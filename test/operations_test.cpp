@@ -30,7 +30,7 @@ namespace
     std::ofstream f( ph.file_c_str() );
     if ( !f )
       throw fs::filesystem_error( "ofstream(): " + ph.generic_path() );
-    f << contents;
+    if ( !contents.empty() ) f << contents;
   }
 
   void verify_file( const fs::path & ph, const std::string & expected )
@@ -83,41 +83,48 @@ int test_main( int, char * [] )
   BOOST_TEST( !fs::exists( dir ) );
 
   // the bound functions should throw, so throws_fs_error() should return true
-  BOOST_TEST( throws_fs_error( bind( fs::directory, ng ) ) );
-  BOOST_TEST( throws_fs_error( bind( fs::directory, dir ) ) );
-  BOOST_TEST( throws_fs_error( bind( fs::empty, dir ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::is_directory, ng ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::is_directory, dir ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::_is_empty, dir ) ) );
 
   fs::create_directory( dir );
 
   BOOST_TEST( fs::exists( dir ) );
-  BOOST_TEST( fs::empty( dir ) );
+  BOOST_TEST( fs::_is_empty( dir ) );
 
-  BOOST_TEST( fs::directory( dir ) );
+  BOOST_TEST( fs::is_directory( dir ) );
 
   fs::path d1( dir << "d1" );
   fs::create_directory( d1  );
   BOOST_TEST( fs::exists( d1 ) );
-  BOOST_TEST( fs::directory( d1 ) );
-  BOOST_TEST( fs::empty( d1 ) );
+  BOOST_TEST( fs::is_directory( d1 ) );
+  BOOST_TEST( fs::_is_empty( d1 ) );
 
   // create a second directory named d2
   fs::path d2( dir << "d2" );
   fs::create_directory(d2 );
   BOOST_TEST( fs::exists( d2 ) );
-  BOOST_TEST( fs::directory( d2 ) );
+  BOOST_TEST( fs::is_directory( d2 ) );
+
+  // create an empty file named "f0"
+  fs::path file_ph( dir << "f0");
+  create_file( file_ph, "" );
+  BOOST_TEST( fs::exists( file_ph ) );
+  BOOST_TEST( !fs::is_directory( file_ph ) );
+  BOOST_TEST( fs::_is_empty( file_ph ) );
 
   // create a file named "f1"
-  fs::path file_ph( dir << "f1");
+  file_ph = dir << "f1";
   create_file( file_ph, "foobar1" );
   BOOST_TEST( fs::exists( file_ph ) );
-  BOOST_TEST( !fs::directory( file_ph ) );
+  BOOST_TEST( !fs::is_directory( file_ph ) );
   verify_file( file_ph, "foobar1" );
 
   // copy_file() tests
   fs::copy_file( file_ph, d1 << "f2" );
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( fs::exists( d1 << "f2" ) );
-  BOOST_TEST( !fs::directory( d1 << "f2" ) );
+  BOOST_TEST( !fs::is_directory( d1 << "f2" ) );
   verify_file( d1 << "f2", "foobar1" );
 
   // rename() on file d1/f2 to d2/f3
@@ -125,7 +132,7 @@ int test_main( int, char * [] )
   BOOST_TEST( !fs::exists( d1 << "f2" ) );
   BOOST_TEST( !fs::exists( d2 << "f2" ) );
   BOOST_TEST( fs::exists( d2 << "f3" ) );
-  BOOST_TEST( !fs::directory( d2 << "f3" ) );
+  BOOST_TEST( !fs::is_directory( d2 << "f3" ) );
   verify_file( d2 << "f3", "foobar1" );
 
   // make sure can't rename() a non-existent file
@@ -142,7 +149,7 @@ int test_main( int, char * [] )
   fs::rename( d2, d3 );
   BOOST_TEST( !fs::exists( d2 ) );
   BOOST_TEST( fs::exists( d3 ) );
-  BOOST_TEST( fs::directory( d3 ) );
+  BOOST_TEST( fs::is_directory( d3 ) );
   BOOST_TEST( !fs::exists( d2 << "f3" ) );
   BOOST_TEST( fs::exists( d3 << "f3" ) );
 
@@ -151,7 +158,7 @@ int test_main( int, char * [] )
   BOOST_TEST( !fs::exists( file_ph ) );
   create_file( file_ph, "" );
   BOOST_TEST( fs::exists( file_ph ) );
-  BOOST_TEST( !fs::directory( file_ph ) );
+  BOOST_TEST( !fs::is_directory( file_ph ) );
   fs::remove( file_ph );
   BOOST_TEST( !fs::exists( file_ph ) );
 
@@ -160,8 +167,8 @@ int test_main( int, char * [] )
   BOOST_TEST( !fs::exists( d1 ) );
   fs::create_directory( d1 );
   BOOST_TEST( fs::exists( d1 ) );
-  BOOST_TEST( fs::directory( d1 ) );
-  BOOST_TEST( fs::empty( d1 ) );
+  BOOST_TEST( fs::is_directory( d1 ) );
+  BOOST_TEST( fs::_is_empty( d1 ) );
   fs::remove( d1 );
   BOOST_TEST( !fs::exists( d1 ) );
 

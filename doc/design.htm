@@ -119,7 +119,7 @@ of choice..</p>
   <li>Some file systems have different rules for valid file names and valid 
   directory names.<br>
 &nbsp;</li>
-  <li>Some file systems (ISO-9660 for CD-ROM's, for example) use very restricted 
+  <li>Some file systems (ISO-9660, level 1, for example) use very restricted 
   (so-called 8.3) file names.<br>
 &nbsp;</li>
   <li>Some file systems allow other file systems with completely different 
@@ -161,12 +161,12 @@ of choice..</p>
   <br>
   <code>&nbsp;&nbsp;&nbsp;&nbsp; assert( exists(&quot;foo&quot;) == exists(&quot;foo&quot;) ); 
   // may fail!<br>
-&nbsp;&nbsp;&nbsp;&nbsp; assert( directory(&quot;foo&quot;) == directory(&quot;foo&quot;); 
+&nbsp;&nbsp;&nbsp;&nbsp; assert( is_directory(&quot;foo&quot;) == is_directory(&quot;foo&quot;); 
   // may fail!<br>
   </code><br>
   In the first example, the file may have been deleted between calls to 
   exists().&nbsp; In the second example, the file may have been deleted and then 
-  replaced by a directory of the same name between the calls to directory().<br>
+  replaced by a directory of the same name between the calls to is_directory().<br>
 &nbsp;</li>
   <li>Even though an application may be portable, it still will have to traffic 
   in system specific paths occasionally; operated provided input is a common 
@@ -186,7 +186,8 @@ design decisions.</p>
 
 <p>Several key insights went into the <i>path</i> class design:</p>
 <ul>
-  <li>Decoupling the input formats, internal conceptual (<i>vector&lt;string&gt;</i>) 
+  <li>Decoupling the input formats, internal conceptual (<i>vector&lt;string&gt;</i> 
+  or other sequence) 
   model, and output formats.</li>
   <li>Providing two input formats (generic and O/S specific) broke a major 
   design deadlock.</li>
@@ -249,22 +250,25 @@ work correctly on their choice of target systems.</p>
 
 <h2><a name="References">References</a></h2>
 
-<p>[<a name="Wulf-Shaw-73">Wulf-Shaw-73</a>] William Wulf, Mary Shaw, <i>Global 
-Variable Considered Harmful</i>, ACM SIGPLAN Notices, 8, 2, 1973, pp. 23-34</p>
-
 <p>[<a name="IBM-01">IBM-01</a>] IBM Corporation, <i>z/OS V1R3.0 C/C++ Run-Time 
 Library Reference</i>, SA22-7821-02, 2001,
 <a href="http://www-1.ibm.com/servers/eserver/zseries/zos/bkserv/">
 http://www-1.ibm.com/servers/eserver/zseries/zos/bkserv/</a></p>
 
+<p>[<a name="ISO-9660">ISO-9660</a>] International Standards Organization, 1988.</p>
+
 <p>[<a name="POSIX-01">POSIX-01</a>] Open Group, <i>IEEE&nbsp;Std&nbsp;1003.1-2001 [AKA 
 POSIX]</i>, 2001,
 <a href="http://www.opengroup.org/onlinepubs/007904975/toc.htm">
 http://www.opengroup.org/onlinepubs/007904975/toc.htm</a></p>
+
+<p>[<a name="Wulf-Shaw-73">Wulf-Shaw-73</a>] William Wulf, Mary Shaw, <i>Global 
+Variable Considered Harmful</i>, ACM SIGPLAN Notices, 8, 2, 1973, pp. 23-34</p>
+
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
 
 </body>
 

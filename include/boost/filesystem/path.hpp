@@ -13,6 +13,7 @@
 #ifndef BOOST_FILESYSTEM_PATH_HPP
 #define BOOST_FILESYSTEM_PATH_HPP
 
+#include <boost/iterator_adaptors.hpp>
 #include <string>
 #include <cassert>
 
@@ -23,8 +24,26 @@ namespace boost
   namespace filesystem
   {
     class path;
-    typedef void (*path_inspector)( const path & );
-    
+
+    namespace detail
+    {
+      struct path_itr_imp
+      {
+        std::string             name;     // cache current element.
+        const path *            path_ptr; // path being iterated over.
+        std::string::size_type  pos;      // position of name in
+                                          // path_ptr->generic_path(). The
+                                          // end() iterator is indicated by 
+                                          // pos == path_ptr->generic_path().size()
+
+        const std::string & operator*() const { return name; }
+        void operator++();
+        void operator--();
+        bool operator==( const path_itr_imp & rhs ) const
+          { return path_ptr == rhs.path_ptr && pos == rhs.pos; }
+      };
+    }
+
     enum path_format { system_specific }; // ugly enough to discourage use
                                           // except when actually needed
 
@@ -33,7 +52,6 @@ namespace boost
     class path
     {
     public:
-
       // compiler generates copy constructor, copy assignment, and destructor
 
       // Rationale for returns of "const path" instead of "path"; see
@@ -53,20 +71,38 @@ namespace boost
         { return path( *this ) <<= rhs; }
 
       // query functions:
-      bool empty() const { return m_path.size() == 0; }
+      bool is_null() const { return m_path.size() == 0; }
+
       const std::string & generic_path() const { return m_path; }
-      const char * file_c_str() const { return m_path.c_str(); }
-      const char * directory_c_str() const { return m_path.c_str(); }
+      const std::string & file_path() const { return m_path; } // native format
+      const std::string & directory_path() const { return m_path; } // ditto
+
       const std::string leaf() const;
       const path branch() const;
 
-//      bool is_absolute() const;  // note that "/" on Windows is relative
+      // deprecated
+      const char * file_c_str() const { return m_path.c_str(); }
+      const char * directory_c_str() const { return m_path.c_str(); }
 
-      // TODO - implement these:
-      // iteration:
-      // typedef ... iterator; // InputIterator over names in m_path
-      // iterator begin() const;
-      // iterator end() const;
+      // iteration over the names in the path:
+      typedef boost::iterator_adaptor<
+        detail::path_itr_imp,
+        boost::default_iterator_policies,
+        const std::string,
+        const std::string &,
+        const std::string *,
+        std::bidirectional_iterator_tag,
+        std::ptrdiff_t 
+        > iterator;
+
+      iterator begin() const;
+      iterator end() const
+      {
+        iterator itr;
+        itr.base().path_ptr = this;
+        itr.base().pos = m_path.size();
+        return itr;
+      }
 
     private:
       // Note: This is an implementation for POSIX and Windows, where there
@@ -74,11 +110,12 @@ namespace boost
       // constructor input formats.  Private members might be quite different
       // in other implementations, particularly where there were wide
       // differences between generic and system-specific argument formats,
-      // or between file_c_str() and directory_c_str() formats.
+      // or between file_path() and directory_path() formats.
 
       std::string  m_path;
 
       friend class directory_iterator;
+      friend struct boost::filesystem::detail::path_itr_imp;
 
       enum source_context { generic, platform, nocheck };
 

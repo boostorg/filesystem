@@ -55,12 +55,12 @@ namespace
     return string( run_date );
   }
 
-//  convert backslashes to forward slashes  ----------------------------------//
+//  convert path separators to forward slashes  ------------------------------//
 
-  void convert_backslashes( string & s )
+  void convert_path_separators( string & s )
   {
     for ( string::iterator itr = s.begin(); itr != s.end(); ++itr )
-      if ( *itr == '\\' ) *itr = '/';
+      if ( *itr == '\\' || *itr == '!' ) *itr = '/';
   }
 
 //  extract a directory from a jam target string  ----------------------------//
@@ -68,7 +68,7 @@ namespace
   string target_directory( const string & s )
   {
     string temp( s );
-    convert_backslashes( temp );
+    convert_path_separators( temp );
     temp.erase( temp.find_last_of( "/" ) );
     string::size_type pos = temp.find_last_of( " " );
     if ( pos != string::npos ) temp.erase( 0, pos+1 );
@@ -77,7 +77,7 @@ namespace
 
   string toolset( const string & s )
   {
-    string t( target_directory( s ) );
+    string t( s );
     string::size_type pos = t.find( "/bin/" );
     if ( pos != string::npos ) pos += 5;
     else return "";
@@ -89,12 +89,41 @@ namespace
 
   string test_name( const string & s )
   {
-    string t( target_directory( s ) );
+    string t( s );
     string::size_type pos = t.find( "/bin/" );
     if ( pos != string::npos ) pos += 5;
     else return "";
     return t.substr( pos, t.find( ".", pos ) - pos );
   }
+
+  // the format of paths is really kinky, so convert to normal form
+  //   first path is missing the leading "..\".
+  //   first path is missing "\bin" after "status".
+  //   second path is missing the leading "..\".
+  //   second path is missing "\bin" after "build".
+  //   second path uses "!" for some separators.
+  void parse_skipped_msg( const string & msg,
+    string & first_dir, string & second_dir )
+  {
+    first_dir.clear();
+    second_dir.clear();
+    string::size_type start_pos( msg.find( '<' ) );
+    if ( start_pos == string::npos ) return;
+    ++start_pos;
+    string::size_type end_pos( msg.find( '>', start_pos ) );
+    first_dir += msg.substr( start_pos, end_pos - start_pos );
+    convert_path_separators( first_dir );
+    first_dir.insert( 6, "/bin" );
+
+    start_pos = msg.find( '<', end_pos );
+    if ( start_pos == string::npos ) return;
+    ++start_pos;
+    end_pos = msg.find( '>', start_pos );
+    second_dir += msg.substr( start_pos, end_pos - start_pos );
+    convert_path_separators( second_dir );
+    second_dir.insert( second_dir.find( "/build/" )+6, "/bin" );
+  }
+
 
 
 //  test_log hides database details  -----------------------------------------//
@@ -204,7 +233,7 @@ namespace
                      const string & result,
                      const string & timestamp,
                      const string & content )
-    // the only valid action_names are "compile", "link", "run"
+    // the only valid action_names are "compile", "link", "run", "lib"
     {
       // my understanding of the jam output is that there should never be
       // a stop_message that was not preceeded by a matching start_message.
@@ -214,7 +243,13 @@ namespace
       test_log tl( target_directory, m_test_name, m_toolset );
 
       // dependency removal
-      if ( action_name == "compile" )
+      if ( action_name == "lib" )
+      {
+        tl.remove_action( "compile" );
+        tl.remove_action( "link" );
+        tl.remove_action( "run" );
+      }
+      else if ( action_name == "compile" )
       {
         tl.remove_action( "link" );
         tl.remove_action( "run" );
@@ -259,8 +294,11 @@ int cpp_main( int argc, char ** argv )
         mgr.stop_message( action, target_directory( line ),
           "fail", timestamp(), content );
       else
-        mgr.start_message( action, target_directory( line ),
-          test_name( line ), toolset( line ), content );
+      {
+        string target_dir( target_directory( line ) );
+        mgr.start_message( action, target_dir,
+          test_name( target_dir ), toolset( target_dir ), content );
+      }
       content = "\n";
       capture_lines = true;
     }
@@ -276,14 +314,15 @@ int cpp_main( int argc, char ** argv )
       }
       else
       {
-        mgr.start_message( "run", target_directory( line ),
-          test_name( line ), toolset( line ), content );
+        string target_dir( target_directory( line ) );
+        mgr.start_message( "run", target_dir,
+          test_name( target_dir ), toolset( target_dir ), content );
 
         // contents of .output file for content
         capture_lines = false;
         content = "\n";
-        fs::ifstream file( fs::path(target_directory(line))
-          << (test_name(line) + ".output") );
+        fs::ifstream file( fs::path(target_dir)
+          << (test_name(target_dir) + ".output") );
         if ( file )
         {
           string ln;
@@ -294,6 +333,30 @@ int cpp_main( int argc, char ** argv )
           }
         }
       }
+    }
+
+    else if ( line.find( "...skipped <" ) != string::npos
+      && line.find( ".test for lack of " ) != string::npos )
+    {
+      mgr.stop_message( content );
+      content.clear();
+      capture_lines = true;
+
+      string target_dir;
+      string lib_dir;
+
+      parse_skipped_msg( line, target_dir, lib_dir );
+
+      if ( target_dir != lib_dir ) // it's a lib problem
+      {
+        target_dir.insert( 0, "../" );
+        mgr.start_message( "lib", target_dir, 
+          test_name( target_dir ), toolset( target_dir ), content );
+        content = lib_dir;
+        mgr.stop_message( "lib", target_dir, "fail", timestamp(), content );
+        content = "\n";
+      }
+
     }
 
     else if ( line.find( "succeeded-test" ) != string::npos

@@ -40,9 +40,18 @@ namespace boost
 
     bool exists( const path & ph );
 
-    bool directory( const path & ph );
+    bool is_directory( const path & ph );
 
-    bool empty( const path & ph );
+    // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
+    // between boost::filesystem::is_empty and the unrelated type trait
+    // boost::is_empty. The workaround for those who must use broken versions
+    //  of VC++ is to use the function _is_empty. All others should use the
+    // correct is_empty name.
+    bool _is_empty( const path & ph ); // deprecated
+
+#   if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300
+    inline bool is_empty( const path & ph ) { return _is_empty( ph ); }
+#   endif
 
 //  operations  --------------------------------------------------------------//
 

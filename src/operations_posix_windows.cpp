@@ -136,7 +136,7 @@ namespace
 
   fs::directory_iterator end_itr;
 
-  bool empty_directory( const fs::path & dir_path )
+  bool is_empty_directory( const fs::path & dir_path )
   {
     return fs::directory_iterator(dir_path) == end_itr;
   }
@@ -144,7 +144,7 @@ namespace
   unsigned long remove_all_aux( const fs::path & ph )
   {
     unsigned long count = 1;
-    if ( fs::directory( ph ) )
+    if ( fs::is_directory( ph ) )
     {
       for ( boost::filesystem::directory_iterator itr( ph );
             itr != end_itr; ++itr )
@@ -188,7 +188,7 @@ namespace boost
     {
       BOOST_SYSTEM_DIRECTORY_TYPE scratch;
       const char * name;
-      if ( dir_path.empty() )
+      if ( dir_path.is_null() )
        m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
       else
         name = find_first_file( dir_path.directory_c_str(),
@@ -258,7 +258,7 @@ namespace boost
 #   endif
     }
 
-    bool directory( const path & ph )
+    bool is_directory( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
@@ -275,26 +275,26 @@ namespace boost
 #   endif
     }
 
-    bool empty( const path & ph )
+    bool _is_empty( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
       if ( ::stat( ph.file_c_str(), &path_stat ) != 0 )
-              throw filesystem_error( std::string("empty(): ")
+              throw filesystem_error( std::string("is_empty(): ")
                 + ph.file_c_str(), system_error );
       
       return S_ISDIR( path_stat.st_mode )
-        ? empty_directory( ph )
+        ? is_empty_directory( ph )
         : path_stat.st_size == 0;
 #   else
       WIN32_FILE_ATTRIBUTE_DATA fad;
       if ( !::GetFileAttributesEx( ph.file_c_str(),
         ::GetFileExInfoStandard, &fad ) )
-              throw filesystem_error( std::string("empty(): ")
+              throw filesystem_error( std::string("is_empty(): ")
                 + ph.file_c_str(), system_error );
       
       return ( fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
-        ? empty_directory( ph )
+        ? is_empty_directory( ph )
         :( !fad.nFileSizeHigh && !fad.nFileSizeLow );
 #   endif
     }
@@ -316,7 +316,7 @@ namespace boost
       if ( !exists( ph ) )
         throw fs::filesystem_error( std::string("remove() on: ")
           + ph.file_c_str(), system_error );
-      if ( directory( ph ) )
+      if ( is_directory( ph ) )
       {
 #   ifdef BOOST_POSIX
         if ( ::rmdir( ph.file_c_str() ) != 0 )
@@ -398,7 +398,7 @@ namespace boost
     const path & initial_directory()
     {
       static path init_dir;
-      if ( init_dir.empty() )
+      if ( init_dir.is_null() )
       {
 #     ifdef BOOST_POSIX
         long path_max = ::pathconf( ".", _PC_PATH_MAX );

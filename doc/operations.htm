@@ -21,8 +21,8 @@
 &nbsp;&nbsp;&nbsp; <a href="#other functions">Other functions</a><br>
 <a href="#Non-member functions">Non-member functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#directory">directory</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#empty">empty</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
@@ -72,8 +72,8 @@ exceptions being thrown. See <a href="reference.htm#Requirements">Requirements</
     };
 
     bool <a href="#exists">exists</a>( const path &amp; ph );
-    bool <a href="#directory">directory</a>( const path &amp; ph );
-    bool <a href="#empty">empty</a>( const path &amp; ph );
+    bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
+    bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
 
     void <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
     void <a href="#remove">remove</a>( const path &amp; ph );
@@ -173,8 +173,8 @@ retain the same names and general behavior in the Filesystem Library, to
 minimize surprises.</p>
 
 <p>
-<b>Rationale:</b> Query function names are not prefixed with <i>is_</i> since 
-this is not the practice for the standard library.</p>
+<b>Naming Rationale:</b> See class <i>path</i>
+<a href="path.htm#Naming Rationale">Naming Rationale</a>.</p>
 
 <h3><a name="exists">exists</a></h3>
 <blockquote>
@@ -186,20 +186,21 @@ will be possible to perform other operations on the file or directory. Access
 rights or other security concerns, for example, may cause other operations to 
 fail.</p>
 </blockquote>
-<h3><a name="directory">directory</a></h3>
+<h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
-<p><code>bool directory( const path &amp; ph );</code></p>
+<p><code>bool is_directory( const path &amp; ph );</code></p>
 <p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
 <i>ph</i> is a directory, else false.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
 <p><b>Rationale:</b> Treating <code>!exists(ph)</code> as an exception rather 
 than just returning false came about because in real code <code>!exists(ph)</code> 
-often resulted from programming error.&nbsp; A compound function returning <code>
-exists(ph) &amp;&amp; directory(ph)</code> can always be added later.</p>
+has 
+often been the first indicate of a programming error.&nbsp; A compound function returning <code>
+exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 </blockquote>
-<h3><a name="empty">empty</a></h3>
+<h3><a name="is_empty">is_empty</a></h3>
 <blockquote>
-<p><code>bool empty( const path &amp; ph );</code></p>
+<p><code>bool is_empty( const path &amp; ph );</code></p>
 <p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
 <i>ph</i> is an empty file or empty directory, else false.</p>
 <p><b>Throws:</b> if <code>!exists(path)</code></p>
@@ -208,14 +209,14 @@ exists(ph) &amp;&amp; directory(ph)</code> can always be added later.</p>
 <blockquote>
 <p><code>void create_directory( const path &amp; &amp; directory_ph );</code></p>
 <p><b>Postcondition:</b> <code>exists(directory_ph) &amp;&amp; 
-directory(directory_ph) &amp;&amp; empty(directory_ph)</code></p>
+is_directory(directory_ph) &amp;&amp; is_empty(directory_ph)</code></p>
 <p><b>Throws: </b>if <code>exists(directory_ph)) || !exists(branch(directory_ph))</code></p>
 </blockquote>
 <h3><a name="remove">remove</a></h3>
 <blockquote>
 <p><code>void remove( const path &amp; ph );</code></p>
 <p><b>Postcondition:</b> <code>!exists( ph )</code></p>
-<p><b>Throws:</b> if <code>!exists(ph) || !empty(ph)</code></p>
+<p><b>Throws:</b> if <code>!exists(ph) || !is_empty(ph)</code></p>
 </blockquote>
 <h3><a name="remove_all">remove_all</a></h3>
 <blockquote>
@@ -268,7 +269,7 @@ support, so alternate semantics are supplied for those implementations which
 cannot change an existing the runtime library.</p>
 <p><b>Note:</b> It would be good practice in a program dependent on <i>
 initial_directory()</i> to call it immediately upon entering<i> main()</i>. That 
-protects against some other called function altering the current working 
+protects against another function altering the current working 
 directory (using a native platform function) before the first call to <i>
 initial_directory()</i>.</p>
 
@@ -276,7 +277,7 @@ initial_directory()</i>.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->15 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21087" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
 
 </body>
 

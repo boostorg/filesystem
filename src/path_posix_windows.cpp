@@ -47,28 +47,66 @@ namespace fs = boost::filesystem;
 
 namespace
 {
+  // POSIX & Windows cases: "", "/", "/foo", "foo", "foo/bar"
+  // Windows only cases: "c:", "c:/", "c:foo", "c:/foo",
+  //                     "prn:", "//share", "//share/foo"
 
-  std::string::size_type leaf_pos( const std::string & path_str )
-  // return 0 if path_str itself is leaf (or empty) 
+  std::string::size_type leaf_pos( const std::string & str,
+    std::string::size_type end_pos ) // end_pos is past-the-end position
+  // return 0 if str itself is leaf (or empty) 
   {
-    if ( path_str == "/" // root
+    if ( (end_pos == 1 && str[0] == '/')
 #     ifdef BOOST_WINDOWS
-      || (path_str.size() > 1 // drive or device
-      && (*(path_str.end()-1) == ':' || *(path_str.end()-2) == ':'))
+      || (end_pos > 1 // drive or device
+      && (str[end_pos-1] == ':' || str[end_pos-2] == ':'))
 #     endif
       ) return 0;
 
-    std::string::size_type pos( path_str.find_last_of( '/' ) );
+    std::string::size_type pos( str.find_last_of( '/', end_pos-1 ) );
 #   ifdef BOOST_WINDOWS
-    if ( pos == std::string::npos ) pos = path_str.find_last_of( ':' );
+    if ( pos == std::string::npos ) pos = str.find_last_of( ':', end_pos-1 );
 #   endif
 
     return ( pos == std::string::npos // path itself must be a leaf (or empty)
 #     ifdef BOOST_WINDOWS
-      || (pos == 1 && path_str[0] == '/') // or share
+      || (pos == 1 && str[0] == '/') // or share
 #     endif
       ) ? 0 // so leaf is entire string
         : pos + 1; // or starts after delimiter
+  }
+
+  void first_name( const std::string & src, std::string & target )
+  {
+    target.clear();
+    std::string::const_iterator itr( src.begin() );
+
+#   ifdef BOOST_WINDOWS
+    // deal with //share
+    if ( src.size() >= 2 && src[0] == '/' && src[1] == '/' )
+      { target = "//"; itr += 2; }
+#   endif
+
+    while ( itr != src.end()
+#     ifdef BOOST_WINDOWS
+      && *itr != ':'
+#     endif
+      && *itr != '/' ) { target += *itr++; }
+
+    if ( itr == src.end() ) return;
+
+#   ifdef BOOST_WINDOWS
+    if ( *itr == ':' )
+    {
+      target += *itr++;
+      if ( itr == src.end() ) return;
+      if ( *itr == '/' ) { target += *itr++; }
+      return;
+    }
+#   endif
+
+    // *itr is '/'
+    if ( itr == src.begin() ) { target += '/'; }
+    return;
   }
 
   const char invalid_chars[] =
@@ -200,7 +238,7 @@ namespace boost
       while ( itr != src.end() )
       {
         // append '/' if needed
-        if ( !empty() // append '/'
+        if ( !is_null() // append '/'
             && *(m_path.end()-1) != ':' && *(m_path.end()-1) != '/' )
             m_path += '/'; 
 
@@ -276,22 +314,31 @@ namespace boost
       } // while more elements
     }
 
+    path::iterator path::begin() const
+    {
+      iterator itr;
+      itr.base().path_ptr = this;
+      first_name( m_path, itr.base().name );
+      itr.base().pos = 0;
+      return itr;
+    }
+
     void path::m_replace_leaf( const char * new_leaf )
     {
-      m_path.erase( leaf_pos( m_path ) );
+      m_path.erase( leaf_pos( m_path, m_path.size() ) );
       m_path += new_leaf;
     }
 
     const std::string path::leaf() const
     {
-      return m_path.substr( leaf_pos( m_path ) );
+      return m_path.substr( leaf_pos( m_path, m_path.size() ) );
     }
 
     const path path::branch() const
     {
-      std::string::size_type len( leaf_pos( m_path ) );
+      std::string::size_type len( leaf_pos( m_path, m_path.size() ) );
        
-      if ( len >= 2  // unless delimiter is part of root, don't include it
+      if ( len > 1  // unless delimiter is part of root, don't include it
 #     ifdef BOOST_WINDOWS
         && m_path[len-1] != ':'
         && m_path[len-2] != ':'
@@ -312,6 +359,33 @@ namespace boost
     //           && m_path[m_path.size()-1] == ':' ); // "device:"
     //}
 
+    namespace detail
+    {
+      void path_itr_imp::operator++()
+      {
+        assert( pos < path_ptr->m_path.size() ); // detect increment past end
+        pos += name.size();
+        if ( path_ptr->m_path[pos] == '/' ) ++pos;
+        std::string::size_type end_pos( path_ptr->m_path.find( '/', pos ) );
+        if ( end_pos == std::string::npos ) end_pos = path_ptr->m_path.size();
+        name = path_ptr->m_path.substr( pos, end_pos - pos );
+      }
 
+      void path_itr_imp::operator--()
+      {                                                                                
+        assert( pos ); // detect decrement of begin
+        std::string::size_type end_pos( pos );
+        if ( end_pos != path_ptr->m_path.size()
+          && end_pos > 1
+#         ifdef BOOST_WINDOWS
+          && path_ptr->m_path[end_pos-1] != ':'
+          && path_ptr->m_path[end_pos-2] != ':'
+#         endif
+          ) --end_pos;
+        pos = leaf_pos( path_ptr->m_path, end_pos );
+        name = path_ptr->m_path.substr( pos, end_pos - pos );
+      }
+
+    } // namespace detail
   } // namespace filesystem
 } // namespace boost

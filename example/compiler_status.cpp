@@ -28,6 +28,7 @@ namespace xml = boost::tiny_xml;
 #include <cstdlib>  // for abort
 #include <string>
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -47,6 +48,8 @@ const std::size_t max_compile_msg_size = 10000;
 
 namespace
 {
+  fs::path boost_root_dir;
+
   bool ignore_pass;
   bool no_warn;
 
@@ -74,6 +77,17 @@ namespace
       if ( *itr == '\\' ) *itr = '/';
   }
 
+// extra information from target directory string  ---------------------------//
+
+  string extract_test_name( const string & s )
+  {
+    string t( s );
+    string::size_type pos = t.find( "/bin/" );
+    if ( pos != string::npos ) pos += 5;
+    else return "";
+    return t.substr( pos, t.find( ".", pos ) - pos );
+  }
+
 //  find_file  ---------------------------------------------------------------//
 //  given a directory to recursively search
 
@@ -82,7 +96,7 @@ namespace
   {
     if ( !fs::exists( dir_path ) ) return false;
     for ( fs::directory_iterator itr( dir_path ); itr != end_itr; ++itr )
-      if ( fs::directory( *itr )
+      if ( fs::is_directory( *itr )
         && itr->leaf() != ignore_dir_named )
       {
         if ( find_file( *itr, name, path_found ) ) return true;
@@ -215,7 +229,12 @@ namespace
         }
         if ( result.size() &&
           ( line.find( search_name1 ) != string::npos
-          || line.find( search_name2 ) != string::npos ) ) return result;
+          || line.find( search_name2 ) != string::npos ) )
+        {
+          if ( line.find( "# compiler_status<always_show_run_output>" )
+            != string::npos ) result.insert( 0, 1, '*' );
+          return result;
+        }
       }
       result.clear();
     }
@@ -231,16 +250,16 @@ namespace
     fs::path child;
     for ( fs::directory_iterator itr( root ); itr != end_itr; ++itr )
     {
-      if ( fs::directory( *itr ) )
+      if ( fs::is_directory( *itr ) )
       {
-        if ( child.empty() ) child = *itr;
+        if ( child.is_null() ) child = *itr;
         else throw std::runtime_error(
           string( "two target possibilities found: \"" )
             + child.generic_path() + "\" and \""
             + (*itr).generic_path() + "\"" );
       }
     }
-    if ( child.empty() ) return root; // this dir has no children
+    if ( child.is_null() ) return root; // this dir has no children
     return target_directory( child );
   }
 
@@ -259,17 +278,21 @@ namespace
 
 //  generate_report  ---------------------------------------------------------//
 
-  bool generate_report( const xml::element_ptr & db,
-                        const string & test_name,
-                        const string & toolset,
-                        bool pass )
+  // return 0 if nothing generated, 1 otherwise, except 2 if compiler msgs
+  int generate_report( const xml::element_ptr & db,
+                       const string & test_name,
+                       const string & toolset,
+                       bool pass,
+                       bool always_show_run_output = false )
   {
     // compile msgs sometimes modified, so make a local copy
     string compile( (pass && no_warn) 
       ? empty_string :  element_content( db, "compile" ) );
 
     const string & link( pass ? empty_string : element_content( db, "link" ) );
-    const string & run( pass ? empty_string : element_content( db, "run" ) );
+    const string & run( (pass && !always_show_run_output) 
+      ? empty_string : element_content( db, "run" ) );
+    string lib( pass ? empty_string : element_content( db, "lib" ) );
 
     // some compilers output the filename even if there are no errors or
     // warnings; detect this if one line of output and it contains no space.
@@ -277,7 +300,10 @@ namespace
     if ( pos != string::npos && compile.size()-pos <= 2 
         && compile.find( ' ' ) == string::npos ) compile.clear();
 
-    if ( compile.empty() && link.empty() && run.empty() ) return false;
+    if ( lib.empty() && compile.empty() && link.empty() && run.empty() )
+      return 0;
+
+    int result = 1; // some kind of msg for sure
 
     // limit compile message length
     if ( compile.size() > max_compile_msg_size )
@@ -287,17 +313,48 @@ namespace
     }
 
     html_log_file << "<h2><a name=\""
-                  << test_name << " " << toolset << "\">"
-                  << test_name << " / " << toolset << "</a></h2>\n";
+      << test_name << " " << toolset << "\">"
+      << test_name << " / " << toolset << "</a></h2>\n";
 
     if ( !compile.empty() )
+    {
+      ++result;
       html_log_file << "<h3>Compiler output:</h3><pre>"
-        << compile << "</pre>\n";  
+        << compile << "</pre>\n";
+    }
     if ( !link.empty() )
       html_log_file << "<h3>Linker output:</h3><pre>" << link << "</pre>\n";  
-    if ( !run.empty()  )
-      html_log_file << "<h3>Run output:</h3><pre>" << run << "</pre>\n";  
-    return true;
+    if ( !run.empty() )
+      html_log_file << "<h3>Run output:</h3><pre>" << run << "</pre>\n";
+
+    static std::set< string > failed_lib_target_dirs;
+    if ( !lib.empty() )
+    {
+      if ( lib[0] == '\n' ) lib.erase( 0, 1 );
+      string lib_test_name( extract_test_name( lib ) );
+      html_log_file << "<h3>Library build failure: </h3>\n"
+        "See <a href=\"#" << lib_test_name << " " << toolset << "\">"
+        << lib_test_name << " / " << toolset << "</a>";
+
+      if ( failed_lib_target_dirs.find( lib ) == failed_lib_target_dirs.end() )
+      {
+        failed_lib_target_dirs.insert( lib );
+        fs::ifstream file( boost_root_dir << lib << "test_log.xml" );
+        if ( file )
+        {
+          xml::element_ptr db = xml::parse( file );
+          generate_report( db, lib_test_name, toolset, false );
+        }
+        else
+        {
+          html_log_file << "<h2><a name=\""
+            << lib_test_name << " " << toolset << "\">"
+            << lib_test_name << " / " << toolset << "</a></h2>\n"
+            "test_log.xml not found\n";
+        }
+      }
+    }
+    return result;
   }
 
   //  do_cell  -----------------------------------------------------------------//
@@ -305,7 +362,8 @@ namespace
   bool do_cell( const fs::path & test_dir,
     const string & test_name,
     const string & toolset,
-    string & target )
+    string & target,
+    bool always_show_run_output )
   // return true if any results except pass_msg
   {
     fs::path target_dir( target_directory( test_dir << toolset ) );
@@ -313,15 +371,15 @@ namespace
 
     // missing jam residue
     if ( fs::exists( target_dir << (test_name + ".success") ) ) pass = true;
-    else if ( !fs::exists( target_dir << (test_name + ".failure") ) )
+    else if ( !fs::exists( target_dir << (test_name + ".failure") )
+      && !fs::exists( target_dir << "test_log.xml" ) )
     {
       target += "<td>" + missing_residue_msg + "</td>";
       return true;
     }
 
-    // missing jam_log.xml
     fs::ifstream file( target_dir << "test_log.xml" );
-    if ( !file )
+    if ( !file ) // missing jam_log.xml
     {
       std::cerr << "Missing jam_log.xml in target \""
         << target_dir.generic_path() << "\"\n";
@@ -333,11 +391,11 @@ namespace
     xml::element_ptr db = xml::parse( file );
 
     // generate bookmarked report of results, and link to it
-    bool anything_generated
-      = generate_report( db, test_name, toolset, pass );
+    int anything_generated
+      = generate_report( db, test_name, toolset, pass, always_show_run_output );
 
     target += "<td>";
-    if ( anything_generated )
+    if ( anything_generated != 0 )
     {
       target += "<a href=\"";
       target += html_log_name;
@@ -346,12 +404,12 @@ namespace
       target += " ";
       target += toolset;
       target += "\">";
-      target += pass ? warn_msg : fail_msg;
+      target += pass ? (anything_generated < 2 ? pass_msg : warn_msg) : fail_msg;
       target += "</a>";
     }
     else  target += pass ? pass_msg : fail_msg;
     target += "</td>";
-    return anything_generated || !pass;
+    return (anything_generated != 0) || !pass;
   }
 
 //  do_row  ------------------------------------------------------------------//
@@ -420,7 +478,11 @@ namespace
     string::size_type row_start_pos = target.size();
     target += "<tr><td><a href=\"" + lib_docs_path + "\">"  + lib_name  + "</a></td>";
     target += "<td><a href=\"" + test_path + "\">" + test_name + "</a></td>";
+
     string test_type = test_type_desc( test_name );
+    bool always_show_run_output = false;
+    if ( !test_type.empty() && test_type[0] == '*' )
+      { always_show_run_output = true; test_type.erase( 0, 1 ); }
     target += "<td>" + test_type + "</td>";
 
     bool no_warn_save = no_warn;
@@ -431,7 +493,8 @@ namespace
     for ( std::vector<string>::const_iterator itr=toolsets.begin();
       itr != toolsets.end(); ++itr )
     {
-      anything_to_report |= do_cell( test_dir, test_name, *itr, target );
+      anything_to_report |= do_cell( test_dir, test_name, *itr, target,
+        always_show_run_output );
     }
 
     target += "</tr>";
@@ -485,7 +548,7 @@ namespace
       std::clog << "Requested compiler is " << specific_compiler << "\n";
       for (; compiler_itr != end_itr; ++compiler_itr )
       {
-        if ( fs::directory( *compiler_itr )  // check just to be sure
+        if ( fs::is_directory( *compiler_itr )  // check just to be sure
           && compiler_itr->leaf() != "test" ) // avoid strange directory (Jamfile bug?)
         {
           if ( specific_compiler.size() != 0
@@ -536,7 +599,6 @@ int cpp_main( int argc, char * argv[] ) // note name!
       { no_warn = true; --argc; ++argv; }
   }
 
-  fs::path boost_root_dir;
   if ( argc == 2 )
     boost_root_dir = fs::path( argv[1], fs::system_specific );
   else

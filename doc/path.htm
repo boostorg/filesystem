@@ -101,11 +101,11 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
 {
   namespace filesystem
   {
+    enum path_format { <a name="system_specific">system_specific</a> };
+
     class path
     {
     public:
-      enum format { <a name="system_specific">system_specific</a> };
-
       // compiler generates copy constructor,
       // copy assignment, and destructor
 
@@ -113,29 +113,40 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
       <a href="#constructors">path</a>();
       <a href="#constructors">path</a>( const std::string &amp; src );
       <a href="#constructors">path</a>( const char * src );
-      <a href="#constructors">path</a>( const std::string &amp; src, format );
-      <a href="#constructors">path</a>( const char * src, format );
+      <a href="#constructors">path</a>( const std::string &amp; src, path_format );
+      <a href="#constructors">path</a>( const char * src, path_format );
 
       // append operations:
       path &amp; <a href="#operator-shift-equal">operator&lt;&lt;=</a>( const path &amp; rhs );
       const path <a href="#operator-shift">operator&lt;&lt;</a> ( const path &amp; rhs ) const;
 
       // query functions: 
-      bool <a href="#empty">empty()</a> const;
+      bool <a href="#empty">is_null()</a> const;
       const std::string &amp; <a href="#generic_path">generic_path</a>() const;
-      const char * <a href="#file_c_str">file_c_str</a>() const;
-      const char * <a href="#directory_c_str">directory_c_str</a>() const;
+      const std::string &amp; <a href="#file_path">file_path</a>() const;
+      const std::string &amp; <a href="#directory_path">directory_path</a>() const;
       const std::string <a href="#leaf">leaf</a>() const;
       const path <a href="#branch">branch</a>() const;
+
+      // iteration:
+      typedef <i>implementation-defined</i> iterator;
+      iterator begin() const;
+      iterator end() const;
 
     private:
       std::vector&lt;std::string&gt; m_name;  // for exposition only
     };
+
+    path <a href="#non-member operator shift">operator&lt;&lt;</a> ( const char * lhs, const path &amp; rhs );
+    path <a href="#non-member operator shift">operator&lt;&lt;</a> ( const std::string &amp; lhs, const path &amp; rhs );
+
+    <i>// Also see </i><a href="#Undocumented non-member functions">Undocumented non-member functions</a><i> below</i>
+
   }
 }</pre>
 <h2><a name="Member">Member</a> functions</h2>
 <p>For the sake of exposition, class <i>path</i> member functions are described 
-as if the class contains a private member <code>std::vector&lt;std::string&gt; m_name</code>. 
+as if the class contains a private member <i>std::vector&lt;std::string&gt; m_name</i>. 
 Actual implementations may differ.</p>
 <p><b>Rationale:</b> Return types of query functions have been chosen to match 
 the types needed by important uses, and to be efficient in common 
@@ -154,6 +165,23 @@ considers too long or contains invalid characters.
 <a href="???????to-be-supplied">Validity checking functions</a> are supplied to 
 ensure names in paths are as portable as desired, but they must be explicitly 
 called by the user.</p>
+<p><b><a name="Naming Rationale">Naming Rationale</a>:</b> Class <i>path</i> 
+member function names and <a href="operations.htm">operations.hpp</a> non-member 
+function names are chosen to be distinct from one another. Otherwise, given a 
+path <i>foo</i>, for example, both <i>foo.empty()</i> and <i>empty( foo )</i> 
+would be valid, but with completely different semantics. Avoiding this was 
+considered more important than consistency with some C++ Standard Library naming 
+conventions, which aren't followed uniformly anyhow, even in the standard.</p>
+<h3><a name="System-specific Representation">System-specific Representation</a></h3>
+<p>Several <i>path</i> non-member functions return representations of <i>m_name</i> 
+in formats specific to the operating system. These formats are implementation 
+defined. If an <i>m_name</i> 
+element contains characters which are invalid under the operating system's 
+rules, and there is an unambiguous translation between the invalid character and 
+a valid character, the implementation is required to perform that translation. 
+For example, if an operating system does not permit lowercase letters in file or 
+directory names, these letters will be translated to uppercase if unambiguous. 
+Such translation does not apply to generic path string format representations.</p>
 <h3><a name="constructors">constructors</a></h3>
 <blockquote>
   <pre>path();</pre>
@@ -194,13 +222,12 @@ path( const char * src, format );</pre>
   For example, <code>initial_directory() &lt;&lt; &quot;src&quot; &lt;&lt; test_name</code>. 
   Operator+, with operator+=, were considered as alternatives, but deemed too 
   easy to confuse with those operators for std::string.</p>
+  <p><b>Note:</b> Also see non-member operator&lt;&lt; functions.</p>
   </blockquote>
-<h3><a name="empty">empty</a></h3>
+<h3><a name="is_null">is_null</a></h3>
 <blockquote>
-  <pre>bool empty() const;</pre>
+  <pre>bool is_null() const;</pre>
 <p><b>Returns:</b> <code>m_name.size() == 0</code></p>
-<p><b>Rationale:</b> The name is the same as the equivalent function in standard 
-library containers.</p>
 </blockquote>
 <h3><a name="generic_path">generic_path</a></h3>
 <blockquote>
@@ -216,28 +243,22 @@ an ambiguous representation might still be useful for some purposes, such as
 display. If no m_name elements originated from the system specific constructors, 
 the returned string is always unambiguous.</p>
 </blockquote>
-<h3><a name="file_c_str">file_c_str</a></h3>
+<h3><a name="file_path">file_path</a></h3>
 <blockquote>
-  <pre>const char * file_c_str() const;</pre>
-<p><b>Returns:</b> The contents of <code>m_name</code>, formatted according to 
-the operating system's rules for file paths. If an <code>m_name</code> element 
-contains characters which are invalid under the operating system's rules, and 
-there is an unambiguous translation between the invalid character and a valid 
-character, the implementation shall perform that translation.</p>
+  <pre>const std::string &amp; generic_path() const;</pre>
+<p><b>Returns:</b> The contents of <code>m_name</code>, formatted in a
+<a href="#System-specific Representation">system-specific representation</a>.</p>
 </blockquote>
-<h3><a name="directory_c_str">directory_c_str</a></h3>
+<h3><a name="directory_path">directory_path</a></h3>
 <blockquote>
-  <pre>const char * directory_c_str() const;</pre>
-<p><b>Returns:</b> The contents of <code>m_name</code>, formatted according to 
-the operating system's rules for directory paths. If an <code>m_name</code> 
-element contains characters which are invalid under the operating system's 
-rules, and there is an unambiguous translation between the invalid character and 
-a valid character, the implementation shall perform that translation.</p>
+  <pre>const std::string &amp; generic_path() const;</pre>
+<p><b>Returns:</b> The contents of <code>m_name</code>, formatted in a
+<a href="#System-specific Representation">system-specific representation</a>.</p>
 </blockquote>
 <h3><a name="leaf">leaf</a></h3>
 <blockquote>
   <pre>const std::string leaf() const;</pre>
-<p><b>Returns:</b> <code>empty() ? string() : m_name.back()</code></p>
+<p><b>Returns:</b> <code>is_null() ? string() : m_name.back()</code></p>
 <p><b>Rationale: </b>Return type is <code>string</code> rather than <code>const 
 string &amp;</code> to give implementations freedom to avoid&nbsp; maintaining the 
 leaf as a separate <code>string</code> object.</p>
@@ -249,12 +270,41 @@ leaf as a separate <code>string</code> object.</p>
 is a path constructed from all the elements of <code>m_name</code> except the 
 last.</p>
 </blockquote>
+<h3><a name="iterator">iterator</a></h3>
+<blockquote>
+<p><code>typedef <i>implementation-defined</i> iterator;</code></p>
+<p>An iterator meeting the C++ Standard Library requirements for bidirectional 
+iterators (24.1). The value, reference, and pointer types are <i>std::string</i>,
+<i>const std::string &amp;</i>, and <i>const std::string *</i>, respectively.</p>
+</blockquote>
+<h3><a name="begin">begin</a></h3>
+<blockquote>
+<p><code>iterator begin() const;</code></p>
+<p><b>Returns:</b> <code>m_path.begin()</code></p>
+</blockquote>
+<h3><a name="end">end</a></h3>
+<blockquote>
+<p><code>iterator end() const;</code></p>
+<p><b>Returns:</b> <code>m_path.end()</code></p>
+</blockquote>
 <h2><a name="Non-member functions">Non-member functions</a></h2>
-<p>(to be supplied)</p>
+<h3><a name="non-member operator shift">Non-member operator&lt;&lt;</a></h3>
+<blockquote>
+<p><code>path operator &lt;&lt; ( const char * lhs, const path &amp; rhs );<br>
+path operator &lt;&lt; ( const std::string &amp; lhs, const path &amp; rhs );</code></p>
+<p><b>Returns:</b> <code>path( lhs ) &lt;&lt;= rhs</code></p>
+</blockquote>
+<h3><a name="Undocumented non-member functions">Undocumented non-member 
+functions</a></h3>
+<p>The header <a href="../../../boost/filesystem/path.hpp">boost/filesystem/path.hpp</a> 
+also supplies several non-member functions which can be used to verify that a 
+path meets certain requirements. These subsidiary functions are undocumented 
+pending more research and discussion, and should not be relied upon as they are 
+likely to change.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21082" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
 
 </body>
 

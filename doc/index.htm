@@ -28,10 +28,11 @@ Filesystem Library</h1>
     <td width="50%"><font size="4">Other Documents</font><br>
 &nbsp;&nbsp;&nbsp; <a href="design.htm">Library Design</a><br>
 &nbsp;&nbsp;&nbsp; <a href="faq.htm">FAQ</a><br>
-&nbsp;&nbsp;&nbsp; <a href="path.htm">path.hpp documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="operations.htm">operations.hpp documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="fstream.htm">fstream.hpp documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="exception.htm">exception.hpp documentation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="portability_guide.htm">Portability Guide</a><br>
+&nbsp;&nbsp;&nbsp; <a href="path.htm"><b><i>path.hpp</i></b> documentation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="operations.htm"><b><i>operations.hpp</i></b> documentation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="fstream.htm"><b><i>fstream.hpp</i></b> documentation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="exception.htm"><b><i>exception.hpp</i></b> documentation</a><br>
 &nbsp;&nbsp;&nbsp; <a href="do-list.htm">Do-list</a></td>
   </tr>
 </table>
@@ -126,7 +127,7 @@ below is extracted from a real program, slightly modified for clarity:</p>
         itr != end_itr;
         ++itr )
   {
-    if ( fs::directory( *itr ) )
+    if ( fs::is_directory( *itr ) )
     {
       if ( find_file( *itr, file_name, path_found ) ) return true;
     }
@@ -210,7 +211,7 @@ may fail:</p>
 remove_all( &quot;foo&quot; );<br>
 assert( !exists( &quot;foo&quot; ) );&nbsp; // (2)<br>
 <br>
-assert( directory( &quot;foo&quot; ) == directory( &quot;foo&quot; ) ); // 
+assert( is_directory( &quot;foo&quot; ) == is_directory( &quot;foo&quot; ) ); // 
 (3)</code></p>
 </blockquote>
 <p>(1) will fail if a non-existent &quot;foo&quot; comes into existence, or an 
@@ -222,7 +223,7 @@ process, or computer is also performing operations in the same directory.</p>
 thread, process, or computer.</p>
 <p>(3) will fail if another thread, process, or computer removes an 
 existing file &quot;foo&quot; and then creates a directory named &quot;foo&quot;, between the 
-example code's two calls to <i>directory()</i>.</p>
+example code's two calls to <i>is_directory()</i>.</p>
 <p>A program which needs to be robust when operating on potentially-shared file 
 or directory resources should be prepared for <i>filesystem_error</i> exceptions 
 to be thrown from any filesystem function except those explicitly specified as 
@@ -255,12 +256,13 @@ for the <i>directory_iterator</i> and <i>filesystem_error</i> classes which were
 based on prior work from Dietmar Kühl, as modified by Jan Langer.</p>
 
 <p>Key <a href="design.htm#Requirements">design requirements</a> and
-<a href="design.htm#Realities">design realities</a> were developed during extensive discussions on the Boost mailing list.&nbsp; Participants included 
-(in chronological order through February, 2002) Beman Dawes, Jan Langer, Darin Adler, Michiel 
+<a href="design.htm#Realities">design realities</a> were developed during extensive discussions on the Boost mailing list, 
+followed by comments on the actual implementation.&nbsp; Participants included 
+(in more-or-less chronological order of first posting) Beman Dawes, Jan Langer, Darin Adler, Michiel 
 Salters, Jani Kajala, Jason Stewart, Carl Daniel, David Abrahams, Bill Kempf, 
 Jonathan Caves, George Heintzelman, Ken Hagen, Eric Jensen, Joel de Guzman, Jim 
-Hyslop, John Maddock, Matt Austern, Peter Dimov, Davlet Panech, Dylan, and 
-others.</p>
+Hyslop, John Maddock, Matt Austern, Peter Dimov, Davlet Panech, Dylan Nicholson, Tom Harris, 
+Giovanni Bajo, Baptiste Lepilleur, and Thomas Witt.</p>
 
 <p>Specific improvements for a preliminary design document came from Dan Nuffer and Jeff 
 Garland.</p>
@@ -268,13 +270,10 @@ Garland.</p>
 <p>A lengthy discussion on the C++ committee's library reflector illuminated the &quot;illusion 
 of portability&quot; problem, particularly in postings by JP Plauger and Pete Becker.</p>
 
-<p>As the library neared completion, additional feedback was received from (in 
-chronological order) Tom Harris, Carl Daniel, Baptiste Lepilleur.</p>
-
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21082" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
 
 </body>
 

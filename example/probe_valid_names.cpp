@@ -96,7 +96,7 @@ bool file_ok( const char * name )
 void specific_file_test( const char * name )
 {
   cout << "\nIs file name \"" << name << "\" valid: "
-    << (file_ok( name ) ? "yes\n" : "no\n");
+    << (file_ok( name ) ? "yes" : "no");
 }
 
 void file_case_sense( )
@@ -175,7 +175,7 @@ bool dir_ok( const char * name )
 void specific_dir_test( const char * name )
 {
   cout << "\nIs directory name \"" << name << "\" valid: "
-    << (dir_ok( name ) ? "yes\n" : "no\n");
+    << (dir_ok( name ) ? "yes" : "no");
 }
 
 bool dir_single_char( int c )
@@ -232,6 +232,7 @@ int main()
 
   file_case_sense();
  
+  cout << "\nTests to illuminate 8.3 or similar restrictions:\n";
   specific_file_test( "ABC" );
   specific_file_test( "ABC." );
   specific_file_test( "ABC.D" );
@@ -239,9 +240,9 @@ int main()
   specific_file_test( "ABC.DEF" );
   specific_file_test( "ABC.DEFG" );
   specific_file_test( "ABC.DEFGH" );
-  specific_file_test( "ABC.DE.FG" );
+  specific_file_test( "ABC.DEF.GHI" );
 
-  cout << "\nSingle character file name:\n\n";
+  cout << "\n\nSingle character file name:\n\n";
   test( file_single_char );
 
   cout << "\nFirst character of multi-character file name:\n\n";
@@ -254,11 +255,16 @@ int main()
   test( file_middle_char );
 
 # ifndef NO_DIRECT_H
-  specific_dir_test( "XYZ" );
+  specific_dir_test( "UVW" );
+  specific_dir_test( "UVW." );
+  specific_dir_test( "UVW.X" );
+  specific_dir_test( "UVW.XY" );
   specific_dir_test( "UVW.XYZ" );
-  specific_dir_test( "UV.WX.YZ" );
+  specific_dir_test( "UVW.XYZZ" );
+  specific_dir_test( "UVW.XYZZZ" );
+  specific_dir_test( "UV.WXY.Z12" );
 
-  cout << "\nSingle character directory name:\n\n";
+  cout << "\n\nSingle character directory name:\n\n";
    test( dir_single_char );
 
   cout << "\nFirst character of multi-character directory name:\n\n";

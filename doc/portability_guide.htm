@@ -1,0 +1,85 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Portability Guide</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>
+<img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Portability 
+Guide</h1>
+<h2>Introduction</h2>
+<p>Like any other C++ program which performs I/O operations, there is no 
+guarantee that a program using the Filesystem Library will be portable between 
+operating systems. The file and directory names in paths present a particularly 
+troublesome portability problem.</p>
+<p>Although there is no way to guarantee that a path is portable to every 
+operating system, the probability of portability can be markedly improved by 
+understanding the limits imposed by various operating systems, and by following 
+some rules-of-thumb when deciding path issues.</p>
+<h2>File and directory rules</h2>
+
+<p>(Very preliminary draft)</p>
+
+<table border="1">
+  <tr>
+    <td align="center" valign="top"><strong>Rule</strong></td>
+    <td align="center" valign="top"><strong>Rationale</strong></td>
+  </tr>
+  <tr>
+    <td valign="top">Limit file and directory names to the characters A-Z, a-z, 0-9, period, hyphen, and
+    underscore.</td>
+    <td valign="top">These are the characters specified by the POSIX standard for portable directory and
+    file names, and are also valid for Windows, Mac, and many other modern filesystems.</td>
+  </tr>
+  <tr>
+    <td valign="top">Do not use period, hyphen, or underscore as the first 
+    character of a file or directory name.</td>
+    <td valign="top">Some operating systems treat have special rules for the 
+    first character of names. POSIX, for example.</td>
+  </tr>
+  <tr>
+    <td valign="top">Do not assume names are case sensitive. For example, do not expected a directory to be
+    able to hold separate elements named &quot;Foo&quot; and &quot;foo&quot;. </td>
+    <td valign="top">Some filesystems are case insensitive.&nbsp; For example, Windows.</td>
+  </tr>
+  <tr>
+    <td valign="top">Do not assume names are case insensitive.&nbsp; For example, do not expect a file
+    created with the name of &quot;Foo&quot; to be open successfully with the name of &quot;foo&quot;.</td>
+    <td valign="top">Some filesystems are case sensitive.&nbsp; For example, POSIX.</td>
+  </tr>
+  <tr>
+    <td valign="top">Limit the length of names and the depth of the directory 
+    tree so that the total length of the string returned by generic_path() to 
+    255 characters.&nbsp; 
+    Note that ISO 9660 level 1 has an explicit directory tree depth limit of 8.</td>
+    <td valign="top">Some operating systems place limits on the total path length.&nbsp; For example,
+    Windows 2000 limits paths to 260 characters total length.</td>
+  </tr>
+  <tr>
+    <td valign="top">Limit the length of any one name in a path.&nbsp; Pick the specific limit according to
+    the operating systems you wish portability to:<br>
+    &nbsp; Greater than 31 characters:&nbsp; POSIX, Windows, MAC OS X.<br>
+    &nbsp; 31 characters: Classic Mac OS<br>
+&nbsp; 8 characters + period + 3 characters: ISO 9660 (CD-ROM)<br>
+    <strong>...</strong></td>
+    <td valign="top">Limiting name length can markedly reduce the expressiveness of file names, yet placing
+    only very high limits on lengths inhibits wide portability.</td>
+  </tr>
+</table>
+
+<h2>Limits imposed by specific operating systems</h2>
+<p>(To be supplied)</p>
+<hr>
+<p>© Copyright Beman Dawes, 2002</p>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
+
+</body>
+
+</html>
