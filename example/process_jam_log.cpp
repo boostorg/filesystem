@@ -20,7 +20,7 @@ namespace xml = boost::tiny_xml;
 namespace fs = boost::filesystem;
 
 #define BOOST_NO_CPP_MAIN_SUCCESS_MESSAGE
-#include <boost/test/cpp_main.cpp>
+#include <libs/test/src/cpp_main.cpp>
 
 namespace
 {

@@ -590,7 +590,7 @@ namespace
 //  main  --------------------------------------------------------------------//
 
 #define BOOST_NO_CPP_MAIN_SUCCESS_MESSAGE
-#include <boost/test/cpp_main.cpp>
+#include <libs/test/src/cpp_main.cpp>
 
 int cpp_main( int argc, char * argv[] ) // note name!
 {
