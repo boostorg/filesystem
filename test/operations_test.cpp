@@ -12,6 +12,7 @@
 #include <boost/filesystem/exception.hpp>
 namespace fs = boost::filesystem;
 
+#include <boost/config.hpp>
 #include <boost/test/minimal.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/bind.hpp>
@@ -19,12 +20,8 @@ using boost::bind;
 
 #include <fstream>
 #include <iostream>
-#include <cstring>
+#include <string>
 #include <cerrno>
-
-# ifdef BOOST_NO_STDC_NAMESPACE
-    namespace std { using ::strcmp; }
-# endif
 
 namespace
 {
@@ -79,8 +76,15 @@ int test_main( int argc, char * argv[] )
 {
   if ( argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t' ) report_throws = true;
 
-  std::cout << "implemenation name: "
-            << fs::detail::implementation_name() << "\n";
+  std::string platform( BOOST_PLATFORM );
+  platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
+             ? "Windows"
+             : "POSIX";
+
+  std::cout << "BOOST_PLATFORM: "
+            << BOOST_PLATFORM << "\n";
+  std::cout << "Operating system family: "
+            << platform << "\n";
   std::cout << "initial_path().string() is\n  \""
             << fs::initial_path().string()
             << "\"\n";
@@ -103,7 +107,7 @@ int test_main( int argc, char * argv[] )
   fs::path dir(  fs::initial_path() / "temp_fs_test_directory" );
   
   // Windows only tests
-  if ( std::strcmp( fs::detail::implementation_name(), "Windows" ) == 0 )
+  if ( platform == "Windows" )
   {
     BOOST_TEST( dir.string().size() > 1
       && dir.string()[1] == ':' ); // verify path includes drive
@@ -139,7 +143,7 @@ int test_main( int argc, char * argv[] )
       ==  "//share" );
   }
 
-  else if ( std::strcmp( fs::detail::implementation_name(), "POSIX" ) == 0 )
+  else if ( platform == "POSIX" )
   {
     BOOST_TEST( fs::system_complete( "" ).empty() );
     BOOST_TEST( fs::system_complete( "/" ).string()
@@ -263,6 +267,7 @@ int test_main( int argc, char * argv[] )
 
   // rename() on directory
   fs::path d3( dir / "d3" );
+  BOOST_TEST( !fs::exists( d3 ) );
   fs::rename( d2, d3 );
   BOOST_TEST( !fs::exists( d2 ) );
   BOOST_TEST( fs::exists( d3 ) );

@@ -16,10 +16,6 @@
 #include <cstring>
 #include <cassert>
 
-# ifdef BOOST_NO_STDC_NAMESPACE
-    namespace std { using ::strcmp; }
-# endif
-
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
 using boost::next;
@@ -63,6 +59,11 @@ namespace {
 
 int test_main( int, char*[] )
 {
+  std::string platform( BOOST_PLATFORM );
+  platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
+             ? "Windows"
+             : "POSIX";
+
   boost::function_requires< boost::ForwardIteratorConcept< fs::path::iterator > >();
 
   path p1( "fe/fi/fo/fum" );
@@ -268,7 +269,10 @@ int test_main( int, char*[] )
   BOOST_TEST( !p.has_relative_path() );
   BOOST_TEST( p.has_leaf() );
   BOOST_TEST( !p.has_branch_path() );
-  BOOST_TEST( fs::detail::single_root_name() == p.is_complete() );
+  if ( platform == "POSIX" )
+    BOOST_TEST( p.is_complete() );
+  else
+    BOOST_TEST( !p.is_complete() );
 
   p = "foo";
   BOOST_TEST( p.relative_path().string() == "foo" );
@@ -298,7 +302,10 @@ int test_main( int, char*[] )
   BOOST_TEST( p.has_relative_path() );
   BOOST_TEST( p.has_leaf() );
   BOOST_TEST( p.has_branch_path() );
-  BOOST_TEST( fs::detail::single_root_name() == p.is_complete() );
+  if ( platform == "POSIX" )
+    BOOST_TEST( p.is_complete() );
+  else
+    BOOST_TEST( !p.is_complete() );
 
   p = "foo/bar";
   BOOST_TEST( p.relative_path().string() == "foo/bar" );
@@ -328,9 +335,12 @@ int test_main( int, char*[] )
   BOOST_TEST( p.has_relative_path() );
   BOOST_TEST( p.has_leaf() );
   BOOST_TEST( p.has_branch_path() );
-  BOOST_TEST( fs::detail::single_root_name() == p.is_complete() );
+  if ( platform == "POSIX" )
+    BOOST_TEST( p.is_complete() );
+  else
+    BOOST_TEST( !p.is_complete() );
 
-  if ( std::strcmp( fs::detail::implementation_name(), "Windows" ) == 0 )
+  if ( platform == "Windows" )
   {
     PATH_CHECK( path( "\\", fs::native ), "/" );
     PATH_CHECK( path( "\\f", fs::native ), "/f" );

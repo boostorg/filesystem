@@ -29,11 +29,9 @@ namespace fs = boost::filesystem;
     namespace std { using ::strerror; }
 # endif
 
-// BOOST_POSIX or BOOST_WINDOWS specify which API to use, not the current
-// operating system. GCC defaults to BOOST_POSIX; it doesn't predefine _WIN32.
-
+// BOOST_POSIX or BOOST_WINDOWS specify which API to use.
 # if !defined( BOOST_WINDOWS ) && !defined( BOOST_POSIX )
-#   if defined(_WIN32)
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
 #     define BOOST_WINDOWS
 #   else
 #     define BOOST_POSIX

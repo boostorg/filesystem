@@ -33,11 +33,16 @@
 
 namespace fs = boost::filesystem;
 
-// BOOST_POSIX or BOOST_WINDOWS specify which API to use, not the current
-// operating system. GCC defaults to BOOST_POSIX; it doesn't predefine _WIN32.
+// BOOST_POSIX or BOOST_WINDOWS specify which API to use.
+# if !defined( BOOST_WINDOWS ) && !defined( BOOST_POSIX )
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+#     define BOOST_WINDOWS
+#   else
+#     define BOOST_POSIX
+#   endif
+# endif
 
-# if defined(BOOST_WINDOWS) || (!defined(BOOST_POSIX) && defined(_WIN32))
-#   define BOOST_WINDOWS
+# if defined(BOOST_WINDOWS)
 #   include "windows.h"
 
 // For Windows, the xxxA form of various function names is used to avoid
@@ -46,7 +51,6 @@ namespace fs = boost::filesystem;
 // other macros defined. There was a bug report of this happening.)
 
 # else
-#   define BOOST_POSIX
 #   include "sys/stat.h"
 #   include "dirent.h"
 #   include "unistd.h"
@@ -179,17 +183,6 @@ namespace boost
 {
   namespace filesystem
   {
-    namespace detail
-    {
-#ifdef BOOST_POSIX
-      const char * implementation_name() { return "POSIX"; }
-      bool single_root_name() { return true; }
-#else
-      const char * implementation_name() { return "Windows"; }
-      bool single_root_name() { return false; }
-#endif
-
-    } // namespace detail
 
 //  dir_itr_imp  -------------------------------------------------------------// 
 
@@ -336,22 +329,19 @@ namespace boost
     {
       if ( exists( ph ) )
       {
+#   ifdef BOOST_POSIX
+        if ( ::remove( ph.string().c_str() ) != 0 )
+        {
+#   else
         if ( is_directory( ph ) )
         {
-#   ifdef BOOST_POSIX
-          if ( ::rmdir( ph.string().c_str() ) != 0 )
-#   else
           if ( !::RemoveDirectoryA( ph.string().c_str() ) )
-#   endif
             boost::throw_exception( filesystem_error(
               "boost::filesystem::remove",
               ph, fs::detail::system_error_code() ) );
         }
         else
         {
-#   ifdef BOOST_POSIX
-          if ( ::remove( ph.string().c_str() ) != 0 )
-#   else
           if ( !::DeleteFileA( ph.string().c_str() ) )
 #   endif
             boost::throw_exception( filesystem_error(
