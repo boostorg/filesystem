@@ -221,14 +221,14 @@ namespace boost
         name = find_first_file( dir_path.native_directory_string().c_str(),
           m_imp->handle, scratch );  // sets handle
 
- 		  if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
+      if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
       {
         m_imp->entry_path = dir_path;
         m_imp->entry_path.m_path_append( name, path::nocheck );
-		    while ( m_imp.get()
+        while ( m_imp.get()
              && ( m_imp->entry_path.leaf() == "."
               || m_imp->entry_path.leaf() == ".." ) )
-		      { operator++(); }
+          { operator++(); }
       }
       else
       {
