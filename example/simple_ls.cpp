@@ -59,7 +59,7 @@ int main( int argc, char* argv[] )
       catch ( const std::exception & ex )
       {
         ++err_count;
-        std::cout << dir_itr->leaf() << " " << ex.what();
+        std::cout << dir_itr->leaf() << " " << ex.what() << std::endl;
       }
     }
     std::cout << "\n" << file_count << " files\n"
