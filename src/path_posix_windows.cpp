@@ -94,7 +94,7 @@ namespace boost
         && name != "."
         && name != ".."
         && *name.begin() != ' '
-        && *--name.end() != ' ';     
+        && *(name.end()-1) != ' ';     
     }
 
     bool posix_name( const std::string & name )
