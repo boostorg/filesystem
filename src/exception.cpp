@@ -58,7 +58,7 @@ namespace
         FORMAT_MESSAGE_FROM_SYSTEM | 
         FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL,
-        ::GetLastError(),
+        sys_err_code,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
         (LPSTR) &lpMsgBuf,
         0,
