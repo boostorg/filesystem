@@ -30,19 +30,21 @@ ways.</p>
 
 <blockquote>
 
-<p><code>void create_directoies( const path &amp; ph );</code></p>
+<p><code>void create_directories( const path &amp; ph );</code></p>
 
 <p><b>Precondition:</b> <code>ph.empty() || <br>
 forall p: p == ph || is_parent(p, ph): is_directory(p) || !exists( p )</code>
 </p>
 <p><b>Postcondition:</b> <code>exists(ph) &amp;&amp; is_directory(ph)</code></p>
 
+<p>Contributed by Vladimir Prus.</p>
+
 </blockquote>
 
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->23 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38519" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->23 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38510" --></p>
 <p>&nbsp;</p>
 
 </body>
