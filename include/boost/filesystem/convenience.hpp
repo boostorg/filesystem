@@ -31,6 +31,12 @@ namespace boost
      */
     void create_directories(const path& ph);
 
+    std::string extension(const path& ph);
+
+    std::string basename(const path& ph);
+
+    path change_extension(const path& ph, const std::string& new_extension);
+
   } // namespace filesystem
 } // namespace boost
 #endif // BOOST_FILESYSTEM_CONVENIENCE_HPP
