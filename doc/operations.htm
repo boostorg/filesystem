@@ -429,6 +429,8 @@ target_file</i>.</p>
 <p><b>Throws:</b> if <code>!exists(source_file) || is_directory(source_file) 
 || exists(target_file) || target_file.empty() || !exists(to_file_path/&quot;..&quot;))</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
+<p><b>Note:</b> File attributes are also copied. Specifically, POSIX <i>
+stat::st_mode</i>, and Windows <i>BY_HANDLE_FILE_INFORMATION::dwFileAttributes</i>. </p>
 </blockquote>
 <h3><a name="initial_path">initial_path</a></h3>
 <blockquote>
@@ -576,7 +578,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38504" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38508" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
