@@ -74,17 +74,33 @@ namespace boost
     BOOST_FILESYSTEM_DECL path system_complete( const path & ph );
     BOOST_FILESYSTEM_DECL path complete( const path & ph, const path & base = initial_path() );
 
+//  directory_iterator helpers  ----------------------------------------------//
+//    forwarding functions avoid need for BOOST_FILESYSTEM_DECL for class
+//    directory_iterator, and so avoid iterator_facade DLL template problems
+    namespace detail
+    {
+      class dir_itr_imp;
+      // shared_ptr provides shallow-copy semantics required for InputIterators
+      typedef boost::shared_ptr< dir_itr_imp > dir_itr_imp_ptr;
+      BOOST_FILESYSTEM_DECL void dir_itr_init( dir_itr_imp_ptr & m_imp,
+                                               const path & dir_path );
+      BOOST_FILESYSTEM_DECL path & dir_itr_dereference(
+                                               const dir_itr_imp_ptr & m_imp );
+      BOOST_FILESYSTEM_DECL void dir_itr_increment( dir_itr_imp_ptr & m_imp );
+    } // namespace detail
+
 //  directory_iterator  ------------------------------------------------------//
 
-    class BOOST_FILESYSTEM_DECL directory_iterator
+    class directory_iterator
       : public boost::iterator_facade<
       directory_iterator,
       path,
       boost::single_pass_traversal_tag >
     {
     public:
-      directory_iterator();  // creates the "end" iterator
-      explicit directory_iterator( const path & p );
+      directory_iterator(){}  // creates the "end" iterator
+      explicit directory_iterator( const path & p )
+        { detail::dir_itr_init( m_imp, p ); }
 
 /*
 The *r++ requirement doesn't appear to apply to the new single_pass_traversal category
@@ -105,14 +121,12 @@ struct path_proxy // allows *r++ to work, as required by 24.1.1
 */
 
     private:
-      class dir_itr_imp;
-      // shared_ptr provides shallow-copy semantics required for InputIterators
-      typedef boost::shared_ptr< dir_itr_imp > m_imp_ptr;
-      m_imp_ptr  m_imp;
-
+      detail::dir_itr_imp_ptr  m_imp;
       friend class boost::iterator_core_access;
-      reference dereference() const;
-      void increment();
+      reference dereference() const 
+        { return detail::dir_itr_dereference( m_imp ); }
+      void increment()
+        { detail::dir_itr_increment( m_imp ); }
       bool equal( const directory_iterator & rhs ) const
         { return m_imp == rhs.m_imp; }
     };

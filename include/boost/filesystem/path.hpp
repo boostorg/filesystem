@@ -25,7 +25,7 @@ namespace boost
 {
   namespace filesystem
   {
-    class BOOST_FILESYSTEM_DECL directory_iterator;
+    class directory_iterator;
 
 
   //  path -------------------------------------------------------------------//
@@ -131,9 +131,8 @@ namespace boost
       //    warning #427-D: qualified name is not allowed in member declaration 
       friend class iterator; 
 
-      void m_path_append( const std::string & src, name_check checker );
-
     public: // should be private, but friend functions don't work for me
+      void m_path_append( const std::string & src, name_check checker );
       void m_replace_leaf( const char * new_leaf );
     };
 

@@ -167,6 +167,7 @@ namespace
 
 #endif
 
+  
   fs::directory_iterator end_itr;
 
   bool is_empty_directory( const fs::path & dir_path )
@@ -196,85 +197,87 @@ namespace boost
 {
   namespace filesystem
   {
+    namespace detail
+    {
 
 //  dir_itr_imp  -------------------------------------------------------------// 
 
-    class directory_iterator::dir_itr_imp
-    {
-    public:
-      path              entry_path;
-      BOOST_HANDLE      handle;
-
-      ~dir_itr_imp()
+      class dir_itr_imp
       {
-        if ( handle != BOOST_INVALID_HANDLE_VALUE ) find_close( handle );
-      }
-    };
+      public:
+        path              entry_path;
+        BOOST_HANDLE      handle;
+
+        ~dir_itr_imp()
+        {
+          if ( handle != BOOST_INVALID_HANDLE_VALUE ) find_close( handle );
+        }
+      };
 
 //  directory_iterator implementation  ---------------------------------------//
 
-    // default ctor creates the "end" iterator (by letting base default to 0)
-    directory_iterator::directory_iterator() {}
-
-    directory_iterator::directory_iterator( const path & dir_path )
-    {
-      m_imp.reset( new dir_itr_imp );
-      BOOST_SYSTEM_DIRECTORY_TYPE scratch;
-      const char * name = 0;  // initialization quiets compiler warnings
-      if ( dir_path.empty() )
-       m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
-      else
-        name = find_first_file( dir_path.native_directory_string().c_str(),
-          m_imp->handle, scratch );  // sets handle
-
-      if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
+      BOOST_FILESYSTEM_DECL void dir_itr_init( dir_itr_imp_ptr & m_imp,
+                                               const path & dir_path )
       {
-        m_imp->entry_path = dir_path;
-        if ( std::strcmp( name, "." ) != 0
-          && std::strcmp( name, ".." ) != 0 )
-        { 
-          m_imp->entry_path.m_path_append( name, no_check );
+        m_imp.reset( new dir_itr_imp );
+        BOOST_SYSTEM_DIRECTORY_TYPE scratch;
+        const char * name = 0;  // initialization quiets compiler warnings
+        if ( dir_path.empty() )
+        m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
+        else
+          name = find_first_file( dir_path.native_directory_string().c_str(),
+            m_imp->handle, scratch );  // sets handle
+
+        if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
+        {
+          m_imp->entry_path = dir_path;
+          if ( std::strcmp( name, "." ) != 0
+            && std::strcmp( name, ".." ) != 0 )
+          { 
+            m_imp->entry_path.m_path_append( name, no_check );
+          }
+          else
+          {
+            m_imp->entry_path.m_path_append( "dummy", no_check );
+            dir_itr_increment( m_imp );
+          }
         }
         else
         {
-          m_imp->entry_path.m_path_append( "dummy", no_check );
-          operator++();
-        }
+          boost::throw_exception( filesystem_error(  
+            "boost::filesystem::directory_iterator constructor",
+            dir_path, fs::detail::system_error_code() ) );
+        }  
       }
-      else
+
+      BOOST_FILESYSTEM_DECL path & dir_itr_dereference(
+        const dir_itr_imp_ptr & m_imp )
       {
-        boost::throw_exception( filesystem_error(  
-          "boost::filesystem::directory_iterator constructor",
-          dir_path, fs::detail::system_error_code() ) );
-      }  
-    }
+        assert( m_imp.get() ); // fails if dereference end iterator
+        return m_imp->entry_path;
+      }
 
-    directory_iterator::reference directory_iterator::dereference() const
-    {
-      assert( m_imp.get() ); // fails if dereference end iterator
-      return m_imp->entry_path;
-    }
-
-    void directory_iterator::increment()
-    {
-      assert( m_imp.get() ); // fails on increment end iterator
-      assert( m_imp->handle != BOOST_INVALID_HANDLE_VALUE ); // reality check
-
-      BOOST_SYSTEM_DIRECTORY_TYPE scratch;
-      const char * name;
-
-      while ( (name = find_next_file( m_imp->handle,
-        m_imp->entry_path, scratch )) != 0 )
+      BOOST_FILESYSTEM_DECL void dir_itr_increment( dir_itr_imp_ptr & m_imp )
       {
-        if ( std::strcmp( name, "." ) != 0
-          && std::strcmp( name, ".." ) != 0 )
+        assert( m_imp.get() ); // fails on increment end iterator
+        assert( m_imp->handle != BOOST_INVALID_HANDLE_VALUE ); // reality check
+
+        BOOST_SYSTEM_DIRECTORY_TYPE scratch;
+        const char * name;
+
+        while ( (name = find_next_file( m_imp->handle,
+          m_imp->entry_path, scratch )) != 0 )
         {
-          m_imp->entry_path.m_replace_leaf( name );
-          return;
+          if ( std::strcmp( name, "." ) != 0
+            && std::strcmp( name, ".." ) != 0 )
+          {
+            m_imp->entry_path.m_replace_leaf( name );
+            return;
+          }
         }
+        m_imp.reset(); // make base() the end iterator
       }
-      m_imp.reset(); // make base() the end iterator
-    }
+    } // namespace detail
 
 //  free functions  ----------------------------------------------------------//
 
