@@ -52,9 +52,13 @@ would provide only an illusion of portability since the function calls would be
 portable but the strings they operate on would not be portable.</p>
 <h2>Conceptual <a name="model">model</a> of a path</h2>
 <p>An object of class <i>path</i> can be conceptualized as containing a sequence 
-of strings, where each string contains the name of a directory, or, in the case 
+of strings. Each string is said to be an element of the path. Each element 
+represents the name of a directory, or, in the case 
 of the string representing the element farthest from the root in the directory 
-hierarchy, the name of a directory or file. Such a path representation is 
+hierarchy, the name of a directory or file. The names <code>&quot;..&quot;</code> and
+<code>&quot;.&quot;</code> are reserved to represent the concepts of <i>parent-directory</i> 
+and <i>directory-placeholder</i>.</p>
+<p>This conceptual path representation is 
  
 independent of any particular representation of the path as a single 
 string.</p>
@@ -81,9 +85,10 @@ the contained path.</p>
   <pre>root ::= [root-name] [root-directory]</pre>
   <pre>root-directory ::= &quot;/&quot;</pre>
   <pre>relative-path ::= path-element { &quot;/&quot; path-element } [&quot;/&quot;]</pre>
-  <pre>path-element ::= name | parent-directory </pre>
-  <pre>parent-directory ::= &quot;..&quot; </pre>
+  <pre>path-element ::= name | parent-directory | directory-placeholder</pre>
   <pre>name ::= char { char }</pre>
+  <pre>directory-placeholder ::= &quot;.&quot;</pre>
+  <pre>parent-directory ::= &quot;..&quot; </pre>
 </blockquote>
 <p>The following are not valid name <i>char</i>'s: <code>x01-x1F, &lt;, &gt;, :, &quot;, /, 
 \, |, *, ?</code>. Although these characters are supported by some operating 
@@ -98,15 +103,24 @@ with the <i><a href="#native">native</a></i> decorator.</p>
 root-name</i> have a grammar which is distinguishable from other grammar elements, 
 and follow the conventions of the operating system.</p>
 <p>The optional trailing &quot;/&quot; in a <i>relative-path</i> is allowed as a 
-notational convenience. It has no semantic meaning and is discarded in 
-conversions to <a href="#Canonical">canonical form</a>.</p>
+notational convenience. It has no semantic meaning and is simply discarded.</p>
 <p>Whether or not a generic path string is actually portable to a particular 
 operating system will depend on the 
 names used.&nbsp; See the <a href="portability_guide.htm">Portability Guide</a>.</p>
 <h2><a name="Canonical">Canonical</a> form</h2>
-<p>Adjacent <i>name, parent-directory</i> elements in <code>m_name</code> are recursively removed.</p>
-<p> <i>relative-path</i> does not have a trailing 
-&quot;/&quot;.</p>
+<p>An empty path is in canonical form.</p>
+<p>A non-empty path is converted to canonical form as if by first converting it 
+to the <a href="#model">conceptual model</a>, and then:</p>
+<ul>
+  <li>Removing each <i>directory-placeholder</i> element.</li>
+  <li>Recursively removing adjacent <i>name, parent-directory</i> elements.</li>
+  <li>If the path is now empty, add a single <i>directory-placeholder</i> 
+  element.</li>
+</ul>
+<p>Thus a non-empty path in canonical form either has no <i>
+directory-placeholders</i>, or consists solely of one <i>directory-placeholder</i>. 
+If it has <i>parent-directory</i> elements, they precede all <i>name</i> 
+elements.</p>
 <h2>Header <a href="../../../boost/filesystem/path.hpp">
 boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
 <pre>namespace boost
@@ -622,6 +636,42 @@ various expressions.</p>
     <td><code>bar</code></td>
   </tr>
   <tr>
+    <td><b><code>.</code></b></td>
+    <td><code>.</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>.</code></td>
+    <td><code>.</code></td>
+    <td><code>.</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>.</code></td>
+  </tr>
+  <tr>
+    <td><b><code>..</code></b></td>
+    <td><code>..</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>..</code></td>
+    <td><code>..</code></td>
+    <td><code>..</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>..</code></td>
+  </tr>
+  <tr>
+    <td><code>../foo</code></td>
+    <td><code>..,foo</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>../foo</code></td>
+    <td><code>../foo</code></td>
+    <td><code>../foo</code></td>
+    <td><code>..</code></td>
+    <td><code>foo</code></td>
+  </tr>
+  <tr>
     <td><b>Windows</b></td>
     <td>&nbsp;</td>
     <td>&nbsp;</td>
@@ -646,18 +696,6 @@ various expressions.</p>
     <td><code>c:</code></td>
   </tr>
   <tr>
-    <td><code>c:foo</code></td>
-    <td><code>c:,foo</code></td>
-    <td><code>c:</code></td>
-    <td><code>c:</code></td>
-    <td><code>&quot;&quot;</code></td>
-    <td><code>foo</code></td>
-    <td><code>foo</code></td>
-    <td><code>c:foo</code></td>
-    <td><code>c:</code></td>
-    <td><code>foo</code></td>
-  </tr>
-  <tr>
     <td><code>c:/</code></td>
     <td><code>c:,/</code></td>
     <td><code>c:/</code></td>
@@ -668,6 +706,30 @@ various expressions.</p>
     <td><code>c:</code></td>
     <td><code>c:</code></td>
     <td><code>/</code></td>
+  </tr>
+  <tr>
+    <td><code>c:..</code></td>
+    <td><code>c:,..</code></td>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>..</code></td>
+    <td><code>c:..</code></td>
+    <td><code>c:..</code></td>
+    <td><code>c:</code></td>
+    <td><code>..</code></td>
+  </tr>
+  <tr>
+    <td><code>c:foo</code></td>
+    <td><code>c:,foo</code></td>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>foo</code></td>
+    <td><code>foo</code></td>
+    <td><code>c:foo</code></td>
+    <td><code>c:</code></td>
+    <td><code>foo</code></td>
   </tr>
   <tr>
     <td><code>c:/foo</code></td>
@@ -734,7 +796,7 @@ various expressions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 March, 2003<!--webbot bot="Timestamp" endspan i-checksum="28831" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 June, 2003<!--webbot bot="Timestamp" endspan i-checksum="19879" --></p>
 
 </body>
 

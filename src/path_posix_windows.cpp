@@ -256,68 +256,87 @@ namespace boost
       // element { "/" element } [ "/" ]
       while ( itr != src.end() )
       {
+        if ( m_path == "." ) m_path = "";
 
-        // append '/' if needed
-        if ( !empty()
-            && *(m_path.end()-1) != ':' && *(m_path.end()-1) != '/' )
-            m_path += '/'; 
-
-        if ( *itr == '.'&& (itr+1) != src.end() && *(itr+1) == '.' ) // ".."
+        // directory-placeholder
+        if ( *itr == '.' && ((itr+1) == src.end() || *(itr+1) == '/') )
         {
-          if ( m_path.size() >= 2 // there is a named parent directory present
-            && *(m_path.end()-1) == '/'
-#           ifdef BOOST_WINDOWS
-            && *(m_path.end()-2) != ':'
-#           endif
-            && *(m_path.end()-2) != '.' )    
-          {
-            // reference to parent so erase child
-            std::string::iterator child( m_path.end()-2 );
-
-            while ( child != m_path.begin() && *child != '/'
-#             ifdef BOOST_WINDOWS
-              && *child != ':'
-#             endif
-              ) --child;
-
-            // only erase '/' if it is a separator rather than part of the root
-            if ( (*child == '/'
-              && (child == m_path.begin()
-#             ifdef BOOST_WINDOWS
-                || *(child-1) == ':'))
-              || *child == ':'
-#             else                           
-              ))         
-#             endif              
-              ) ++child;
-
-            m_path.erase( child, m_path.end() );
-          }
-          else { m_path += ".."; }
+          if ( empty() ) m_path += '.';
           ++itr;
-          ++itr;
-        } // ".."
-        else // element is name
-        {
-          std::string name;
-          do
-            { name += *itr; }
-          while ( ++itr != src.end() && *itr != '/'
-#           ifdef BOOST_WINDOWS
-            && (*itr != '\\' || context != platform)
-#           endif
-            );
-
-          if ( context == generic && !generic_name( name ) )
-          {
-            boost::throw_exception( filesystem_error(
-              "boost::filesystem::path",
-              "invalid name \"" + name + "\" in path: \"" + src + "\"" ) );
-          }
-
-          m_path += name;
         }
 
+        // parent-directory or name
+        else
+        {
+          // append '/' if needed
+          if ( !empty()
+              && *(m_path.end()-1) != ':' && *(m_path.end()-1) != '/' )
+              m_path += '/';
+
+          // parent-directory
+          if ( *itr == '.'
+            && (itr+1) != src.end() && *(itr+1) == '.'
+            && ((itr+2) == src.end() || *(itr+2) == '/') )
+          {
+            if ( m_path.size() >= 2 // there is a named parent directory present
+              && *(m_path.end()-1) == '/'
+#             ifdef BOOST_WINDOWS
+              && *(m_path.end()-2) != ':'
+#             endif
+              && *(m_path.end()-2) != '.' )    
+            {
+              // reference to parent so erase child
+              std::string::iterator child( m_path.end()-2 );
+
+              while ( child != m_path.begin() && *child != '/'
+#               ifdef BOOST_WINDOWS
+                && *child != ':'
+#               endif
+                ) --child;
+
+              // only erase '/' if it is a separator rather than part of the root
+              if ( (*child == '/'
+                && (child == m_path.begin()
+#               ifdef BOOST_WINDOWS
+                  || *(child-1) == ':'))
+                || *child == ':'
+#               else                           
+                ))         
+#               endif              
+                ) ++child;
+
+              m_path.erase( child, m_path.end() );
+              if ( empty() ) m_path = ".";
+            }
+            else { m_path += ".."; }
+            ++itr;
+            ++itr;
+          } // parent-directory
+
+          // name
+          else
+          {
+            std::string name;
+            do
+              { name += *itr; }
+            while ( ++itr != src.end() && *itr != '/'
+#             ifdef BOOST_WINDOWS
+              && (*itr != '\\' || context != platform)
+#             endif
+              );
+
+            if ( context == generic && !generic_name( name ) )
+            {
+              boost::throw_exception( filesystem_error(
+                "boost::filesystem::path",
+                "invalid name \"" + name + "\" in path: \"" + src + "\"" ) );
+            }
+
+            m_path += name;
+          }
+        } // parent-directory or name
+
+        // end or "/"
         if ( itr != src.end() )
         {
           if ( *itr == '/'

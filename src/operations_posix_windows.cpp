@@ -223,11 +223,16 @@ namespace boost
       if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
       {
         m_imp->entry_path = dir_path;
-        m_imp->entry_path.m_path_append( name, path::nocheck );
-        while ( m_imp.get()
-             && ( m_imp->entry_path.leaf() == "."
-              || m_imp->entry_path.leaf() == ".." ) )
-          { operator++(); }
+        if ( std::strcmp( name, "." ) != 0
+          && std::strcmp( name, ".." ) != 0 )
+        { 
+          m_imp->entry_path.m_path_append( name, path::nocheck );
+        }
+        else
+        {
+          m_imp->entry_path.m_path_append( "dummy", path::nocheck );
+          operator++();
+        }
       }
       else
       {
