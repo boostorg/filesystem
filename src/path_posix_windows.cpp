@@ -167,7 +167,7 @@ namespace boost
         && name.find_first_not_of( valid_boost_directory ) == std::string::npos;     
     }
 
-    //  path implementation  -------------------------------------------------//
+//  path implementation  -----------------------------------------------------//
 
     path::path( const std::string & src )
     {
@@ -269,7 +269,7 @@ namespace boost
       {
 
         // append '/' if needed
-        if ( !is_null()
+        if ( !empty()
             && *(m_path.end()-1) != ':' && *(m_path.end()-1) != '/' )
             m_path += '/'; 
 
@@ -343,6 +343,8 @@ namespace boost
       } // while more elements
     }
 
+// path decomposition functions  ---------------------------------------------//
+
     path::iterator path::begin() const
     {
       iterator itr;
@@ -358,6 +360,24 @@ namespace boost
       m_path += new_leaf;
     }
 
+/*
+    path & path::make_absolute( const path & root_source )
+    {
+      assert( root_source.is_absolute() ); 
+      if ( !is_absolute() )
+      {
+        path tmp( root_source.root_path() );
+        tmp /= relative_path();
+        operator=( tmp );
+      }
+      return *this;
+    }
+
+    path & path::make_absolute()
+    {
+      return make_absolute( initial_path() );
+    }
+*/
     std::string path::leaf() const
     {
       return m_path.substr( leaf_pos( m_path, m_path.size() ) );
@@ -395,20 +415,6 @@ namespace boost
       if ( end_pos && m_path[end_pos-1] == '/'
         && !detail::is_absolute_root( m_path, end_pos ) ) --end_pos;
       return path( m_path.substr( 0, end_pos ), system_specific );
-    }
-
-    bool path::is_absolute() const
-    {
-      return ( m_path.size() 
-               && m_path[0] == '/' )  // covers both "/" and "//share"
-#       ifdef BOOST_WINDOWS
-          || ( m_path.size() > 2
-               && m_path[1] == ':'
-               && m_path[2] == '/' )  // "c:/"
-          || ( m_path.size() > 3
-               && m_path[m_path.size()-1] == ':' ) // "device:"
-#       endif
-               ;
     }
 
     path path::relative_path() const
@@ -468,7 +474,73 @@ namespace boost
 #   endif
     }
 
-      namespace detail
+// path query functions  -----------------------------------------------------//
+
+    bool path::is_complete() const
+    {
+#   ifdef BOOST_WINDOWS
+      return m_path.size() > 2
+        && ( (m_path[1] == ':' && m_path[2] == '/') // "c:/"
+          || (m_path[0] == '/' && m_path[1] == '/') // "//share"
+          || m_path[m_path.size()-1] == ':' );
+#   else
+      return m_path.size() && m_path[0] == '/';
+#   endif
+
+
+      return ( m_path.size() 
+               && m_path[0] == '/' )  // covers both "/" and "//share"
+#            ifdef BOOST_WINDOWS
+               || ( m_path.size() > 1 && m_path[1] == ':' ) // "c:" and "c:/"
+               || ( m_path.size() > 3
+                    && m_path[m_path.size()-1] == ':' ) // "device:"
+#            endif
+               ;
+    }
+
+    bool path::has_root_path() const
+    {
+      return ( m_path.size() 
+               && m_path[0] == '/' )  // covers both "/" and "//share"
+#            ifdef BOOST_WINDOWS
+               || ( m_path.size() > 1 && m_path[1] == ':' ) // "c:" and "c:/"
+               || ( m_path.size() > 3
+                    && m_path[m_path.size()-1] == ':' ) // "device:"
+#            endif
+               ;
+    }
+
+    bool path::has_system_specific_root() const
+    {
+#   ifdef BOOST_WINDOWS
+      return m_path.size() > 1
+        && ( m_path[1] == ':' // "c:"
+          || m_path[m_path.size()-1] == ':' // "prn:"
+          || (m_path[0] == '/' && m_path[1] == '/') // "//share"
+           );
+#   else
+      return false;
+#   endif
+    }
+
+    bool path::has_root_directory() const
+    {
+      return ( m_path.size() 
+               && m_path[0] == '/' )  // covers both "/" and "//share"
+#            ifdef BOOST_WINDOWS
+               || ( m_path.size() > 2
+                    && m_path[1] == ':' && m_path[2] == '/' ) // "c:/"
+#            endif
+               ;
+    }
+
+    bool path::has_relative_path() const { return !relative_path().empty(); }
+    bool path::has_branch_path() const { return !branch_path().empty(); }
+
+
+// path_itr_imp implementation  ----------------------------------------------// 
+
+    namespace detail
     {
       void path_itr_imp::operator++()
       {

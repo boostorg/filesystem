@@ -74,6 +74,7 @@ namespace boost
     namespace detail
     {
       const char * implementation_name(); // helps testing to know name
+      bool single_rooted_filesystem();
     }
 
 //  directory_iterator  ------------------------------------------------------//

@@ -179,11 +179,11 @@ ensure names in paths are as portable as desired, but they must be explicitly
 called by the user.</p>
 <p><b><a name="Naming Rationale">Naming Rationale</a>:</b> Class <i>path</i> 
 member function names and <a href="operations.htm">operations.hpp</a> non-member 
-function names are chosen to be distinct from one another. Otherwise, given a 
-path <i>foo</i>, for example, both <i>foo.empty()</i> and <i>empty( foo )</i> 
-would be valid, but with completely different semantics. Avoiding this was 
-considered more important than consistency with some C++ Standard Library naming 
-conventions, which aren't followed uniformly anyhow, even in the standard.</p>
+function names were chosen to be somewhat distinct from one another. The 
+objective was to avoid both <i>foo.empty()</i> and <i>empty( foo )</i> being 
+valid, but with completely different semantics. At one point <i>path::empty()</i> 
+was renamed <i>path::is_null()</i>, but that caused many coding typos because <i>
+std::string::empty()</i> is often used nearby.</p>
 <h3><a name="System-specific Representation">System-specific Representation</a></h3>
 <p>Several <i>path</i> non-member functions return representations of <i>m_name</i> 
 in formats specific to the operating system. These formats are implementation 
@@ -603,7 +603,7 @@ efficient, and less error prone.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 November, 2002<!--webbot bot="Timestamp" endspan i-checksum="39360" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 November, 2002<!--webbot bot="Timestamp" endspan i-checksum="39364" --></p>
 
 </body>
 

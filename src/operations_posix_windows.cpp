@@ -112,6 +112,7 @@ namespace
     BOOST_HANDLE & handle, BOOST_SYSTEM_DIRECTORY_TYPE & data )
   // Returns: 0 if error, otherwise name
   {
+//    std::cout << "find_first_file " << dir << std::endl;
     std::string dirpath( std::string(dir) + "/*" );
     return ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
       == BOOST_INVALID_HANDLE_VALUE ) ? 0 : data.cFileName;
@@ -119,6 +120,7 @@ namespace
 
   inline void find_close( BOOST_HANDLE handle )
   {
+//    std::cout << "find_close" << std::endl;
     assert( handle != BOOST_INVALID_HANDLE_VALUE );
     ::FindClose( handle );
   }
@@ -174,8 +176,10 @@ namespace boost
     {
 #ifdef BOOST_POSIX
       const char * implementation_name() { return "POSIX"; }
+      bool single_rooted_filesystem() { return true; }
 #else
       const char * implementation_name() { return "Windows"; }
+      bool single_rooted_filesystem() { return false; }
 #endif
 
     } // namespace detail
@@ -204,7 +208,7 @@ namespace boost
       m_imp.reset( new dir_itr_imp );
       BOOST_SYSTEM_DIRECTORY_TYPE scratch;
       const char * name;
-      if ( dir_path.is_null() )
+      if ( dir_path.empty() )
        m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
       else
         name = find_first_file( dir_path.system_specific_directory_string().c_str(),
@@ -423,7 +427,7 @@ namespace boost
     const path & initial_path()
     {
       static path init_path;
-      if ( init_path.is_null() ) init_path = current_path();
+      if ( init_path.empty() ) init_path = current_path();
       return init_path;
     }
 

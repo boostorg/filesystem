@@ -76,15 +76,17 @@ namespace boost
       path         branch_path() const;
 
       // query functions:
-      bool is_null() const { return m_path.size() == 0; }
-      bool is_absolute() const;
+      bool empty() const { return m_path.empty(); } // name consistent with std containers
 
-/*
-      bool has_root_path() const;
+      bool is_complete() const; // has_root_directory [&& has_system_specific_root()]
+
+      bool has_root_path() const;  // has_system_specific_root() || has_root_directory()
       bool has_system_specific_root() const;
       bool has_root_directory() const;
       bool has_relative_path() const;
-*/
+      bool has_leaf() const { return !m_path.empty(); }
+      bool has_branch_path() const;
+
       const std::string & string() const { return m_path; }
 
       std::string system_specific_file_string() const;

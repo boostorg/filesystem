@@ -75,6 +75,10 @@ int test_main( int, char * [] )
             << fs::initial_path().system_specific_file_string()
             << "\"\n";
 
+  BOOST_TEST( fs::initial_path().is_complete() );
+  BOOST_TEST( fs::current_path().is_complete() );
+  BOOST_TEST( fs::initial_path().string() == fs::current_path().string() );
+
   fs::path dir(  fs::initial_path() / "temp_fs_test_directory" );
   
   if ( std::strcmp( fs::detail::implementation_name(), "Windows" ) == 0 )
@@ -125,14 +129,26 @@ int test_main( int, char * [] )
     BOOST_TEST( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
     if ( dir_itr->leaf() == "d1" )
     {
-      // Thomas Witt suggested the ++ to verify a compiler problem workaround
-//      BOOST_TEST( (++fs::directory_iterator(dir))->leaf() == "d2" );
-      ++dir_itr;
+      BOOST_TEST( (++dir_itr)->leaf() == "d2" );
+    }
+    else
+    {
+      BOOST_TEST( (++dir_itr)->leaf() == "d1" );
+    }
+  }
+
+  { // *i++ must work to meet the standard's InputIterator requirements
+    fs::directory_iterator dir_itr( dir );
+    BOOST_TEST( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
+    if ( dir_itr->leaf() == "d1" )
+    {
+      BOOST_TEST( (*dir_itr++).leaf() == "d1" );
       BOOST_TEST( dir_itr->leaf() == "d2" );
     }
     else
     {
-      BOOST_TEST( (++fs::directory_iterator(dir))->leaf() == "d1" );
+      BOOST_TEST( (*dir_itr++).leaf() == "d2" );
+      BOOST_TEST( dir_itr->leaf() == "d1" );
     }
   }
 
