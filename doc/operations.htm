@@ -216,7 +216,7 @@ is_directory(directory_ph) &amp;&amp; is_empty(directory_ph)</code></p>
 <blockquote>
 <p><code>void remove( const path &amp; ph );</code></p>
 <p><b>Postcondition:</b> <code>!exists( ph )</code></p>
-<p><b>Throws:</b> if <code>!exists(ph) || !is_empty(ph)</code></p>
+<p><b>Throws:</b> if <code>!exists(ph) || (is_directory(ph) &amp;&amp; !is_empty(ph))</code></p>
 </blockquote>
 <h3><a name="remove_all">remove_all</a></h3>
 <blockquote>
@@ -277,7 +277,7 @@ initial_directory()</i>.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 August, 2002<!--webbot bot="Timestamp" endspan i-checksum="34406" --></p>
 
 </body>
 
