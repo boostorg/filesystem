@@ -38,6 +38,7 @@ namespace boost
 //  query functions  ---------------------------------------------------------//
 
     BOOST_FILESYSTEM_DECL bool exists( const path & ph );
+    BOOST_FILESYSTEM_DECL bool symbolic_link_exists( const path & ph );
     BOOST_FILESYSTEM_DECL bool is_directory( const path & ph );
 
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash

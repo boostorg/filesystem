@@ -174,8 +174,10 @@ int test_main( int argc, char * argv[] )
 
   BOOST_TEST( fs::exists( dir ) );
   BOOST_TEST( fs::_is_empty( dir ) );
-
   BOOST_TEST( fs::is_directory( dir ) );
+
+  BOOST_TEST( !fs::symbolic_link_exists( dir ) );
+  BOOST_TEST( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
 
   fs::path d1( dir / "d1" );
   fs::create_directory( d1  );

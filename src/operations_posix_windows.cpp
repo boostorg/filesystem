@@ -177,7 +177,8 @@ namespace
   unsigned long remove_all_aux( const fs::path & ph )
   {
     unsigned long count = 1;
-    if ( fs::is_directory( ph ) )
+    if ( !fs::symbolic_link_exists( ph ) // don't recurse symbolic links
+      && fs::is_directory( ph ) )
     {
       for ( fs::directory_iterator itr( ph );
             itr != end_itr; ++itr )
@@ -284,6 +285,20 @@ namespace boost
       return ::stat( ph.string().c_str(), &path_stat ) == 0;  
 #   else
       return ::GetFileAttributesA( ph.string().c_str() ) != 0xFFFFFFFF;
+#   endif
+    }
+
+    // suggested by Walter Landry
+    BOOST_FILESYSTEM_DECL bool symbolic_link_exists( const path & ph )
+    {
+#   ifdef BOOST_POSIX
+      struct stat path_stat;
+      return ::lstat( ph.native_file_string().c_str(), &path_stat ) == 0
+        && S_ISLNK( path_stat.st_mode );
+#   else
+      return false; // Windows has no O/S concept of symbolic links
+                    // (.lnk files are an application feature, not
+                    // a Windows operating system feature)
 #   endif
     }
 
@@ -407,7 +422,8 @@ namespace boost
 
     BOOST_FILESYSTEM_DECL unsigned long remove_all( const path & ph )
     {
-      return exists( ph ) ? remove_all_aux( ph ) : 0;
+      return exists( ph )|| symbolic_link_exists( ph )
+        ? remove_all_aux( ph ) : 0;
     }
 
     BOOST_FILESYSTEM_DECL void rename( const path & old_path,

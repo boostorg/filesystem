@@ -21,6 +21,7 @@
 &nbsp;&nbsp;&nbsp; <a href="#Other_functions">Other_functions</a><br>
 <a href="#Non-member_functions">Operations functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#symbolic_link_exists">symbolic_link_exists</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br>
@@ -73,6 +74,7 @@ header. </p>
     };
 
     bool <a href="#exists">exists</a>( const path &amp; ph );
+    bool <a href="#symbolic_link_exists">symbolic_link_exists</a>( const path &amp; ph );
     bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
     bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
     std::time_t <a href="#last_write_time">last_write_time</a>( const path &amp; ph );
@@ -104,10 +106,18 @@ directory</a>. </p>
 
 <p>The value type is <i><a href="path.htm">boost::filesystem::path</a></i>, so 
 dereferencing a <i>directory_iterator</i> yields a <a href="index.htm#path">
-path</a> to a file or directory contained within the directory represented by 
+path</a> to a file or sub-directory contained within the directory represented by 
 the directory-path argument supplied at construction. The path returned by 
 dereferencing a <i>directory_iterator</i> is composed by appending the name of 
 the directory entry to the directory path supplied at construction.</p>
+
+<p><b><a name="symbolic-link-warning">Warning</a>:</b> Programs performing 
+directory iteration may wish to test, via <a href="#exists">exists()</a>, if the 
+path returned by dereferencing an iterator actually exists. It could be a
+<a href="index.htm#symbolic-link">symbolic link</a> to a non-existent file or 
+directory. Programs recursively walking directory trees for purposes of removing 
+and renaming entries may wish to avoid following symbolic links, which can be 
+detected with <a href="#symbolic_link_exists">symbolic_link_exists()</a>.</p>
 
 <p>The order of the path entries returned by dereferencing successive increments 
 of a <i>directory_iterator</i> is unspecified. Thus depending on the ordering 
@@ -213,6 +223,32 @@ rights or other security concerns, for example, may cause other operations to
 fail.</p>
 <p><b>Note:</b> <code>exists(&quot;&quot;)</code> is valid and returns false;</p>
 </blockquote>
+<h3><a name="symbolic_link_exists">symbolic_link_exists</a></h3>
+<blockquote>
+<p><code>bool symbolic_link_exists( const path &amp; ph );</code></p>
+<p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
+<i>ph</i> is present and is a <a href="index.htm#symbolic-link">symbolic link</a>, else false.</p>
+<p><b>Note:</b> See the <a href="#symbolic-link-warning">directory iterator 
+warning</a> for one use of <code>symbolic_link_exists()</code>.</p>
+<p><b>Note:</b> The Microsoft Windows operating system does not currently 
+support symbolic links, so <code>symbolic_link_exists()</code> always returns 
+false on that platform. (Short-cut files (.lnk) are a Windows application 
+feature, not an O/S feature.) Programmers should still test for symbolic links 
+where applicable in case Windows adds the feature, and also so that programs 
+will be portable to systems like POSIX, where symbolic links may be present.</p>
+<p><b>Rationale:</b> The function does not throw if <i>ph</i> is not present, 
+and is accordingly named <code>symbolic_link_exists</code> rather than <code>
+is_symbolic_link</code>. Non-throwing behavior permits testing for all four 
+possible conditions:</p>
+  <ul>
+    <li><i>ph</i> not present: <code>!exists(ph) &amp;&amp; !symbolic_link_exists(ph)</code></li>
+    <li><i>ph</i> present and is not a symbolic link: <code>exists(ph) &amp;&amp; !symbolic_link_exists(ph)</code></li>
+    <li><i>ph</i> present and is a symbolic link to a non-existent file or 
+    directory: <code>!exists(ph) &amp;&amp; symbolic_link_exists(ph)</code></li>
+    <li><i>ph</i> present and is a symbolic link to an existing file or 
+    directory: <code>exists(ph) &amp;&amp; symbolic_link_exists(ph)</code></li>
+  </ul>
+</blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
 <p><code>bool is_directory( const path &amp; ph );</code></p>
@@ -279,13 +315,14 @@ establishment of the postcondition. </p>
 <p><b>Postcondition:</b> <code>!exists( ph )</code></p>
 <p><b>Throws:</b> if<code> ph.empty() || (exists(ph) &amp;&amp; is_directory(ph) &amp;&amp; !is_empty(ph))</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
-<p><b>Note:</b> See <a href="index.htm#link_rules">link rules</a> for operating 
-system dependent behavior if <code>ph</code> is a <a href="index.htm#link">link</a>.</p>
+<p><b>Note:</b> <a href="index.htm#symbolic-link">Symbolic links</a> are 
+themselves deleted, rather than what they point to being deleted.</p>
 <p><b>Rationale:</b> Does not throw when <code>!exists( ph )</code> because not 
-throwing is:</p>
+throwing:</p>
 <ul>
-  <li>Slightly easier-to-use for many common use cases.</li>
-  <li>Slightly higher-level because it implies use of postcondition semantics 
+  <li>Works correctly if <code>ph</code> is a dangling symbolic link. </li>
+  <li>Is slightly easier-to-use for many common use cases.</li>
+  <li>Is slightly higher-level because it implies use of postcondition semantics 
   rather than effects semantics, which would be specified in the somewhat 
   lower-level terms of interactions with the operating system.</li>
 </ul>
@@ -293,16 +330,18 @@ throwing is:</p>
 by which otherwise would have been detected. For example, a misspelled path name 
 could go undetected for a long time.</p>
 <p>The initial version of the library threw an exception when the path did not exist; it 
-was reluctantly changed to reflect user complaints.</p>
+was changed to reflect user complaints.</p>
 </blockquote>
 <h3><a name="remove_all">remove_all</a></h3>
 <blockquote>
 <p><code>unsigned long remove_all( const path &amp; ph );</code></p>
 <p><b>Precondition:</b> <code>!ph.empty()</code></p>
-<p><b>Postcondition:</b> <code>!exists( ph )</code></p>
+<p><b>Postcondition:</b> <code>!exists( ph ) &amp;&amp; !symbolic_link_exists( ph )</code></p>
 <p><b>Returns:</b> The number of files and directories removed.</p>
 <p><b>Throws:</b> if<code> ph.empty()</code>. See <a href="#empty_rationale">
 empty path rationale</a>.</p>
+<p><b>Note:</b> <a href="index.htm#symbolic-link">Symbolic links</a> are 
+themselves deleted, rather than what they point to being deleted.</p>
 </blockquote>
 <h3><a name="rename">rename</a></h3>
 <blockquote>
@@ -377,6 +416,8 @@ operations between roots, and such an attempted <i>rename</i> with throw a <i>
 <a href="exception.htm">filesystem_error</a></i> exception.. Implementations should not take heroic efforts, such 
 as switching to a copy mode, to make an otherwise failing <i>rename </i>succeed 
 across roots.</p>
+<p><b>Note:</b> <a href="index.htm#symbolic-link">Symbolic links</a> are 
+themselves renamed, rather than what they point to being renamed.</p>
 </blockquote>
 <h3><a name="copy_file">copy_file</a></h3>
 <blockquote>
@@ -535,7 +576,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 November, 2003<!--webbot bot="Timestamp" endspan i-checksum="39368" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38504" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

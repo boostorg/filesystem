@@ -266,12 +266,23 @@ have different <a href="#directory_tree">directory trees</a> for each different
 disk, drive, device, volume, share, or other entity managed the system, with each having its 
 own root-name.</p>
 <p><b><a name="link">link</a></b> - A&nbsp;name in a <a href="#directory">
-directory</a> can be viewed as a pointer to the underlying directory or file 
+directory</a> can be viewed as a pointer to some underlying directory or file 
 content. Modern operating systems permit multiple directory elements to point to 
 the same underlying directory or file content. Such a pointer is often called a 
 link. Not all operating systems support the 
-concept of links. Links may be reference counted or non-reference counted. 
-Non-reference counted links are sometimes called symbolic links or shortcuts.</p>
+concept of links. Links may be reference-counted (<a href="#hard-link">hard link</a>) 
+or non-reference-counted (<a href="#symbolic-link">symbolic link</a>).</p>
+<p><b><a name="hard-link">hard link</a></b> - A reference-counted
+<a href="#link">link</a>. Because the operating system manages the underlying 
+file or directory, hard links are transparent to programs. They &quot;just work&quot; 
+without the programmer needing to be aware of their existence.</p>
+<p><b><a name="symbolic-link">symbolic link</a></b> - A non-reference-counted
+<a href="#hard-link">link</a>. The operating system manages some aspects of 
+symbolic links. Most uses, such as opening or querying files, automatically 
+resolve to the file or directory being pointed to rather than to the symbolic 
+link itself. A few uses, such as remove() and rename(), modify the symbolic link 
+rather than it's target. See an important
+<a href="operations.htm#symbolic-link-warning">symbolic links warning</a>.</p>
 <h2><a name="Common_Specifications">Common Specifications</a></h2>
 <p>Unless otherwise specified, all Filesystem Library member and non-member 
 functions have the following common specifications:</p>
@@ -295,7 +306,8 @@ BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
 <p><b><a name="link_rules">Links follow operating system rules</a></b>- <a href="#link">Links</a> are 
 transparent in that Filesystem Library functions simply follow operating system 
 rules. That implies that some functions may throw <i><a href="exception.htm">filesystem_error</a></i> 
-exceptions if a link is cyclic or has other problems.</p>
+exceptions if a link is cyclic or has other problems. Also, see an important
+<a href="operations.htm#symbolic-link-warning">symbolic links warning</a>.</p>
 <p>Typical operating systems rules call for deep operations on all links except 
 that destructive operations on non-reference counted links are either shallow, 
 or fail altogether in the case of trying to remove a non-reference counted link 
@@ -483,7 +495,7 @@ version 1.32.0.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38521" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38504" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
