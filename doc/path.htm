@@ -194,7 +194,7 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
 
       // <a href="#name_check­_mechanism">default name_check</a> mechanism:
       static bool <a href="#default_name_check_writable">default_name_check_writable</a>(); 
-      static name_check <a href="#default_name_check">default_name_check</a>( name_check new_check );
+      static void <a href="#default_name_check">default_name_check</a>( name_check new_check );
       static name_check <a href="#default_name_check">default_name_check</a>();</pre>
 <pre>      // relational operators:
       bool <a href="#operator_eq">operator==</a>( const path &amp; that ) const;
@@ -684,7 +684,7 @@ check. </p>
 <p>The default name check function is set and retrieved by <i>path</i> static 
 member functions, and as such is similar to a global variable. Since global variables are 
 considered harmful [<a href="design.htm#Wulf-Shaw-73">Wulf-Shaw-73</a>], class
-<i>path</i> allows the default name check function can be set only once, and 
+<i>path</i> allows the default name check function to be set only once, and 
 only before the first use. This turns a dangerous global variable into a 
 safer global constant. Even with this protection, the ability to set the default name check function is 
 still a powerful feature, and is still dangerous in that it can change 
@@ -708,7 +708,7 @@ manipulations. Convenience is also a factor.</p>
   See Scott Myers, <i>Effective C++</i>, Item 21. The const qualifiers were 
   eliminated (1) to conform with C++ Standard Library practice, (2) because 
   non-const returns allow occasionally useful expressions, and (3) because the 
-  number of coding errors eliminated were deemed rare. A requirement that path::iterator not be a non-class type was added to eliminate errors non-const 
+  number of coding errors eliminated were deemed rare. A requirement that path::iterator be a  class type was added to eliminate non-const 
   iterator errors.</p>
 <h2>Path <a name="decomposition">decomposition</a> examples</h2>
 <p>It is often useful to extract specific elements from a path object.&nbsp; 
@@ -976,7 +976,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28869" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->05 December, 2004<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
