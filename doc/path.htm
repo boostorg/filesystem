@@ -95,8 +95,8 @@ the contained path.</p>
 systems, they are disallowed by so many operating systems that they are banned 
 altogether.</p>
 <p><i>root-name</i> grammar is implementation-defined. <i>
-root-name</i> must not be present in generic input (the undecorated
-<i>path</i> constructors); it may be part of the strings returned by <i>path</i> 
+root-name</i> must not be present in generic input (the single-argument
+<i>path</i> constructors). It may be part of the strings returned by <i>path</i> 
 member functions, and may be present in the argument to <i>path</i> constructors 
 with the <i><a href="#native">native</a></i> decorator.</p>
 <p>Although implementation-defined, it is desirable that <i>
@@ -417,8 +417,8 @@ if any. See <a href="#decomposition">Path decomposition examples</a>.</p>
 <blockquote>
   <pre>std::string leaf() const;</pre>
 <p><b>Returns:</b> <code>empty() ? std::string() : m_name.back()</code></p>
-<p>A typical use is to obtain the undecorated name of a directory entry from the 
-path returned by a <a href="operations.htm#directory_iterator">
+<p>A typical use is to obtain a file or directory name without path information 
+from a path returned by a <a href="operations.htm#directory_iterator">
 directory_iterator</a>. See <a href="#decomposition">Path decomposition examples</a>.</p>
 </blockquote>
 <h3><a name="branch_path">branch_path</a></h3>
