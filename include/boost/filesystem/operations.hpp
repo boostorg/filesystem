@@ -59,7 +59,7 @@ namespace boost
 
 //  operations  --------------------------------------------------------------//
 
-    BOOST_FILESYSTEM_DECL void create_directory( const path & directory_ph );
+    BOOST_FILESYSTEM_DECL bool create_directory( const path & directory_ph );
 
     BOOST_FILESYSTEM_DECL bool remove( const path & ph );
     BOOST_FILESYSTEM_DECL unsigned long remove_all( const path & ph );
