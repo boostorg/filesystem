@@ -77,6 +77,7 @@ namespace fs = boost::filesystem;
 #include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
+//#include <iostream>
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::strcmp; using ::remove; using ::rename; }
@@ -142,16 +143,18 @@ namespace
   inline const char *  find_first_file( const char * dir,
     BOOST_HANDLE & handle, BOOST_SYSTEM_DIRECTORY_TYPE & data )
   // Returns: 0 if error, otherwise name
+  // Note: an empty root directory has no "." or ".." entries, so this causes
+  // a ERROR_FILE_NOT_FOUND error which we do not considered an error. Instead,
+  // the handle is set to BOOST_INVALID_HANDLE_VALUE and a non-zero is returned.
   {
-//    std::cout << "find_first_file " << dir << std::endl;
     std::string dirpath( std::string(dir) + "/*" );
     return ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
-      == BOOST_INVALID_HANDLE_VALUE ) ? 0 : data.cFileName;
+      == BOOST_INVALID_HANDLE_VALUE
+      && ::GetLastError() != ERROR_FILE_NOT_FOUND) ? 0 : data.cFileName;
   }  
 
   inline void find_close( BOOST_HANDLE handle )
   {
-//    std::cout << "find_close" << std::endl;
     assert( handle != BOOST_INVALID_HANDLE_VALUE );
     ::FindClose( handle );
   }
@@ -250,11 +253,18 @@ namespace boost
         BOOST_SYSTEM_DIRECTORY_TYPE scratch;
         const char * name = 0;  // initialization quiets compiler warnings
         if ( dir_path.empty() )
-        m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
+          m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
         else
+        {
           name = find_first_file( dir_path.native_directory_string().c_str(),
             m_imp->handle, scratch );  // sets handle
-
+          if ( m_imp->handle == BOOST_INVALID_HANDLE_VALUE
+            && name ) // eof
+          {
+            m_imp.reset(); // make end iterator
+            return;
+          }
+        }
         if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
         {
           m_imp->entry_path = dir_path;
