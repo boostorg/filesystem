@@ -30,12 +30,12 @@
 #   endif
 # endif
 
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/exception.hpp"
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/exception.hpp>
 
 namespace fs = boost::filesystem;
 
-#include "boost/config.hpp"
+#include <boost/config.hpp>
 #ifdef BOOST_NO_STDC_NAMESPACE
   namespace std { using ::strlen; }
 #endif
@@ -77,7 +77,7 @@ namespace
 
   void first_name( const std::string & src, std::string & target )
   {
-    target.clear();
+    target = ""; // VC++ 6.0 doesn't have string::clear()
     std::string::const_iterator itr( src.begin() );
 
 #   ifdef BOOST_WINDOWS

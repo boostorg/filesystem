@@ -7,20 +7,20 @@
 
 //  See http://www.boost.org for most recent version including documentation.
 
-#include "boost/filesystem/fstream.hpp"
+#include <boost/filesystem/fstream.hpp>
 #include <string>
 #include <cstdio> // for std::remove
 
 namespace fs = boost::filesystem;
 
-#include "boost/config.hpp"
+#include <boost/config.hpp>
 #ifdef BOOST_NO_STDC_NAMESPACE
   namespace std { using ::remove; }
 #endif
 
 
 #define BOOST_INCLUDE_MAIN
-#include "boost/test/test_tools.hpp"
+#include <boost/test/test_tools.hpp>
 
 int test_main( int, char*[] )
 {

@@ -54,9 +54,6 @@ namespace boost
     public:
       // compiler generates copy constructor, copy assignment, and destructor
 
-      // Rationale for returns of "const path" instead of "path"; see
-      // Scott Meyers, EC++, Item 21.
-
       path(){}
 
       path( const std::string & src );

@@ -59,6 +59,9 @@ int test_main( int, char*[] )
   path p3;
   p3 = p2;
 
+//  p1.branch() = p2; // should fail
+//  *p1.begin() = ""; // should fail
+
   // These verify various overloads don't cause compiler errors
   fs::exists( "foo" );
   fs::exists( std::string( "foo" ) );
