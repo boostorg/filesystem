@@ -1,0 +1,45 @@
+<title>Boost Filesystem Do-list</title>
+<h1>
+<img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Filesystem 
+Do-list</h1>
+<ul>
+  <li>Finish the probe program, and ask Boost people to run it on various O/S's.<br>
+&nbsp;</li>
+  <li>Finish portability guide and checking functions. Get opinions on default, Boost, and other error checks.&nbsp; POSIX?&nbsp; 
+  Windows? Mac?&nbsp; ISO 6990?<br>
+&nbsp;</li>
+  <li>Cyclic paths:</li>
+</ul>
+<blockquote>
+  <ul>
+    <li>General requirements.</li>
+    <li>Add cycle-breaking code if needed.</li>
+    <li>Add test case to make sure functions like <i>remove_all</i> don't loop.</li>
+  </ul>
+</blockquote>
+<ul>
+  <li>As a lexical concept, parent-directory is portable unless it escapes to 
+  the operating system. But do all operating recognize such a concept in a path?&nbsp; 
+  I doubt it.&nbsp; Maybe there should be a checking function that verifies that 
+  generic_path() contains no <code>&quot;..&quot;</code>.<br>
+&nbsp;</li>
+  <li>Once the review is complete, ask for help porting to the Mac, etc.<br>
+&nbsp;</li>
+  <li>From John Maddock:</li>
+</ul>
+<blockquote>
+  <pre>&gt;All the functions generic_path, file_path, directory_path, leaf, and 
+&gt;branch,
+&gt;are under-documented IMO. I had to read the specs quite closely before I
+&gt;could figure out which did what. Adding examples to each would probably be
+&gt;a help, or maybe a &quot;description&quot; section that provides a less terse
+&gt;description than the standardese.</pre>
+</blockquote>
+<ul>
+  <li>Change remove() to return a bool, now that the file doesn't have to 
+  exist..&nbsp; (Keith Burton)</li>
+</ul>
+<hr>
+<p>© Copyright Beman Dawes, 2002</p>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39335" --></p>

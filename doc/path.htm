@@ -1,0 +1,373 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Boost Filesystem path.hpp Header</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>
+<img border="0" src="../../../c++boost.gif" align="center" width="277" height="86"><a href="../../../boost/filesystem/path.hpp">boost/filesystem/path.hpp</a></h1>
+
+<p>
+<a href="#Introduction">Introduction</a><br>
+<a href="#Grammar">Grammar for generic path strings</a><br>
+<a href="#Canonical">Canonical form</a><br>
+<a href="#synopsis">Header synopsis</a><br>
+<a href="#Class path">Class path</a><br>
+<a href="#Member">Member functions</a><br>
+<a href="#Non-member functions">Non-member functions</a></p>
+<h2><a name="Introduction">Introduction</a></h2>
+
+<p>Many Filesystem Library functions traffic in objects of class <i>path</i>, 
+provided by this header.&nbsp; Non-member functions for error checking are also 
+supplied.</p>
+
+<p>For actual operations on files and directories, see <a href="operations.htm">
+boost/filesystem/operations.hpp documentation</a>.</p>
+
+<p>For file I/O stream operations, see <a href="fstream.htm">boost/filesystem/fstream.hpp 
+documentation</a>.</p>
+
+<p>As with all Filesystem Library components, errors may result in <i>
+<a href="exception.htm">filesystem_error</a></i> or <i>std::bad_alloc</i> 
+exceptions being thrown. See <a href="index.htm#Requirements">Requirements</a>.</p>
+<h2><a name="Class path">Class path</a></h2>
+<p>Class <i>path</i> provides for portable mechanism for representing
+<a href="index.htm#path">paths</a> in C++ programs.&nbsp; Class <i>path</i> 
+is concerned with the lexical and syntactic aspects of a path, regardless of 
+whether or not such a path currently exists in the operating system's 
+filesystem. </p>
+<p><b>Rationale:</b> If filesystem functions trafficked in <i>std::strings</i> or C-style strings, the 
+functions 
+would provide only an illusion of portability since the function calls would be 
+portable but the strings they operate on would not be portable.</p>
+<h2><a name="Conceptual model">Conceptual model</a> of a path</h2>
+<p>An object of class <i>path</i> can be conceptualized as containing a sequence 
+of strings, where each string contains the name of a directory, or, in the case 
+of the string representing the element farthest from the root in the directory 
+hierarchy, the name of a directory or file. Such a path representation is 
+ 
+independent of any particular representation of the path as a single 
+string.</p>
+<p>There is no requirement that an implementation of class <i>path</i> actually 
+contain a sequence of strings, but conceptualizing the contents that way provides 
+a completely portable way to reason about paths.</p>
+<p>So that programs can portably express paths as a single string, class <i>path</i> 
+defines a <a href="#Grammar">grammar</a> for a portable generic path string 
+format, and supplies constructor and append operations taking such strings as 
+arguments. Because user input or third-party library functions may supply path 
+strings formatted according to operating system specific rules, an additional 
+constructor is provided which takes a system-specific format as an argument.</p>
+<p>Access functions are provided to retrieve the contents of a object of class
+<i>path</i> formatted as a portable path string, a directory path string using 
+the operating system's format, and a file path string using the operating 
+system's format.&nbsp; Additional access functions retrieve specific portions of 
+the contained path.</p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<h2><a name="Grammar">Grammar</a> for portable generic path string</h2>
+<p>The grammar is specified in extended BNF, with terminal symbols in quotes:
+</p>
+<blockquote>
+  <pre>path ::= [system-specific-root] [relative-path] </pre>
+  <pre>relative-path ::= element { &quot;/&quot; element } </pre>
+  <pre>element ::= name | parent-directory </pre>
+  <pre>parent-directory ::= &quot;..&quot; </pre>
+  <pre>name ::= char { char }</pre>
+</blockquote>
+<p><i>system-specific-root</i> grammar is implementation-defined. <i>
+system-specific-root</i> must not be present in generic input (the undecorated
+<i>path</i> constructors); it may be part of the strings returned by <i>path</i> 
+member functions, and may be present in the argument to <i>path</i> constructors 
+with the <i><a href="#system_specific">system_specific</a></i> decorator.</p>
+<p>Although implementation-defined, it is desirable that <i>
+system-specific-root</i> have a grammar which is distinguishable from other grammar elements, 
+and follow the conventions of the operating system.</p>
+<p>Whether or not a generic path string is actually portable to a particular 
+operating system will depend on the 
+names used.&nbsp; See the <a href="portability_guide.htm">Portability Guide</a>.</p>
+<h2><a name="Canonical">Canonical</a> form</h2>
+<p>Adjacent <i>name, parent-directory</i> elements in <code>m_name</code> 
+have been recursively removed. </p>
+<h2>Header <a href="../../../boost/filesystem/path.hpp">
+boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
+<pre>namespace boost
+{
+  namespace filesystem
+  {
+    enum path_format { <a name="system_specific">system_specific</a> };
+
+    class path
+    {
+    public:
+      // compiler generates copy constructor,
+      // copy assignment, and destructor
+
+      // constructors:
+      <a href="#constructors">path</a>();
+      <a href="#constructors">path</a>( const std::string &amp; src );
+      <a href="#constructors">path</a>( const char * src );
+      <a href="#constructors">path</a>( const std::string &amp; src, path_format );
+      <a href="#constructors">path</a>( const char * src, path_format );
+
+      // append operations:
+      path &amp; <a href="#operator-shift-equal">operator&lt;&lt;=</a>( const path &amp; rhs );
+      const path <a href="#operator-shift">operator&lt;&lt;</a>( const path &amp; rhs ) const;
+
+      // query functions: 
+      bool <a href="#empty">is_null()</a> const;
+      const std::string &amp; <a href="#generic_path">generic_path</a>() const;
+      const std::string &amp; <a href="#file_path">file_path</a>() const;
+      const std::string &amp; <a href="#directory_path">directory_path</a>() const;
+      const std::string <a href="#leaf">leaf</a>() const;
+      const path <a href="#branch">branch</a>() const;
+
+      // iteration:
+      typedef <i>implementation-defined</i> <a href="#iterator">iterator</a>;
+      const iterator <a href="#begin">begin</a>() const;
+      const iterator <a href="#end">end</a>() const;
+
+    private:
+      std::vector&lt;std::string&gt; m_name;  // for exposition only
+    };
+
+    const path <a href="#non-member operator shift">operator&lt;&lt;</a> ( const char * lhs, const path &amp; rhs );
+    const path <a href="#non-member operator shift">operator&lt;&lt;</a> ( const std::string &amp; lhs, const path &amp; rhs );
+
+    <i>// Also see </i><a href="#Undocumented non-member functions">Undocumented non-member functions</a><i> below</i>
+
+  }
+}</pre>
+  <p><b>Rationale:</b> The return type of several functions (<i>operator&lt;&lt;, 
+  leaf, branch</i>) is <i>const path</i> instead of <i>path</i> to disallow 
+  expressions like <i>(p1&lt;&lt;p2) = p3</i>.&nbsp; See Scott Myers, <i>Effective C++</i>, 
+  Item 21. Likewise, <i>begin()</i> and <i>end()</i> return <i>const iterator</i> 
+  rather than <i>iterator</i>. This detects non-portable code such as <i>++pth.begin()</i>, 
+  which will not work if <i>iterator</i> is a non-class type. See <i>next()</i> 
+  and <i>prior()</i> in <a href="../../utility/utility.htm">boost/utility.hpp</a>.</p>
+<h2><a name="Member">Member</a> functions</h2>
+<p>For the sake of exposition, class <i>path</i> member functions are described 
+as if the class contains a private member <i>std::vector&lt;std::string&gt; m_name</i>. 
+Actual implementations may differ.</p>
+<p><b>Rationale:</b> Return types of query functions have been chosen to match 
+the types needed by important uses, and to be efficient in common 
+implementations.</p>
+<p><b>Note:</b> There is no guarantee that a <i>path</i> object represents a 
+path which is considered valid by the current operating system. A path might be 
+invalid to the operating system because it contains invalid names (too long, 
+invalid characters, and so on), or because it is a partial path still as yet 
+unfinished by the program. An invalid path will normally be detected at time of 
+use, such as by one of the Filesystem Library's <a href="operations.htm">
+operations</a> or <a href="fstream.htm">fstream</a> functions.</p>
+<p><b>Portability Warning:</b> There is no guarantee that a <i>path</i> object 
+represents a path which would be portable to another operating system. A path 
+might be non-portable because it contains names which the operating systems 
+considers too long or contains invalid characters.
+<a href="???????to-be-supplied">Validity checking functions</a> are supplied to 
+ensure names in paths are as portable as desired, but they must be explicitly 
+called by the user.</p>
+<p><b><a name="Naming Rationale">Naming Rationale</a>:</b> Class <i>path</i> 
+member function names and <a href="operations.htm">operations.hpp</a> non-member 
+function names are chosen to be distinct from one another. Otherwise, given a 
+path <i>foo</i>, for example, both <i>foo.empty()</i> and <i>empty( foo )</i> 
+would be valid, but with completely different semantics. Avoiding this was 
+considered more important than consistency with some C++ Standard Library naming 
+conventions, which aren't followed uniformly anyhow, even in the standard.</p>
+<h3><a name="System-specific Representation">System-specific Representation</a></h3>
+<p>Several <i>path</i> non-member functions return representations of <i>m_name</i> 
+in formats specific to the operating system. These formats are implementation 
+defined. If an <i>m_name</i> 
+element contains characters which are invalid under the operating system's 
+rules, and there is an unambiguous translation between the invalid character and 
+a valid character, the implementation is required to perform that translation. 
+For example, if an operating system does not permit lowercase letters in file or 
+directory names, these letters will be translated to uppercase if unambiguous. 
+Such translation does not apply to generic path string format representations.</p>
+<h3><a name="Representation example">Representation example</a></h3>
+<p>The difference between the representations returned by <i>generic path()</i>,
+<i>directory_path()</i>, and <i>file_path()</i> are illustrated by the following 
+code:</p>
+<blockquote>
+  <pre>path my_path( &quot;foo/bar/data.txt&quot; );
+std::cout &lt;&lt; &quot;generic_path---: &quot; &lt;&lt; my_path.generic_path() &lt;&lt; '\n'
+          &lt;&lt; &quot;directory_path-: &quot; &lt;&lt; my_path.directory_path() &lt;&lt; '\n'
+          &lt;&lt; &quot;file_path------: &quot; &lt;&lt; my_path.file_path() &lt;&lt; '\n';</pre>
+</blockquote>
+<p>On POSIX or Windows, the output representations would be identical:</p>
+<blockquote>
+  <pre>generic_path---: foo/bar/data.txt
+directory_path-: foo/bar/data.txt
+file_path------: foo/bar/data.txt</pre>
+</blockquote>
+<p>But on a hypothetical operating system using OpenVMS format representations, 
+they would each be different:</p>
+<blockquote>
+  <pre>generic_path---: foo/bar/data.txt
+directory_path-: [foo.bar.data.txt]
+file_path------: [foo.bar]data.txt</pre>
+</blockquote>
+<p>Note that that because this system uses period as both a directory separator 
+character and as a separator between filename and extension, <i>directory_path()</i> 
+in the example produces a useless result. On this operating system, the 
+programmer should only use this path as a file path. (There is a
+<a href="portability_guide.htm#recommendations">portability recommendation</a> 
+to not use periods in directory names.)</p>
+<h3><a name="constructors">constructors</a></h3>
+<blockquote>
+  <pre>path();</pre>
+  <p><b>Effects:</b> Default constructs an object of class <i>path</i>.</p>
+  <pre>path( const std::string &amp; src );
+path( const char * src );</pre>
+  <p><b>Precondition:</b> <i>src</i> conforms to the <a href="#Grammar">generic 
+  path string grammar</a> <i>relative-path</i> syntax, and contains no embedded 
+  '\0' characters.</p>
+  <p><b>Effects:</b> For each <i>src</i> <i>element</i>,&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
+  <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
+  <a href="#Canonical">canonical form</a>.</p>
+  <p><b>Rationale:</b> These constructors are not explicit because an intended 
+  use is automatic conversion of strings to paths. </p>
+  <pre>path( const std::string &amp; src, path_format );
+path( const char * src, path_format );</pre>
+  <p><b>Precondition:</b> <i>src</i> conforms to the operating system's grammar 
+  for path strings, and contains no embedded '\0' characters.</p>
+  <p><b>Effects:</b> For each <i>src</i> element (where an element represents a 
+  directory name, file name, or parent-directory indicator),&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
+  <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
+  <a href="#Canonical">canonical form</a>.</p>
+</blockquote>
+<h3><a name="operator-shift-equal">operator &lt;&lt;=</a></h3>
+<blockquote>
+  <pre>path &amp; operator&lt;&lt;=( const path &amp; rhs );</pre>
+  <p><b>Effects:</b> Append <code>rhs.m_name</code> to <code>m_name</code>.</p>
+  <p><b>Returns:</b> <code>*this</code></p>
+  <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
+  <a href="#Canonical">canonical form</a>.</p>
+  <p><b>Rationale:</b> It is not considered an error for <code>rhs</code> to 
+  include a <code>system-specific-root</code> because it might relative, and 
+  thus valid.&nbsp; For example, on Windows, the follow must succeed:</p>
+  <blockquote>
+    <pre>path p( &quot;c:&quot;, system_specific );
+p &lt;&lt;= path( &quot;/foo&quot;, system_specific );
+assert( p.generic_path() == &quot;c:/foo&quot; );</pre>
+  </blockquote>
+  </blockquote>
+<h3><a name="operator-shift">operator &lt;&lt;</a></h3>
+<blockquote>
+  <pre>const path operator&lt;&lt; ( const path &amp; rhs ) const;</pre>
+  <p><b>Returns:</b> <code>path( *this ) &lt;&lt;= rhs</code></p>
+  <p><b>Rationale:</b> Operator &lt;&lt; is supplied, because it, together with operator &lt;&lt;=, provides a 
+  convenient way for users to supply paths with a variable number of elements.&nbsp; 
+  For example, <code>initial_directory() &lt;&lt; &quot;src&quot; &lt;&lt; test_name</code>. 
+  Operator+, with operator+=, were considered as alternatives, but deemed too 
+  easy to confuse with those operators for std::string.</p>
+  <p><b>Note:</b> Also see <a href="#non-member operator shift">non-member <i>operator&lt;&lt;</i></a> functions.</p>
+  </blockquote>
+<h3><a name="is_null">is_null</a></h3>
+<blockquote>
+  <pre>bool is_null() const;</pre>
+<p><b>Returns:</b> <code>m_name.size() == 0</code></p>
+</blockquote>
+<h3><a name="generic_path">generic_path</a></h3>
+<blockquote>
+  <pre>const std::string &amp; generic_path() const;</pre>
+<p><b>Returns:</b> The contents of <code>m_name</code>, formatted according to 
+the rules of the <a href="#Grammar">generic path string grammar</a>.</p>
+<p><b>Note:</b> If any m_name elements originated from the system specific 
+constructors, there is no guarantee that the returned string is unambiguous 
+according to the grammar. A system-specific-root indistinguishable from a 
+relative-path name, a name containing &quot;/&quot;, a name &quot;..&quot;, and a 
+system-specific-root beyond the first element all could cause ambiguities. Such 
+an ambiguous representation might still be useful for some purposes, such as 
+display. If no m_name elements originated from the system specific constructors, 
+the returned string is always unambiguous.</p>
+<p><b>See:</b> <a href="#Representation example">Representation example</a> 
+above.</p>
+</blockquote>
+<h3><a name="file_path">file_path</a></h3>
+<blockquote>
+  <pre>const std::string &amp; file_path() const;</pre>
+<p><b>Returns:</b> The contents of <code>m_name</code>, formatted in the
+<a href="#System-specific Representation">system-specific representation</a> of 
+a file path.</p>
+<p><b>See:</b> <a href="#Representation example">Representation example</a> 
+above.</p>
+<p><b>Warning:</b> This function is intended only for use in calls to operating 
+system or third-party libraries. Use in other contexts is probably a programming 
+error. The preferred way to obtain a std::string from a path is <i>generic_path()</i>.</p>
+</blockquote>
+<h3><a name="directory_path">directory_path</a></h3>
+<blockquote>
+  <pre>const std::string &amp; directory_path() const;</pre>
+<p><b>Returns:</b> The contents of <code>m_name</code>, formatted in the
+<a href="#System-specific Representation">system-specific representation</a> of 
+a directory path.</p>
+<p><b>See:</b> <a href="#Representation example">Representation example</a> 
+above.</p>
+<p><b>Warning:</b> This function is intended only for use in calls to operating 
+system or third-party libraries. Use in other contexts is probably a programming 
+error. The preferred way to obtain a std::string from a path is <i>generic_path()</i>.</p>
+</blockquote>
+<h3><a name="leaf">leaf</a></h3>
+<blockquote>
+  <pre>const std::string leaf() const;</pre>
+<p><b>Returns:</b> <code>is_null() ? std::string() : m_name.back()</code></p>
+<p><b>Rationale: </b>Return type is <code>const string</code> rather than <code>const 
+string &amp;</code> to give implementations freedom to avoid&nbsp; maintaining the 
+leaf as a separate <code>string</code> object.</p>
+</blockquote>
+<h3><a name="branch">branch</a></h3>
+<blockquote>
+  <pre>const path branch() const;</pre>
+<p><b>Returns:</b> <code>m_name.size() &lt;= 1 ? path(&quot;&quot;) : x</code>, where <code>x</code> 
+is a path constructed from all the elements of <code>m_name</code> except the 
+last.</p>
+</blockquote>
+<h3><a name="iterator">iterator</a></h3>
+<blockquote>
+<p><code>typedef <i>implementation-defined</i> iterator;</code></p>
+<p>An iterator meeting the C++ Standard Library requirements for bidirectional 
+iterators (24.1). The value, reference, and pointer types are <i>std::string</i>,
+<i>const std::string &amp;</i>, and <i>const std::string *</i>, respectively.</p>
+</blockquote>
+<h3><a name="begin">begin</a></h3>
+<blockquote>
+<p><code>const iterator begin() const;</code></p>
+<p><b>Returns:</b> <code>m_path.begin()</code></p>
+</blockquote>
+<h3><a name="end">end</a></h3>
+<blockquote>
+<p><code>const iterator end() const;</code></p>
+<p><b>Returns:</b> <code>m_path.end()</code></p>
+</blockquote>
+<h2><a name="Non-member functions">Non-member functions</a></h2>
+<h3><a name="non-member operator shift">Non-member operator&lt;&lt;</a></h3>
+<blockquote>
+<p><code>const path operator &lt;&lt; ( const char * lhs, const path &amp; rhs );<br>
+const
+path operator &lt;&lt; ( const std::string &amp; lhs, const path &amp; rhs );</code></p>
+<p><b>Returns:</b> <code>path( lhs ) &lt;&lt;= rhs</code></p>
+</blockquote>
+<h3><a name="Undocumented non-member functions">Undocumented non-member 
+functions</a></h3>
+<p>The header <a href="../../../boost/filesystem/path.hpp">boost/filesystem/path.hpp</a> 
+also supplies several non-member functions which can be used to verify that a 
+path meets certain requirements. These subsidiary functions are undocumented 
+pending more research and discussion, and should not be relied upon as they are 
+likely to change.</p>
+<hr>
+<p>© Copyright Beman Dawes, 2002</p>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39331" --></p>
+
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+#
+# !!!!!!!!!!!!!!!! You must set BOOST_ROOT=../../.. before running bjam test !!!!!!!!!!!!!!!!!!!!!!
+#
+
+
+subproject libs/filesystem/test ;
+
+# bring in rules for testing
+SEARCH on testing.jam = $(BOOST_BUILD_PATH) ;
+include testing.jam ;
+
+{
+    # look in BOOST_ROOT for sources first, just in this Jamfile
+    local SEARCH_SOURCE = $(BOOST_ROOT) $(SEARCH_SOURCE) ;
+    
+   test-suite "filesystem"
+       : [ run libs/filesystem/test/path_test.cpp
+               <lib>../../../libs/filesystem/build/fs
+               <lib>../../../libs/test/build/test_exec_monitor
+         ]
+         [ run libs/filesystem/test/operations_test.cpp
+               <lib>../../../libs/filesystem/build/fs
+               <lib>../../../libs/test/build/test_exec_monitor
+         ]
+         [ run libs/filesystem/test/fstream_test.cpp
+               <lib>../../../libs/filesystem/build/fs
+               <lib>../../../libs/test/build/test_exec_monitor
+         ]
+         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
+               <lib>../../../libs/filesystem/build/fs
+               <lib>../../../libs/test/build/test_exec_monitor
+         ]
+       ;
+}

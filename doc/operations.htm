@@ -1,0 +1,298 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Boost Filesystem operations.hpp Header</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>
+<img border="0" src="../../../c++boost.gif" align="center" width="277" height="86"><a href="../../../boost/filesystem/operations.hpp">boost/filesystem/operations.hpp</a></h1>
+
+<p><a href="#Introduction">Introduction</a><br>
+<a href="#Synopsis">Header synopsis</a><br>
+<a href="#Class directory_iterator">Class directory_iterator</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#destructor">Destructor</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#other functions">Other functions</a><br>
+<a href="#Non-member functions">Non-member functions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#initial_directory">initial_directory</a></p>
+
+<h2><a name="Introduction">Introduction</a></h2>
+
+<p>The <a href="../../../boost/filesystem/operations.hpp">
+boost/filesystem/operations.hpp</a> header provides operations on files and 
+directories.</p>
+
+<p>These operations traffic in paths; see <a href="path.htm">
+boost/filesystem/path.hpp documentation</a>.</p>
+
+<p>For file I/O streams, see <a href="fstream.htm">boost/filesystem/fstream.hpp 
+documentation</a>.</p>
+
+<p>As with all Filesystem Library components, errors may result in <i>
+<a href="exception.htm">filesystem_error</a></i> or <i>std::bad_alloc</i> 
+exceptions being thrown. See <a href="index.htm#Requirements">Requirements</a>.</p>
+
+<h2>Header <a href="../../../boost/filesystem/operations.hpp">boost/filesystem/operations.hpp</a>
+<a name="Synopsis">synopsis</a></h2>
+<pre>namespace boost
+{
+  namespace filesystem
+  {
+
+    class <a href="#Class directory_iterator">directory_iterator</a>
+    {
+    public:
+      typedef <a href="path.htm">path</a>                     value_type;
+      typedef std::ptrdiff_t           difference_type;
+      typedef const path *             pointer;
+      typedef const path &amp;             reference;
+      typedef std::input_iterator_tag  iterator_category;
+
+      <a href="#constructors">directory_iterator</a>();
+      explicit <a href="#constructors">directory_iterator</a>( const path &amp; directory_ph );
+
+      // <a href="#other functions">other functions</a>
+      // ...
+    };
+
+    bool <a href="#exists">exists</a>( const path &amp; ph );
+    bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
+    bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
+
+    void <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
+    void <a href="#remove">remove</a>( const path &amp; ph );
+    unsigned long <a href="#remove_all">remove_all</a>( const path &amp; ph );
+    void <a href="#rename">rename</a>( const path &amp; from_path,
+                 const path &amp; to_path );
+    void <a href="#copy_file">copy_file</a>( const path &amp; from_file_ph,
+                    const path &amp; to_file_ph );
+
+    const path &amp; <a href="#initial_directory">initial_directory</a>();
+
+  } // namespace filesystem
+} // namespace boost
+</pre>
+
+<h2><a name="Class directory_iterator">Class directory_iterator</a></h2>
+
+<p>Class <i>directory_iterator</i> provides a C++ standard conforming input 
+iterator which accesses the contents of a <a href="reference.htm#directory">
+directory</a>. </p>
+
+<p>The value type is <i><a href="path.htm">boost::filesystem::path</a></i>, so 
+dereferencing a <i>directory_iterator</i> yields a <a href="reference.htm#path">
+path</a> to a file or directory contained within the directory represented by 
+the directory-path argument supplied at construction. The path returned by 
+dereferencing a <i>directory_iterator</i> is composed by appending the name of 
+the directory entry to the directory path supplied at construction.</p>
+
+<p>The order of the path entries returned by dereferencing successive increments 
+of a <i>directory_iterator</i> is unspecified. Thus depending on the ordering 
+provided by a particular implementation will result in non-portable code.</p>
+
+<p>A path returned by dereferencing a <i>directory_iterator</i> is, if 
+representing a directory, suitable for use as an argument to Filesystem Library 
+functions specified as accepting paths or directory paths. If not representing a 
+directory, the dereferenced path is suitable for use as an argument to 
+Filesystem Library functions specified as accepting paths or file paths, or C++ 
+Standard Library functions specified as taking file names. The leaf of a path 
+returned by dereferencing a <i>directory_iterator</i> will never be <code>&quot;..&quot;</code> 
+or <code>&quot;.&quot;</code>.</p>
+
+<p><b>Note:</b> The implication of the above requirement is that if an operating 
+system's directories can contain entries which are not usable by Filesystem 
+Library or Standard Library functions, these entries will be skipped during 
+directory iteration. Such entries are by definition non-portable, but can always 
+be accessed via the native operating system API if required.</p>
+
+<h3><a name="constructors">Constructors</a></h3>
+<blockquote>
+
+<p><code>directory_iterator();</code></p>
+
+<p><b>Effects:</b> Constructs a <i>directory_iterator</i> having the <i>
+past-the-end</i> value as described in the C++ standard, section 24.1.</p>
+
+<p><code>explicit directory_iterator( const path &amp; directory_ph );</code></p>
+
+<p><b>Effects:</b> Constructs a <i>directory_iterator</i> with a value 
+representing the first path in <i>directory_ph</i>, or if <code>
+empty(directory_ph)</code>, the <i>past-the-end</i> value.</p>
+</blockquote>
+
+<h3><a name="other functions">Other functions</a></h3>
+
+<p>Class <i>directory_iterator</i> also supplies all the other functions 
+required by the C++ standard clause 24 for input iterators, such as <i>operator==</i>, 
+<i>operator++</i>, and <i>operator*</i>.</p>
+
+<h2><a name="Non-member functions">Non-member functions</a></h2>
+
+<p>
+The non-member functions provide common operations on files and directories. 
+They follow traditional practice of the C and C++ standard libraries, except 
+that 
+they:</p>
+
+<ul>
+  <li>Traffic in <i><a href="path.htm">paths</a></i> rather than <code>char*</code>'s, for much 
+  enhanced portability.</li>
+  <li>Report errors by throwing exceptions, for safer and better error handling.</li>
+  <li>Tighten specifications slightly, for improved portability.</li>
+</ul>
+
+<p>
+<b>Rationale:</b> Functions which already exist in the C++ Standard Library, 
+such as <i><a href="#remove">remove()</a></i> and <i><a href="#rename">rename()</a></i>, 
+retain the same names and general behavior in the Filesystem Library, to 
+minimize surprises.</p>
+
+<p>
+<b>Rationale:</b> Errors which might appear to be preconditions are not 
+specified as such, but instead are specified to throw exceptions. This is 
+because the possibility of <a href="index.htm#Race-condition">race-conditions</a> 
+makes it unreliable to test for preconditions before calling the function. As a 
+design practice, preconditions should always be testable by a program, so that 
+violations can be avoided. It is not always possible or desirable to abstract 
+away the fact that the library is implemented by calls to the operating system, 
+and this is one of those cases.</p>
+
+<p>
+<b>Naming Rationale:</b> See class <i>path</i>
+<a href="path.htm#Naming Rationale">Naming Rationale</a>.</p>
+
+<h3><a name="exists">exists</a></h3>
+<blockquote>
+<p><code>bool exists( const path &amp; ph );</code></p>
+<p><b>Returns:</b> True if the operating system reports the path 
+represented by <i>ph</i> exists, else false.</p>
+<p><b>Note: </b>Even if <i>exists( ph ) == true</i>, there is no guarantee that it 
+will be possible to perform other operations on the file or directory. Access 
+rights or other security concerns, for example, may cause other operations to 
+fail.</p>
+</blockquote>
+<h3><a name="is_directory">is_directory</a></h3>
+<blockquote>
+<p><code>bool is_directory( const path &amp; ph );</code></p>
+<p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
+<i>ph</i> is a directory, else false.</p>
+<p><b>Throws:</b> if <code>!exists(ph)</code></p>
+<p><b>Rationale:</b> Treating <code>!exists(ph)</code> as an exception rather 
+than just returning false came about because in real code <code>!exists(ph)</code> 
+has 
+often been the first indicate of a programming error.&nbsp; A compound function returning <code>
+exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
+</blockquote>
+<h3><a name="is_empty">is_empty</a></h3>
+<blockquote>
+<p><code>bool is_empty( const path &amp; ph );</code></p>
+<p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
+<i>ph</i> is an empty file or empty directory, else false.</p>
+<p><b>Throws:</b> if <code>!exists(path)</code></p>
+</blockquote>
+<h3><a name="create_directory">create_directory</a></h3>
+<blockquote>
+<p><code>void create_directory( const path &amp; directory_ph );</code></p>
+<p><b>Postcondition:</b> <code>exists(directory_ph) &amp;&amp; 
+is_directory(directory_ph) &amp;&amp; is_empty(directory_ph)</code></p>
+<p><b>Throws: </b>if <code>exists(directory_ph)) || !exists(branch(directory_ph))</code></p>
+</blockquote>
+<h3><a name="remove">remove</a></h3>
+<blockquote>
+<p><code>void remove( const path &amp; ph );</code></p>
+<p><b>Postcondition:</b> <code>!exists( ph )</code></p>
+<p><b>Throws:</b> if<code> exists(ph) &amp;&amp; is_directory(ph) &amp;&amp; !is_empty(ph)</code></p>
+<p><b>Rationale:</b> Does not throw when <code>!exists( ph )</code> because not 
+throwing is:</p>
+<ul>
+  <li>Slightly easier-to-use for many common use cases.</li>
+  <li>Slightly higher-level because it implies use of postcondition semantics 
+  rather than effects semantics, which would be specified in the somewhat 
+  lower-level terms of interactions with the operating system.</li>
+</ul>
+<p>There is, however, a slight decrease in safety because some errors will slip 
+by which otherwise would have been detected. For example, a misspelled path name 
+could go undetected for a long time.</p>
+<p>The initial version of the library did throw when the path did not exist; it 
+was changed only reluctantly.</p>
+</blockquote>
+<h3><a name="remove_all">remove_all</a></h3>
+<blockquote>
+<p><code>unsigned long remove_all( const path &amp; ph );</code></p>
+<p><b>Postcondition:</b> <code>!exists( ph )</code></p>
+<p><b>Returns:</b> The number of files and directories removed.</p>
+</blockquote>
+<h3><a name="rename">rename</a></h3>
+<blockquote>
+<p><code>void rename( const path &amp; from_ph, const path &amp; to_ph 
+);</code></p>
+<p><b>Effects:</b> Changes the name of&nbsp; file or directory <i>from_ph</i> 
+to <i>to_ph</i>.</p>
+<p><b>Postconditions:</b> <code>!exists(from_ph) &amp;&amp; exists(to_ph)</code>, 
+and the file or directory contents and attributes are otherwise unchanged.</p>
+<p><b>Throws:</b> if <code>!exists(from_ph) || exists(to_ph) || !exists(branch(to_ph))</code></p>
+<p><b>Rationale:</b> Because <i>rename</i> is logically the same operation as <i>move</i>, 
+there is no need for a separate <i>move</i> function. The choice of the name is 
+inherited from the C Library.</p>
+<p><b>Note:</b> If <code>branch(from_path)</code> resolves to the same directory 
+as <code>branch(to_ph)</code>, then <code>leaf(from_ph)</code> must not be 
+the same name as <code>leaf(to_ph)</code>, but if the branch directories are 
+different, it doesn't matter if the leaf names are the same.</p>
+<p><b>Note:</b> Some operating systems with multi-rooted file systems 
+representing different drives, devices, or volumes, do not allow <i>rename</i> 
+operations between roots . Implementations should not take heroic efforts, such 
+as switching to a copy mode, to make an otherwise failing <i>rename </i>succeed 
+across drives, devices, or volumes. </p>
+</blockquote>
+<h3><a name="copy_file">copy_file</a></h3>
+<blockquote>
+<p><code>void copy_file( const path &amp; from_file_ph, const path &amp; 
+to_file_ph );</code></p>
+<p><b>Effects:</b> Copies the file represented by <i>from_file_ph</i> to <i>
+to_file_ph</i>.</p>
+<p><b>Throws:</b> if <code>!exists(from_file_ph) || directory(from_file_ph) 
+|| exists(to_file_ph) || !exist(branch(to_path))</code></p>
+</blockquote>
+<h3><a name="initial_directory">initial_directory</a></h3>
+<blockquote>
+<p><code>const path &amp; initial_directory();</code></p>
+<p><b>Effects:</b> The first time the function is called, stores an absolute 
+directory path.</p>
+<p>The preferred value for the stored path is the initial working directory path when <i>
+main()</i> was called. Implementations are permitted, however, to store the 
+current working directory at the time of the first call to <i>initial_directory()</i>. If neither of these actions is possible, a diagnostic 
+is required.</p>
+<p><b>Returns:</b> The stored path.</p>
+<p><b>Rationale:</b>&nbsp; The semantics, in effect, turn a global variable into 
+a safer global constant. The preferred implementation requires runtime library 
+support, so alternate semantics are supplied for those implementations which 
+cannot change an existing the runtime library.</p>
+<p><b>Note:</b> It would be good practice in a program dependent on <i>
+initial_directory()</i> to call it immediately upon entering<i> main()</i>. That 
+protects against another function altering the current working 
+directory (using a native platform function) before the first call to <i>
+initial_directory()</i>.</p>
+
+</blockquote>
+<hr>
+<p>© Copyright Beman Dawes, 2002</p>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39335" --></p>
+
+</body>
+
+</html>
