@@ -148,12 +148,12 @@ namespace boost
       m_path_append( src );
     }
 
-    path::path( const std::string & src, format )
+    path::path( const std::string & src, path_format )
     {
       m_path_append( src, platform );
     }
 
-    path::path( const char * src, format )
+    path::path( const char * src, path_format )
     {
       m_path_append( src, platform );
     }

@@ -77,7 +77,7 @@ int test_main( int, char * [] )
     && dir.generic_path()[1] == ':' ); // verify path includes drive
   #endif
 
-  fs::path ng( " no-way, Jose ", fs::path::system_specific );
+  fs::path ng( " no-way, Jose ", fs::system_specific );
 
   fs::remove_all( dir );  // in case residue from prior failed tests
   BOOST_TEST( !fs::exists( dir ) );

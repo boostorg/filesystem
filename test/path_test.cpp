@@ -180,40 +180,40 @@ int test_main( int, char*[] )
 
 # ifdef BOOST_WINDOWS
 
-  check( path( "/", path::system_specific ), "/" );
-  check( path( "/f", path::system_specific ), "/f" );
-  check( path( "/foo", path::system_specific ), "/foo" );
-  check( path( "\\", path::system_specific ), "/" );
-  check( path( "\\f", path::system_specific ), "/f" );
-  check( path( "\\foo", path::system_specific ), "/foo" );
-  check( path( "foo\\bar", path::system_specific ), "foo/bar" );
-  check( path( "foo bar", path::system_specific ), "foo bar" );
-  check( path( "c:", path::system_specific ), "c:" );
-  check( path( "c:/", path::system_specific ), "c:/" );
-  check( path( "c:foo", path::system_specific ), "c:foo" );
-  check( path( "c:/foo", path::system_specific ), "c:/foo" );
-  check( path( "//share", path::system_specific ), "//share" );
-  check( path( "//share/foo", path::system_specific ), "//share/foo" );
-  check( path( "\\\\share", path::system_specific ), "//share" );
-  check( path( "\\\\share\\foo", path::system_specific ), "//share/foo" );
-  check( path( "c:/foo", path::system_specific ), "c:/foo" );
-  check( path( "prn:", path::system_specific ), "prn:" );
+  check( path( "/", fs::system_specific ), "/" );
+  check( path( "/f", fs::system_specific ), "/f" );
+  check( path( "/foo", fs::system_specific ), "/foo" );
+  check( path( "\\", fs::system_specific ), "/" );
+  check( path( "\\f", fs::system_specific ), "/f" );
+  check( path( "\\foo", fs::system_specific ), "/foo" );
+  check( path( "foo\\bar", fs::system_specific ), "foo/bar" );
+  check( path( "foo bar", fs::system_specific ), "foo bar" );
+  check( path( "c:", fs::system_specific ), "c:" );
+  check( path( "c:/", fs::system_specific ), "c:/" );
+  check( path( "c:foo", fs::system_specific ), "c:foo" );
+  check( path( "c:/foo", fs::system_specific ), "c:/foo" );
+  check( path( "//share", fs::system_specific ), "//share" );
+  check( path( "//share/foo", fs::system_specific ), "//share/foo" );
+  check( path( "\\\\share", fs::system_specific ), "//share" );
+  check( path( "\\\\share\\foo", fs::system_specific ), "//share/foo" );
+  check( path( "c:/foo", fs::system_specific ), "c:/foo" );
+  check( path( "prn:", fs::system_specific ), "prn:" );
 
-  BOOST_TEST( path( "/", path::system_specific ).leaf() == "/" );
-  BOOST_TEST( path( "c:", path::system_specific ).leaf() == "c:" );
-  BOOST_TEST( path( "c:/", path::system_specific ).leaf() == "c:/" );
-  BOOST_TEST( path( "c:foo", path::system_specific ).leaf() == "foo" );
-  BOOST_TEST( path( "c:/foo", path::system_specific ).leaf() == "foo" );
-  BOOST_TEST( path( "//share", path::system_specific ).leaf() == "//share" );
-  BOOST_TEST( path( "//share/foo", path::system_specific ).leaf() == "foo" );
+  BOOST_TEST( path( "/", fs::system_specific ).leaf() == "/" );
+  BOOST_TEST( path( "c:", fs::system_specific ).leaf() == "c:" );
+  BOOST_TEST( path( "c:/", fs::system_specific ).leaf() == "c:/" );
+  BOOST_TEST( path( "c:foo", fs::system_specific ).leaf() == "foo" );
+  BOOST_TEST( path( "c:/foo", fs::system_specific ).leaf() == "foo" );
+  BOOST_TEST( path( "//share", fs::system_specific ).leaf() == "//share" );
+  BOOST_TEST( path( "//share/foo", fs::system_specific ).leaf() == "foo" );
 
-  BOOST_TEST( path( "/", path::system_specific ).branch().generic_path() == "" );
-  BOOST_TEST( path( "c:", path::system_specific ).branch().generic_path() == "" );
-  BOOST_TEST( path( "c:/", path::system_specific ).branch().generic_path() == "" );
-  BOOST_TEST( path( "c:foo", path::system_specific ).branch().generic_path() == "c:" );
-  BOOST_TEST( path( "c:/foo", path::system_specific ).branch().generic_path() == "c:/" );
-  BOOST_TEST( path( "//share", path::system_specific ).branch().generic_path() == "" );
-  BOOST_TEST( path( "//share/foo", path::system_specific ).branch().generic_path() == "//share" );
+  BOOST_TEST( path( "/", fs::system_specific ).branch().generic_path() == "" );
+  BOOST_TEST( path( "c:", fs::system_specific ).branch().generic_path() == "" );
+  BOOST_TEST( path( "c:/", fs::system_specific ).branch().generic_path() == "" );
+  BOOST_TEST( path( "c:foo", fs::system_specific ).branch().generic_path() == "c:" );
+  BOOST_TEST( path( "c:/foo", fs::system_specific ).branch().generic_path() == "c:/" );
+  BOOST_TEST( path( "//share", fs::system_specific ).branch().generic_path() == "" );
+  BOOST_TEST( path( "//share/foo", fs::system_specific ).branch().generic_path() == "//share" );
 
 # endif  // BOOST_WINDOWS
 
