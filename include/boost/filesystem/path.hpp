@@ -82,7 +82,7 @@ namespace boost
       class iterator : public boost::iterator_facade<
         iterator,
         std::string const,
-        boost::single_pass_traversal_tag >
+        boost::bidirectional_traversal_tag >
       {
       private:
         friend class boost::iterator_core_access;
