@@ -24,6 +24,11 @@ using boost::bind;
 #include <cerrno>
 #include <ctime>
 
+# ifdef BOOST_NO_STDC_NAMESPACE
+    namespace std { using ::asctime; using ::gmtime; using ::localtime;
+                    using ::difftime; using ::time; }
+# endif
+
 namespace
 {
   bool report_throws;

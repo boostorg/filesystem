@@ -29,6 +29,10 @@
 #include <string>
 #include <ctime>
 
+# ifdef BOOST_NO_STDC_NAMESPACE
+    namespace std { using ::time_t; }
+# endif
+
 //----------------------------------------------------------------------------//
 
 namespace boost
