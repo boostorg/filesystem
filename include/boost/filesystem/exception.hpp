@@ -62,8 +62,15 @@ namespace boost
 
       int         native_error() const { return m_sys_err; }
       // Note: a value of 0 implies a library (rather than system) error
+
       error_code  error() const { return m_err; }
-      
+/*
+      const string & function() const;
+      // name of the function throwing the exception
+
+      const path & path1() const; // argument 1 to function; may be empty()
+      const path & path2() const; // argument 2 to function; may be empty()
+*/
      private:
       int                 m_sys_err;
       error_code          m_err;
