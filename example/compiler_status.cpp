@@ -47,6 +47,15 @@ namespace
 
   string specific_compiler;
 
+//  convert backslashes to forward slashes -----------------------------------//
+
+  void convert_backslashes( string & s )
+  {
+    for ( string::iterator itr = s.begin(); itr != s.end(); ++itr )
+      if ( *itr == '\\' ) *itr = '/';
+  }
+
+
 //  find_file  ---------------------------------------------------------------//
 //  given a directory to recursively search
 
@@ -226,20 +235,25 @@ namespace
       if ( file )
       {
         std::getline( file, test_path );
-        if ( test_path.size() ) test_path = test_path.erase( 0, 1 ); // strip "
-        test_path.erase( test_path.find( "\"" ) );
+        if ( test_path.size() )
+        {
+          test_path = test_path.erase( 0, 1 ); // strip "
+          test_path.erase( test_path.find( "\"" ) );
+          // test_path is now a disk path, so convert to URL style path
+          convert_backslashes( test_path );
+          string::size_type pos = test_path.find( "/libs/" );
+          if ( pos != string::npos ) test_path.replace( 0, pos, ".." );
+        }
       }
     }
 
     // extract the library name from the test_path
     string lib_name( test_path );
-    string::size_type pos = lib_name.find( "libs/" );
-    if ( pos == string::npos ) pos = lib_name.find( "libs\\" );
+    string::size_type pos = lib_name.find( "/libs/" );
     if ( pos != string::npos )
     {
-      lib_name.erase( 0, pos+5 );
+      lib_name.erase( 0, pos+6 );
       pos = lib_name.find( "/" );
-      if ( pos == string::npos ) pos = lib_name.find( "\\" );
       if ( pos != string::npos ) lib_name.erase( pos );
     }
     else lib_name.clear();
