@@ -123,7 +123,9 @@ namespace boost
       std::string  m_path;
 
       friend class directory_iterator;
-      friend class boost::filesystem::path::iterator;
+      // Was qualified; como433beta8 reports:
+      //    warning #427-D: qualified name is not allowed in member declaration 
+      friend class iterator; 
 
       void m_path_append( const std::string & src, name_check checker );
 
