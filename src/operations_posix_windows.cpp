@@ -322,7 +322,7 @@ namespace boost
       if(::GetFileAttributesA( ph.string().c_str() ) == 0xFFFFFFFF)
       {
          UINT err = ::GetLastError();
-         if((err == ERROR_FILE_NOT_FOUND) || (err == ERROR_PATH_NOT_FOUND) || (err == ERROR_INVALID_NAME))
+         if((err == ERROR_FILE_NOT_FOUND) || (err == ERROR_INVALID_PARAMETER) || (err == ERROR_PATH_NOT_FOUND) || (err == ERROR_INVALID_NAME))
             return false; // GetFileAttributes failed because the path does not exist
          // for any other error we assume the file does exist and fall through,
          // this may not be the best policy though...  (JM 20040330)
