@@ -25,6 +25,9 @@ namespace boost
     class path;
     typedef void (*path_inspector)( const path & );
     
+    enum path_format { system_specific }; // ugly enough to discourage use
+                                          // except when actually needed
+
   //  path -------------------------------------------------------------------//
 
     class path
@@ -41,10 +44,8 @@ namespace boost
       path( const std::string & src );
       path( const char * src );
 
-      enum format { system_specific }; // ugly enough to discourage use
-
-      path( const std::string & src, format );
-      path( const char * src, format );
+      path( const std::string & src, path_format );
+      path( const char * src, path_format );
 
       // append operations:
       path & operator <<=( const path & rhs );
