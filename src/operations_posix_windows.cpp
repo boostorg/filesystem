@@ -60,14 +60,21 @@ namespace fs = boost::filesystem;
 // forms are actually macros, so can misfire if the user has various
 // other macros defined. There was a bug report of this happening.)
 
-# else
+# else // BOOST_POSIX
+#   define __USE_FILE_OFFSET64 // at worst, this may do nothing,
+      // but that won't matter on 64-bit systems or on 32-bit systems which
+      // don't have files larger than can be represented by a traditional
+      // POSIX/UNIX off_t type. OTOH, defining __USE_FILE_OFFSET64 kicks
+      // in 64-bit off_t's (and thus st_size) on 32-bit systems that support
+      // the Large File Support (LFS) interface, such as Linux.
+
 #   include "dirent.h"
 #   include "unistd.h"
 #   include "fcntl.h"
 #   include "utime.h"
 # endif
 
-#include <sys/stat.h>  // last_write_time() uses stat()
+#include <sys/stat.h>  // even on Windows some functions use stat()
 #include <string>
 #include <cstdio>      // for remove, rename
 #include <cerrno>
@@ -371,13 +378,6 @@ namespace boost
     BOOST_FILESYSTEM_DECL boost::intmax_t file_size( const path & ph )
     {
 #   ifdef BOOST_POSIX
-#     define _FILE_OFFSET_BITS 64 // at worst, this may do nothing,
-      // but that won't matter on 64-bit systems or other systems which
-      // don't have files larger than can be represented by a traditional
-      // POSIX/UNIX off_t type. OTOH, defining _FILE_OFFSET_BITS kicks
-      // in 64-bit off_t's (and thus st_size) on systems that support
-      // the Large File Support (LFS) interface, such as Linux.
-
       struct stat path_stat;
       if ( ::stat( ph.string().c_str(), &path_stat ) != 0 )
         boost::throw_exception( filesystem_error(
@@ -390,7 +390,7 @@ namespace boost
           is_directory_error ) ); 
       return static_cast<boost::intmax_t>(path_stat.st_size);
 #   else
-      // by now, maxint_t is 64-bits on all Windows compilers
+      // by now, intmax_t is 64-bits on all Windows compilers
       WIN32_FILE_ATTRIBUTE_DATA fad;
       if ( !::GetFileAttributesExA( ph.string().c_str(),
         ::GetFileExInfoStandard, &fad ) )
