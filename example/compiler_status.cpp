@@ -10,7 +10,7 @@
 
     This program was designed to work unchanged on all platforms and
     configurations.  All output which is platform or configuration dependent
-    is obtained from external sources such as the status/Jamfile, the residue
+    is obtained from external sources such as the Jamfile, the residue
     from jam execution, the tools/build/xxx-tools.jam files, or the output
     of the config_info tests.
 
@@ -195,7 +195,7 @@ namespace
   }
 
 //  test_type_desc  ----------------------------------------------------------//
-//  from boost-root/status/Jamfile
+//  from jamfile
 
   string test_type_desc( const string & test_name )
   {
@@ -539,7 +539,8 @@ namespace
 
   void do_table( const fs::path & boost_root_dir )
   {
-    fs::path build_dir( boost_root_dir << "status" << "bin" );
+//    fs::path build_dir( boost_root_dir << "status" << "bin" );
+    fs::path build_dir( fs::initial_directory() << "bin" );
 
     report << "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n";
      
@@ -607,6 +608,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
   {
     std::cerr <<
       "usage: compiler_status [options...] boost-root-dir status-file [links-file]\n"
+      "must be run from directory containing Jamfile\n"
       "  options: --compiler name     Run for named compiler only\n"
       "           --ignore-pass       Do not report tests which pass all compilers\n"
       "           --no-warn           Warnings not reported if test passes\n"
@@ -615,7 +617,13 @@ int cpp_main( int argc, char * argv[] ) // note name!
   }
 
   boost_root_dir = fs::path( argv[1], fs::system_specific );
-  jamfile.open( boost_root_dir << "status/Jamfile" ); // may fail; that's OK
+  fs::path jamfile_path( fs::initial_directory() << "Jamfile" );
+  jamfile.open( jamfile_path );
+  if ( !jamfile )
+  {
+    std::cerr << "Could not open Jamfile: " << jamfile_path.file_path() << std::endl;
+    return 1;
+  }
 
   report.open( argv[2] );
   if ( !report )

@@ -36,9 +36,9 @@ namespace
 
     for ( string::size_type pos = 0; pos < src.size(); ++pos )
     {
-      if ( src[pos] == '<' ) target += "&lt";
-      else if ( src[pos] == '>' ) target += "&gt";
-      else if ( src[pos] == '&' ) target += "&amp";
+      if ( src[pos] == '<' ) target += "&lt;";
+      else if ( src[pos] == '>' ) target += "&gt;";
+      else if ( src[pos] == '&' ) target += "&amp;";
       else target += src[pos];
     }
   }
