@@ -47,10 +47,10 @@ namespace fs = boost::filesystem;
 
 namespace
 {
+# ifdef BOOST_WINDOWS
   std::string system_message( int sys_err_code )
   {
     std::string str;
-# ifdef BOOST_WINDOWS
     LPVOID lpMsgBuf;
     ::FormatMessageA( 
         FORMAT_MESSAGE_ALLOCATE_BUFFER | 
@@ -68,11 +68,16 @@ namespace
     while ( str.size()
       && (str[str.size()-1] == '\n' || str[str.size()-1] == '\r') )
         str.erase( str.size()-1 );
-# else
-    str += std::strerror( errno );
-# endif
     return str;
   }
+# else
+  std::string system_message( int )
+  {
+    std::string str;
+    str += std::strerror( errno );
+    return str;
+  }
+# endif
 
   struct ec_xlate { int sys_ec; fs::error_code ec; };
   const ec_xlate ec_table[] =
