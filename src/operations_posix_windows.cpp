@@ -449,12 +449,14 @@ namespace boost
       const std::size_t buf_sz = 32768;
       boost::scoped_array<char> buf( new char [buf_sz] );
       int infile, outfile=0;  // init quiets compiler warning
+      struct stat from_stat;
 
-      if ( (infile = ::open( from_file_ph.string().c_str(),
+      if ( ::stat( from_file_ph.string().c_str(), &from_stat ) != 0
+        || (infile = ::open( from_file_ph.string().c_str(),
                              O_RDONLY )) < 0
         || (outfile = ::open( to_file_ph.string().c_str(),
                               O_WRONLY | O_CREAT | O_EXCL,
-                              S_IRWXU|S_IRWXG|S_IRWXO )) < 0 )
+                              from_stat.st_mode )) < 0 )
       {
         if ( infile != 0 ) ::close( infile );
         boost::throw_exception( filesystem_error(
