@@ -185,9 +185,15 @@ non-member functions?</b></p>
 path</i> member 
 functions, while operations performed by the operating system are provided as 
 free functions.</p>
+<p><b>Why is path <a href="path.htm#Normalized">normalized form</a> different 
+from <a href="path.htm#Canonical">canonical form</a>?</b></p>
+<p>On operating systems such as POSIX which allow symbolic links to directories, 
+the normalized form of a path can represent a different location than the 
+canonical form. See <a href="design.htm#symbolic-link-use-case">use case</a> 
+from Walter Landry.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 October, 2003<!--webbot bot="Timestamp" endspan i-checksum="38549" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38521" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

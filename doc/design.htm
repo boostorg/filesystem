@@ -182,7 +182,16 @@ of choice..</p>
 &nbsp;</li>
   <li>Even though an application may be portable, it still will have to traffic 
   in system specific paths occasionally; user provided input is a common 
-  example.</li>
+  example.<br>
+&nbsp;</li>
+  <li><a name="symbolic-link-use-case">Symbolic</a> links cause canonical and 
+  normal form of some paths to represent different files or directories. For 
+  example, given the directory hierarchy <code>/a/b/c</code>, with a symbolic 
+  link in <code>/a</code> named <code>x</code>&nbsp; pointing to <code>b/c</code>, 
+  then under POSIX Pathname Resolution rules a path of <code>&quot;/a/x/..&quot;</code> 
+  should resolve to <code>&quot;/a/b&quot;</code>. If <code>&quot;/a/x/..&quot;</code> were first 
+  normalized to <code>&quot;/a&quot;</code>, it would resolve incorrectly. (Case supplied 
+  by Walter Landry.)</li>
 </ul>
 
 <h2><a name="Rationale">Rationale</a></h2>
@@ -298,7 +307,7 @@ Variable Considered Harmful</i>, ACM SIGPLAN Notices, 8, 2, 1973, pp. 23-34</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 October, 2003<!--webbot bot="Timestamp" endspan i-checksum="38549" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38521" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

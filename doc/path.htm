@@ -120,12 +120,18 @@ canonical form.</p>
 <p>A non-empty path is converted to canonical form as if by first converting it 
 to the <a href="#model">conceptual model</a>, and then:</p>
 <ul>
+  <li>Repeatedly replacing any leading <i>root-directory, parent-directory</i> 
+  elements with a single <i>root-directory</i> element. Rationale: Both POSIX 
+  and Windows specify this reduction; specifying it for canonical form ensures 
+  portable semantics for other operating systems.</li>
   <li>Removing each <i>directory-placeholder</i> element.</li>
-  <li>Recursively removing adjacent <i>name, parent-directory</i> elements.</li>
   <li>If the path is now empty, add a single <i>directory-placeholder</i> 
   element.</li>
 </ul>
-<p>Thus a non-empty path in canonical form either has no <i>
+<h2><a name="Normalized">Normalized</a> form</h2>
+<p>Normalized form is the same as canonical form, except that adjacent <i>name, parent-directory</i> 
+elements are recursively removed.</p>
+<p>Thus a non-empty path in normal form either has no <i>
 directory-placeholders</i>, or consists solely of one <i>directory-placeholder</i>. 
 If it has <i>parent-directory</i> elements, they precede all <i>name</i> 
 elements.</p>
@@ -159,6 +165,9 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
       std::string <a href="#native_file_string">native_file_string</a>() const;
       std::string <a href="#native_directory_string">native_directory_string</a>() const;
       
+      // modification functions:
+      path &amp;      <a href="#normalize">normalize</a>();
+
       // decomposition functions:
       path        <a href="#root_path">root_path</a>() const;
       std::string <a href="#root_name">root_name</a>() const;
@@ -400,6 +409,12 @@ assert( p.string() == &quot;c:/foo&quot; );</pre>
   <p><b>Note:</b> Also see <a href="#non-member_operator_shift">non-member <i>
   operator/</i></a> functions.</p>
   </blockquote>
+<h3><a name="normalize">normalize</a></h3>
+<blockquote>
+<p><code>path &amp; normalize();</code></p>
+<p><b>Postcondition:</b> m_name is in <a href="#Normalized">normalized form</a>.</p>
+<p><b>Returns:</b> <code>*this</code></p>
+</blockquote>
 <h3><a name="string">string</a></h3>
 <blockquote>
   <pre>const std::string &amp; string() const;</pre>
@@ -892,7 +907,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 October, 2003<!--webbot bot="Timestamp" endspan i-checksum="38549" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38521" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

@@ -50,6 +50,9 @@ namespace boost
       path operator /( const path & rhs ) const
         { return path( *this ) /= rhs; }
 
+      // modification functions:
+      path & normalize();
+
       // conversion functions:
       const std::string & string() const { return m_path; }
       std::string native_file_string() const;

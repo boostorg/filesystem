@@ -101,11 +101,17 @@ int test_main( int, char*[] )
   PATH_CHECK( "", "" );
 
   PATH_CHECK( "foo", "foo" );
+  PATH_CHECK( "f", "f" );
+  PATH_CHECK( "foo/", "foo" );
+  PATH_CHECK( path("foo/").normalize(), "foo" );
+  PATH_CHECK( "f/", "f" );
+  PATH_CHECK( path("f/").normalize(), "f" );
   PATH_CHECK( path("") / "foo", "foo" );
   PATH_CHECK( path("foo") / "", "foo" );
   PATH_CHECK( path( "/" ), "/" );
   PATH_CHECK( path( "/" ) / "", "/" );
   PATH_CHECK( path( "/f" ), "/f" );
+  PATH_CHECK( path( "/foo" ).normalize(), "/foo" );
 
   PATH_CHECK( "/foo", "/foo" );
   PATH_CHECK( path("") / "/foo", "/foo" );
@@ -116,6 +122,7 @@ int test_main( int, char*[] )
   PATH_CHECK( path("foo") / "/", "foo" );
 
   PATH_CHECK( "foo/bar", "foo/bar" );
+  PATH_CHECK( path( "foo/bar" ).normalize(), "foo/bar" );
   PATH_CHECK( path("foo") / path("bar"), "foo/bar" ); // path arg
   PATH_CHECK( path("foo") / "bar", "foo/bar" );       // const char * arg
   PATH_CHECK( path("foo") / path("woo/bar").leaf(), "foo/bar" ); // const std::string & arg
@@ -125,60 +132,94 @@ int test_main( int, char*[] )
   PATH_CHECK( path("a") / "b", "a/b" );
 
   PATH_CHECK( "..", ".." );
+  PATH_CHECK( path("..").normalize(), ".." );
   PATH_CHECK( path("..") / "", ".." );
   PATH_CHECK( path("") / "..", ".." );
 
   PATH_CHECK( "../..", "../.." );
+  PATH_CHECK( path("../..").normalize(), "../.." );
   PATH_CHECK( path("..") / ".." , "../.." );
 
+  PATH_CHECK( "/..", "/" );
+  PATH_CHECK( path("/..").normalize(), "/" );
+  PATH_CHECK( path("/") / ".." , "/" );
+
+  PATH_CHECK( "/../..", "/" );
+  PATH_CHECK( path("/../..").normalize(), "/" );
+  PATH_CHECK( path("/..") / ".." , "/" );
+
   PATH_CHECK( "../foo", "../foo" );
+  PATH_CHECK( path("../foo").normalize(), "../foo" );
   PATH_CHECK( path("..") / "foo" , "../foo" );
 
-  PATH_CHECK( "foo/..", "." ); // important test case
-  PATH_CHECK( path("foo") / ".." , "." );
+  PATH_CHECK( "foo/..", "foo/.." );
+  PATH_CHECK( path("foo") / ".." , "foo/.." );
+  PATH_CHECK( path("foo/..").normalize(), "." );
+  PATH_CHECK( (path("foo") / "..").normalize() , "." );
+  PATH_CHECK( path( "foo/..bar", fs::no_check ), "foo/..bar" );
+  PATH_CHECK( path("foo/..bar", fs::no_check ).normalize(), "foo/..bar" );
 
   PATH_CHECK( "../f", "../f" );
+  PATH_CHECK( path("../f").normalize(), "../f" );
   PATH_CHECK( path("..") / "f" , "../f" );
 
-  PATH_CHECK( "f/..", "." );
-  PATH_CHECK( path("f") / ".." , "." );
+  PATH_CHECK( "/../f", "/f" );
+  PATH_CHECK( path("/../f").normalize(), "/f" );
+  PATH_CHECK( path("/..") / "f" , "/f" );
 
-  PATH_CHECK( "foo/../..", ".." );
-  PATH_CHECK( path("foo") / ".." / ".." , ".." );
+  PATH_CHECK( "f/..", "f/.." );
+  PATH_CHECK( path("f") / ".." , "f/.." );
+  PATH_CHECK( path("f/..").normalize(), "." );
+  PATH_CHECK( (path("f") / "..").normalize() , "." );
 
-  PATH_CHECK( "foo/../../..", "../.." );
-  PATH_CHECK( path("foo") / ".." / ".." / ".." , "../.." );
+  PATH_CHECK( "foo/../..", "foo/../.." );
+  PATH_CHECK( path("foo/../..").normalize(), ".." );
+  PATH_CHECK( path("foo") / ".." / ".." , "foo/../.." );
 
-  PATH_CHECK( "foo/../bar", "bar" );
-  PATH_CHECK( path("foo") / ".." / "bar" , "bar" );
+  PATH_CHECK( "foo/../../..", "foo/../../.." );
+  PATH_CHECK( path("foo/../../..").normalize(), "../.." );
+  PATH_CHECK( path("foo") / ".." / ".." / ".." , "foo/../../.." );
 
-  PATH_CHECK( "foo/bar/..", "foo" );
-  PATH_CHECK( path("foo") / "bar" / ".." , "foo" );
+  PATH_CHECK( "foo/../bar", "foo/../bar" );
+  PATH_CHECK( path("foo/../bar").normalize(), "bar" );
+  PATH_CHECK( path("foo") / ".." / "bar" , "foo/../bar" );
 
-  PATH_CHECK( "foo/bar/../..", "." );
-  PATH_CHECK( path("foo") / "bar" / ".." / "..", "." );
+  PATH_CHECK( "foo/bar/..", "foo/bar/.." );
+  PATH_CHECK( path("foo/bar/..").normalize(), "foo" );
+  PATH_CHECK( path("foo") / "bar" / ".." , "foo/bar/.." );
 
-  PATH_CHECK( "foo/bar/../blah", "foo/blah" );
-  PATH_CHECK( path("foo") / "bar" / ".." / "blah", "foo/blah" );
+  PATH_CHECK( "foo/bar/../..", "foo/bar/../.." );
+  PATH_CHECK( path("foo/bar/../..").normalize(), "." );
+  PATH_CHECK( path("foo") / "bar" / ".." / "..", "foo/bar/../.." );
 
-  PATH_CHECK( "f/../b", "b" );
-  PATH_CHECK( path("f") / ".." / "b" , "b" );
+  PATH_CHECK( "foo/bar/../blah", "foo/bar/../blah" );
+  PATH_CHECK( path("foo/bar/../blah").normalize(), "foo/blah" );
+  PATH_CHECK( path("foo") / "bar" / ".." / "blah", "foo/bar/../blah" );
 
-  PATH_CHECK( "f/b/..", "f" );
-  PATH_CHECK( path("f") / "b" / ".." , "f" );
+  PATH_CHECK( "f/../b", "f/../b" );
+  PATH_CHECK( path("f/../b").normalize(), "b" );
+  PATH_CHECK( path("f") / ".." / "b" , "f/../b" );
 
-  PATH_CHECK( "f/b/../a", "f/a" );
-  PATH_CHECK( path("f") / "b" / ".." / "a", "f/a" );
+  PATH_CHECK( "f/b/..", "f/b/.." );
+  PATH_CHECK( path("f/b/..").normalize(), "f" );
+  PATH_CHECK( path("f") / "b" / ".." , "f/b/.." );
 
-  PATH_CHECK( "foo/bar/blah/../..", "foo" );
-  PATH_CHECK( path("foo") / "bar" / "blah" / ".." / "..", "foo" );
+  PATH_CHECK( "f/b/../a", "f/b/../a" );
+  PATH_CHECK( path("f/b/../a").normalize(), "f/a" );
+  PATH_CHECK( path("f") / "b" / ".." / "a", "f/b/../a" );
 
-  PATH_CHECK( "foo/bar/blah/../../bletch", "foo/bletch" );
-  PATH_CHECK( path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo/bletch" );
+  PATH_CHECK( "foo/bar/blah/../..", "foo/bar/blah/../.." );
+  PATH_CHECK( path("foo/bar/blah/../..").normalize(), "foo" );
+  PATH_CHECK( path("foo") / "bar" / "blah" / ".." / "..", "foo/bar/blah/../.." );
+
+  PATH_CHECK( "foo/bar/blah/../../bletch", "foo/bar/blah/../../bletch" );
+  PATH_CHECK( path("foo/bar/blah/../../bletch").normalize(), "foo/bletch" );
+  PATH_CHECK( path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo/bar/blah/../../bletch" );
 
   PATH_CHECK( path("...", fs::portable_posix_name ), "..." );
   PATH_CHECK( path("....", fs::portable_posix_name ), "...." );
   PATH_CHECK( path("foo/...", fs::portable_posix_name ), "foo/..." );
+  PATH_CHECK( path("foo/...", fs::portable_posix_name ).normalize(), "foo/..." );
   PATH_CHECK( path("abc.", fs::portable_posix_name ), "abc." );
   PATH_CHECK( path("abc..", fs::portable_posix_name ), "abc.." );
   PATH_CHECK( path("foo/abc.", fs::portable_posix_name ), "foo/abc." );
@@ -191,6 +232,7 @@ int test_main( int, char*[] )
   PATH_CHECK( path("foo/.abc", fs::no_check), "foo/.abc" );
   PATH_CHECK( "foo/a.c", "foo/a.c" );
   PATH_CHECK( path("foo/..abc", fs::no_check), "foo/..abc" );
+  PATH_CHECK( path("foo/..abc", fs::no_check).normalize(), "foo/..abc" );
   PATH_CHECK( "foo/a..c", "foo/a..c" );
 
   PATH_CHECK( ".", "." );
@@ -199,6 +241,7 @@ int test_main( int, char*[] )
   PATH_CHECK( path(".") / "foo", "foo" );
   PATH_CHECK( "./..", ".." );
   PATH_CHECK( path(".") / "..", ".." );
+  PATH_CHECK( "./../foo", "../foo" );
   PATH_CHECK( "foo/.", "foo" );
   PATH_CHECK( path("foo") / ".", "foo" );
   PATH_CHECK( "../.", ".." );
@@ -213,9 +256,10 @@ int test_main( int, char*[] )
   PATH_CHECK( path("foo") / "." / "bar", "foo/bar" );
   PATH_CHECK( "foo/./.", "foo" );
   PATH_CHECK( path("foo") / "." / ".", "foo" );
-  PATH_CHECK( "foo/./..", "." );
-  PATH_CHECK( path("foo") / "." / "..", "." );
-  PATH_CHECK( "foo/../.", "." );
+  PATH_CHECK( "foo/./..", "foo/.." );
+  PATH_CHECK( path("foo") / "." / "..", "foo/.." );
+  PATH_CHECK( "foo/./../bar", "foo/../bar" );
+  PATH_CHECK( "foo/../.", "foo/.." );
   PATH_CHECK( path(".") / "." / "..", ".." );
   PATH_CHECK( "././..", ".." );
   PATH_CHECK( path(".") / "." / "..", ".." );
@@ -508,6 +552,26 @@ int test_main( int, char*[] )
     PATH_CHECK( path( "foo bar", fs::native ), "foo bar" );
     PATH_CHECK( path( "c:", fs::native ), "c:" );
     PATH_CHECK( path( "c:/", fs::native ), "c:/" );
+    PATH_CHECK( path( "c:.", fs::native ), "c:" );
+    PATH_CHECK( path( "c:..", fs::native ), "c:.." );
+    PATH_CHECK( path( "c:..", fs::native ).normalize(), "c:.." );
+    PATH_CHECK( path( "c:/.", fs::native ), "c:/" );
+    PATH_CHECK( path( "c:/..", fs::native ), "c:/" );
+    PATH_CHECK( path( "c:/..", fs::native ).normalize(), "c:/" );
+    PATH_CHECK( path( "c:/../", fs::native ), "c:/" );
+    PATH_CHECK( path( "c:/../", fs::native ).normalize(), "c:/" );
+    PATH_CHECK( path( "c:/../..", fs::native ), "c:/" );
+    PATH_CHECK( path( "c:/../..", fs::native ).normalize(), "c:/" );
+    PATH_CHECK( path( "c:/../foo", fs::native ), "c:/foo" );
+    PATH_CHECK( path( "c:/../foo", fs::native ).normalize(), "c:/foo" );
+    PATH_CHECK( path( "c:/../../foo", fs::native ), "c:/foo" );
+    PATH_CHECK( path( "c:/../../foo", fs::native ).normalize(), "c:/foo" );
+    PATH_CHECK( path( "c:foo/..", fs::native ), "c:foo/.." );
+    PATH_CHECK( path( "c:foo/..", fs::native ).normalize(), "c:" );
+    PATH_CHECK( path( "c:/foo/..", fs::native ), "c:/foo/.." );
+    PATH_CHECK( path( "c:/foo/..", fs::native ).normalize(), "c:/" );
+    PATH_CHECK( path( "c:/..foo", fs::native ), "c:/..foo" );
+    PATH_CHECK( path( "c:/..foo", fs::native ).normalize(), "c:/..foo" );
     PATH_CHECK( path( "c:foo", fs::native ), "c:foo" );
     PATH_CHECK( path( "c:/foo", fs::native ), "c:/foo" );
     PATH_CHECK( path( "//share", fs::native ), "//share" );

@@ -303,37 +303,7 @@ namespace boost
             && (itr+1) != src.end() && *(itr+1) == '.'
             && ((itr+2) == src.end() || *(itr+2) == '/') )
           {
-            if ( m_path.size() >= 2 // there is a named parent directory present
-              && *(m_path.end()-1) == '/'
-#             ifdef BOOST_WINDOWS
-              && *(m_path.end()-2) != ':'
-#             endif
-              && *(m_path.end()-2) != '.' )    
-            {
-              // reference to parent so erase child
-              std::string::iterator child( m_path.end()-2 );
-
-              while ( child != m_path.begin() && *child != '/'
-#               ifdef BOOST_WINDOWS
-                && *child != ':'
-#               endif
-                ) --child;
-
-              // only erase '/' if it is a separator rather than part of the root
-              if ( (*child == '/'
-                && (child == m_path.begin()
-#               ifdef BOOST_WINDOWS
-                  || *(child-1) == ':'))
-                || *child == ':'
-#               else                           
-                ))         
-#               endif              
-                ) ++child;
-
-              m_path.erase( child, m_path.end() );
-              if ( empty() ) m_path = ".";
-            }
-            else { m_path += ".."; }
+            m_path += "..";
             ++itr;
             ++itr;
           } // parent-directory
@@ -376,6 +346,23 @@ namespace boost
         }
 
       } // while more elements
+
+      // special case: remove one or more leading "/.."
+
+      std::string::size_type pos = 0, sz = m_path.size();
+
+#     ifdef BOOST_WINDOWS
+      if ( sz > 2 && m_path[pos] != '/' && m_path[pos+1] == ':' ) // drive
+        { pos += 2;  sz  -= 2; }
+#     endif
+
+      while ( sz >= 3 && m_path[pos] == '/'
+         && m_path[pos+1] == '.' && m_path[pos+2] == '.'
+         && (sz == 3 || m_path[pos+3] == '/') )
+      {
+        m_path.erase( pos+1, 3 ); // "..[/]"
+        sz -= 3; // on last, 3 should be 2; that doesn't matter
+      }
     }
 
 // path conversion functions  ------------------------------------------------//
@@ -396,7 +383,58 @@ namespace boost
     std::string path::native_directory_string() const
       { return native_file_string(); }
 
-// path decomposition functions  ---------------------------------------------//
+// path modification functions -----------------------------------------------//
+
+      path & path::normalize()
+      {
+        if ( m_path.empty() ) return *this;
+        std::string::size_type end, beg(0), start(0);
+
+#       ifdef BOOST_WINDOWS
+          if ( m_path.size() > 2
+            && m_path[0] != '/' && m_path[1] == ':' ) start = 2; // drive
+#       endif
+
+        while ( (beg=m_path.find( "/..", beg )) != std::string::npos )
+        {
+          end = beg + 3;
+          if ( (beg == 1 && m_path[0] == '.')
+            || (beg == 2 && m_path[0] == '.' && m_path[1] == '.')
+            || (beg > 2 && m_path[beg-3] == '/'
+                        && m_path[beg-2] == '.' && m_path[beg-1] == '.') )
+          {
+            beg = end;
+            continue;
+          }
+          if ( end < m_path.size() )
+          {
+            if ( m_path[end] == '/' ) ++end;
+            else { beg = end; continue; } // name starts with ..
+          }
+
+          // end is one past end of substr to be erased; now set beg
+          while ( beg > start && m_path[--beg] != '/' ) {}
+          if ( m_path[beg] == '/') ++beg;
+          m_path.erase( beg, end-beg );
+          if ( beg ) --beg;
+        }
+
+        if ( m_path.empty() ) m_path = ".";
+        else
+        { // remove trailing '/' if not root directory
+          std::string::size_type sz = m_path.size();
+
+#       ifdef BOOST_WINDOWS
+          if ( start ) sz  -= 2; // drive
+#       endif
+
+          if ( sz > 1 && m_path[m_path.size()-1] == '/' )
+            { m_path.erase( m_path.size()-1 ); }
+        }
+        return *this;
+      }
+
+ // path decomposition functions  ---------------------------------------------//
 
     path::iterator path::begin() const
     {
