@@ -24,7 +24,10 @@ ways.</p>
 
 <dl class="index">
 <dt><a href="#create_directories">create_directories</a>
-</ol>
+<dt><a href="#extension">extension</a>
+<dt><a href="#basename">basename</a>
+<dt><a href="#change_extension">change_extension</a>
+</dl>
 
 <h2 id="create_directoies">create_directories</h2>
 
@@ -41,10 +44,75 @@ forall p: p == ph || is_parent(p, ph): is_directory(p) || !exists( p )</code>
 
 </blockquote>
 
+<h2 id="extension">extension</h2>
+
+<blockquote>
+
+<p><code>std::string extension( const path &amp; ph );</code></p>
+
+<p><b>Returns:</b> if <code>ph.leaf()</code> contains a dot ('.'),
+returns the substring of <code>ph.leaf()</code> starting from the last dot and
+ending at the string's end. Otherwise, returns empty string.
+<p><b>Rationale:</b> <ul>
+<li>The dot is included in the return value so that it's
+possible to tell if extension is empty or absent.
+<li>It was noted that this defintion of extension is probably not sufficient
+when using <a href="http://tinyurl.com/9tih">Alternate Data Streams</a> &mdash;
+a filesystem feature specific to NTFS. However, semantic in this case was not
+clear, and the current one is quite usefull still.
+</ul>
+<p><b>Acknowlegements:</b> Carl Daniel and Pavel Vozenilek noticed and
+discussed the ADS issue.
+
+<p>Contributed by Vladimir Prus.</p>
+
+</blockquote>
+
+<h2 id="basename">basename</h2>
+
+<blockquote>
+
+<p><code>std::string basename( const path &amp; ph );</code></p>
+
+<p><b>Returns:</b> if <code>ph.leaf()</code> contains a dot ('.'),
+returns the substring of <code>ph.leaf()</code> starting from beginning and
+ending at the last dot (the dot is not included). Otherwise, returns 
+<code>ph.leaf()</code>
+
+</p>
+
+<p>Contributed by Vladimir Prus.</p>
+
+</blockquote>
+
+<h2 id="change_extension">change_extension</h2>
+
+<blockquote>
+
+<p><code>path basename( const path &amp; ph, const std::string &amp; new_extension );</code></p>
+
+<p><b>Postcondition:</b> <code>basename(return_value) == basename(ph)
+&amp;&amp; extension(return_value) == new_extension</code>
+<p><b>Note:</b> It follows from the semantic of <code>extension</code> that 
+<code>new_extension</code> should include dot to achieve reasonable results.
+</p>
+<p><b>Rationale:</b> Previously, this functions had
+<code>!ph.leaf().empty()</code> as precondition. It's not clear if it was
+right or wrong. Changing extension of an empty path looks pointless. On the
+other hand, the value of precondition was questionable: one would better place such
+checks at the points where paths are entered by the user. Current decision
+is to drop the precondition.</p>
+
+<p>Contributed by Vladimir Prus.</p>
+
+</blockquote>
+
+
+
 <hr>
-<p>© Copyright Beman Dawes, 2002</p>
+<p>© Copyright Vladimir Prus, 2003</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->23 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38510" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->5 May, 2003<!--webbot bot="Timestamp" endspan i-checksum="38510" --></p>
 <p>&nbsp;</p>
 
 </body>

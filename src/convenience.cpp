@@ -28,5 +28,30 @@ namespace boost
          create_directory(ph);
      }
 
+    std::string extension(const path& ph)
+    {
+      std::string leaf = ph.leaf();
+
+      std::string::size_type n = leaf.rfind('.');
+      if (n != std::string::npos)
+        return leaf.substr(n);
+      else
+        return std::string();
+    }
+
+    std::string basename(const path& ph)
+    {
+      std::string leaf = ph.leaf();
+
+      std::string::size_type n = leaf.rfind('.');
+      return leaf.substr(0, n);
+    }
+
+    path change_extension(const path& ph, const std::string& new_extension)
+    {
+      return ph.branch_path() / (basename(ph) + new_extension);
+    }
+
+
   } // namespace filesystem
 } // namespace boost
