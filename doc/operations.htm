@@ -78,7 +78,7 @@ header. </p>
     bool <a href="#symbolic_link_exists">symbolic_link_exists</a>( const path &amp; ph );
     bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
     bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
-    boost::maxint_t <a href="#file_size">file_size</a>( const path &amp; ph );
+    boost::intmax_t <a href="#file_size">file_size</a>( const path &amp; ph );
     std::time_t <a href="#last_write_time">last_write_time</a>( const path &amp; ph );
     void <a href="#last_write_time">last_write_time</a>( const path &amp; ph, std::time_t new_time );
 
@@ -281,7 +281,7 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 </blockquote>
   <h3><a name="file_size">file_size</a></h3>
 <blockquote>
-  <p><code>boost::maxint_t file_size( const path &amp; ph );</code></p>
+  <p><code>boost::intmax_t file_size( const path &amp; ph );</code></p>
   <p><b>Returns:</b> The size of the file in bytes as reported by the operating 
   system.</p>
   <p><b>Throws:</b> if <code>!exists(ph) || is_directory(ph)</code></p>
@@ -296,7 +296,7 @@ sample program against a large file to verify correct operation.</p>
 the size of a file is typically constant, while finding the size of a directory 
 is typically linear. It was felt this would be surprising. The function is named 
 accordingly. Users needing the size of a directory can trivially provide a user 
-function which iterates over directories returning a count.</p>
+function which iterates over a directory returning a count.</p>
 </blockquote>
 <h3><a name="last_write_time">last_write_time</a></h3>
 <blockquote>
@@ -604,7 +604,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 February, 2004<!--webbot bot="Timestamp" endspan i-checksum="40401" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->17 February, 2004<!--webbot bot="Timestamp" endspan i-checksum="40412" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
