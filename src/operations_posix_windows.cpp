@@ -3,11 +3,12 @@
 // < ----------------------------------------------------------------------- > 
 // <   Copyright © 2002 Beman Dawes.                                         >
 // <   Copyright © 2001 Dietmar Kühl.                                        >
-// <                                                                         > 
-// <   See accompanying license for terms and conditions of use.             > 
+// <   Use, modification, and distribution is subject to the Boost Software  >
+// <   License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy  >
+// <   at http://www.boost.org/LICENSE_1_0.txt)                              >
 // < ----------------------------------------------------------------------- > 
 
-//  See http://www.boost.org/libs/filesystem for documentation.
+//  See library home page at http://www.boost.org/libs/filesystem
 
 //----------------------------------------------------------------------------//
 
