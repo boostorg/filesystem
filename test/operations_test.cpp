@@ -52,7 +52,8 @@ namespace
   }
 
   template< typename F >
-    bool throws_fs_error( F func, fs::error_code ec = fs::no_error )
+    bool throws_fs_error( F func, fs::error_code ec =
+      ::boost::filesystem::no_error ) // VC++ 7.1 build 2292 won't accept fs::
   {
     try { func(); }
 
