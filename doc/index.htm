@@ -244,6 +244,12 @@ Non-reference counted links are sometimes called symbolic links or shortcuts.</p
 <h2><a name="Common_Specifications">Common Specifications</a></h2>
 <p>Unless otherwise specified, all Filesystem Library member and non-member 
 functions have the following common specifications:</p>
+<p><b>Postconditions not guaranteed in the presence of race-conditions</b> - 
+Filesystem function specifications follow the form of C++ Standard Library 
+specifications, and so sometimes specify behavior in terms of postconditions. If 
+a <a href="#Race-condition">race-condition</a> exists, a function's 
+postconditions may no longer be true by the time the function returns to the 
+caller.</p>
 <p><b>May throw exceptions</b> - Filesystem Library functions may throw <i><a href="exception.htm">filesystem_error</a></i> 
 exceptions if they cannot successfully complete their operational 
 specifications. Function implementations may use C++ Standard Library functions, 
@@ -432,7 +438,7 @@ of portability&quot; problem, particularly in postings by PJ Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 April, 2003<!--webbot bot="Timestamp" endspan i-checksum="29884" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34469" --></p>
 
 </body>
 
