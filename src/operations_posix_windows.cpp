@@ -2,15 +2,9 @@
 
 // < ----------------------------------------------------------------------- > 
 // <   Copyright © 2002 Beman Dawes.                                         >
-// <   Copyright © 2001 Dietmar Kühl, All Rights Reserved                    >
+// <   Copyright © 2001 Dietmar Kühl.                                        >
 // <                                                                         > 
-// <   Permission to use, copy, modify, distribute and sell this             > 
-// <   software for any purpose is hereby granted without fee, provided      > 
-// <   that the above copyright notice appears in all copies and that        > 
-// <   both that copyright notice and this permission notice appear in       > 
-// <   supporting documentation. The authors make no representations about   > 
-// <   the suitability of this software for any purpose. It is provided      > 
-// <   "as is" without expressed or implied warranty.                        > 
+// <   See accompanying license for terms and conditions of use.             > 
 // < ----------------------------------------------------------------------- > 
 
 //  See http://www.boost.org/libs/filesystem for documentation.
