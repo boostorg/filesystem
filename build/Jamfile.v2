@@ -5,5 +5,13 @@ project boost/filesystem
 
 SOURCES = exception operations_posix_windows path_posix_windows convenience ;
 
-lib boost_filesystem : $(SOURCES).cpp
-     ;
+import os ;
+if [ os.name ] = NT
+{
+    linkage = <link>static ;
+}
+
+lib boost_filesystem
+  : $(SOURCES).cpp
+  : $(linkage)
+    ;
