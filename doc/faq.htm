@@ -159,19 +159,26 @@ wide-character name, and
 unsure that they are a good idea in the context of a portable library.</p>
 <p>[October, 2002 - PJ Plauger has suggested a&nbsp; locale based conversion 
 scheme. Others have indicated support for such an experiment.]</p>
-<p><b>Why aren't file and directory name portability errors detected automatically, 
-rather than by separate function calls?</b></p>
-<p>Applications mix use of portable and non-portable names, and the situations 
-where non-portable names constitute errors vary widely.&nbsp; For example, a 
-non-portable name found by a <i>directory_iterator</i> may or may not constitute 
-an application error. In another example, for an application copying selected 
-native directories and files for later use restricted to ISO-6990 filesystem, 
-conditions for error are very different between the source and the target.</p>
-<p>A number (at least six) of designs for automatic name validity error 
+<p><b>Why are file and directory name portability errors detected automatically 
+when these aren't actually errors in some applications?</b></p>
+<p>For many uses, automatic portability error detection based on the generic 
+path grammar is a sensible default. For cases where some other error check 
+(including no check at all) is preferred&nbsp; for the entire application, 
+functionality is provided to change the default. For cases where some other 
+error check (including no check at all) is preferred&nbsp; for a particular 
+path, the error check can be specified in the path constructor.</p>
+<p>The error checking functions call also be explicitly called. That provides 
+yet another way to check for errors.</p>
+<p>The design makes error checking easy and automatic for common cases, yet 
+provides explicit control when that is required.</p>
+<p><b>Why isn't more powerful name portability error detection provided, such as 
+deferring checking until a path is actually used?</b></p>
+<p>A number (at least six) of designs for  name validity error 
 detection were evaluated, including at least four complete implementations.&nbsp; 
-While the details for rejection differed, all automatic name validity checking 
-designs tended to distort the 
-otherwise simple design of the rest of the library.</p>
+While the details for rejection differed, all of the more powerful name validity checking 
+designs distorted other 
+otherwise simple aspects of the library. While name checking can be helpful, it 
+isn't important enough to justify added a lot of additional complexity.</p>
 <p><b>Why are paths sometimes manipulated by member functions and sometimes by 
 non-member functions?</b></p>
 <p>The design rule is that purely lexical operations are supplied as <i>class 
