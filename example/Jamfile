@@ -8,7 +8,9 @@ exe process_jam_log$(SUFEXE)
 	<lib>../build/fs$(SUFLIB)
 	:
 	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
-	<include>$(PROJECT_ROOT)   # make this point to your boost-root
+	<include>$(B_ROOT)         # make this point to your boost-root
+	<library-path>$(B_ROOT)/libs/test/build/bin/libunit_test_framework.a/$(TOOLS)/debug/runtime-link-dynamic/
+	<find-library>unit_test_framework
 	:
 	debug
         release
@@ -20,7 +22,9 @@ exe compiler_status$(SUFEXE)
 	<lib>../build/fs$(SUFLIB)
 	:
 	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
-	<include>$(PROJECT_ROOT)   # make this point to your boost-root
+	<include>$(B_ROOT)         # make this point to your boost-root
+	<library-path>$(B_ROOT)/libs/test/build/bin/libunit_test_framework.a/$(TOOLS)/debug/runtime-link-dynamic/
+	<find-library>unit_test_framework
 	:
 	debug
         release
