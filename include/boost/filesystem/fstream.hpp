@@ -14,6 +14,7 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <iosfwd>
 #include <fstream>
 
 namespace boost
