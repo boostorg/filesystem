@@ -1,0 +1,40 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Boost Filesystem fstream Header</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>
+<img border="0" src="../../../c++boost.gif" align="center" width="277" height="86"><a href="../../../boost/filesystem/fstream.hpp">boost/filesystem/fstream.hpp</a></h1>
+
+<h2><a name="Introduction">Introduction</a></h2>
+
+<p>The C++ Standard Library's <i>&lt;fstream&gt;</i> header uses <i>const char*</i> to 
+pass arguments representing file names, with that usage occurring in seven 
+times.</p>
+
+<p>The Filesystem Library's <i>fstream.hpp</i> header provides, in namespace <i>
+boost::filesystem</i>, equivalent components, except that the seven&nbsp; <i>
+const char*</i> arguments have been replaced by <i>const path&amp;</i> arguments.</p>
+
+<p>The implementation simply uses the <i>&lt;fstream&gt;</i> standard library 
+components as base classes, and then overrides the members with changed argument 
+types.</p>
+
+<p>For the moment, the only other documentation beyond the
+<a href="index.htm#tutorial">tutorial</a> and <a href="index.htm#Examples">
+examples</a> is the header itself.&nbsp; See <a href="../../../boost/filesystem/fstream.hpp">boost/filesystem/fstream.hpp</a>.</p>
+<hr>
+<p>© Copyright Beman Dawes, 2002</p>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
+
+</body>
+
+</html>

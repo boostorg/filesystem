@@ -143,18 +143,18 @@ namespace
     return fs::directory_iterator(dir_path) == end_itr;
   }
 
-  unsigned long remove_all_aux( const fs::path & any_path )
+  unsigned long remove_all_aux( const fs::path & ph )
   {
     unsigned long count = 1;
-    if ( fs::directory( any_path ) )
+    if ( fs::directory( ph ) )
     {
-      for ( boost::filesystem::directory_iterator itr( any_path );
+      for ( boost::filesystem::directory_iterator itr( ph );
             itr != end_itr; ++itr )
       {
         count += remove_all_aux( *itr );
       }
     }
-    fs::remove( any_path );
+    fs::remove( ph );
     return count;
   }
 
@@ -250,53 +250,53 @@ namespace boost
 
 //  free functions  ----------------------------------------------------------//
 
-    bool exists( const path & any_path )
+    bool exists( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct ::stat path_stat;
-      return ::stat( any_path.file_c_str(), &path_stat ) == 0;  
+      return ::stat( ph.file_c_str(), &path_stat ) == 0;  
 #   else
-      return GetFileAttributes( any_path.file_c_str() ) != 0xFFFFFFFF;
+      return GetFileAttributes( ph.file_c_str() ) != 0xFFFFFFFF;
 #   endif
     }
 
-    bool directory( const path & any_path )
+    bool directory( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct ::stat path_stat;
-      if ( ::stat( any_path.directory_c_str(), &path_stat ) != 0 )
+      if ( ::stat( ph.directory_c_str(), &path_stat ) != 0 )
         throw filesystem_error( std::string("is_directory(): ")
-          + any_path.directory_c_str(), system_error );
+          + ph.directory_c_str(), system_error );
       return S_ISDIR( path_stat.st_mode );
 #   else
-      DWORD attributes = GetFileAttributes( any_path.directory_c_str() );
+      DWORD attributes = GetFileAttributes( ph.directory_c_str() );
       if ( attributes == 0xFFFFFFFF )
         throw filesystem_error( std::string("is_directory(): ")
-          + any_path.directory_c_str(), system_error );
+          + ph.directory_c_str(), system_error );
       return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #   endif
     }
 
-    bool empty( const path & any_path )
+    bool empty( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct ::stat path_stat;
-      if ( ::stat( any_path.file_c_str(), &path_stat ) != 0 )
+      if ( ::stat( ph.file_c_str(), &path_stat ) != 0 )
               throw filesystem_error( std::string("empty(): ")
-                + any_path.file_c_str(), system_error );
+                + ph.file_c_str(), system_error );
       
       return S_ISDIR( path_stat.st_mode )
-        ? empty_directory( any_path )
+        ? empty_directory( ph )
         : path_stat.st_size == 0;
 #   else
       WIN32_FILE_ATTRIBUTE_DATA fad;
-      if ( !GetFileAttributesEx( any_path.file_c_str(),
+      if ( !GetFileAttributesEx( ph.file_c_str(),
               GetFileExInfoStandard, &fad ) )
               throw filesystem_error( std::string("empty(): ")
-                + any_path.file_c_str(), system_error );
+                + ph.file_c_str(), system_error );
       
       return ( fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
-        ? empty_directory( any_path )
+        ? empty_directory( ph )
         :( !fad.nFileSizeHigh && !fad.nFileSizeLow );
 #   endif
     }
@@ -305,7 +305,7 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       if ( ::mkdir( dir_path.directory_c_str(),
-        S_IRWXU|S_IRWXG|S_IRWXO ) !=0 )
+        S_IRWXU|S_IRWXG|S_IRWXO ) != 0 )
 #   else
       if ( !CreateDirectory( dir_path.directory_c_str(), 0 ) )
 #   endif
@@ -313,36 +313,36 @@ namespace boost
           + dir_path.directory_c_str(), system_error );
     }
 
-    void remove( const path & any_path )
+    void remove( const path & ph )
     {
-      if ( !exists( any_path ) )
+      if ( !exists( ph ) )
         throw fs::filesystem_error( std::string("remove() on: ")
-          + any_path.file_c_str(), system_error );
-      if ( directory( any_path ) )
+          + ph.file_c_str(), system_error );
+      if ( directory( ph ) )
       {
 #   ifdef BOOST_POSIX
-        if ( ::rmdir( any_path.file_c_str() ) != 0 )
+        if ( ::rmdir( ph.file_c_str() ) != 0 )
 #   else
-        if ( !RemoveDirectory( any_path.file_c_str() ) )
+        if ( !RemoveDirectory( ph.file_c_str() ) )
 #   endif
           throw fs::filesystem_error( std::string("remove() on: ")
-            + any_path.file_c_str(), system_error );
+            + ph.file_c_str(), system_error );
       }
       else
       {
 #   ifdef BOOST_POSIX
-        if ( ::remove( any_path.file_c_str() ) != 0 )
+        if ( ::remove( ph.file_c_str() ) != 0 )
 #   else
-        if ( !DeleteFile( any_path.file_c_str() ) )
+        if ( !DeleteFile( ph.file_c_str() ) )
 #   endif
           throw fs::filesystem_error( std::string("remove() on: ")
-            + any_path.file_c_str(), system_error );
+            + ph.file_c_str(), system_error );
       }
     }
 
-    unsigned long remove_all( const path & any_path )
+    unsigned long remove_all( const path & ph )
     {
-      return exists( any_path ) ? remove_all_aux( any_path ) : 0;
+      return exists( ph ) ? remove_all_aux( ph ) : 0;
     }
 
     void rename( const path & old_path,
@@ -358,8 +358,8 @@ namespace boost
           + old_path.file_c_str() + ", " + new_path.file_c_str(), system_error );
     }
 
-    void copy_file( const path & from_file_path,
-                    const path & to_file_path )
+    void copy_file( const path & from_file_ph,
+                    const path & to_file_ph )
     {
 #   ifdef BOOST_POSIX
       // TODO: Ask POSIX experts if this is the best way to copy a file
@@ -368,16 +368,16 @@ namespace boost
       boost::scoped_array<char> buf( new char [buf_sz] );
       int infile, outfile;
 
-      if ( (infile = ::open( from_file_path.file_c_str(),
+      if ( (infile = ::open( from_file_ph.file_c_str(),
                              O_RDONLY )) < 0
-        || (outfile = ::open( to_file_path.file_c_str(),
+        || (outfile = ::open( to_file_ph.file_c_str(),
                               O_WRONLY | O_CREAT | O_EXCL,
                               S_IRWXU|S_IRWXG|S_IRWXO )) < 0 )
       {
         if ( infile != 0 ) ::close( infile );
         throw fs::filesystem_error( std::string("copy() files: ")
-          + from_file_path.file_c_str()
-          + ", " + to_file_path.file_c_str(), system_error );
+          + from_file_ph.file_c_str()
+          + ", " + to_file_ph.file_c_str(), system_error );
       }
 
       ssize_t sz;
@@ -389,12 +389,12 @@ namespace boost
 
       if ( sz != 0 )
 #   else
-      if ( !CopyFile( from_file_path.file_c_str(),
-                      to_file_path.file_c_str(), /*fail_if_exists=*/true ) )
+      if ( !CopyFile( from_file_ph.file_c_str(),
+                      to_file_ph.file_c_str(), /*fail_if_exists=*/true ) )
 #   endif
         throw fs::filesystem_error( std::string("copy() files: ")
-          + from_file_path.file_c_str()
-          + ", " + to_file_path.file_c_str(), system_error );
+          + from_file_ph.file_c_str()
+          + ", " + to_file_ph.file_c_str(), system_error );
     }
 
     const path & initial_directory()

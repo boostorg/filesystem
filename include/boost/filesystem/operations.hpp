@@ -38,25 +38,25 @@ namespace boost
 
 //  query functions  ---------------------------------------------------------//
 
-    bool exists( const path & any_path );
+    bool exists( const path & ph );
 
-    bool directory( const path & any_path );
+    bool directory( const path & ph );
 
-    bool empty( const path & any_path );
+    bool empty( const path & ph );
 
 //  operations  --------------------------------------------------------------//
 
-    void create_directory( const path & directory_path );
+    void create_directory( const path & directory_ph );
 
-    void remove( const path & any_path );
+    void remove( const path & ph );
 
     void rename( const path & from_path,
                  const path & to_path );
 
-    unsigned long remove_all( const path & any_path );
+    unsigned long remove_all( const path & ph );
 
-    void copy_file( const path & from_file_path,
-                    const path & to_file_path );
+    void copy_file( const path & from_file_ph,
+                    const path & to_file_ph );
 
     const path & initial_directory();
 
@@ -86,7 +86,7 @@ namespace boost
       typedef base::iterator_category iterator_category;
 
       directory_iterator(); // creates the "end" iterator
-      explicit directory_iterator( const path & directory_path );
+      explicit directory_iterator( const path & directory_ph );
 
       ~directory_iterator();
 
