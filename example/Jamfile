@@ -5,10 +5,11 @@ subproject libs/filesystem/example ;
 exe process_jam_log$(SUFEXE)
 	:
 	process_jam_log.cpp tiny_xml.cpp
-	<lib>../build/fs$(SUFLIB)
 	:
 	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
 	<include>$(B_ROOT)         # make this point to your boost-root
+	<library-path>$(B_ROOT)/libs/filesystem/build/bin/libfs.a/$(TOOLS)/debug/runtime-link-dynamic/
+	<find-library>fs
 	<library-path>$(B_ROOT)/libs/test/build/bin/libunit_test_framework.a/$(TOOLS)/debug/runtime-link-dynamic/threading-single
 	<find-library>unit_test_framework
 	:
@@ -19,10 +20,11 @@ exe process_jam_log$(SUFEXE)
 exe compiler_status$(SUFEXE)
 	:
 	compiler_status.cpp tiny_xml.cpp
-	<lib>../build/fs$(SUFLIB)
 	:
 	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
 	<include>$(B_ROOT)         # make this point to your boost-root
+	<library-path>$(B_ROOT)/libs/filesystem/build/bin/libfs.a/$(TOOLS)/debug/runtime-link-dynamic/
+	<find-library>fs
 	<library-path>$(B_ROOT)/libs/test/build/bin/libunit_test_framework.a/$(TOOLS)/debug/runtime-link-dynamic/threading-single
 	<find-library>unit_test_framework
 	:
