@@ -213,7 +213,7 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 <p><code>void create_directory( const path &amp; directory_ph );</code></p>
 <p><b>Postcondition:</b> <code>exists(directory_ph) &amp;&amp; 
 is_directory(directory_ph) &amp;&amp; is_empty(directory_ph)</code></p>
-<p><b>Throws: </b>if <code>exists(directory_ph)) || !exists(branch(directory_ph))</code></p>
+<p><b>Throws: </b>if <code>exists(directory_ph)) || !exists(branch_path(directory_ph))</code></p>
 </blockquote>
 <h3><a name="remove">remove</a></h3>
 <blockquote>
@@ -233,7 +233,7 @@ throwing is:</p>
 <p>There is, however, a slight decrease in safety because some errors will slip 
 by which otherwise would have been detected. For example, a misspelled path name 
 could go undetected for a long time.</p>
-<p>The initial version of the library threw and exception when the path did not exist; it 
+<p>The initial version of the library throw an exception when the path did not exist; it 
 was reluctantly changed to reflect user complaints.</p>
 </blockquote>
 <h3><a name="remove_all">remove_all</a></h3>
@@ -250,12 +250,12 @@ was reluctantly changed to reflect user complaints.</p>
 to <i>to_ph</i>.</p>
 <p><b>Postconditions:</b> <code>!exists(from_ph) &amp;&amp; exists(to_ph)</code>, 
 and the file or directory contents and attributes are otherwise unchanged.</p>
-<p><b>Throws:</b> if <code>!exists(from_ph) || exists(to_ph) || !exists(branch(to_ph))</code></p>
+<p><b>Throws:</b> if <code>!exists(from_ph) || exists(to_ph) || !exists(branch_path(to_ph))</code></p>
 <p><b>Rationale:</b> Because <i>rename</i> is logically the same operation as <i>move</i>, 
 there is no need for a separate <i>move</i> function. The choice of the name is 
 inherited from the C Library.</p>
-<p><b>Note:</b> If <code>branch(from_path)</code> resolves to the same directory 
-as <code>branch(to_ph)</code>, then <code>leaf(from_ph)</code> must not be 
+<p><b>Note:</b> If <code>branch_path(from_path)</code> resolves to the same directory 
+as <code>branch_path(to_ph)</code>, then <code>leaf(from_ph)</code> must not be 
 the same name as <code>leaf(to_ph)</code>, but if the branch directories are 
 different, it doesn't matter if the leaf names are the same.</p>
 <p><b>Note:</b> Some operating systems with multi-rooted file systems 
@@ -271,7 +271,7 @@ to_file_ph );</code></p>
 <p><b>Effects:</b> Copies the file represented by <i>from_file_ph</i> to <i>
 to_file_ph</i>.</p>
 <p><b>Throws:</b> if <code>!exists(from_file_ph) || directory(from_file_ph) 
-|| exists(to_file_ph) || !exist(branch(to_path))</code></p>
+|| exists(to_file_ph) || !exist(branch_path(to_path))</code></p>
 </blockquote>
 <h3><a name="initial_path">initial_path</a></h3>
 <blockquote>
@@ -414,7 +414,7 @@ by a prior program run by the command processor.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38509" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38515" --></p>
 
 </body>
 

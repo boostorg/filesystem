@@ -384,7 +384,7 @@ if any. See <a href="#decomposition">Path decomposition examples</a>.</p>
 <blockquote>
   <pre>std::string root_directory() const;</pre>
   <p><b>Returns:</b> If the path contains <a href="#Grammar">root-directory</a>, 
-  then <code>string(&quot;&quot;)</code>, else <code>string()</code>.</p>
+  then <code>string(&quot;/&quot;)</code>, else <code>string()</code>.</p>
   <p>Portably provides a copy of a path's <a href="#Grammar">root-directory</a>, 
   if any. The only possible results are &quot;/&quot; or &quot;&quot;. See <a href="#decomposition">
   Path decomposition examples</a>.</p>
@@ -400,7 +400,7 @@ if any. See <a href="#decomposition">Path decomposition examples</a>.</p>
 <h3><a name="leaf">leaf</a></h3>
 <blockquote>
   <pre>std::string leaf() const;</pre>
-<p><b>Returns:</b> <code>is_null() ? std::string() : m_name.back()</code></p>
+<p><b>Returns:</b> <code>empty() ? std::string() : m_name.back()</code></p>
 <p>A typical use is to obtain the undecorated name of a directory entry from the 
 path returned by a <a href="operations.htm#directory_iterator">
 directory_iterator</a>. See <a href="#decomposition">Path decomposition examples</a>.</p>
@@ -734,7 +734,7 @@ various expressions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38515" --></p>
 
 </body>
 
