@@ -79,18 +79,18 @@ namespace boost
         m_msg += ": ";
 #       ifdef BOOST_WINDOWS
           LPVOID lpMsgBuf;
-          ::FormatMessage( 
+          ::FormatMessageA( 
               FORMAT_MESSAGE_ALLOCATE_BUFFER | 
               FORMAT_MESSAGE_FROM_SYSTEM | 
               FORMAT_MESSAGE_IGNORE_INSERTS,
               NULL,
               m_err,
               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-              (LPTSTR) &lpMsgBuf,
+              (LPSTR) &lpMsgBuf,
               0,
               NULL 
           );
-          m_msg += static_cast<LPCTSTR>(lpMsgBuf);
+          m_msg += static_cast<LPCSTR>(lpMsgBuf);
           LocalFree( lpMsgBuf ); // free the buffer
 #       else
           m_msg += std::strerror(m_err);
