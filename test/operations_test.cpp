@@ -343,8 +343,8 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( throws_fs_error( bind( fs::rename, dir, d1 ) ) );
 
   // [case 4A] can't rename() file to a nonexistent parent directory
-  BOOST_TEST( !is_directory( dir / "f1" ) );
-  BOOST_TEST( !exists( dir / "d3/f3" ) );
+  BOOST_TEST( !fs::is_directory( dir / "f1" ) );
+  BOOST_TEST( !fs::exists( dir / "d3/f3" ) );
   BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ),
     fs::not_found_error ) );
 
@@ -392,16 +392,16 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( !fs::exists( d3 ) );
 
   // [case 5C] rename() rename and move d1 to d2 / "d20"
-  BOOST_TEST( exists( d1 ) );
-  BOOST_TEST( !exists( d2 / "d20" ) );
+  BOOST_TEST( fs::exists( d1 ) );
+  BOOST_TEST( !fs::exists( d2 / "d20" ) );
   BOOST_TEST( fs::exists( d1 / "f2" ) );
   fs::rename( d1, d2 / "d20" );
-  BOOST_TEST( !exists( d1 ) );
-  BOOST_TEST( exists( d2 / "d20" ) );
+  BOOST_TEST( !fs::exists( d1 ) );
+  BOOST_TEST( fs::exists( d2 / "d20" ) );
   BOOST_TEST( fs::exists( d2 / "d20" / "f2" ) );
   fs::rename( d2 / "d20", d1 );
-  BOOST_TEST( exists( d1 ) );
-  BOOST_TEST( !exists( d2 / "d20" ) );
+  BOOST_TEST( fs::exists( d1 ) );
+  BOOST_TEST( !fs::exists( d2 / "d20" ) );
   BOOST_TEST( fs::exists( d1 / "f2" ) );
 
   // remove() tests on file
