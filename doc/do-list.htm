@@ -11,8 +11,12 @@ Do-list</h1>
   <li>Windows: //share style paths need more analysis and test cases for system_complete() 
   and complete(). Also, path_test cases at line 410 need review, correction.<br>
 &nbsp;</li>
-  <li>Replace filesystem_error impl with shared_ptr. Consider changing who() 
+  <li>Replace filesystem_error impl with shared_ptr. (Dave Abrahams).<br>
+&nbsp;</li>
+  <li>Consider changing who() 
   interface (and ctors to const char *).<br>
+&nbsp;</li>
+  <li>Add a path::swap member function guaranteed not to throw. (Geurt Vos).<br>
 &nbsp;</li>
   <li>Windows: What happens when a directory_itorator encounters a 
   wide-character filename? Write a test case.</li>
@@ -41,4 +45,4 @@ Do-list</h1>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->15 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38575" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 March, 2003<!--webbot bot="Timestamp" endspan i-checksum="28833" --></p>
