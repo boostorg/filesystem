@@ -54,9 +54,6 @@ namespace boost
 		template <typename T>
 		T &at ()
 	        {
-	    	    if (T::has_state)
-		        return T (*this).do_get ();
-		    
 		    // fails access on the attributes
 	            // during destruction of the cache object
 	            assert (!destruction_);
