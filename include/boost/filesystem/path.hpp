@@ -6,7 +6,7 @@
 //  warranty, and with no claim as to its suitability for any purpose.
 
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 //----------------------------------------------------------------------------// 
 
@@ -63,19 +63,36 @@ namespace boost
       path( const char * src, path_format );
 
       // append operations:
-      path & operator <<=( const path & rhs );
-      const path operator << ( const path & rhs ) const
-        { return path( *this ) <<= rhs; }
+      path & operator /=( const path & rhs );
+      const path operator /( const path & rhs ) const
+        { return path( *this ) /= rhs; }
+
+      // composition functions:
+      path & make_absolute();
+      path & make_absolute( const path & root_source );
+
+      // decomposition functions:
+      path root() const;
+      std::string system_root() const;
+      std::string root_directory() const;
+
+      path relative_path() const;
+
+      std::string leaf() const;
+      path branch() const;
 
       // query functions:
       bool is_null() const { return m_path.size() == 0; }
+      bool is_absolute() const;
 
-      const std::string & generic_path() const { return m_path; }
-      const std::string & file_path() const { return m_path; } // native format
-      const std::string & directory_path() const { return m_path; } // ditto
+      bool has_root() const;
+      bool has_system_root() const;
+      bool has_root_directory() const;
+      bool has_relative_path() const;
 
-      const std::string leaf() const;
-      const path branch() const;
+      const std::string & generic_string() const { return m_path; }
+      const std::string & file_string() const { return m_path; } // native format
+      const std::string & directory_string() const { return m_path; } // ditto
 
       // iteration over the names in the path:
       typedef boost::iterator_adaptor<
@@ -88,8 +105,8 @@ namespace boost
         std::ptrdiff_t 
         > iterator;
 
-      const iterator begin() const;
-      const iterator end() const
+      iterator begin() const;
+      iterator end() const
       {
         iterator itr;
         itr.base().path_ptr = this;
