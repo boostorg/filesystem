@@ -78,7 +78,7 @@ namespace boost
 
     class directory_iterator:
       public boost::iterator< std::input_iterator_tag,
-                              path >,
+                              path, const path *, const path & >,
       public boost::equality_comparable< directory_iterator >,
       public boost::dereferenceable< directory_iterator,
                                      const path * >,
