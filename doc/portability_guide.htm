@@ -59,7 +59,10 @@ some rules-of-thumb when deciding path issues.</p>
   <tr>
     <td valign="top">Do not assume names are case sensitive. For example, do not expected a directory to be
     able to hold separate elements named &quot;Foo&quot; and &quot;foo&quot;. </td>
-    <td valign="top">Some filesystems are case insensitive.&nbsp; For example, Windows.</td>
+    <td valign="top">Some filesystems are case insensitive.&nbsp; For example, Windows 
+    NTFS is case preserving in the way it stores names, but case insensitive in 
+    searching for names (unless running under the POSIX sub-system, it which 
+    case it does case sensitive searches). </td>
   </tr>
   <tr>
     <td valign="top">Do not assume names are case insensitive.&nbsp; For example, do not expect a file
@@ -91,7 +94,7 @@ some rules-of-thumb when deciding path issues.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 August, 2002<!--webbot bot="Timestamp" endspan i-checksum="34422" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 August, 2002<!--webbot bot="Timestamp" endspan i-checksum="34409" --></p>
 
 </body>
 
