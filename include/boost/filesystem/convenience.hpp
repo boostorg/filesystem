@@ -1,12 +1,9 @@
 //  boost/filesystem/convenience.hpp  ----------------------------------------//
 
-//  (C) Copyright Beman Dawes, 2002
-//  (C) Copyright Vladimir Prus, 2002
-//  Permission to copy, use, modify, sell and distribute this software
-//  is granted provided this copyright notice appears in all copies.
-//  This software is provided "as is" without express or implied
-//  warranty, and with no claim as to its suitability for any purpose.
+//  Copyright Beman Dawes, 2002
+//  Copyright Vladimir Prus, 2002
 
+//  See accompanying license for terms and conditions of use.
 
 //  See http://www.boost.org/libs/filesystem for documentation.
 
