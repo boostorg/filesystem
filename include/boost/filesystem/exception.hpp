@@ -16,6 +16,7 @@
 #ifndef BOOST_FILESYSTEM_EXCEPTION_HPP
 #define BOOST_FILESYSTEM_EXCEPTION_HPP
 
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <string>
@@ -30,7 +31,7 @@ namespace boost
   {
     namespace detail
     {
-      int system_error_code(); // artifact of POSIX and WINDOWS error reporting
+      BOOST_FILESYSTEM_DECL int system_error_code(); // artifact of POSIX and WINDOWS error reporting
     }
 
     enum error_code
@@ -55,7 +56,7 @@ namespace boost
     };
 
 
-    class filesystem_error : public std::exception
+    class BOOST_FILESYSTEM_DECL filesystem_error : public std::exception
     {
     public:
 

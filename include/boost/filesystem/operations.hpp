@@ -17,7 +17,7 @@
 #ifndef BOOST_FILESYSTEM_DIRECTORY_HPP
 #define BOOST_FILESYSTEM_DIRECTORY_HPP
 
-#include <boost/config.hpp>
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/iterator.hpp>
@@ -38,8 +38,8 @@ namespace boost
 
 //  query functions  ---------------------------------------------------------//
 
-    bool exists( const path & ph );
-    bool is_directory( const path & ph );
+    BOOST_FILESYSTEM_DECL bool exists( const path & ph );
+    BOOST_FILESYSTEM_DECL bool is_directory( const path & ph );
 
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
     // between boost::filesystem::is_empty and the unrelated type trait
@@ -52,31 +52,32 @@ namespace boost
     inline bool is_empty( const path & ph ) { return _is_empty( ph ); }
 #   endif
 
-    std::time_t last_write_time( const path & ph );
-    void last_write_time( const path & ph, const std::time_t new_time );
+    BOOST_FILESYSTEM_DECL std::time_t last_write_time( const path & ph );
+    BOOST_FILESYSTEM_DECL void last_write_time( const path & ph, const std::time_t new_time );
 
 //  operations  --------------------------------------------------------------//
 
-    void create_directory( const path & directory_ph );
+    BOOST_FILESYSTEM_DECL void create_directory( const path & directory_ph );
 
-    bool remove( const path & ph );
-    unsigned long remove_all( const path & ph );
+    BOOST_FILESYSTEM_DECL bool remove( const path & ph );
+    BOOST_FILESYSTEM_DECL unsigned long remove_all( const path & ph );
 
-    void rename( const path & from_path,
+    BOOST_FILESYSTEM_DECL void rename( const path & from_path,
                  const path & to_path );
 
-    void copy_file( const path & from_file_ph,
+    BOOST_FILESYSTEM_DECL void copy_file( const path & from_file_ph,
                     const path & to_file_ph );
 
-    path          current_path();
-    const path &  initial_path();
+    BOOST_FILESYSTEM_DECL path current_path();
+    BOOST_FILESYSTEM_DECL const path & initial_path();
 
-    path          system_complete( const path & ph );
-    path          complete( const path & ph, const path & base = initial_path() );
+    BOOST_FILESYSTEM_DECL path system_complete( const path & ph );
+    BOOST_FILESYSTEM_DECL path complete( const path & ph, const path & base = initial_path() );
 
 //  directory_iterator  ------------------------------------------------------//
 
-    class directory_iterator : public boost::iterator_facade<
+    class BOOST_FILESYSTEM_DECL directory_iterator
+      : public boost::iterator_facade<
       directory_iterator,
       path,
       boost::readable_iterator_tag,

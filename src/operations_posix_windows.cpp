@@ -19,7 +19,11 @@
 
 //----------------------------------------------------------------------------// 
 
-#include <boost/config.hpp>
+// define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
+// the library is being built (possibly exporting rather than importing code)
+#define BOOST_FILESYSTEM_SOURCE 
+
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
 #include <boost/scoped_array.hpp>
@@ -275,7 +279,7 @@ namespace boost
 
 //  free functions  ----------------------------------------------------------//
 
-    bool exists( const path & ph )
+    BOOST_FILESYSTEM_DECL bool exists( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
@@ -285,7 +289,7 @@ namespace boost
 #   endif
     }
 
-    bool is_directory( const path & ph )
+    BOOST_FILESYSTEM_DECL bool is_directory( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
@@ -304,7 +308,7 @@ namespace boost
 #   endif
     }
 
-    bool _is_empty( const path & ph )
+    BOOST_FILESYSTEM_DECL bool _is_empty( const path & ph )
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
@@ -330,7 +334,7 @@ namespace boost
 #   endif
     }
 
-    std::time_t last_write_time( const path & ph )
+    BOOST_FILESYSTEM_DECL std::time_t last_write_time( const path & ph )
     {
       // Works for both Windows and POSIX
       struct stat path_stat;
@@ -341,7 +345,7 @@ namespace boost
       return path_stat.st_mtime;
     }
 
-    void last_write_time( const path & ph, const std::time_t new_time )
+    BOOST_FILESYSTEM_DECL void last_write_time( const path & ph, const std::time_t new_time )
     {
       // Works for both Windows and POSIX
       ::utimbuf buf;
@@ -354,7 +358,7 @@ namespace boost
           ph, fs::detail::system_error_code() ) );
     }
 
-    void create_directory( const path & dir_path )
+    BOOST_FILESYSTEM_DECL void create_directory( const path & dir_path )
     {
 #   ifdef BOOST_POSIX
       if ( ::mkdir( dir_path.native_directory_string().c_str(),
@@ -367,7 +371,7 @@ namespace boost
           dir_path, fs::detail::system_error_code() ) );
     }
 
-    bool remove( const path & ph )
+    BOOST_FILESYSTEM_DECL bool remove( const path & ph )
     {
       if ( exists( ph ) )
       {
@@ -403,12 +407,12 @@ namespace boost
       return false;
     }
 
-    unsigned long remove_all( const path & ph )
+    BOOST_FILESYSTEM_DECL unsigned long remove_all( const path & ph )
     {
       return exists( ph ) ? remove_all_aux( ph ) : 0;
     }
 
-    void rename( const path & old_path,
+    BOOST_FILESYSTEM_DECL void rename( const path & old_path,
                  const path & new_path )
     {
 #   ifdef BOOST_POSIX
@@ -422,7 +426,7 @@ namespace boost
           old_path, new_path, fs::detail::system_error_code() ) );
     }
 
-    void copy_file( const path & from_file_ph,
+    BOOST_FILESYSTEM_DECL void copy_file( const path & from_file_ph,
                     const path & to_file_ph )
     {
 #   ifdef BOOST_POSIX
@@ -461,7 +465,7 @@ namespace boost
           from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
     }
 
-    path current_path()
+    BOOST_FILESYSTEM_DECL path current_path()
     {
 #   ifdef BOOST_POSIX
       long path_max = ::pathconf( ".", _PC_PATH_MAX );
@@ -487,14 +491,14 @@ namespace boost
       return path( buf.get(), native );
     }
 
-    const path & initial_path()
+    BOOST_FILESYSTEM_DECL const path & initial_path()
     {
       static path init_path;
       if ( init_path.empty() ) init_path = current_path();
       return init_path;
     }
 
-    path system_complete( const path & ph )
+    BOOST_FILESYSTEM_DECL path system_complete( const path & ph )
     {
 #   ifdef BOOST_WINDOWS
       if ( ph.empty() ) return ph;
@@ -514,7 +518,7 @@ namespace boost
 #   endif
     }
     
-    path complete( const path & ph, const path & base )
+    BOOST_FILESYSTEM_DECL path complete( const path & ph, const path & base )
     {
       assert( base.is_complete()
         && (ph.is_complete() || !ph.has_root_name()) ); // precondition

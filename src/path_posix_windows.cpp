@@ -1,6 +1,6 @@
 //  path implementation  -----------------------------------------------------//
 
-//  Copyright Beman Dawes 2002.
+//  © Copyright Beman Dawes 2002-2003
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -17,6 +17,10 @@
 //  such problems.
 
 //****************************************************************************//
+
+// define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
+// the library is being built (possibly exporting rather than importing code)
+#define BOOST_FILESYSTEM_SOURCE 
 
 // BOOST_POSIX or BOOST_WINDOWS specify which API to use.
 # if !defined( BOOST_WINDOWS ) && !defined( BOOST_POSIX )
@@ -125,7 +129,7 @@ namespace boost
   {
     //  name_check functions  ----------------------------------------------//
 
-    bool native( const std::string & name )
+    BOOST_FILESYSTEM_DECL bool native( const std::string & name )
     {
 #   ifdef BOOST_WINDOWS
       return windows_name( name );
@@ -134,15 +138,15 @@ namespace boost
 #   endif
     }
 
-    bool no_check( const std::string & ) { return true; }
+    BOOST_FILESYSTEM_DECL bool no_check( const std::string & ) { return true; }
 
-    bool portable_posix_name( const std::string & name )
+    BOOST_FILESYSTEM_DECL bool portable_posix_name( const std::string & name )
     {
       return name.size() != 0
         && name.find_first_not_of( valid_posix ) == std::string::npos;     
     }
 
-    bool windows_name( const std::string & name )
+    BOOST_FILESYSTEM_DECL bool windows_name( const std::string & name )
     {
       return name.size() != 0
         && name.find_first_of( windows_invalid_chars ) == std::string::npos
@@ -151,7 +155,7 @@ namespace boost
           || name.length() == 1 || name == "..");
     }
 
-    bool portable_name( const std::string & name )
+    BOOST_FILESYSTEM_DECL bool portable_name( const std::string & name )
     {
       return
         name.size() == 0
@@ -162,7 +166,7 @@ namespace boost
         && name[0] != '.' && name[0] != '-');
     }
 
-    bool portable_directory_name( const std::string & name )
+    BOOST_FILESYSTEM_DECL bool portable_directory_name( const std::string & name )
     {
       return
         name == "."
@@ -171,7 +175,7 @@ namespace boost
           && name.find('.') == std::string::npos);
     }
 
-    bool portable_file_name( const std::string & name )
+    BOOST_FILESYSTEM_DECL bool portable_file_name( const std::string & name )
     {
       std::string::size_type pos;
       return

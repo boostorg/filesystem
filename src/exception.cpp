@@ -12,7 +12,11 @@
 
 //----------------------------------------------------------------------------//
 
-#include <boost/config.hpp>
+// define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
+// the library is being built (possibly exporting rather than importing code)
+#define BOOST_FILESYSTEM_SOURCE 
+
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/exception.hpp>
 
 namespace fs = boost::filesystem;
@@ -288,7 +292,7 @@ namespace boost
 
     namespace detail
     {
-      int system_error_code() // artifact of POSIX and WINDOWS error reporting
+      BOOST_FILESYSTEM_DECL int system_error_code() // artifact of POSIX and WINDOWS error reporting
       {
   #   ifdef BOOST_WINDOWS
         return ::GetLastError();

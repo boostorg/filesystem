@@ -1,6 +1,6 @@
 //  boost/filesystem/path.hpp  -----------------------------------------------//
 
-//  Copyright Beman Dawes 2002.
+//  © Copyright Beman Dawes 2002-2003
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@
 #ifndef BOOST_FILESYSTEM_PATH_HPP
 #define BOOST_FILESYSTEM_PATH_HPP
 
+#include <boost/filesystem/config.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <string>
 #include <cassert>
@@ -22,12 +23,12 @@ namespace boost
 {
   namespace filesystem
   {
-    class directory_iterator;
+    class BOOST_FILESYSTEM_DECL directory_iterator;
 
 
   //  path -------------------------------------------------------------------//
 
-    class path
+    class BOOST_FILESYSTEM_DECL path
     {
     public:
       typedef bool (*name_check)( const std::string & name );
@@ -142,13 +143,13 @@ namespace boost
    
   //  path::name_checks  ---------------------------------------------------//
 
-    bool portable_posix_name( const std::string & name );
-    bool windows_name( const std::string & name );
-    bool portable_name( const std::string & name );
-    bool portable_directory_name( const std::string & name );
-    bool portable_file_name( const std::string & name );
-    bool no_check( const std::string & name );   // always returns true
-    bool native( const std::string & name );
+    BOOST_FILESYSTEM_DECL bool portable_posix_name( const std::string & name );
+    BOOST_FILESYSTEM_DECL bool windows_name( const std::string & name );
+    BOOST_FILESYSTEM_DECL bool portable_name( const std::string & name );
+    BOOST_FILESYSTEM_DECL bool portable_directory_name( const std::string & name );
+    BOOST_FILESYSTEM_DECL bool portable_file_name( const std::string & name );
+    BOOST_FILESYSTEM_DECL bool no_check( const std::string & name );   // always returns true
+    BOOST_FILESYSTEM_DECL bool native( const std::string & name );
       // native(name) must return true for any name which MIGHT be valid
       // on the native platform.
 
