@@ -20,6 +20,11 @@ using boost::bind;
 #include <fstream>
 #include <iostream>
 #include <cstring>
+#include <cerrno>
+
+# ifdef BOOST_NO_STDC_NAMESPACE
+    namespace std { using ::strcmp; }
+# endif
 
 namespace
 {
@@ -30,8 +35,8 @@ namespace
   {
     std::ofstream f( ph.native_file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "ofstream(): " + ph.string(),
-        fs::system_error );
+      throw fs::filesystem_error( "operations_test create_file",
+        ph, errno );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -39,14 +44,14 @@ namespace
   {
     std::ifstream f( ph.native_file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "ifstream(): " + ph.string(),
-        fs::system_error );
+      throw fs::filesystem_error( "operations_test verify_file",
+        ph, errno );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_error("verify_file(): " + ph.string()
-        + " contents \"" + contents
-        + "\" != \"" + expected + "\"", fs::system_error );
+      throw fs::filesystem_error( "operations_test verify_file",
+        ph, " contents \"" + contents
+        + "\" != \"" + expected + "\"" );
   }
 
   template< typename F >

@@ -84,7 +84,7 @@ namespace
   }
 
   inline const char * find_next_file(
-    BOOST_HANDLE handle, BOOST_SYSTEM_DIRECTORY_TYPE & )
+    BOOST_HANDLE handle, const fs::path & ph, BOOST_SYSTEM_DIRECTORY_TYPE & )
   // Returns: if EOF 0, otherwise name
   // Throws: if system reports error
   {
@@ -99,7 +99,9 @@ namespace
       if ( errno != 0 )
       {
         boost::throw_exception(
-          fs::filesystem_error( "directory_iterator ++() failure", fs::other_error ) );
+          fs::filesystem_error(
+            "boost::filesystem::directory_iterator::operator++",
+            ph, errno ) );
       }
       else { return 0; } // end reached
     }
@@ -129,7 +131,8 @@ namespace
   }
 
   inline const char * find_next_file(
-    BOOST_HANDLE handle, BOOST_SYSTEM_DIRECTORY_TYPE & data )
+    BOOST_HANDLE handle, const fs::path & ph,
+    BOOST_SYSTEM_DIRECTORY_TYPE & data )
   // Returns: 0 if EOF, otherwise name
   // Throws: if system reports error
   {
@@ -138,7 +141,8 @@ namespace
       if ( ::GetLastError() != ERROR_NO_MORE_FILES )
       {
         boost::throw_exception( fs::filesystem_error(
-          "directory_iterator ++() failure", fs::system_error ) );
+          "boost::filesystem::directory_iterator::operator++",
+          ph.branch_path(), fs::detail::system_error_code() ) );
       }
       else { return 0; } // end reached
      }
@@ -228,9 +232,9 @@ namespace boost
       }
       else
       {
-        boost::throw_exception( filesystem_error( std::string( 
-          "directory_iterator constructor failure: " )
-          + dir_path.native_directory_string(), system_error ) );
+        boost::throw_exception( filesystem_error(  
+          "boost::filesystem::directory_iterator constructor",
+          dir_path, fs::detail::system_error_code() ) );
       }  
     }
 
@@ -247,7 +251,8 @@ namespace boost
 
       BOOST_SYSTEM_DIRECTORY_TYPE scratch;
       const char * name;
-      if ( (name = find_next_file( m_imp->handle, scratch )) != 0 )
+      if ( (name = find_next_file( m_imp->handle,
+        m_imp->entry_path, scratch )) != 0 )
       {
         m_imp->entry_path.m_replace_leaf( name );
       }
@@ -274,14 +279,16 @@ namespace boost
 #   ifdef BOOST_POSIX
       struct stat path_stat;
       if ( ::stat( ph.native_directory_string().c_str(), &path_stat ) != 0 )
-        boost::throw_exception( filesystem_error( std::string("is_directory(): ")
-          + ph.native_directory_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::is_directory",
+          ph, fs::detail::system_error_code() ) );
       return S_ISDIR( path_stat.st_mode );
 #   else
       DWORD attributes = ::GetFileAttributesA( ph.native_directory_string().c_str() );
       if ( attributes == 0xFFFFFFFF )
-        boost::throw_exception( filesystem_error( std::string("is_directory(): ")
-          + ph.native_directory_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::is_directory",
+          ph, fs::detail::system_error_code() ) );
       return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #   endif
     }
@@ -291,8 +298,9 @@ namespace boost
 #   ifdef BOOST_POSIX
       struct stat path_stat;
       if ( ::stat( ph.string().c_str(), &path_stat ) != 0 )
-              boost::throw_exception( filesystem_error( std::string("is_empty(): ")
-                + ph.native_file_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::is_empty",
+          ph, fs::detail::system_error_code() ) );
       
       return S_ISDIR( path_stat.st_mode )
         ? is_empty_directory( ph )
@@ -301,8 +309,9 @@ namespace boost
       WIN32_FILE_ATTRIBUTE_DATA fad;
       if ( !::GetFileAttributesExA( ph.string().c_str(),
         ::GetFileExInfoStandard, &fad ) )
-              boost::throw_exception( filesystem_error( std::string("is_empty(): ")
-                + ph.native_file_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::is_empty",
+          ph, fs::detail::system_error_code() ) );
       
       return ( fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
         ? is_empty_directory( ph )
@@ -318,8 +327,9 @@ namespace boost
 #   else
       if ( !::CreateDirectoryA( dir_path.native_directory_string().c_str(), 0 ) )
 #   endif
-        boost::throw_exception( filesystem_error( std::string("create_directory(): ")
-          + dir_path.native_directory_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::create_directory",
+          dir_path, fs::detail::system_error_code() ) );
     }
 
     bool remove( const path & ph )
@@ -333,8 +343,9 @@ namespace boost
 #   else
           if ( !::RemoveDirectoryA( ph.string().c_str() ) )
 #   endif
-            boost::throw_exception( filesystem_error( std::string("remove() on: ")
-              + ph.native_file_string(), system_error ) );
+            boost::throw_exception( filesystem_error(
+              "boost::filesystem::remove",
+              ph, fs::detail::system_error_code() ) );
         }
         else
         {
@@ -343,8 +354,9 @@ namespace boost
 #   else
           if ( !::DeleteFileA( ph.string().c_str() ) )
 #   endif
-            boost::throw_exception( filesystem_error( std::string("remove() on: ")
-              + ph.native_file_string(), system_error ) );
+            boost::throw_exception( filesystem_error(
+              "boost::filesystem::remove",
+              ph, fs::detail::system_error_code() ) );
         }
         return true;
       }
@@ -365,9 +377,9 @@ namespace boost
 #   else
       if ( !::MoveFileA( old_path.string().c_str(), new_path.string().c_str() ) )
 #   endif
-        boost::throw_exception( filesystem_error( std::string("move_file(): ")
-          + old_path.native_file_string()
-          + ", " + new_path.native_file_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::rename",
+          old_path, new_path, fs::detail::system_error_code() ) );
     }
 
     void copy_file( const path & from_file_ph,
@@ -387,9 +399,9 @@ namespace boost
                               S_IRWXU|S_IRWXG|S_IRWXO )) < 0 )
       {
         if ( infile != 0 ) ::close( infile );
-        boost::throw_exception( filesystem_error( std::string("copy() files: ")
-          + from_file_ph.string()
-          + ", " + to_file_ph.string(), system_error ) );
+          boost::throw_exception( filesystem_error(
+            "boost::filesystem::copy_file",
+            from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
       }
 
       ssize_t sz;
@@ -404,9 +416,9 @@ namespace boost
       if ( !::CopyFileA( from_file_ph.string().c_str(),
                       to_file_ph.string().c_str(), /*fail_if_exists=*/true ) )
 #   endif
-        boost::throw_exception( filesystem_error( std::string("copy() files: ")
-          + from_file_ph.native_file_string()
-          + ", " + to_file_ph.native_file_string(), system_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::copy_file",
+          from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
     }
 
     path current_path()
@@ -415,7 +427,8 @@ namespace boost
       long path_max = ::pathconf( ".", _PC_PATH_MAX );
       if ( path_max < 1 )
         boost::throw_exception(
-          filesystem_error( "initial_path(): size < 1", other_error ) );
+          filesystem_error( "boost::filesystem::current_path",
+            "_PC_PATH_MAX < 1" ) );
       boost::scoped_array<char>
         buf( new char[static_cast<std::size_t>(path_max)] );
       if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
@@ -423,12 +436,14 @@ namespace boost
       DWORD sz;
       if ( (sz = ::GetCurrentDirectoryA( 0, static_cast<char*>(0) )) == 0 )
         boost::throw_exception(
-          filesystem_error( "initial_path(): size is zero", other_error ) );
+          filesystem_error( "boost::filesystem::current_path",
+            "size is 0" ) );
       boost::scoped_array<char> buf( new char[sz] );
       if ( ::GetCurrentDirectoryA( sz, buf.get() ) == 0 )
 #   endif
-        { boost::throw_exception(
-            filesystem_error( "initial_path()", system_error ) ); }
+        boost::throw_exception(
+          filesystem_error( "boost::filesystem::current_path", path(),
+            fs::detail::system_error_code() ) );
       return path( buf.get(), native );
     }
 
@@ -449,7 +464,8 @@ namespace boost
                                             sizeof(buf) , buf, &pfn );
       if ( !len )
         { boost::throw_exception(
-            filesystem_error( "system_complete()", system_error ) ); }
+            filesystem_error( "boost::filesystem::system_complete",
+              ph, "size is 0" ) ); }
       buf[len] = '\0';
       return path( buf, native );
 #   else

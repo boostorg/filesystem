@@ -150,8 +150,10 @@ namespace boost
     const path & check_posix_leaf( const path & ph )
     {
       if ( !posix_name( ph.leaf() ) )
-        boost::throw_exception( filesystem_error( "invalid posix name: \""
-          + ph.leaf() + "\"", path_error ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::check_posix_leaf",
+          ph, "invalid posix name: \""
+            + ph.leaf() + "\"" ) );
       return ph;
     }
 
@@ -310,8 +312,9 @@ namespace boost
 
           if ( context == generic && !generic_name( name ) )
           {
-            boost::throw_exception( filesystem_error( "invalid path name: \""
-               + src + "\"", path_error ) );
+            boost::throw_exception( filesystem_error(
+              "boost::filesystem::path",
+              "invalid name \"" + name + "\" in path: \"" + src + "\"" ) );
           }
 
           m_path += name;
@@ -325,8 +328,9 @@ namespace boost
 #         endif
           ) ++itr;
           else 
-            boost::throw_exception( filesystem_error( "invalid path syntax: \""
-               + src + "\"", path_error ) );
+            boost::throw_exception( filesystem_error(
+              "boost::filesystem::path",
+              "invalid path syntax: \"" + src + "\"" ) );
         }
 
       } // while more elements

@@ -58,6 +58,9 @@ internationalization.</p>
     public:
 
       <a href="#Constructors">filesystem_error</a>( const std::string &amp; who,
+        const std::string &amp; message );
+
+      <a href="#Constructors">filesystem_error</a>( const std::string &amp; who,
         const path &amp; path1, const std::string &amp; message );
 
       <a href="#Constructors">filesystem_error</a>( const std::string &amp; who,
@@ -87,14 +90,17 @@ other operating systems, it is implementation defined.</p>
 <h3><a name="Constructors">Constructors</a></h3>
 <blockquote>
   <pre>filesystem_error( const std::string &amp; who,
-const path &amp; path1, const std::string &amp; message );
+  const std::string &amp; message );
 
 filesystem_error( const std::string &amp; who,
-const path &amp; path1, int sys_err_code );
+  const path &amp; path1, const std::string &amp; message );
 
 filesystem_error( const std::string &amp; who,
-const path &amp; path1, const path &amp; path2,
-int sys_err_code );</pre>
+  const path &amp; path1, int sys_err_code );
+
+filesystem_error( const std::string &amp; who,
+  const path &amp; path1, const path &amp; path2,
+  int sys_err_code );</pre>
   <p><b>Precondition:</b> The <code>who</code> argument is in the form, as 
   appropriate:</p>
   <ul>
@@ -134,7 +140,8 @@ int sys_err_code );</pre>
 <blockquote>
   <pre>const path &amp; path1() const;</pre>
 
-<p><b>Returns:</b> The <code>path1</code> argument to the constructor.</p>
+<p><b>Returns:</b> The <code>path1</code> argument to the constructor, if any, 
+otherwise <code>path()</code>.</p>
 </blockquote>
 
 <h3><a name="path2">path2</a></h3>
@@ -152,7 +159,7 @@ internationalization of error messages. </p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->29 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38522" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
 
 </body>
 

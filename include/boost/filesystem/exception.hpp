@@ -20,6 +20,8 @@
 #ifndef BOOST_FILESYSTEM_EXCEPTION_HPP
 #define BOOST_FILESYSTEM_EXCEPTION_HPP
 
+#include <boost/filesystem/path.hpp>
+
 #include <string>
 #include <stdexcept>
 
@@ -29,6 +31,11 @@ namespace boost
 {
   namespace filesystem
   {
+    namespace detail
+    {
+      int system_error_code(); // artifact of POSIX and WINDOWS error reporting
+    }
+
     enum error_code
     {
       no_error = 0,
@@ -38,7 +45,7 @@ namespace boost
       security_error,   // includes access rights, permissions failures
       read_only_error,
       io_error,
-      path_error,       // path format or a name in the path is invalid
+      path_error,
       not_found_error,
       not_directory_error,
       busy_error,       // implies trying again might succeed
@@ -55,25 +62,41 @@ namespace boost
     {
     public:
 
-      filesystem_error( const std::string & msg, error_code ec );
-      // if ec==system_error, unspecified processing of msg and ec will occur
+      filesystem_error(
+        const std::string & who,
+        const std::string & message ); // assumed to be error_code::other_error
+
+      filesystem_error(
+        const std::string & who,
+        const path & path1,
+        const std::string & message ); // assumed to be error_code::other_error
+
+      filesystem_error(
+        const std::string & who,
+        const path & path1,
+        int sys_err_code );
+
+      filesystem_error(
+        const std::string & who,
+        const path & path1,
+        const path & path2,
+        int sys_err_code );
 
       ~filesystem_error() throw();
 
-      int         native_error() const { return m_sys_err; }
+      int             native_error() const { return m_sys_err; }
       // Note: a value of 0 implies a library (rather than system) error
+      error_code      error() const { return m_err; }
+      const std::string &  who() const; // name of who throwing exception
+      const path &    path1() const; // argument 1 to who; may be empty()
+      const path &    path2() const; // argument 2 to who; may be empty()
 
-      error_code  error() const { return m_err; }
-/*
-      const string & function() const;
-      // name of the function throwing the exception
-
-      const path & path1() const; // argument 1 to function; may be empty()
-      const path & path2() const; // argument 2 to function; may be empty()
-*/
-     private:
-      int                 m_sys_err;
-      error_code          m_err;
+    private:
+      int             m_sys_err;
+      error_code      m_err;
+      std::string     m_who;
+      path            m_path1;
+      path            m_path2;
     };
 
   } // namespace filesystem

@@ -16,6 +16,10 @@
 #include <cstring>
 #include <cassert>
 
+# ifdef BOOST_NO_STDC_NAMESPACE
+    namespace std { using ::strcmp; }
+# endif
+
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
 using boost::next;
