@@ -69,13 +69,7 @@ directory boost/filesystem:</p>
 &nbsp;</li>
   <li>Header <a href="../../../boost/filesystem/convenience.hpp">convenience.hpp</a> 
   provides convenience functions that combine lower-level functions in useful 
-  ways. See <a href="convenience.htm">convenience.hpp documentation</a>.<br>
-&nbsp;</li>
-  <li>Experimental header <i>
-  <a href="../../../boost/filesystem/recursive_directory_iterator.hpp">
-  recursive_directory_iterator.hpp</a></i> provides an undocumented directory 
-  iterator which recurses into any sub-directories encountered. It will be 
-  incorporated into the Filesystem Library if user feedback is favorable.</li>
+  ways. See <a href="convenience.htm">convenience.hpp documentation</a>.</li>
 </ul>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
 <p>First some preliminaries:</p>
@@ -122,7 +116,7 @@ fs::ifstream file2( arg_path / &quot;foo&quot; / &quot;bar&quot; );</pre>
 </blockquote>
 <p>Note that expressions <i>arg_path / &quot;foo/bar&quot;</i> and <i>arg_path / &quot;foo&quot; 
 / &quot;bar&quot;</i> yield identical results.</p>
-<p><a href="operations.htm#Class directory_iterator">Class <i>directory_iterator</i></a> 
+<p><a href="operations.htm#directory_iterator">Class <i>directory_iterator</i></a> 
 is an important component of the library. It provides input iterators over the 
 contents of a directory, with the value type being class <i>path</i>.</p>
 <p>The following function, given a directory path and a file name, recursively 
@@ -386,7 +380,7 @@ of portability&quot; problem, particularly in postings by JP Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38519" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38507" --></p>
 
 </body>
 

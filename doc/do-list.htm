@@ -3,8 +3,6 @@
 <img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
 <ul>
-  <li>Docs for boost/filesystem/exception.hpp still needed!<br>
-&nbsp;</li>
   <li>Final resolution of the move vs rename issue.<br>
 &nbsp;</li>
   <li>Pavel Vozenilek writes: rename() function from operations.hpp should state 
@@ -19,8 +17,7 @@ Do-list</h1>
   Win95/98.<br>
 &nbsp;</li>
   <li>Windows: Some files seem to be poisoned to the point where you can't even 
-  do is_directory() on them with an access error. For example,&nbsp; 
-  pagefile.sys. Should directory_iterator ignore these files?<br>
+  do is_directory() on them without an access error. For example,&nbsp; pagefile.sys. Should directory_iterator ignore these files?<br>
 &nbsp;</li>
   <li>Windows: //share style paths need more analysis and test cases for system_complete() 
   and complete(). Also, path_test cases at line 410 need review, correction.<br>
@@ -64,12 +61,9 @@ Do-list</h1>
   Will any programs fail?<br>
 &nbsp;</li>
   <li>Methodically check all functions taking path arguments to verify that 
-  behavior when path(&quot;&quot;) is well-specified.<br>
-&nbsp;</li>
-  <li>Document exception code mapping, and specify as &quot;implementation defined&quot;.<br>
-&nbsp;</li>
+  behavior when path(&quot;&quot;) is well-specified.</li>
 </ul>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38515" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38507" --></p>
