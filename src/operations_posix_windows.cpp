@@ -362,6 +362,9 @@ namespace boost
           // shall fail and set errno to EEXIST or ENOTEMPTY."
           // Linux uses ENOTEMPTY, Solaris uses EEXIST.
           if ( error == EEXIST ) error = ENOTEMPTY;
+          boost::throw_exception( filesystem_error(
+            "boost::filesystem::remove", ph, error ) );
+        }
 #   else
         if ( is_directory( ph ) )
         {
@@ -373,12 +376,11 @@ namespace boost
         else
         {
           if ( !::DeleteFileA( ph.string().c_str() ) )
-            int error = fs::detail::system_error_code();
-#   endif
             boost::throw_exception( filesystem_error(
               "boost::filesystem::remove",
-              ph, error ) );
+              ph, fs::detail::system_error_code() ) );
         }
+#   endif
         return true;
       }
       return false;
