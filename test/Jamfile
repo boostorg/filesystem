@@ -23,18 +23,23 @@ DEPENDS all : test ;
    test-suite "filesystem"
        : [ run libs/filesystem/test/path_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
          [ run libs/filesystem/test/default_name_check_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
          [ run libs/filesystem/test/operations_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
          [ run libs/filesystem/test/fstream_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
          [ run libs/filesystem/test/convenience_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
        ;
 }
