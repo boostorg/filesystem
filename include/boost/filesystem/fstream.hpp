@@ -43,12 +43,12 @@ namespace boost
     public:
       basic_ifstream() {}
       explicit basic_ifstream( const path & file_ph,
-        ios_base::openmode mode = std::ios_base::in )
+        std::ios_base::openmode mode = std::ios_base::in )
         : std::basic_ifstream<charT,traits>(
         file_ph.file_c_str(), mode ) {}
       virtual ~basic_ifstream() {}
       void open( const path & file_ph,
-        ios_base::openmode mode = std::ios_base::in )
+        std::ios_base::openmode mode = std::ios_base::in )
       {
         std::basic_ifstream<charT,traits>::open(
           file_ph.file_c_str(), mode );
@@ -64,12 +64,12 @@ namespace boost
     public:
       basic_ofstream() {}
       explicit basic_ofstream( const path & file_ph,
-        ios_base::openmode mode = std::ios_base::out )
+        std::ios_base::openmode mode = std::ios_base::out )
         : std::basic_ofstream<charT,traits>(
         file_ph.file_c_str(), mode ) {}
       virtual ~basic_ofstream() {}
       void open( const path & file_ph,
-        ios_base::openmode mode = std::ios_base::out )
+        std::ios_base::openmode mode = std::ios_base::out )
       {
         std::basic_ofstream<charT,traits>::open(
           file_ph.file_c_str(), mode );
@@ -85,12 +85,12 @@ namespace boost
     public:
       basic_fstream() {}
       explicit basic_fstream( const path & file_ph,
-        ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
+        std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
         : std::basic_fstream<charT,traits>(
         file_ph.file_c_str(), mode ) {}
       virtual ~basic_fstream() {}
       void open( const path & file_ph,
-        ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
+        std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
       {
         std::basic_fstream<charT,traits>::open(
           file_ph.file_c_str(), mode );
