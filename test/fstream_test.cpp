@@ -45,8 +45,8 @@ int test_main( int, char*[] )
     fs::basic_ofstream<char> bofs( "fstream_test_bfoo" );
     fs::ofstream cofs( "fstream_test_cfoo" );
 
-    BOOST_TEST( bofs.is_open() );
-    BOOST_TEST( cofs.is_open() );
+    BOOST_CHECK( bofs.is_open() );
+    BOOST_CHECK( cofs.is_open() );
 
     bofs << "fstream_test_bfoo";
     cofs << "fstream_test_cfoo";
@@ -57,7 +57,7 @@ int test_main( int, char*[] )
 
 #   ifndef BOOST_NO_STD_WSTRING
     fs::wofstream wofs( "fstream_test_wfoo" );
-    BOOST_TEST( wofs.is_open() );
+    BOOST_CHECK( wofs.is_open() );
     wofs << L"fstream_test_wfoo";
     wofs.open( "fstream_test_wfoo" ); // expected to fail
 #   endif
@@ -67,8 +67,8 @@ int test_main( int, char*[] )
     fs::basic_ifstream<char> bifs( "fstream_test_bfoo" );
     fs::ifstream cifs( "fstream_test_cfoo" );
 
-    BOOST_TEST( bifs.is_open() );
-    BOOST_TEST( cifs.is_open() );
+    BOOST_CHECK( bifs.is_open() );
+    BOOST_CHECK( cifs.is_open() );
 
     std::string b;
     std::string c;
@@ -76,8 +76,8 @@ int test_main( int, char*[] )
     bifs >> b;
     cifs >> c;
 
-    BOOST_TEST( b == "fstream_test_bfoo" );
-    BOOST_TEST( c == "fstream_test_cfoo" );
+    BOOST_CHECK( b == "fstream_test_bfoo" );
+    BOOST_CHECK( c == "fstream_test_cfoo" );
 
     // these will fail, but they still test the interface
     bifs.open( "fstream_test_bfoo" );
@@ -85,10 +85,10 @@ int test_main( int, char*[] )
 
 #   ifndef BOOST_NO_STD_WSTRING
     fs::wifstream wifs( "fstream_test_wfoo" );
-    BOOST_TEST( wifs.is_open() );
+    BOOST_CHECK( wifs.is_open() );
     std::wstring w;
     wifs >> w;
-    BOOST_TEST( w == L"fstream_test_wfoo" );
+    BOOST_CHECK( w == L"fstream_test_wfoo" );
     wifs.open( "fstream_test_wfoo" ); // expected to fail
 #   endif
   }
@@ -97,8 +97,8 @@ int test_main( int, char*[] )
     fs::basic_fstream<char> bfs( "fstream_test_bfoo" );
     fs::fstream cfs( "fstream_test_cfoo" );
 
-    BOOST_TEST( bfs.is_open() );
-    BOOST_TEST( cfs.is_open() );
+    BOOST_CHECK( bfs.is_open() );
+    BOOST_CHECK( cfs.is_open() );
 
     std::string b;
     std::string c;
@@ -106,8 +106,8 @@ int test_main( int, char*[] )
     bfs >> b;
     cfs >> c;
 
-    BOOST_TEST( b == "fstream_test_bfoo" );
-    BOOST_TEST( c == "fstream_test_cfoo" );
+    BOOST_CHECK( b == "fstream_test_bfoo" );
+    BOOST_CHECK( c == "fstream_test_cfoo" );
 
     // these will fail, but they still test the interface
     bfs.open( "fstream_test_bfoo" );
@@ -115,10 +115,10 @@ int test_main( int, char*[] )
 
 #   ifndef BOOST_NO_STD_WSTRING
     fs::wfstream wfs( "fstream_test_wfoo" );
-    BOOST_TEST( wfs.is_open() );
+    BOOST_CHECK( wfs.is_open() );
     std::wstring w;
     wfs >> w;
-    BOOST_TEST( w == L"fstream_test_wfoo" );
+    BOOST_CHECK( w == L"fstream_test_wfoo" );
     wfs.open( "fstream_test_wfoo" ); // expected to fail
 #   endif
   }

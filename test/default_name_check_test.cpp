@@ -17,10 +17,10 @@ using boost::filesystem::path;
 
 int test_main( int, char*[] )
 {
-  BOOST_TEST( path::default_name_check_writable() );
+  BOOST_CHECK( path::default_name_check_writable() );
   path::default_name_check( fs::no_check );
-  BOOST_TEST( !path::default_name_check_writable() );
-  BOOST_TEST( path::default_name_check() == fs::no_check );
+  BOOST_CHECK( !path::default_name_check_writable() );
+  BOOST_CHECK( path::default_name_check() == fs::no_check );
   return 0;
 }
 
