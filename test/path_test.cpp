@@ -59,9 +59,20 @@ namespace {
 int test_main( int, char*[] )
 {
   std::string platform( BOOST_PLATFORM );
-  platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
-             ? "Windows"
-             : "POSIX";
+
+  // The choice of platform is make at runtime rather than compile-time
+  // so that compile errors for all platforms will be detected even though
+  // only the current platform is runtime tested.
+# if defined( BOOST_POSIX )
+    platform = "POSIX";
+# elif defined( BOOST_WINDOWS )
+    platform = "Windows";
+# else
+    platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
+               ? "Windows"
+               : "POSIX";
+# endif
+  std::cout << "Platform is " << platform << '\n';
 
   BOOST_TEST( path::default_name_check_writable() );
   BOOST_TEST( path::default_name_check() == fs::portable_name );
