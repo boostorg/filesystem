@@ -42,10 +42,10 @@ namespace boost
         bool operator==( const path_itr_imp & rhs ) const
           { return path_ptr == rhs.path_ptr && pos == rhs.pos; }
       };
-    }
+    } // detail
 
-    enum path_format { system_specific }; // ugly enough to discourage use
-                                          // except when actually needed
+    enum path_format { native }; // ugly enough to discourage use
+                                 // except when actually needed
 
   //  path -------------------------------------------------------------------//
 
@@ -64,12 +64,17 @@ namespace boost
 
       // append operations:
       path & operator /=( const path & rhs );
-      const path operator /( const path & rhs ) const
+      path operator /( const path & rhs ) const
         { return path( *this ) /= rhs; }
+
+      // conversion functions:
+      const std::string & string() const { return m_path; }
+      std::string native_file_string() const;
+      std::string native_directory_string() const;
 
       // decomposition functions:
       path         root_path() const;
-      std::string  system_specific_root() const;
+      std::string  root_name() const;
       std::string  root_directory() const;
       path         relative_path() const;
       std::string  leaf() const;
@@ -78,19 +83,14 @@ namespace boost
       // query functions:
       bool empty() const { return m_path.empty(); } // name consistent with std containers
 
-      bool is_complete() const; // has_root_directory [&& has_system_specific_root()]
+      bool is_complete() const;
 
-      bool has_root_path() const;  // has_system_specific_root() || has_root_directory()
-      bool has_system_specific_root() const;
+      bool has_root_path() const;
+      bool has_root_name() const;
       bool has_root_directory() const;
       bool has_relative_path() const;
       bool has_leaf() const { return !m_path.empty(); }
       bool has_branch_path() const;
-
-      const std::string & string() const { return m_path; }
-
-      std::string system_specific_file_string() const;
-      std::string system_specific_directory_string() const;
 
       // iteration over the names in the path:
       typedef boost::iterator_adaptor<
@@ -118,7 +118,7 @@ namespace boost
       // constructor input formats.  Private members might be quite different
       // in other implementations, particularly where there were wide
       // differences between generic and system-specific argument formats,
-      // or between system_specific_file_string() and system_specific_directory_string() formats.
+      // or between native_file_string() and native_directory_string() formats.
 
       std::string  m_path;
 

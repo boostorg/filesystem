@@ -56,7 +56,7 @@ namespace boost
 
     void create_directory( const path & directory_ph );
 
-    void remove( const path & ph );
+    bool remove( const path & ph );
 
     void rename( const path & from_path,
                  const path & to_path );
@@ -66,15 +66,18 @@ namespace boost
     void copy_file( const path & from_file_ph,
                     const path & to_file_ph );
 
-    const path &  initial_path();
     path          current_path();
+    const path &  initial_path();
+
+    path          system_complete( const path & ph );
+    path          complete( const path & ph, const path & base = initial_path() );
 
 //  details  -----------------------------------------------------------------//
 
     namespace detail
     {
       const char * implementation_name(); // helps testing to know name
-      bool single_rooted_filesystem();
+      bool single_root_name();
     }
 
 //  directory_iterator  ------------------------------------------------------//

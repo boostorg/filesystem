@@ -40,6 +40,7 @@ namespace fs = boost::filesystem;
   namespace std { using ::strlen; }
 #endif
 
+#include <boost/throw_exception.hpp>
 #include <cstring>  // SGI MIPSpro compilers need this
 #include <vector>
 #include <cassert>
@@ -149,8 +150,8 @@ namespace boost
     const path & check_posix_leaf( const path & ph )
     {
       if ( !posix_name( ph.leaf() ) )
-        throw filesystem_error( "invalid posix name: \""
-          + ph.leaf() + "\"" );
+        boost::throw_exception( filesystem_error( "invalid posix name: \""
+          + ph.leaf() + "\"", path_error ) );
       return ph;
     }
 
@@ -195,18 +196,6 @@ namespace boost
       return *this;
     }
 
-    std::string path::system_specific_file_string() const
-    {
-      std::string s( m_path );
-      for ( std::string::iterator itr( s.begin() );
-        itr != s.end(); ++itr )
-        if ( *itr == '/' ) *itr = '\\';
-      return s;
-    }
-
-    std::string path::system_specific_directory_string() const
-      { return system_specific_file_string(); }
-   
     void path::m_path_append( const std::string & src, source_context context )
     {
       // convert backslash to forward slash if context is "platform" 
@@ -219,7 +208,7 @@ namespace boost
 
       std::string::const_iterator itr( src.begin() );
 
-      // [system-specific-root]
+      // [root-filesystem]
 #     ifdef BOOST_WINDOWS
       if ( context != generic && src.size() >= 2 )
       {
@@ -321,8 +310,8 @@ namespace boost
 
           if ( context == generic && !generic_name( name ) )
           {
-            throw filesystem_error( "invalid path name: \""
-               + src + "\"" );
+            boost::throw_exception( filesystem_error( "invalid path name: \""
+               + src + "\"", path_error ) );
           }
 
           m_path += name;
@@ -336,12 +325,30 @@ namespace boost
 #         endif
           ) ++itr;
           else 
-            throw filesystem_error( "invalid path syntax: \""
-               + src + "\"" );
+            boost::throw_exception( filesystem_error( "invalid path syntax: \""
+               + src + "\"", path_error ) );
         }
 
       } // while more elements
     }
+
+// path conversion functions  ------------------------------------------------//
+
+    std::string path::native_file_string() const
+    {
+#   ifdef BOOST_WINDOWS
+      std::string s( m_path );
+      for ( std::string::iterator itr( s.begin() );
+        itr != s.end(); ++itr )
+        if ( *itr == '/' ) *itr = '\\';
+      return s;
+#   else
+      return m_path;
+#   endif
+    }
+
+    std::string path::native_directory_string() const
+      { return native_file_string(); }
 
 // path decomposition functions  ---------------------------------------------//
 
@@ -360,24 +367,6 @@ namespace boost
       m_path += new_leaf;
     }
 
-/*
-    path & path::make_absolute( const path & root_source )
-    {
-      assert( root_source.is_absolute() ); 
-      if ( !is_absolute() )
-      {
-        path tmp( root_source.root_path() );
-        tmp /= relative_path();
-        operator=( tmp );
-      }
-      return *this;
-    }
-
-    path & path::make_absolute()
-    {
-      return make_absolute( initial_path() );
-    }
-*/
     std::string path::leaf() const
     {
       return m_path.substr( leaf_pos( m_path, m_path.size() ) );
@@ -414,7 +403,7 @@ namespace boost
       // skip a '/' unless it is a root directory
       if ( end_pos && m_path[end_pos-1] == '/'
         && !detail::is_absolute_root( m_path, end_pos ) ) --end_pos;
-      return path( m_path.substr( 0, end_pos ), system_specific );
+      return path( m_path.substr( 0, end_pos ), native );
     }
 
     path path::relative_path() const
@@ -438,7 +427,7 @@ namespace boost
       return path( m_path.substr( pos ) );
     }
 
-    std::string path::system_specific_root() const
+    std::string path::root_name() const
     {
 #   ifdef BOOST_WINDOWS
       std::string::size_type pos( m_path.find( ':' ) );
@@ -468,7 +457,7 @@ namespace boost
     {
       return path(
 #   ifdef BOOST_WINDOWS
-        system_specific_root(), system_specific ) /= root_directory();
+        root_name(), native ) /= root_directory();
 #   else
         root_directory() );
 #   endif
@@ -510,7 +499,7 @@ namespace boost
                ;
     }
 
-    bool path::has_system_specific_root() const
+    bool path::has_root_name() const
     {
 #   ifdef BOOST_WINDOWS
       return m_path.size() > 1

@@ -4,11 +4,6 @@
 <h1>
 <img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Filesystem 
 FAQ</h1>
-<p><b>Why not use a URI (Universal Resource Identifier) based path?</b></p>
-<p>URI's would promise more than the Filesystem Library can actually deliver, 
-since URI's extend far beyond what most operating systems consider a file or a 
-directory.&nbsp; Thus for the primary &quot;portable script-style file system 
-operations&quot; requirement of the Filesystem Library, full URI's appear to be over-specification.</p>
 <p><b>Why base the generic-path string format on POSIX?</b></p>
 <p>POSIX is the basis for the most familiar path-string formats, including the 
 URL portion of URI's and the native Windows format. It is ubiquitous and 
@@ -16,28 +11,35 @@ familiar.&nbsp; On many systems, it is very easy to implement because it is
 either the native operating system format (Unix and Windows) or via a 
 operating system supplied 
 POSIX library (z/OS, OS/390, and many more.)</p>
+<p><b>Why not use a full URI (Universal Resource Identifier) based path?</b></p>
+<p>URI's would promise more than the Filesystem Library can actually deliver, 
+since URI's extend far beyond what most operating systems consider a file or a 
+directory.&nbsp; Thus for the primary &quot;portable script-style file system 
+operations&quot; requirement of the Filesystem Library, full URI's appear to be over-specification.</p>
 <p><b>Why isn't <i>path</i> a base class with derived <i>directory_path</i> and
 <i>file_path</i> classes?</b></p>
 <p>Why bother?&nbsp; The behavior of all three classes is essentially identical. 
 Several early versions did require users to identify each path as a file or 
 directory path, and this seemed to increase errors and decrease code 
 readability. There was no apparent upside benefit. </p>
-<p><b>Why do some <i>path</i> member function names have a &quot;system_specific_&quot; prefix?</b></p>
+<p><b>Why do some function names have a &quot;native_&quot; prefix?</b></p>
 <p>To alert users that the results are inherently non-portable. The names are 
 deliberately ugly to discourage use except where really necessary.</p>
 <p><b>Why doesn't path supply operator== and other comparison operators?</b></p>
 <p>There is no way to know if two <i>path</i> objects actually represent the 
 same path.&nbsp; For example, <i>path(&quot;/foo&quot;)</i> and <i>path(&quot;../foo&quot;)</i> may 
-represent the same path, even though they are textually different. <i>
-path::string()'s</i> can be used for textual comparison.</p>
-<p><b>Why not support a  concept of specific kinds file systems, such as 
-posix_file_system or windows_file_system.</b></p>
+represent the same path, even though they are textually different. If exact 
+textual comparison is desired, <i>
+path::string()'s</i> can be used.</p>
+<p><b>Why not support a  concept of specific kinds of file systems, such as posix_file_system or windows_file_system.</b></p>
 <p>Portability is one of the one or two most important requirements for the 
-library.&nbsp; Gaining some advantage by using features specific to particular 
-operating systems is not a requirement.</p>
+library.&nbsp;Gaining some advantage by using features specific to particular 
+operating systems is not a requirement. There doesn't appear to be much need for 
+the ability to manipulate, say, a classic Mac OS path while running on an 
+OpenVMS machine.</p>
 <p>Furthermore, concepts like &quot;posix_file_system&quot; 
 are very slippery. What happens when a NTFS or ISO 9660 file system is mounted 
-in directory on a machine running the POSIX operating system, for example?</p>
+in directory on a machine running a POSIX-like operating system, for example?</p>
 <p><b>Why not supply a 'handle' type, and let the file and directory operations 
 traffic in it?</b></p>
 <p>It isn't clear there is any feasible way to meet the &quot;portable script-style 
@@ -128,11 +130,11 @@ system depend as to be disqualified as a &quot;guaranteed presence&quot; operati
 <p><b>Why isn't there a set_current_directory function?</b></p>
 <p>Global variables are considered harmful [<a href="design.htm#Wulf-Shaw-73">wulf-shaw-73</a>]. 
 While we can't prevent people from shooting themselves in the foot, we aren't 
-about to hand them the gun.</p>
+about to hand them a loaded gun pointed right at their big toe.</p>
 <p><b>Why aren't there query functions for compound conditions like existing_directory?</b></p>
 <p>After several attempts, named queries for multi-attribute proved a 
 slippery-slope; where do you stop?</p>
-<p><b>Why aren't <a name="wide-character names">wide-character names</a> supported? Why not std::wstring or even 
+<p><b>Why aren't <a name="wide-character_names">wide-character names</a> supported? Why not std::wstring or even 
 a templated type?</b></p>
 <p>Wide-character names would provide an illusion of portability where 
 portability does not in fact exist. Behavior would be completely different on 
@@ -148,6 +150,8 @@ between wide-character and narrow-character names for file systems which do not 
 wide-character name, and 
 (3) even the committee members most interested in wide-character names are 
 unsure that they are a good idea in the context of a portable library.</p>
+<p>[October, 2002 - PJ Plauger has suggested a&nbsp; locale based conversion 
+scheme. Others have indicated support for such an experiment.]</p>
 <p><b>Why aren't file and directory name portability errors detected automatically, 
 rather than by separate function calls?</b></p>
 <p>Applications mix use of portable and non-portable names, and the situations 
@@ -158,9 +162,10 @@ native directories and files for later use restricted to ISO-6990 filesystem,
 conditions for error are very different between the source and the target.</p>
 <p>A number (at least six) of designs for automatic name validity error 
 detection were evaluated, including at least four complete implementations.&nbsp; 
-While the details for rejection differed, they all tended to distort the 
+While the details for rejection differed, all automatic name validity checking 
+designs tended to distort the 
 otherwise simple design of the rest of the library.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 November, 2002<!--webbot bot="Timestamp" endspan i-checksum="39364" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>

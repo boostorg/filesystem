@@ -31,7 +31,7 @@ namespace boost
         std::ios_base::openmode mode )
       {
         return std::basic_filebuf<charT,traits>::open(
-          file_ph.file_path().c_str(), mode );
+          file_ph.native_file_string().c_str(), mode );
       }
     };
 
@@ -48,13 +48,13 @@ namespace boost
       explicit basic_ifstream( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::in )
         : std::basic_ifstream<charT,traits>(
-        file_ph.file_path().c_str(), mode ) {}
+        file_ph.native_file_string().c_str(), mode ) {}
       virtual ~basic_ifstream() {}
       void open( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::in )
       {
         std::basic_ifstream<charT,traits>::open(
-          file_ph.file_path().c_str(), mode );
+          file_ph.native_file_string().c_str(), mode );
       }
     };
 
@@ -71,13 +71,13 @@ namespace boost
       explicit basic_ofstream( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::out )
         : std::basic_ofstream<charT,traits>(
-        file_ph.file_path().c_str(), mode ) {}
+        file_ph.native_file_string().c_str(), mode ) {}
       virtual ~basic_ofstream() {}
       void open( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::out )
       {
         std::basic_ofstream<charT,traits>::open(
-          file_ph.file_path().c_str(), mode );
+          file_ph.native_file_string().c_str(), mode );
       }
     };
 
@@ -94,13 +94,13 @@ namespace boost
       explicit basic_fstream( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
         : std::basic_fstream<charT,traits>(
-        file_ph.file_path().c_str(), mode ) {}
+        file_ph.native_file_string().c_str(), mode ) {}
       virtual ~basic_fstream() {}
       void open( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
       {
         std::basic_fstream<charT,traits>::open(
-          file_ph.file_path().c_str(), mode );
+          file_ph.native_file_string().c_str(), mode );
       }
     };
  

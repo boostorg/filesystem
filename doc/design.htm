@@ -18,7 +18,7 @@ Library Design</h1>
 <a href="#Requirements">Requirements</a><br>
 <a href="#Realities">Realities</a><br>
 <a href="#Rationale">Rationale</a><br>
-<a href="#Abandoned Designs">Abandoned Designs</a><br>
+<a href="#Abandoned_Designs">#Abandoned_Designs</a><br>
 <a href="#References">References</a></p>
 
 <h2><a name="Introduction">Introduction</a></h2>
@@ -111,10 +111,10 @@ of choice..</p>
   <li>Avoid giving the illusion of portability where portability in fact does not 
   exist.<br>
   <br>
-  Rationale: Defining important behavior unspecified or &quot;implementation defined&quot; does a 
+  Rationale: Leaving important behavior unspecified or &quot;implementation defined&quot; does a 
   great disservice to programmers using a library because it makes it appear 
   that code relying on the behavior is portable, when in fact there is nothing 
-  at all portable about it. The only case where such under-specification is acceptable is when both users and implementors know from 
+  portable about it. The only case where such under-specification is acceptable is when both users and implementors know from 
   other sources exactly what behavior is required, yet for some reason it isn't 
   possible to specify it exactly.</li>
 </ul>
@@ -197,13 +197,16 @@ design decisions.</p>
 
 <p>Several key insights went into the <i>path</i> class design:</p>
 <ul>
-  <li>Decoupling the input formats, internal conceptual (<i>vector&lt;string&gt;</i> 
+  <li>Decoupling of the input formats, internal conceptual (<i>vector&lt;string&gt;</i> 
   or other sequence) 
   model, and output formats.</li>
   <li>Providing two input formats (generic and O/S specific) broke a major 
   design deadlock.</li>
   <li>Providing several output formats solved another set of previously 
   intractable problems.</li>
+  <li>Several non-obvious functions (particularly decomposition and composition) 
+  are required to support portable code. (Peter Dimov, Thomas Witt, Glen 
+  Knowles, others.)</li>
 </ul>
 
 <p>Error checking was a particularly difficult area. One key insight was that 
@@ -212,7 +215,7 @@ Rather, the programmer must think out the question &quot;What operating systems 
 want this path to be portable to?&quot;&nbsp; By providing support for several 
 answers to that question, the Filesystem Library alerts programmers of the need 
 to ask it in the first place.</p>
-<h2><a name="Abandoned Designs">Abandoned Designs</a></h2>
+<h2><a name="Abandoned_Designs">Abandoned Designs</a></h2>
 <h3>operations.hpp</h3>
 <p>Dietmar Kühl's original dir_it design and implementation supported 
 wide-character file and directory names. It was abandoned after extensive 
@@ -233,10 +236,11 @@ real code.</p>
 <p>Yet another set of convenience functions ( for example, <i>remove</i> with 
 permissive, prune, recurse, and other options, plus predicate, and possibly 
 other, filtering features) were abandoned because the details became both 
-complex and contentious. What is left is a toolkit of low-level operations from 
-which the user can create more complex convenience operations, plus a very small 
-number of convenience functions which were found to be useful enough to justify 
-inclusion.</p>
+complex and contentious.</p>
+
+<p>What is left is a toolkit of low-level operations from which the user can 
+create more complex convenience operations, plus a very small number of 
+convenience functions which were found to be useful enough to justify inclusion.</p>
 
 <h3>path.hpp</h3>
 
@@ -284,7 +288,7 @@ Variable Considered Harmful</i>, ACM SIGPLAN Notices, 8, 2, 1973, pp. 23-34</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39336" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
 
 </body>
 

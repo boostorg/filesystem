@@ -23,40 +23,46 @@ using boost::bind;
 
 namespace
 {
+  bool report_throws;
   fs::directory_iterator end_itr;
 
   void create_file( const fs::path & ph, const std::string & contents )
   {
-    std::ofstream f( ph.system_specific_file_string().c_str() );
+    std::ofstream f( ph.native_file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "ofstream(): " + ph.string() );
+      throw fs::filesystem_error( "ofstream(): " + ph.string(),
+        fs::system_error );
     if ( !contents.empty() ) f << contents;
   }
 
   void verify_file( const fs::path & ph, const std::string & expected )
   {
-    std::ifstream f( ph.system_specific_file_string().c_str() );
+    std::ifstream f( ph.native_file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "ifstream(): " + ph.string() );
+      throw fs::filesystem_error( "ifstream(): " + ph.string(),
+        fs::system_error );
     std::string contents;
     f >> contents;
     if ( contents != expected )
       throw fs::filesystem_error("verify_file(): " + ph.string()
         + " contents \"" + contents
-        + "\" != \"" + expected + "\"" );
+        + "\" != \"" + expected + "\"", fs::system_error );
   }
 
   template< typename F >
-  bool throws_fs_error( F func )
+    bool throws_fs_error( F func, fs::error_code ec = fs::no_error )
   {
     try { func(); }
 
-    catch ( const fs::filesystem_error & /*ex*/ )
+    catch ( const fs::filesystem_error & ex )
     {
-//      std::cout << ex.what() << "\n";
-      return true;
+      if ( report_throws ) std::cout << ex.what() << "\n";
+      if ( ec == fs::no_error || ec == ex.error() ) return true;
+      std::cout << "filesystem_error::error() reports " << ex.error()
+        << ", should be " << ec
+        << "\n native_error() is " << ex.native_error()
+        << "\n";
     }
-
     return false;
   }
 
@@ -64,36 +70,88 @@ namespace
 
 //  test_main  ---------------------------------------------------------------//
 
-int test_main( int, char * [] )
+int test_main( int argc, char * argv[] )
 {
+  if ( argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t' ) report_throws = true;
+
   std::cout << "implemenation name: "
             << fs::detail::implementation_name() << "\n";
   std::cout << "initial_path().string() is\n  \""
             << fs::initial_path().string()
             << "\"\n";
-  std::cout << "initial_path().system_specific_file_string() is\n  \""
-            << fs::initial_path().system_specific_file_string()
+  std::cout << "initial_path().native_file_string() is\n  \""
+            << fs::initial_path().native_file_string()
             << "\"\n";
 
   BOOST_TEST( fs::initial_path().is_complete() );
   BOOST_TEST( fs::current_path().is_complete() );
   BOOST_TEST( fs::initial_path().string() == fs::current_path().string() );
 
+  BOOST_TEST( fs::complete( "" ).empty() );
+  BOOST_TEST( fs::complete( "/" ).string()
+    == fs::initial_path().root_path().string() );
+  BOOST_TEST( fs::complete( "foo" ).string()
+    == fs::initial_path().string()+"/foo" );
+  BOOST_TEST( fs::complete( "/foo" ).string()
+    == fs::initial_path().root_path().string()+"foo" );
+
   fs::path dir(  fs::initial_path() / "temp_fs_test_directory" );
   
+  // Windows only tests
   if ( std::strcmp( fs::detail::implementation_name(), "Windows" ) == 0 )
   {
     BOOST_TEST( dir.string().size() > 1
       && dir.string()[1] == ':' ); // verify path includes drive
+
+    BOOST_TEST( fs::system_complete( "" ).empty() );
+    BOOST_TEST( fs::system_complete( "/" ).string()
+      == fs::initial_path().root_path().string() );
+    BOOST_TEST( fs::system_complete( "foo" ).string()
+      == fs::initial_path().string()+"/foo" );
+    BOOST_TEST( fs::system_complete( "/foo" ).string()
+      == fs::initial_path().root_path().string()+"foo" );
+
+//    BOOST_TEST( fs::complete( fs::path( "c:", fs::native ) ).string()
+//      == fs::initial_path().string() );
+//    BOOST_TEST( fs::complete( fs::path( "c:foo", fs::native ) ).string()
+//      == fs::initial_path().string()+"/foo" );
+    BOOST_TEST( fs::complete( fs::path( "c:/", fs::native ) ).string()
+      == "c:/" );
+    BOOST_TEST( fs::complete( fs::path( "c:/foo", fs::native ) ).string()
+      ==  "c:/foo" );
+    BOOST_TEST( fs::complete( fs::path( "//share", fs::native ) ).string()
+      ==  "//share" );
+
+    BOOST_TEST( fs::system_complete( fs::path( "c:", fs::native ) ).string()
+      == fs::initial_path().string() );
+    BOOST_TEST( fs::system_complete( fs::path( "c:foo", fs::native ) ).string()
+      == fs::initial_path().string()+"/foo" );
+    BOOST_TEST( fs::system_complete( fs::path( "c:/", fs::native ) ).string()
+      == "c:/" );
+    BOOST_TEST( fs::system_complete( fs::path( "c:/foo", fs::native ) ).string()
+      ==  "c:/foo" );
+    BOOST_TEST( fs::system_complete( fs::path( "//share", fs::native ) ).string()
+      ==  "//share" );
   }
 
-  fs::path ng( " no-way, Jose ", fs::system_specific );
+  else if ( std::strcmp( fs::detail::implementation_name(), "POSIX" ) == 0 )
+  {
+    BOOST_TEST( fs::system_complete( "" ).empty() );
+    BOOST_TEST( fs::system_complete( "/" ).string()
+      == fs::initial_path().root_path().string() );
+    BOOST_TEST( fs::system_complete( "foo" ).string()
+      == fs::initial_path().string()+"/foo" );
+    BOOST_TEST( fs::system_complete( "/foo" ).string()
+      == fs::initial_path().root_path().string()+"foo" );
+  }
+
+  fs::path ng( " no-way, Jose ", fs::native );
 
   fs::remove_all( dir );  // in case residue from prior failed tests
   BOOST_TEST( !fs::exists( dir ) );
 
   // the bound functions should throw, so throws_fs_error() should return true
-  BOOST_TEST( throws_fs_error( bind( fs::is_directory, ng ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::is_directory, ng ), fs::not_found_error ) );
   BOOST_TEST( throws_fs_error( bind( fs::is_directory, dir ) ) );
   BOOST_TEST( throws_fs_error( bind( fs::_is_empty, dir ) ) );
 
@@ -111,7 +169,6 @@ int test_main( int, char * [] )
   BOOST_TEST( fs::_is_empty( d1 ) );
 
   boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
-  boost::function_requires< boost::ForwardIteratorConcept< fs::directory_iterator > >();
 
   {
     fs::directory_iterator dir_itr( dir );
@@ -193,7 +250,8 @@ int test_main( int, char * [] )
   BOOST_TEST( throws_fs_error( bind( fs::rename, d1 / "f2", d2 / "f4" ) ) );
 
   // make sure can't rename() to an existent file
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d2 / "f3" ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d2 / "f3" ),
+    fs::already_exists_error ) );
 
   // make sure can't rename() to a nonexistent parent directory
   BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ) ) );
@@ -213,10 +271,10 @@ int test_main( int, char * [] )
   create_file( file_ph, "" );
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
-  fs::remove( file_ph );
+  BOOST_TEST( fs::remove( file_ph ) );
   BOOST_TEST( !fs::exists( file_ph ) );
-  fs::remove( "no-such-file" ); // should be harmless
-  fs::remove( "no-such-directory/no-such-file" ); // ditto
+  BOOST_TEST( !fs::remove( "no-such-file" ) );
+  BOOST_TEST( !fs::remove( "no-such-directory/no-such-file" ) );
 
   // remove test on directory
   d1 = dir / "shortlife_dir";
@@ -225,8 +283,8 @@ int test_main( int, char * [] )
   BOOST_TEST( fs::exists( d1 ) );
   BOOST_TEST( fs::is_directory( d1 ) );
   BOOST_TEST( fs::_is_empty( d1 ) );
-  BOOST_TEST( throws_fs_error( bind( fs::remove, dir ) ) );
-  fs::remove( d1 );
+  BOOST_TEST( throws_fs_error( bind( fs::remove, dir ), fs::not_empty_error ) );
+  BOOST_TEST( fs::remove( d1 ) );
   BOOST_TEST( !fs::exists( d1 ) );
 
   // post-test cleanup
