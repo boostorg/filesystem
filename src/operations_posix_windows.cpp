@@ -51,6 +51,9 @@ namespace fs = boost::filesystem;
 # if defined(BOOST_WINDOWS)
 #   include "windows.h"
 #   if defined(__BORLANDC__) || defined(__MWERKS__)
+#     if defined(__BORLANDC__)
+        using std::time_t;
+#     endif
 #     include "utime.h"
 #   else
 #     include "sys/utime.h"
