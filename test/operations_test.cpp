@@ -132,10 +132,10 @@ int test_main( int argc, char * argv[] )
     BOOST_TEST( fs::complete( fs::path( "//share", fs::native ) ).string()
       ==  "//share" );
 
-    BOOST_TEST( fs::system_complete( fs::path( "c:", fs::native ) ).string()
-      == fs::initial_path().string() );
-    BOOST_TEST( fs::system_complete( fs::path( "c:foo", fs::native ) ).string()
-      == fs::initial_path().string()+"/foo" );
+    BOOST_TEST( fs::system_complete( fs::path( fs::initial_path().root_name(),
+      fs::native ) ).string() == fs::initial_path().string() );
+    BOOST_TEST( fs::system_complete( fs::path( fs::initial_path().root_name()
+      + "foo", fs::native ) ).string() == fs::initial_path().string()+"/foo" );
     BOOST_TEST( fs::system_complete( fs::path( "c:/", fs::native ) ).string()
       == "c:/" );
     BOOST_TEST( fs::system_complete( fs::path( "c:/foo", fs::native ) ).string()
