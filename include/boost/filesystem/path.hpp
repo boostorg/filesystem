@@ -67,10 +67,6 @@ namespace boost
       const path operator /( const path & rhs ) const
         { return path( *this ) /= rhs; }
 
-      // composition functions:
-      path & make_absolute();
-      path & make_absolute( const path & root_source );
-
       // decomposition functions:
       path         root_path() const;
       std::string  system_specific_root() const;
@@ -138,10 +134,10 @@ namespace boost
 
   //  path non-member functions  ---------------------------------------------//
 
-    inline const path operator / ( const char * lhs, const path & rhs )
+    inline path operator / ( const char * lhs, const path & rhs )
       { return path( lhs ) /= rhs; }
 
-    inline const path operator / ( const std::string & lhs, const path & rhs )
+    inline path operator / ( const std::string & lhs, const path & rhs )
       { return path( lhs ) /= rhs; }
    
   //  error checking  --------------------------------------------------------//

@@ -23,8 +23,8 @@
 
 #include <boost/config.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/smart_ptr.hpp>
-#include <boost/iterator_adaptors.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/iterator.hpp>
 
 #include <string>
 
@@ -66,61 +66,58 @@ namespace boost
     void copy_file( const path & from_file_ph,
                     const path & to_file_ph );
 
-    const path & initial_directory();
+    const path &  initial_path();
+    path          current_path();
 
-//  directory_iterator details  ----------------------------------------------//
+//  details  -----------------------------------------------------------------//
 
     namespace detail
     {
-      const char * implementation_name();
-
-      class directory_iterator_imp;
-      
-      struct directory_iterator_internals
-      {
-        typedef boost::shared_ptr< detail::directory_iterator_imp > dii_ptr;
-        dii_ptr imp;
-
-        const path & deref() const;
-        void inc();
-      };
-
-      struct dii_policies : public default_iterator_policies
-      {
-
-        template <class IteratorAdaptor>
-        typename IteratorAdaptor::reference
-        dereference(const IteratorAdaptor& x) const
-          { return x.base().deref(); }
-
-        template <class IteratorAdaptor>
-        void increment(IteratorAdaptor& x)
-          { x.base().inc(); }
-
-        template <class IteratorAdaptor1, class IteratorAdaptor2>
-        bool equal(const IteratorAdaptor1& x, const IteratorAdaptor2& y) const
-          { return x.base().imp == y.base().imp; }
-      };
+      const char * implementation_name(); // helps testing to know name
     }
 
 //  directory_iterator  ------------------------------------------------------//
 
     class directory_iterator
-      : public boost::iterator_adaptor<
-          // because directory_iterator is an InputIterator, shallow copy-
-          // semantics are required, and shared_ptr provides that.
-          detail::directory_iterator_internals,
-          detail::dii_policies,
-          path, const path &, const path *,
-          std::input_iterator_tag, std::ptrdiff_t >
+      : public boost::iterator< std::input_iterator_tag,
+          path, std::ptrdiff_t, const path *, const path & >
     {
+    private:
+      typedef directory_iterator self;
     public:
       directory_iterator();  // creates the "end" iterator
-      explicit directory_iterator( const path & system_specific_directory_string );
+      explicit directory_iterator( const path & p );
 
-      // workaround iterator_adaptor / compiler interactions
-      const boost::filesystem::path * operator->() const
-        { return &base().deref(); }
+      reference operator*() const { return m_deref(); }
+      pointer   operator->() const { return &m_deref(); }
+      self &    operator++() { m_inc(); return *this; }
+
+      friend bool operator==( const self & x, const self & y )
+        { return x.m_imp == y.m_imp; }
+      friend bool operator!=( const self & x, const self & y )
+        { return !(x.m_imp == y.m_imp); }
+
+      struct path_proxy // allows *i++ to work, as required by std
+      {
+        path pv;
+        explicit path_proxy( const path & p ) : pv(p) {}
+        path operator*() const { return pv; }
+      };
+
+      path_proxy operator++(int)
+      {
+        path_proxy pp( m_deref() );
+        ++*this;
+        return pp;
+      }
+
+    private:
+      class dir_itr_imp;
+      // shared_ptr provides shallow-copy semantics required for InputIterators
+      typedef boost::shared_ptr< dir_itr_imp > m_imp_ptr;
+      m_imp_ptr  m_imp;
+      reference  m_deref() const;
+      void       m_inc();
     };
 
   } // namespace filesystem

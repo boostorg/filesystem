@@ -27,6 +27,7 @@
 #include <boost/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
+#include <boost/scoped_array.hpp>
 //#include <iostream>
 
 namespace fs = boost::filesystem;
@@ -177,21 +178,21 @@ namespace boost
       const char * implementation_name() { return "Windows"; }
 #endif
 
-//  directory_iterator_imp  --------------------------------------------------// 
-
-      class directory_iterator_imp
-      {
-      public:
-        path              entry_path;
-        BOOST_HANDLE      handle;
-
-        ~directory_iterator_imp()
-        {
-          if ( handle != BOOST_INVALID_HANDLE_VALUE ) find_close( handle );
-        }
-      };
-
     } // namespace detail
+
+//  dir_itr_imp  -------------------------------------------------------------// 
+
+    class directory_iterator::dir_itr_imp
+    {
+    public:
+      path              entry_path;
+      BOOST_HANDLE      handle;
+
+      ~dir_itr_imp()
+      {
+        if ( handle != BOOST_INVALID_HANDLE_VALUE ) find_close( handle );
+      }
+    };
 
 //  directory_iterator implementation  ---------------------------------------//
 
@@ -200,22 +201,22 @@ namespace boost
 
     directory_iterator::directory_iterator( const path & dir_path )
     {
-      base().imp.reset( new detail::directory_iterator_imp );
+      m_imp.reset( new dir_itr_imp );
       BOOST_SYSTEM_DIRECTORY_TYPE scratch;
       const char * name;
       if ( dir_path.is_null() )
-       base().imp->handle = BOOST_INVALID_HANDLE_VALUE;
+       m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
       else
         name = find_first_file( dir_path.system_specific_directory_string().c_str(),
-          base().imp->handle, scratch );  // sets handle
+          m_imp->handle, scratch );  // sets handle
 
- 		  if ( base().imp->handle != BOOST_INVALID_HANDLE_VALUE )
+ 		  if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
       {
-        base().imp->entry_path = dir_path;
-        base().imp->entry_path.m_path_append( name, path::nocheck );
-		    while ( base().imp.get()
-             && ( base().imp->entry_path.leaf() == "."
-              || base().imp->entry_path.leaf() == ".." ) )
+        m_imp->entry_path = dir_path;
+        m_imp->entry_path.m_path_append( name, path::nocheck );
+		    while ( m_imp.get()
+             && ( m_imp->entry_path.leaf() == "."
+              || m_imp->entry_path.leaf() == ".." ) )
 		      { operator++(); }
       }
       else
@@ -226,28 +227,26 @@ namespace boost
       }  
     }
 
-    namespace detail
+    path const & directory_iterator::m_deref() const
     {
-      path const & directory_iterator_internals::deref() const
+      assert( m_imp.get() ); // fails if dereference end iterator
+      return m_imp->entry_path;
+    }
+
+    void directory_iterator::m_inc()
+    {
+      assert( m_imp.get() ); // fails on increment end iterator
+      assert( m_imp->handle != BOOST_INVALID_HANDLE_VALUE ); // reality check
+
+      BOOST_SYSTEM_DIRECTORY_TYPE scratch;
+      const char * name;
+      if ( (name = find_next_file( m_imp->handle, scratch )) != 0 )
       {
-        assert( imp.get() ); // fails if dereference end iterator
-        return imp->entry_path;
+        m_imp->entry_path.m_replace_leaf( name );
       }
-
-      void directory_iterator_internals::inc()
+      else
       {
-        assert( imp.get() ); // fails on increment end iterator
-        assert( imp->handle != BOOST_INVALID_HANDLE_VALUE ); // imp reality check
-
-        BOOST_SYSTEM_DIRECTORY_TYPE scratch;
-        const char * name;
-        if ( (name = find_next_file( imp->handle, scratch )) != 0 )
-        {
-          imp->entry_path.m_replace_leaf( name );
-        }
-        else {
-          imp.reset(); // make base() the end iterator
-        }
+        m_imp.reset(); // make base() the end iterator
       }
     }
 
@@ -401,29 +400,31 @@ namespace boost
           + ", " + to_file_ph.system_specific_file_string().c_str(), system_error );
     }
 
-    const path & initial_directory()
+    path current_path()
     {
-      static path init_dir;
-      if ( init_dir.is_null() )
-      {
-#     ifdef BOOST_POSIX
-        long path_max = ::pathconf( ".", _PC_PATH_MAX );
-        if ( path_max == -1 )
-          throw filesystem_error( "initial_directory()" );
-        boost::scoped_array<char>
-          buf( new char[static_cast<std::size_t>(path_max)] );
-        if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
-#     else
-        DWORD sz;
-        if ( (sz = ::GetCurrentDirectoryA( 0, static_cast<char*>(0) )) == 0 )
-          throw filesystem_error( "initial_directory()" );
-        boost::scoped_array<char> buf( new char[sz] );
-        if ( ::GetCurrentDirectoryA( sz, buf.get() ) == 0 )
-#     endif
-          { throw filesystem_error( "initial_directory()", system_error ); }
-        init_dir = path( buf.get(), system_specific );
-      }
-      return init_dir;
+#   ifdef BOOST_POSIX
+      long path_max = ::pathconf( ".", _PC_PATH_MAX );
+      if ( path_max == -1 )
+        throw filesystem_error( "initial_path()" );
+      boost::scoped_array<char>
+        buf( new char[static_cast<std::size_t>(path_max)] );
+      if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
+#   else
+      DWORD sz;
+      if ( (sz = ::GetCurrentDirectoryA( 0, static_cast<char*>(0) )) == 0 )
+        throw filesystem_error( "initial_path()" );
+      boost::scoped_array<char> buf( new char[sz] );
+      if ( ::GetCurrentDirectoryA( sz, buf.get() ) == 0 )
+#   endif
+        { throw filesystem_error( "initial_path()", system_error ); }
+      return path( buf.get(), system_specific );
+    }
+
+    const path & initial_path()
+    {
+      static path init_path;
+      if ( init_path.is_null() ) init_path = current_path();
+      return init_path;
     }
 
   } // namespace filesystem
