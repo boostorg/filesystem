@@ -1,7 +1,7 @@
 //  boost/filesystem/directory.hpp  ------------------------------------------//
 
 // < ----------------------------------------------------------------------- > 
-// <   Copyright © 2002 Beman Dawes.                                         >
+// <   Copyright © 2002, 2003 Beman Dawes.                                   >
 // <   Copyright © 2002 Jan Langer.                                          >
 // <   Copyright © 2001 Dietmar Kühl, All Rights Reserved                    >
 // <                                                                         > 
@@ -27,6 +27,7 @@
 #include <boost/iterator.hpp>
 
 #include <string>
+#include <ctime>
 
 //----------------------------------------------------------------------------//
 
@@ -38,7 +39,6 @@ namespace boost
 //  query functions  ---------------------------------------------------------//
 
     bool exists( const path & ph );
-
     bool is_directory( const path & ph );
 
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
@@ -51,6 +51,8 @@ namespace boost
 #   if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300
     inline bool is_empty( const path & ph ) { return _is_empty( ph ); }
 #   endif
+
+    std::time_t last_write_time( const path & ph );
 
 //  operations  --------------------------------------------------------------//
 

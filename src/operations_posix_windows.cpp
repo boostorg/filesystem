@@ -51,12 +51,12 @@ namespace fs = boost::filesystem;
 // other macros defined. There was a bug report of this happening.)
 
 # else
-#   include "sys/stat.h"
 #   include "dirent.h"
 #   include "unistd.h"
 #   include "fcntl.h"
 # endif
 
+#include <sys/stat.h>  // last_write_time() uses stat()
 #include <string>
 #include <cstdio>
 #include <cerrno>
@@ -310,6 +310,17 @@ namespace boost
         ? is_empty_directory( ph )
         :( !fad.nFileSizeHigh && !fad.nFileSizeLow );
 #   endif
+    }
+
+    std::time_t last_write_time( const path & ph )
+    {
+      // Works for both Windows and POSIX
+      struct stat path_stat;
+      if ( ::stat( ph.string().c_str(), &path_stat ) != 0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::last_write_time",
+          ph, fs::detail::system_error_code() ) );
+      return path_stat.st_mtime;
     }
 
     void create_directory( const path & dir_path )

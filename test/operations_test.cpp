@@ -22,6 +22,7 @@ using boost::bind;
 #include <iostream>
 #include <string>
 #include <cerrno>
+#include <ctime>
 
 namespace
 {
@@ -229,6 +230,16 @@ int test_main( int argc, char * argv[] )
   // create a file named "f1"
   file_ph = dir / "f1";
   create_file( file_ph, "foobar1" );
+
+  std::time_t ft = fs::last_write_time( file_ph );
+  std::cout << "UTC should currently be about " << std::asctime(std::gmtime(&ft)) << "\n";
+  std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
+
+  // hard to test time exactly, but except under the most unusual circumstances,
+  // time since file creation should be no more than one minute, I'm hoping.
+  double time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
+  BOOST_TEST( time_diff >= 0.0 && time_diff < 60.0 );
+
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
   verify_file( file_ph, "foobar1" );
