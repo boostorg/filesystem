@@ -178,6 +178,15 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( throws_fs_error( bind( fs::is_directory, dir ) ) );
   BOOST_TEST( throws_fs_error( bind( fs::_is_empty, dir ) ) );
 
+  // test path::exception members
+  try { fs::is_directory( ng ); } // will throw
+
+  catch ( const fs::filesystem_error & ex )
+  {
+    BOOST_TEST( ex.who() == "boost::filesystem::is_directory" );
+    BOOST_TEST( ex.path1().string() == " no-way, Jose" );
+  }
+
   BOOST_TEST( fs::create_directory( dir ) );
 
   BOOST_TEST( fs::exists( dir ) );
@@ -284,15 +293,20 @@ int test_main( int argc, char * argv[] )
 
 #if !BOOST_WORKAROUND(__BORLANDC__, <= 0x564)
   std::tm * tmp = std::localtime( &ft );
+  std::cout << "Year is " << tmp->tm_year << std::endl;
   --tmp->tm_year;
   std::cout << "Change year to " << tmp->tm_year << std::endl;
   fs::last_write_time( file_ph, std::mktime( tmp ) );
-  std::cout << "Now get time difference" << std::endl;
-  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_TEST( time_diff >= 365*24*3600.0 && time_diff < (366*24*3600.0 + 60.0) );
+  std::cout << "Get new value" << std::endl;
   ft = fs::last_write_time( file_ph );
   std::cout << "Local time one year ago should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
+  std::cout << "Now get time difference" << std::endl;
+  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
+  std::cout << "Time difference is : " << time_diff << std::endl;
+  BOOST_TEST( time_diff >= 365*24*3600.0 && time_diff < (366*24*3600.0 + 60.0) );
+  std::cout << "Reset to current time" << std::endl;
   fs::last_write_time( file_ph, std::time_t() );
+  std::cout << "And check that" << std::endl;
   time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
   BOOST_TEST( time_diff >= 0.0 && time_diff < 60.0 );
   ft = fs::last_write_time( file_ph );
