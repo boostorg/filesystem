@@ -3,11 +3,16 @@
 <img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
 <ul>
+  <li>Change name &quot;libfs.lib&quot; to &quot;libboost_filesystem.lib&quot;.<br>
+&nbsp;</li>
   <li>Windows: Some files seem to be poisoned to the point where you can't even 
   do is_directory() on them without an access error. For example,&nbsp; pagefile.sys. Should directory_iterator ignore these files?<br>
 &nbsp;</li>
   <li>Windows: //share style paths need more analysis and test cases for system_complete() 
   and complete(). Also, path_test cases at line 410 need review, correction.<br>
+&nbsp;</li>
+  <li>Replace filesystem_error impl with shared_ptr. Consider changing who() 
+  interface (and ctors to const char *).<br>
 &nbsp;</li>
   <li>Windows: What happens when a directory_itorator encounters a 
   wide-character filename? Write a test case.</li>
@@ -36,4 +41,4 @@ Do-list</h1>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38572" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->15 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38575" --></p>

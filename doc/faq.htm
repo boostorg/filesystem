@@ -165,7 +165,12 @@ detection were evaluated, including at least four complete implementations.&nbsp
 While the details for rejection differed, all automatic name validity checking 
 designs tended to distort the 
 otherwise simple design of the rest of the library.</p>
+<p><b>Why are paths sometimes manipulated by member functions and sometimes by 
+non-member functions?</b></p>
+<p>The design rule is that purely lexical operations are supplied as member 
+functions, while operations performed by the operating system are provided as 
+free functions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38582" --></p>
