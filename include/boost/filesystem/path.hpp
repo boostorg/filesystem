@@ -76,8 +76,7 @@ namespace boost
       // iteration over the names in the path:
       class iterator : public boost::iterator_facade<
         iterator,
-        std::string,
-        boost::readable_iterator_tag,
+        std::string const,
         boost::single_pass_traversal_tag >
       {
       private:

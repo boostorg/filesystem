@@ -80,7 +80,6 @@ namespace boost
       : public boost::iterator_facade<
       directory_iterator,
       path,
-      boost::readable_iterator_tag,
       boost::single_pass_traversal_tag >
     {
     public:
