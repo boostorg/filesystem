@@ -131,14 +131,17 @@ namespace boost
   {
     //  name_check functions  ----------------------------------------------//
 
+#   ifdef BOOST_WINDOWS
     BOOST_FILESYSTEM_DECL bool native( const std::string & name )
     {
-#   ifdef BOOST_WINDOWS
       return windows_name( name );
-#   else
-      return true;
-#   endif
     }
+#   else
+    BOOST_FILESYSTEM_DECL bool native( const std::string & )
+    {
+      return true;
+    }
+#   endif
 
     BOOST_FILESYSTEM_DECL bool no_check( const std::string & ) { return true; }
 
@@ -611,8 +614,9 @@ namespace boost
     {
       assert( new_check );
       if ( !safe_to_write_check )
-        throw filesystem_error( "boost::filesystem::default_name_check",
-                                "default name check already set" );
+        boost::throw_exception(
+          filesystem_error( "boost::filesystem::default_name_check",
+                            "default name check already set" ));
       default_check = new_check;
       safe_to_write_check = false;
     }
