@@ -17,3 +17,7 @@ lib boost_filesystem
        <no-warn>exception.cpp <no-warn>operations_posix_windows.cpp
      : debug release
      ;
+
+install filesystem lib
+     : <lib>boost_filesystem
+     ;
