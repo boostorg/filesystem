@@ -14,6 +14,18 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
+#define _USE_FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
+#define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
+      // 64-bit systems or on 32-bit systems which don't have files larger 
+      // than can be represented by a traditional POSIX/UNIX off_t type. 
+      // OTOH, defining them should kick in 64-bit off_t's (and thus 
+      // st_size) on 32-bit systems that provide the Large File
+      // Support (LFS) interface, such as Linux, Solaris, and IRIX.
+      // The defines are given before any headers are included to
+      // ensure that they are available to all included headers.
+      // That is required at least on Solaris, and possibly on other
+      // systems as well.
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
@@ -38,14 +50,6 @@ namespace fs = boost::filesystem;
 // other macros defined. There was a bug report of this happening.)
 
 # else // BOOST_POSIX_API
-#   define _USE_FILE_OFFSET_BITS 64 // at worst,
-#   define __USE_FILE_OFFSET64 // these defines may do nothing,
-      // but that won't matter on 64-bit systems or on 32-bit systems which
-      // don't have files larger than can be represented by a traditional
-      // POSIX/UNIX off_t type. OTOH, defining them should kick
-      // in 64-bit off_t's (and thus st_size) on 32-bit systems that support
-      // the Large File Support (LFS) interface, such as Linux, Solaris, and IRIX.
-
 #   include <sys/types.h>
 #   include "dirent.h"
 #   include "unistd.h"
