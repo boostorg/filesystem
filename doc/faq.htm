@@ -31,12 +31,6 @@ programmers to read the specs rather than just assuming the meaning is known.</p
 <p><b>Why do some function names have a &quot;native_&quot; prefix?</b></p>
 <p>To alert users that the results are inherently non-portable. The names are 
 deliberately ugly to discourage use except where really necessary.</p>
-<p><b>Why doesn't <i>path</i> supply operator== and other comparison operators?</b></p>
-<p>There is no way to know if two <i>path</i> objects represent the 
-same path.&nbsp; For example, does <code>path(&quot;abc&quot;) == path(&quot;ABC&quot;)</code>? 
-The answer is yes, no, or maybe, depending on the operating system. If exact 
-textual comparison is desired, <i>
-path::string()'s</i> can be used.</p>
 <p><b>Why not support a  concept of specific kinds of file systems, such as posix_file_system or windows_file_system.</b></p>
 <p>Portability is one of the one or two most important requirements for the 
 library.&nbsp;Gaining some advantage by using features specific to particular 
@@ -193,7 +187,7 @@ canonical form. See <a href="design.htm#symbolic-link-use-case">use case</a>
 from Walter Landry.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38521" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28869" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

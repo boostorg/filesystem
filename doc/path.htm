@@ -26,6 +26,7 @@ representation</a><br>
 programmers</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#relative_paths_good">Good programming practice: 
 relative paths</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Path_equality">Path equality vs path equivalence</a><br>
 <a href="#Member">Member functions</a><br>
 <a href="#Non-member_functions">Non-member functions</a><br>
 <a href="#name_check_mechanism">Default name_check mechansim</a><br>
@@ -194,7 +195,14 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
       // <a href="#name_check­_mechanism">default name_check</a> mechanism:
       static bool <a href="#default_name_check_writable">default_name_check_writable</a>(); 
       static name_check <a href="#default_name_check">default_name_check</a>( name_check new_check );
-      static name_check <a href="#default_name_check">default_name_check</a>();
+      static name_check <a href="#default_name_check">default_name_check</a>();</pre>
+<pre>      // relational operators:
+      bool <a href="#operator_eq">operator==</a>( const path &amp; that ) const;
+      bool <a href="#operator_ne">operator!=</a>( const path &amp; that ) const;
+      bool <a href="#operator_lt">operator&lt;</a>( const path &amp; that ) const;
+      bool <a href="#operator_le">operator&lt;=</a>( const path &amp; that ) const;
+      bool <a href="#operator_gt">operator&gt;</a>( const path &amp; that ) const;
+      bool <a href="#operator_ge">operator&gt;=</a>( const path &amp; that ) const;
 
     private:
       std::vector&lt;std::string&gt; m_name;  // for exposition only
@@ -333,6 +341,17 @@ ways:</p>
   <li><b>Algorithmically</b>. See <a href="operations.htm#complete">complete()</a> 
   and <a href="operations.htm#system_complete">system_complete()</a> functions.</li>
 </ul>
+<h3><a name="Path_equality">Path equality</a> vs path equivalence</h3>
+<p>Are paths &quot;abc&quot; and &quot;ABC&quot; equal? No, never, if you determine equality via 
+class <i>path</i>'s <code>operator==</code>, which considers only the two paths 
+lexical representations.</p>
+<p>Do paths &quot;abc&quot; and &quot;ABC&quot; resolve to the same file or directory? The answer is 
+&quot;yes&quot;, &quot;no&quot;, or &quot;maybe&quot; depending on the external file system. The (pending) 
+operations function equivalent() is the only way to determine if two paths 
+resolve to the same external file system entity.</p>
+<p>Programmers wishing to determine if two paths are &quot;the same&quot; must decide if 
+that means &quot;the same representation&quot; or &quot;resolve to the same actual file or 
+directory&quot;, and choose the appropriate function accordingly.</p>
 <h2><a name="Member">Member</a> functions</h2>
 <h3><a name="constructors">constructors</a></h3>
 <blockquote>
@@ -590,6 +609,56 @@ previously called. </p>
 <p><code>static name_check default_name_check();</code></p>
 <p><b>Returns:</b> the default name_check.</p>
 <p><b>Postcondition:</b> <code>!default_name_check_writable()</code></p>
+</blockquote>
+<h3><a name="operator_eq">operator</a> ==</h3>
+<blockquote>
+  <pre>bool operator==( const path &amp; that ) const;</pre>
+  <p><b>Returns:</b> <code>!(*this &lt; that) &amp;&amp; !(that &lt; *this)</code></p>
+  <p>See <a href="#Path_equality">Path equality vs path equivalence</a>.</p>
+</blockquote>
+<h3><a name="operator_ne">operator !=</a></h3>
+<blockquote>
+  <pre>bool operator!=( const path &amp; that ) const;</pre>
+  <p><b>Returns:</b> <code>!(*this == that)</code></p>
+  <p>See <a href="#Path_equality">Path equality vs path equivalence</a>.</p>
+</blockquote>
+<h3><a name="operator_lt">operator</a> &lt;</h3>
+<blockquote>
+  <pre>bool operator&lt;( const path &amp; that ) const;</pre>
+  <p><b>Returns:</b> <code>std::lexicographical_compare( begin(), end(), 
+  that.begin(), that.end() )</code></p>
+  <p>See <a href="#Path_equality">Path equality vs path equivalence</a>.</p>
+  <p><b>Rationale:</b> Relational operators are provided to ease uses such as 
+  specifying paths as keys in associative containers. Lexicographical comparison 
+  is used because:</p>
+  <ol>
+    <li>Even though not a full-fledged standard container, paths are enough like 
+    containers to merit meeting the C++ Standard Library's container comparison 
+    requirements (23.1 table 65).</li>
+    <li>The alternative is to return <code>this-&gt;string(), that.string()</code>. 
+    But path::string() as currently specified can yield non-unique results for 
+    differing paths. The case (from Peter Dimov) is <code>path(&quot;first/&quot;)/&quot;second&quot;</code> 
+    and <code>path(&quot;first&quot;)/&quot;second&quot;</code> both returning a string() of <code>
+    &quot;first//second&quot;</code>.</li>
+  </ol>
+</blockquote>
+<h3><a name="operator_le">operator</a> &lt;=</h3>
+<blockquote>
+  <pre>bool operator&lt;=( const path &amp; that ) const;</pre>
+  <p><b>Returns:</b> <code>!(that &lt; *this)</code></p>
+  <p>See <a href="#Path_equality">Path equality vs path equivalence</a>.</p>
+</blockquote>
+<h3><a name="operator_gt">operator</a> &gt;</h3>
+<blockquote>
+  <pre>bool operator&gt;( const path &amp; that ) const;</pre>
+  <p><b>Returns:</b> <code>that &lt; *this</code></p>
+  <p>See <a href="#Path_equality">Path equality vs path equivalence</a>.</p>
+</blockquote>
+<h3><a name="operator_ge">operator</a> &gt;=</h3>
+<blockquote>
+  <pre>bool operator&gt;=( const path &amp; that ) const;</pre>
+  <p><b>Returns:</b> <code>!(*this &lt; that)</code></p>
+  <p>See <a href="#Path_equality">Path equality vs path equivalence</a>.</p>
 </blockquote>
 <h2><a name="Non-member_functions">Non-member functions</a></h2>
 <h3><a name="non-member_operator_shift">Non-member operator /</a></h3>
@@ -907,7 +976,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38521" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28869" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

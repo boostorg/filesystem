@@ -44,6 +44,7 @@ namespace fs = boost::filesystem;
 #include <boost/throw_exception.hpp>
 #include <cstring>  // SGI MIPSpro compilers need this
 #include <vector>
+#include <algorithm> // for lexicographical_compare
 #include <cassert>
 
 #include <boost/config/abi_prefix.hpp> // must be the last header
@@ -626,6 +627,14 @@ namespace boost
       safe_to_write_check = false;
       return default_check;
     }
+
+    //  path operator<  ------------------------------------------------------//
+    bool path::operator<( const path & that ) const
+    {
+      return std::lexicographical_compare(
+        begin(), end(), that.begin(), that.end() );
+    }
+
 
 // path::iterator implementation  --------------------------------------------// 
 

@@ -116,6 +116,14 @@ namespace boost
       static void default_name_check( name_check new_check );
       static name_check default_name_check();
 
+      // relational operators
+      bool operator<( const path & that ) const;
+      bool operator==( const path & that ) const { return !(*this < that) && !(that < *this); }
+      bool operator!=( const path & that ) const { return !(*this == that); }
+      bool operator>( const path & that ) const  { return that < *this; }
+      bool operator<=( const path & that ) const { return !(that < *this); }
+      bool operator>=( const path & that ) const { return !(*this < that); }
+
     private:
       // Note: This is an implementation for POSIX and Windows, where there
       // are only minor differences between generic and system-specific
