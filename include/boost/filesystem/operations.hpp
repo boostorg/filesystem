@@ -46,7 +46,7 @@ namespace boost
     // boost::is_empty. The workaround for those who must use broken versions
     // of VC++ is to use the function _is_empty. All others should use the
     // correct is_empty name.
-    bool _is_empty( const path & ph ); // deprecated
+    BOOST_FILESYSTEM_DECL bool _is_empty( const path & ph ); // deprecated
 
 #   if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300
     inline bool is_empty( const path & ph ) { return _is_empty( ph ); }
