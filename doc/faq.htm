@@ -32,9 +32,9 @@ programmers to read the specs rather than just assuming the meaning is known.</p
 <p>To alert users that the results are inherently non-portable. The names are 
 deliberately ugly to discourage use except where really necessary.</p>
 <p><b>Why doesn't <i>path</i> supply operator== and other comparison operators?</b></p>
-<p>There is no way to know if two <i>path</i> objects actually represent the 
-same path.&nbsp; For example, <i>path(&quot;/foo&quot;)</i> and <i>path(&quot;../foo&quot;)</i> may 
-represent the same path, even though they are textually different. If exact 
+<p>There is no way to know if two <i>path</i> objects represent the 
+same path.&nbsp; For example, does <code>path(&quot;abc&quot;) == path(&quot;ABC&quot;)</code>? 
+The answer is yes, no, or maybe, depending on the operating system. If exact 
 textual comparison is desired, <i>
 path::string()'s</i> can be used.</p>
 <p><b>Why not support a  concept of specific kinds of file systems, such as posix_file_system or windows_file_system.</b></p>
@@ -181,4 +181,4 @@ free functions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34471" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34474" --></p>
