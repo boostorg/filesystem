@@ -34,9 +34,12 @@ file systems.</p>
 operating system.&nbsp;It is also possible to construct names which are 
 likely to be portable to a large number of modern and legacy operating systems.</p>
 
-<p>Some operating systems support multiple file systems, and each file system 
-may have its own naming rules. For example, modern versions of Windows support 
-NTFS, FAT, FAT32, and ISO-9660 file systems, among others, and the naming rules 
+<p>Almost all modern operating systems support multiple file systems. At the 
+minimum, they support a native file system plus a CD-ROM file system (Generally 
+ISO-9669, often with Juliet extensions).</p>
+
+<p>Each file system 
+may have its own naming rules. For example, modern versions of Windows support NTFS, FAT, FAT32, and ISO-9660 file systems, among others, and the naming rules 
 for some of those file systems differ a great deal. Each file system may have 
 differing rules for overall path validity, such as a maximum length or number of 
 sub-directories.</p>
@@ -169,15 +172,14 @@ which are formatted according to operating system rules.</p>
     <td valign="top">Do not use periods in directory names.<p>Use
     <a href="#portable_directory_name">portable_directory_name</a> to enforce 
     this recommendation.</td>
-    <td valign="top">Requirement for Requirement for ISO-9660, OpenVMS native 
-    filesystem, and other legacy systems.</td>
+    <td valign="top">Requirement for ISO-9660 without Juliet extensions, OpenVMS native filesystem, and other legacy systems.</td>
   </tr>
   <tr>
     <td valign="top">Do not use more that one period in a file name, and limit 
     the portion after the period to three characters.<p>Use
     <a href="#portable_file_name">portable_file_name</a> to enforce this 
     recommendation.</td>
-    <td valign="top">Requirement for ISO-9660, OpenVMS native filesystem, and 
+    <td valign="top">Requirement for ISO-9660 level 1, OpenVMS native filesystem, and 
     other legacy systems. </td>
   </tr>
   <tr>
@@ -195,31 +197,33 @@ which are formatted according to operating system rules.</p>
   </tr>
   <tr>
     <td valign="top">Don't use hyphens in names.</td>
-    <td valign="top">ISO-9660, and possibly some legacy systems, do not permit 
+    <td valign="top">ISO-9660 level 1, and possibly some legacy systems, do not permit 
     hyphens.</td>
   </tr>
   <tr>
-    <td valign="top">Limit the length of names and the depth of the directory 
-    tree so that the total length of the string returned by path::string() to 
+    <td valign="top">Limit the length of the string returned by path::string() to 
     255 characters.&nbsp; 
-    Note that ISO 9660 level 1 has an explicit directory tree depth limit of 8.</td>
+    Note that ISO 9660 has an explicit directory tree depth limit of 8, although 
+    this depth limit is removed by the Juliet extensions.</td>
     <td valign="top">Some operating systems place limits on the total path length.&nbsp; For example,
     Windows 2000 limits paths to 260 characters total length.</td>
   </tr>
   <tr>
     <td valign="top">Limit the length of any one name in a path.&nbsp; Pick the specific limit according to
-    the operating systems you wish portability to:<br>
-    &nbsp; Greater than 31 characters:&nbsp; POSIX, Windows, MAC OS X.<br>
-    &nbsp; 31 characters: Classic Mac OS<br>
-&nbsp; 8 characters + period + 3 characters: ISO 9660 level 1 (CD-ROM)</td>
+    the operating systems and or file systems you wish portability to:<br>
+    &nbsp;&nbsp; Not a concern::&nbsp; POSIX, Windows, MAC OS X.<br>
+    &nbsp;&nbsp; 31 characters: Classic Mac OS<br>
+&nbsp;&nbsp; 8 characters + period + 3 characters: ISO 9660 level 1<br>
+&nbsp;&nbsp; 32 characters: ISO 9660 level 2 and 3<br>
+&nbsp;&nbsp; 128 characters (64 if unicode): ISO 9660 with Juliet extensions</td>
     <td valign="top">Limiting name length can markedly reduce the expressiveness of file names, yet placing
-    only very high limits on lengths inhibits wide portability.</td>
+    only very high limits on lengths inhibits widest portability.</td>
   </tr>
 </table>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 October, 2003<!--webbot bot="Timestamp" endspan i-checksum="38549" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
 
 <p>© Copyright Beman Dawes, 2002, 2003</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
