@@ -77,6 +77,14 @@ namespace boost
     BOOST_FILESYSTEM_DECL path system_complete( const path & ph );
     BOOST_FILESYSTEM_DECL path complete( const path & ph, const path & base = initial_path() );
 
+//  test helper  -------------------------------------------------------------//
+
+    // not part of the documented interface because false positives are possible;
+    // there is no law that says that an OS that has large stat.st_size
+    // actually supports large file sizes.
+    BOOST_FILESYSTEM_DECL bool possible_large_file_size_support();
+
+
 //  directory_iterator helpers  ----------------------------------------------//
 //    forwarding functions avoid need for BOOST_FILESYSTEM_DECL for class
 //    directory_iterator, and so avoid iterator_facade DLL template problems

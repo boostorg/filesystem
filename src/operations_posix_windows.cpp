@@ -332,6 +332,16 @@ namespace boost
 #   endif
     }
 
+    BOOST_FILESYSTEM_DECL bool possible_large_file_size_support()
+    {
+#   ifdef BOOST_POSIX
+      struct stat lcl_stat;
+      return sizeof( lcl_stat.st_size ) > 4;
+#   else
+      return true;
+#   endif
+    }
+
     // suggested by Walter Landry
     BOOST_FILESYSTEM_DECL bool symbolic_link_exists( const path & ph )
     {

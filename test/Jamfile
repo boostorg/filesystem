@@ -41,5 +41,9 @@ DEPENDS all : test ;
                <lib>../../../libs/filesystem/build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
+         [ run libs/filesystem/test/large_file_support_test.cpp
+               <lib>../../../libs/filesystem/build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB=1
+         ]
        ;
 }
