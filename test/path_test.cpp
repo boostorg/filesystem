@@ -59,6 +59,7 @@ namespace {
 
 int test_main( int, char*[] )
 {
+  boost::function_requires< boost::ForwardIteratorConcept< fs::path::iterator > >();
 
   path p1( "fe/fi/fo/fum" );
   path p2( p1 );

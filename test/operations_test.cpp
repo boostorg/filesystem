@@ -12,9 +12,8 @@
 #include <boost/filesystem/exception.hpp>
 namespace fs = boost::filesystem;
 
-//#include <boost/test/test_tools.hpp>
 #include <boost/test/minimal.hpp>
-
+#include <boost/concept_check.hpp>
 #include <boost/bind.hpp>
 using boost::bind;
 
@@ -69,11 +68,14 @@ int test_main( int, char * [] )
 {
   std::cout << "implemenation name: "
             << fs::detail::implementation_name() << "\n";
-  std::cout << "initial_directory() is \""
-            << fs::initial_directory().string()
+  std::cout << "initial_path().string() is\n  \""
+            << fs::initial_path().string()
+            << "\"\n";
+  std::cout << "initial_path().system_specific_file_string() is\n  \""
+            << fs::initial_path().system_specific_file_string()
             << "\"\n";
 
-  fs::path dir(  fs::initial_directory() << "temp_fs_test_directory" );
+  fs::path dir(  fs::initial_path() / "temp_fs_test_directory" );
   
   if ( std::strcmp( fs::detail::implementation_name(), "Windows" ) == 0 )
   {
@@ -98,11 +100,14 @@ int test_main( int, char * [] )
 
   BOOST_TEST( fs::is_directory( dir ) );
 
-  fs::path d1( dir << "d1" );
+  fs::path d1( dir / "d1" );
   fs::create_directory( d1  );
   BOOST_TEST( fs::exists( d1 ) );
   BOOST_TEST( fs::is_directory( d1 ) );
   BOOST_TEST( fs::_is_empty( d1 ) );
+
+  boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
+  boost::function_requires< boost::ForwardIteratorConcept< fs::directory_iterator > >();
 
   {
     fs::directory_iterator dir_itr( dir );
@@ -110,7 +115,7 @@ int test_main( int, char * [] )
   }
 
   // create a second directory named d2
-  fs::path d2( dir << "d2" );
+  fs::path d2( dir / "d2" );
   fs::create_directory(d2 );
   BOOST_TEST( fs::exists( d2 ) );
   BOOST_TEST( fs::is_directory( d2 ) );
@@ -132,14 +137,14 @@ int test_main( int, char * [] )
   }
 
   // create an empty file named "f0"
-  fs::path file_ph( dir << "f0");
+  fs::path file_ph( dir / "f0");
   create_file( file_ph, "" );
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
   BOOST_TEST( fs::_is_empty( file_ph ) );
 
   // create a file named "f1"
-  file_ph = dir << "f1";
+  file_ph = dir / "f1";
   create_file( file_ph, "foobar1" );
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
@@ -154,40 +159,40 @@ int test_main( int, char * [] )
   }
 
   // copy_file() tests
-  fs::copy_file( file_ph, d1 << "f2" );
+  fs::copy_file( file_ph, d1 / "f2" );
   BOOST_TEST( fs::exists( file_ph ) );
-  BOOST_TEST( fs::exists( d1 << "f2" ) );
-  BOOST_TEST( !fs::is_directory( d1 << "f2" ) );
-  verify_file( d1 << "f2", "foobar1" );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
+  BOOST_TEST( !fs::is_directory( d1 / "f2" ) );
+  verify_file( d1 / "f2", "foobar1" );
 
   // rename() on file d1/f2 to d2/f3
-  fs::rename( d1 << "f2", d2 << "f3" );
-  BOOST_TEST( !fs::exists( d1 << "f2" ) );
-  BOOST_TEST( !fs::exists( d2 << "f2" ) );
-  BOOST_TEST( fs::exists( d2 << "f3" ) );
-  BOOST_TEST( !fs::is_directory( d2 << "f3" ) );
-  verify_file( d2 << "f3", "foobar1" );
+  fs::rename( d1 / "f2", d2 / "f3" );
+  BOOST_TEST( !fs::exists( d1 / "f2" ) );
+  BOOST_TEST( !fs::exists( d2 / "f2" ) );
+  BOOST_TEST( fs::exists( d2 / "f3" ) );
+  BOOST_TEST( !fs::is_directory( d2 / "f3" ) );
+  verify_file( d2 / "f3", "foobar1" );
 
   // make sure can't rename() a non-existent file
-  BOOST_TEST( throws_fs_error( bind( fs::rename, d1 << "f2", d2 << "f4" ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, d1 / "f2", d2 / "f4" ) ) );
 
   // make sure can't rename() to an existent file
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir << "f1", d2 << "f3" ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d2 / "f3" ) ) );
 
   // make sure can't rename() to a nonexistent parent directory
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir << "f1", dir << "d3/f3" ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ) ) );
 
   // rename() on directory
-  fs::path d3( dir << "d3" );
+  fs::path d3( dir / "d3" );
   fs::rename( d2, d3 );
   BOOST_TEST( !fs::exists( d2 ) );
   BOOST_TEST( fs::exists( d3 ) );
   BOOST_TEST( fs::is_directory( d3 ) );
-  BOOST_TEST( !fs::exists( d2 << "f3" ) );
-  BOOST_TEST( fs::exists( d3 << "f3" ) );
+  BOOST_TEST( !fs::exists( d2 / "f3" ) );
+  BOOST_TEST( fs::exists( d3 / "f3" ) );
 
   // remove() tests on file
-  file_ph = dir << "shortlife";
+  file_ph = dir / "shortlife";
   BOOST_TEST( !fs::exists( file_ph ) );
   create_file( file_ph, "" );
   BOOST_TEST( fs::exists( file_ph ) );
@@ -198,7 +203,7 @@ int test_main( int, char * [] )
   fs::remove( "no-such-directory/no-such-file" ); // ditto
 
   // remove test on directory
-  d1 = dir << "shortlife_dir";
+  d1 = dir / "shortlife_dir";
   BOOST_TEST( !fs::exists( d1 ) );
   fs::create_directory( d1 );
   BOOST_TEST( fs::exists( d1 ) );
