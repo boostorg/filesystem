@@ -68,7 +68,11 @@ namespace
       == BOOST_INVALID_HANDLE_VALUE ) ? 0 : dummy_first_name;
   }  
 
-  inline void find_close( BOOST_HANDLE handle ) { ::closedir( handle ); }
+  inline void find_close( BOOST_HANDLE handle )
+  {
+    assert( handle != BOOST_INVALID_HANDLE_VALUE );
+    ::closedir( handle );
+  }
 
   inline const char * find_next_file(
     BOOST_HANDLE handle, BOOST_SYSTEM_DIRECTORY_TYPE & )
@@ -87,11 +91,7 @@ namespace
       {
         throw fs::filesystem_error( "directory_iterator ++() failure" );
       }
-      else // eof
-      {
-        find_close( handle );
-        return 0;
-      }
+      else { return 0; } // end reached
     }
     return dp->d_name;
   }
@@ -110,7 +110,11 @@ namespace
       == BOOST_INVALID_HANDLE_VALUE ) ? 0 : data.cFileName;
   }  
 
-  inline void find_close( BOOST_HANDLE handle ) { ::FindClose( handle ); }
+  inline void find_close( BOOST_HANDLE handle )
+  {
+    assert( handle != BOOST_INVALID_HANDLE_VALUE );
+    ::FindClose( handle );
+  }
 
   inline const char * find_next_file(
     BOOST_HANDLE handle, BOOST_SYSTEM_DIRECTORY_TYPE & data )
@@ -124,12 +128,8 @@ namespace
         throw fs::filesystem_error(
           "directory_iterator ++() failure", fs::system_error );
       }
-      else // eof
-      {
-        find_close( handle );
-        return 0;
-      }
-    }
+      else { return 0; } // end reached
+     }
     return data.cFileName;
   }
 
@@ -178,10 +178,7 @@ namespace boost
 
         ~directory_iterator_imp()
         {
-          if ( handle != BOOST_INVALID_HANDLE_VALUE )
-          {
-            find_close( handle );
-          }
+          if ( handle != BOOST_INVALID_HANDLE_VALUE ) find_close( handle );
         }
       };
 
