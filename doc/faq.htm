@@ -5,14 +5,14 @@
 <img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Filesystem 
 FAQ</h1>
 <p><b>Why base the generic-path string format on POSIX?</b></p>
-<p>POSIX is the basis for the most familiar path-string formats, including the 
+<p><a href="design.htm#POSIX-01">POSIX</a> is the basis for the most familiar path-string formats, including the 
 URL portion of URI's and the native Windows format. It is ubiquitous and 
 familiar.&nbsp; On many systems, it is very easy to implement because it is 
 either the native operating system format (Unix and Windows) or via a 
 operating system supplied 
 POSIX library (z/OS, OS/390, and many more.)</p>
 <p><b>Why not use a full URI (Universal Resource Identifier) based path?</b></p>
-<p>URI's would promise more than the Filesystem Library can actually deliver, 
+<p><a href="design.htm#URI">URI's</a> would promise more than the Filesystem Library can actually deliver, 
 since URI's extend far beyond what most operating systems consider a file or a 
 directory.&nbsp; Thus for the primary &quot;portable script-style file system 
 operations&quot; requirement of the Filesystem Library, full URI's appear to be over-specification.</p>
@@ -25,7 +25,7 @@ readability. There was no apparent upside benefit. </p>
 <p><b>Why do some function names have a &quot;native_&quot; prefix?</b></p>
 <p>To alert users that the results are inherently non-portable. The names are 
 deliberately ugly to discourage use except where really necessary.</p>
-<p><b>Why doesn't path supply operator== and other comparison operators?</b></p>
+<p><b>Why doesn't <i>path</i> supply operator== and other comparison operators?</b></p>
 <p>There is no way to know if two <i>path</i> objects actually represent the 
 same path.&nbsp; For example, <i>path(&quot;/foo&quot;)</i> and <i>path(&quot;../foo&quot;)</i> may 
 represent the same path, even though they are textually different. If exact 
@@ -112,7 +112,8 @@ simple, yet widely acceptable, semantics for them. For example, remove_all.</p>
 <p><b>Why are library functions so picky about errors?</b></p>
 <p>Safety. The default is to be safe rather than sorry. This is particularly 
 important given the reality that on many computer systems files and directories 
-are <a href="#global">globally shared</a> resources .</p>
+are <a href="#global">globally shared</a> resources, and thus subject to 
+unexpected errors.</p>
 <p><b>Why are errors reported by exception rather than return code or error 
 notification variable?</b></p>
 <p>Safety.&nbsp;Return codes or error notification variables are often ignored 
@@ -173,4 +174,4 @@ free functions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38582" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 June, 2003<!--webbot bot="Timestamp" endspan i-checksum="19877" --></p>
