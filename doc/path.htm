@@ -235,8 +235,8 @@ path( const char * src );</pre>
   <a href="#Canonical">canonical form</a>.</p>
   <p><b>Rationale:</b> These constructors are not explicit because an intended 
   use is automatic conversion of strings to paths. </p>
-  <pre>path( const std::string &amp; src, format );
-path( const char * src, format );</pre>
+  <pre>path( const std::string &amp; src, path_format );
+path( const char * src, path_format );</pre>
   <p><b>Precondition:</b> <i>src</i> conforms to the operating system's grammar 
   for path strings, and contains no embedded '\0' characters.</p>
   <p><b>Effects:</b> For each <i>src</i> element (where an element represents a 
@@ -251,6 +251,14 @@ path( const char * src, format );</pre>
   <p><b>Returns:</b> <code>*this</code></p>
   <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
   <a href="#Canonical">canonical form</a>.</p>
+  <p><b>Rationale:</b> It is not considered an error for <code>rhs</code> to 
+  include a <code>system-specific-root</code> because it might relative, and 
+  thus valid.&nbsp; For example, on Windows, the follow must succeed:</p>
+  <blockquote>
+    <pre>path p( &quot;c:&quot;, system_specific );
+p &lt;&lt;= path( &quot;/foo&quot;, system_specific );
+assert( p.generic_path() == &quot;c:/foo&quot; );</pre>
+  </blockquote>
   </blockquote>
 <h3><a name="operator-shift">operator &lt;&lt;</a></h3>
 <blockquote>
@@ -352,7 +360,7 @@ likely to change.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39336" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39346" --></p>
 
 </body>
 
