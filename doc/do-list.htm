@@ -5,6 +5,19 @@ Do-list</h1>
 <ul>
   <li>Docs for boost/filesystem/exception.hpp still needed!<br>
 &nbsp;</li>
+  <li>Final resolution of the move vs rename issue.<br>
+&nbsp;</li>
+  <li>Pavel Vozenilek writes: rename() function from operations.hpp should state 
+  whether any guarantee is fulfilled (atomic operation, no copy semantic, file 
+  integrity, etc).<br>
+  <br>
+  For example people use UNIX system command 'mv' to ensure moved file 
+  integrity.<br>
+  <br>
+  Currently MoveFile() used for Windows implementation ensures nothing. 
+  MoveFileEx() provides 'no copy' semantic but this function isn't available on 
+  Win95/98.<br>
+&nbsp;</li>
   <li>Windows: Some files seem to be poisoned to the point where you can't even 
   do is_directory() on them with an access error. For example,&nbsp; 
   pagefile.sys. Should directory_iterator ignore these files?<br>
@@ -54,4 +67,4 @@ Do-list</h1>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38509" --></p>

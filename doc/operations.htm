@@ -278,8 +278,9 @@ to_file_ph</i>.</p>
 <p><code>const path &amp; initial_path();</code></p>
 <p><b>Effects:</b> The first time called, stores the path returned by
 <a href="#current_path">current_path()</a>.</p>
-<p>The preferred implementation is to call <i>initial_path()</i> during program 
-initialization, before the call to main().</p>
+<p>The preferred implementation would be to call <i>initial_path()</i> during program 
+initialization, before the call to <i>main()</i>. This is, however, not possible 
+with changing the C++ runtime library.</p>
 <p><b>Returns:</b> A reference to the stored path.</p>
 <p><b>Rationale:</b>&nbsp; The semantics, in effect, turn a dangerous global variable into 
 a safer global constant. The preferred implementation requires runtime library 
@@ -297,12 +298,15 @@ initial_path()</i>.</p>
   <pre>path current_path();</pre>
   <p><b>Returns:</b> The current path as maintained by the operating system.</p>
   <p><b>Postcondition:</b> <code>current_path().is_complete()</code></p>
+  <p><b>Note:</b> The equivalent POSIX function is <i>getcwd()</i>. The 
+  equivalent Windows function is <i>GetCurrentDirectoryA()</i>.</p>
   <p><b>Warning:</b> The current path maintained by the operating system is 
   in-effect a dangerous global variable. It may be changed unexpectedly by a 
   third-party or system library function, or by another thread. For a safer 
   alternative, see <a href="#initial_path">initial_path()</a>.</p>
   <p><b>Rationale:</b> Although dangerous, the function is useful in dealing 
-  with other libraries.</p>
+  with other libraries. The <i>current_path()</i> name was choosen to emphasis 
+  that the function returns a complete path, not just a single directory name.</p>
 </blockquote>
 <h3><a name="complete">complete</a></h3>
 
@@ -410,7 +414,7 @@ by a prior program run by the command processor.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38509" --></p>
 
 </body>
 
