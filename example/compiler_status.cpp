@@ -52,6 +52,7 @@ namespace
 
   bool ignore_pass;
   bool no_warn;
+  bool no_links;
 
   fs::directory_iterator end_itr;
 
@@ -64,8 +65,8 @@ namespace
 
   string specific_compiler; // if running on one toolset only
 
-  string html_log_name = "status_log.html";
-  fs::ofstream html_log_file;
+  string html_status_name = "status_log.html";
+  fs::ofstream html_status_file;
 
   const string empty_string;
 
@@ -277,7 +278,7 @@ namespace
   }
 
 //  generate_report  ---------------------------------------------------------//
-
+  
   // return 0 if nothing generated, 1 otherwise, except 2 if compiler msgs
   int generate_report( const xml::element_ptr & db,
                        const string & test_name,
@@ -312,27 +313,27 @@ namespace
       compile += "...\n   (remainder deleted because of excessive size)\n";
     }
 
-    html_log_file << "<h2><a name=\""
+    html_status_file << "<h2><a name=\""
       << test_name << " " << toolset << "\">"
       << test_name << " / " << toolset << "</a></h2>\n";
 
     if ( !compile.empty() )
     {
       ++result;
-      html_log_file << "<h3>Compiler output:</h3><pre>"
+      html_status_file << "<h3>Compiler output:</h3><pre>"
         << compile << "</pre>\n";
     }
     if ( !link.empty() )
-      html_log_file << "<h3>Linker output:</h3><pre>" << link << "</pre>\n";  
+      html_status_file << "<h3>Linker output:</h3><pre>" << link << "</pre>\n";  
     if ( !run.empty() )
-      html_log_file << "<h3>Run output:</h3><pre>" << run << "</pre>\n";
+      html_status_file << "<h3>Run output:</h3><pre>" << run << "</pre>\n";
 
     static std::set< string > failed_lib_target_dirs;
     if ( !lib.empty() )
     {
       if ( lib[0] == '\n' ) lib.erase( 0, 1 );
       string lib_test_name( extract_test_name( lib ) );
-      html_log_file << "<h3>Library build failure: </h3>\n"
+      html_status_file << "<h3>Library build failure: </h3>\n"
         "See <a href=\"#" << lib_test_name << " " << toolset << "\">"
         << lib_test_name << " / " << toolset << "</a>";
 
@@ -347,7 +348,7 @@ namespace
         }
         else
         {
-          html_log_file << "<h2><a name=\""
+          html_status_file << "<h2><a name=\""
             << lib_test_name << " " << toolset << "\">"
             << lib_test_name << " / " << toolset << "</a></h2>\n"
             "test_log.xml not found\n";
@@ -378,27 +379,32 @@ namespace
       return true;
     }
 
-    fs::ifstream file( target_dir << "test_log.xml" );
-    if ( !file ) // missing jam_log.xml
-    {
-      std::cerr << "Missing jam_log.xml in target \""
-        << target_dir.generic_path() << "\"\n";
-      target += "<td>";
-      target += pass ? pass_msg : fail_msg;
-      target += "</td>";
-      return pass;
-    }
-    xml::element_ptr db = xml::parse( file );
+    int anything_generated = 0;
 
-    // generate bookmarked report of results, and link to it
-    int anything_generated
-      = generate_report( db, test_name, toolset, pass, always_show_run_output );
+    if ( !no_links )
+    {
+      fs::ifstream file( target_dir << "test_log.xml" );
+      if ( !file ) // missing jam_log.xml
+      {
+        std::cerr << "Missing jam_log.xml in target \""
+          << target_dir.generic_path() << "\"\n";
+        target += "<td>";
+        target += pass ? pass_msg : fail_msg;
+        target += "</td>";
+        return pass;
+      }
+      xml::element_ptr db = xml::parse( file );
+
+      // generate bookmarked report of results, and link to it
+      anything_generated
+        = generate_report( db, test_name, toolset, pass, always_show_run_output );
+    }
 
     target += "<td>";
     if ( anything_generated != 0 )
     {
       target += "<a href=\"";
-      target += html_log_name;
+      target += html_status_name;
       target += "#";
       target += test_name;
       target += " ";
@@ -513,11 +519,14 @@ namespace
     // each test directory
     for ( fs::directory_iterator itr( build_dir ); itr != end_itr; ++itr )
     {
-      results.push_back( std::string() ); // no sort required, but leave code
-                                          // in place in case that changes
-      do_row( boost_root_dir, *itr,
-              itr->leaf().substr( 0, itr->leaf().size()-5 ),
-              results[results.size()-1] );
+      if ( fs::is_directory( *itr ) )
+      {
+        results.push_back( std::string() ); // no sort required, but leave code
+                                            // in place in case that changes
+        do_row( boost_root_dir, *itr,
+                itr->leaf().substr( 0, itr->leaf().size()-5 ),
+                results[results.size()-1] );
+      }
     }
 
     std::sort( results.begin(), results.end() );
@@ -544,8 +553,8 @@ namespace
     if ( itr != end_itr )
     {
       fs::directory_iterator compiler_itr( *itr );
-      std::clog << "Using " << itr->generic_path() << " to determine compilers\n";
-      std::clog << "Requested compiler is " << specific_compiler << "\n";
+      if ( specific_compiler.empty() )
+        std::clog << "Using " << itr->generic_path() << " to determine compilers\n";
       for (; compiler_itr != end_itr; ++compiler_itr )
       {
         if ( fs::is_directory( *compiler_itr )  // check just to be sure
@@ -553,7 +562,6 @@ namespace
         {
           if ( specific_compiler.size() != 0
             && specific_compiler != compiler_itr->leaf() ) continue;
-          std::clog << "  " << compiler_itr->leaf() << "\n";
           toolsets.push_back( compiler_itr->leaf() );
           string desc( compiler_desc( boost_root_dir,
                                                  compiler_itr->leaf() ) );
@@ -588,15 +596,13 @@ int cpp_main( int argc, char * argv[] ) // note name!
   while ( argc > 1 && *argv[1] == '-' )
   {
     if ( argc > 2 && std::strcmp( argv[1], "--compiler" ) == 0 )
-    {
-      specific_compiler = argv[2];
-      argc -= 2;
-      argv += 2;
-    }
-    else if ( std::strcmp( argv[1], "--ignore-pass" ) == 0 )
-      { ignore_pass = true; --argc; ++argv; }
-    else if ( std::strcmp( argv[1], "--no-warn" ) == 0 )
-      { no_warn = true; --argc; ++argv; }
+    { specific_compiler = argv[2]; --argc; ++argv; }
+    else if ( std::strcmp( argv[1], "--ignore-pass" ) == 0 ) ignore_pass = true;
+    else if ( std::strcmp( argv[1], "--no-warn" ) == 0 ) no_warn = true;
+    else if ( std::strcmp( argv[1], "--no-links" ) == 0 ) no_links = true;
+    else { std::cerr << "Unknown option: " << argv[1] << "\n"; argc = 1; }
+    --argc;
+    ++argv;
   }
 
   if ( argc == 2 )
@@ -606,16 +612,20 @@ int cpp_main( int argc, char * argv[] ) // note name!
     std::cerr << "usage: compiler_status [--compiler name] boost-root-directory\n"
       "  options: --compiler name     Run for named compiler only\n"
       "           --ignore-pass       Do not report tests which pass all compilers\n"
-      "           --no-warn           Warnings not reported if test passes\n";
+      "           --no-warn           Warnings not reported if test passes\n"
+      "           --no-links          Do not generate status file or links to it\n";
     return 1;
   }
 
-  html_log_file.open( html_log_name );
-  if ( !html_log_file )
+  if ( !no_links )
   {
-    std::cerr << "Could not open HTML log output file: "
-      << html_log_name << std::endl;
-    return 1;
+    html_status_file.open( html_status_name );
+    if ( !html_status_file )
+    {
+      std::cerr << "Could not open HTML log output file: "
+        << html_status_name << std::endl;
+      return 1;
+    }
   }
 
   jamfile.open( boost_root_dir << "status/Jamfile" ); // may fail; that's OK
