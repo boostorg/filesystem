@@ -50,6 +50,11 @@ namespace fs = boost::filesystem;
 
 # if defined(BOOST_WINDOWS)
 #   include "windows.h"
+#   if defined(__BORLANDC__) || defined(__MWERKS__)
+#     include "utime.h"
+#   else
+#     include "sys/utime.h"
+#   endif
 
 // For Windows, the xxxA form of various function names is used to avoid
 // inadvertently getting wide forms of the functions. (The undecorated
@@ -60,6 +65,7 @@ namespace fs = boost::filesystem;
 #   include "dirent.h"
 #   include "unistd.h"
 #   include "fcntl.h"
+#   include "utime.h"
 # endif
 
 #include <sys/stat.h>  // last_write_time() uses stat()
@@ -335,6 +341,19 @@ namespace boost
           "boost::filesystem::last_write_time",
           ph, fs::detail::system_error_code() ) );
       return path_stat.st_mtime;
+    }
+
+    void last_write_time( const path & ph, const std::time_t new_time )
+    {
+      // Works for both Windows and POSIX
+      ::utimbuf buf;
+      buf.actime = std::time_t();
+      buf.modtime = new_time;
+      if ( ::utime( ph.string().c_str(),
+        new_time == std::time_t() ? 0 : &buf ) != 0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::last_write_time",
+          ph, fs::detail::system_error_code() ) );
     }
 
     void create_directory( const path & dir_path )

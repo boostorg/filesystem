@@ -26,7 +26,7 @@ using boost::bind;
 
 # ifdef BOOST_NO_STDC_NAMESPACE
     namespace std { using ::asctime; using ::gmtime; using ::localtime;
-                    using ::difftime; using ::time; }
+    using ::difftime; using ::time; using ::tm; using ::mktime; }
 # endif
 
 namespace
@@ -252,6 +252,19 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
   verify_file( file_ph, "foobar1" );
+
+  std::tm * tmp = std::localtime( &ft );
+  --tmp->tm_year;
+  fs::last_write_time( file_ph, std::mktime( tmp ) );
+  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
+  BOOST_TEST( time_diff >= 365*24*3600.0 && time_diff < (366*24*3600.0 + 60.0) );
+  ft = fs::last_write_time( file_ph );
+  std::cout << "Local time one year ago should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
+  fs::last_write_time( file_ph, std::time_t() );
+  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
+  BOOST_TEST( time_diff >= 0.0 && time_diff < 60.0 );
+  ft = fs::last_write_time( file_ph );
+  std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
 
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.

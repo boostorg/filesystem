@@ -57,6 +57,7 @@ namespace boost
 #   endif
 
     std::time_t last_write_time( const path & ph );
+    void last_write_time( const path & ph, const std::time_t new_time );
 
 //  operations  --------------------------------------------------------------//
 
