@@ -100,6 +100,10 @@ the directory-path argument supplied at construction. The path returned by
 dereferencing a <i>directory_iterator</i> is composed by appending the name of 
 the directory entry to the directory path supplied at construction.</p>
 
+<p>The order of the path entries returned by dereferencing successive increments 
+of a <i>directory_iterator</i> is unspecified. Thus depending on the ordering 
+provided by a particular implementation will result in non-portable code.</p>
+
 <p>A path returned by dereferencing a <i>directory_iterator</i> is, if 
 representing a directory, suitable for use as an argument to Filesystem Library 
 functions specified as accepting paths or directory paths. If not representing a 
@@ -285,7 +289,7 @@ initial_directory()</i>.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39336" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->17 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39344" --></p>
 
 </body>
 
