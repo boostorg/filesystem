@@ -38,12 +38,12 @@ install filesystem lib
 stage stage/lib : <lib>boost_filesystem <dll>boost_filesystem
     :
         # copy to a path rooted at BOOST_ROOT:
-        $(BOOST_ROOT)
+        <locate>$(BOOST_ROOT)
         # make sure the names of the libraries are correctly named:
         [ common-names ]
         # add this target to the "stage" and "all" psuedo-targets:
-        stage
-        all
+        <target>stage
+        <target>all
     :
         debug release
     ;
