@@ -46,7 +46,7 @@ compete with Python, Perl, or shell languages, but rather to provide portable fi
 operations when C++ is already the language of choice. The <a href="design.htm">
 design</a> encourages, but does not require, safe and portable filesystem usage.</p>
 
-<p>Filesystem Library components are supplied by several&nbsp; headers, all in 
+<p>The Filesystem Library supplies several&nbsp; headers, all in 
 directory boost/filesystem:</p>
 
 <ul>
@@ -70,6 +70,18 @@ directory boost/filesystem:</p>
   provides convenience functions that combine lower-level functions in useful 
   ways. See <a href="convenience.htm">convenience.hpp documentation</a>.</li>
 </ul>
+<p>The object-library source files (<a href="../src/convenience.cpp">convenience.cpp</a>,
+<a href="../src/exception.cpp">exception.cpp</a>,
+<a href="../src/operations_posix_windows.cpp">operations_posix_windows.cpp</a>, 
+and <a href="../src/path_posix_windows.cpp">path_posix_windows.cpp</a>) are 
+supplied in directory libs/filesystem/src. These source files implement the 
+library for POSIX or Windows compatible operating systems; no implementation is 
+supplied for other operating systems. Note that many operating systems not 
+normally thought of as POSIX or Windows systems, such as mainframe legacy 
+operating systems or embedded operating systems, support POSIX compatible file 
+systems which will work with the Filesystem Library.</p>
+<p>The object-library can be built with a <a href="../build/Jamfile">Jamfile</a> 
+supplied in directory libs/filesystem/build.</p>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
 <p>First some preliminaries:</p>
 <blockquote>
@@ -420,7 +432,7 @@ of portability&quot; problem, particularly in postings by JP Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38570" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 March, 2003<!--webbot bot="Timestamp" endspan i-checksum="28841" --></p>
 
 </body>
 
