@@ -7,10 +7,6 @@
 
 //  See http://www.boost.org for most recent version including documentation.
 
-//----------------------------------------------------------------------------//
-////////////////  WARNING:  THIS IS A DRAFT.  USE OF operator-> IS FAILING    //
-//----------------------------------------------------------------------------// 
-
 #ifndef BOOST_FILESYSTEM_RECURSIVE_DIRECTORY_ITERATOR_HPP
 #define BOOST_FILESYSTEM_RECURSIVE_DIRECTORY_ITERATOR_HPP
 
@@ -109,6 +105,10 @@ namespace boost
       {
         base().reset( new detail::rdi_imp<Predicate> );
       }
+
+      // workaround iterator_adaptor / compiler interactions
+      const boost::filesystem::path * operator->() const
+        { return &*base()->stac.top(); }
     };
   }
 }
