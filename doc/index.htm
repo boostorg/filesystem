@@ -23,6 +23,9 @@ Filesystem Library</h1>
 <a href="#Definitions">Definitions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Common_Specifications">Common Specifications</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Race-condition">Race-condition danger</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Implementation">Implementation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Building">Building the object-library</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Cgywin">Notes for Cygwin users</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Acknowledgements">Acknowledgements</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Change-history">Change history</a></td>
     <td width="50%"><font size="4">Other Documents</font><br>
@@ -76,22 +79,6 @@ directory boost/filesystem:</p>
 functions in <i>path.hpp</i>, while operations performed by the operating system 
 on the actual external filesystem directories and files are provided in <i>
 operations.hpp,</i> primarily as free functions.</p>
-<p>The object-library source files (<a href="../src/convenience.cpp">convenience.cpp</a>,
-<a href="../src/exception.cpp">exception.cpp</a>,
-<a href="../src/operations_posix_windows.cpp">operations_posix_windows.cpp</a>, 
-and <a href="../src/path_posix_windows.cpp">path_posix_windows.cpp</a>) are 
-supplied in directory libs/filesystem/src. These source files implement the 
-library for POSIX or Windows compatible operating systems; no implementation is 
-supplied for other operating systems. Note that many operating systems not 
-normally thought of as POSIX or Windows systems, such as mainframe legacy 
-operating systems or embedded operating systems, support POSIX compatible file 
-systems which will work with the Filesystem Library.</p>
-<p>The object-library can be built for static or dynamic (shared/dll) linking. 
-This is controlled by the BOOST_ALL_DYN_LINK or BOOST_FILESYSTEM_DYN_LINK 
-macros. See the <a href="../../../more/separate_compilation.html">Separate 
-Compilation</a> page for a description of the techniques used.</p>
-<p>The object-library can be built with a <a href="../build/Jamfile">Jamfile</a> 
-supplied in directory libs/filesystem/build.</p>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
 <p>First some preliminaries:</p>
 <blockquote>
@@ -371,6 +358,44 @@ either the POSIX or Windows API's available.</p>
 <p>The library is in regular use on Apple Mac OS, HP-UX, IBM AIX, Linux, 
 Microsoft Windows, SGI IRIX, and Sun Solaris operating systems using a variety 
 of compilers.</p>
+<h2><a name="Building">Building</a> the object-library</h2>
+<p>The object-library will normally be built automatically. See
+<a href="../../../more/getting_started.html">Getting Started</a>. It can also be 
+built manually using a <a href="../build/Jamfile">Jamfile</a> 
+supplied in directory libs/filesystem/build, or the user can construct an IDE 
+project or make file which includes the object-library source files.</p>
+<p>The object-library source files (<a href="../src/convenience.cpp">convenience.cpp</a>,
+<a href="../src/exception.cpp">exception.cpp</a>,
+<a href="../src/operations_posix_windows.cpp">operations_posix_windows.cpp</a>, 
+and <a href="../src/path_posix_windows.cpp">path_posix_windows.cpp</a>) are 
+supplied in directory libs/filesystem/src. These source files implement the 
+library for POSIX or Windows compatible operating systems; no implementation is 
+supplied for other operating systems. Note that many operating systems not 
+normally thought of as POSIX  systems, such as mainframe legacy 
+operating systems or embedded operating systems, support POSIX compatible file 
+systems which will work with the Filesystem Library.</p>
+<p>The object-library can be built for static or dynamic (shared/dll) linking. 
+This is controlled by the BOOST_ALL_DYN_LINK or BOOST_FILESYSTEM_DYN_LINK 
+macros. See the <a href="../../../more/separate_compilation.html">Separate 
+Compilation</a> page for a description of the techniques used.</p>
+<h3>Note for <a name="Cgywin">Cygwin</a> users</h3>
+<p>The library's implementation code automatically detects the current platform, 
+and compiles the POSIX or Windows implementation code accordingly. Automatic 
+platform detection during object library compilation can be overridden by 
+defining BOOST_POSIX or BOOST_WINDOWS macros. With the exception of the Cygwin 
+environment, there is usually no reason to define one of the macros, as the 
+software development kits supplied with most compilers only support a single 
+platform.</p>
+<p>The <a href="http://www.cygwin.com/">Cygwin</a> package of tools supports 
+traditional Windows usage, but also provides an emulation layer and other tools 
+which can be used to make Windows act as Linux (and thus POSIX), and provide the 
+Linux look-and-feel. GCC is usually the compiler of choice in this environment, 
+as it can be installed via the Cygwin install process. Other compilers can also 
+use the Cygwin emulation of POSIX, at least in theory.</p>
+<p>Those wishing to use the Cygwin POSIX emulation layer should define the 
+BOOST_POSIX macro when compiling the Boost Filesystem Library's object-library. 
+The macro does not need to be defined (and will have no effect if defined) for 
+Boost Filesystem Library user programs.</p>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>The Filesystem Library was designed and implemented by Beman Dawes. The <i>directory_iterator</i> and <i>filesystem_error</i> classes were 
 based on prior work from Dietmar Kühl, as modified by Jan Langer. Thomas Witt 
@@ -495,7 +520,7 @@ version 1.32.0.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38504" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 February, 2004<!--webbot bot="Timestamp" endspan i-checksum="40403" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
