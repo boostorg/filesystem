@@ -90,7 +90,7 @@ namespace boost
       : public boost::iterator_adaptor< 
          boost::shared_ptr< detail::rdi_imp< Predicate > >,
          detail::rdi_policies,
-         const boost::filesystem::path,
+         boost::filesystem::path,
          const boost::filesystem::path &,
          const boost::filesystem::path *,
          std::input_iterator_tag,

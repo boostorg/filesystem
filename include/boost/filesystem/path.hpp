@@ -85,7 +85,7 @@ namespace boost
       typedef boost::iterator_adaptor<
         detail::path_itr_imp,
         boost::default_iterator_policies,
-        const std::string,
+        std::string,
         const std::string &,
         const std::string *,
         std::bidirectional_iterator_tag,
