@@ -39,14 +39,14 @@ namespace boost
   namespace filesystem
   {
 
-    filesystem_error::filesystem_error(int err, std::string const& msg):
+    filesystem_error::filesystem_error( std::string const& msg ):
       std::runtime_error("filesystem error"),
       m_msg(msg),
-      m_err(err)
+      m_err(0)
     {
     }
 
-    filesystem_error::filesystem_error(std::string const& msg):
+    filesystem_error::filesystem_error( std::string const& msg, error_type ):
       std::runtime_error("filesystem error"),
       m_msg(msg),
 #     ifdef BOOST_WIN32

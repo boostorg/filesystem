@@ -30,23 +30,27 @@ namespace boost
 {
   namespace filesystem
   {
+    enum error_type { system_error };
+
     class filesystem_error:
       public std::runtime_error
     {
     public:
 
-      explicit filesystem_error(int err, std::string const& msg = "");
-      // Effects: : std::runtime_error("..."),
-      // m_msg(msg), m_err(err)
+      explicit filesystem_error( std::string const& msg );
+      // Effects: : std::runtime_error(implementation-defined),
+      // m_msg(msg), m_err(0)
 
-      explicit filesystem_error(std::string const& msg= "");
-      // Effects: filesystem_error( value, msg ), where value is appropriate
+      explicit filesystem_error( std::string const& msg, error_type );
+      // Effects: : std::runtime_error(implementation-defined),
+      // m_msg(msg), m_err(value), where value is appropriate
       // for the operating system (for example, GetLastError() on Windows,
       // errno on POSIX)
 
       ~filesystem_error() throw();
       char const* what() const throw();
-      int         get_error() const { return m_err; }
+      int         error() const { return m_err; }
+      // Note: a value of 0 implies an internal (rather than system) error
 
     private:
       mutable std::string m_msg;
