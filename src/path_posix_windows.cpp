@@ -40,6 +40,7 @@ namespace fs = boost::filesystem;
   namespace std { using ::strlen; }
 #endif
 
+#include <cstring>  // SGI MIPSpro compilers need this
 #include <vector>
 #include <cassert>
 

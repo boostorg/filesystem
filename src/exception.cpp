@@ -21,6 +21,7 @@
 #include <boost/config.hpp>
 #include <boost/filesystem/exception.hpp>
 
+#include <cstring> // SGI MIPSpro compilers need this
 #include <cerrno>
 #include <string>
 
