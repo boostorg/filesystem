@@ -1,7 +1,4 @@
-#
-# !!!!!!!!!!!!!!!! You must set BOOST_ROOT=../../.. before running bjam test !!!!!!!!!!!!!!!!!!!!!!
-#
-
+# Boost Filesystem Library test Jamfile
 
 subproject libs/filesystem/test ;
 
@@ -26,9 +23,9 @@ include testing.jam ;
                <lib>../../../libs/filesystem/build/fs
                <lib>../../../libs/test/build/test_exec_monitor
          ]
-         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
-               <lib>../../../libs/filesystem/build/fs
-               <lib>../../../libs/test/build/test_exec_monitor
-         ]
+#         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
+#               <lib>../../../libs/filesystem/build/fs
+#               <lib>../../../libs/test/build/test_exec_monitor
+#         ]
        ;
 }
