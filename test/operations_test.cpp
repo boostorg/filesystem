@@ -219,17 +219,29 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( fs::exists( d2 ) );
   BOOST_TEST( fs::is_directory( d2 ) );
 
+  // test the basic operation of directory_iterators, and test that
+  // stepping one iterator doesn't affect a different iterator.
   {
     fs::directory_iterator dir_itr( dir );
+    fs::directory_iterator dir_itr2( dir );
     BOOST_TEST( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
+    BOOST_TEST( dir_itr2->leaf() == "d1" || dir_itr2->leaf() == "d2" );
     if ( dir_itr->leaf() == "d1" )
     {
       BOOST_TEST( (++dir_itr)->leaf() == "d2" );
+      BOOST_TEST( dir_itr2->leaf() == "d1" );
+      BOOST_TEST( (++dir_itr2)->leaf() == "d2" );
     }
     else
     {
+      BOOST_TEST( (dir_itr)->leaf() == "d2" );
       BOOST_TEST( (++dir_itr)->leaf() == "d1" );
+      BOOST_TEST( dir_itr2->leaf() == "d2" );
+      BOOST_TEST( (++dir_itr2)->leaf() == "d1" );
     }
+    BOOST_TEST( ++dir_itr == fs::directory_iterator() );
+    BOOST_TEST( dir_itr2 != fs::directory_iterator() );
+    BOOST_TEST( ++dir_itr2 == fs::directory_iterator() );
   }
 
   { // *i++ must work to meet the standard's InputIterator requirements
