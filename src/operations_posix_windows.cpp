@@ -34,8 +34,6 @@
   namespace std { using ::strcmp; }
 #endif
 
-//#include <iostream>
-
 namespace fs = boost::filesystem;
 
 // BOOST_POSIX or BOOST_WINDOWS specify which API to use.
@@ -75,6 +73,8 @@ namespace fs = boost::filesystem;
 #include <cstdio>
 #include <cerrno>
 #include <cassert>
+
+#include <boost/config/abi_prefix.hpp> // must be the last header
 
 //  helpers  -----------------------------------------------------------------//
 

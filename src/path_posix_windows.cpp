@@ -46,6 +46,8 @@ namespace fs = boost::filesystem;
 #include <vector>
 #include <cassert>
 
+#include <boost/config/abi_prefix.hpp> // must be the last header
+
 //  helpers  -----------------------------------------------------------------// 
 
 namespace

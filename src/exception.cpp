@@ -43,6 +43,8 @@ namespace fs = boost::filesystem;
 #   include <errno.h> // for POSIX error codes
 # endif
 
+#include <boost/config/abi_prefix.hpp> // must be the last header
+
 //----------------------------------------------------------------------------//
 
 namespace

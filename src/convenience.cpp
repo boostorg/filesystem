@@ -16,6 +16,8 @@
 
 #include <boost/filesystem/convenience.hpp>
 
+#include <boost/config/abi_prefix.hpp> // must be the last header
+
 namespace boost
 {
   namespace filesystem
