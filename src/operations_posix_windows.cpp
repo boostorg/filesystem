@@ -425,9 +425,8 @@ namespace boost
 #   ifdef BOOST_POSIX
       struct stat s1;
       int s1_result = ::stat( ph1.string().c_str(), &s1 );
-      int error1; // save error code in case we have to throw
-      if ( s1_result != 0 )
-        error1 = fs::detail::system_error_code();
+      // save error code in case we have to throw
+      int error1 = (s1_result != 0 ? fs::detail::system_error_code() : 0);
       struct stat s2;
       int s2_result = ::stat( ph2.string().c_str(), &s2 );
       if ( s1_result != 0
