@@ -29,10 +29,10 @@ namespace
 int main( int argc, char * argv[] )
 {
   fs::path dir( argc > 1
-    ? fs::path( argv[1], fs::system_specific )
-    : fs::initial_directory() );
+    ? fs::path( argv[1], fs::native )
+    : fs::initial_path() );
 
-  std::cout << "Directory being inspected: " << dir.generic_path() << std::endl;
+  std::cout << "Directory being inspected: " << dir.string () << std::endl;
 
   typedef bool(*pred_type)(const fs::path&);
 
@@ -41,8 +41,8 @@ int main( int argc, char * argv[] )
 
   for ( ; rdi != rdi_end; ++rdi )
   {
-    std::cout << (*rdi).generic_path() << std::endl;
-    std::cout << rdi->generic_path() << std::endl;
+    std::cout << (*rdi).string() << std::endl;
+    std::cout << rdi->string() << std::endl;
   }
 
   return 0;
