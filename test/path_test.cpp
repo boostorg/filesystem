@@ -793,33 +793,40 @@ int test_main( int, char*[] )
     BOOST_TEST( next( itr_ck.begin() ) == itr_ck.end() );
     BOOST_TEST( prior( itr_ck.end() ) == itr_ck.begin() );
     BOOST_TEST( *prior( itr_ck.end() ) == std::string( "prn:" ) );
+  } // Windows
 
-    // test relational operators
+  else
+  { // POSIX
+    p = path( "/usr/local/bin:/usr/bin:/bin", fs::no_check );
+    BOOST_TEST( p.native_file_string() == "/usr/local/bin:/usr/bin:/bin" );
+  } // POSIX
 
-    path e, e2;
-    path a( "a" );
-    path a2( "a" );
-    path b( "b" );
+  // test relational operators
+                                                             
+  path e, e2;
+  path a( "a" );
+  path a2( "a" );
+  path b( "b" );
 
-    // probe operator <
-    BOOST_TEST( !(e < e2) );
-    BOOST_TEST( e < a );
-    BOOST_TEST( a < b );
-    BOOST_TEST( !(a < a2) );
+  // probe operator <
+  BOOST_TEST( !(e < e2) );
+  BOOST_TEST( e < a );
+  BOOST_TEST( a < b );
+  BOOST_TEST( !(a < a2) );
 
-    // reality check character set is as expected
-    BOOST_TEST( std::string("a.b") < std::string("a/b") );
-    // verify compare is actually lexicographical
-    BOOST_TEST( path("a/b") < path("a.b") );
+  // reality check character set is as expected
+  BOOST_TEST( std::string("a.b") < std::string("a/b") );
+  // verify compare is actually lexicographical
+  BOOST_TEST( path("a/b") < path("a.b") );
 
-    // make sure the derivative operators also work
-    BOOST_TEST( a == a2 );
-    BOOST_TEST( a != b );
-    BOOST_TEST( a <= b );
-    BOOST_TEST( a <= a2 );
-    BOOST_TEST( b >= a );
-    BOOST_TEST( a2 >= a );
-  }
+  // make sure the derivative operators also work
+  BOOST_TEST( a == a2 );
+  BOOST_TEST( a != b );
+  BOOST_TEST( a <= b );
+  BOOST_TEST( a <= a2 );
+  BOOST_TEST( b >= a );
+  BOOST_TEST( a2 >= a );
+
 //  std::cout << errors << " errors detected\n";
   
   return errors;
