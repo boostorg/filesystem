@@ -105,20 +105,20 @@ namespace
   // Returns: 0 if error, otherwise name
   {
     std::string dirpath( std::string(dir) + "/*" );
-    return ( (handle = FindFirstFile( dirpath.c_str(), &data ))
+    return ( (handle = ::FindFirstFile( dirpath.c_str(), &data ))
       == BOOST_INVALID_HANDLE_VALUE ) ? 0 : data.cFileName;
   }  
 
-  inline void find_close( BOOST_HANDLE handle ) { FindClose( handle ); }
+  inline void find_close( BOOST_HANDLE handle ) { ::FindClose( handle ); }
 
   inline const char * find_next_file(
     BOOST_HANDLE handle, BOOST_SYSTEM_DIRECTORY_TYPE & data )
   // Returns: 0 if EOF, otherwise name
   // Throws: if system reports error
   {
-    if ( FindNextFile( handle, &data ) == 0 )
+    if ( ::FindNextFile( handle, &data ) == 0 )
     {
-      if ( GetLastError() != ERROR_NO_MORE_FILES )
+      if ( ::GetLastError() != ERROR_NO_MORE_FILES )
       {
         throw fs::filesystem_error(
           "directory_iterator ++() failure", fs::system_error );
@@ -254,7 +254,7 @@ namespace boost
       struct stat path_stat;
       return ::stat( ph.file_c_str(), &path_stat ) == 0;  
 #   else
-      return GetFileAttributes( ph.file_c_str() ) != 0xFFFFFFFF;
+      return ::GetFileAttributes( ph.file_c_str() ) != 0xFFFFFFFF;
 #   endif
     }
 
@@ -267,7 +267,7 @@ namespace boost
           + ph.directory_c_str(), system_error );
       return S_ISDIR( path_stat.st_mode );
 #   else
-      DWORD attributes = GetFileAttributes( ph.directory_c_str() );
+      DWORD attributes = ::GetFileAttributes( ph.directory_c_str() );
       if ( attributes == 0xFFFFFFFF )
         throw filesystem_error( std::string("is_directory(): ")
           + ph.directory_c_str(), system_error );
@@ -288,8 +288,8 @@ namespace boost
         : path_stat.st_size == 0;
 #   else
       WIN32_FILE_ATTRIBUTE_DATA fad;
-      if ( !GetFileAttributesEx( ph.file_c_str(),
-              GetFileExInfoStandard, &fad ) )
+      if ( !::GetFileAttributesEx( ph.file_c_str(),
+        ::GetFileExInfoStandard, &fad ) )
               throw filesystem_error( std::string("empty(): ")
                 + ph.file_c_str(), system_error );
       
@@ -305,7 +305,7 @@ namespace boost
       if ( ::mkdir( dir_path.directory_c_str(),
         S_IRWXU|S_IRWXG|S_IRWXO ) != 0 )
 #   else
-      if ( !CreateDirectory( dir_path.directory_c_str(), 0 ) )
+      if ( !::CreateDirectory( dir_path.directory_c_str(), 0 ) )
 #   endif
         throw filesystem_error( std::string("create_directory(): ")
           + dir_path.directory_c_str(), system_error );
@@ -321,7 +321,7 @@ namespace boost
 #   ifdef BOOST_POSIX
         if ( ::rmdir( ph.file_c_str() ) != 0 )
 #   else
-        if ( !RemoveDirectory( ph.file_c_str() ) )
+        if ( !::RemoveDirectory( ph.file_c_str() ) )
 #   endif
           throw fs::filesystem_error( std::string("remove() on: ")
             + ph.file_c_str(), system_error );
@@ -331,7 +331,7 @@ namespace boost
 #   ifdef BOOST_POSIX
         if ( ::remove( ph.file_c_str() ) != 0 )
 #   else
-        if ( !DeleteFile( ph.file_c_str() ) )
+        if ( !::DeleteFile( ph.file_c_str() ) )
 #   endif
           throw fs::filesystem_error( std::string("remove() on: ")
             + ph.file_c_str(), system_error );
@@ -350,7 +350,7 @@ namespace boost
       if ( exists( new_path ) // POSIX is too permissive so must check
         || ::rename( old_path.file_c_str(), new_path.file_c_str() ) != 0 )
 #   else
-      if ( !MoveFile( old_path.file_c_str(), new_path.file_c_str() ) )
+      if ( !::MoveFile( old_path.file_c_str(), new_path.file_c_str() ) )
 #   endif
         throw filesystem_error( std::string("move_file(): ")
           + old_path.file_c_str() + ", " + new_path.file_c_str(), system_error );
@@ -387,7 +387,7 @@ namespace boost
 
       if ( sz != 0 )
 #   else
-      if ( !CopyFile( from_file_ph.file_c_str(),
+      if ( !::CopyFile( from_file_ph.file_c_str(),
                       to_file_ph.file_c_str(), /*fail_if_exists=*/true ) )
 #   endif
         throw fs::filesystem_error( std::string("copy() files: ")
@@ -409,13 +409,13 @@ namespace boost
         if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
 #     else
         DWORD sz;
-        if ( (sz = GetCurrentDirectory( 0, static_cast<char*>(0) )) == 0 )
+        if ( (sz = ::GetCurrentDirectory( 0, static_cast<char*>(0) )) == 0 )
           throw filesystem_error( "initial_directory()" );
         boost::scoped_array<char> buf( new char[sz] );
-        if ( GetCurrentDirectory( sz, buf.get() ) == 0 )
+        if ( ::GetCurrentDirectory( sz, buf.get() ) == 0 )
 #     endif
           { throw filesystem_error( "initial_directory()", system_error ); }
-        init_dir = path( buf.get(), path::system_specific );
+        init_dir = path( buf.get(), system_specific );
       }
       return init_dir;
     }

@@ -61,9 +61,9 @@ namespace boost
       std::runtime_error("filesystem error"),
       m_msg(msg),
 #     ifdef BOOST_WINDOWS
-        m_err( GetLastError() )
+        m_err( ::GetLastError() )
 #     else
-        m_err(errno)
+        m_err(errno) // GCC 3.1 won't accept ::errno
 #     endif
     {
     }
@@ -79,7 +79,7 @@ namespace boost
         m_msg += ": ";
 #       ifdef BOOST_WINDOWS
           LPVOID lpMsgBuf;
-          FormatMessage( 
+          ::FormatMessage( 
               FORMAT_MESSAGE_ALLOCATE_BUFFER | 
               FORMAT_MESSAGE_FROM_SYSTEM | 
               FORMAT_MESSAGE_IGNORE_INSERTS,
