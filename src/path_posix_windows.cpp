@@ -289,7 +289,11 @@ namespace boost
         if ( m_path == "." ) m_path = "";
 
         // directory-placeholder
-        if ( *itr == '.' && ((itr+1) == src.end() || *(itr+1) == '/') )
+        if ( *itr == '.' && ((itr+1) == src.end() || *(itr+1) == '/'
+#         ifdef BOOST_WINDOWS
+          || *(itr+1) == '\\'
+#         endif
+          ) )
         {
           if ( empty() ) m_path += '.';
           ++itr;
@@ -309,7 +313,11 @@ namespace boost
           // parent-directory
           if ( *itr == '.'
             && (itr+1) != src.end() && *(itr+1) == '.'
-            && ((itr+2) == src.end() || *(itr+2) == '/') )
+            && ((itr+2) == src.end() || *(itr+2) == '/'
+#           ifdef BOOST_WINDOWS
+            || *(itr+2) == '\\'
+#           endif
+           ) )
           {
             m_path += "..";
             ++itr;
