@@ -107,15 +107,15 @@ int test_main( int, char * [] )
   BOOST_TEST( fs::directory( d2 ) );
 
   // create a file named "f1"
-  fs::path file_path( dir << "f1");
-  create_file( file_path, "foobar1" );
-  BOOST_TEST( fs::exists( file_path ) );
-  BOOST_TEST( !fs::directory( file_path ) );
-  verify_file( file_path, "foobar1" );
+  fs::path file_ph( dir << "f1");
+  create_file( file_ph, "foobar1" );
+  BOOST_TEST( fs::exists( file_ph ) );
+  BOOST_TEST( !fs::directory( file_ph ) );
+  verify_file( file_ph, "foobar1" );
 
   // copy_file() tests
-  fs::copy_file( file_path, d1 << "f2" );
-  BOOST_TEST( fs::exists( file_path ) );
+  fs::copy_file( file_ph, d1 << "f2" );
+  BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( fs::exists( d1 << "f2" ) );
   BOOST_TEST( !fs::directory( d1 << "f2" ) );
   verify_file( d1 << "f2", "foobar1" );
@@ -147,13 +147,13 @@ int test_main( int, char * [] )
   BOOST_TEST( fs::exists( d3 << "f3" ) );
 
   // remove() tests on file
-  file_path = dir << "shortlife";
-  BOOST_TEST( !fs::exists( file_path ) );
-  create_file( file_path, "" );
-  BOOST_TEST( fs::exists( file_path ) );
-  BOOST_TEST( !fs::directory( file_path ) );
-  fs::remove( file_path );
-  BOOST_TEST( !fs::exists( file_path ) );
+  file_ph = dir << "shortlife";
+  BOOST_TEST( !fs::exists( file_ph ) );
+  create_file( file_ph, "" );
+  BOOST_TEST( fs::exists( file_ph ) );
+  BOOST_TEST( !fs::directory( file_ph ) );
+  fs::remove( file_ph );
+  BOOST_TEST( !fs::exists( file_ph ) );
 
   // remove test on directory
   d1 = dir << "shortlife_dir";

@@ -19,14 +19,26 @@
 
 //****************************************************************************//
 
+// BOOST_POSIX or BOOST_WINDOWS specify which API to use, not the current
+// operating system. GCC defaults to BOOST_POSIX; it doesn't predefine _WIN32.
+
 # if !defined( BOOST_WINDOWS ) && !defined( BOOST_POSIX )
-#   error macro BOOST_POSIX or BOOST_WINDOWS must be defined
+#   if defined(_WIN32)
+#     define BOOST_WINDOWS
+#   else
+#     define BOOST_POSIX
+#   endif
 # endif
 
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/exception.hpp>
+#include "boost/filesystem/path.hpp"
+#include "boost/filesystem/exception.hpp"
 
 namespace fs = boost::filesystem;
+
+#include "boost/config.hpp"
+#ifdef BOOST_NO_STDC_NAMESPACE
+  namespace std { using ::strlen; }
+#endif
 
 #include <vector>
 #include <cassert>
@@ -158,7 +170,7 @@ namespace boost
       // check names if context is "generic"
       // allow system-specific-root if context is not "generic"
 
-      assert( src.size() == strlen( src.c_str() ) ); // no embedded 0
+      assert( src.size() == std::strlen( src.c_str() ) ); // no embedded 0
 
       if ( src.size() == 0 ) return;
 

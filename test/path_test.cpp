@@ -163,7 +163,6 @@ int test_main( int, char*[] )
   check_throw( "foo/...." );
   check_throw( "foo//bar" );
   check_throw( "foo\\bar" );
-  check_throw( "" );
   check_throw( " " );
   check_throw( " foo" );
   check_throw( "foo " );

@@ -30,20 +30,18 @@
 
 namespace fs = boost::filesystem;
 
-#if defined( BOOST_POSIX )
+// BOOST_POSIX or BOOST_WINDOWS specify which API to use, not the current
+// operating system. GCC defaults to BOOST_POSIX; it doesn't predefine _WIN32.
 
-# include "sys/stat.h"
-# include "dirent.h"
-# include "unistd.h"
-# include "fcntl.h"
-
-#elif defined( BOOST_WINDOWS )
-
-# include "windows.h"
-
-#else
-# error macro BOOST_POSIX or BOOST_WINDOWS must be defined
-#endif
+# if defined(BOOST_WINDOWS) || (!defined(BOOST_POSIX) && defined(_WIN32))
+#   include "windows.h"
+# else
+#   define BOOST_POSIX
+#   include "sys/stat.h"
+#   include "dirent.h"
+#   include "unistd.h"
+#   include "fcntl.h"
+# endif
 
 #include <string>
 #include <cstdio>
@@ -253,7 +251,7 @@ namespace boost
     bool exists( const path & ph )
     {
 #   ifdef BOOST_POSIX
-      struct ::stat path_stat;
+      struct stat path_stat;
       return ::stat( ph.file_c_str(), &path_stat ) == 0;  
 #   else
       return GetFileAttributes( ph.file_c_str() ) != 0xFFFFFFFF;
@@ -263,7 +261,7 @@ namespace boost
     bool directory( const path & ph )
     {
 #   ifdef BOOST_POSIX
-      struct ::stat path_stat;
+      struct stat path_stat;
       if ( ::stat( ph.directory_c_str(), &path_stat ) != 0 )
         throw filesystem_error( std::string("is_directory(): ")
           + ph.directory_c_str(), system_error );
@@ -280,7 +278,7 @@ namespace boost
     bool empty( const path & ph )
     {
 #   ifdef BOOST_POSIX
-      struct ::stat path_stat;
+      struct stat path_stat;
       if ( ::stat( ph.file_c_str(), &path_stat ) != 0 )
               throw filesystem_error( std::string("empty(): ")
                 + ph.file_c_str(), system_error );

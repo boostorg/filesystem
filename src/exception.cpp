@@ -28,7 +28,18 @@
     namespace std { using ::strerror; }
 # endif
 
-# ifdef BOOST_WIN32
+// BOOST_POSIX or BOOST_WINDOWS specify which API to use, not the current
+// operating system. GCC defaults to BOOST_POSIX; it doesn't predefine _WIN32.
+
+# if !defined( BOOST_WINDOWS ) && !defined( BOOST_POSIX )
+#   if defined(_WIN32)
+#     define BOOST_WINDOWS
+#   else
+#     define BOOST_POSIX
+#   endif
+# endif
+
+# if defined( BOOST_WINDOWS )
 #   include "windows.h"
 # endif
 
@@ -49,7 +60,7 @@ namespace boost
     filesystem_error::filesystem_error( std::string const& msg, error_type ):
       std::runtime_error("filesystem error"),
       m_msg(msg),
-#     ifdef BOOST_WIN32
+#     ifdef BOOST_WINDOWS
         m_err( GetLastError() )
 #     else
         m_err(errno)
@@ -66,7 +77,7 @@ namespace boost
       if (m_err)
       {
         m_msg += ": ";
-#       ifdef BOOST_WIN32
+#       ifdef BOOST_WINDOWS
           LPVOID lpMsgBuf;
           FormatMessage( 
               FORMAT_MESSAGE_ALLOCATE_BUFFER | 

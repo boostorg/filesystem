@@ -35,7 +35,9 @@ namespace boost
     };
 
     typedef basic_filebuf<char> filebuf;
+#   ifndef BOOST_NO_STD_WSTRING
     typedef basic_filebuf<wchar_t> wfilebuf;
+#   endif
 
     template < class charT, class traits = std::char_traits<charT> >
     class basic_ifstream : public std::basic_ifstream<charT,traits>
@@ -56,7 +58,9 @@ namespace boost
     };
 
     typedef basic_ifstream<char> ifstream;
+#   ifndef BOOST_NO_STD_WSTRING
     typedef basic_ifstream<wchar_t> wifstream;
+#   endif
 
     template < class charT, class traits = std::char_traits<charT> >
     class basic_ofstream : public std::basic_ofstream<charT,traits>
@@ -77,7 +81,9 @@ namespace boost
     };
 
     typedef basic_ofstream<char> ofstream;
+#   ifndef BOOST_NO_STD_WSTRING
     typedef basic_ofstream<wchar_t> wofstream;
+#   endif
 
     template < class charT, class traits = std::char_traits<charT> >
     class basic_fstream : public std::basic_fstream<charT,traits>
@@ -98,8 +104,9 @@ namespace boost
     };
  
     typedef basic_fstream<char> fstream;
+#   ifndef BOOST_NO_STD_WSTRING
     typedef basic_fstream<wchar_t> wfstream;
-
+#   endif
   } // namespace filesystem
 
 } // namespace boost

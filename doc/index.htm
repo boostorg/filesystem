@@ -159,9 +159,9 @@ program which uses the library.</p>
 <p>Test programs are also sometimes useful in understanding a library, as they 
 illustrate what the developer expected to work and not work. See:</p>
 <ul>
+  <li><a href="../test/path_test.cpp">path_test.cpp</a></li>
   <li><a href="../test/operations_test.cpp">operations_test.cpp</a></li>
   <li><a href="../test/fstream_test.cpp">fstream_test.cpp</a></li>
-  <li><a href="../test/path_test.cpp">path_test.cpp</a></li>
 </ul>
 <h2><a name="Definitions">Definitions</a></h2>
 <p><b><a name="directory">directory</a> </b>- A container provided by the operating system, 
@@ -227,6 +227,28 @@ example code's two calls to <i>directory()</i>.</p>
 or directory resources should be prepared for <i>filesystem_error</i> exceptions 
 to be thrown from any filesystem function except those explicitly specified as 
 not throwing exceptions.</p>
+<h2><a name="Implementation">Implementation</a></h2>
+<p>The current implementation (July, 2002) supports operating systems that have 
+either the POSIX or Windows API's available.</p>
+<p>The following tests are provided:</p>
+<ul>
+  <li><a href="../test/path_test.cpp">path_test.cpp</a></li>
+  <li><a href="../test/operations_test.cpp">operations_test.cpp</a></li>
+  <li><a href="../test/fstream_test.cpp">fstream_test.cpp</a></li>
+</ul>
+<p>As of July, 2002, these tests succeed for the following compilers on Windows:</p>
+<ul>
+  <li>Borland 5.5.1</li>
+  <li>GCC 3.1 (excluding wide-character fstream tests)</li>
+  <li>Intel 6.0</li>
+  <li>Metrowerks 8.1</li>
+  <li>Microsoft 7.0</li>
+  <li>Microsoft 6.0 except fstream_test failed.</li>
+</ul>
+<p>As of July, 2002, these tests failed for the following compilers on Windows:</p>
+<ul>
+  <li>Microsoft 6.0 fstream_test</li>
+</ul>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>The Filesystem Library was designed and implemented by Beman Dawes, except 
 for the <i>directory_iterator</i> and <i>filesystem_error</i> classes which were 
@@ -249,7 +271,7 @@ of portability&quot; problem, particularly in postings by JP Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->15 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21087" --></p>
 
 </body>
 
