@@ -22,6 +22,9 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/exception.hpp>
+
 // BOOST_POSIX or BOOST_WINDOWS specify which API to use.
 # if !defined( BOOST_WINDOWS ) && !defined( BOOST_POSIX )
 #   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
@@ -31,8 +34,6 @@
 #   endif
 # endif
 
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/exception.hpp>
 
 namespace fs = boost::filesystem;
 
