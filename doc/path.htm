@@ -94,18 +94,23 @@ the contained path.</p>
 <blockquote>
   <pre>path ::= [root] [relative-path]  // an empty path is valid</pre>
   <pre>root ::= [root-name] [root-directory]</pre>
-  <pre>root-directory ::= &quot;/&quot;</pre>
-  <pre>relative-path ::= path-element { &quot;/&quot; path-element } [&quot;/&quot;]</pre>
+  <pre>root-directory ::= separator</pre>
+  <pre>relative-path ::= path-element { separator path-element } [separator]</pre>
   <pre>path-element ::= name | parent-directory | directory-placeholder</pre>
   <pre>name ::= char { char }</pre>
   <pre>directory-placeholder ::= &quot;.&quot;</pre>
-  <pre>parent-directory ::= &quot;..&quot; </pre>
+  <pre>parent-directory ::= &quot;..&quot;
+
+separator ::= &quot;/&quot;  // an implementation may define additional separators </pre>
 </blockquote>
 <p><i>root-name</i> grammar is implementation-defined. <i>
 root-name</i> must not be present in generic input. It may be part of the strings returned by <i>path</i> 
 member functions, and may be present in the <i>src</i> argument to <i>path</i> constructors 
 when the <i><a href="#native">native</a></i> name check is in effect.</p>
-<p><i>char</i> may not be slash ('/') or '\0'.</p>
+<p><i>char</i> may not be slash ('/') or '\0'. In additional, many operating and 
+file systems may place additional restrictions on the characters which may 
+appear in names. See <a href="portability_guide.htm#recommendations">File and 
+Directory Name Recommendations</a>.</p>
 <p>Although implementation-defined, it is desirable that <i>
 root-name</i> have a grammar which is distinguishable from other grammar elements, 
 and follow the conventions of the operating system.</p>
@@ -976,7 +981,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->05 December, 2004<!--webbot bot="Timestamp" endspan i-checksum="38514" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 January, 2005<!--webbot bot="Timestamp" endspan i-checksum="38839" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
