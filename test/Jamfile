@@ -6,6 +6,9 @@ subproject libs/filesystem/test ;
 SEARCH on testing.jam = $(BOOST_BUILD_PATH) ;
 include testing.jam ;
 
+# Make tests run by default.
+DEPENDS all : test ;
+
 {
     # look in BOOST_ROOT for sources first, just in this Jamfile
     local SEARCH_SOURCE = $(BOOST_ROOT) $(SEARCH_SOURCE) ;
@@ -14,7 +17,7 @@ include testing.jam ;
        : [ run libs/filesystem/test/path_test.cpp
                <lib>../../../libs/filesystem/build/fs
          ]
-         [ run libs/filesystem/test/operations_test.cpp # compiler_status<always_show_run_output>
+         [ run libs/filesystem/test/operations_test.cpp
                <lib>../../../libs/filesystem/build/fs
          ]
          [ run libs/filesystem/test/fstream_test.cpp
