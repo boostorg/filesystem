@@ -314,7 +314,7 @@ namespace boost
       } // while more elements
     }
 
-    path::iterator path::begin() const
+    const path::iterator path::begin() const
     {
       iterator itr;
       itr.base().path_ptr = this;

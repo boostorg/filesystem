@@ -92,8 +92,8 @@ namespace boost
         std::ptrdiff_t 
         > iterator;
 
-      iterator begin() const;
-      iterator end() const
+      const iterator begin() const;
+      const iterator end() const
       {
         iterator itr;
         itr.base().path_ptr = this;

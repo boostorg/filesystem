@@ -10,11 +10,14 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
+#include <boost/utility.hpp>
 #include <iostream>
 #include <cassert>
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
+using boost::next;
+using boost::prior;
 
 #define BOOST_INCLUDE_MAIN
 #include <boost/test/test_tools.hpp>
@@ -197,74 +200,74 @@ int test_main( int, char*[] )
 
   itr_ck = path( "/", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "/" ) );
-  BOOST_TEST( ++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "/" ) );
-  BOOST_TEST( --itr_ck.end() == itr_ck.begin() );
+  BOOST_TEST( next(itr_ck.begin()) == itr_ck.end() );
+  BOOST_TEST( *next(itr_ck.end()) == std::string( "/" ) );
+  BOOST_TEST( next(itr_ck.end()) == itr_ck.begin() );
 
   itr_ck = path( "/foo", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "/" ) );
-  BOOST_TEST( *++itr_ck.begin() == std::string( "foo" ) );
-  BOOST_TEST( ++++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( ++itr_ck.begin() == --itr_ck.end() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "foo" ) );
-  BOOST_TEST( *----itr_ck.end() == std::string( "/" ) );
-  BOOST_TEST( ----itr_ck.end() == itr_ck.begin() );
+  BOOST_TEST( *next( itr_ck.begin() ) == std::string( "foo" ) );
+  BOOST_TEST( next(next( itr_ck.begin() )) == itr_ck.end() );
+  BOOST_TEST( next( itr_ck.begin() ) == prior( itr_ck.end() ) );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "foo" ) );
+  BOOST_TEST( *prior(prior( itr_ck.end() )) == std::string( "/" ) );
+  BOOST_TEST( prior(prior( itr_ck.end() )) == itr_ck.begin() );
 
   itr_ck = "foo";
   BOOST_TEST( *itr_ck.begin() == std::string( "foo" ) );
-  BOOST_TEST( ++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "foo" ) );
-  BOOST_TEST( --itr_ck.end() == itr_ck.begin() );
+  BOOST_TEST( next( itr_ck.begin() ) == itr_ck.end() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "foo" ) );
+  BOOST_TEST( prior( itr_ck.end() ) == itr_ck.begin() );
 
 # ifdef BOOST_WINDOWS
 
   itr_ck = path( "c:", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "c:" ) );
-  BOOST_TEST( ++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( --itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "c:" ) );
+  BOOST_TEST( next( itr_ck.begin() ) == itr_ck.end() );
+  BOOST_TEST( prior( itr_ck.end() ) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "c:" ) );
 
   itr_ck = path( "c:/", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "c:/" ) );
-  BOOST_TEST( ++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( --itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "c:/" ) );
+  BOOST_TEST( next( itr_ck.begin() ) == itr_ck.end() );
+  BOOST_TEST( prior( itr_ck.end() ) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "c:/" ) );
 
   itr_ck = path( "c:foo", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "c:" ) );
-  BOOST_TEST( *++itr_ck.begin() == std::string( "foo" ) );
-  BOOST_TEST( ++++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( ----itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "foo" ) );
-  BOOST_TEST( *----itr_ck.end() == std::string( "c:" ) );
+  BOOST_TEST( *next( itr_ck.begin() ) == std::string( "foo" ) );
+  BOOST_TEST( next(next( itr_ck.begin() )) == itr_ck.end() );
+  BOOST_TEST( prior(prior( itr_ck.end() )) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "foo" ) );
+  BOOST_TEST( *prior(prior( itr_ck.end() )) == std::string( "c:" ) );
 
   itr_ck = path( "c:/foo", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "c:/" ) );
-  BOOST_TEST( *++itr_ck.begin() == std::string( "foo" ) );
-  BOOST_TEST( ++++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( ----itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "foo" ) );
-  BOOST_TEST( *----itr_ck.end() == std::string( "c:/" ) );
+  BOOST_TEST( *next( itr_ck.begin() ) == std::string( "foo" ) );
+  BOOST_TEST( next(next( itr_ck.begin() )) == itr_ck.end() );
+  BOOST_TEST( prior(prior( itr_ck.end() )) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "foo" ) );
+  BOOST_TEST( *prior(prior( itr_ck.end() )) == std::string( "c:/" ) );
 
   itr_ck = path( "//share", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "//share" ) );
-  BOOST_TEST( ++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( --itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "//share" ) );
+  BOOST_TEST( next( itr_ck.begin() ) == itr_ck.end() );
+  BOOST_TEST( prior( itr_ck.end() ) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "//share" ) );
 
   itr_ck = path( "//share/foo", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "//share" ) );
-  BOOST_TEST( *++itr_ck.begin() == std::string( "foo" ) );
-  BOOST_TEST( ++++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( ----itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "foo" ) );
-  BOOST_TEST( *----itr_ck.end() == std::string( "//share" ) );
+  BOOST_TEST( *next( itr_ck.begin() ) == std::string( "foo" ) );
+  BOOST_TEST( next(next( itr_ck.begin() )) == itr_ck.end() );
+  BOOST_TEST( prior(prior( itr_ck.end() )) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "foo" ) );
+  BOOST_TEST( *prior(prior( itr_ck.end() )) == std::string( "//share" ) );
 
   itr_ck = path( "prn:", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "prn:" ) );
-  BOOST_TEST( ++itr_ck.begin() == itr_ck.end() );
-  BOOST_TEST( --itr_ck.end() == itr_ck.begin() );
-  BOOST_TEST( *--itr_ck.end() == std::string( "prn:" ) );
+  BOOST_TEST( next( itr_ck.begin() ) == itr_ck.end() );
+  BOOST_TEST( prior( itr_ck.end() ) == itr_ck.begin() );
+  BOOST_TEST( *prior( itr_ck.end() ) == std::string( "prn:" ) );
 
   check( path( "/", fs::system_specific ), "/" );
   check( path( "/f", fs::system_specific ), "/f" );
@@ -304,6 +307,6 @@ int test_main( int, char*[] )
 # endif  // BOOST_WINDOWS
 
 //  std::cout << errors << " errors detected\n";
-
+  
   return errors;
 }
