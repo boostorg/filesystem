@@ -192,7 +192,7 @@ namespace boost
   namespace filesystem
   {
 //  filesystem_error m_imp class  --------------------------------------------//
-//  see www.boost.org/more/error_handling.html for implemenation rationale
+//  see www.boost.org/more/error_handling.html for implementation rationale
 
     class filesystem_error::m_imp
     {
