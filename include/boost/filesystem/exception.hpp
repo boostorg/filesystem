@@ -14,7 +14,7 @@
 
 // Original author: Dietmar Kühl. Revised by Beman Dawes.
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 //----------------------------------------------------------------------------// 
 
@@ -32,20 +32,12 @@ namespace boost
   {
     enum error_type { system_error };
 
-    class filesystem_error:
-      public std::runtime_error
+    class filesystem_error : public std::runtime_error
     {
     public:
 
       explicit filesystem_error( std::string const& msg );
-      // Effects: : std::runtime_error(implementation-defined),
-      // m_msg(msg), m_err(0)
-
       explicit filesystem_error( std::string const& msg, error_type );
-      // Effects: : std::runtime_error(implementation-defined),
-      // m_msg(msg), m_err(value), where value is appropriate
-      // for the operating system (for example, GetLastError() on Windows,
-      // errno on POSIX)
 
       ~filesystem_error() throw();
       char const* what() const throw();

@@ -14,7 +14,7 @@
 
 // Original author: Dietmar Kühl. Revised by Beman Dawes.
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 //----------------------------------------------------------------------------//
 

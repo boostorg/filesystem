@@ -28,21 +28,21 @@ namespace
 
   void create_file( const fs::path & ph, const std::string & contents )
   {
-    std::ofstream f( ph.file_path().c_str() );
+    std::ofstream f( ph.system_specific_file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "ofstream(): " + ph.generic_path() );
+      throw fs::filesystem_error( "ofstream(): " + ph.string() );
     if ( !contents.empty() ) f << contents;
   }
 
   void verify_file( const fs::path & ph, const std::string & expected )
   {
-    std::ifstream f( ph.file_path().c_str() );
+    std::ifstream f( ph.system_specific_file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "ifstream(): " + ph.generic_path() );
+      throw fs::filesystem_error( "ifstream(): " + ph.string() );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_error("verify_file(): " + ph.generic_path()
+      throw fs::filesystem_error("verify_file(): " + ph.string()
         + " contents \"" + contents
         + "\" != \"" + expected + "\"" );
   }
@@ -70,15 +70,15 @@ int test_main( int, char * [] )
   std::cout << "implemenation name: "
             << fs::detail::implementation_name() << "\n";
   std::cout << "initial_directory() is \""
-            << fs::initial_directory().generic_path()
+            << fs::initial_directory().string()
             << "\"\n";
 
   fs::path dir(  fs::initial_directory() << "temp_fs_test_directory" );
   
   if ( std::strcmp( fs::detail::implementation_name(), "Windows" ) == 0 )
   {
-    BOOST_TEST( dir.generic_path().size() > 1
-      && dir.generic_path()[1] == ':' ); // verify path includes drive
+    BOOST_TEST( dir.string().size() > 1
+      && dir.string()[1] == ':' ); // verify path includes drive
   }
 
   fs::path ng( " no-way, Jose ", fs::system_specific );

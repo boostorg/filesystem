@@ -20,7 +20,8 @@
 <a href="#synopsis">Header synopsis</a><br>
 <a href="#Class path">Class path</a><br>
 <a href="#Member">Member functions</a><br>
-<a href="#Non-member functions">Non-member functions</a></p>
+<a href="#Non-member functions">Non-member functions</a><br>
+<a href="#decomposition">Path decomposition</a></p>
 <h2><a name="Introduction">Introduction</a></h2>
 
 <p>Many Filesystem Library functions traffic in objects of class <i>path</i>, 
@@ -68,19 +69,15 @@ constructor is provided which takes a system-specific format as an argument.</p>
 the operating system's format, and a file path string using the operating 
 system's format.&nbsp; Additional access functions retrieve specific portions of 
 the contained path.</p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
 <h2><a name="Grammar">Grammar</a> for portable generic path string</h2>
 <p>The grammar is specified in extended BNF, with terminal symbols in quotes:
 </p>
 <blockquote>
-  <pre>path ::= [system-specific-root] [relative-path] </pre>
-  <pre>relative-path ::= element { &quot;/&quot; element } </pre>
-  <pre>element ::= name | parent-directory </pre>
+  <pre>path ::= [root] [relative-path]  // an empty path is valid</pre>
+  <pre>root ::= [system-specific-root] [root-directory]</pre>
+  <pre>root-directory ::= &quot;/&quot;</pre>
+  <pre>relative-path ::= path-element { &quot;/&quot; path-element } [&quot;/&quot;]</pre>
+  <pre>path-element ::= name | parent-directory </pre>
   <pre>parent-directory ::= &quot;..&quot; </pre>
   <pre>name ::= char { char }</pre>
 </blockquote>
@@ -92,12 +89,17 @@ with the <i><a href="#system_specific">system_specific</a></i> decorator.</p>
 <p>Although implementation-defined, it is desirable that <i>
 system-specific-root</i> have a grammar which is distinguishable from other grammar elements, 
 and follow the conventions of the operating system.</p>
+<p>The optional trailing &quot;/&quot; in a <i>relative-path</i> is allowed as a 
+notational convenience. It has no semantic meaning and is discarded in 
+conversions to <a href="#Canonical">canonical form</a>.</p>
 <p>Whether or not a generic path string is actually portable to a particular 
 operating system will depend on the 
 names used.&nbsp; See the <a href="portability_guide.htm">Portability Guide</a>.</p>
 <h2><a name="Canonical">Canonical</a> form</h2>
 <p>Adjacent <i>name, parent-directory</i> elements in <code>m_name</code> 
-have been recursively removed. </p>
+have been recursively removed.</p>
+<p> <i>relative-path</i> does not have a trailing 
+&quot;/&quot;.</p>
 <h2>Header <a href="../../../boost/filesystem/path.hpp">
 boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
 <pre>namespace boost
@@ -221,6 +223,17 @@ in the example produces a useless result. On this operating system, the
 programmer should only use this path as a file path. (There is a
 <a href="portability_guide.htm#recommendations">portability recommendation</a> 
 to not use periods in directory names.)</p>
+<h3>Warning for POSIX and UNIX programmers</h3>
+<p>POSIX and other UNIX-like file systems are single-rooted, while most other 
+file systems are multi-rooted. Multi-rooted file systems require a system-root 
+such as a drive, device, disk, volume, or share name for a path to be absolute.&nbsp; 
+Because of this, the <i>root()</i> and <i>root_directory()</i> functions return 
+identical results on UNIX and other single-rooted file systems, but different 
+results on multi-rooted file systems. Thus use of the wrong function will not be 
+apparent on UNIX-like systems, but will result in non-portable code which will 
+fail when used on multi-rooted systems. Thus UNIX programmers should use 
+particular care to choose between <i>root()</i> and <i>root_directory()</i>.</p>
+<p>The same warning applies to <i>has_root()</i> and <i>has_root_directory()</i>.</p>
 <h3><a name="constructors">constructors</a></h3>
 <blockquote>
   <pre>path();</pre>
@@ -231,7 +244,7 @@ path( const char * src );</pre>
   path string grammar</a> <i>relative-path</i> syntax, and contains no embedded 
   '\0' characters.</p>
   <p><b>Effects:</b> For each <i>src</i> <i>element</i>,&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
-  <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
+  <p><b>Postcondition:</b> <code>m_name</code> is in
   <a href="#Canonical">canonical form</a>.</p>
   <p><b>Rationale:</b> These constructors are not explicit because an intended 
   use is automatic conversion of strings to paths. </p>
@@ -239,17 +252,25 @@ path( const char * src );</pre>
 path( const char * src, path_format );</pre>
   <p><b>Precondition:</b> <i>src</i> conforms to the operating system's grammar 
   for path strings, and contains no embedded '\0' characters.</p>
-  <p><b>Effects:</b> For each <i>src</i> element (where an element represents a 
-  directory name, file name, or parent-directory indicator),&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
-  <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
+  <p><b>Effects:</b> For each <i>src</i> element,&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
+  <p><b>Postcondition:</b> <code>m_name</code> is in
   <a href="#Canonical">canonical form</a>.</p>
 </blockquote>
 <h3><a name="operator-shift-equal">operator &lt;&lt;=</a></h3>
 <blockquote>
   <pre>path &amp; operator&lt;&lt;=( const path &amp; rhs );</pre>
-  <p><b>Effects:</b> Append <code>rhs.m_name</code> to <code>m_name</code>.</p>
+  <p><b>Effects:</b> If any of the following conditions are met, then 
+  m_name.push_back(&quot;/&quot;).</p>
+  <ul>
+    <li>has_relative_path().</li>
+    <li>!is_absolute() &amp;&amp; has_system_specific_root(), and the operating system 
+    requires the system-specific root be absolute</li>
+  </ul>
+  <p>&nbsp;Then append <code>rhs.m_name</code> to <code>m_name</code>.</p>
+  <p>(Footnote: Thus on Windows, (path(&quot;//share&quot;) /= &quot;foo&quot;).string() is 
+  &quot;//share/foo&quot;)</p>
   <p><b>Returns:</b> <code>*this</code></p>
-  <p><b>Postcondition:</b> <code>m_name</code> has been reduced to
+  <p><b>Postcondition:</b> <code>m_name</code> is in
   <a href="#Canonical">canonical form</a>.</p>
   <p><b>Rationale:</b> It is not considered an error for <code>rhs</code> to 
   include a <code>system-specific-root</code> because it might relative, and 
@@ -363,10 +384,226 @@ also supplies several non-member functions which can be used to verify that a
 path meets certain requirements. These subsidiary functions are undocumented 
 pending more research and discussion, and should not be relied upon as they are 
 likely to change.</p>
+<h2>Path <a name="decomposition">decomposition</a></h2>
+<p>It is often useful to extract specific elements from a path object.&nbsp; 
+While any decomposition can be achieved by iterating over the elements of a 
+path, convenience functions are provided which are easier to use, more 
+efficient, and less error prone.</p>
+<table border="1" cellpadding="5" cellspacing="0">
+  <tr>
+    <td><b>generic_<br>
+    string()</b></td>
+    <td><b>Elements</b></td>
+    <td><b>root_<br>
+    path()<br>
+&nbsp;</b></td>
+    <td><b>system_<br>
+    specific_<br>
+    root()</b></td>
+    <td><b>root_<br>
+    directory()</b></td>
+    <td><b>relative_<br>
+    path()</b></td>
+    <td><b>root_<br>
+    directory()<br>
+    / relative_<br>
+    path()</b></td>
+    <td><b>system_<br>
+    specific_<br>
+    root() /<br>
+    relative_<br>
+    path()</b></td>
+    <td><b>branch_<br>
+    path()</b></td>
+    <td><b>leaf()</b></td>
+  </tr>
+  <tr>
+    <td><b>All systems</b></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>/</code></td>
+    <td><code>/</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+  </tr>
+  <tr>
+    <td><code>foo</code></td>
+    <td><code>foo</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>foo</code></td>
+    <td><code>foo</code></td>
+    <td><code>foo</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>foo</code></td>
+  </tr>
+  <tr>
+    <td><code>/foo</code></td>
+    <td><code>/,foo</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+    <td><code>foo</code></td>
+    <td><code>/foo</code></td>
+    <td><code>foo</code></td>
+    <td><code>/</code></td>
+    <td><code>foo</code></td>
+  </tr>
+  <tr>
+    <td><code>foo/bar</code></td>
+    <td><code>foo,bar</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>foo/bar</code></td>
+    <td><code>foo/bar</code></td>
+    <td><code>foo/bar</code></td>
+    <td><code>foo</code></td>
+    <td><code>bar</code></td>
+  </tr>
+  <tr>
+    <td><code>/foo/bar</code></td>
+    <td><code>/,foo,bar</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+    <td><code>foo/bar</code></td>
+    <td><code>/foo/bar</code></td>
+    <td><code>foo/bar</code></td>
+    <td><code>/foo</code></td>
+    <td><code>bar</code></td>
+  </tr>
+  <tr>
+    <td><b>Windows</b></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>c:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>c:</code></td>
+  </tr>
+  <tr>
+    <td><code>c:foo</code></td>
+    <td><code>c:,foo</code></td>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>foo</code></td>
+    <td><code>foo</code></td>
+    <td><code>c:foo</code></td>
+    <td><code>c:</code></td>
+    <td><code>foo</code></td>
+  </tr>
+  <tr>
+    <td><code>c:/</code></td>
+    <td><code>c:,/</code></td>
+    <td><code>c:/</code></td>
+    <td><code>c:</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+    <td><code>c:</code></td>
+    <td><code>c:</code></td>
+    <td><code>/</code></td>
+  </tr>
+  <tr>
+    <td><code>c:/foo</code></td>
+    <td><code>c:,/,foo</code></td>
+    <td><code>c:/</code></td>
+    <td><code>c:</code></td>
+    <td><code>/</code></td>
+    <td><code>foo</code></td>
+    <td><code>/foo</code></td>
+    <td><code>c:foo</code></td>
+    <td><code>c:/</code></td>
+    <td><code>foo</code></td>
+  </tr>
+  <tr>
+    <td><code>//shr</code></td>
+    <td><code>//shr</code></td>
+    <td><code>//shr</code></td>
+    <td><code>//shr</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>//shr</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>//shr</code></td>
+  </tr>
+  <tr>
+    <td><code>//shr/</code></td>
+    <td><code>//shr,/</code></td>
+    <td><code>//shr/</code></td>
+    <td><code>//shr</code></td>
+    <td><code>/</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>/</code></td>
+    <td><code>//shr</code></td>
+    <td><code>//shr</code></td>
+    <td><code>/</code></td>
+  </tr>
+  <tr>
+    <td><code>//shr/foo</code></td>
+    <td><code>//shr,<br>
+    /,foo</code></td>
+    <td><code>//shr/</code></td>
+    <td><code>//shr</code></td>
+    <td><code>/</code></td>
+    <td><code>foo</code></td>
+    <td><code>/foo</code></td>
+    <td><code>//shr/foo</code></td>
+    <td><code>//shr/</code></td>
+    <td><code>foo</code></td>
+  </tr>
+  <tr>
+    <td><code>prn:</code></td>
+    <td><code>prn:</code></td>
+    <td><code>prn:</code></td>
+    <td><code>prn:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>prn:</code></td>
+    <td><code>&quot;&quot;</code></td>
+    <td><code>prn:</code></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39331" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 November, 2002<!--webbot bot="Timestamp" endspan i-checksum="39360" --></p>
 
 </body>
 

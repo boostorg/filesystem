@@ -153,26 +153,10 @@ conditions for error are very different between the source and the target.</p>
 detection were evaluated, including at least four complete implementations.&nbsp; 
 While the details for rejection differed, they all tended to distort the 
 otherwise simple design of the rest of the library.</p>
-<p><b>Why doesn't the generic path grammar include syntax for portably 
-specifying the root directory?</b></p>
-<p>The concept of &quot;root directory&quot; appears to be inherently non-portable.&nbsp; 
-For example, &quot;/&quot;&nbsp; means one thing on POSIX (an absolute path the single 
-filesystem root), and another on Windows (a relative path to the root of the 
-current drive).&nbsp; It goes rapidly downhill from there; on the classic Mac 
-OS, root names can be ambiguous!</p>
-<p><b>Why isn't there a path::is_absolute() or similar function?</b></p>
-<p>Because useful semantics are not obvious. On some operating systems a path is clearly either absolute or 
-relative, but on others the distinction isn't clear. For example, on Windows consider these 
-paths:</p>
-<ul>
-  <li>&quot;/foo&quot; is not strictly an absolute path since it is relative to the 
-  current drive, yet appending it to another path as if it were relative clearly 
-  isn't correct.</li>
-  <li>&quot;c:foo&quot; is relative to the current working directory on drive &quot;c:&quot;, 
-  yet it can't be treated like other relative paths in that it can't be appended 
-  to an absolute path.</li>
-</ul>
+<p><b>Why do some path member function names have a &quot;system_specific_&quot; prefix?</b></p>
+<p>To alert users that the results are inherently non-portable. The names are 
+deliberately ugly to discourage use except where really necessary.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39334" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 November, 2002<!--webbot bot="Timestamp" endspan i-checksum="39352" --></p>

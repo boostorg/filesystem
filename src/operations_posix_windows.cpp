@@ -13,7 +13,7 @@
 // <   "as is" without expressed or implied warranty.                        > 
 // < ----------------------------------------------------------------------- > 
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 //----------------------------------------------------------------------------//
 
@@ -36,6 +36,12 @@ namespace fs = boost::filesystem;
 
 # if defined(BOOST_WINDOWS) || (!defined(BOOST_POSIX) && defined(_WIN32))
 #   include "windows.h"
+
+// For Windows, the xxxA form of various function names is used to avoid
+// inadvertently getting wide forms of the functions. (The undecorated
+// forms are actually macros, so can misfire if the user has various
+// other macros defined. There was a bug report of this happening.)
+
 # else
 #   define BOOST_POSIX
 #   include "sys/stat.h"
@@ -106,7 +112,7 @@ namespace
   // Returns: 0 if error, otherwise name
   {
     std::string dirpath( std::string(dir) + "/*" );
-    return ( (handle = ::FindFirstFile( dirpath.c_str(), &data ))
+    return ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
       == BOOST_INVALID_HANDLE_VALUE ) ? 0 : data.cFileName;
   }  
 
@@ -121,7 +127,7 @@ namespace
   // Returns: 0 if EOF, otherwise name
   // Throws: if system reports error
   {
-    if ( ::FindNextFile( handle, &data ) == 0 )
+    if ( ::FindNextFileA( handle, &data ) == 0 )
     {
       if ( ::GetLastError() != ERROR_NO_MORE_FILES )
       {
@@ -200,7 +206,7 @@ namespace boost
       if ( dir_path.is_null() )
        base().imp->handle = BOOST_INVALID_HANDLE_VALUE;
       else
-        name = find_first_file( dir_path.directory_path().c_str(),
+        name = find_first_file( dir_path.system_specific_directory_string().c_str(),
           base().imp->handle, scratch );  // sets handle
 
  		  if ( base().imp->handle != BOOST_INVALID_HANDLE_VALUE )
@@ -216,7 +222,7 @@ namespace boost
       {
         throw filesystem_error( std::string( 
           "directory_iterator constructor failure: " )
-          + dir_path.directory_path().c_str(), system_error );
+          + dir_path.system_specific_directory_string().c_str(), system_error );
       }  
     }
 
@@ -251,9 +257,9 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
-      return ::stat( ph.file_path().c_str(), &path_stat ) == 0;  
+      return ::stat( ph.string().c_str(), &path_stat ) == 0;  
 #   else
-      return ::GetFileAttributes( ph.file_path().c_str() ) != 0xFFFFFFFF;
+      return ::GetFileAttributesA( ph.string().c_str() ) != 0xFFFFFFFF;
 #   endif
     }
 
@@ -261,15 +267,15 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
-      if ( ::stat( ph.directory_path().c_str(), &path_stat ) != 0 )
+      if ( ::stat( ph.system_specific_directory_string().c_str(), &path_stat ) != 0 )
         throw filesystem_error( std::string("is_directory(): ")
-          + ph.directory_path().c_str(), system_error );
+          + ph.system_specific_directory_string().c_str(), system_error );
       return S_ISDIR( path_stat.st_mode );
 #   else
-      DWORD attributes = ::GetFileAttributes( ph.directory_path().c_str() );
+      DWORD attributes = ::GetFileAttributesA( ph.system_specific_directory_string().c_str() );
       if ( attributes == 0xFFFFFFFF )
         throw filesystem_error( std::string("is_directory(): ")
-          + ph.directory_path().c_str(), system_error );
+          + ph.system_specific_directory_string().c_str(), system_error );
       return (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 #   endif
     }
@@ -278,19 +284,19 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
-      if ( ::stat( ph.file_path().c_str(), &path_stat ) != 0 )
+      if ( ::stat( ph.string().c_str(), &path_stat ) != 0 )
               throw filesystem_error( std::string("is_empty(): ")
-                + ph.file_path().c_str(), system_error );
+                + ph.system_specific_file_string().c_str(), system_error );
       
       return S_ISDIR( path_stat.st_mode )
         ? is_empty_directory( ph )
         : path_stat.st_size == 0;
 #   else
       WIN32_FILE_ATTRIBUTE_DATA fad;
-      if ( !::GetFileAttributesEx( ph.file_path().c_str(),
+      if ( !::GetFileAttributesExA( ph.string().c_str(),
         ::GetFileExInfoStandard, &fad ) )
               throw filesystem_error( std::string("is_empty(): ")
-                + ph.file_path().c_str(), system_error );
+                + ph.system_specific_file_string().c_str(), system_error );
       
       return ( fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
         ? is_empty_directory( ph )
@@ -301,13 +307,13 @@ namespace boost
     void create_directory( const path & dir_path )
     {
 #   ifdef BOOST_POSIX
-      if ( ::mkdir( dir_path.directory_path().c_str(),
+      if ( ::mkdir( dir_path.system_specific_directory_string().c_str(),
         S_IRWXU|S_IRWXG|S_IRWXO ) != 0 )
 #   else
-      if ( !::CreateDirectory( dir_path.directory_path().c_str(), 0 ) )
+      if ( !::CreateDirectoryA( dir_path.system_specific_directory_string().c_str(), 0 ) )
 #   endif
         throw filesystem_error( std::string("create_directory(): ")
-          + dir_path.directory_path().c_str(), system_error );
+          + dir_path.system_specific_directory_string().c_str(), system_error );
     }
 
     void remove( const path & ph )
@@ -317,22 +323,22 @@ namespace boost
         if ( is_directory( ph ) )
         {
 #   ifdef BOOST_POSIX
-          if ( ::rmdir( ph.file_path().c_str() ) != 0 )
+          if ( ::rmdir( ph.string().c_str() ) != 0 )
 #   else
-          if ( !::RemoveDirectory( ph.file_path().c_str() ) )
+          if ( !::RemoveDirectoryA( ph.string().c_str() ) )
 #   endif
             throw fs::filesystem_error( std::string("remove() on: ")
-              + ph.file_path().c_str(), system_error );
+              + ph.system_specific_file_string().c_str(), system_error );
         }
         else
         {
 #   ifdef BOOST_POSIX
-          if ( ::remove( ph.file_path().c_str() ) != 0 )
+          if ( ::remove( ph.string().c_str() ) != 0 )
 #   else
-          if ( !::DeleteFile( ph.file_path().c_str() ) )
+          if ( !::DeleteFileA( ph.string().c_str() ) )
 #   endif
             throw fs::filesystem_error( std::string("remove() on: ")
-              + ph.file_path().c_str(), system_error );
+              + ph.system_specific_file_string().c_str(), system_error );
         }
       }
     }
@@ -347,12 +353,13 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       if ( exists( new_path ) // POSIX is too permissive so must check
-        || ::rename( old_path.file_path().c_str(), new_path.file_path().c_str() ) != 0 )
+        || ::rename( old_path.string().c_str(), new_path.string().c_str() ) != 0 )
 #   else
-      if ( !::MoveFile( old_path.file_path().c_str(), new_path.file_path().c_str() ) )
+      if ( !::MoveFileA( old_path.string().c_str(), new_path.string().c_str() ) )
 #   endif
         throw filesystem_error( std::string("move_file(): ")
-          + old_path.file_path().c_str() + ", " + new_path.file_path().c_str(), system_error );
+          + old_path.system_specific_file_string().c_str()
+          + ", " + new_path.system_specific_file_string().c_str(), system_error );
     }
 
     void copy_file( const path & from_file_ph,
@@ -365,16 +372,16 @@ namespace boost
       boost::scoped_array<char> buf( new char [buf_sz] );
       int infile, outfile;
 
-      if ( (infile = ::open( from_file_ph.file_path().c_str(),
+      if ( (infile = ::open( from_file_ph.string().c_str(),
                              O_RDONLY )) < 0
-        || (outfile = ::open( to_file_ph.file_path().c_str(),
+        || (outfile = ::open( to_file_ph.string().c_str(),
                               O_WRONLY | O_CREAT | O_EXCL,
                               S_IRWXU|S_IRWXG|S_IRWXO )) < 0 )
       {
         if ( infile != 0 ) ::close( infile );
         throw fs::filesystem_error( std::string("copy() files: ")
-          + from_file_ph.file_path().c_str()
-          + ", " + to_file_ph.file_path().c_str(), system_error );
+          + from_file_ph.string().c_str()
+          + ", " + to_file_ph.string().c_str(), system_error );
       }
 
       ssize_t sz;
@@ -386,12 +393,12 @@ namespace boost
 
       if ( sz != 0 )
 #   else
-      if ( !::CopyFile( from_file_ph.file_path().c_str(),
-                      to_file_ph.file_path().c_str(), /*fail_if_exists=*/true ) )
+      if ( !::CopyFileA( from_file_ph.string().c_str(),
+                      to_file_ph.string().c_str(), /*fail_if_exists=*/true ) )
 #   endif
         throw fs::filesystem_error( std::string("copy() files: ")
-          + from_file_ph.file_path().c_str()
-          + ", " + to_file_ph.file_path().c_str(), system_error );
+          + from_file_ph.system_specific_file_string().c_str()
+          + ", " + to_file_ph.system_specific_file_string().c_str(), system_error );
     }
 
     const path & initial_directory()
@@ -408,10 +415,10 @@ namespace boost
         if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
 #     else
         DWORD sz;
-        if ( (sz = ::GetCurrentDirectory( 0, static_cast<char*>(0) )) == 0 )
+        if ( (sz = ::GetCurrentDirectoryA( 0, static_cast<char*>(0) )) == 0 )
           throw filesystem_error( "initial_directory()" );
         boost::scoped_array<char> buf( new char[sz] );
-        if ( ::GetCurrentDirectory( sz, buf.get() ) == 0 )
+        if ( ::GetCurrentDirectoryA( sz, buf.get() ) == 0 )
 #     endif
           { throw filesystem_error( "initial_directory()", system_error ); }
         init_dir = path( buf.get(), system_specific );

@@ -5,7 +5,7 @@
 //  in all copies. This software is provided "as is" without express or implied
 //  warranty, and with no claim as to its suitability for any purpose.
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 #ifndef BOOST_FILESYSTEM_RECURSIVE_DIRECTORY_ITERATOR_HPP
 #define BOOST_FILESYSTEM_RECURSIVE_DIRECTORY_ITERATOR_HPP

@@ -14,7 +14,7 @@
 // <   "as is" without express or implied warranty.                          > 
 // < ----------------------------------------------------------------------- > 
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 //----------------------------------------------------------------------------// 
 
@@ -116,7 +116,7 @@ namespace boost
     {
     public:
       directory_iterator();  // creates the "end" iterator
-      explicit directory_iterator( const path & directory_path );
+      explicit directory_iterator( const path & system_specific_directory_string );
 
       // workaround iterator_adaptor / compiler interactions
       const boost::filesystem::path * operator->() const
