@@ -201,8 +201,8 @@ int test_main( int, char*[] )
   itr_ck = path( "/", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "/" ) );
   BOOST_TEST( next(itr_ck.begin()) == itr_ck.end() );
-  BOOST_TEST( *next(itr_ck.end()) == std::string( "/" ) );
-  BOOST_TEST( next(itr_ck.end()) == itr_ck.begin() );
+  BOOST_TEST( *prior(itr_ck.end()) == std::string( "/" ) );
+  BOOST_TEST( prior(itr_ck.end()) == itr_ck.begin() );
 
   itr_ck = path( "/foo", fs::system_specific );
   BOOST_TEST( *itr_ck.begin() == std::string( "/" ) );
