@@ -365,6 +365,11 @@ namespace boost
       {
         assert( pos < path_ptr->m_path.size() ); // detect increment past end
         pos += name.size();
+        if ( pos == path_ptr->m_path.size() )
+        {
+          name = "";  // not strictly required, but might aid debugging
+          return;
+        }
         if ( path_ptr->m_path[pos] == '/' ) ++pos;
         std::string::size_type end_pos( path_ptr->m_path.find( '/', pos ) );
         if ( end_pos == std::string::npos ) end_pos = path_ptr->m_path.size();
