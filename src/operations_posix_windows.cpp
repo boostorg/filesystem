@@ -61,12 +61,13 @@ namespace fs = boost::filesystem;
 // other macros defined. There was a bug report of this happening.)
 
 # else // BOOST_POSIX
-#   define __USE_FILE_OFFSET64 // at worst, this may do nothing,
+#   define _USE_FILE_OFFSET_BITS 64 // at worst,
+#   define __USE_FILE_OFFSET64 // these defines may do nothing,
       // but that won't matter on 64-bit systems or on 32-bit systems which
       // don't have files larger than can be represented by a traditional
-      // POSIX/UNIX off_t type. OTOH, defining __USE_FILE_OFFSET64 kicks
+      // POSIX/UNIX off_t type. OTOH, defining them should kick
       // in 64-bit off_t's (and thus st_size) on 32-bit systems that support
-      // the Large File Support (LFS) interface, such as Linux.
+      // the Large File Support (LFS) interface, such as Linux, Solaris, and IRIX.
 
 #   include "dirent.h"
 #   include "unistd.h"
