@@ -495,28 +495,17 @@ namespace boost
             "boost::filesystem::equivalent",
             ph2, fs::detail::system_error_code() ) );
       // In theory, volume serial numbers are sufficient to distinguish between
-      // devices, but in practice VSN's are sometimes duplicated, so device id
-      // is also checked. Device id's alone aren't sufficient because network
-      // share devices on different machines will have the same id. Furthermore,
-      // cheap floppy disks often have 0 VSN's and are mounted on the same
-      // lettered drive across networks, so last write time and file size is
-      // checked to distinguish that case as far as is possible.
-      if ( info1.dwVolumeSerialNumber != info2.dwVolumeSerialNumber
-        || info1.nFileIndexHigh != info2.nFileIndexHigh
-        || info1.nFileIndexLow != info2.nFileIndexLow
-        || info1.nFileSizeHigh != info2.nFileSizeHigh
-        || info1.nFileSizeLow != info2.nFileSizeLow ) return false;
-      struct stat s1;
-      if ( ::stat( ph1.string().c_str(), &s1 ) != 0 )
-        boost::throw_exception( filesystem_error(
-          "boost::filesystem::equivalent",
-          ph1, fs::detail::system_error_code() ) );
-      struct stat s2;
-      if ( ::stat( ph2.string().c_str(), &s2 ) != 0 )
-        boost::throw_exception( filesystem_error(
-          "boost::filesystem::equivalent",
-          ph2, fs::detail::system_error_code() ) );
-      return s1.st_dev == s2.st_dev;
+      // devices, but in practice VSN's are sometimes duplicated, so last write
+      // time and file size are also checked.
+      return info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber
+        && info1.nFileIndexHigh == info2.nFileIndexHigh
+        && info1.nFileIndexLow == info2.nFileIndexLow
+        && info1.nFileSizeHigh == info2.nFileSizeHigh
+        && info1.nFileSizeLow == info2.nFileSizeLow
+        && info1.ftLastWriteTime.dwLowDateTime
+          == info2.ftLastWriteTime.dwLowDateTime
+        && info1.ftLastWriteTime.dwHighDateTime
+          == info2.ftLastWriteTime.dwHighDateTime;
 #   endif
     }
 

@@ -296,12 +296,11 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
       values. The POSIX implementation does not protect against
       <a href="index.htm#Race-condition">race conditions</a>.<br>
 &nbsp;</li>
-      <li>Windows: stat() reports identical st_dev values and 
-      GetFileInformationByHandle() reports identical dwVolumeSerialNumber, 
-      nFileIndexHigh, nFileIndexLow, nFileSizeHigh, and nFileSizeLow values. 
+      <li>Windows: GetFileInformationByHandle() reports identical dwVolumeSerialNumber, 
+      nFileIndexHigh, nFileIndexLow, nFileSizeHigh, nFileSizeLow values, 
+      ftLastWriteTime.dwLowDateTime, and ftLastWriteTime.dwHighDateTime. 
       Note that for identical media (particularly bit-for-bit duplicate CD's, 
-      Floppies, or memory cards) on the same lettered drive of different network 
-      shared systems, equivalent() will return <code>true</code> even though the 
+      Floppies, or memory cards)  equivalent() will return <code>true</code> even though the 
       media are physically different. The Windows implementation does protect 
       against <a href="index.htm#Race-condition">race conditions</a>.</li>
     </ul>
@@ -631,7 +630,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28864" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 November, 2004<!--webbot bot="Timestamp" endspan i-checksum="39366" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
