@@ -446,8 +446,8 @@ namespace boost
 
     path system_complete( const path & ph )
     {
-      if ( ph.empty() ) return ph;
 #   ifdef BOOST_WINDOWS
+      if ( ph.empty() ) return ph;
       char buf[MAX_PATH];
       char * pfn;
       std::size_t len = ::GetFullPathNameA( ph.string().c_str(),
@@ -459,7 +459,8 @@ namespace boost
       buf[len] = '\0';
       return path( buf, native );
 #   else
-      return current_path() / ph;
+      return (ph.empty() || ph.is_complete())
+        ? ph : current_path() / ph;
 #   endif
     }
     
