@@ -85,6 +85,9 @@ supplied for other operating systems. Note that many operating systems not
 normally thought of as POSIX or Windows systems, such as mainframe legacy 
 operating systems or embedded operating systems, support POSIX compatible file 
 systems which will work with the Filesystem Library.</p>
+<p>The object-library can be built for static or dynamic (shared/dll) linking. 
+This is controlled by the BOOST_ALL_DYN_LINK or BOOST_FILESYSTEM_DYN_LINK 
+macros.</p>
 <p>The object-library can be built with a <a href="../build/Jamfile">Jamfile</a> 
 supplied in directory libs/filesystem/build.</p>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
@@ -265,7 +268,7 @@ directory</a> can be viewed as a pointer to the underlying directory or file
 content. Modern operating systems permit multiple directory elements to point to 
 the same underlying directory or file content. Such a pointer is often called a 
 link. Not all operating systems support the 
-concept of links. Links may be referenced counted or non-reference counted. 
+concept of links. Links may be reference counted or non-reference counted. 
 Non-reference counted links are sometimes called symbolic links or shortcuts.</p>
 <h2><a name="Common_Specifications">Common Specifications</a></h2>
 <p>Unless otherwise specified, all Filesystem Library member and non-member 
@@ -287,7 +290,7 @@ boost::throw_exception()</a></b> - All exceptions thrown by the Filesystem
 Library are implemented by calling <a href="../../utility/throw_exception.html">
 boost::throw_exception()</a>. Thus exact behavior may differ depending on 
 BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
-<p><b>Links follow operating system rules</b>- <a href="#link">Links</a> are 
+<p><b><a name="link_rules">Links follow operating system rules</a></b>- <a href="#link">Links</a> are 
 transparent in that Filesystem Library functions simply follow operating system 
 rules. That implies that some functions may throw <i><a href="exception.htm">filesystem_error</a></i> 
 exceptions if a link is cyclic or has other problems.</p>
@@ -300,16 +303,16 @@ to a directory.</p>
 functions which throw exceptions may leave the external file system in an 
 altered state. It is suggested that implementations provide stronger guarantees 
 when possible.</p>
-<p>Rationale: Implementors shouldn't be required to provide guarantees which are 
-impossible to meet on some operating systems. Implementors should be given 
+<p>Rationale: Implementers shouldn't be required to provide guarantees which are 
+impossible to meet on some operating systems. Implementers should be given 
 normative encouragement to provide those guarantees when possible.</p>
 <p><b>Graceful degradation</b> -&nbsp; Filesystem Library functions which cannot 
 be fully supported on a particular operating system will be partially supported 
 if possible. Implementations must document such partial support. Functions which 
 are requested to provide some operation which they cannot support should report 
-an error at compile time or throw an exception at runtime.</p>
+an error at compile time (preferred) or throw an exception at runtime.</p>
 <p>Rationale: Implementations on less-powerful operating systems should provide 
-useful functionality if possible, but should not be required to simulate 
+useful functionality if possible, but are not be required to simulate 
 features not present in the underlying operating system.</p>
 <h2><a name="Race-condition">Race-condition</a> d<a name="Dangers">anger</a></h2>
 <p>The state of files and directories is often
@@ -463,7 +466,7 @@ of portability&quot; problem, particularly in postings by PJ Plauger and Pete Be
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 October, 2003<!--webbot bot="Timestamp" endspan i-checksum="38549" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 November, 2003<!--webbot bot="Timestamp" endspan i-checksum="39355" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

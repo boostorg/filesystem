@@ -279,6 +279,8 @@ establishment of the postcondition. </p>
 <p><b>Postcondition:</b> <code>!exists( ph )</code></p>
 <p><b>Throws:</b> if<code> ph.empty() || (exists(ph) &amp;&amp; is_directory(ph) &amp;&amp; !is_empty(ph))</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
+<p><b>Note:</b> See <a href="index.htm#link_rules">link rules</a> for operating 
+system dependent behavior if <code>ph</code> is a <a href="index.htm#link">link</a>.</p>
 <p><b>Rationale:</b> Does not throw when <code>!exists( ph )</code> because not 
 throwing is:</p>
 <ul>
@@ -533,7 +535,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 October, 2003<!--webbot bot="Timestamp" endspan i-checksum="38549" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 November, 2003<!--webbot bot="Timestamp" endspan i-checksum="39368" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
