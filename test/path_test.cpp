@@ -592,6 +592,7 @@ int test_main( int, char*[] )
     PATH_CHECK( path( "c:/..foo", fs::native ).normalize(), "c:/..foo" );
     PATH_CHECK( path( "c:foo", fs::native ), "c:foo" );
     PATH_CHECK( path( "c:/foo", fs::native ), "c:/foo" );
+    PATH_CHECK( path( "c++", fs::native ), "c++" );
     PATH_CHECK( path( "//share", fs::native ), "//share" );
     PATH_CHECK( path( "//share/", fs::native ), "//share/" );
     PATH_CHECK( path( "//share/foo", fs::native ), "//share/foo" );
