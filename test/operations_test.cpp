@@ -122,6 +122,7 @@ int test_main( int argc, char * argv[] )
   // Windows only tests
   if ( platform == "Windows" )
   {
+    BOOST_TEST( !fs::exists( fs::path( "//share-not/foo", fs::native ) ) );
     BOOST_TEST( dir.string().size() > 1
       && dir.string()[1] == ':' ); // verify path includes drive
 
