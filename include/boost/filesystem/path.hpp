@@ -6,7 +6,7 @@
 //  warranty, and with no claim as to its suitability for any purpose.
 
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 //----------------------------------------------------------------------------// 
 
@@ -32,9 +32,9 @@ namespace boost
         std::string             name;     // cache current element.
         const path *            path_ptr; // path being iterated over.
         std::string::size_type  pos;      // position of name in
-                                          // path_ptr->generic_path(). The
+                                          // path_ptr->string(). The
                                           // end() iterator is indicated by 
-                                          // pos == path_ptr->generic_path().size()
+                                          // pos == path_ptr->string().size()
 
         const std::string & operator*() const { return name; }
         void operator++();
@@ -42,10 +42,10 @@ namespace boost
         bool operator==( const path_itr_imp & rhs ) const
           { return path_ptr == rhs.path_ptr && pos == rhs.pos; }
       };
-    }
+    } // detail
 
-    enum path_format { system_specific }; // ugly enough to discourage use
-                                          // except when actually needed
+    enum path_format { native }; // ugly enough to discourage use
+                                 // except when actually needed
 
   //  path -------------------------------------------------------------------//
 
@@ -63,19 +63,34 @@ namespace boost
       path( const char * src, path_format );
 
       // append operations:
-      path & operator <<=( const path & rhs );
-      const path operator << ( const path & rhs ) const
-        { return path( *this ) <<= rhs; }
+      path & operator /=( const path & rhs );
+      path operator /( const path & rhs ) const
+        { return path( *this ) /= rhs; }
+
+      // conversion functions:
+      const std::string & string() const { return m_path; }
+      std::string native_file_string() const;
+      std::string native_directory_string() const;
+
+      // decomposition functions:
+      path         root_path() const;
+      std::string  root_name() const;
+      std::string  root_directory() const;
+      path         relative_path() const;
+      std::string  leaf() const;
+      path         branch_path() const;
 
       // query functions:
-      bool is_null() const { return m_path.size() == 0; }
+      bool empty() const { return m_path.empty(); } // name consistent with std containers
 
-      const std::string & generic_path() const { return m_path; }
-      const std::string & file_path() const { return m_path; } // native format
-      const std::string & directory_path() const { return m_path; } // ditto
+      bool is_complete() const;
 
-      const std::string leaf() const;
-      const path branch() const;
+      bool has_root_path() const;
+      bool has_root_name() const;
+      bool has_root_directory() const;
+      bool has_relative_path() const;
+      bool has_leaf() const { return !m_path.empty(); }
+      bool has_branch_path() const;
 
       // iteration over the names in the path:
       typedef boost::iterator_adaptor<
@@ -88,8 +103,8 @@ namespace boost
         std::ptrdiff_t 
         > iterator;
 
-      const iterator begin() const;
-      const iterator end() const
+      iterator begin() const;
+      iterator end() const
       {
         iterator itr;
         itr.base().path_ptr = this;
@@ -103,7 +118,7 @@ namespace boost
       // constructor input formats.  Private members might be quite different
       // in other implementations, particularly where there were wide
       // differences between generic and system-specific argument formats,
-      // or between file_path() and directory_path() formats.
+      // or between native_file_string() and native_directory_string() formats.
 
       std::string  m_path;
 
@@ -121,11 +136,11 @@ namespace boost
 
   //  path non-member functions  ---------------------------------------------//
 
-    inline const path operator << ( const char * lhs, const path & rhs )
-      { return path( lhs ) <<= rhs; }
+    inline path operator / ( const char * lhs, const path & rhs )
+      { return path( lhs ) /= rhs; }
 
-    inline const path operator << ( const std::string & lhs, const path & rhs )
-      { return path( lhs ) <<= rhs; }
+    inline path operator / ( const std::string & lhs, const path & rhs )
+      { return path( lhs ) /= rhs; }
    
   //  error checking  --------------------------------------------------------//
 
