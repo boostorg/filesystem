@@ -63,7 +63,7 @@ namespace
       std::cout << "filesystem_error::error() reports " << ex.error()
         << ", should be " << ec
         << "\n native_error() is " << ex.native_error()
-        << "\n";
+        << std::endl;
     }
     return false;
   }
@@ -146,8 +146,8 @@ int test_main( int argc, char * argv[] )
   else if ( platform == "POSIX" )
   {
     BOOST_TEST( fs::system_complete( "" ).empty() );
-    BOOST_TEST( fs::system_complete( "/" ).string()
-      == fs::initial_path().root_path().string() );
+    BOOST_TEST( fs::initial_path().root_path().string() == "/" );
+    BOOST_TEST( fs::system_complete( "/" ).string() == "/" );
     BOOST_TEST( fs::system_complete( "foo" ).string()
       == fs::initial_path().string()+"/foo" );
     BOOST_TEST( fs::system_complete( "/foo" ).string()
@@ -256,14 +256,20 @@ int test_main( int argc, char * argv[] )
   verify_file( d2 / "f3", "foobar1" );
 
   // make sure can't rename() a non-existent file
-  BOOST_TEST( throws_fs_error( bind( fs::rename, d1 / "f2", d2 / "f4" ) ) );
+  BOOST_TEST( !fs::exists( d1 / "f2" ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, d1 / "f2", d2 / "f4" ),
+    fs::not_found_error ) );
 
   // make sure can't rename() to an existent file
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d2 / "f3" ),
-    fs::already_exists_error ) );
+  BOOST_TEST( fs::exists( dir / "f1" ) );
+  BOOST_TEST( fs::exists( d2 / "f3" ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d2 / "f3" ) ) );
+  // several POSIX implementations (cygwin, openBSD) report ENOENT instead of EEXIST,
+  // so we don't verify error type on the above test.
 
   // make sure can't rename() to a nonexistent parent directory
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ) ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ),
+    fs::not_found_error ) );
 
   // rename() on directory
   fs::path d3( dir / "d3" );
