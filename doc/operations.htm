@@ -76,6 +76,7 @@ header. </p>
     bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
     bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
     std::time_t <a href="#last_write_time">last_write_time</a>( const path &amp; ph );
+    void <a href="#last_write_time">last_write_time</a>( const path &amp; ph, std::time_t new_time );
 
     void <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
     bool <a href="#remove">remove</a>( const path &amp; ph );
@@ -233,12 +234,6 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 </blockquote>
 <h3><a name="last_write_time">last_write_time</a></h3>
 <blockquote>
-<p><code>std::time_t last_write_time( const path &amp; ph );</code></p>
-<p><b>Returns:</b> The time the file was last modified, as reported by the 
-operating system. If the time cannot be determined, returns (std::time_t)(-1).</p>
-<p>To convert the returned value to UTC or local time, use <code>std::gmtime()</code> 
-or <code>std::localtime()</code> respectively.</p>
-<p><b>Throws:</b> if <code>!exists(ph)</code></p>
 <p><b>Warning:</b> The times associated with files are subject to many 
 vicissitudes. Each type of filesystem differs slightly in the details and 
 resolution of how times are recorded. It is not uncommon for a program to 
@@ -246,6 +241,19 @@ simultaneously have access to files maintained by FAT, ISO9660, NTFS, and POSIX
 filesystems. During program execution, the system clock may be set to a new 
 value by some other, possibly automatic, process. Another thread or process may 
 write to a file, causing the last write time to change unexpectedly.</p>
+<p><code>std::time_t last_write_time( const path &amp; ph );</code></p>
+<p><b>Returns:</b> The time the file was last modified, as reported by the 
+operating system. If the time cannot be determined, returns (std::time_t)(-1).</p>
+<p>To convert the returned value to UTC or local time, use <code>std::gmtime()</code> 
+or <code>std::localtime()</code> respectively.</p>
+<p><b>Throws:</b> if <code>!exists(ph)</code></p>
+<p><code>void last_write_time( const path &amp; ph, std::time_t new_time );</code></p>
+<p><b>Effects:</b> Asks the operating system to set the last write time to <code>
+new_time</code>, or to the current time if <code>new_time==std::time_t()</code>.</p>
+<p><b>Throws:</b> if <code>!exists(ph)</code></p>
+<p><b>Rationale:</b> <code>last_write_time(ph)==new_time</code> is not specified 
+as a postcondition because the times may differ somewhat on some operating 
+systems.</p>
 </blockquote>
 <h3><a name="create_directory">create_directory</a></h3>
 <blockquote>
@@ -520,7 +528,7 @@ by a prior program run by the command processor.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 May, 2003<!--webbot bot="Timestamp" endspan i-checksum="13973" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34480" --></p>
 
 </body>
 
