@@ -207,7 +207,7 @@ namespace boost
     {
       m_imp.reset( new dir_itr_imp );
       BOOST_SYSTEM_DIRECTORY_TYPE scratch;
-      const char * name;
+      const char * name = 0;  // initialization quiets compiler warnings
       if ( dir_path.empty() )
        m_imp->handle = BOOST_INVALID_HANDLE_VALUE;
       else
@@ -380,7 +380,7 @@ namespace boost
 
       const std::size_t buf_sz = 32768;
       boost::scoped_array<char> buf( new char [buf_sz] );
-      int infile, outfile;
+      int infile, outfile=0;  // init quiets compiler warning
 
       if ( (infile = ::open( from_file_ph.string().c_str(),
                              O_RDONLY )) < 0
@@ -389,9 +389,9 @@ namespace boost
                               S_IRWXU|S_IRWXG|S_IRWXO )) < 0 )
       {
         if ( infile != 0 ) ::close( infile );
-          boost::throw_exception( filesystem_error(
-            "boost::filesystem::copy_file",
-            from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::copy_file",
+          from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
       }
 
       ssize_t sz;
