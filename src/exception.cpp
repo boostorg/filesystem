@@ -181,7 +181,6 @@ namespace
 
   const fs::path empty_path;
   const std::string empty_string;
-  const char * no_context_msg = "filesystem_error";
 } // unnamed namespace
 
 namespace boost
