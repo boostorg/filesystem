@@ -284,14 +284,13 @@ int test_main( int argc, char * argv[] )
   // hard to test time exactly, but except under the most unusual circumstances,
   // time since file creation should be no more than one minute, I'm hoping.
   double time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_TEST( time_diff >= 0.0 && time_diff < 60.0 );
+  BOOST_TEST( time_diff > -60.0 && time_diff < 60.0 );
 
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
   BOOST_TEST( fs::file_size( file_ph ) == 7 );
   verify_file( file_ph, "foobar1" );
 
-#if !BOOST_WORKAROUND(__BORLANDC__, <= 0x564)
   std::tm * tmp = std::localtime( &ft );
   std::cout << "Year is " << tmp->tm_year << std::endl;
   --tmp->tm_year;
@@ -305,19 +304,12 @@ int test_main( int argc, char * argv[] )
   std::cout << "Time difference is : " << time_diff << std::endl;
   BOOST_TEST( time_diff >= 365*24*3600.0 && time_diff < (366*24*3600.0 + 60.0) );
   std::cout << "Reset to current time" << std::endl;
-  fs::last_write_time( file_ph, std::time_t() );
+  fs::last_write_time( file_ph, std::time(0) );
   std::cout << "And check that" << std::endl;
   time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_TEST( time_diff >= 0.0 && time_diff < 60.0 );
+  BOOST_TEST( time_diff >= -60.0 && time_diff < 60.0 );
   ft = fs::last_write_time( file_ph );
   std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
-#else
-  std::cout <<
-    "<note>\n"
-    "Changing a file time via boost::filesystem::last_write_time() fails for this compiler\n"
-    "This will not affect other uses of the library.\n"
-    "</note>\n";
-#endif
 
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.

@@ -569,11 +569,15 @@ namespace boost
     BOOST_FILESYSTEM_DECL void last_write_time( const path & ph, const std::time_t new_time )
     {
       // Works for both Windows and POSIX
+      struct stat path_stat;
+      if ( ::stat( ph.string().c_str(), &path_stat ) != 0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::last_write_time",
+          ph, fs::detail::system_error_code() ) );
       ::utimbuf buf;
-      buf.actime = std::time_t();
+      buf.actime = path_stat.st_atime; // utime() updates access time too:-(
       buf.modtime = new_time;
-      if ( ::utime( ph.string().c_str(),
-        new_time == std::time_t() ? 0 : &buf ) != 0 )
+      if ( ::utime( ph.string().c_str(), &buf ) != 0 )
         boost::throw_exception( filesystem_error(
           "boost::filesystem::last_write_time",
           ph, fs::detail::system_error_code() ) );
