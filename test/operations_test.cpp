@@ -227,16 +227,16 @@ int test_main( int argc, char * argv[] )
     BOOST_TEST( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
     if ( dir_itr->leaf() == "d1" )
     {
-      // Note result for single_pass_traversal requirements is
-      // different than for input_iterator requirements
-      BOOST_TEST( (*dir_itr++).leaf() == "d2" );
+      BOOST_TEST( (*dir_itr++).leaf() == "d1" );
       BOOST_TEST( dir_itr->leaf() == "d2" );
     }
     else
     {
-      // Note result for single_pass_traversal requirements is
-      // different than for input_iterator requirements
+      // Check C++98 input iterator requirements
       BOOST_TEST( (*dir_itr++).leaf() == "d1" );
+      // input iterator requirements in the current WP would require this check:
+      // BOOST_TEST( implicit_cast<std::string const&>(*dir_itr++).leaf() == "d1" );
+
       BOOST_TEST( dir_itr->leaf() == "d1" );
     }
   }
