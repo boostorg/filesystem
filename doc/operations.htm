@@ -420,48 +420,41 @@ to <i>target</i>. Specifically:</p>
     <td>!exists()</td>
     <td>&nbsp;</td>
     <td>Throw <a href="exception.htm">filesystem_error</a>. Note that !exists() 
-    covers the source.empty() case.</td>
+    covers the source.empty() case. [case 1] </td>
   </tr>
   <tr>
     <td>&nbsp;</td>
     <td>target.empty()</td>
     <td>Throw <a href="exception.htm">filesystem_error</a>. See
-    <a href="#empty_rationale">create_directory() rationale</a>.</td>
+    <a href="#empty_rationale">create_directory() rationale</a>. [case 2] </td>
   </tr>
   <tr>
     <td>&nbsp;</td>
-    <td>exists() &amp;&amp; !is_directory()</td>
-    <td>Throw <a href="exception.htm">filesystem_error</a>.</td>
+    <td>exists()</td>
+    <td>Throw <a href="exception.htm">filesystem_error</a>. [case 3] </td>
   </tr>
   <tr>
     <td>!is_directory()</td>
-    <td>!exists()</td>
+    <td>&nbsp;</td>
     <td>If !exists( target / &quot;..&quot; ) throw <a href="exception.htm">
-    filesystem_error</a>. Otherwise, the source.leaf() name is changed to 
-    target.leaf(), and if source / &quot;..&quot; resolves to a different directory than 
-    target / &quot;..&quot;, the renamed source file is moved there.</td>
-  </tr>
-  <tr>
-    <td>!is_directory()</td>
-    <td>is_directory()</td>
-    <td>The source file is moved to the target directory.</td>
+    filesystem_error</a>. [case 4A] <br>
+    The source.leaf() name is changed to 
+    target.leaf(). [case 4B] <br>
+    If source / &quot;..&quot; resolves to a different directory than 
+    target / &quot;..&quot;, the renamed source file is moved there. [case 4C] </td>
   </tr>
   <tr>
     <td>is_directory()</td>
-    <td>!exists()</td>
+    <td>&nbsp;</td>
     <td>If !exists( target / &quot;..&quot; ) throw <a href="exception.htm">
-    filesystem_error</a>. Otherwise, the source.leaf() name is changed to 
-    target.leaf(), and if system_complete(source.banch_path()) resolves to a 
+    filesystem_error</a>. [case 5A]<br>
+    The source.leaf() name is changed to 
+    target.leaf(). [case 5B] <br>
+    If system_complete(source.banch_path()) resolves to a 
     different directory than system_complete(target.branch_path()),&nbsp; the 
-    renamed source directory is moved there.</td>
+    renamed source directory is moved there. [case 5C] </td>
   </tr>
-  <tr>
-    <td>is_directory()</td>
-    <td>is_directory()</td>
-    <td>The source directory is moved from source / &quot;..&quot; to target, becoming a 
-    sub-directory of target.</td>
-  </tr>
-</table>
+  </table>
 <p><b>Postconditions:</b> <code>!exists(source) &amp;&amp; exists(target)</code>, 
 and the <i>source</i> file or directory contents and attributes are otherwise unchanged.</p>
 <p><b>Throws:</b> See Effects table above. See <a href="#empty_rationale">empty 
@@ -638,7 +631,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28862" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28864" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

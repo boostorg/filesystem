@@ -320,39 +320,89 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( !fs::is_directory( d1 / "f2" ) );
   verify_file( d1 / "f2", "foobar1" );
 
-  // rename() on file d1/f2 to d2/f3
+  // rename() test case numbers refer to operations.htm#rename table
+
+  // [case 1] make sure can't rename() a non-existent file
+  BOOST_TEST( !fs::exists( d1 / "f99" ) );
+  BOOST_TEST( !fs::exists( d1 / "f98" ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, d1 / "f99", d1 / "f98" ),
+    fs::not_found_error ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, fs::path(""), d1 / "f98" ),
+    fs::not_found_error ) );
+
+  // [case 2] rename() target.empty()
+  BOOST_TEST( throws_fs_error( bind( fs::rename, file_ph, "" ),
+    fs::not_found_error ) );
+
+  // [case 3] make sure can't rename() to an existent file or directory
+  BOOST_TEST( fs::exists( dir / "f1" ) );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d1 / "f2" ) ) );
+  // several POSIX implementations (cygwin, openBSD) report ENOENT instead of EEXIST,
+  // so we don't verify error type on the above test.
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir, d1 ) ) );
+
+  // [case 4A] can't rename() file to a nonexistent parent directory
+  BOOST_TEST( !is_directory( dir / "f1" ) );
+  BOOST_TEST( !exists( dir / "d3/f3" ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ),
+    fs::not_found_error ) );
+
+  // [case 4B] rename() file in same directory
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
+  BOOST_TEST( !fs::exists( d1 / "f50" ) );
+  fs::rename( d1 / "f2", d1 / "f50" );
+  BOOST_TEST( !fs::exists( d1 / "f2" ) );
+  BOOST_TEST( fs::exists( d1 / "f50" ) );
+  fs::rename( d1 / "f50", d1 / "f2" );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
+  BOOST_TEST( !fs::exists( d1 / "f50" ) );
+
+  // [case 4C] rename() file d1/f2 to d2/f3
   fs::rename( d1 / "f2", d2 / "f3" );
   BOOST_TEST( !fs::exists( d1 / "f2" ) );
   BOOST_TEST( !fs::exists( d2 / "f2" ) );
   BOOST_TEST( fs::exists( d2 / "f3" ) );
   BOOST_TEST( !fs::is_directory( d2 / "f3" ) );
   verify_file( d2 / "f3", "foobar1" );
+  fs::rename( d2 / "f3", d1 / "f2" );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
 
-  // make sure can't rename() a non-existent file
-  BOOST_TEST( !fs::exists( d1 / "f2" ) );
-  BOOST_TEST( throws_fs_error( bind( fs::rename, d1 / "f2", d2 / "f4" ),
+  // [case 5A] rename() directory to nonexistent parent directory
+  BOOST_TEST( fs::exists( d1 ) );
+  BOOST_TEST( !fs::exists( dir / "d3/d5" ) );
+  BOOST_TEST( !fs::exists( dir / "d3" ) );
+  BOOST_TEST( throws_fs_error( bind( fs::rename, d1, dir / "d3/d5" ),
     fs::not_found_error ) );
 
-  // make sure can't rename() to an existent file
-  BOOST_TEST( fs::exists( dir / "f1" ) );
-  BOOST_TEST( fs::exists( d2 / "f3" ) );
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", d2 / "f3" ) ) );
-  // several POSIX implementations (cygwin, openBSD) report ENOENT instead of EEXIST,
-  // so we don't verify error type on the above test.
-
-  // make sure can't rename() to a nonexistent parent directory
-  BOOST_TEST( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ),
-    fs::not_found_error ) );
-
-  // rename() on directory
+  // [case 5B] rename() on directory
   fs::path d3( dir / "d3" );
+  BOOST_TEST( fs::exists( d1 ) );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
   BOOST_TEST( !fs::exists( d3 ) );
-  fs::rename( d2, d3 );
-  BOOST_TEST( !fs::exists( d2 ) );
+  fs::rename( d1, d3 );
+  BOOST_TEST( !fs::exists( d1 ) );
   BOOST_TEST( fs::exists( d3 ) );
   BOOST_TEST( fs::is_directory( d3 ) );
-  BOOST_TEST( !fs::exists( d2 / "f3" ) );
-  BOOST_TEST( fs::exists( d3 / "f3" ) );
+  BOOST_TEST( !fs::exists( d1 / "f2" ) );
+  BOOST_TEST( fs::exists( d3 / "f2" ) );
+  fs::rename( d3, d1 );
+  BOOST_TEST( fs::exists( d1 ) );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
+  BOOST_TEST( !fs::exists( d3 ) );
+
+  // [case 5C] rename() rename and move d1 to d2 / "d20"
+  BOOST_TEST( exists( d1 ) );
+  BOOST_TEST( !exists( d2 / "d20" ) );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
+  fs::rename( d1, d2 / "d20" );
+  BOOST_TEST( !exists( d1 ) );
+  BOOST_TEST( exists( d2 / "d20" ) );
+  BOOST_TEST( fs::exists( d2 / "d20" / "f2" ) );
+  fs::rename( d2 / "d20", d1 );
+  BOOST_TEST( exists( d1 ) );
+  BOOST_TEST( !exists( d2 / "d20" ) );
+  BOOST_TEST( fs::exists( d1 / "f2" ) );
 
   // remove() tests on file
   file_ph = dir / "shortlife";
@@ -365,7 +415,7 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( !fs::remove( "no-such-file" ) );
   BOOST_TEST( !fs::remove( "no-such-directory/no-such-file" ) );
 
-  // remove test on directory
+  // remove() test on directory
   d1 = dir / "shortlife_dir";
   BOOST_TEST( !fs::exists( d1 ) );
   fs::create_directory( d1 );
