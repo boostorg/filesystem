@@ -18,7 +18,7 @@ namespace fs = boost::filesystem;
 namespace
 {
 
-  bool dummy( const fs::path & pth )
+  bool dummy( const fs::path & /*pth*/ )
   {
 //    std::cout << "predicate called with " << pth.generic_path() << '\n';
     return true;
@@ -32,6 +32,8 @@ int main( int argc, char * argv[] )
     ? fs::path( argv[1], fs::system_specific )
     : fs::initial_directory() );
 
+  std::cout << "Directory being inspected: " << dir.generic_path() << std::endl;
+
   typedef bool(*pred_type)(const fs::path&);
 
   fs::recursive_directory_iterator<pred_type> rdi( dir , dummy );
@@ -40,7 +42,7 @@ int main( int argc, char * argv[] )
   for ( ; rdi != rdi_end; ++rdi )
   {
     std::cout << (*rdi).generic_path() << std::endl;
-//    std::cout << rdi->generic_path() << std::endl;
+    std::cout << rdi->generic_path() << std::endl;
   }
 
   return 0;
