@@ -25,7 +25,7 @@ DEPENDS all : test ;
                <lib>../../../libs/filesystem/build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
-         [ run libs/filesystem/test/default_name_check_test.cpp
+         [ run libs/filesystem/test/wide_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB=1
          ]

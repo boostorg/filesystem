@@ -8,8 +8,11 @@
 //  See library home page at http://www.boost.org/libs/filesystem
 
 #include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <string>
+#include <iostream>
 #include <cstdio> // for std::remove
+#include "lpath.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -20,113 +23,107 @@ namespace fs = boost::filesystem;
 
 #include <boost/test/minimal.hpp>
 
+namespace
+{
+  template< class Path >
+  void test( const Path & p )
+  {
+    { 
+      std::cout << " in test 1\n";
+      fs::filebuf fb;
+      fb.open( p, std::ios_base::in );
+      BOOST_CHECK( fb.is_open() == fs::exists( p ) );
+    }
+    {
+      std::cout << " in test 2\n";
+      fs::filebuf fb1;
+      fb1.open( p, std::ios_base::out );
+      BOOST_CHECK( fb1.is_open() );
+    }
+    {
+      std::cout << " in test 3\n";
+      fs::filebuf fb2;
+      fb2.open( p, std::ios_base::in );
+      BOOST_CHECK( fb2.is_open() );
+    }
+    {
+      std::cout << " in test 4\n";
+      fs::ifstream tfs( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 5\n";
+      fs::ifstream tfs( p, std::ios_base::in );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 6\n";
+      fs::ifstream tfs;
+      tfs.open( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 7\n";
+      fs::ifstream tfs;
+      tfs.open( p, std::ios_base::in );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 8\n";
+      fs::ofstream tfs( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 9\n";
+      fs::ofstream tfs( p, std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 10\n";
+      fs::ofstream tfs;
+      tfs.open( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 11\n";
+      fs::ofstream tfs;
+      tfs.open( p, std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 12\n";
+      fs::fstream tfs( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 13\n";
+      fs::fstream tfs( p, std::ios_base::in|std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 14\n";
+      fs::fstream tfs;
+      tfs.open( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 15\n";
+      fs::fstream tfs;
+      tfs.open( p, std::ios_base::in|std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+  } // test
+} // unnamed namespace
+
 int test_main( int, char*[] )
 {
-  { // basic_filebuf runtime results are ignored; as long as they don't crash
-    // or throw we are satisfied
-    fs::basic_filebuf<char> bfb;
-    fs::filebuf cfb;
-
-    bfb.open( "fstream_test_bffoo", std::ios_base::in );
-    cfb.open( "fstream_test_bffoo", std::ios_base::in );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wfilebuf wfb;
-    wfb.open( "fstream_test_bffoo", std::ios_base::in );
-#   endif
-  }
-
-  std::remove( "fstream_test_bfoo" );
-  std::remove( "fstream_test_cfoo" );
-# ifndef BOOST_NO_STD_WSTRING
-  std::remove( "fstream_test_wfoo" );
-# endif
-  {
-    fs::basic_ofstream<char> bofs( "fstream_test_bfoo" );
-    fs::ofstream cofs( "fstream_test_cfoo" );
-
-    BOOST_CHECK( bofs.is_open() );
-    BOOST_CHECK( cofs.is_open() );
-
-    bofs << "fstream_test_bfoo";
-    cofs << "fstream_test_cfoo";
-
-    // these will fail, but they still test the interface
-    bofs.open( "fstream_test_bfoo" );
-    cofs.open( "fstream_test_cfoo" );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wofstream wofs( "fstream_test_wfoo" );
-    BOOST_CHECK( wofs.is_open() );
-    wofs << L"fstream_test_wfoo";
-    wofs.open( "fstream_test_wfoo" ); // expected to fail
-#   endif
-  }
-
-  {
-    fs::basic_ifstream<char> bifs( "fstream_test_bfoo" );
-    fs::ifstream cifs( "fstream_test_cfoo" );
-
-    BOOST_CHECK( bifs.is_open() );
-    BOOST_CHECK( cifs.is_open() );
-
-    std::string b;
-    std::string c;
-
-    bifs >> b;
-    cifs >> c;
-
-    BOOST_CHECK( b == "fstream_test_bfoo" );
-    BOOST_CHECK( c == "fstream_test_cfoo" );
-
-    // these will fail, but they still test the interface
-    bifs.open( "fstream_test_bfoo" );
-    cifs.open( "fstream_test_cfoo" );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wifstream wifs( "fstream_test_wfoo" );
-    BOOST_CHECK( wifs.is_open() );
-    std::wstring w;
-    wifs >> w;
-    BOOST_CHECK( w == L"fstream_test_wfoo" );
-    wifs.open( "fstream_test_wfoo" ); // expected to fail
-#   endif
-  }
-
-  {
-    fs::basic_fstream<char> bfs( "fstream_test_bfoo" );
-    fs::fstream cfs( "fstream_test_cfoo" );
-
-    BOOST_CHECK( bfs.is_open() );
-    BOOST_CHECK( cfs.is_open() );
-
-    std::string b;
-    std::string c;
-
-    bfs >> b;
-    cfs >> c;
-
-    BOOST_CHECK( b == "fstream_test_bfoo" );
-    BOOST_CHECK( c == "fstream_test_cfoo" );
-
-    // these will fail, but they still test the interface
-    bfs.open( "fstream_test_bfoo" );
-    cfs.open( "fstream_test_cfoo" );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wfstream wfs( "fstream_test_wfoo" );
-    BOOST_CHECK( wfs.is_open() );
-    std::wstring w;
-    wfs >> w;
-    BOOST_CHECK( w == L"fstream_test_wfoo" );
-    wfs.open( "fstream_test_wfoo" ); // expected to fail
-#   endif
-  }
-
-//  std::remove( "fstream_test_bfoo" );
-//  std::remove( "fstream_test_cfoo" );
-//  #   ifndef BOOST_NO_STD_WSTRING
-//  std::remove( "fstream_test_wfoo" );
-//  #   endif
+  std::cout << "path tests:\n";
+  test( fs::path( "fstream_test_foo" ) );
+  std::cout << "\nwpath tests:\n";
+  test( fs::wpath( L"fstream_test_\x2780" ) );
+  const long lname[] = { 'f', 's', 'r', 'e', 'a', 'm', '_', 't', 'e', 's',
+    't', '_', 'l', 'p', 'a', 't', 'h', 0 };
+  std::cout << "\nlpath tests:\n";
+  test( user::lpath( lname ) );
   return 0;
 }

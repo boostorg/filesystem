@@ -15,13 +15,12 @@
 
 <p><a href="#Introduction">Introduction</a><br>
 <a href="#Synopsis">Header synopsis</a><br>
-<a href="#directory_iterator">Class directory_iterator</a><br>
+<a href="#directory_iterator">Class basic_directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#destructor">Destructor</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Other_functions">Other_functions</a><br>
 <a href="#Non-member_functions">Operations functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#symbolic_link_exists">symbolic_link_exists</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_accessible">is_accessible</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br>
@@ -52,89 +51,98 @@ documentation</a>.</p>
 Specifications</a> apply to all member and non-member functions supplied by this 
 header. </p>
 
-<h2>Header <a href="../../../boost/filesystem/operations.hpp">boost/filesystem/operations.hpp</a>
-<a name="Synopsis">synopsis</a></h2>
+<h2>Header <a href="../../../boost/filesystem/operations.hpp">boost/filesystem/operations.hpp</a> </h2>
+
+<p>To allow automatic 
+conversions to function properly for classes <i>path</i> and <i>wpath</i>, as 
+well as supporting class template <i>basic_path</i>, three 
+overloads of each non-member function are supplied. The overloads must &quot;do the right thing&quot; using
+<code>boost::enable_if</code> or equivalent techniques, so that the correct 
+overload is selected for calls like <code>exists( &quot;foo&quot; )</code>. To simplify 
+exposition, only the templated version of each non-member function is shown.</p>
+<h2><a name="Synopsis">Synopsis</a></h2>
 <pre>namespace boost
 {
   namespace filesystem
   {
-
-    class <a href="#directory_iterator">directory_iterator</a>
+    template&lt;class Path&gt; class basic_directory_iterator 
+      : public boost::iterator_facade&lt;
+          basic_directory_iterator&lt;Path&gt;,
+          Path, boost::single_pass_traversal_tag &gt;
     {
     public:
-      typedef <a href="path.htm">path</a>                     value_type;
-      typedef std::ptrdiff_t           difference_type;
-      typedef const path *             pointer;
-      typedef const path &amp;             reference;
-      typedef std::input_iterator_tag  iterator_category;
-
-      <a href="#constructors">directory_iterator</a>();
-      explicit <a href="#constructors">directory_iterator</a>( const path &amp; directory_ph );
-
-      // <a href="#Other_functions">Other_functions</a>
-      // ...
+      basic_directory_iterator(){} // creates the &quot;end&quot; iterator
+      explicit basic_directory_iterator( const Path &amp; directory_path );
     };
 
-    bool <a href="#exists">exists</a>( const path &amp; ph );
-    bool <a href="#symbolic_link_exists">symbolic_link_exists</a>( const path &amp; ph );
-    bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
-    bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
-    bool <a href="#equivalent">equivalent</a>( const path &amp; ph1, const path &amp; ph2 );
+    typedef basic_directory_iterator&lt;path&gt; directory_iterator;
+    typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
 
-    boost::intmax_t <a href="#file_size">file_size</a>( const path &amp; ph );
+    template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
 
-    std::time_t <a href="#last_write_time">last_write_time</a>( const path &amp; ph );
-    void <a href="#last_write_time">last_write_time</a>( const path &amp; ph, std::time_t new_time );
+    template&lt;class Path&gt; bool <a href="#symbolic_link_exists">symbolic_link_exists</a>( const <code>Path</code> &amp; ph );
 
-    bool <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
-    bool <a href="#remove">remove</a>( const path &amp; ph );
-    unsigned long <a href="#remove_all">remove_all</a>( const path &amp; ph );
-    void <a href="#rename">rename</a>( const path &amp; from_path,
-                 const path &amp; to_path );
-    void <a href="#copy_file">copy_file</a>( const path &amp; source_file,
-                    const path &amp; target_file );
+    template&lt;class Path&gt; bool <a href="#is_accessible">is_accessible</a>( const <code>Path</code> &amp; ph );
 
-    const path &amp; <a href="#initial_path">initial_path</a>();
-    path <a href="#current_path">current_path</a>();
-    path <a href="#complete">complete</a>( const path &amp; ph,
-                   const path &amp; base = initial_path() );
-    path <a href="#system_complete">system_complete</a>( const path &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_directory">is_directory</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; bool <a href="#equivalent">equivalent</a>( const <code>Path</code> &amp; ph1, const <code>Path</code> &amp; ph2 );
+
+    template&lt;class Path&gt; boost::intmax_t <a href="#file_size">file_size</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; std::time_t <a href="#last_write_time">last_write_time</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; void <a href="#last_write_time">last_write_time</a>( const <code>Path</code> &amp; ph, std::time_t new_time );
+
+    template&lt;class Path&gt; bool <a href="#create_directory">create_directory</a>( const <code>Path</code> &amp; directory_ph );
+
+    template&lt;class Path&gt; bool <a href="#remove">remove</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; unsigned long <a href="#remove_all">remove_all</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; void <a href="#rename">rename</a>( const <code>Path</code> &amp; from_path, const <code>Path</code> &amp; to_path );
+
+    template&lt;class Path&gt; void <a href="#copy_file">copy_file</a>( const <code>Path</code> &amp; source_file, const <code>Path</code> &amp; target_file );
+
+    template&lt;class Path&gt; <code>Path</code> <a href="#complete">complete</a>( const <code>Path</code> &amp; ph, const <code>Path</code> &amp; base = initial_path&lt;<code>Path&gt;</code>() );
+
+    template&lt;class Path&gt; <code>Path</code> <a href="#system_complete">system_complete</a>( const <code>Path</code> &amp; ph );
+
+    template&lt;class Path&gt; const<i><b> </b></i>Path<b><i> </i></b>&amp; <a href="#initial_path">initial_path</a>();
+
+    template&lt;class Path&gt; <code>Path</code> <a href="#current_path">current_path</a>();
 
   } // namespace filesystem
 } // namespace boost
 </pre>
 
-<h2><a name="directory_iterator">Class directory_iterator</a></h2>
+<h2><a name="directory_iterator">Class basic_directory_iterator</a></h2>
 
-<p>Class <i>directory_iterator</i> provides a C++ standard conforming input 
+<p>Class <i>basic_directory_iterator</i> provides a C++ standard conforming input 
 iterator which accesses the contents of a <a href="index.htm#directory">
 directory</a>. </p>
 
-<p>The value type is <i><a href="path.htm">boost::filesystem::path</a></i>, so 
-dereferencing a <i>directory_iterator</i> yields a <a href="index.htm#path">
+<p>The value type is <i><a href="path.htm">boost::filesystem::basic_path</a></i>, so 
+dereferencing a <i>basic_directory_iterator</i> yields a <a href="index.htm#path">
 path</a> to a file or sub-directory contained within the directory represented by 
 the directory-path argument supplied at construction. The path returned by 
-dereferencing a <i>directory_iterator</i> is composed by appending the name of 
+dereferencing a <i>basic_directory_iterator</i> is composed by appending the name of 
 the directory entry to the directory path supplied at construction.</p>
 
 <p>The order of the path entries returned by dereferencing successive increments 
-of a <i>directory_iterator</i> is unspecified. Thus depending on the ordering 
+of a <i>basic_directory_iterator</i> is unspecified. Thus depending on the ordering 
 provided by a particular implementation will result in non-portable code.</p>
 
-<p>A path returned by dereferencing a <i>directory_iterator</i> is, if 
-representing a directory, suitable for use as an argument to Filesystem Library 
+<p>A path returned by dereferencing a <i>basic_directory_iterator</i> is, if 
+representing a directory, suitable for use as an argument to Boost.Filesystem 
 functions specified as accepting paths or directory paths. If not representing a 
 directory, the dereferenced path is suitable for use as an argument to 
-Filesystem Library functions specified as accepting paths or file paths, or C++ 
+Boost.Filesystem functions specified as accepting paths or file paths, or C++ 
 Standard Library functions specified as taking file names. The leaf of a path 
-returned by dereferencing a <i>directory_iterator</i> will never be <code>&quot;..&quot;</code> 
+returned by dereferencing a <i>basic_directory_iterator</i> will never be <code>&quot;..&quot;</code> 
 or <code>&quot;.&quot;</code>.</p>
-
-<p><b>Note:</b> The implication of the above requirement is that if an operating 
-system's directories can contain entries which are not usable by Filesystem 
-Library or Standard Library functions, these entries will be skipped during 
-directory iteration. Such entries are by definition non-portable, but can always 
-be accessed via the native operating system API if required.</p>
 
 <p><b><a name="symbolic-link-warning">Warning</a>:</b> Programs performing 
 directory iteration may wish to test, via <a href="#exists">exists()</a>, if the 
@@ -145,7 +153,7 @@ and renaming entries may wish to avoid following symbolic links, which can be
 detected with <a href="#symbolic_link_exists">symbolic_link_exists()</a>.</p>
 
 <p><b>Warning:</b> If a file or sub-directory is removed from or added to a 
-directory after the construction of a <i>directory_iterator</i> for the 
+directory after the construction of a <i>basic_directory_iterator</i> for the 
 directory, it is unspecified whether or not subsequent incrementing of the 
 iterator will ever result in an iterator whose value is the removed or added 
 directory entry.</p>
@@ -153,28 +161,22 @@ directory entry.</p>
 <h3><a name="constructors">Constructors</a></h3>
 <blockquote>
 
-<p><code>directory_iterator();</code></p>
+<p><code>basic_directory_iterator();</code></p>
 
-<p><b>Effects:</b> Constructs a <i>directory_iterator</i> having the <i>
+<p><b>Effects:</b> Constructs a <i>basic_directory_iterator</i> having the <i>
 past-the-end</i> value as described in the C++ standard, section 24.1.</p>
 
-<p><code>explicit directory_iterator( const path &amp; directory_ph );</code></p>
+<p><code>explicit basic_directory_iterator( const Path &amp; directory_ph );</code></p>
 
-<p><b>Effects:</b> Constructs a <i>directory_iterator</i> with a value 
+<p><b>Effects:</b> Constructs a <i>basic_directory_iterator</i> with a value 
 representing the first path in <i>directory_ph</i>, or if <code>
 empty(directory_ph)</code>, the <i>past-the-end</i> value.</p>
 
 <p><b>Throws:</b> if <code>!exists( directory_ph )</code></p>
 
 <p><b>Note:</b> To iterate over the current directory, write <code>
-directory_iterator(current_path())</code> rather than <code>directory_iterator(&quot;&quot;)</code>.</p>
+directory_iterator(current_path&lt;path&gt;())</code> rather than <code>directory_iterator(&quot;&quot;)</code>.</p>
 </blockquote>
-
-<h3><a name="Other_functions">Other functions</a></h3>
-
-<p>Class <i>directory_iterator</i> also supplies all the other functions 
-required by the C++ standard clause 24 for input iterators, such as <i>operator==</i>, 
-<i>operator++</i>, and <i>operator*</i>.</p>
 
 <h2><a name="Non-member_functions">Non-member functions</a></h2>
 
@@ -217,7 +219,7 @@ above. The error condition is also specified in the <i>Throws</i> paragraph to
 ensure that the error results in well-defined rather than implementation-defined 
 behavior, and because existing practice for the equivalent operating system 
 function is usually to treat an empty path as an error. The intended use of the 
-Filesystem Library in script-like programs makes undefined behavior particularly 
+Filesystem Library in portable script-like programs makes undefined behavior particularly 
 unattractive.</p>
 
 <p>
@@ -226,18 +228,19 @@ unattractive.</p>
 
 <h3><a name="exists">exists</a></h3>
 <blockquote>
-<p><code>bool exists( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );</code></p>
 <p><b>Returns:</b> True if the operating system reports the path 
 represented by <i>ph</i> exists, else false.</p>
 <p><b>Note: </b>Even if <code>exists( ph ) == true</code>, there is no guarantee that it 
 will be possible to perform other operations on the file or directory. Access 
 rights or other security concerns, for example, may cause other operations to 
-fail.</p>
-<p><b>Note:</b> <code>exists(&quot;&quot;)</code> is valid and returns false;</p>
+fail. Thus <a href="#is_accessible">is_accessible()</a> may be the preferable 
+function to use.</p>
+<p><b>Note:</b> <code>exists(&quot;&quot;)</code> is valid and returns false.</p>
 </blockquote>
 <h3><a name="symbolic_link_exists">symbolic_link_exists</a></h3>
 <blockquote>
-<p><code>bool symbolic_link_exists( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool symbolic_link_exists( const Path &amp; ph );</code></p>
 <p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
 <i>ph</i> is present and is a <a href="index.htm#symbolic-link">symbolic link</a>, else false.</p>
 <p><b>Note:</b> See the <a href="#symbolic-link-warning">directory iterator 
@@ -261,9 +264,17 @@ possible conditions:</p>
     directory: <code>exists(ph) &amp;&amp; symbolic_link_exists(ph)</code></li>
   </ul>
 </blockquote>
+
+<h3><a name="is_accessible">is_accessible</a></h3>
+<blockquote>
+<p><code>template&lt;class Path&gt; bool is_accessible( const Path &amp; ph );</code></p>
+<p><b>Returns:</b> True if the operating system reports the path 
+represented by <i>ph</i> exists and it is possible to obtain the attributes, else false.</p>
+<p><b>Note:</b> <code>is_accessible(&quot;&quot;)</code> is valid and returns false.</p>
+</blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
-<p><code>bool is_directory( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );</code></p>
 <p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
 <i>ph</i> is a directory, else false.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
@@ -275,17 +286,17 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 </blockquote>
 <h3><a name="is_empty">is_empty</a></h3>
 <blockquote>
-<p><code>bool is_empty( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool is_empty( const Path &amp; ph );</code></p>
 <p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
 <i>ph</i> is an empty file or empty directory, else false.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
   <p>This function determines if the file or directory identified by the 
   contents of <i>ph</i> is empty. To determine if a path string itself is empty, 
-  use the <i><a href="path.htm#empty">path::empty()</a></i> function.</p>
+  use the <i><a href="path.htm#empty">basic_path::empty()</a></i> function.</p>
 </blockquote>
   <h3><a name="equivalent">equivalent</a></h3>
 <blockquote>
-  <pre>bool equivalent( const path &amp; ph1, const path &amp; ph2 );</pre>
+  <pre><code>template&lt;class Path&gt; </code>bool equivalent( const Path &amp; ph1, const Path &amp; ph2 );</pre>
   <p><b>Returns:</b> <code>false</code> if <code>!exists(ph1) || !exists(ph2)</code>. 
   Otherwise, returns <code>true</code> if ph1 and ph2 resolve to the same file 
   or directory, else <code>false</code>. The criteria used to determine sameness 
@@ -312,11 +323,10 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 </blockquote>
   <h3><a name="file_size">file_size</a></h3>
 <blockquote>
-  <p><code>boost::intmax_t file_size( const path &amp; ph );</code></p>
+  <p><code>template&lt;class Path&gt; boost::intmax_t file_size( const Path &amp; ph );</code></p>
   <p><b>Returns:</b> The size of the file in bytes as reported by the operating 
   system.</p>
-  <p><b>Throws:</b> if <code>!exists(ph) || is_directory(ph) || </code>the file 
-  size cannot be determined (such as for an input stream).</p>
+  <p><b>Throws:</b> if <code>!exists(ph) || is_directory(ph)</code></p>
 <p><b>Warming:</b> If a compiler does not support <code>maxint_t</code> large 
 enough to represent the operating system's maximum file size, or if the 
 implementation does not know how to query the operating system for large file 
@@ -332,22 +342,22 @@ function which iterates over a directory returning a count.</p>
 </blockquote>
 <h3><a name="last_write_time">last_write_time</a></h3>
 <blockquote>
+<p><code>template&lt;class Path&gt; std::time_t last_write_time( const Path &amp; ph );</code></p>
 <p><b>Warning:</b> The times associated with files are subject to many 
-vicissitudes. Each type of filesystem differs slightly in the details and 
+vicissitudes. Each type of file system differs slightly in the details and 
 resolution of how times are recorded. The resolution is as low as one hour on 
-some filesystems. It is not uncommon for a program to 
+some file systems. It is not uncommon for a program to 
 simultaneously have access to files maintained by FAT, ISO9660, NTFS, and POSIX 
-filesystems, and so experience different last_write_time behavior for different 
+file systems, and so experience different last_write_time behavior for different 
 files. During program execution, the system clock may be set to a new 
 value by some other, possibly automatic, process. Another thread or process may 
-write to a file, causing the last write time to change unexpectedly.</p>
-<p><code>std::time_t last_write_time( const path &amp; ph );</code></p>
+write to a file, and this may also cause the last write time to change unexpectedly.</p>
 <p><b>Returns:</b> The time the file was last modified, as reported by the 
 operating system. If the time cannot be determined, returns (std::time_t)(-1).</p>
 <p>To convert the returned value to UTC or local time, use <code>std::gmtime()</code> 
 or <code>std::localtime()</code> respectively.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
-<p><code>void last_write_time( const path &amp; ph, std::time_t new_time );</code></p>
+<p><code>template&lt;class Path&gt; void last_write_time( const Path &amp; ph, std::time_t new_time );</code></p>
 <p><b>Effects:</b> Asks the operating system to set the last write time to <code>
 new_time</code>, or to the current time if <code>new_time==std::time_t()</code>.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
@@ -357,7 +367,7 @@ systems.</p>
 </blockquote>
 <h3><a name="create_directory">create_directory</a></h3>
 <blockquote>
-<p><code>bool create_directory( const path &amp; directory_ph );</code></p>
+<p><code>template&lt;class Path&gt; bool create_directory( const Path &amp; directory_ph );</code></p>
 <p><b>Precondition:</b> <code>!directory_ph.empty()</code></p>
 <p><b>Returns:</b> The value of <code>!exists( directory_ph )</code> prior to the 
 establishment of the postcondition.</p>
@@ -368,7 +378,7 @@ See <a href="#empty_rationale">empty path rationale</a>.</p>
 </blockquote>
 <h3><a name="remove">remove</a></h3>
 <blockquote>
-<p><code>bool remove( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool remove( const Path &amp; ph );</code></p>
 <p><b>Precondition:</b> <code>!ph.empty()</code></p>
 <p><b>Returns:</b> The value of <code>exists( ph )</code> prior to the 
 establishment of the postcondition. </p>
@@ -394,7 +404,7 @@ was changed to reflect user complaints.</p>
 </blockquote>
 <h3><a name="remove_all">remove_all</a></h3>
 <blockquote>
-<p><code>unsigned long remove_all( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; unsigned long remove_all( const Path &amp; ph );</code></p>
 <p><b>Precondition:</b> <code>!ph.empty()</code></p>
 <p><b>Postcondition:</b> <code>!exists( ph ) &amp;&amp; !symbolic_link_exists( ph )</code></p>
 <p><b>Returns:</b> The number of files and directories removed.</p>
@@ -405,7 +415,7 @@ themselves deleted, rather than what they point to being deleted.</p>
 </blockquote>
 <h3><a name="rename">rename</a></h3>
 <blockquote>
-<p><code>void rename( const path &amp; source, const path &amp; target 
+<p><code>template&lt;class Path&gt; void rename( const Path &amp; source, const Path &amp; target 
 );</code></p>
 <p><b>Precondition:</b> <code>!source.empty() &amp;&amp; !target.empty()</code></p>
 <p><b>Effects:</b> Changes the name of&nbsp; file or directory <i>source</i> 
@@ -474,8 +484,8 @@ themselves renamed, rather than what they point to being renamed.</p>
 </blockquote>
 <h3><a name="copy_file">copy_file</a></h3>
 <blockquote>
-<p><code>void copy_file( const path &amp; source_file, const path &amp; 
-target_file );</code></p>
+<p><code>template&lt;class Path&gt; void copy_file( const Path &amp; source_file, const 
+Path &amp; target_file );</code></p>
 <p><b>Precondition:</b> <code>!source.empty() &amp;&amp; !target.empty()</code></p>
 <p><b>Effects:</b> Copies the file represented by <i>source_file</i> to <i>
 target_file</i>.</p>
@@ -487,7 +497,7 @@ stat::st_mode</i>, and Windows <i>BY_HANDLE_FILE_INFORMATION::dwFileAttributes</
 </blockquote>
 <h3><a name="initial_path">initial_path</a></h3>
 <blockquote>
-<p><code>const path &amp; initial_path();</code></p>
+<p><code>template&lt;class Path&gt; const Path &amp; initial_path();</code></p>
 <p><b>Effects:</b> The first time called, stores the path returned by
 <a href="#current_path">current_path()</a>.</p>
 <p>The preferred implementation would be to call <i>initial_path()</i> during program 
@@ -507,7 +517,7 @@ initial_path()</i>.</p>
 </blockquote>
 <h3><a name="current_path">current_path</a></h3>
 <blockquote>
-  <pre>path current_path();</pre>
+  <pre><code>template&lt;class Path&gt; </code>Path current_path();</pre>
   <p><b>Returns:</b> The current path as maintained by the operating system.</p>
   <p><b>Postcondition:</b> <code>current_path().is_complete()</code></p>
   <p><b>Note:</b> The equivalent POSIX function is <i>getcwd()</i>. The 
@@ -523,7 +533,7 @@ initial_path()</i>.</p>
 <h3><a name="complete">complete</a></h3>
 
 <blockquote>
-<p><code>path complete( const path &amp; ph, const path &amp; base = initial_path() );</code></p>
+<p><code>template&lt;class Path&gt; Path complete( const Path &amp; ph, const Path &amp; base = initial_path&lt;Path&gt;() );</code></p>
 
 <p><b>Precondition:</b> <code>!ph.empty() &amp;&amp; base.is_complete() &amp;&amp; (ph.is_complete() || !ph.has_root_name())</code></p>
 
@@ -589,7 +599,7 @@ root_name() equivalence requirement.</p>
 <h3><a name="system_complete">system_complete</a></h3>
 
 <blockquote>
-<p><code>path system_complete( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; Path system_complete( const Path &amp; ph );</code></p>
 
 <p><b>Precondition:</b> <code>!ph.empty()</code></p>
 
@@ -631,7 +641,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 February, 2005<!--webbot bot="Timestamp" endspan i-checksum="40402" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28898" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

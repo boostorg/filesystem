@@ -9,7 +9,6 @@
 //  See library home page at http://www.boost.org/libs/filesystem
 
 #include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/exception.hpp>
 namespace fs = boost::filesystem;
 using fs::path;
 

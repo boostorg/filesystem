@@ -1,0 +1,159 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>1.33 (Internationalization) Changes</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1>1.33 (Internationalization) Changes</h1>
+<h2>Introduction</h2>
+<p>This release is a major upgrade for the Filesystem Library, in preparation 
+for submission to the C++ Standards Committee. Features of this release 
+include:</p>
+<ul>
+  <li><a href="#Internationalization">Internationalization</a>, provided by 
+  class templates <i>basic_path</i>, <i>basic_filesystem_error</i>, and <i>
+  basic_directory_iterator</i>.<br>
+&nbsp;</li>
+  <li><a href="#Simplification">Simplification</a> of the path interface, 
+  including elimination of distinction between native and generic formats, 
+  and separation of name checking functionality from general path functionality.<br>
+&nbsp;</li>
+  <li><a href="#Preservation">Preservation</a> of existing user code whenever 
+  possible.</li>
+</ul>
+<p><a href="#Rationale">Rationale</a> for some of the changes is also provided.</p>
+<h2><a name="Internationalization">Internationalization</a></h2>
+<p>Cass templates <i>basic_path</i>, <i>basic_filesystem_error</i>, and <i>
+basic_directory_iterator</i> provide the basic mechanisims for 
+internationalization, in ways very similar to the C++ Standard Library's <i>
+basic_string</i> and similar class templates. The following typedefs are 
+provided:</p>
+<blockquote>
+  <pre>typedef basic_path&lt;std::string, ...&gt; path;
+typedef basic_path&lt;std::wstring, ...&gt; wpath;
+
+typedef basic_filesystem_error&lt;path&gt; filesystem_error;
+typedef basic_filesystem_error&lt;wpath&gt; wfilesystem_error;
+
+typedef basic_directory_iterator&lt;path&gt; directory_iterator;
+typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;</pre>
+</blockquote>
+<p>The string type used by Boost.Filesystem <i>basic_path</i> (std::string, 
+std::wstring, or whatever) is called the <i>internal</i> string type. The string 
+type used by the operating system for paths (often char*, sometimes wchar_t*) is 
+called the <i>external</i> string type. Conversion between internal and external 
+types is performed by path traits classes. The specific conversion for <i>path</i> 
+and <i>wpath</i> is implementation defined, with normative encouragement to use 
+the operating system's preferred file system encoding. For many modern POSIX-based 
+file systems the <i>wpath</i> external encoding is <a href="design.htm#Kuhn">
+UTF-8</a>, while for modern Windows file systems such as NTFS it is
+<a href="http://en.wikipedia.org/wiki/UTF-16">UTF-16</a>.</p>
+<p>The operational functions in operations.hpp are provided with overloads for
+<i>path</i>, <i>wpath</i>, and user-defined <i>basic_path</i>'s. For example:</p>
+<blockquote>
+  <pre>bool is_directory( const path &amp; ph );
+
+bool is_directory( const wpath &amp; ph );
+
+template&lt;class Path&gt;
+typename boost::enable_if&lt;is_basic_path&lt;Path&gt;, bool&gt;::type
+is_directory( const Path &amp; ph );
+</pre>
+</blockquote>
+<h2><a name="Simplification">Simplification</a> of path interface</h2>
+<p>Prior versions of the library required users of class <i>path</i> to identify 
+the format (native or generic) and name error-checking policy, either via a 
+second constructor argument or via a default mechanism. That approach caused 
+complaints, particularly from users not needing the name checking features. The 
+interface has now been simplified:</p>
+<ul>
+  <li>The distinction between native and generic formats has been eliminated. 
+  See <a href="#distinction">rationale</a>. Two argument forms of path 
+  constructors are now deprecated, with the second argument having no effect. 
+  These constructors are only provided to ease the transition of existing code.<br>
+&nbsp;</li>
+  <li>Path name checking functionality has been moved out of class path and into 
+  separate free-functions. This still provides name checking for those who need 
+  it, but with much less impact on those who don't need it.</li>
+</ul>
+<h2><a name="Preservation">Preservation</a> of existing user code</h2>
+<p>Although the change to a template based approach required a complete overhaul 
+of the implementation code, the actual interface as seen by current user 
+programs is mostly unchanged. The bulk of the conversion problems which would 
+otherwise affect user code have been reduced by providing deprecated member 
+functions to ease transition. The deprecated members are:</p>
+<blockquote>
+  <pre>// 2nd argument ignored:
+basic_path( const string_type &amp; str, name_check );
+basic_path( const typename string_type::value_type * s, name_check );
+
+// old names for renamed functions:
+string_type native_file_string() const;
+string_type native_directory_string() const;
+
+// now defined such that these no longer have any real effect:
+static bool default_name_check_writable() { return false; } 
+static void default_name_check( name_check ) {}
+static name_check default_name_check() { return 0; }</pre>
+</blockquote>
+<p>Of course, the user code will have to be changed before the 
+deprecated members are removed in future releases.</p>
+<p>The use of certain functions require immediate user-program changes:</p>
+<blockquote>
+  <pre>template&lt;class Path&gt; Path current_path();
+template&lt;class Path&gt; Path initial_path();</pre>
+</blockquote>
+<p>Because the template argument cannot be deduced, calls to these 
+functions must be changed from:</p>
+<blockquote>
+  <pre>current_path()   to   current_path&lt;path&gt;()
+initial_path()   to   initial_path&lt;path&gt;()</pre>
+</blockquote>
+<h2><a name="Rationale">Rationale</a></h2>
+<h3>Elimination of the native versus generic <a name="distinction">distinction</a></h3>
+<p>Elimination of user confusion and general design simplification was the 
+original motivation for elimination of the distinction between native and 
+generic paths.</p>
+<p>During design work, a further technical argument was discovered. Consider the 
+path <code>&quot;c:foo/bar&quot;</code>. On many POSIX systems, <code>&quot;c:foo&quot;</code> is a 
+valid directory name, so we have a two element path and there is no issue of 
+native versus generic format. On Windows system, however, <code>&quot;c:&quot;</code> is a 
+drive specification, so we have a three element path. All calls to the operating 
+system will result in <code>&quot;c:&quot;</code> being considered a drive specification; 
+there is no way that fact-of-life can be changed by claiming the format is 
+generic. The native versus generic distinction is thus useless and misleading 
+for POSIX, Windows, and probably most other operating systems.</p>
+<p>If paths for a particular operating system did require a distinction be made, 
+it could be done by requiring that native paths be prefixed with some unique 
+implementation-defined identification. For example, <code>&quot;native-path:&quot;</code>. 
+This would only be required for operating systems where (1) the distinction 
+mattered, and (2) there was no lexical way to distinguish the two forms. For 
+example, a native operating system that used the same syntax as the Filesystem 
+Library's generic POSIX-like format, but processed the elements right-to-left 
+instead of left-to-right.</p>
+<h3>Preservation of <a name="existing-code">existing code</a></h3>
+<p>Allowing existing user code to continue to work with the updated version of 
+the library has obvious benefits in terms of preserving the effort users have 
+applied to both learning the library and writing code which uses the library.</p>
+<p>There is an additional motivation; other than the name checking portion of 
+class path,&nbsp; the existing interface has proven to be useful and robust, so 
+there is no reason to fiddle with it.</p>
+<hr>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28911" --></p>
+<p>© Copyright Beman Dawes, 2005</p>
+<p> Use, modification, and distribution are subject to the Boost Software 
+License, Version 1.0. (See accompanying file 
+<a href="../../../../site/LICENSE_1_0.txt">
+LICENSE_1_0.txt</a> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt">
+www.boost.org/LICENSE_1_0.txt</a>)</p>
+
+</body>
+
+</html>

@@ -15,7 +15,6 @@
 #define BOOST_FILESYSTEM_SOURCE 
 
 #include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/exception.hpp>
 #include <boost/throw_exception.hpp>
 
 #include <boost/config/abi_prefix.hpp> // must be the last header
@@ -73,3 +72,6 @@ namespace boost
 
   } // namespace filesystem
 } // namespace boost
+
+#include <boost/config/abi_suffix.hpp>
+
