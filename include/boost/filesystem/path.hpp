@@ -13,7 +13,7 @@
 #ifndef BOOST_FILESYSTEM_PATH_HPP
 #define BOOST_FILESYSTEM_PATH_HPP
 
-#include <boost/iterator_adaptors.hpp>
+#include <boost/iterator/iterator_facade.hpp>
 #include <string>
 #include <cassert>
 
@@ -23,29 +23,11 @@ namespace boost
 {
   namespace filesystem
   {
-    class path;
-
-    namespace detail
-    {
-      struct path_itr_imp
-      {
-        std::string             name;     // cache current element.
-        const path *            path_ptr; // path being iterated over.
-        std::string::size_type  pos;      // position of name in
-                                          // path_ptr->string(). The
-                                          // end() iterator is indicated by 
-                                          // pos == path_ptr->string().size()
-
-        const std::string & operator*() const { return name; }
-        void operator++();
-        void operator--();
-        bool operator==( const path_itr_imp & rhs ) const
-          { return path_ptr == rhs.path_ptr && pos == rhs.pos; }
-      };
-    } // detail
-
     enum path_format { native }; // ugly enough to discourage use
                                  // except when actually needed
+
+    class directory_iterator;
+
 
   //  path -------------------------------------------------------------------//
 
@@ -93,22 +75,36 @@ namespace boost
       bool has_branch_path() const;
 
       // iteration over the names in the path:
-      typedef boost::iterator_adaptor<
-        detail::path_itr_imp,
-        boost::default_iterator_policies,
+      class iterator : public boost::iterator_facade<
+        iterator,
         std::string,
-        const std::string &,
-        const std::string *,
-        std::bidirectional_iterator_tag,
-        std::ptrdiff_t 
-        > iterator;
+        boost::readable_iterator_tag,
+        boost::single_pass_traversal_tag >
+      {
+      private:
+        friend class boost::iterator_core_access;
+        friend class boost::filesystem::path;
+
+        reference dereference() const { return m_name; }
+        bool equal( const iterator & rhs ) const
+          { return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos; }
+        void increment();
+        void decrement();
+
+        std::string             m_name;     // cache current element.
+        const path *            m_path_ptr; // path being iterated over.
+        std::string::size_type  m_pos;      // position of name in
+                                            // path_ptr->string(). The
+                                            // end() iterator is indicated by 
+                                            // pos == path_ptr->string().size()
+      };
 
       iterator begin() const;
       iterator end() const
       {
         iterator itr;
-        itr.base().path_ptr = this;
-        itr.base().pos = m_path.size();
+        itr.m_path_ptr = this;
+        itr.m_pos = m_path.size();
         return itr;
       }
 
@@ -123,7 +119,7 @@ namespace boost
       std::string  m_path;
 
       friend class directory_iterator;
-      friend struct boost::filesystem::detail::path_itr_imp;
+      friend class boost::filesystem::path::iterator;
 
       enum source_context { generic, platform, nocheck };
 

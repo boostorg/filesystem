@@ -11,6 +11,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
 #include <boost/utility.hpp>
+#include <boost/concept_check.hpp>
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -64,7 +65,7 @@ int test_main( int, char*[] )
              ? "Windows"
              : "POSIX";
 
-  boost::function_requires< boost::ForwardIteratorConcept< fs::path::iterator > >();
+//  boost::function_requires< boost::BidirectionalIteratorConcept< fs::path::iterator > >();
 
   path p1( "fe/fi/fo/fum" );
   path p2( p1 );

@@ -242,13 +242,13 @@ namespace boost
       }  
     }
 
-    path const & directory_iterator::m_deref() const
+    directory_iterator::reference directory_iterator::dereference() const
     {
       assert( m_imp.get() ); // fails if dereference end iterator
       return m_imp->entry_path;
     }
 
-    void directory_iterator::m_inc()
+    void directory_iterator::increment()
     {
       assert( m_imp.get() ); // fails on increment end iterator
       assert( m_imp->handle != BOOST_INVALID_HANDLE_VALUE ); // reality check

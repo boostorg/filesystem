@@ -215,12 +215,16 @@ int test_main( int argc, char * argv[] )
     BOOST_TEST( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
     if ( dir_itr->leaf() == "d1" )
     {
-      BOOST_TEST( (*dir_itr++).leaf() == "d1" );
+      // Note result for single_pass_traversal requirements is
+      // different than for input_iterator requirements
+      BOOST_TEST( (*dir_itr++).leaf() == "d2" );
       BOOST_TEST( dir_itr->leaf() == "d2" );
     }
     else
     {
-      BOOST_TEST( (*dir_itr++).leaf() == "d2" );
+      // Note result for single_pass_traversal requirements is
+      // different than for input_iterator requirements
+      BOOST_TEST( (*dir_itr++).leaf() == "d1" );
       BOOST_TEST( dir_itr->leaf() == "d1" );
     }
   }

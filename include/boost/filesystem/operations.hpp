@@ -79,26 +79,20 @@ namespace boost
 
 //  directory_iterator  ------------------------------------------------------//
 
-    class directory_iterator
-      : public boost::iterator< std::input_iterator_tag,
-          path, std::ptrdiff_t, const path *, const path & >
+    class directory_iterator : public boost::iterator_facade<
+      directory_iterator,
+      path,
+      boost::readable_iterator_tag,
+      boost::single_pass_traversal_tag >
     {
-    private:
-      typedef directory_iterator self;
     public:
       directory_iterator();  // creates the "end" iterator
       explicit directory_iterator( const path & p );
 
-      reference operator*() const { return m_deref(); }
-      pointer   operator->() const { return &m_deref(); }
-      self &    operator++() { m_inc(); return *this; }
-
-      friend bool operator==( const self & x, const self & y )
-        { return x.m_imp == y.m_imp; }
-      friend bool operator!=( const self & x, const self & y )
-        { return !(x.m_imp == y.m_imp); }
-
-      struct path_proxy // allows *i++ to work, as required by std
+/*
+The *r++ requirement doesn't appear to apply to the new single_pass_traversal category
+Thus I'm leaving the proxy out pending confirmation from the N1477 authors
+struct path_proxy // allows *r++ to work, as required by 24.1.1
       {
         path pv;
         explicit path_proxy( const path & p ) : pv(p) {}
@@ -111,16 +105,20 @@ namespace boost
         ++*this;
         return pp;
       }
+*/
 
     private:
       class dir_itr_imp;
       // shared_ptr provides shallow-copy semantics required for InputIterators
       typedef boost::shared_ptr< dir_itr_imp > m_imp_ptr;
       m_imp_ptr  m_imp;
-      reference  m_deref() const;
-      void       m_inc();
-    };
 
+      friend class boost::iterator_core_access;
+      reference dereference() const;
+      void increment();
+      bool equal( const directory_iterator & rhs ) const
+        { return m_imp == rhs.m_imp; }
+    };
   } // namespace filesystem
 } // namespace boost
 

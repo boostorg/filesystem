@@ -376,9 +376,9 @@ namespace boost
     path::iterator path::begin() const
     {
       iterator itr;
-      itr.base().path_ptr = this;
-      first_name( m_path, itr.base().name );
-      itr.base().pos = 0;
+      itr.m_path_ptr = this;
+      first_name( m_path, itr.m_name );
+      itr.m_pos = 0;
       return itr;
     }
 
@@ -538,48 +538,45 @@ namespace boost
     bool path::has_branch_path() const { return !branch_path().empty(); }
 
 
-// path_itr_imp implementation  ----------------------------------------------// 
+// path::iterator implementation  --------------------------------------------// 
 
-    namespace detail
+    void path::iterator::increment()
     {
-      void path_itr_imp::operator++()
+      assert( m_pos < m_path_ptr->m_path.size() ); // detect increment past end
+      m_pos += m_name.size();
+      if ( m_pos == m_path_ptr->m_path.size() )
       {
-        assert( pos < path_ptr->m_path.size() ); // detect increment past end
-        pos += name.size();
-        if ( pos == path_ptr->m_path.size() )
+        m_name = "";  // not strictly required, but might aid debugging
+        return;
+      }
+      if ( m_path_ptr->m_path[m_pos] == '/' )
+      {
+#       ifdef BOOST_WINDOWS
+        if ( m_name[m_name.size()-1] == ':' // drive or device
+          || (m_name[0] == '/' && m_name[1] == '/') ) // share
         {
-          name = "";  // not strictly required, but might aid debugging
+          m_name = "/";
           return;
         }
-        if ( path_ptr->m_path[pos] == '/' )
-        {
-#       ifdef BOOST_WINDOWS
-          if ( name[name.size()-1] == ':' // drive or device
-            || (name[0] == '/' && name[1] == '/') ) // share
-          {
-            name = "/";
-            return;
-          }
 #       endif
-          ++pos;
-        }
-        std::string::size_type end_pos( path_ptr->m_path.find( '/', pos ) );
-        if ( end_pos == std::string::npos ) end_pos = path_ptr->m_path.size();
-        name = path_ptr->m_path.substr( pos, end_pos - pos );
+        ++m_pos;
       }
+      std::string::size_type end_pos( m_path_ptr->m_path.find( '/', m_pos ) );
+      if ( end_pos == std::string::npos )
+        end_pos = m_path_ptr->m_path.size();
+      m_name = m_path_ptr->m_path.substr( m_pos, end_pos - m_pos );
+    }
 
-      void path_itr_imp::operator--()
-      {                                                                                
-        assert( pos ); // detect decrement of begin
-        std::string::size_type end_pos( pos );
+    void path::iterator::decrement()
+    {                                                                                
+      assert( m_pos ); // detect decrement of begin
+      std::string::size_type end_pos( m_pos );
 
-        // skip a '/' unless it is a root directory
-        if ( path_ptr->m_path[end_pos-1] == '/'
-          && !detail::is_absolute_root( path_ptr->m_path, end_pos ) ) --end_pos;
-        pos = leaf_pos( path_ptr->m_path, end_pos );
-        name = path_ptr->m_path.substr( pos, end_pos - pos );
-      }
-
-    } // namespace detail
+      // skip a '/' unless it is a root directory
+      if ( m_path_ptr->m_path[end_pos-1] == '/'
+        && !detail::is_absolute_root( m_path_ptr->m_path, end_pos ) ) --end_pos;
+      m_pos = leaf_pos( m_path_ptr->m_path, end_pos );
+      m_name = m_path_ptr->m_path.substr( m_pos, end_pos - m_pos );
+    }
   } // namespace filesystem
 } // namespace boost
