@@ -35,7 +35,6 @@ namespace xml = boost::tiny_xml;
 #include <ctime>
 
 using std::string;
-using std::cout;
 
 const string pass_msg( "Pass" );
 const string warn_msg( "<font color=\"#FF9900\"><i>Warn</i></font>" );
@@ -62,11 +61,11 @@ namespace
   std::vector<string> toolsets;
 
   fs::ifstream jamfile;
+  fs::ofstream report;
+  fs::ofstream links_file;
+  string links_name;
 
   string specific_compiler; // if running on one toolset only
-
-  string html_status_name = "status_log.html";
-  fs::ofstream html_status_file;
 
   const string empty_string;
 
@@ -313,27 +312,27 @@ namespace
       compile += "...\n   (remainder deleted because of excessive size)\n";
     }
 
-    html_status_file << "<h2><a name=\""
+    links_file << "<h2><a name=\""
       << test_name << " " << toolset << "\">"
       << test_name << " / " << toolset << "</a></h2>\n";
 
     if ( !compile.empty() )
     {
       ++result;
-      html_status_file << "<h3>Compiler output:</h3><pre>"
+      links_file << "<h3>Compiler output:</h3><pre>"
         << compile << "</pre>\n";
     }
     if ( !link.empty() )
-      html_status_file << "<h3>Linker output:</h3><pre>" << link << "</pre>\n";  
+      links_file << "<h3>Linker output:</h3><pre>" << link << "</pre>\n";  
     if ( !run.empty() )
-      html_status_file << "<h3>Run output:</h3><pre>" << run << "</pre>\n";
+      links_file << "<h3>Run output:</h3><pre>" << run << "</pre>\n";
 
     static std::set< string > failed_lib_target_dirs;
     if ( !lib.empty() )
     {
       if ( lib[0] == '\n' ) lib.erase( 0, 1 );
       string lib_test_name( extract_test_name( lib ) );
-      html_status_file << "<h3>Library build failure: </h3>\n"
+      links_file << "<h3>Library build failure: </h3>\n"
         "See <a href=\"#" << lib_test_name << " " << toolset << "\">"
         << lib_test_name << " / " << toolset << "</a>";
 
@@ -348,7 +347,7 @@ namespace
         }
         else
         {
-          html_status_file << "<h2><a name=\""
+          links_file << "<h2><a name=\""
             << lib_test_name << " " << toolset << "\">"
             << lib_test_name << " / " << toolset << "</a></h2>\n"
             "test_log.xml not found\n";
@@ -404,7 +403,7 @@ namespace
     if ( anything_generated != 0 )
     {
       target += "<a href=\"";
-      target += html_status_name;
+      target += links_name;
       target += "#";
       target += test_name;
       target += " ";
@@ -533,7 +532,7 @@ namespace
 
     for ( std::vector<string>::iterator v(results.begin());
       v != results.end(); ++v )
-      { cout << *v << "\n"; }
+      { report << *v << "\n"; }
   }
 
 //  do_table  ----------------------------------------------------------------//
@@ -542,11 +541,11 @@ namespace
   {
     fs::path build_dir( boost_root_dir << "status" << "bin" );
 
-    cout << "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n";
+    report << "<table border=\"1\" cellspacing=\"0\" cellpadding=\"5\">\n";
      
     // generate the column headings
 
-    cout << "<tr><td>Library</td><td>Test Name</td>\n"
+    report << "<tr><td>Library</td><td>Test Name</td>\n"
       "<td><a href=\"compiler_status.html#test-type\">Test Type</a></td>\n";
 
     fs::directory_iterator itr( build_dir );
@@ -567,7 +566,7 @@ namespace
                                                  compiler_itr->leaf() ) );
           string vers( version_desc( boost_root_dir,
                                                 compiler_itr->leaf() ) );
-          cout << "<td>"
+          report << "<td>"
                << (desc.size() ? desc : compiler_itr->leaf())
                << (vers.size() ? (string( "<br>" ) + vers ) : string( "" ))
                << "</td>\n";
@@ -575,13 +574,13 @@ namespace
       }
     }
 
-    cout << "</tr>\n";
+    report << "</tr>\n";
 
     // now the rest of the table body
 
     do_table_body( boost_root_dir, build_dir );
 
-    cout << "</table>\n";
+    report << "</table>\n";
   }
 
 } // unnamed namespace
@@ -599,36 +598,43 @@ int cpp_main( int argc, char * argv[] ) // note name!
     { specific_compiler = argv[2]; --argc; ++argv; }
     else if ( std::strcmp( argv[1], "--ignore-pass" ) == 0 ) ignore_pass = true;
     else if ( std::strcmp( argv[1], "--no-warn" ) == 0 ) no_warn = true;
-    else if ( std::strcmp( argv[1], "--no-links" ) == 0 ) no_links = true;
     else { std::cerr << "Unknown option: " << argv[1] << "\n"; argc = 1; }
     --argc;
     ++argv;
   }
 
-  if ( argc == 2 )
-    boost_root_dir = fs::path( argv[1], fs::system_specific );
-  else
+  if ( argc != 3 && argc != 4 )
   {
-    std::cerr << "usage: compiler_status [--compiler name] boost-root-directory\n"
+    std::cerr <<
+      "usage: compiler_status [options...] boost-root-dir status-file [links-file]\n"
       "  options: --compiler name     Run for named compiler only\n"
       "           --ignore-pass       Do not report tests which pass all compilers\n"
       "           --no-warn           Warnings not reported if test passes\n"
-      "           --no-links          Do not generate status file or links to it\n";
+      "example: compiler_status --compiler gcc \\boost-root cs.html cs-links.html\n";
     return 1;
   }
 
-  if ( !no_links )
+  boost_root_dir = fs::path( argv[1], fs::system_specific );
+  jamfile.open( boost_root_dir << "status/Jamfile" ); // may fail; that's OK
+
+  report.open( argv[2] );
+  if ( !report )
   {
-    html_status_file.open( html_status_name );
-    if ( !html_status_file )
+    std::cerr << "Could not open report output file: " << argv[2] << std::endl;
+    return 1;
+  }
+
+  if ( argc == 4 )
+  {
+    links_name = argv[3];
+    links_file.open( links_name );
+    if ( !links_file )
     {
-      std::cerr << "Could not open HTML log output file: "
-        << html_status_name << std::endl;
+      std::cerr << "Could not open links output file: " << links_name << std::endl;
       return 1;
     }
   }
-
-  jamfile.open( boost_root_dir << "status/Jamfile" ); // may fail; that's OK
+  else no_links = true;
 
   char run_date[128];
   std::time_t tod;
@@ -636,7 +642,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
   std::strftime( run_date, sizeof(run_date),
     "%X UTC, %A %d %B %Y", std::gmtime( &tod ) );
 
-  cout << "<html>\n"
+  report << "<html>\n"
           "<head>\n"
           "<title>Boost Compiler Status Automatic Test</title>\n"
           "</head>\n"
@@ -654,7 +660,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
 
   do_table( boost_root_dir );
 
-  cout << "</body>\n"
+  report << "</body>\n"
           "</html>\n"
           ;
 
