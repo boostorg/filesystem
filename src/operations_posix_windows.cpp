@@ -357,6 +357,11 @@ namespace boost
 #   ifdef BOOST_POSIX
         if ( ::remove( ph.string().c_str() ) != 0 )
         {
+          int error = fs::detail::system_error_code();
+          // POSIX says "If the directory is not an empty directory, rmdir()
+          // shall fail and set errno to EEXIST or ENOTEMPTY."
+          // Linux uses ENOTEMPTY, Solaris uses EEXIST.
+          if ( error == EEXIST ) error = ENOTEMPTY;
 #   else
         if ( is_directory( ph ) )
         {
@@ -368,10 +373,11 @@ namespace boost
         else
         {
           if ( !::DeleteFileA( ph.string().c_str() ) )
+            int error = fs::detail::system_error_code();
 #   endif
             boost::throw_exception( filesystem_error(
               "boost::filesystem::remove",
-              ph, fs::detail::system_error_code() ) );
+              ph, error ) );
         }
         return true;
       }
