@@ -300,7 +300,10 @@ namespace boost
         {
           // append '/' if needed
           if ( !empty()
-              && *(m_path.end()-1) != ':' && *(m_path.end()-1) != '/' )
+#         ifdef BOOST_WINDOWS
+            && *(m_path.end()-1) != ':'
+#         endif
+            && *(m_path.end()-1) != '/' )
               m_path += '/';
 
           // parent-directory
