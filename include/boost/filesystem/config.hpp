@@ -41,7 +41,7 @@
 
 //  enable automatic library variant selection  ------------------------------// 
 
-#if !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_FILESYSTEM_NO_LIB)
+#if !defined(BOOST_FILESYSTEM_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_FILESYSTEM_NO_LIB)
 //
 // Set the name of our library, this will get undef'ed by auto_link.hpp
 // once it's done with it:
