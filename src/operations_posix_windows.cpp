@@ -545,14 +545,21 @@ namespace boost
     BOOST_FILESYSTEM_DECL path current_path()
     {
 #   ifdef BOOST_POSIX
-      long path_max = ::pathconf( ".", _PC_PATH_MAX );
-      if ( path_max < 1 )
-        boost::throw_exception(
-          filesystem_error( "boost::filesystem::current_path",
-            "_PC_PATH_MAX < 1" ) );
-      boost::scoped_array<char>
-        buf( new char[static_cast<std::size_t>(path_max)] );
-      if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
+      for ( long path_max = 32;; path_max *=2 ) // loop 'til buffer large enough
+      {
+        boost::scoped_array<char>
+          buf( new char[static_cast<std::size_t>(path_max)] );
+        errno = 0;
+        if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
+        {
+          if ( errno != ERANGE )
+            boost::throw_exception(
+              filesystem_error( "boost::filesystem::current_path", path(),
+                fs::detail::system_error_code() ) );
+        }
+        else return path( buf.get(), native );
+      }
+      BOOST_UNREACHABLE_RETURN(0)
 #   else
       DWORD sz;
       if ( (sz = ::GetCurrentDirectoryA( 0, static_cast<char*>(0) )) == 0 )
@@ -561,11 +568,11 @@ namespace boost
             "size is 0" ) );
       boost::scoped_array<char> buf( new char[sz] );
       if ( ::GetCurrentDirectoryA( sz, buf.get() ) == 0 )
-#   endif
         boost::throw_exception(
           filesystem_error( "boost::filesystem::current_path", path(),
             fs::detail::system_error_code() ) );
       return path( buf.get(), native );
+#   endif
     }
 
     BOOST_FILESYSTEM_DECL const path & initial_path()
