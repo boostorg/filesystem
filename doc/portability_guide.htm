@@ -22,20 +22,33 @@ troublesome portability problem.</p>
 operating system, the probability of portability can be markedly improved by 
 understanding the limits imposed by various operating systems, and by following 
 some rules-of-thumb when deciding path issues.</p>
-<h2>File and directory rules</h2>
+<h2>File and directory <a name="recommendations">recommendations</a></h2>
 
 <p>(Very preliminary draft)</p>
 
 <table border="1">
   <tr>
-    <td align="center" valign="top"><strong>Rule</strong></td>
+    <td align="center" valign="top"><strong>Recommendation</strong></td>
     <td align="center" valign="top"><strong>Rationale</strong></td>
   </tr>
   <tr>
     <td valign="top">Limit file and directory names to the characters A-Z, a-z, 0-9, period, hyphen, and
-    underscore.</td>
+    underscore.<br>
+    <br>
+    For even greater portability, don't use hyphens at all.</td>
     <td valign="top">These are the characters specified by the POSIX standard for portable directory and
-    file names, and are also valid for Windows, Mac, and many other modern filesystems.</td>
+    file names, and are also valid for Windows, Mac, and many other modern filesystems. 
+    ISO-9660, and possibly some legacy systems, do not permit hyphens at all.</td>
+  </tr>
+  <tr>
+    <td valign="top">Do not use periods in directory names. </td>
+    <td valign="top">Requirement for Requirement for ISO-9660, OpenVMS native 
+    filesystem, and other legacy systems.</td>
+  </tr>
+  <tr>
+    <td valign="top">Do not use more that one period in a file name.</td>
+    <td valign="top">Requirement for ISO-9660, OpenVMS native filesystem, and 
+    other legacy systems. </td>
   </tr>
   <tr>
     <td valign="top">Do not use period, hyphen, or underscore as the first 
@@ -78,7 +91,7 @@ some rules-of-thumb when deciding path issues.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21079" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 August, 2002<!--webbot bot="Timestamp" endspan i-checksum="34422" --></p>
 
 </body>
 
