@@ -27,11 +27,6 @@
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/detail/workaround.hpp>
-#include <cstring>
-
-#ifdef BOOST_NO_STDC_NAMESPACE
-namespace std { using ::strcmp; using ::remove; using ::rename; }
-#endif
 
 namespace fs = boost::filesystem;
 
@@ -78,9 +73,14 @@ namespace fs = boost::filesystem;
 
 #include <sys/stat.h>  // even on Windows some functions use stat()
 #include <string>
+#include <cstring>
 #include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
+
+#ifdef BOOST_NO_STDC_NAMESPACE
+namespace std { using ::strcmp; using ::remove; using ::rename; }
+#endif
 
 #include <boost/config/abi_prefix.hpp> // must be the last header
 
