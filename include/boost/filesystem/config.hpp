@@ -12,7 +12,12 @@
 #ifndef BOOST_FILESYSTEM_CONFIG_HPP
 #define BOOST_FILESYSTEM_CONFIG_HPP
 
+// This header implements separate compilation features as described in
+// http://www.boost.org/more/separate_compilation.html
+
 #include <boost/config.hpp>
+
+//  enable dynamic linking on Windows  ---------------------------------------//
 
 #ifdef BOOST_HAS_DECLSPEC // defined in config system
 // we need to import/export our code only if the user has specifically
@@ -33,5 +38,25 @@
 #ifndef BOOST_FILESYSTEM_DECL
 #define BOOST_FILESYSTEM_DECL
 #endif
+
+//  enable automatic library variant selection  ------------------------------// 
+
+#if !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_FILESYSTEM_NO_LIB)
+//
+// Set the name of our library, this will get undef'ed by auto_link.hpp
+// once it's done with it:
+//
+#define BOOST_LIB_NAME boost_filesystem
+//
+// If we're importing code from a dll, then tell auto_link.hpp about it:
+//
+#if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_FILESYSTEM_DYN_LINK)
+#  define BOOST_DYN_LINK
+#endif
+//
+// And include the header that does the work:
+//
+#include <boost/config/auto_link.hpp>
+#endif  // auto-linking disabled
 
 #endif // BOOST_FILESYSTEM_CONFIG_HPP

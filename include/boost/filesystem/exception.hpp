@@ -23,6 +23,8 @@
 #include <exception>
 #include <boost/shared_ptr.hpp>
 
+#include <boost/config/abi_prefix.hpp> // must be the last header
+
 //----------------------------------------------------------------------------// 
 
 namespace boost
@@ -101,4 +103,5 @@ namespace boost
   } // namespace filesystem
 } // namespace boost
 
+#include <boost/config/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 #endif // BOOST_FILESYSTEM_EXCEPTION_HPP

@@ -17,13 +17,14 @@
 #ifndef BOOST_FILESYSTEM_DIRECTORY_HPP
 #define BOOST_FILESYSTEM_DIRECTORY_HPP
 
-#include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/path.hpp>  // includes <boost/filesystem/config.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/iterator.hpp>
 
 #include <string>
 #include <ctime>
+
+#include <boost/config/abi_prefix.hpp> // must be the last header
 
 # ifdef BOOST_NO_STDC_NAMESPACE
     namespace std { using ::time_t; }
@@ -119,4 +120,6 @@ struct path_proxy // allows *r++ to work, as required by 24.1.1
   } // namespace filesystem
 } // namespace boost
 
+
+#include <boost/config/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 #endif // BOOST_FILESYSTEM_DIRECTORY_HPP

@@ -12,11 +12,13 @@
 #ifndef BOOST_FILESYSTEM_FSTREAM_HPP
 #define BOOST_FILESYSTEM_FSTREAM_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/path.hpp>  // includes <boost/filesystem/config.hpp>
 #include <boost/detail/workaround.hpp>
 
 #include <iosfwd>
 #include <fstream>
+
+#include <boost/config/abi_prefix.hpp> // must be the last header
 
 namespace boost
 {
@@ -185,5 +187,5 @@ namespace boost
 
 } // namespace boost
 
+#include <boost/config/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
 #endif  // BOOST_FILESYSTEM_FSTREAM_HPP
-
