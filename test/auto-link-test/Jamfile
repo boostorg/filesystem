@@ -22,11 +22,11 @@ run
    # sources
       ../operations_test.cpp
    :
-   :	# input files
-   : 	# requirements
+   :  # input files
+   :   # requirements
       <library-path>../../../../stage/lib
       <define>BOOST_LIB_DIAGNOSTIC=1
-   : 	# program name
+   :   # program name
       operations_test          
    ;
 
@@ -36,12 +36,12 @@ run
    # sources
       ../operations_test.cpp
    :
-   :	# input files
-   : 	# requirements
+   :  # input files
+   :   # requirements
       <library-path>../../../../stage/lib
       <define>BOOST_LIB_DIAGNOSTIC=1
       <define>BOOST_ALL_DYN_LINK=1
       <runtime-link>dynamic
-   : 	# program name
+   :   # program name
       operations_test_dll          
    ;
