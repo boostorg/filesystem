@@ -317,8 +317,9 @@ path( const char * src, path_format );</pre>
   <p><b>Postcondition:</b> <code>m_name</code> is in
   <a href="#Canonical">canonical form</a>.</p>
   <p><b>Rationale:</b> It is not considered an error for <code>rhs</code> to 
-  include a <code>root-name</code> because it might relative, and 
-  thus valid.&nbsp; For example, on Windows, the follow must succeed:</p>
+  include a <code>root-directory</code> because <code>m_name</code> might be relative 
+  or empty, and 
+  thus it is valid for rhs to supply <code>root-directory</code>.&nbsp; For example, on Windows, the following must succeed:</p>
   <blockquote>
     <pre>path p( &quot;c:&quot;, native );
 p /= &quot;/foo&quot;;
@@ -335,8 +336,9 @@ assert( p.string() == &quot;c:/foo&quot; );</pre>
   For example, <code>initial_directory() / &quot;src&quot; / test_name</code>. 
   Operator+ and operator+= were considered as alternatives, but deemed too 
   easy to confuse with those operators for std::string. Operator&lt;&lt; and 
-  operator=&lt;&lt; were until during public review it was pointed out that / and /= 
-  matched the generic path syntax.</p>
+  operator=&lt;&lt; were used originally until during public review Dave 
+  Abrahams pointed out that / and /= 
+  match the generic path syntax.</p>
   <p><b>Note:</b> Also see <a href="#non-member_operator_shift">non-member <i>
   operator/</i></a> functions.</p>
   </blockquote>
@@ -796,7 +798,7 @@ various expressions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 June, 2003<!--webbot bot="Timestamp" endspan i-checksum="19879" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34476" --></p>
 
 </body>
 
