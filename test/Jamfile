@@ -12,7 +12,7 @@ include testing.jam ;
 
     # link versus filesystem library from main boost project
     # this should be done less 'specific'
-    local FS_LIB_PATH = $(BOOST_ROOT)/libs/filesystem/build/bin/libfs.a/gcc/debug/runtime-link-dynamic ; 
+    local FS_LIB_PATH = $(BOOST_ROOT)/libs/filesystem/build/bin/libfs.a/$(TOOLS)/debug/runtime-link-dynamic ; 
                
     test-suite "filesystem"
        : [ run libs/filesystem/test/type_pm_test.cpp
