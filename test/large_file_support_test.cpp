@@ -27,7 +27,7 @@ int main()
                "that can not represent file sizes greater that 2 gigabytes (31-bits).\n"
                "Thus the Filesystem Library will not correctly deal with such large\n"
                "files. If you think that this operatiing system should be able to\n"
-               "support large files, please report the problem on the Boost developers\n"
+               "support large files, please report the problem to the Boost developers\n"
                "mailing list.\n";
   return 1;
-}                                               
+}
