@@ -111,14 +111,6 @@ the directory-path argument supplied at construction. The path returned by
 dereferencing a <i>directory_iterator</i> is composed by appending the name of 
 the directory entry to the directory path supplied at construction.</p>
 
-<p><b><a name="symbolic-link-warning">Warning</a>:</b> Programs performing 
-directory iteration may wish to test, via <a href="#exists">exists()</a>, if the 
-path returned by dereferencing an iterator actually exists. It could be a
-<a href="index.htm#symbolic-link">symbolic link</a> to a non-existent file or 
-directory. Programs recursively walking directory trees for purposes of removing 
-and renaming entries may wish to avoid following symbolic links, which can be 
-detected with <a href="#symbolic_link_exists">symbolic_link_exists()</a>.</p>
-
 <p>The order of the path entries returned by dereferencing successive increments 
 of a <i>directory_iterator</i> is unspecified. Thus depending on the ordering 
 provided by a particular implementation will result in non-portable code.</p>
@@ -137,6 +129,19 @@ system's directories can contain entries which are not usable by Filesystem
 Library or Standard Library functions, these entries will be skipped during 
 directory iteration. Such entries are by definition non-portable, but can always 
 be accessed via the native operating system API if required.</p>
+
+<p><b><a name="symbolic-link-warning">Warning</a>:</b> Programs performing 
+directory iteration may wish to test, via <a href="#exists">exists()</a>, if the 
+path returned by dereferencing an iterator actually exists. It could be a
+<a href="index.htm#symbolic-link">symbolic link</a> to a non-existent file or 
+directory. Programs recursively walking directory trees for purposes of removing 
+and renaming entries may wish to avoid following symbolic links, which can be 
+detected with <a href="#symbolic_link_exists">symbolic_link_exists()</a>.</p>
+
+<p><b>Warning:</b> If a file or sub-directory is removed from or added to a 
+directory after the construction of a <i>directory_iterator</i> for the 
+directory, it is unspecified whether or not incrementing the iterator will ever 
+result in an iterator whose value is the removed or added directory entry.</p>
 
 <h3><a name="constructors">Constructors</a></h3>
 <blockquote>
@@ -578,7 +583,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38508" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38510" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
