@@ -20,6 +20,9 @@ include testing.jam ;
          [ run libs/filesystem/test/fstream_test.cpp
                <lib>../../../libs/filesystem/build/fs
          ]
+         [ run libs/filesystem/test/convenience_test.cpp
+               <lib>../../../libs/filesystem/build/fs
+         ]
 #         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
 #               <lib>../../../libs/filesystem/build/fs
 #         ]
