@@ -97,9 +97,7 @@ namespace boost
       directory_iterator(); // creates the "end" iterator
       explicit directory_iterator( const path & directory_ph );
 
-      ~directory_iterator();
-
-      // compiler generates copy constructor and copy assignment
+      // compiler generates copy constructor, copy assignment, and destructor
       
       bool operator==( const directory_iterator & ) const;
 

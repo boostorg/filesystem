@@ -27,6 +27,7 @@
 #include <boost/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
+//#include <iostream>
 
 namespace fs = boost::filesystem;
 
@@ -174,6 +175,14 @@ namespace boost
       public:
         path              entry_path;
         BOOST_HANDLE      handle;
+
+        ~directory_iterator_imp()
+        {
+          if ( handle != BOOST_INVALID_HANDLE_VALUE )
+          {
+            find_close( handle );
+          }
+        }
       };
 
     } // namespace detail
@@ -209,12 +218,6 @@ namespace boost
           "directory_iterator constructor failure: " )
           + dir_path.directory_c_str(), system_error );
       }  
-    }
-
-    directory_iterator::~directory_iterator()
-    {
-      if ( m_imp.get() && m_imp->handle != BOOST_INVALID_HANDLE_VALUE)
-        find_close( m_imp->handle );
     }
 
     bool directory_iterator::operator== (
