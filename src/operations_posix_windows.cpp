@@ -29,6 +29,12 @@
 #include <boost/filesystem/exception.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
+#include <cstring>
+
+#ifdef BOOST_NO_STDC_NAMESPACE
+  namespace std { using ::strcmp; }
+#endif
+
 //#include <iostream>
 
 namespace fs = boost::filesystem;
@@ -244,15 +250,18 @@ namespace boost
 
       BOOST_SYSTEM_DIRECTORY_TYPE scratch;
       const char * name;
-      if ( (name = find_next_file( m_imp->handle,
+
+      while ( (name = find_next_file( m_imp->handle,
         m_imp->entry_path, scratch )) != 0 )
       {
-        m_imp->entry_path.m_replace_leaf( name );
+        if ( std::strcmp( name, "." ) != 0
+          && std::strcmp( name, ".." ) != 0 )
+        {
+          m_imp->entry_path.m_replace_leaf( name );
+          return;
+        }
       }
-      else
-      {
-        m_imp.reset(); // make base() the end iterator
-      }
+      m_imp.reset(); // make base() the end iterator
     }
 
 //  free functions  ----------------------------------------------------------//
