@@ -23,7 +23,7 @@ Filesystem Library</h1>
 <a href="#Definitions">Definitions</a><br>
 &nbsp;&nbsp;&nbsp;
 <a href="#Requirements">Requirements</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Dangers">Dangers</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Race-condition">Race-condition danger</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Acknowledgements">Acknowledgements</a></td>
     <td width="50%"><font size="4">Other Documents</font><br>
 &nbsp;&nbsp;&nbsp; <a href="design.htm">Library Design</a><br>
@@ -45,7 +45,8 @@ compete with Python, Perl, or shell languages, but rather to provide portable fi
 operations when C++ is already the language of choice. The <a href="design.htm">
 design</a> encourages, but does not require, safe and portable filesystem usage.</p>
 
-<p>Filesystem Library components are supplied by four headers:</p>
+<p>Filesystem Library components are supplied by several&nbsp; headers, all in 
+directory boost/filesystem:</p>
 
 <ul>
   <li>Header <i>path.hpp</i> provides class <i>path, </i>a portable mechanism for representing
@@ -62,12 +63,18 @@ design</a> encourages, but does not require, safe and portable filesystem usage.
   See <a href="fstream.htm">fstream.hpp documentation</a>.<br>
 &nbsp;</li>
   <li>Header <i>exception.hpp</i> provides class <i>filesystem_error</i>. See
-  <a href="exception.htm">exception.hpp documentation</a>.</li>
+  <a href="exception.htm">exception.hpp documentation</a>.<br>
+&nbsp;</li>
+  <li>Experimental header <i>
+  <a href="../../../boost/filesystem/recursive_directory_iterator.hpp">
+  recursive_directory_iterator.hpp</a></i> provides an undocumented directory 
+  iterator which recurses into any sub-directories encountered. It will be 
+  incorporated into the Filesystem Library if user feedback is favorable.</li>
 </ul>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
-<p>After some preliminaries:</p>
+<p>First some preliminaries:</p>
 <blockquote>
-  <pre>#include &quot;boost/filesystem/operations.hpp&quot; // also includes path.hpp
+  <pre>#include &quot;boost/filesystem/operations.hpp&quot; // includes boost/filesystem/path.hpp
 #include &quot;boost/filesystem/fstream.hpp&quot;    // ditto
 #include &lt;iostream&gt;                        // for cout
 namespace fs = boost::filesystem;</pre>
@@ -80,7 +87,7 @@ namespace fs = boost::filesystem;</pre>
 <a href="path.htm#Grammar">portable generic path format</a>. Access functions 
 make <i>my_path</i> contents available in an operating system dependent format, 
 such as <code>&quot;some_dir:file.txt&quot;</code>, <code>&quot;[some_dir]file.txt&quot;</code>,
-<code>&quot;some_dir/file.txt&quot;</code>, or whatever is appropriate for the current 
+<code>&quot;some_dir/file.txt&quot;</code>, or whatever is appropriate for the  
 operating system.</p>
 <p>Class <i>path</i> has conversion constructors from <i>const char*</i> and <i>
 const std:: string&amp;</i>, so that even though the Filesystem Library functions in 
@@ -173,7 +180,9 @@ hierarchy viewed as an acyclic graph.</p>
 <p><b><a name="path">path</a> </b>- A possibly empty sequence of names. Each 
 element in the sequence, except the last, names a <a href="#directory">directory</a> 
 which contains the 
-next element. The last element may name either a directory or file.</p>
+next element. The last element may name either a directory or file. The first 
+element is closest to the root of the directory tree, the last element is 
+farthest from the root.</p>
 <p>It is traditional to represent a path as a string, where each element in the 
 path is represented by a <a href="#name">name</a>, and some operating system 
 defined syntax distinguishes between the name elements. Other representations of 
@@ -194,11 +203,11 @@ implementation cannot successfully complete operations required to meet the
 function's specifications. Such exceptions are in addition to any exceptions 
 specified in the function's &quot;Throws&quot; paragraph.</p>
 <p>Filesystem Library functions are permitted to call C++ Standard Library 
-functions, so, <i>std::bad_alloc</i> exceptions may also be thrown, unless 
+functions, so <i>std::bad_alloc</i> exceptions may also be thrown, unless 
 otherwise specified.</p>
 <p>There is no rollback guarantee; a Filesystem Library function which throws an 
-exception may leave the external file system in an altered the state.</p>
-<h2><a name="Dangers">Dangers</a></h2>
+exception may leave the external file system in an altered state.</p>
+<h2><a name="Race-condition">Race-condition</a> d<a name="Dangers">anger</a></h2>
 <p>The state of files and directories is often
 globally shared, and thus may be changed unexpectedly by other threads, 
 processes, or even other computers which have access to the filesystem. As an 
@@ -229,7 +238,7 @@ or directory resources should be prepared for <i>filesystem_error</i> exceptions
 to be thrown from any filesystem function except those explicitly specified as 
 not throwing exceptions.</p>
 <h2><a name="Implementation">Implementation</a></h2>
-<p>The current implementation (July, 2002) supports operating systems that have 
+<p>The current implementation (September, 2002) supports operating systems that have 
 either the POSIX or Windows API's available.</p>
 <p>The following tests are provided:</p>
 <ul>
@@ -237,19 +246,17 @@ either the POSIX or Windows API's available.</p>
   <li><a href="../test/operations_test.cpp">operations_test.cpp</a></li>
   <li><a href="../test/fstream_test.cpp">fstream_test.cpp</a></li>
 </ul>
-<p>As of July, 2002, these tests succeed for the following compilers on Windows:</p>
+<p>As of September, 2002, these tests succeed for the following compilers on Windows:</p>
 <ul>
   <li>Borland 5.5.1</li>
-  <li>GCC 3.1 (excluding wide-character fstream tests)</li>
+  <li>GCC 3.1 (using POSIX implementation, but excluding wide-character fstream tests)</li>
   <li>Intel 6.0</li>
-  <li>Metrowerks 8.1</li>
+  <li>Metrowerks 8.2</li>
   <li>Microsoft 7.0</li>
   <li>Microsoft 6.0 except fstream_test failed.</li>
 </ul>
-<p>As of July, 2002, these tests failed for the following compilers on Windows:</p>
-<ul>
-  <li>Microsoft 6.0 fstream_test</li>
-</ul>
+<p>As of September, 2002, some limited use has been successful on Linux using 
+GCC and IBM/AIX using Visual Age C++.</p>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>The Filesystem Library was designed and implemented by Beman Dawes, except 
 for the <i>directory_iterator</i> and <i>filesystem_error</i> classes which were 
@@ -263,7 +270,7 @@ Salters, Jani Kajala, Jason Stewart, Carl Daniel, David Abrahams, Bill Kempf,
 Jonathan Caves, George Heintzelman, Ken Hagen, Eric Jensen, Joel de Guzman, Jim 
 Hyslop, John Maddock, Matt Austern, Peter Dimov, Davlet Panech, Dylan Nicholson, Tom Harris, 
 Giovanni Bajo, Baptiste Lepilleur, Thomas Witt, Keith Burton, Mattias Flodin, 
-Daniel Frey, Vladimir Prus.</p>
+Daniel Frey, Vladimir Prus, Toon Knapen.</p>
 
 <p>Specific improvements for a preliminary design document came from Dan Nuffer and Jeff 
 Garland.</p>
@@ -274,7 +281,7 @@ of portability&quot; problem, particularly in postings by JP Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 August, 2002<!--webbot bot="Timestamp" endspan i-checksum="34422" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39336" --></p>
 
 </body>
 

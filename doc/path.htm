@@ -35,10 +35,10 @@ documentation</a>.</p>
 
 <p>As with all Filesystem Library components, errors may result in <i>
 <a href="exception.htm">filesystem_error</a></i> or <i>std::bad_alloc</i> 
-exceptions being thrown. See <a href="reference.htm#Requirements">Requirements</a>.</p>
+exceptions being thrown. See <a href="index.htm#Requirements">Requirements</a>.</p>
 <h2><a name="Class path">Class path</a></h2>
-<p>Class <i>path</i> provides for portable mechanism for representing 
-<a href="reference.htm#path">paths</a> in C++ programs.&nbsp; Class <i>path</i> 
+<p>Class <i>path</i> provides for portable mechanism for representing
+<a href="index.htm#path">paths</a> in C++ programs.&nbsp; Class <i>path</i> 
 is concerned with the lexical and syntactic aspects of a path, regardless of 
 whether or not such a path currently exists in the operating system's 
 filesystem. </p>
@@ -49,15 +49,17 @@ portable but the strings they operate on would not be portable.</p>
 <h2><a name="Conceptual model">Conceptual model</a> of a path</h2>
 <p>An object of class <i>path</i> can be conceptualized as containing a sequence 
 of strings, where each string contains the name of a directory, or, in the case 
-of the last string, a directory or file. Such a path representation is 
-completely independent of any particular representation of the path as a single 
+of the string representing the element farthest from the root in the directory 
+hierarchy, the name of a directory or file. Such a path representation is 
+ 
+independent of any particular representation of the path as a single 
 string.</p>
 <p>There is no requirement that an implementation of class <i>path</i> actually 
 contain a sequence of strings, but conceptualizing the contents that way provides 
 a completely portable way to reason about paths.</p>
 <p>So that programs can portably express paths as a single string, class <i>path</i> 
 defines a <a href="#Grammar">grammar</a> for a portable generic path string 
-format, and supplies a constructor and append operations taking such strings as 
+format, and supplies constructor and append operations taking such strings as 
 arguments. Because user input or third-party library functions may supply path 
 strings formatted according to operating system specific rules, an additional 
 constructor is provided which takes a system-specific format as an argument.</p>
@@ -90,8 +92,9 @@ with the <i><a href="#system_specific">system_specific</a></i> decorator.</p>
 <p>Although implementation-defined, it is desirable that <i>
 system-specific-root</i> have a grammar which is distinguishable from other grammar elements, 
 and follow the conventions of the operating system.</p>
-<p>Whether or not a generic path string is actually portable will depend on the 
-names used.&nbsp; See <font color="#FF0000"><i>to be provided</i></font></p>
+<p>Whether or not a generic path string is actually portable to a particular 
+operating system will depend on the 
+names used.&nbsp; See the <a href="portability_guide.htm">Portability Guide</a>.</p>
 <h2><a name="Canonical">Canonical</a> form</h2>
 <p>Adjacent <i>name, parent-directory</i> elements in <code>m_name</code> 
 have been recursively removed. </p>
@@ -118,7 +121,7 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
 
       // append operations:
       path &amp; <a href="#operator-shift-equal">operator&lt;&lt;=</a>( const path &amp; rhs );
-      const path <a href="#operator-shift">operator&lt;&lt;</a> ( const path &amp; rhs ) const;
+      const path <a href="#operator-shift">operator&lt;&lt;</a>( const path &amp; rhs ) const;
 
       // query functions: 
       bool <a href="#empty">is_null()</a> const;
@@ -129,9 +132,9 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
       const path <a href="#branch">branch</a>() const;
 
       // iteration:
-      typedef <i>implementation-defined</i> iterator;
-      iterator begin() const;
-      iterator end() const;
+      typedef <i>implementation-defined</i> <a href="#iterator">iterator</a>;
+      const iterator <a href="#begin">begin</a>() const;
+      const iterator <a href="#end">end</a>() const;
 
     private:
       std::vector&lt;std::string&gt; m_name;  // for exposition only
@@ -323,12 +326,12 @@ iterators (24.1). The value, reference, and pointer types are <i>std::string</i>
 </blockquote>
 <h3><a name="begin">begin</a></h3>
 <blockquote>
-<p><code>iterator begin() const;</code></p>
+<p><code>const iterator begin() const;</code></p>
 <p><b>Returns:</b> <code>m_path.begin()</code></p>
 </blockquote>
 <h3><a name="end">end</a></h3>
 <blockquote>
-<p><code>iterator end() const;</code></p>
+<p><code>const iterator end() const;</code></p>
 <p><b>Returns:</b> <code>m_path.end()</code></p>
 </blockquote>
 <h2><a name="Non-member functions">Non-member functions</a></h2>
@@ -349,7 +352,7 @@ likely to change.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 August, 2002<!--webbot bot="Timestamp" endspan i-checksum="34422" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39336" --></p>
 
 </body>
 

@@ -99,16 +99,16 @@ namespace boost
     public:
       recursive_directory_iterator( const path & pth, Predicate pred )
       {
-        base().reset( new detail::rdi_imp<Predicate>( pth, pred ) );
+        this->base().reset( new detail::rdi_imp<Predicate>( pth, pred ) );
       }
       recursive_directory_iterator() // the past-the-end iterator
       {
-        base().reset( new detail::rdi_imp<Predicate> );
+        this->base().reset( new detail::rdi_imp<Predicate> );
       }
 
       // workaround iterator_adaptor / compiler interactions
       const boost::filesystem::path * operator->() const
-        { return &*base()->stac.top(); }
+        { return &*this->base()->stac.top(); }
     };
   }
 }

@@ -77,10 +77,6 @@ namespace boost
       const std::string leaf() const;
       const path branch() const;
 
-      // deprecated
-      const char * file_c_str() const { return m_path.c_str(); }
-      const char * directory_c_str() const { return m_path.c_str(); }
-
       // iteration over the names in the path:
       typedef boost::iterator_adaptor<
         detail::path_itr_imp,
@@ -119,6 +115,7 @@ namespace boost
       void m_path_append( const std::string & src,
         source_context context = generic );
 
+    public: // should be private, but friend functions don't work for me
       void m_replace_leaf( const char * new_leaf );
     };
 

@@ -12,8 +12,8 @@
 #include <boost/filesystem/exception.hpp>
 namespace fs = boost::filesystem;
 
-#define BOOST_INCLUDE_MAIN
-#include <boost/test/test_tools.hpp>
+//#include <boost/test/test_tools.hpp>
+#include <boost/test/minimal.hpp>
 
 #include <boost/bind.hpp>
 using boost::bind;
@@ -27,7 +27,7 @@ namespace
 
   void create_file( const fs::path & ph, const std::string & contents )
   {
-    std::ofstream f( ph.file_c_str() );
+    std::ofstream f( ph.file_path().c_str() );
     if ( !f )
       throw fs::filesystem_error( "ofstream(): " + ph.generic_path() );
     if ( !contents.empty() ) f << contents;
@@ -35,7 +35,7 @@ namespace
 
   void verify_file( const fs::path & ph, const std::string & expected )
   {
-    std::ifstream f( ph.file_c_str() );
+    std::ifstream f( ph.file_path().c_str() );
     if ( !f )
       throw fs::filesystem_error( "ifstream(): " + ph.generic_path() );
     std::string contents;
@@ -66,6 +66,8 @@ namespace
 
 int test_main( int, char * [] )
 {
+  std::cout << "implemenation name: "
+            << fs::detail::implementation_name() << "\n";
   std::cout << "initial_directory() is \""
             << fs::initial_directory().generic_path()
             << "\"\n";
@@ -99,6 +101,11 @@ int test_main( int, char * [] )
   BOOST_TEST( fs::exists( d1 ) );
   BOOST_TEST( fs::is_directory( d1 ) );
   BOOST_TEST( fs::_is_empty( d1 ) );
+
+  {
+    fs::directory_iterator dir_itr( dir );
+    BOOST_TEST( dir_itr->leaf() == "d1" );
+  }
 
   // create a second directory named d2
   fs::path d2( dir << "d2" );
@@ -169,6 +176,8 @@ int test_main( int, char * [] )
   BOOST_TEST( !fs::is_directory( file_ph ) );
   fs::remove( file_ph );
   BOOST_TEST( !fs::exists( file_ph ) );
+  fs::remove( "no-such-file" ); // should be harmless
+  fs::remove( "no-such-directory/no-such-file" ); // ditto
 
   // remove test on directory
   d1 = dir << "shortlife_dir";
@@ -177,6 +186,7 @@ int test_main( int, char * [] )
   BOOST_TEST( fs::exists( d1 ) );
   BOOST_TEST( fs::is_directory( d1 ) );
   BOOST_TEST( fs::_is_empty( d1 ) );
+  BOOST_TEST( throws_fs_error( bind( fs::remove, dir ) ) );
   fs::remove( d1 );
   BOOST_TEST( !fs::exists( d1 ) );
 

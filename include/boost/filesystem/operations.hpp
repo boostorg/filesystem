@@ -24,8 +24,7 @@
 #include <boost/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/smart_ptr.hpp>
-#include <boost/iterator.hpp>
-#include <boost/operators.hpp>
+#include <boost/iterator_adaptors.hpp>
 
 #include <string>
 
@@ -45,7 +44,7 @@ namespace boost
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
     // between boost::filesystem::is_empty and the unrelated type trait
     // boost::is_empty. The workaround for those who must use broken versions
-    //  of VC++ is to use the function _is_empty. All others should use the
+    // of VC++ is to use the function _is_empty. All others should use the
     // correct is_empty name.
     bool _is_empty( const path & ph ); // deprecated
 
@@ -69,46 +68,59 @@ namespace boost
 
     const path & initial_directory();
 
+//  directory_iterator details  ----------------------------------------------//
+
     namespace detail
     {
+      const char * implementation_name();
+
       class directory_iterator_imp;
+      
+      struct directory_iterator_internals
+      {
+        typedef boost::shared_ptr< detail::directory_iterator_imp > dii_ptr;
+        dii_ptr imp;
+
+        const path & deref() const;
+        void inc();
+      };
+
+      struct dii_policies : public default_iterator_policies
+      {
+
+        template <class IteratorAdaptor>
+        typename IteratorAdaptor::reference
+        dereference(const IteratorAdaptor& x) const
+          { return x.base().deref(); }
+
+        template <class IteratorAdaptor>
+        void increment(IteratorAdaptor& x)
+          { x.base().inc(); }
+
+        template <class IteratorAdaptor1, class IteratorAdaptor2>
+        bool equal(const IteratorAdaptor1& x, const IteratorAdaptor2& y) const
+          { return x.base().imp == y.base().imp; }
+      };
     }
 
 //  directory_iterator  ------------------------------------------------------//
 
-    class directory_iterator:
-      public boost::iterator< std::input_iterator_tag,
-                              path, const path *, const path & >,
-      public boost::equality_comparable1< directory_iterator >,
-      public boost::dereferenceable< directory_iterator,
-                                     const path * >,
-      public boost::incrementable< directory_iterator >
+    class directory_iterator
+      : public boost::iterator_adaptor<
+          // because directory_iterator is an InputIterator, shallow copy-
+          // semantics are required, and shared_ptr provides that.
+          detail::directory_iterator_internals,
+          detail::dii_policies,
+          path, const path &, const path *,
+          std::input_iterator_tag, std::ptrdiff_t >
     {
     public:
-      typedef boost::iterator<
-        std::input_iterator_tag,
-        path >                        base;
-      typedef base::value_type        value_type;
-      typedef base::difference_type   difference_type;
-      typedef base::pointer           pointer;
-      typedef base::reference         reference;
-      typedef base::iterator_category iterator_category;
+      directory_iterator();  // creates the "end" iterator
+      explicit directory_iterator( const path & directory_path );
 
-      directory_iterator(); // creates the "end" iterator
-      explicit directory_iterator( const path & directory_ph );
-
-      // compiler generates copy constructor, copy assignment, and destructor
-      
-      bool operator==( const directory_iterator & ) const;
-
-      const path & operator*() const;
-
-      directory_iterator & operator++();
-
-    private:
-      // because directory_iterator is an InputIterator, shallow copy
-      // semantics are required, and shared_ptr provides that.
-      boost::shared_ptr<detail::directory_iterator_imp> m_imp;
+      // workaround iterator_adaptor / compiler interactions
+      const boost::filesystem::path * operator->() const
+        { return &base().deref(); }
     };
 
   } // namespace filesystem

@@ -14,7 +14,7 @@ operations&quot; requirement of the Filesystem Library, full URI's appear to be 
 </b>POSIX is the basis for the most familiar path-string formats, including the 
 URL portion of URI's and the native Windows format. It is ubiquitous and 
 familiar.&nbsp; On many systems, it is very easy to implement because it is 
-either the native operating system format (Unixes and Windows) or via a 
+either the native operating system format (Unix and Windows) or via a 
 operating system supplied 
 POSIX library (z/OS, OS/390, and many more.)</p>
 <p><b>Why isn't <i>path</i> a base class with derived <i>directory_path</i> and
@@ -110,8 +110,7 @@ notification variable?</b></p>
 by programmers.&nbsp; Exceptions are much harder to ignore, provided desired 
 default behavior (program termination) if not caught, yet allow error recovery 
 if desired.</p>
-<p><b>Why are attributes accessed via named functions rather than
-<a href="../../property_map/property_map.html">property maps</a>?</b></p>
+<p><b>Why are attributes accessed via named functions rather than property maps?</b></p>
 <p>For a few commonly used attributes (existence, directory or file, emptiness), 
 simple syntax and guaranteed presence outweigh other considerations. Because 
 access to virtually all other attributes is inherently system dependent, 
@@ -126,7 +125,7 @@ about to hand them the gun.</p>
 <p><b>Why aren't there query functions for compound conditions like existing_directory?</b></p>
 <p>After several attempts, named queries for multi-attribute proved a 
 slippery-slope; where do you stop?</p>
-<p><b>Why aren't wide-character names supported? Why not std::wstring or even 
+<p><b>Why aren't <a name="wide-character names">wide-character names</a> supported? Why not std::wstring or even 
 a templated type?</b></p>
 <p>Wide-character names would provide an illusion of portability where 
 portability does not in fact exist. Behavior would be completely different on 
@@ -176,4 +175,4 @@ paths:</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21082" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39334" --></p>
