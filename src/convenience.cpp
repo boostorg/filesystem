@@ -8,6 +8,12 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+//----------------------------------------------------------------------------//
+
+// define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
+// the library is being built (possibly exporting rather than importing code)
+#define BOOST_FILESYSTEM_SOURCE 
+
 #include <boost/filesystem/convenience.hpp>
 
 namespace boost
