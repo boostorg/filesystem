@@ -178,19 +178,20 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( throws_fs_error( bind( fs::is_directory, dir ) ) );
   BOOST_TEST( throws_fs_error( bind( fs::_is_empty, dir ) ) );
 
-  fs::create_directory( dir );
+  BOOST_TEST( fs::create_directory( dir ) );
 
   BOOST_TEST( fs::exists( dir ) );
   BOOST_TEST( fs::_is_empty( dir ) );
   BOOST_TEST( fs::is_directory( dir ) );
   BOOST_TEST( throws_fs_error( bind( fs::file_size, dir ),
     fs::is_directory_error ) );
+  BOOST_TEST( !fs::create_directory( dir ) );
 
   BOOST_TEST( !fs::symbolic_link_exists( dir ) );
   BOOST_TEST( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
 
   fs::path d1( dir / "d1" );
-  fs::create_directory( d1  );
+  BOOST_TEST( fs::create_directory( d1 ) );
   BOOST_TEST( fs::exists( d1 ) );
   BOOST_TEST( fs::is_directory( d1 ) );
   BOOST_TEST( fs::_is_empty( d1 ) );
@@ -247,6 +248,8 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( !fs::is_directory( file_ph ) );
   BOOST_TEST( fs::_is_empty( file_ph ) );
   BOOST_TEST( fs::file_size( file_ph ) == 0 );
+  BOOST_TEST( throws_fs_error( bind( fs::create_directory, file_ph ),
+    fs::not_directory_error ) );
 
   // create a file named "f1"
   file_ph = dir / "f1";

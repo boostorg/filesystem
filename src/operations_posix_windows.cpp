@@ -432,17 +432,25 @@ namespace boost
           ph, fs::detail::system_error_code() ) );
     }
 
-    BOOST_FILESYSTEM_DECL void create_directory( const path & dir_path )
+    BOOST_FILESYSTEM_DECL bool create_directory( const path & dir_path )
     {
 #   ifdef BOOST_POSIX
       if ( ::mkdir( dir_path.native_directory_string().c_str(),
-        S_IRWXU|S_IRWXG|S_IRWXO ) != 0 )
+        S_IRWXU|S_IRWXG|S_IRWXO ) == 0 ) return true;
+      if ( errno != EEXIST ) 
 #   else
-      if ( !::CreateDirectoryA( dir_path.native_directory_string().c_str(), 0 ) )
+      if ( ::CreateDirectoryA( dir_path.native_directory_string().c_str(), 0 ) )
+        return true;
+      if ( ::GetLastError() != ERROR_ALREADY_EXISTS )
 #   endif
         boost::throw_exception( filesystem_error(
           "boost::filesystem::create_directory",
           dir_path, fs::detail::system_error_code() ) );
+      if ( !is_directory( dir_path ) )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::create_directory",
+          dir_path, "path exists and is not a directory", not_directory_error ) );
+      return false;
     }
 
     BOOST_FILESYSTEM_DECL bool remove( const path & ph )
@@ -549,7 +557,6 @@ namespace boost
       {
         boost::scoped_array<char>
           buf( new char[static_cast<std::size_t>(path_max)] );
-        errno = 0;
         if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
         {
           if ( errno != ERANGE )

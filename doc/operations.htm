@@ -82,7 +82,7 @@ header. </p>
     std::time_t <a href="#last_write_time">last_write_time</a>( const path &amp; ph );
     void <a href="#last_write_time">last_write_time</a>( const path &amp; ph, std::time_t new_time );
 
-    void <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
+    bool <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
     bool <a href="#remove">remove</a>( const path &amp; ph );
     unsigned long <a href="#remove_all">remove_all</a>( const path &amp; ph );
     void <a href="#rename">rename</a>( const path &amp; from_path,
@@ -325,11 +325,13 @@ systems.</p>
 </blockquote>
 <h3><a name="create_directory">create_directory</a></h3>
 <blockquote>
-<p><code>void create_directory( const path &amp; directory_ph );</code></p>
+<p><code>bool create_directory( const path &amp; directory_ph );</code></p>
 <p><b>Precondition:</b> <code>!directory_ph.empty()</code></p>
+<p><b>Returns:</b> The value of <code>!exists( directory_ph )</code> prior to the 
+establishment of the postcondition.</p>
 <p><b>Postcondition:</b> <code>exists(directory_ph) &amp;&amp; 
-is_directory(directory_ph) &amp;&amp; is_empty(directory_ph)</code></p>
-<p><b>Throws: </b>if <code>directory_ph.empty() || exists(directory_ph)) || !exists(directory_ph/&quot;..&quot;))</code>. 
+is_directory(directory_ph)</code></p>
+<p><b>Throws: </b>if <code>directory_ph.empty() || (exists(directory_ph) &amp;&amp; !is_directory(directory_ph)) || !exists(directory_ph/&quot;..&quot;)</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
 </blockquote>
 <h3><a name="remove">remove</a></h3>
@@ -604,7 +606,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->17 February, 2004<!--webbot bot="Timestamp" endspan i-checksum="40412" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28863" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

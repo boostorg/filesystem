@@ -498,13 +498,32 @@ Yitzhak Sapir
 of portability&quot; problem, particularly in postings by PJ Plauger and Pete Becker.</p>
 
 <p>Walter Landry provided much help illuminating symbolic link use cases for 
-version 1.32.0.</p>
+version 1.31.0.</p>
 
 <h2><a name="Change-history">Change history</a></h2>
 
 <h3>Version 1.32.0</h3>
 
 <ul>
+  <li><a href="operations.htm#file_size">file_size()</a> function added.</li>
+  <li><a href="operations.htm#create_directory">create_directory()</a> no longer 
+  throws if the directory already exists. A bool is returned, indicating that 
+  the directory did not preexist. Similar changes made to
+  <a href="convenience.htm">create_directories()</a>.</li>
+  <li><a href="#Cgywin">Docs added</a> for users wishing Cygwin/POSIX behavior 
+  on Windows.</li>
+  <li>For POSIX, Large File Support (LSF) is enabled if available, such as on 
+  Linux.</li>
+  <li><a href="operations.htm#current_path">current_path()</a> and
+  <a href="operations.htm#initial_path">initial_path()</a> on POSIX now handle 
+  very long paths correctly.</li>
+</ul>
+
+<h3>Version 1.31.0</h3>
+
+<ul>
+  <li>The object library can now be <a href="#Building">built</a> for either 
+  static or dynamic (shared/dll) linking. </li>
   <li>Several added functions, including improved checking for directory and 
   file name portability. See <a href="path.htm#default_name_check">Default name 
   check functions</a>, <a href="path.htm#name_check­_mechanism">Default name 
@@ -520,7 +539,7 @@ version 1.32.0.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 February, 2004<!--webbot bot="Timestamp" endspan i-checksum="40403" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28863" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

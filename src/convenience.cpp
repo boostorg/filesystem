@@ -15,6 +15,8 @@
 #define BOOST_FILESYSTEM_SOURCE 
 
 #include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/exception.hpp>
+#include <boost/throw_exception.hpp>
 
 #include <boost/config/abi_prefix.hpp> // must be the last header
 
@@ -25,14 +27,23 @@ namespace boost
 
 //  create_directories (contributed by Vladimir Prus)  -----------------------//
 
-     BOOST_FILESYSTEM_DECL void create_directories(const path& ph)
+     BOOST_FILESYSTEM_DECL bool create_directories(const path& ph)
      {
-         if (ph.empty() || exists(ph)) return;
+         if (ph.empty() || exists(ph))
+         {
+           if ( !ph.empty() && !is_directory(ph) )
+               boost::throw_exception( filesystem_error(
+                 "boost::filesystem::create_directories",
+                 ph, "path exists and is not a directory",
+                 not_directory_error ) );
+           return false;
+         }
 
          // First create branch, by calling ourself recursively
          create_directories(ph.branch_path());
          // Now that parent's path exists, create the directory
          create_directory(ph);
+         return true;
      }
 
     BOOST_FILESYSTEM_DECL std::string extension(const path& ph)
