@@ -1,0 +1,27 @@
+# Boost Filesystem Library Build Jamfile
+
+subproject libs/filesystem/example ;
+
+exe process_jam_log$(SUFEXE)
+	:
+	process_jam_log.cpp
+	<lib>../build/fs$(SUFLIB)
+	:
+	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
+	<include>$(PROJECT_ROOT)   # make this point to your boost-root
+	:
+	debug
+        release
+	;
+
+exe compiler_status$(SUFEXE)
+	:
+	compiler_status.cpp
+	<lib>../build/fs$(SUFLIB)
+	:
+	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
+	<include>$(PROJECT_ROOT)   # make this point to your boost-root
+	:
+	debug
+        release
+	;
