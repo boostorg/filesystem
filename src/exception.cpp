@@ -179,55 +179,117 @@ namespace
       + system_message( sys_err_code );
   }
 
+  const fs::path empty_path;
+  const std::string empty_string;
+  const char * no_context_msg = "filesystem_error";
 } // unnamed namespace
 
 namespace boost
 {
   namespace filesystem
   {
+//  filesystem_error m_imp class  --------------------------------------------//
+//  see www.boost.org/more/error_handling.html for implemenation rationale
+
+    class filesystem_error::m_imp
+    {
+    public:
+      std::string     m_who;
+      path            m_path1;
+      path            m_path2;
+      std::string     m_what;
+    };
+
 
 //  filesystem_error implementation  -----------------------------------------//
 
     filesystem_error::filesystem_error(
       const std::string & who,
       const std::string & message )
-      : std::runtime_error(
-          other_error_prep( who, message ).c_str() ),
-        m_sys_err(0), m_err(other_error), m_who(who)
-    {}
+      : m_sys_err(0), m_err(other_error)
+    {
+      try
+      {
+        m_imp_ptr.reset( new m_imp );
+        m_imp_ptr->m_who = who;
+        m_imp_ptr->m_what = other_error_prep( who, message );
+      }
+      catch (...) { m_imp_ptr.reset(); }
+    }
  
     filesystem_error::filesystem_error(
       const std::string & who,
       const path & path1,
       const std::string & message )
-      : std::runtime_error(
-          other_error_prep( who, path1, message ).c_str() ),
-        m_sys_err(0), m_err(other_error), m_who(who), m_path1(path1)
-    {}
+      : m_sys_err(0), m_err(other_error)
+    {
+      try
+      {
+        m_imp_ptr.reset( new m_imp );
+        m_imp_ptr->m_who = who;
+        m_imp_ptr->m_what = other_error_prep( who, path1, message );
+        m_imp_ptr->m_path1 = path1;
+      }
+      catch (...) { m_imp_ptr.reset(); }
+    }
  
     filesystem_error::filesystem_error(
       const std::string & who,
       const path & path1,
       int sys_err_code )
-      : std::runtime_error(
-          system_error_prep( who, path1, sys_err_code ).c_str() ),
-        m_sys_err(sys_err_code), m_err(lookup_error(sys_err_code)),
-        m_who(who), m_path1(path1)
-    {}
+      : m_sys_err(sys_err_code), m_err(lookup_error(sys_err_code))
+    {
+      try
+      {
+        m_imp_ptr.reset( new m_imp );
+        m_imp_ptr->m_who = who;
+        m_imp_ptr->m_what = system_error_prep( who, path1, sys_err_code );
+        m_imp_ptr->m_path1 = path1;
+      }
+      catch (...) { m_imp_ptr.reset(); }
+    }
 
     filesystem_error::filesystem_error(
       const std::string & who,
       const path & path1,
       const path & path2,
       int sys_err_code )
-      : std::runtime_error(
-          system_error_prep( who, path1, path2, sys_err_code ).c_str() ),
-        m_sys_err(sys_err_code), m_err(lookup_error(sys_err_code)),
-        m_who(who), m_path1(path1), m_path2(path2)
-    {}
+      : m_sys_err(sys_err_code), m_err(lookup_error(sys_err_code))
+    {
+      try
+      {
+        m_imp_ptr.reset( new m_imp );
+        m_imp_ptr->m_who = who;
+        m_imp_ptr->m_what = system_error_prep( who, path1, path2, sys_err_code );
+        m_imp_ptr->m_path1 = path1;
+        m_imp_ptr->m_path2 = path2;
+      }
+      catch (...) { m_imp_ptr.reset(); }
+    }
 
     filesystem_error::~filesystem_error() throw()
     {
+    }
+
+    const std::string & filesystem_error::who() const
+    {
+      return m_imp_ptr.get() == 0 ? empty_string : m_imp_ptr->m_who;
+    }
+
+    const path & filesystem_error::path1() const
+    {
+      return m_imp_ptr.get() == 0 ? empty_path : m_imp_ptr->m_path1;
+    }
+
+    const path & filesystem_error::path2() const
+    {
+      return m_imp_ptr.get() == 0 ? empty_path : m_imp_ptr->m_path2;
+    }
+
+    const char * filesystem_error::what() const throw()
+    {
+      return m_imp_ptr.get() == 0 ? empty_string.c_str()
+                                  : m_imp_ptr->m_what.c_str();
     }
 
     namespace detail

@@ -25,7 +25,8 @@ std::runtime_error</i>, which is used by functions in the Filesystem Library to
 report operational errors.</p>
 
 <p>The design evolved based on user requests to ease portability and 
-internationalization.</p>
+internationalization. See the Boost <a href="../../../more/error_handling.html">
+Error and Exception Handling</a> guidelines.</p>
 
 <h2><a name="Synopsis">Synopsis</a></h2>
 <pre>namespace boost
@@ -53,7 +54,7 @@ internationalization.</p>
       out_of_resource_error
     };
 
-    class filesystem_error : public std::runtime_error
+    class filesystem_error : public std::exception
     {
     public:
 
@@ -71,6 +72,8 @@ internationalization.</p>
         <i>sys_err</i> sys_err_code );
 
       ~filesystem_error() throw();
+
+      virtual const char * what() const throw();
 
       <i>sys_err</i> <a href="#native_error">native_error</a>() const;
       error_code <a href="#error">error</a>() const;
@@ -114,6 +117,14 @@ filesystem_error( const std::string &amp; who,
   between library implementations. </p>
   <p><b>Effects:</b> Constructs a <i>filesystem_error</i> object.</p>
 </blockquote>
+<h3><a name="what">what</a></h3>
+<blockquote>
+<p><code>virtual const char * what() const throw();</code></p>
+<p><b>Returns:</b> A string identifying the error, including who(), path1(), 
+path2(), and related messages. If an error occurs in the preparation of the 
+string, particularly in low-memory situations, an implementation is permitted to 
+return a simpler static string.</p>
+</blockquote>
 <h3><a name="native_error">native_error</a></h3>
 <blockquote>
   <p><i><code>sys_err</code></i><code> native_error() const;</code></p>
@@ -133,7 +144,9 @@ filesystem_error( const std::string &amp; who,
 <blockquote>
   <pre>const std::string &amp; who() const;</pre>
 
-<p><b>Returns:</b> The <code>who</code> argument to the constructor.</p>
+<p><b>Returns:</b> The <code>who</code> argument to the constructor. An 
+implementation is permitted to return an empty string if an exception, for 
+example,&nbsp; std::bad_alloc,&nbsp; occurs during processing.</p>
 </blockquote>
 
 <h3><a name="path1">path1</a></h3>
@@ -141,7 +154,9 @@ filesystem_error( const std::string &amp; who,
   <pre>const path &amp; path1() const;</pre>
 
 <p><b>Returns:</b> The <code>path1</code> argument to the constructor, if any, 
-otherwise <code>path()</code>.</p>
+otherwise <code>path()</code>. An implementation is permitted to return an empty 
+path if an exception, for example, std::bad_alloc,&nbsp; occurs during 
+processing.</p>
 </blockquote>
 
 <h3><a name="path2">path2</a></h3>
@@ -149,7 +164,9 @@ otherwise <code>path()</code>.</p>
   <pre>const path &amp; path2() const;</pre>
 
 <p><b>Returns:</b> The <code>path2</code> argument to the constructor, if any, 
-otherwise <code>path()</code>.</p>
+otherwise <code>path()</code>. An implementation is permitted to return an empty 
+path if an exception, for example, std::bad_alloc,&nbsp; occurs during 
+processing.</p>
 </blockquote>
 
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
@@ -159,7 +176,7 @@ internationalization of error messages. </p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38568" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->23 March, 2003<!--webbot bot="Timestamp" endspan i-checksum="28836" --></p>
 
 </body>
 
