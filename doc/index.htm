@@ -70,6 +70,11 @@ directory boost/filesystem:</p>
   provides convenience functions that combine lower-level functions in useful 
   ways. See <a href="convenience.htm">convenience.hpp documentation</a>.</li>
 </ul>
+<p>The organizing principle is that purely lexical operations on<i> </i>
+      <a href="#path">paths</a> are supplied as <i>class path</i> member 
+functions in <i>path.hpp</i>, while operations performed by the operating system 
+on the actual external filesystem directories and files are provided in <i>
+operations.hpp,</i> primarily as free functions .</p>
 <p>The object-library source files (<a href="../src/convenience.cpp">convenience.cpp</a>,
 <a href="../src/exception.cpp">exception.cpp</a>,
 <a href="../src/operations_posix_windows.cpp">operations_posix_windows.cpp</a>, 
@@ -88,11 +93,12 @@ supplied in directory libs/filesystem/build.</p>
   <pre>#include &quot;boost/filesystem/operations.hpp&quot; // includes boost/filesystem/path.hpp
 #include &quot;boost/filesystem/fstream.hpp&quot;    // ditto
 #include &lt;iostream&gt;                        // for std::cout
-namespace fs = boost::filesystem;</pre>
+using boost::filesystem;                   // for ease of tutorial presentation;
+                                           // a namespace alias is preferred in real code</pre>
 </blockquote>
 <p>A <a href="path.htm#synopsis">class <i>path</i></a> object can be created:</p>
 <blockquote>
-  <pre>fs::path my_path( &quot;some_dir/file.txt&quot; );</pre>
+  <pre>path my_path( &quot;some_dir/file.txt&quot; );</pre>
 </blockquote>
 <p>The string passed to the <i>path</i> constructor is in a
 <a href="path.htm#Grammar">portable generic path format</a>. Access functions 
@@ -105,28 +111,33 @@ const std:: string&amp;</i>, so that even though the Filesystem Library function
 the following code snippet take <i>const path&amp;</i> arguments, the user can just 
 code C-style strings:</p>
 <blockquote>
-  <pre>fs::remove_all( &quot;foobar&quot; );
-fs::create_directory( &quot;foobar&quot; );
-fs::ofstream file( &quot;foobar/cheeze&quot; );
+  <pre>remove_all( &quot;foobar&quot; );
+create_directory( &quot;foobar&quot; );
+ofstream file( &quot;foobar/cheeze&quot; );
 file &lt;&lt; &quot;tastes good!\n&quot;;
 file.close();
-if ( !fs::exists( &quot;foobar/cheeze&quot; ) )
+if ( !exists( &quot;foobar/cheeze&quot; ) )
   std::cout &lt;&lt; &quot;Something is rotten in foobar\n&quot;;</pre>
 </blockquote>
 <p>Additional class path constructors provide for an operating system dependent 
 format, useful for user provided input:</p>
 <blockquote>
   <pre>int main( int argc, char * argv[] ) {
-fs::path arg_path( argv[1], fs::native ); // native means use O/S path format</pre>
+path arg_path( argv[1], native ); // native means use O/S path format</pre>
 </blockquote>
 <p>To make class <i>path</i> objects easy to use in expressions, <i>operator/</i> 
 appends paths:</p>
 <blockquote>
-  <pre>fs::ifstream file1( arg_path / &quot;foo/bar&quot; );
-fs::ifstream file2( arg_path / &quot;foo&quot; / &quot;bar&quot; );</pre>
+  <pre>ifstream file1( arg_path / &quot;foo/bar&quot; );
+ifstream file2( arg_path / &quot;foo&quot; / &quot;bar&quot; );</pre>
 </blockquote>
-<p>Note that expressions <i>arg_path / &quot;foo/bar&quot;</i> and <i>arg_path / &quot;foo&quot; 
+<p>The expressions <i>arg_path / &quot;foo/bar&quot;</i> and <i>arg_path / &quot;foo&quot; 
 / &quot;bar&quot;</i> yield identical results.</p>
+<p>Paths can include references to the parent directory, using the &quot;<code>..</code>&quot; 
+notation. Paths are always automatically converted to
+<a href="path.htm#Canonical">canonical form</a>, so <i>&quot;foo/../bar&quot;</i> gets 
+converted to <i>&quot;bar&quot;</i>, and <i>&quot;../foo/../bar&quot;</i> gets converted to <i>
+&quot;../bar&quot;</i>.</p>
 <p><a href="operations.htm#directory_iterator">Class <i>directory_iterator</i></a> 
 is an important component of the library. It provides input iterators over the 
 contents of a directory, with the value type being class <i>path</i>.</p>
@@ -135,17 +146,17 @@ searches the directory and its sub-directories for the file name, returning a
 bool, and if successful, the path to the file that was found.&nbsp; The code 
 below is extracted from a real program, slightly modified for clarity:</p>
 <blockquote>
-  <pre>bool find_file( const fs::path &amp; dir_path,     // in this directory,
+  <pre>bool find_file( const path &amp; dir_path,     // in this directory,
                 const std::string &amp; file_name, // search for this name,
-                fs::path &amp; path_found )        // placing path here if found
+                path &amp; path_found )        // placing path here if found
 {
-  if ( !fs::exists( dir_path ) ) return false;
-  fs::directory_iterator end_itr; // default construction yields past-the-end
-  for ( fs::directory_iterator itr( dir_path );
+  if ( !exists( dir_path ) ) return false;
+  directory_iterator end_itr; // default construction yields past-the-end
+  for ( directory_iterator itr( dir_path );
         itr != end_itr;
         ++itr )
   {
-    if ( fs::is_directory( *itr ) )
+    if ( is_directory( *itr ) )
     {
       if ( find_file( *itr, file_name, path_found ) ) return true;
     }
@@ -163,11 +174,13 @@ see below</i>, calls the <i>leaf()</i> function on the <i>path</i> object
 returned by the iterator. <i>leaf()</i> returns a string which is a copy of the 
 last (closest to the leaf, farthest from the root) file or directory name in the
 <i>path</i> object.</p>
+<p>In addition to <i>leaf()</i>, several other function names use the 
+tree/root/branch/leaf metaphor.</p>
 <p>Notice that <i>find_file()</i> does not do explicit error checking, such as 
 verifying that the <i>dir_path</i> argument really represents a directory. All 
 Filesystem Library functions throw <a href="exception.htm">filesystem_error</a> 
 exceptions if they do not complete successfully, so there is enough implicit 
-error checking that this application doesn't need to include additional error 
+error checking that this application doesn't need to supply additional error 
 checking code.</p>
 <p>The tutorial is now over; hopefully you now are ready to write simple, 
 script-like, programs using the Filesystem Library!</p>
@@ -207,7 +220,9 @@ illustrate what the developer expected to work and not work. See:</p>
 containing the names of files, other directories, or both. Directories are identified 
 by <a href="#directory path">directory path</a>.</p>
 <p><b><a name="directory_tree">directory tree</a></b> - A directory and file 
-hierarchy viewed as an acyclic graph.</p>
+hierarchy viewed as an acyclic graph. The tree metaphor is reflected in the 
+root/branch/leaf naming convention for many <a href="#path">path</a> related 
+functions.</p>
 <p><b><a name="path">path</a> </b>- A possibly empty sequence of <a href="#name">names</a>. Each 
 element in the sequence, except the last, names a <a href="#directory">directory</a> 
 which contains the 
@@ -222,6 +237,17 @@ a path are possible, such as each name being an element in a <code>std::vector&l
 last element is a file.</p>
 <p><b><a name="directory_path">directory path</a></b> - A <a href="#path">path</a> 
 whose last element is a directory.</p>
+<p><b><a name="complete_path">complete path</a></b> - A <a href="#path">path</a> 
+which contains all the elements required by the operating system to uniquely 
+identify a file or directory. (There is an odd
+<a href="path.htm#is_complete_note">corner case</a> where a complete path can 
+still be ambiguous on a few operating systems.)</p>
+<p><b><a name="relative_path">relative path</a></b> - A <a href="#root">path</a> 
+which is not <a href="#complete_path">complete</a>. Before actual use, relative 
+paths are turned into <a href="#complete_path">complete paths</a> either 
+implicitly by the filesystem adding default elements, or explicitly by the 
+program adding the missing elements via function call. Use of relative paths 
+often makes a program much more flexible.</p>
 <p><b><a name="name">name</a></b> - A file or directory name, without any
 <a href="#directory path">directory path</a> information to indicate the file or 
 directory's actual location within a directory tree. For some 
@@ -438,7 +464,7 @@ of portability&quot; problem, particularly in postings by PJ Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34469" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34471" --></p>
 
 </body>
 

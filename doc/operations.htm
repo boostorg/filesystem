@@ -29,7 +29,7 @@
 &nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#initial_directory">initial_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#complete">complete</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#system_complete">system_complete</a></p>
 
@@ -231,14 +231,20 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
 <p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
 <i>ph</i> is an empty file or empty directory, else false.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
+  <p>This function determines if the file or directory identified by the 
+  contents of <i>ph</i> is empty. To determine if a path string itself is empty, 
+  use the <i><a href="path.htm#empty">path::empty()</a></i> function.
+  </p>
 </blockquote>
 <h3><a name="last_write_time">last_write_time</a></h3>
 <blockquote>
 <p><b>Warning:</b> The times associated with files are subject to many 
 vicissitudes. Each type of filesystem differs slightly in the details and 
-resolution of how times are recorded. It is not uncommon for a program to 
+resolution of how times are recorded. The resolution is as low as one hour on 
+some filesystems. It is not uncommon for a program to 
 simultaneously have access to files maintained by FAT, ISO9660, NTFS, and POSIX 
-filesystems. During program execution, the system clock may be set to a new 
+filesystems, and so experience different last_write_time behavior for different 
+files. During program execution, the system clock may be set to a new 
 value by some other, possibly automatic, process. Another thread or process may 
 write to a file, causing the last write time to change unexpectedly.</p>
 <p><code>std::time_t last_write_time( const path &amp; ph );</code></p>
@@ -528,7 +534,7 @@ by a prior program run by the command processor.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34480" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34471" --></p>
 
 </body>
 

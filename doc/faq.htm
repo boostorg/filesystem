@@ -21,7 +21,13 @@ operations&quot; requirement of the Filesystem Library, full URI's appear to be 
 <p>Why bother?&nbsp; The behavior of all three classes is essentially identical. 
 Several early versions did require users to identify each path as a file or 
 directory path, and this seemed to increase errors and decrease code 
-readability. There was no apparent upside benefit. </p>
+readability. There was no apparent upside benefit.</p>
+<p><b>Why are fully specified paths called <i>complete</i> rather than <i>
+<a name="absolute">absolute</a></i>?</b></p>
+<p>To avoid long-held assumptions (what do you mean, <i>&quot;/foo&quot;</i> isn't 
+absolute on some systems?) by programmers used to single-rooted filesystems. 
+Using an unfamiliar name for the concept and related functions causes 
+programmers to read the specs rather than just assuming the meaning is known.</p>
 <p><b>Why do some function names have a &quot;native_&quot; prefix?</b></p>
 <p>To alert users that the results are inherently non-portable. The names are 
 deliberately ugly to discourage use except where really necessary.</p>
@@ -168,10 +174,11 @@ designs tended to distort the
 otherwise simple design of the rest of the library.</p>
 <p><b>Why are paths sometimes manipulated by member functions and sometimes by 
 non-member functions?</b></p>
-<p>The design rule is that purely lexical operations are supplied as member 
+<p>The design rule is that purely lexical operations are supplied as <i>class 
+path</i> member 
 functions, while operations performed by the operating system are provided as 
 free functions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 June, 2003<!--webbot bot="Timestamp" endspan i-checksum="19877" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34471" --></p>

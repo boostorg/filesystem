@@ -333,7 +333,7 @@ assert( p.string() == &quot;c:/foo&quot; );</pre>
   <p><b>Rationale:</b> Operator / is supplied because together with operator /=, 
   it provides a 
   convenient way for users to supply paths with a variable number of elements.&nbsp; 
-  For example, <code>initial_directory() / &quot;src&quot; / test_name</code>. 
+  For example, <code>initial_path() / &quot;src&quot; / test_name</code>. 
   Operator+ and operator+= were considered as alternatives, but deemed too 
   easy to confuse with those operators for std::string. Operator&lt;&lt; and 
   operator=&lt;&lt; were used originally until during public review Dave 
@@ -433,12 +433,13 @@ See <a href="#decomposition">Path decomposition examples</a>.</p>
 <h3><a name="empty">empty</a></h3>
 <blockquote>
   <pre>bool empty() const;</pre>
-<p><b>Returns:</b> <code>m_name.empty()</code>.</p>
-  <p><b>Naming rationale:</b> Because the equivalent function for standard 
-  library container is named empty(), prior versions with other names caused 
-  numerous typos. The problem was acerbated because tests for path emptyness are 
-  often used near, or in the same expression, with tests for string emptyness,
-  </p>
+<p><b>Returns:</b> <code>string().empty()</code>.</p>
+  <p>The <i>path::empty()</i> function determines if a path string itself is 
+  empty. To determine if the file or directory identified by the path is empty, 
+  use the <a href="operations.htm#is_empty">operations.hpp is_empty()</a> 
+  function.</p>
+  <p><b>Naming rationale:</b> C++ Standard Library containers use the <i>empty</i> 
+  name for the equivalent functions.</p>
 </blockquote>
 <h3>is_complete</h3>
 <blockquote>
@@ -449,7 +450,11 @@ See <a href="#decomposition">Path decomposition examples</a>.</p>
   <p><b>Naming rationale:</b> The alternate name, is_absolute(), causes 
   confusion and controversy because on multi-root operating systems some people 
   believe root_name() should participate in is_absolute(), and some 
-  don't.</p>
+  don't. See the <a href="faq.htm#absolute">FAQ</a>.</p>
+  <p><b><a name="is_complete_note">Note</a>:</b> On most operating systems, a 
+  complete path always uniquely identifies a single file or directory. On a few 
+  systems (classic Mac OS, for example), even a complete path may be ambiguous 
+  in practice because the OS does not enforce uniqueness.</p>
 </blockquote>
 <h3>has_root_path</h3>
 <blockquote>
@@ -798,7 +803,7 @@ various expressions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34480" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34471" --></p>
 
 </body>
 
