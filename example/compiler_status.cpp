@@ -33,6 +33,7 @@ namespace xml = boost::tiny_xml;
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <stdexcept>
 
 using std::string;
 

@@ -4,7 +4,7 @@ subproject libs/filesystem/example ;
 
 exe process_jam_log$(SUFEXE)
 	:
-	process_jam_log.cpp
+	process_jam_log.cpp tiny_xml.cpp
 	<lib>../build/fs$(SUFLIB)
 	:
 	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
@@ -16,7 +16,7 @@ exe process_jam_log$(SUFEXE)
 
 exe compiler_status$(SUFEXE)
 	:
-	compiler_status.cpp
+	compiler_status.cpp tiny_xml.cpp
 	<lib>../build/fs$(SUFLIB)
 	:
 	<include>$(BOOST_ROOT)     # this automatically points to the boost-sandbox root
