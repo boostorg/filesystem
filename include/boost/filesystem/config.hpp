@@ -17,6 +17,26 @@
 
 #include <boost/config.hpp>
 
+//  determine platform  ------------------------------------------------------//
+
+//  BOOST_POSIX_API or BOOST_WINDOWS_API specify which API to use
+
+# if defined( BOOST_WINDOWS_API ) && defined( BOOST_POSIX_API )
+#   error both BOOST_WINDOWS_API and BOOST_POSIX_API are defined
+# elif !defined( BOOST_WINDOWS_API ) && !defined( BOOST_POSIX_API )
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+#     define BOOST_WINDOWS_API
+#   else
+#     define BOOST_POSIX_API 
+#   endif
+# endif
+
+//  BOOST_WINDOWS_PATH enables Windows path syntax recognition
+
+# if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+#   define BOOST_WINDOWS_PATH
+# endif
+
 //  enable dynamic linking on Windows  ---------------------------------------//
 
 #ifdef BOOST_HAS_DECLSPEC // defined in config system
