@@ -120,6 +120,14 @@ int test_main( int, char * [] )
   BOOST_TEST( !fs::is_directory( file_ph ) );
   verify_file( file_ph, "foobar1" );
 
+  // there was an inital bug in directory_iterator that caused premature
+  // close of an OS handle. The next five lines will detect regression.
+  {
+    fs::directory_iterator di;
+    { di = fs::directory_iterator( dir ); }
+    BOOST_TEST( ++di != fs::directory_iterator() );
+  }
+
   // copy_file() tests
   fs::copy_file( file_ph, d1 << "f2" );
   BOOST_TEST( fs::exists( file_ph ) );
