@@ -69,6 +69,7 @@ namespace fs = boost::filesystem;
       // in 64-bit off_t's (and thus st_size) on 32-bit systems that support
       // the Large File Support (LFS) interface, such as Linux, Solaris, and IRIX.
 
+#   include <sys/types.h>
 #   include "dirent.h"
 #   include "unistd.h"
 #   include "fcntl.h"
