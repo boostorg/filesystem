@@ -368,6 +368,46 @@ namespace boost
 #   endif
     }
 
+    BOOST_FILESYSTEM_DECL boost::intmax_t file_size( const path & ph )
+    {
+#   ifdef BOOST_POSIX
+#     define _FILE_OFFSET_BITS 64 // at worst, this may do nothing,
+      // but that won't matter on 64-bit systems or other systems which
+      // don't have files larger than can be represented by a traditional
+      // POSIX/UNIX off_t type. OTOH, defining _FILE_OFFSET_BITS kicks
+      // in 64-bit off_t's (and thus st_size) on systems that support
+      // the Large File Support (LFS) interface, such as Linux.
+
+      struct stat path_stat;
+      if ( ::stat( ph.string().c_str(), &path_stat ) != 0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::file_size",
+          ph, fs::detail::system_error_code() ) );
+      if ( S_ISDIR( path_stat.st_mode ) )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::file_size",
+          ph, "invalid: is a directory",
+          is_directory_error ) ); 
+      return static_cast<boost::intmax_t>(path_stat.st_size);
+#   else
+      // by now, maxint_t is 64-bits on all Windows compilers
+      WIN32_FILE_ATTRIBUTE_DATA fad;
+      if ( !::GetFileAttributesExA( ph.string().c_str(),
+        ::GetFileExInfoStandard, &fad ) )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::file_size",
+          ph, fs::detail::system_error_code() ) );
+      if ( (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) !=0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::file_size",
+          ph, "invalid: is a directory",
+          is_directory_error ) ); 
+      return (static_cast<boost::intmax_t>(fad.nFileSizeHigh)
+          << (sizeof(fad.nFileSizeLow)*8))
+        + fad.nFileSizeLow;
+#   endif
+    }
+
     BOOST_FILESYSTEM_DECL std::time_t last_write_time( const path & ph )
     {
       // Works for both Windows and POSIX

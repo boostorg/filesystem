@@ -167,6 +167,7 @@ int test_main( int argc, char * argv[] )
 
   // the bound functions should throw, so throws_fs_error() should return true
   BOOST_TEST( throws_fs_error( bind( fs::is_directory, ng ), fs::not_found_error ) );
+  BOOST_TEST( throws_fs_error( bind( fs::file_size, ng ), fs::not_found_error ) );
   BOOST_TEST( throws_fs_error( bind( fs::is_directory, dir ) ) );
   BOOST_TEST( throws_fs_error( bind( fs::_is_empty, dir ) ) );
 
@@ -175,6 +176,8 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( fs::exists( dir ) );
   BOOST_TEST( fs::_is_empty( dir ) );
   BOOST_TEST( fs::is_directory( dir ) );
+  BOOST_TEST( throws_fs_error( bind( fs::file_size, dir ),
+    fs::is_directory_error ) );
 
   BOOST_TEST( !fs::symbolic_link_exists( dir ) );
   BOOST_TEST( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
@@ -236,6 +239,7 @@ int test_main( int argc, char * argv[] )
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
   BOOST_TEST( fs::_is_empty( file_ph ) );
+  BOOST_TEST( fs::file_size( file_ph ) == 0 );
 
   // create a file named "f1"
   file_ph = dir / "f1";
@@ -252,6 +256,7 @@ int test_main( int argc, char * argv[] )
 
   BOOST_TEST( fs::exists( file_ph ) );
   BOOST_TEST( !fs::is_directory( file_ph ) );
+  BOOST_TEST( fs::file_size( file_ph ) == 7 );
   verify_file( file_ph, "foobar1" );
 
 #if !BOOST_WORKAROUND(__BORLANDC__, <= 0x564)
