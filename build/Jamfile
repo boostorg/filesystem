@@ -1,5 +1,10 @@
 # Boost Filesystem Library Build Jamfile
 
+#  (C) Copyright Beman Dawes 2002. Permission to copy, use, modify, sell and
+#  distribute this software is granted provided this copyright notice appears in
+#  all copies. This software is provided "as is" without express or implied
+#  warranty, and with no claim as to its suitability for any purpose.
+
 subproject libs/filesystem/build ;
 
 SOURCES = exception operations_posix_windows path_posix_windows convenience ;
