@@ -196,7 +196,7 @@ containing the names of files, other directories, or both. Directories are ident
 by <a href="#directory path">directory path</a>.</p>
 <p><b><a name="directory_tree">directory tree</a></b> - A directory and file 
 hierarchy viewed as an acyclic graph.</p>
-<p><b><a name="path">path</a> </b>- A possibly empty sequence of names. Each 
+<p><b><a name="path">path</a> </b>- A possibly empty sequence of <a href="#name">names</a>. Each 
 element in the sequence, except the last, names a <a href="#directory">directory</a> 
 which contains the 
 next element. The last element may name either a directory or file. The first 
@@ -217,14 +217,18 @@ operating systems, files and directories may have more than one valid name, such
 as a short-form name and a long-form name.</p>
 <p><b><a name="root">root</a></b> - The initial node in the acyclic graph which 
 represents the <a href="#directory_path">directory tree</a> for a filesystem.</p>
-<p><b><a name="multi-root_filesystem">multi-root filesystem</a></b> - A 
-filesystem which has multiple <a href="#root">roots</a>. Some operating systems 
+<p><b><a name="multi-root_filesystem">multi-root operating system</a></b> - An 
+operating system which has multiple <a href="#root">roots</a>. Some operating systems 
 have different <a href="#directory_tree">directory trees</a> for each different 
-drive, device, volume, or other entity managed the system, with each having its 
-own root.</p>
-<p><b><a name="link">link</a></b> - A&nbsp; file which serves as a pointer to 
-another file is called a <i>link</i>. Not all operating systems support the 
-concept of links.</p>
+disk, drive, device, volume, share, or other entity managed the system, with each having its 
+own root-name.</p>
+<p><b><a name="link">link</a></b> - A&nbsp;name in a <a href="#directory">
+directory</a> can be viewed as a pointer to the underlying directory or file 
+content. Modern operating systems permit multiple directory elements to point to 
+the same underlying directory or file content. Such a pointer is often called a 
+link. Not all operating systems support the 
+concept of links. Links may be referenced counted or non-reference counted. 
+Non-reference counted links are sometimes called symbolic links or shortcuts.</p>
 <h2><a name="Common_Specifications">Common Specifications</a></h2>
 <p>Unless otherwise specified, all Filesystem Library member and non-member 
 functions have the following common specifications:</p>
@@ -239,12 +243,15 @@ boost::throw_exception()</a></b> - All exceptions thrown by the Filesystem
 Library are implemented by calling <a href="../../utility/throw_exception.html">
 boost::throw_exception()</a>. Thus exact behavior may differ depending on 
 BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
-<p><b>Do not resolve links</b> - Filesystem Library functions operate on the
-<a href="#link">link file</a> itself, not on the file it points to.</p>
-<p>Example: If &quot;foo&quot; is a link file pointing to file &quot;bar&quot;, 
-boost::filesystem::remove( &quot;foo&quot; ) removes file &quot;foo&quot; but not file &quot;bar&quot;.</p>
-<p>Rationale: Follows existing practice (POSIX,etc), and ensures uniform 
-operation between operating systems.</p>
+<p><b>Links follow operating system rules</b>- <a href="#link">Links</a> are 
+transparent in that Filesystem Library functions simply follow operating system 
+rules. That implies that some functions may throw <i><a href="exception.htm">filesystem_error</a></i> 
+exceptions if a link is cyclic or has other problems.</p>
+<p>Typical operating systems rules call for deep operations on all links except 
+that destructive operations on non-reference counted links are either shallow, 
+or fail altogether in the case of trying to remove a non-reference counted link 
+to a directory.</p>
+<p>Rationale: Follows existing practice (POSIX, Windows, etc.).</p>
 <p><b>No atomic-operation or rollback guarantee</b> - Filesystem Library 
 functions which throw exceptions may leave the external file system in an 
 altered state. It is suggested that implementations provide stronger guarantees 
@@ -413,7 +420,7 @@ of portability&quot; problem, particularly in postings by JP Plauger and Pete Be
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38568" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38570" --></p>
 
 </body>
 

@@ -3,19 +3,6 @@
 <img border="0" src="../../../c++boost.gif" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
 <ul>
-  <li>Final resolution of the move vs rename issue.<br>
-&nbsp;</li>
-  <li>Pavel Vozenilek writes: rename() function from operations.hpp should state 
-  whether any guarantee is fulfilled (atomic operation, no copy semantic, file 
-  integrity, etc).<br>
-  <br>
-  For example people use UNIX system command 'mv' to ensure moved file 
-  integrity.<br>
-  <br>
-  Currently MoveFile() used for Windows implementation ensures nothing. 
-  MoveFileEx() provides 'no copy' semantic but this function isn't available on 
-  Win95/98.<br>
-&nbsp;</li>
   <li>Windows: Some files seem to be poisoned to the point where you can't even 
   do is_directory() on them without an access error. For example,&nbsp; pagefile.sys. Should directory_iterator ignore these files?<br>
 &nbsp;</li>
@@ -27,19 +14,8 @@ Do-list</h1>
 &nbsp;</li>
   <li>Windows: Resolve the current confusion between running on a POSIX O/S, and using 
   the POSIX functions (via gcc) on Windows. This is the cause of the Win32 gcc 
-  regression test failure.<br>
-&nbsp;</li>
-  <li>Links and cyclic paths:</li>
+  regression test failure.</li>
 </ul>
-<blockquote>
-  <ul>
-    <li>General requirements. How do links work on Windows and POSIX?</li>
-    <li>Add cycle-breaking code if needed.</li>
-    <li>Add test case to make sure functions like <i>remove_all</i> don't loop.</li>
-    <li>Is a policy ctor needed for directory_iterator to deal with links?</li>
-    <li>POSIX: lstat() or stat()?</li>
-  </ul>
-</blockquote>
 <ul>
   <li>Add &quot;.&quot; current directory to generic path? Add test cases one 
   way or the other. Change simple_ls accordingly.<br>
@@ -60,10 +36,8 @@ Do-list</h1>
   rather than std::ifstream, for example). But does it matter? Does anyone care? 
   Will any programs fail?<br>
 &nbsp;</li>
-  <li>Methodically check all functions taking path arguments to verify that 
-  behavior when path(&quot;&quot;) is well-specified.</li>
 </ul>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38507" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38570" --></p>

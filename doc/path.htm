@@ -248,17 +248,18 @@ in the example produces a useless result. On this operating system, the
 programmer should only use this path as a file path. (There is a
 <a href="portability_guide.htm#recommendations">portability recommendation</a> 
 to not use periods in directory names.)</p>
-<h3>Warning for POSIX and UNIX programmers</h3>
-<p>POSIX and other UNIX-like file systems are single-rooted, while most other 
-file systems are multi-rooted. Multi-rooted file systems require a system-root 
+<h3>Caution for POSIX and UNIX programmers</h3>
+<p>POSIX and other UNIX-like operating systems have a single root, while most other 
+operating systems have multiple roots. Multi-root operating systems require a 
+root-name 
 such as a drive, device, disk, volume, or share name for a path to be resolved 
 to an actual specific file or directory.&nbsp; 
 Because of this, the <i>root()</i> and <i>root_directory()</i> functions return 
-identical results on UNIX and other single-rooted file systems, but different 
-results on multi-rooted file systems. Thus use of the wrong function will not be 
+identical results on UNIX and other single-root operating systems, but different 
+results on multi-root operating systems. Thus use of the wrong function will not be 
 apparent on UNIX-like systems, but will result in non-portable code which will 
-fail when used on multi-rooted systems. Thus UNIX programmers should use 
-particular care to choose between <i>root()</i> and <i>root_directory()</i>. If 
+fail when used on multi-root systems. UNIX programmers are cautioned to use 
+particular care in choosing between <i>root()</i> and <i>root_directory()</i>. If 
 undecided, use <i>root()</i>.</p>
 <p>The same warning applies to <i>has_root()</i> and <i>has_root_directory()</i>.</p>
 <h2><a name="Member">Member</a> functions</h2>
@@ -426,11 +427,11 @@ See <a href="#decomposition">Path decomposition examples</a>.</p>
 <h3>is_complete</h3>
 <blockquote>
   <pre>bool is_complete() const;</pre>
-  <p><b>Returns:</b> For single-rooted file systems, <code>has_root_directory()</code>. 
-  For multi-rooted file systems, <code>has_root_directory() &amp;&amp; 
+  <p><b>Returns:</b> For single-root operating systems, <code>has_root_directory()</code>. 
+  For multi-root operating systems, <code>has_root_directory() &amp;&amp; 
   has_root_name()</code>.</p>
   <p><b>Naming rationale:</b> The alternate name, is_absolute(), causes 
-  confusion and controversy because on multi-rooted file systems some people 
+  confusion and controversy because on multi-root operating systems some people 
   believe root_name() should participate in is_absolute(), and some 
   don't.</p>
 </blockquote>
@@ -733,7 +734,7 @@ various expressions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38568" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38570" --></p>
 
 </body>
 

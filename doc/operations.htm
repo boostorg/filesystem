@@ -335,8 +335,8 @@ path rationale</a>.</p>
 there is no need for a separate <i>move</i> function. The choice of the name is 
 based on existing practice in the C, C++, and POSIX libraries, and because the 
 name <i>move</i> implies physical file movement, which does not in fact occur.</p>
-<p><b>Note:</b> Some operating systems with 
-<a href="index.htm#multi-root_filesystem">multi-root filesystems</a> do not allow <i>rename</i> 
+<p><b>Note:</b> Some operating systems with
+<a href="index.htm#multi-root_filesystem">multiple roots</a> do not allow <i>rename</i> 
 operations between roots, and such an attempted <i>rename</i> with throw a <i>
 <a href="exception.htm">filesystem_error</a></i> exception.. Implementations should not take heroic efforts, such 
 as switching to a copy mode, to make an otherwise failing <i>rename </i>succeed 
@@ -398,11 +398,11 @@ initial_path()</i>.</p>
 <p><b>Effects:</b> Composes a complete path from <code>ph</code> and <code>base</code>, 
 using the following rules:</p>
 
-<p>For single-root systems (POSIX-like systems, for example), if <code>ph.empty()</code> 
+<p>For single-root operating systems (POSIX-like systems, for example), if <code>ph.empty()</code> 
 or <code>ph.is_complete()</code>, the composed path is <code>ph</code>, 
 otherwise the composed path is <code>base/ph</code>.</p>
 
-  <p>For multi-root systems (Windows, Classic Mac, many others), the rules are 
+  <p>For <a href="index.htm#multi-root_filesystem">multi-root</a> operating systems (Windows, Classic Mac, many others), the rules are 
   give by this table:</p>
   <table border="1" cellpadding="5">
     <tr>
@@ -500,7 +500,7 @@ by a prior program run by the command processor.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38568" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 January, 2003<!--webbot bot="Timestamp" endspan i-checksum="38570" --></p>
 
 </body>
 
