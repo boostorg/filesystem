@@ -303,9 +303,23 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       struct stat path_stat;
-      return ::stat( ph.string().c_str(), &path_stat ) == 0;  
+      if(::stat( ph.string().c_str(), &path_stat ) != 0)
+      {
+         if((errno == ENOENT) || (errno == ENOTDIR))
+            return false;  // stat failed because the path does not exist
+         // for any other error we assume the file does exist and fall through,
+         // this may not be the best policy though...  (JM 20040330)
+      }
+      return true;
 #   else
-      return ::GetFileAttributesA( ph.string().c_str() ) != 0xFFFFFFFF;
+      if(::GetFileAttributesA( ph.string().c_str() ) == 0xFFFFFFFF)
+      {
+         if((::GetLastError() == ERROR_FILE_NOT_FOUND) || (::GetLastError() == ERROR_PATH_NOT_FOUND))
+            return false; // GetFileAttributes failed because the path does not exist
+         // for any other error we assume the file does exist and fall through,
+         // this may not be the best policy though...  (JM 20040330)
+      }
+      return true;
 #   endif
     }
 
