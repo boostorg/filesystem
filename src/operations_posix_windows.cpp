@@ -605,9 +605,12 @@ namespace boost
 
     BOOST_FILESYSTEM_DECL bool remove( const path & ph )
     {
-      if ( exists( ph ) )
-      {
+      if ( exists( ph )
 #   ifdef BOOST_POSIX
+        || symbolic_link_exists( ph ) ) // handle dangling symbolic links
+      {
+        // note that the POSIX behavior for symbolic links is what we want;
+        // the link rather than what it points to is deleted
         if ( std::remove( ph.string().c_str() ) != 0 )
         {
           int error = fs::detail::system_error_code();
@@ -619,6 +622,8 @@ namespace boost
             "boost::filesystem::remove", ph, error ) );
         }
 #   else
+      )
+      {
         if ( is_directory( ph ) )
         {
           if ( !::RemoveDirectoryA( ph.string().c_str() ) )
