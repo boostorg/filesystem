@@ -111,8 +111,9 @@ int test_main( int, char*[] )
   PATH_CHECK( path("foo") / "/", "foo" );
 
   PATH_CHECK( "foo/bar", "foo/bar" );
-  PATH_CHECK( path("foo") / "bar", "foo/bar" );
-  PATH_CHECK( path("foo") / path("bar"), "foo/bar" );
+  PATH_CHECK( path("foo") / path("bar"), "foo/bar" ); // path arg
+  PATH_CHECK( path("foo") / "bar", "foo/bar" );       // const char * arg
+  PATH_CHECK( path("foo") / path("woo/bar").leaf(), "foo/bar" ); // const std::string & arg
   PATH_CHECK( "foo" / path("bar"), "foo/bar" );
 
   PATH_CHECK( "a/b", "a/b" );  // probe for length effects
