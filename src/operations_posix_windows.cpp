@@ -26,6 +26,7 @@
 #include <boost/filesystem/exception.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/detail/workaround.hpp>
 #include <cstring>
 
 #ifdef BOOST_NO_STDC_NAMESPACE
@@ -214,6 +215,23 @@ namespace boost
         }
       };
 
+//  dot_or_dot_dot  ----------------------------------------------------------//
+
+      inline bool dot_or_dot_dot( const char * name )
+      {
+# if !BOOST_WORKAROUND( __BORLANDC__, BOOST_TESTED_AT(0x0564) )
+        return std::strcmp( name, "." ) == 0
+            || std::strcmp( name, ".." ) == 0;
+# else
+        // Borland workaround for failure of intrinsics to be placed in
+        // namespace std with certain combinations of compiler options.
+        // To ensure test coverage, the workaround is applied to all
+        // configurations, regardless of option settings.
+        return name[0]=='.'
+          && (name[1]=='\0' || (name[1]=='.' && name[2]=='\0'));
+# endif
+      }
+
 //  directory_iterator implementation  ---------------------------------------//
 
       BOOST_FILESYSTEM_DECL void dir_itr_init( dir_itr_imp_ptr & m_imp,
@@ -231,8 +249,8 @@ namespace boost
         if ( m_imp->handle != BOOST_INVALID_HANDLE_VALUE )
         {
           m_imp->entry_path = dir_path;
-          if ( std::strcmp( name, "." ) != 0
-            && std::strcmp( name, ".." ) != 0 )
+          // append name, except ignore "." or ".."
+          if ( !dot_or_dot_dot( name ) )
           { 
             m_imp->entry_path.m_path_append( name, no_check );
           }
@@ -268,8 +286,8 @@ namespace boost
         while ( (name = find_next_file( m_imp->handle,
           m_imp->entry_path, scratch )) != 0 )
         {
-          if ( std::strcmp( name, "." ) != 0
-            && std::strcmp( name, ".." ) != 0 )
+          // append name, except ignore "." or ".."
+          if ( !dot_or_dot_dot( name ) )
           {
             m_imp->entry_path.m_replace_leaf( name );
             return;
