@@ -1,0 +1,46 @@
+# Boost Filesystem Library test Jamfile
+
+subproject libs/filesystem/test ;
+
+# bring in rules for testing
+SEARCH on testing.jam = $(BOOST_BUILD_PATH) ;
+include testing.jam ;
+
+{
+    # look in BOOST_ROOT for sources first, just in this Jamfile
+    local SEARCH_SOURCE = $(BOOST_ROOT) $(SEARCH_SOURCE) ;
+
+    # link versus filesystem library from main boost project
+    # this should be done less 'specific'
+    local FS_LIB_PATH = $(BOOST_ROOT)/libs/filesystem/build/bin/libfs.a/gcc/debug/runtime-link-dynamic ; 
+               
+    test-suite "filesystem"
+       : [ run libs/filesystem/test/type_pm_test.cpp
+               <lib>../../../libs/filesystem/build/fs-sandbox
+         ]
+         [ run libs/filesystem/test/attr_test.cpp
+               <lib>../../../libs/filesystem/build/fs-sandbox 
+	     : :
+	     : <library-path>$(FS_LIB_PATH)
+	       <find-library>fs
+         ]
+         [ run libs/filesystem/test/chown_test.cpp
+               <lib>../../../libs/filesystem/build/fs-sandbox
+	     : :
+	     : <library-path>$(FS_LIB_PATH)
+	       <find-library>fs
+         ]
+         [ run libs/filesystem/test/commit_test.cpp
+               <lib>../../../libs/filesystem/build/fs-sandbox
+	     : :
+	     : <library-path>$(FS_LIB_PATH)
+	       <find-library>fs
+         ]
+         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
+               <lib>../../../libs/filesystem/build/fs-sandbox
+	     : :
+	     : <library-path>$(FS_LIB_PATH)
+	       <find-library>fs
+         ]
+       ;
+}
