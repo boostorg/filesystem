@@ -29,7 +29,7 @@
 #include <cstring>
 
 #ifdef BOOST_NO_STDC_NAMESPACE
-  namespace std { using ::strcmp; }
+namespace std { using ::strcmp; using ::remove; using ::rename; }
 #endif
 
 namespace fs = boost::filesystem;
@@ -68,7 +68,7 @@ namespace fs = boost::filesystem;
 
 #include <sys/stat.h>  // last_write_time() uses stat()
 #include <string>
-#include <cstdio>
+#include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
 
@@ -392,7 +392,7 @@ namespace boost
       if ( exists( ph ) )
       {
 #   ifdef BOOST_POSIX
-        if ( ::remove( ph.string().c_str() ) != 0 )
+        if ( std::remove( ph.string().c_str() ) != 0 )
         {
           int error = fs::detail::system_error_code();
           // POSIX says "If the directory is not an empty directory, rmdir()
@@ -434,7 +434,7 @@ namespace boost
     {
 #   ifdef BOOST_POSIX
       if ( exists( new_path ) // POSIX is too permissive so must check
-        || ::rename( old_path.string().c_str(), new_path.string().c_str() ) != 0 )
+        || std::rename( old_path.string().c_str(), new_path.string().c_str() ) != 0 )
 #   else
       if ( !::MoveFileA( old_path.string().c_str(), new_path.string().c_str() ) )
 #   endif
