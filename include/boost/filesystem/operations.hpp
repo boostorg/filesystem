@@ -53,6 +53,7 @@ namespace boost
     inline bool is_empty( const path & ph ) { return _is_empty( ph ); }
 #   endif
 
+    BOOST_FILESYSTEM_DECL bool equivalent( const path & ph1, const path & ph2 );
     BOOST_FILESYSTEM_DECL boost::intmax_t file_size( const path & ph );
     BOOST_FILESYSTEM_DECL std::time_t last_write_time( const path & ph );
     BOOST_FILESYSTEM_DECL void last_write_time( const path & ph, const std::time_t new_time );

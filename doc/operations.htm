@@ -24,6 +24,7 @@
 &nbsp;&nbsp;&nbsp; <a href="#symbolic_link_exists">symbolic_link_exists</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#file_size">file_size</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br>
@@ -78,7 +79,10 @@ header. </p>
     bool <a href="#symbolic_link_exists">symbolic_link_exists</a>( const path &amp; ph );
     bool <a href="#is_directory">is_directory</a>( const path &amp; ph );
     bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
+    bool <a href="#equivalent">equivalent</a>( const path &amp; ph1, const path &amp; ph2 );
+
     boost::intmax_t <a href="#file_size">file_size</a>( const path &amp; ph );
+
     std::time_t <a href="#last_write_time">last_write_time</a>( const path &amp; ph );
     void <a href="#last_write_time">last_write_time</a>( const path &amp; ph, std::time_t new_time );
 
@@ -278,6 +282,34 @@ exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
   <p>This function determines if the file or directory identified by the 
   contents of <i>ph</i> is empty. To determine if a path string itself is empty, 
   use the <i><a href="path.htm#empty">path::empty()</a></i> function.</p>
+</blockquote>
+  <h3><a name="equivalent">equivalent</a></h3>
+<blockquote>
+  <pre>bool equivalent( const path &amp; ph1, const path &amp; ph2 );</pre>
+  <p><b>Returns:</b> <code>false</code> if <code>!exists(ph1) || !exists(ph2)</code>. 
+  Otherwise, returns <code>true</code> if ph1 and ph2 resolve to the same file 
+  or directory, else <code>false</code>. The criteria used to determine sameness 
+  are implementation defined:</p>
+  <blockquote>
+    <ul>
+      <li>POSIX: stat() reports identical st_dev, st_ino, st_size, and st_mtime 
+      values. The POSIX implementation does not protect against
+      <a href="index.htm#Race-condition">race conditions</a>.<br>
+&nbsp;</li>
+      <li>Windows: stat() reports identical st_dev values and 
+      GetFileInformationByHandle() reports identical dwVolumeSerialNumber, 
+      nFileIndexHigh, nFileIndexLow, nFileSizeHigh, and nFileSizeLow values. 
+      Note that for identical media (particularly bit-for-bit duplicate CD's, 
+      Floppies, or memory cards) on the same lettered drive of different network 
+      shared systems, equivalent() will return <code>true</code> even though the 
+      media are physically different. The Windows implementation does protect 
+      against <a href="index.htm#Race-condition">race conditions</a>.</li>
+    </ul>
+  </blockquote>
+  <p><b>Throws:</b> if <code>!exists(ph1) &amp;&amp; !exists(ph2)</code></p>
+  <p><b>Warning:</b> This function may be impossible to implement on some 
+  operating systems; users may wish to avoid use for code which may be ported to 
+  operating systems with limited filesystem support.</p>
 </blockquote>
   <h3><a name="file_size">file_size</a></h3>
 <blockquote>
@@ -606,7 +638,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28863" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28862" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

@@ -255,6 +255,19 @@ int test_main( int argc, char * argv[] )
   file_ph = dir / "f1";
   create_file( file_ph, "foobar1" );
 
+  // equivalence tests
+  fs::path ng2("does_not_exist2");
+  BOOST_TEST( throws_fs_error( bind( fs::equivalent, ng, ng2 ) ) );
+  BOOST_TEST( fs::equivalent( file_ph, dir / "f1" ) );
+  BOOST_TEST( fs::equivalent( dir, d1 / ".." ) );
+  BOOST_TEST( !fs::equivalent( file_ph, dir ) );
+  BOOST_TEST( !fs::equivalent( dir, file_ph ) );
+  BOOST_TEST( !fs::equivalent( d1, d2 ) );
+  BOOST_TEST( !fs::equivalent( dir, ng ) );
+  BOOST_TEST( !fs::equivalent( ng, dir ) );
+  BOOST_TEST( !fs::equivalent( file_ph, ng ) );
+  BOOST_TEST( !fs::equivalent( ng, file_ph ) );
+
   std::time_t ft = fs::last_write_time( file_ph );
   std::cout << "UTC should currently be about " << std::asctime(std::gmtime(&ft)) << "\n";
   std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << std::endl;

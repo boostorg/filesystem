@@ -375,6 +375,125 @@ namespace boost
 #   endif
     }
 
+# ifdef BOOST_WINDOWS
+    // Thanks to Jeremy Maitin-Shepard for much help and for permission to
+    // base the implementation on portions of his file-equivalence-win32.cpp
+    // experimental code.
+    struct handle_wrapper
+    {
+      BOOST_HANDLE handle;
+      handle_wrapper( BOOST_HANDLE h )
+        : handle(h) {}
+      ~handle_wrapper()
+      {
+        if ( handle != BOOST_INVALID_HANDLE_VALUE )
+          ::CloseHandle(handle);
+      }
+    };
+# endif
+
+    BOOST_FILESYSTEM_DECL bool equivalent( const path & ph1, const path & ph2 )
+    {
+#   ifdef BOOST_POSIX
+      struct stat s1;
+      int s1_result = ::stat( ph1.string().c_str(), &s1 );
+      int error1; // save error code in case we have to throw
+      if ( s1_result != 0 )
+        error1 = fs::detail::system_error_code();
+      struct stat s2;
+      int s2_result = ::stat( ph2.string().c_str(), &s2 );
+      if ( s1_result != 0
+        || s2_result != 0 )
+      {
+        if ( s1_result == 0 || s2_result == 0 ) return false;
+        assert( s1_result != 0 && s2_result != 0 );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::equivalent",
+          ph1, error1 ) );
+      }
+      // at this point, both stats are known to be valid
+      return s1.st_dev == s2.st_dev
+          && s1.st_ino == s2.st_ino
+          // According to the POSIX stat specs, "The st_ino and st_dev fields
+          // taken together uniquely identify the file within the system."
+          // Just to be sure, size and mod time are also checked.
+          && s1.st_size == s2.st_size
+          && s1.st_mtime == s2.st_mtime;
+#   else
+      // Note well: Physical location on external media is part of the
+      // equivalence criteria. If there are no open handles, physical location
+      // can change due to defragmentation or other relocations. Thus handles
+      // must be held open until location information for both paths has
+      // been retrieved.
+      handle_wrapper p1(
+        ::CreateFileA(
+            ph1.string().c_str(),
+            0,
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            0,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS,
+            0 ) );
+      int error1; // save error code in case we have to throw
+      if ( p1.handle == BOOST_INVALID_HANDLE_VALUE )
+        error1 = fs::detail::system_error_code();
+      handle_wrapper p2(
+        ::CreateFileA(
+            ph2.string().c_str(),
+            0,
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            0,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS,
+            0 ) );
+      if ( p1.handle == BOOST_INVALID_HANDLE_VALUE
+        || p2.handle == BOOST_INVALID_HANDLE_VALUE )
+      {
+        if ( p1.handle != BOOST_INVALID_HANDLE_VALUE
+          || p2.handle != BOOST_INVALID_HANDLE_VALUE ) return false;
+        assert( p1.handle == BOOST_INVALID_HANDLE_VALUE
+          && p2.handle == BOOST_INVALID_HANDLE_VALUE );
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::equivalent",
+          ph1, error1 ) );
+      }
+      // at this point, both handles are known to be valid
+      BY_HANDLE_FILE_INFORMATION info1, info2;
+      if ( !::GetFileInformationByHandle( p1.handle, &info1 ) )
+          boost::throw_exception( filesystem_error(
+            "boost::filesystem::equivalent",
+            ph1, fs::detail::system_error_code() ) );
+      if ( !::GetFileInformationByHandle( p2.handle, &info2 ) )
+          boost::throw_exception( filesystem_error(
+            "boost::filesystem::equivalent",
+            ph2, fs::detail::system_error_code() ) );
+      // In theory, volume serial numbers are sufficient to distinguish between
+      // devices, but in practice VSN's are sometimes duplicated, so device id
+      // is also checked. Device id's alone aren't sufficient because network
+      // share devices on different machines will have the same id. Furthermore,
+      // cheap floppy disks often have 0 VSN's and are mounted on the same
+      // lettered drive across networks, so last write time and file size is
+      // checked to distinguish that case as far as is possible.
+      if ( info1.dwVolumeSerialNumber != info2.dwVolumeSerialNumber
+        || info1.nFileIndexHigh != info2.nFileIndexHigh
+        || info1.nFileIndexLow != info2.nFileIndexLow
+        || info1.nFileSizeHigh != info2.nFileSizeHigh
+        || info1.nFileSizeLow != info2.nFileSizeLow ) return false;
+      struct stat s1;
+      if ( ::stat( ph1.string().c_str(), &s1 ) != 0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::equivalent",
+          ph1, fs::detail::system_error_code() ) );
+      struct stat s2;
+      if ( ::stat( ph2.string().c_str(), &s2 ) != 0 )
+        boost::throw_exception( filesystem_error(
+          "boost::filesystem::equivalent",
+          ph2, fs::detail::system_error_code() ) );
+      return s1.st_dev == s2.st_dev;
+#   endif
+    }
+
+
     BOOST_FILESYSTEM_DECL boost::intmax_t file_size( const path & ph )
     {
 #   ifdef BOOST_POSIX
