@@ -475,16 +475,6 @@ namespace boost
 #   else
       return m_path.size() && m_path[0] == '/';
 #   endif
-
-
-      return ( m_path.size() 
-               && m_path[0] == '/' )  // covers both "/" and "//share"
-#            ifdef BOOST_WINDOWS
-               || ( m_path.size() > 1 && m_path[1] == ':' ) // "c:" and "c:/"
-               || ( m_path.size() > 3
-                    && m_path[m_path.size()-1] == ':' ) // "device:"
-#            endif
-               ;
     }
 
     bool path::has_root_path() const
