@@ -77,7 +77,7 @@ namespace fs = boost::filesystem;
 #include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
-//#include <iostream>
+//#include <iostream>    // for debugging only; comment out when not in use
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::strcmp; using ::remove; using ::rename; }
@@ -93,7 +93,7 @@ namespace
 
 # define BOOST_HANDLE DIR *
 # define BOOST_INVALID_HANDLE_VALUE 0
-# define BOOST_SYSTEM_DIRECTORY_TYPE struct dirent *
+# define BOOST_SYSTEM_DIRECTORY_TYPE struct dirent
 
   inline const char *  find_first_file( const char * dir,
     BOOST_HANDLE & handle, BOOST_SYSTEM_DIRECTORY_TYPE & )
@@ -110,29 +110,43 @@ namespace
     ::closedir( handle );
   }
 
-  inline const char * find_next_file(
-    BOOST_HANDLE handle, const fs::path & ph, BOOST_SYSTEM_DIRECTORY_TYPE & )
+  // warning: the only dirent member updated is d_name
+  inline int readdir_r_simulator( DIR * dirp, struct dirent * entry,
+    struct dirent ** result ) // *result set to 0 on end of directory
+    {
+#     if defined(_POSIX_THREAD_SAFE_FUNCTIONS) \
+      && defined(_SC_THREAD_SAFE_FUNCTIONS) \
+      && _POSIX_THREAD_SAFE_FUNCTIONS >= 0
+      if ( ::sysconf( _SC_THREAD_SAFE_FUNCTIONS ) >= 0 )
+        { return ::readdir_r( dirp, entry, result ); }
+#     endif
+
+      struct dirent * p;
+      errno = 0;
+      *result = 0;
+      if ( (p = ::readdir( dirp )) == 0 )
+        return errno;
+      // POSIX specs require entry->d_name be large enough:
+      std::strcpy( entry->d_name, p->d_name );
+      *result = entry;
+      return 0;
+    }
+
+  inline const char * find_next_file( BOOST_HANDLE handle,
+    const fs::path & ph, BOOST_SYSTEM_DIRECTORY_TYPE & entry )
   // Returns: if EOF 0, otherwise name
   // Throws: if system reports error
   {
-
-//  TODO: use readdir_r() if available, so code is multi-thread safe.
-//  Fly-in-ointment: not all platforms support readdir_r().
-
-    struct dirent * dp;
-    errno = 0;
-    if ( (dp = ::readdir( handle )) == 0 )
+    struct dirent * result;
+    int return_code;
+    if ( (return_code = ::readdir_r_simulator( handle, &entry, &result )) != 0 )
     {
-      if ( errno != 0 )
-      {
-        boost::throw_exception(
-          fs::filesystem_error(
-            "boost::filesystem::directory_iterator::operator++",
-            ph, errno ) );
-      }
-      else { return 0; } // end reached
+      boost::throw_exception(
+        fs::filesystem_error(
+          "boost::filesystem::directory_iterator::operator++",
+          ph, return_code ) );
     }
-    return dp->d_name;
+    return result ? entry.d_name : 0;
   }
 #else // BOOST_WINDOWS
 
