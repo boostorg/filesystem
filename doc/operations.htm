@@ -233,10 +233,15 @@ to <i>to_ph</i>.</p>
 and the file or directory contents and attributes are otherwise unchanged.</p>
 <p><b>Throws:</b> if <code>!exists(from_ph) || exists(to_ph) || !exists(branch(to_ph))</code></p>
 <p><b>Note:</b> <i>rename</i> is effectively the same operation as <i>move</i>.</p>
-<p><b>Note:</b> if <code>branch(from_path)</code> resolves to the same directory 
+<p><b>Note:</b> If <code>branch(from_path)</code> resolves to the same directory 
 as <code>branch(to_ph)</code>, then <code>leaf(from_ph)</code> must not be 
 the same name as <code>leaf(to_ph)</code>, but if the branch directories are 
 different, it doesn't matter if the leaf names are the same.</p>
+<p><b>Note:</b> Some operating systems with multi-rooted filesystems 
+representing different drives, devices, or volumes, do not allow <i>rename</i> 
+operations between roots . Implementations should not take heroic efforts, such 
+as switching to a copy mode, to make an otherwise failing <i>rename </i>succeed 
+across drives, devices, or volumes. </p>
 </blockquote>
 <h3><a name="copy_file">copy_file</a></h3>
 <blockquote>
@@ -271,7 +276,7 @@ initial_directory()</i>.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21077" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->15 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21087" --></p>
 
 </body>
 

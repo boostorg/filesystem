@@ -47,13 +47,13 @@ functions
 would provide only an illusion of portability since the function calls would be 
 portable but the strings they operate on would not be portable.</p>
 <h2><a name="Conceptual model">Conceptual model</a> of a path</h2>
-<p>An object of class <i>path</i> can be conceptualized as containing a vector 
+<p>An object of class <i>path</i> can be conceptualized as containing a sequence 
 of strings, where each string contains the name of a directory, or, in the case 
 of the last string, a directory or file. Such a path representation is 
 completely independent of any particular representation of the path as a single 
 string.</p>
 <p>There is no requirement that an implementation of class <i>path</i> actually 
-contain a vector of strings, but conceptualizing the contents that way provides 
+contain a sequence of strings, but conceptualizing the contents that way provides 
 a completely portable way to reason about paths.</p>
 <p>So that programs can portably express paths as a single string, class <i>path</i> 
 defines a <a href="#Grammar">grammar</a> for a portable generic path string 
@@ -141,16 +141,16 @@ Actual implementations may differ.</p>
 the types needed by important uses, and to be efficient in common 
 implementations.</p>
 <p><b>Note:</b> There is no guarantee that a <i>path</i> object represents a 
-path which would be considered valid by the operating system. A path might be 
+path which is considered valid by the current operating system. A path might be 
 invalid to the operating system because it contains invalid names (too long, 
 invalid characters, and so on), or because it is a partial path still as yet 
 unfinished by the program. An invalid path will normally be detected at time of 
 use, such as by one of the Filesystem Library's <a href="operations.htm">
 operations</a> or <a href="fstream.htm">fstream</a> functions.</p>
 <p><b>Portability Warning:</b> There is no guarantee that a <i>path</i> object 
-represents a path which would be portable to other operating systems. A path 
-might be non-portable because it contains names which other operating systems 
-consider too long or containing invalid characters.
+represents a path which would be portable to another operating system. A path 
+might be non-portable because it contains names which the operating systems 
+considers too long or contains invalid characters.
 <a href="???????to-be-supplied">Validity checking functions</a> are supplied to 
 ensure names in paths are as portable as desired, but they must be explicitly 
 called by the user.</p>
@@ -220,13 +220,19 @@ the returned string is always unambiguous.</p>
 <blockquote>
   <pre>const char * file_c_str() const;</pre>
 <p><b>Returns:</b> The contents of <code>m_name</code>, formatted according to 
-the operating system's rules for file paths.</p>
+the operating system's rules for file paths. If an <code>m_name</code> element 
+contains characters which are invalid under the operating system's rules, and 
+there is an unambiguous translation between the invalid character and a valid 
+character, the implementation shall perform that translation.</p>
 </blockquote>
 <h3><a name="directory_c_str">directory_c_str</a></h3>
 <blockquote>
   <pre>const char * directory_c_str() const;</pre>
 <p><b>Returns:</b> The contents of <code>m_name</code>, formatted according to 
-the operating system's rules for directory paths.</p>
+the operating system's rules for directory paths. If an <code>m_name</code> 
+element contains characters which are invalid under the operating system's 
+rules, and there is an unambiguous translation between the invalid character and 
+a valid character, the implementation shall perform that translation.</p>
 </blockquote>
 <h3><a name="leaf">leaf</a></h3>
 <blockquote>
@@ -248,7 +254,7 @@ last.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21077" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 July, 2002<!--webbot bot="Timestamp" endspan i-checksum="21082" --></p>
 
 </body>
 
