@@ -32,7 +32,7 @@ dll boost_filesystem
      ;
 
 install filesystem lib
-     : boost_filesystem boost_filesystem
+     : <lib>boost_filesystem <dll>boost_filesystem
      ;
 
 stage stage/lib : boost_filesystem boost_filesystem
