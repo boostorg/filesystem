@@ -105,18 +105,16 @@ namespace
   const char invalid_chars[] =
     "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
     "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
-    "<>:\"/\\|*?";
+    "<>:\"/\\|";
   // note that the terminating '\0' is part of the string - thus the size below
   // is sizeof(invalid_chars) rather than sizeof(invalid_chars)-1.  I 
-  const std::string invalid_generic( invalid_chars, sizeof(invalid_chars) );
+  const std::string windows_invalid_chars( invalid_chars, sizeof(invalid_chars) );
 
   const std::string valid_posix(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-" );
 
-  const std::string valid_boost_file(
-    "abcdefghijklmnopqrstuvwxyz0123456789._-" );
-  const std::string valid_boost_directory(
-    "abcdefghijklmnopqrstuvwxyz0123456789_-" );
+  fs::path::name_check default_check = fs::portable_name;
+  bool safe_to_write_check = true; // write-once-before-read allowed
 
 } // unnamed namespace
 
@@ -126,82 +124,104 @@ namespace boost
 {
   namespace filesystem
   {
+    //  name_check functions  ----------------------------------------------//
 
-    //  error checking functions  --------------------------------------------//
+    bool native( const std::string & name )
+    {
+#   ifdef BOOST_WINDOWS
+      return windows_name( name );
+#   else
+      return true;
+#   endif
+    }
 
-    bool generic_name( const std::string & name )
+    bool no_check( const std::string & ) { return true; }
+
+    bool portable_posix_name( const std::string & name )
     {
       return name.size() != 0
-        && name.find_first_of( invalid_generic ) == std::string::npos
-        && name != "."
-        && name != ".."
-        && *name.begin() != ' '
-        && *(name.end()-1) != ' ';     
+        && name.find_first_not_of( valid_posix ) == std::string::npos;     
     }
 
-    bool posix_name( const std::string & name )
+    bool windows_name( const std::string & name )
     {
-      return name.find_first_not_of( valid_posix ) == std::string::npos
-        && name != ".";     
+      return name.size() != 0
+        && name.find_first_of( windows_invalid_chars ) == std::string::npos
+        && *(name.end()-1) != ' '
+        && (*(name.end()-1) != '.'
+          || name.length() == 1 || name == "..");
     }
 
-    const path & check_posix_leaf( const path & ph )
+    bool portable_name( const std::string & name )
     {
-      if ( !posix_name( ph.leaf() ) )
-        boost::throw_exception( filesystem_error(
-          "boost::filesystem::check_posix_leaf",
-          ph, "invalid posix name: \""
-            + ph.leaf() + "\"" ) );
-      return ph;
+      return
+        name.size() == 0
+        || name == "."
+        || name == ".."
+        || (windows_name( name )
+        && portable_posix_name( name )
+        && name[0] != '.' && name[0] != '-');
     }
 
-    bool boost_file_name( const std::string & name )
+    bool portable_directory_name( const std::string & name )
     {
-      return name.size() <= 31
-        && name.find_first_not_of( valid_boost_file ) == std::string::npos
-        && name != ".";     
+      return
+        name == "."
+        || name == ".."
+        || (portable_name( name )
+          && name.find('.') == std::string::npos);
     }
 
-    bool boost_directory_name( const std::string & name )
+    bool portable_file_name( const std::string & name )
     {
-      return name.size() <= 31
-        && name.find_first_not_of( valid_boost_directory ) == std::string::npos;     
+      std::string::size_type pos;
+      return
+         name == "."
+        || name == ".."
+        || (portable_name( name )
+          && ( (pos = name.find( '.' )) == std::string::npos
+            || (name.find( '.', pos+1 )== std::string::npos
+              && (pos + 5) > name.length() )))
+        ;
     }
+
 
 //  path implementation  -----------------------------------------------------//
 
     path::path( const std::string & src )
     {
-      m_path_append( src );
+      m_path_append( src, default_name_check() );
     }
 
     path::path( const char * src )
     {
-      m_path_append( src );
+      assert( src != 0 );
+      m_path_append( src, default_name_check() );
     }
 
-    path::path( const std::string & src, path_format )
+    path::path( const std::string & src, name_check checker )
     {
-      m_path_append( src, platform );
+      m_path_append( src, checker );
     }
 
-    path::path( const char * src, path_format )
+    path::path( const char * src, name_check checker )
     {
-      m_path_append( src, platform );
+      assert( src != 0 );
+      m_path_append( src, checker );
     }
 
     path & path::operator /=( const path & rhs )
     {
-      m_path_append( rhs.m_path, nocheck );
+      m_path_append( rhs.m_path, no_check );
       return *this;
     }
 
-    void path::m_path_append( const std::string & src, source_context context )
+    void path::m_path_append( const std::string & src, name_check checker )
     {
-      // convert backslash to forward slash if context is "platform" 
-      // check names if context is "generic"
-      // allow system-specific-root if context is not "generic"
+      // convert backslash to forward slash if checker==native 
+      // allow system-specific-root if checker==no_check || checker==native
 
+      assert( checker );
       assert( src.size() == std::strlen( src.c_str() ) ); // no embedded 0
 
       if ( src.size() == 0 ) return;
@@ -210,7 +230,7 @@ namespace boost
 
       // [root-filesystem]
 #     ifdef BOOST_WINDOWS
-      if ( context != generic && src.size() >= 2 )
+      if ( (checker == no_check || checker == native) && src.size() >= 2 )
       {
         // drive or device
         if ( src[1] == ':' || src[src.size()-1] == ':' )
@@ -221,8 +241,8 @@ namespace boost
         }
 
         // share
-        else if ( (*itr == '/' || (*itr == '\\' && context == platform))
-          && (*(itr+1) == '/' || (*(itr+1) == '\\' && context == platform)) )
+        else if ( (*itr == '/' || (*itr == '\\' && checker == native))
+          && (*(itr+1) == '/' || (*(itr+1) == '\\' && checker == native)) )
         {
           m_path += "//";
           for ( itr += 2;
@@ -235,7 +255,7 @@ namespace boost
       // root directory [ "/" ]
       if ( itr != src.end() && (*itr == '/'
 #         ifdef BOOST_WINDOWS
-          || (*itr == '\\' && context == platform)
+          || (*itr == '\\' && checker == native)
 #         endif
           ) )
       {
@@ -321,11 +341,11 @@ namespace boost
               { name += *itr; }
             while ( ++itr != src.end() && *itr != '/'
 #             ifdef BOOST_WINDOWS
-              && (*itr != '\\' || context != platform)
+              && (*itr != '\\' || checker != native)
 #             endif
               );
 
-            if ( context == generic && !generic_name( name ) )
+            if ( !checker( name ) )
             {
               boost::throw_exception( filesystem_error(
                 "boost::filesystem::path",
@@ -341,7 +361,7 @@ namespace boost
         {
           if ( *itr == '/'
 #         ifdef BOOST_WINDOWS
-          || (*itr == '\\' && context == platform)
+          || (*itr == '\\' && checker == native)
 #         endif
           ) ++itr;
           else 
@@ -424,7 +444,7 @@ namespace boost
       // skip a '/' unless it is a root directory
       if ( end_pos && m_path[end_pos-1] == '/'
         && !detail::is_absolute_root( m_path, end_pos ) ) --end_pos;
-      return path( m_path.substr( 0, end_pos ), native );
+      return path( m_path.substr( 0, end_pos ), no_check );
     }
 
     path path::relative_path() const
@@ -445,7 +465,7 @@ namespace boost
         if ( ++pos < m_path.size() && m_path[pos] == '/' ) ++pos;
 #     endif
       }
-      return path( m_path.substr( pos ) );
+      return path( m_path.substr( pos ), no_check );
     }
 
     std::string path::root_name() const
@@ -478,7 +498,7 @@ namespace boost
     {
       return path(
 #   ifdef BOOST_WINDOWS
-        root_name(), native ) /= root_directory();
+        root_name(), no_check ) /= root_directory();
 #   else
         root_directory() );
 #   endif
@@ -537,6 +557,28 @@ namespace boost
     bool path::has_relative_path() const { return !relative_path().empty(); }
     bool path::has_branch_path() const { return !branch_path().empty(); }
 
+    //  default name_check mechanism  ----------------------------------------//
+
+    bool path::default_name_check_writable()
+    {
+      return safe_to_write_check;
+    }
+
+    void path::default_name_check( name_check new_check )
+    {
+      assert( new_check );
+      if ( !safe_to_write_check )
+        throw filesystem_error( "boost::filesystem::default_name_check",
+                                "default name check already set" );
+      default_check = new_check;
+      safe_to_write_check = false;
+    }
+
+    path::name_check path::default_name_check()
+    {
+      safe_to_write_check = false;
+      return default_check;
+    }
 
 // path::iterator implementation  --------------------------------------------// 
 

@@ -19,9 +19,16 @@
 <a href="#Canonical">Canonical form</a><br>
 <a href="#synopsis">Header synopsis</a><br>
 <a href="#Class_path">Class path</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Native_path_representation">Native path 
+representation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Representation_example">Representation example</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Caution_POSIX">Caution for POSIX and UNIX 
+programmers</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#relative_paths_good">Good programming practice: 
+relative paths</a><br>
 <a href="#Member">Member functions</a><br>
 <a href="#Non-member_functions">Non-member functions</a><br>
-<a href="#Validity_checking">Validity checking functions</a><br>
+<a href="#name_check_mechanism">Default name_check mechansim</a><br>
 <a href="#Rationale">Rationale</a><br>
 <a href="#decomposition">Path decomposition examples</a></p>
 <h2><a name="Introduction">Introduction</a></h2>
@@ -37,7 +44,10 @@ documentation</a>.</p>
 
 <p>The Filesystem Library's <a href="index.htm#Common_Specifications">Common 
 Specifications</a> apply to all member and non-member functions supplied by this 
-header. </p>
+header.</p>
+
+<p>The <a href="portability_guide.htm">Portability Guide</a> discusses path 
+naming issues which are important when portability is a concern.</p>
 <h2><a name="Class_path">Class path</a></h2>
 <p>Class <i>path</i> provides for portable mechanism for representing
 <a href="index.htm#path">paths</a> in C++ programs, using a portable generic 
@@ -90,15 +100,11 @@ the contained path.</p>
   <pre>directory-placeholder ::= &quot;.&quot;</pre>
   <pre>parent-directory ::= &quot;..&quot; </pre>
 </blockquote>
-<p>The following are not valid name <i>char</i>'s: <code>x01-x1F, &lt;, &gt;, :, &quot;, /, 
-\, |, *, ?</code>. Although these characters are supported by some operating 
-systems, they are disallowed by so many operating systems that they are banned 
-altogether.</p>
 <p><i>root-name</i> grammar is implementation-defined. <i>
-root-name</i> must not be present in generic input (the single-argument
-<i>path</i> constructors). It may be part of the strings returned by <i>path</i> 
-member functions, and may be present in the argument to <i>path</i> constructors 
-with the <i><a href="#native">native</a></i> decorator.</p>
+root-name</i> must not be present in generic input. It may be part of the strings returned by <i>path</i> 
+member functions, and may be present in the <i>src</i> argument to <i>path</i> constructors 
+when the <i><a href="#native">native</a></i> name check is in effect.</p>
+<p><i>char</i> may not be slash ('/') or '\0'.</p>
 <p>Although implementation-defined, it is desirable that <i>
 root-name</i> have a grammar which is distinguishable from other grammar elements, 
 and follow the conventions of the operating system.</p>
@@ -108,6 +114,8 @@ notational convenience. It has no semantic meaning and is simply discarded.</p>
 operating system will depend on the 
 names used.&nbsp; See the <a href="portability_guide.htm">Portability Guide</a>.</p>
 <h2><a name="Canonical">Canonical</a> form</h2>
+<p>All operations modifying <i>path</i> objects leave the <i>path</i> object in 
+canonical form.</p>
 <p>An empty path is in canonical form.</p>
 <p>A non-empty path is converted to canonical form as if by first converting it 
 to the <a href="#model">conceptual model</a>, and then:</p>
@@ -127,11 +135,11 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
 {
   namespace filesystem
   {
-    enum path_format { <a name="native">native</a> };
-
     class path
     {
     public:
+      <a name="name_check_typedef">typedef</a> bool (*name_check)( const std::string &amp; name );
+
       // compiler generates copy constructor,
       // copy assignment, and destructor
 
@@ -139,8 +147,8 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
       <a href="#constructors">path</a>();
       <a href="#constructors">path</a>( const std::string &amp; src );
       <a href="#constructors">path</a>( const char * src );
-      <a href="#constructors">path</a>( const std::string &amp; src, path_format );
-      <a href="#constructors">path</a>( const char * src, path_format );
+      <a href="#constructors">path</a>( const std::string &amp; src, name_check checker );
+      <a href="#constructors">path</a>( const char * src, name_check checker );
 
       // append operations:
       path &amp; <a href="#operator_slash_equal">operator /=</a> ( const path &amp; rhs );
@@ -160,19 +168,24 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
       path        <a href="#branch_path">branch_path</a>() const;
       
       // query functions: 
-      bool empty() const;
-      bool is_complete() const;
-      bool has_root_path() const;
-      bool has_root_name() const;
-      bool has_root_directory() const;
-      bool has_relative_path() const;
-      bool has_leaf() const;
-      bool has_branch_path() const;
+      bool <a href="#empty">empty</a>() const;
+      bool <a href="#is_complete">is_complete</a>() const;
+      bool <a href="#has_root_path">has_root_path</a>() const;
+      bool <a href="#has_root_name">has_root_name</a>() const;
+      bool <a href="#has_root_directory">has_root_directory</a>() const;
+      bool <a href="#has_relative_path">has_relative_path</a>() const;
+      bool <a href="#has_leaf">has_leaf</a>() const;
+      bool <a href="#has_branch_path">has_branch_path</a>() const;
       
       // iteration:
       typedef <i>implementation-defined</i> <a href="#iterator">iterator</a>;
       iterator <a href="#begin">begin</a>() const;
       iterator <a href="#end">end</a>() const;
+
+      // <a href="#name_check­_mechanism">default name_check</a> mechanism:
+      static bool <a href="#default_name_check_writable">default_name_check_writable</a>(); 
+      static name_check <a href="#default_name_check">default_name_check</a>( name_check new_check );
+      static name_check <a href="#default_name_check">default_name_check</a>();
 
     private:
       std::vector&lt;std::string&gt; m_name;  // for exposition only
@@ -181,8 +194,14 @@ boost/filesystem/path.hpp</a> <a name="synopsis">synopsis</a></h2>
     path <a href="#non-member_operator_shift">operator /</a> ( const char * lhs, const path &amp; rhs );
     path <a href="#non-member_operator_shift">operator /</a> ( const std::string &amp; lhs, const path &amp; rhs );
 
-    <i>// Also see </i><a href="#Undocumented non-member functions">Undocumented non-member functions</a><i> below</i>
-
+    // <a href="portability_guide.htm#name_check­_functions">name_check functions</a>
+    bool <a href="portability_guide.htm#portable_posix_name">portable_posix_name</a>( const std::string &amp; name );
+    bool <a href="portability_guide.htm#windows_name">windows_name</a>( const std::string &amp; name );
+    bool <a href="portability_guide.htm#portable_name">portable_name</a>( const std::string &amp; name );
+    bool <a href="portability_guide.htm#portable_directory_name">portable_directory_name</a>( const std::string &amp; name );
+    bool <a href="portability_guide.htm#portable_file_name">portable_file_name</a>( const std::string &amp; name );
+    bool <a href="portability_guide.htm#no_check">no_check</a>( const std::string &amp; name );
+    bool <a href="portability_guide.htm#native">native</a>( const std::string &amp; name );
   }
 }</pre>
 <p>For the sake of exposition, class <i>path</i> member functions are described 
@@ -201,10 +220,13 @@ operations</a> or <a href="fstream.htm">fstream</a> functions.</p>
 <p><b>Portability Warning:</b> There is no guarantee that a <i>path</i> object 
 represents a path which would be portable to another operating system. A path 
 might be non-portable because it contains names which the operating systems 
-considers too long or contains invalid characters. <a href="#Validity_checking">Validity checking functions</a> are supplied to 
-ensure names in paths are as portable as desired, but they must be explicitly 
-called by the user.</p>
-<h3><a name="System-specific_Representation">System-specific Representation</a></h3>
+considers too long or contains invalid characters. A
+<a href="#name_check­_mechanism">default name_check mechanism</a> is provided to 
+aid in the detection of non-portable names, or a name_check function can be 
+specified in <i>path</i> constructors. The library supplies several 
+<a href="portability_guide.htm#name_check­_functions">name_check 
+functions</a>, or users can supply their own.</p>
+<h3><a name="Native_path_representation">Native path representation</a></h3>
 <p>Several <i>path</i> member functions return representations of <i>m_name</i> 
 in formats specific to the operating system. These formats are implementation 
 defined. If an <i>m_name</i> 
@@ -262,7 +284,7 @@ in the example produces a useless result. On this operating system, the
 programmer should only use this path as a file path. (There is a
 <a href="portability_guide.htm#recommendations">portability recommendation</a> 
 to not use periods in directory names.)</p>
-<h3>Caution for POSIX and UNIX programmers</h3>
+<h3><a name="Caution_POSIX">Caution</a> for POSIX and UNIX programmers</h3>
 <p>POSIX and other UNIX-like operating systems have a single root, while most other 
 operating systems have multiple roots. Multi-root operating systems require a 
 root-name 
@@ -276,29 +298,65 @@ fail when used on multi-root systems. UNIX programmers are cautioned to use
 particular care in choosing between <i>root()</i> and <i>root_directory()</i>. If 
 undecided, use <i>root()</i>.</p>
 <p>The same warning applies to <i>has_root()</i> and <i>has_root_directory()</i>.</p>
+<h3><a name="relative_paths_good">Good programming practice: relative paths</a></h3>
+<p>It is usually bad programming practice to hard-code <a href="#is_complete">
+complete paths</a> into programs. Such programs tend to be fragile because they 
+break when directory trees get reorganized or the programs are moved to other 
+machines or operating systems.</p>
+<p>The most robust way to deal with path completion is to hard-code only 
+relative paths. When a complete path is required, it can be obtained in several 
+ways:</p>
+<ul>
+  <li><b>Implicitly</b>. Allow the operating system to complete the path 
+  according to the operating system's path completion algorithm. For example:<pre>    create_directory( &quot;foo&quot; ); // operating system will complete path</pre>
+  </li>
+  <li><b>User input</b>. The path is often best <a href="#constructors">
+  constructed</a> with the <i>native</i> name check, so that the user input 
+  follows the operating system's native path format, which will usually be what 
+  the program user expects. For example:<pre>    path foo( argv[1], native );
+    foo /= &quot;foo&quot;;</pre>
+  </li>
+  <li><b><a href="operations.htm#initial_path">initial_path()</a></b>. 
+  Particularly for command line programs, specifying paths relative to the 
+  current path at the time the program is started is a common practice. For 
+  example:<pre>    path foo( initial_path() / &quot;foo&quot; );</pre>
+  </li>
+  <li><b>Algorithmically</b>. See <a href="operations.htm#complete">complete()</a> 
+  and <a href="operations.htm#system_complete">system_complete()</a> functions.</li>
+</ul>
 <h2><a name="Member">Member</a> functions</h2>
 <h3><a name="constructors">constructors</a></h3>
 <blockquote>
   <pre>path();</pre>
   <p><b>Effects:</b> Default constructs an object of class <i>path</i>.</p>
-  <pre>path( const std::string &amp; src );
+  <p><b>Postcondition:</b> path().empty()</p>
+  <pre>path( const std::string &amp; src, name_check checker );
+path( const char * src, name_check checker );
+path( const std::string &amp; src );
 path( const char * src );</pre>
-  <p><b>Precondition:</b> <i>src</i> conforms to the <a href="#Grammar">generic 
-  path string grammar</a> <i>relative-path</i> syntax with optional <i>
-  root-directory</i> prefix, and contains no embedded 
-  '\0' characters.</p>
-  <p><b>Effects:</b> For each <i>src</i> <i>element</i>,&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
+  <p>For the single-argument forms, <code>default_name_check()</code> is used as
+  <code>checker</code>. </p>
+  <p><b>Precondition:</b> <code>src != 0</code>.</p>
+  <p><b>Effects:</b> Select the grammar as follows:</p>
+  <ul>
+    <li>If <code>checker == native</code>, the operating system's implementation 
+    defined grammar for paths.</li>
+    <li>else if <code>checker == no_check</code>, the <a href="#Grammar">generic 
+  path string grammar</a> with optional <i>
+  root-name</i>.</li>
+    <li>else the <a href="#Grammar">generic 
+  path string grammar</a> without <i>
+  root-name</i>.</li>
+  </ul>
+  <p>Parse src into a sequence of names, according to the grammar, then, for each name in <code>src</code>,&nbsp; <code>m_name.push_back( 
+  name )</code>.</p>
+  <p><b>Throws:</b> For each name in <code>src</code>, throw if <code>checker( 
+  name )</code> returns 
+  false.</p>
   <p><b>Postcondition:</b> <code>m_name</code> is in
-  <a href="#Canonical">canonical form</a>.</p>
-  <p><b>Rationale:</b> These constructors are not explicit because an intended 
-  use is automatic conversion of strings to paths. </p>
-  <pre>path( const std::string &amp; src, path_format );
-path( const char * src, path_format );</pre>
-  <p><b>Precondition:</b> <i>src</i> conforms to the operating system's grammar 
-  for path strings, and contains no embedded '\0' characters.</p>
-  <p><b>Effects:</b> For each <i>src</i> element,&nbsp; <code>m_name.push_back( <i>element</i> )</code>.</p>
-  <p><b>Postcondition:</b> <code>m_name</code> is in
-  <a href="#Canonical">canonical form</a>.</p>
+  <a href="#Canonical">canonical form</a>. For the single-argument forms only, <code>!default_name_check_writable()</code>.</p>
+  <p><b>Rationale:</b> The single-argument constructors are not <code>explicit</code> because an intended 
+  use is automatic conversion of strings to paths.</p>
 </blockquote>
 <h3><a name="operator_slash_equal">operator /=</a></h3>
 <blockquote>
@@ -347,14 +405,12 @@ assert( p.string() == &quot;c:/foo&quot; );</pre>
   <pre>const std::string &amp; string() const;</pre>
 <p><b>Returns:</b> The contents of <code>m_name</code>, formatted according to 
 the rules of the <a href="#Grammar">generic path string grammar</a>.</p>
-<p><b>Note:</b> If any m_name elements originated from the system specific 
-constructors, there is no guarantee that the returned string is unambiguous 
-according to the grammar. A root-name indistinguishable from a 
-relative-path name, a name containing &quot;/&quot;, a name &quot;..&quot;, and a 
-root-name beyond the first element all could cause ambiguities. Such 
-an ambiguous representation might still be useful for some purposes, such as 
-display. If no m_name elements originated from the system specific constructors, 
-the returned string is always unambiguous.</p>
+<p><b>Note:</b> The returned string must be unambiguous 
+according to the grammar. That means that for an operating system with root-names indistinguishable from  
+relative-path names, names containing &quot;/&quot;, or allowing &quot;.&quot; or &quot;..&quot; as 
+directory or file names, escapes or other mechanisms will have to be introduced 
+into the grammar to prevent ambiguities. This has not been done yet, since no 
+current implementations are on operating systems with any of those problems.</p>
 <p><b>See:</b> <a href="#Representation_example">Representation example</a> 
 above.</p>
 </blockquote>
@@ -441,7 +497,7 @@ See <a href="#decomposition">Path decomposition examples</a>.</p>
   <p><b>Naming rationale:</b> C++ Standard Library containers use the <i>empty</i> 
   name for the equivalent functions.</p>
 </blockquote>
-<h3>is_complete</h3>
+<h3><a name="is_complete">is_complete</a></h3>
 <blockquote>
   <pre>bool is_complete() const;</pre>
   <p><b>Returns:</b> For single-root operating systems, <code>has_root_directory()</code>. 
@@ -452,36 +508,36 @@ See <a href="#decomposition">Path decomposition examples</a>.</p>
   believe root_name() should participate in is_absolute(), and some 
   don't. See the <a href="faq.htm#absolute">FAQ</a>.</p>
   <p><b><a name="is_complete_note">Note</a>:</b> On most operating systems, a 
-  complete path always uniquely identifies a single file or directory. On a few 
+  complete path always unambiguously identifies a specific file or directory. On a few 
   systems (classic Mac OS, for example), even a complete path may be ambiguous 
-  in practice because the OS does not enforce uniqueness.</p>
+  in unusual cases because the OS does not require unambiguousness.</p>
 </blockquote>
-<h3>has_root_path</h3>
+<h3><a name="has_root_path">has_root_path</a></h3>
 <blockquote>
   <pre>bool has_root_path() const;</pre>
   <p><b>Returns:</b> <code>has_root_name() || has_root_directory()</code></p>
 </blockquote>
-<h3>has_root_name</h3>
+<h3><a name="has_root_name">has_root_name</a></h3>
 <blockquote>
   <pre>bool has_root_name() const;</pre>
   <p><b>Returns:</b> <code>!root_name().empty()</code></p>
 </blockquote>
-<h3>has_root_directory</h3>
+<h3><a name="has_root_directory">has_root_directory</a></h3>
 <blockquote>
   <pre>bool has_root_directory() const;</pre>
   <p><b>Returns:</b> <code>!root_directory().empty()</code></p>
 </blockquote>
-<h3>has_relative_path</h3>
+<h3><a name="has_relative_path">has_relative_path</a></h3>
 <blockquote>
   <pre>bool has_relative_path() const;</pre>
   <p><b>Returns:</b> <code>!relative_path().empty()</code></p>
 </blockquote>
-<h3>has_leaf</h3>
+<h3><a name="has_leaf">has_leaf</a></h3>
 <blockquote>
   <pre>bool has_leaf() const;</pre>
   <p><b>Returns:</b> <code>!leaf().empty()</code></p>
 </blockquote>
-<h3>has_branch_path</h3>
+<h3><a name="has_branch_path">has_branch_path</a></h3>
 <blockquote>
   <pre>bool has_branch_path() const;</pre>
   <p><b>Returns:</b> <code>!branch_path().empty()</code></p>
@@ -504,6 +560,22 @@ work on temporaries). The value, reference, and pointer types are <i>std::string
 <p><code>iterator end() const;</code></p>
 <p><b>Returns:</b> <code>m_path.end()</code></p>
 </blockquote>
+<h3><a name="default_name_check_writable">default_name_check_writable</a></h3>
+<blockquote>
+<p><code>static bool default_name_check_writable();</code></p>
+<p><b>Returns:</b> True, unless a <i>default_name_check</i> function has been 
+previously called. </p>
+</blockquote>
+<h3><a name="default_name_check">default_name_check</a></h3>
+<blockquote>
+<p><code>static void default_name_check( name_check new_check );</code></p>
+<p><b>Precondition:</b> new_check != 0</p>
+<p><b>Postcondition:</b> <code>default_name_check(new_check) &amp;&amp; !default_name_check_writable()</code></p>
+<p><b>Throws:</b> if <code>!default_name_check_writable()</code></p>
+<p><code>static name_check default_name_check();</code></p>
+<p><b>Returns:</b> the default name_check.</p>
+<p><b>Postcondition:</b> <code>!default_name_check_writable()</code></p>
+</blockquote>
 <h2><a name="Non-member_functions">Non-member functions</a></h2>
 <h3><a name="non-member_operator_shift">Non-member operator /</a></h3>
 <blockquote>
@@ -511,15 +583,33 @@ work on temporaries). The value, reference, and pointer types are <i>std::string
 path operator / ( const std::string &amp; lhs, const path &amp; rhs );</code></p>
 <p><b>Returns:</b> <code>path( lhs ) /= rhs</code></p>
 </blockquote>
-<h2><a name="Validity_checking">Validity checking functions</a></h2>
-<h3>Undocumented non-member 
-functions</h3>
-<p>The header <a href="../../../boost/filesystem/path.hpp">boost/filesystem/path.hpp</a> 
-also supplies several non-member functions which can be used to verify that a 
-path meets certain requirements. These subsidiary functions are undocumented 
-pending more research and discussion, and should not be relied upon as they are 
-likely to change.</p>
+<h2>Default <a name="name_check­_mechanism">name_check mechanism</a></h2>
+<p>It is difficult or impossible to write portable programs without some way to 
+verify that directory and file names are portable. Without automatic name 
+checking, verification is tedious, error prone, and ugly. Yet no single name 
+check function can serve all applications, and within an application 
+different paths or portions of paths may require different name check 
+functions. Sometimes there should be no checking at all.</p>
+<p>Those needs are met by providing a default name check function to meet an 
+application's most common needs, and then providing <i>path</i> constructors 
+which override the default name check function to handle less common needs. 
+The default name check function can be set by the application, allowing the 
+most common case for the particular application to be handled by the default 
+check. </p>
+<h3>Dangers</h3>
+<p>The default name check function is set and retrieved by <i>path</i> static 
+member functions, and as such is similar to a global variable. Since global variables are 
+considered harmful [<a href="design.htm#Wulf-Shaw-73">Wulf-Shaw-73</a>], class
+<i>path</i> allows the default name check function can be set only once, and 
+only before the first use. This turns a dangerous global variable into a 
+safer global constant. Even with this protection, the ability to set the default name check function is 
+still a powerful feature, and is still dangerous in that it can change 
+the behavior of code buried out-of-sight in libraries or elsewhere. Thus 
+changing the default error check function should only be done when explicitly 
+specifying the function via the two argument <i>path</i> constructors is not 
+reasonable.</p>
 <h2><a name="Rationale">Rationale</a></h2>
+<p>Also see the <a href="faq.htm">FAQ</a> for additional rationale.</p>
 <p><b>Function <a name="Naming_Rationale">naming</a>:</b> Class <i>path</i> 
 member function names and <a href="operations.htm">operations.hpp</a> non-member 
 function names were chosen to be somewhat distinct from one another. The 
@@ -803,7 +893,7 @@ various expressions.</p>
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34471" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 August, 2003<!--webbot bot="Timestamp" endspan i-checksum="34484" --></p>
 
 </body>
 

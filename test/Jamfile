@@ -22,6 +22,9 @@ DEPENDS all : test ;
        : [ run libs/filesystem/test/path_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
          ]
+         [ run libs/filesystem/test/default_name_check_test.cpp
+               <lib>../../../libs/filesystem/build/boost_filesystem
+         ]
          [ run libs/filesystem/test/operations_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
          ]
@@ -31,8 +34,5 @@ DEPENDS all : test ;
          [ run libs/filesystem/test/convenience_test.cpp
                <lib>../../../libs/filesystem/build/boost_filesystem
          ]
-#         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
-#               <lib>../../../libs/filesystem/build/boost_filesystem
-#         ]
        ;
 }

@@ -17,8 +17,10 @@ using fs::path;
 
 int test_main( int, char*[] )
 {
+  path::default_name_check( fs::no_check ); // names below not valid on all O/S's
+                                            // but they must be tested anyhow
 
-//  create_directories() tests  ----------------------------------------------//
+ //  create_directories() tests  ----------------------------------------------//
 
   fs::create_directories( "" );  // should be harmless
   fs::create_directories( "/" ); // ditto

@@ -235,11 +235,11 @@ namespace boost
         if ( std::strcmp( name, "." ) != 0
           && std::strcmp( name, ".." ) != 0 )
         { 
-          m_imp->entry_path.m_path_append( name, path::nocheck );
+          m_imp->entry_path.m_path_append( name, no_check );
         }
         else
         {
-          m_imp->entry_path.m_path_append( "dummy", path::nocheck );
+          m_imp->entry_path.m_path_append( "dummy", no_check );
           operator++();
         }
       }

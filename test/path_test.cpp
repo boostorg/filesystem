@@ -11,7 +11,6 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
 #include <boost/utility.hpp>
-#include <boost/concept_check.hpp>
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -65,7 +64,15 @@ int test_main( int, char*[] )
              ? "Windows"
              : "POSIX";
 
-//  boost::function_requires< boost::BidirectionalIteratorConcept< fs::path::iterator > >();
+  BOOST_TEST( path::default_name_check_writable() );
+  BOOST_TEST( path::default_name_check() == fs::portable_name );
+  BOOST_TEST( !path::default_name_check_writable() );
+  bool default_name_check_threw = false;
+  try { path::default_name_check( fs::no_check ); }
+  catch ( const fs::filesystem_error & ) { default_name_check_threw = true; }
+  BOOST_TEST( default_name_check_threw );
+  BOOST_TEST( path::default_name_check() == fs::portable_name );
+
 
   path p1( "fe/fi/fo/fum" );
   path p2( p1 );
@@ -82,7 +89,6 @@ int test_main( int, char*[] )
   fs::exists( p1 );
   fs::exists( "foo" / p1 );
   fs::exists( std::string( "foo" ) / p1 );
-  fs::exists( fs::check_posix_leaf( "foo" ) );
 
   BOOST_TEST( p1.string() == p2.string() );
   BOOST_TEST( p1.string() == p3.string() );
@@ -171,21 +177,22 @@ int test_main( int, char*[] )
   PATH_CHECK( "foo/bar/blah/../../bletch", "foo/bletch" );
   PATH_CHECK( path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo/bletch" );
 
-  PATH_CHECK( "...", "..." ); // make sure all these are seen as valid paths
-  PATH_CHECK( "....", "...." );
-  PATH_CHECK( "foo/...", "foo/..." );
-  PATH_CHECK( ".abc", ".abc" );
+  PATH_CHECK( path("...", fs::portable_posix_name ), "..." );
+  PATH_CHECK( path("....", fs::portable_posix_name ), "...." );
+  PATH_CHECK( path("foo/...", fs::portable_posix_name ), "foo/..." );
+  PATH_CHECK( path("abc.", fs::portable_posix_name ), "abc." );
+  PATH_CHECK( path("abc..", fs::portable_posix_name ), "abc.." );
+  PATH_CHECK( path("foo/abc.", fs::portable_posix_name ), "foo/abc." );
+  PATH_CHECK( path("foo/abc..", fs::portable_posix_name ), "foo/abc.." );
+
+  PATH_CHECK( path(".abc", fs::no_check), ".abc" );
   PATH_CHECK( "a.c", "a.c" );
-  PATH_CHECK( "abc.", "abc." );
-  PATH_CHECK( "..abc", "..abc" );
+  PATH_CHECK( path("..abc", fs::no_check), "..abc" );
   PATH_CHECK( "a..c", "a..c" );
-  PATH_CHECK( "abc..", "abc.." );
-  PATH_CHECK( "foo/.abc", "foo/.abc" );
+  PATH_CHECK( path("foo/.abc", fs::no_check), "foo/.abc" );
   PATH_CHECK( "foo/a.c", "foo/a.c" );
-  PATH_CHECK( "foo/abc.", "foo/abc." );
-  PATH_CHECK( "foo/..abc", "foo/..abc" );
+  PATH_CHECK( path("foo/..abc", fs::no_check), "foo/..abc" );
   PATH_CHECK( "foo/a..c", "foo/a..c" );
-  PATH_CHECK( "foo/abc..", "foo/abc.." );
 
   PATH_CHECK( ".", "." );
   PATH_CHECK( path("") / ".", "." );
@@ -217,23 +224,65 @@ int test_main( int, char*[] )
   PATH_CHECK( path(".") / ".." / ".", ".." );
   PATH_CHECK( ".././.", ".." );
   PATH_CHECK( path("..") / "." / ".", ".." );
+
+  BOOST_TEST( path("foo\\bar", fs::no_check).leaf() == "foo\\bar" );
   
-  BOOST_TEST( fs::posix_name("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_") );
-  BOOST_TEST( !fs::posix_name("F$O") );
-  BOOST_TEST( !fs::posix_name(".") );
-  BOOST_TEST( !fs::boost_file_name("ABCDEFGHIJKLMNOPQRSTUVWXYZ") );
-  BOOST_TEST( fs::boost_file_name("abcdefghijklmnopqrstuvwxyz") );
-  BOOST_TEST( fs::boost_file_name("0123456789.-_") );
-  BOOST_TEST( fs::boost_file_name("1234567890123456789012345678901") );
-  BOOST_TEST( !fs::boost_file_name("12345678901234567890123456789012") );
-  BOOST_TEST( !fs::boost_file_name("F$O") );
-  BOOST_TEST( !fs::boost_file_name(".") );
-  BOOST_TEST( !fs::boost_directory_name("ABCDEFGHIJKLMNOPQRSTUVWXYZ") );
-  BOOST_TEST( fs::boost_directory_name("abcdefghijklmnopqrstuvwxyz") );
-  BOOST_TEST( fs::boost_directory_name("0123456789-_") );
-  BOOST_TEST( fs::boost_directory_name("1234567890123456789012345678901") );
-  BOOST_TEST( !fs::boost_directory_name("12345678901234567890123456789012") );
-  BOOST_TEST( !fs::boost_directory_name("F$O") );
+  BOOST_TEST( fs::portable_posix_name(".") );
+  BOOST_TEST( fs::portable_posix_name("..") );
+  BOOST_TEST( fs::portable_posix_name("...") );
+  BOOST_TEST( fs::portable_posix_name("....") );
+  BOOST_TEST( fs::portable_posix_name("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_") );
+  BOOST_TEST( !fs::portable_posix_name("F$O") );
+
+  BOOST_TEST( fs::portable_name(".") );
+  BOOST_TEST( fs::portable_name("..") );
+  BOOST_TEST( fs::portable_name("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_") );
+  BOOST_TEST( !fs::portable_name("A.") );
+  BOOST_TEST( fs::portable_name("A-") );
+  BOOST_TEST( !fs::portable_name(".A") );
+  BOOST_TEST( !fs::portable_name("-A") );
+  BOOST_TEST( !fs::portable_name("F$O") );
+
+
+  BOOST_TEST( fs::portable_file_name(".") );
+  BOOST_TEST( fs::portable_file_name("..") );
+  BOOST_TEST( fs::portable_file_name("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_") );
+  BOOST_TEST( fs::portable_file_name("0123456789.-_") );
+  BOOST_TEST( fs::portable_file_name("1234567890123456789012345678901") );
+  BOOST_TEST( !fs::portable_file_name("a.") );
+  BOOST_TEST( !fs::portable_file_name("a..b") );
+  BOOST_TEST( !fs::portable_file_name("a.bcde") );
+  BOOST_TEST( !fs::portable_file_name("a..cde") );
+  BOOST_TEST( !fs::portable_file_name("a.c.de") );
+  BOOST_TEST( !fs::portable_file_name("a.cd.e") );
+  BOOST_TEST( fs::portable_file_name("a.b") );
+  BOOST_TEST( fs::portable_file_name("a.bc") );
+  BOOST_TEST( fs::portable_file_name("a.bcd") );
+  BOOST_TEST( !fs::portable_file_name("A.") );
+  BOOST_TEST( fs::portable_file_name("A-") );
+  BOOST_TEST( !fs::portable_file_name(".A") );
+  BOOST_TEST( !fs::portable_file_name("-A") );
+  BOOST_TEST( !fs::portable_file_name("F$O") );
+
+  BOOST_TEST( fs::portable_directory_name(".") );
+  BOOST_TEST( fs::portable_directory_name("..") );
+  BOOST_TEST( fs::portable_directory_name("ABCDEFGHIJKLMNOPQRSTUVWXYZ") );
+  BOOST_TEST( fs::portable_directory_name("abcdefghijklmnopqrstuvwxyz") );
+  BOOST_TEST( fs::portable_directory_name("0123456789-_") );
+  BOOST_TEST( fs::portable_directory_name("1234567890123456789012345678901") );
+  BOOST_TEST( !fs::portable_directory_name("a.") );
+  BOOST_TEST( !fs::portable_directory_name("a.bcde") );
+  BOOST_TEST( !fs::portable_directory_name("a..cde") );
+  BOOST_TEST( !fs::portable_directory_name("a.c.de") );
+  BOOST_TEST( !fs::portable_directory_name("a.cd.e") );
+  BOOST_TEST( !fs::portable_directory_name("a.b") );
+  BOOST_TEST( !fs::portable_directory_name("a.bc") );
+  BOOST_TEST( !fs::portable_directory_name("a.bcd") );
+  BOOST_TEST( !fs::portable_directory_name("A.") );
+  BOOST_TEST( fs::portable_directory_name("A-") );
+  BOOST_TEST( !fs::portable_directory_name(".A") );
+  BOOST_TEST( !fs::portable_directory_name("-A") );
+  BOOST_TEST( !fs::portable_directory_name("F$O") );
 
   check_throw( "foo//bar" );
   check_throw( "foo\\bar" );
@@ -417,6 +466,26 @@ int test_main( int, char*[] )
   BOOST_TEST( p.relative_path().string() == "foo/bar" );
   BOOST_TEST( p.branch_path().string() == "/foo" );
   BOOST_TEST( p.leaf() == "bar" );
+  BOOST_TEST( p.root_name() == "" );
+  BOOST_TEST( p.root_directory() == "/" );
+  BOOST_TEST( p.root_path().string() == "/" );
+  BOOST_TEST( p.has_root_path() );
+  BOOST_TEST( !p.has_root_name() );
+  BOOST_TEST( p.has_root_directory() );
+  BOOST_TEST( p.has_relative_path() );
+  BOOST_TEST( p.has_leaf() );
+  BOOST_TEST( p.has_branch_path() );
+  if ( platform == "POSIX" )
+    BOOST_TEST( p.is_complete() );
+  else
+    BOOST_TEST( !p.is_complete() );
+
+  // decomposition and query functions must work even for paths which
+  // do not pass the default name_check 
+  p = path( "/</>", fs::no_check );
+  BOOST_TEST( p.relative_path().string() == "</>" );
+  BOOST_TEST( p.branch_path().string() == "/<" );
+  BOOST_TEST( p.leaf() == ">" );
   BOOST_TEST( p.root_name() == "" );
   BOOST_TEST( p.root_directory() == "/" );
   BOOST_TEST( p.root_path().string() == "/" );

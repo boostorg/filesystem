@@ -161,7 +161,7 @@ int test_main( int argc, char * argv[] )
       == fs::initial_path().root_path().string()+"foo" );
   }
 
-  fs::path ng( " no-way, Jose ", fs::native );
+  fs::path ng( " no-way, Jose", fs::native );
 
   fs::remove_all( dir );  // in case residue from prior failed tests
   BOOST_TEST( !fs::exists( dir ) );
