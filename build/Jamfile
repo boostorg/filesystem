@@ -6,5 +6,6 @@ SOURCES = exception operations_posix_windows path_posix_windows ;
 
 lib fs : ../src/$(SOURCES).cpp
      : <include>$(BOOST_ROOT) <sysinclude>$(BOOST_ROOT)
+       <include>$(B_ROOT) 
      : debug release
      ;
