@@ -15,11 +15,11 @@
 
 <p><a href="#Introduction">Introduction</a><br>
 <a href="#Synopsis">Header synopsis</a><br>
-<a href="#Class directory_iterator">Class directory_iterator</a><br>
+<a href="#directory_iterator">Class directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#destructor">Destructor</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#other functions">Other functions</a><br>
-<a href="#Non-member functions">Non-member functions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Other_functions">Other_functions</a><br>
+<a href="#Non-member_functions">Operations functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
@@ -74,27 +74,31 @@ exceptions being thrown. See <a href="index.htm#Requirements">Requirements</a>.<
     bool <a href="#is_empty">is_empty</a>( const path &amp; ph );
 
     void <a href="#create_directory">create_directory</a>( const path &amp; directory_ph );
-    void <a href="#remove">remove</a>( const path &amp; ph );
+    bool <a href="#remove">remove</a>( const path &amp; ph );
     unsigned long <a href="#remove_all">remove_all</a>( const path &amp; ph );
     void <a href="#rename">rename</a>( const path &amp; from_path,
                  const path &amp; to_path );
     void <a href="#copy_file">copy_file</a>( const path &amp; from_file_ph,
                     const path &amp; to_file_ph );
 
-    const path &amp; <a href="#initial_directory">initial_directory</a>();
+    const path &amp; <a href="#initial_path">initial_path</a>();
+    path <a href="#current_path">current_path</a>();
+    path <a href="#complete">complete</a>( const path &amp; ph,
+                   const path &amp; base = initial_path() );
+    path <a href="#system_complete">system_complete</a>( const path &amp; ph );
 
   } // namespace filesystem
 } // namespace boost
 </pre>
 
-<h2><a name="Class directory_iterator">Class directory_iterator</a></h2>
+<h2><a name="directory_iterator">Class directory_iterator</a></h2>
 
 <p>Class <i>directory_iterator</i> provides a C++ standard conforming input 
-iterator which accesses the contents of a <a href="reference.htm#directory">
+iterator which accesses the contents of a <a href="index.htm#directory">
 directory</a>. </p>
 
 <p>The value type is <i><a href="path.htm">boost::filesystem::path</a></i>, so 
-dereferencing a <i>directory_iterator</i> yields a <a href="reference.htm#path">
+dereferencing a <i>directory_iterator</i> yields a <a href="index.htm#path">
 path</a> to a file or directory contained within the directory represented by 
 the directory-path argument supplied at construction. The path returned by 
 dereferencing a <i>directory_iterator</i> is composed by appending the name of 
@@ -134,13 +138,13 @@ representing the first path in <i>directory_ph</i>, or if <code>
 empty(directory_ph)</code>, the <i>past-the-end</i> value.</p>
 </blockquote>
 
-<h3><a name="other functions">Other functions</a></h3>
+<h3><a name="Other_functions">Other functions</a></h3>
 
 <p>Class <i>directory_iterator</i> also supplies all the other functions 
 required by the C++ standard clause 24 for input iterators, such as <i>operator==</i>, 
 <i>operator++</i>, and <i>operator*</i>.</p>
 
-<h2><a name="Non-member functions">Non-member functions</a></h2>
+<h2><a name="Non-member_functions">Non-member functions</a></h2>
 
 <p>
 The non-member functions provide common operations on files and directories. 
@@ -213,7 +217,9 @@ is_directory(directory_ph) &amp;&amp; is_empty(directory_ph)</code></p>
 </blockquote>
 <h3><a name="remove">remove</a></h3>
 <blockquote>
-<p><code>void remove( const path &amp; ph );</code></p>
+<p><code>bool remove( const path &amp; ph );</code></p>
+<p><b>Returns:</b> The value of <code>exists( ph )</code> prior to the 
+establishment of the postcondition. </p>
 <p><b>Postcondition:</b> <code>!exists( ph )</code></p>
 <p><b>Throws:</b> if<code> exists(ph) &amp;&amp; is_directory(ph) &amp;&amp; !is_empty(ph)</code></p>
 <p><b>Rationale:</b> Does not throw when <code>!exists( ph )</code> because not 
@@ -227,8 +233,8 @@ throwing is:</p>
 <p>There is, however, a slight decrease in safety because some errors will slip 
 by which otherwise would have been detected. For example, a misspelled path name 
 could go undetected for a long time.</p>
-<p>The initial version of the library did throw when the path did not exist; it 
-was changed only reluctantly.</p>
+<p>The initial version of the library threw and exception when the path did not exist; it 
+was reluctantly changed to reflect user complaints.</p>
 </blockquote>
 <h3><a name="remove_all">remove_all</a></h3>
 <blockquote>
@@ -267,31 +273,144 @@ to_file_ph</i>.</p>
 <p><b>Throws:</b> if <code>!exists(from_file_ph) || directory(from_file_ph) 
 || exists(to_file_ph) || !exist(branch(to_path))</code></p>
 </blockquote>
-<h3><a name="initial_directory">initial_directory</a></h3>
+<h3><a name="initial_path">initial_path</a></h3>
 <blockquote>
-<p><code>const path &amp; initial_directory();</code></p>
-<p><b>Effects:</b> The first time the function is called, stores an absolute 
-directory path.</p>
-<p>The preferred value for the stored path is the initial working directory path when <i>
-main()</i> was called. Implementations are permitted, however, to store the 
-current working directory at the time of the first call to <i>initial_directory()</i>. If neither of these actions is possible, a diagnostic 
-is required.</p>
-<p><b>Returns:</b> The stored path.</p>
-<p><b>Rationale:</b>&nbsp; The semantics, in effect, turn a global variable into 
+<p><code>const path &amp; initial_path();</code></p>
+<p><b>Effects:</b> The first time called, stores the path returned by
+<a href="#current_path">current_path()</a>.</p>
+<p>The preferred implementation is to call <i>initial_path()</i> during program 
+initialization, before the call to main().</p>
+<p><b>Returns:</b> A reference to the stored path.</p>
+<p><b>Rationale:</b>&nbsp; The semantics, in effect, turn a dangerous global variable into 
 a safer global constant. The preferred implementation requires runtime library 
 support, so alternate semantics are supplied for those implementations which 
 cannot change an existing the runtime library.</p>
-<p><b>Note:</b> It would be good practice in a program dependent on <i>
-initial_directory()</i> to call it immediately upon entering<i> main()</i>. That 
+<p><b>Note:</b> It is good practice for a program dependent on <i>
+initial_path()</i> to call it immediately upon entering<i> main()</i>. That 
 protects against another function altering the current working 
 directory (using a native platform function) before the first call to <i>
-initial_directory()</i>.</p>
+initial_path()</i>.</p>
 
 </blockquote>
+<h3><a name="current_path">current_path</a></h3>
+<blockquote>
+  <pre>path current_path();</pre>
+  <p><b>Returns:</b> The current path as maintained by the operating system.</p>
+  <p><b>Postcondition:</b> <code>current_path().is_complete()</code></p>
+  <p><b>Warning:</b> The current path maintained by the operating system is 
+  in-effect a dangerous global variable. It may be changed unexpectedly by a 
+  third-party or system library function, or by another thread. For a safer 
+  alternative, see <a href="#initial_path">initial_path()</a>.</p>
+  <p><b>Rationale:</b> Although dangerous, the function is useful in dealing 
+  with other libraries.</p>
+</blockquote>
+<h3><a name="complete">complete</a></h3>
+
+<blockquote>
+<p><code>path complete( const path &amp; ph, const path &amp; base = initial_path() );</code></p>
+
+<p><b>Precondition:</b> <code>base.is_complete() &amp;&amp; (ph.is_complete() || !ph.has_root_name())</code></p>
+
+<p><b>Effects:</b> Composes a complete path from <code>ph</code> and <code>base</code>, 
+using the following rules:</p>
+
+<p>For single-root systems (POSIX-like systems, for example), if <code>ph.empty()</code> 
+or <code>ph.is_complete()</code>, the composed path is <code>ph</code>, 
+otherwise the composed path is <code>base/ph</code>.</p>
+
+  <p>For multi-root systems (Windows, Classic Mac, many others), the rules are 
+  give by this table:</p>
+  <table border="1" cellpadding="5">
+    <tr>
+      <td align="center">&nbsp;</td>
+      <td align="center"><code>ph.has_root_directory()</code></td>
+      <td align="center"><code>!ph.has_root_directory()</code></td>
+    </tr>
+    <tr>
+      <td align="center"><code>ph.has_root_name()</code></td>
+      <td align="center"><code>ph</code></td>
+      <td align="center"><code>(precondition failure)</code></td>
+    </tr>
+    <tr>
+      <td align="center"><code>!ph.has_root_name()</code></td>
+      <td align="center"><code>base.root_name()<br>
+      / ph</code></td>
+      <td align="center"><code>base / ph</code></td>
+    </tr>
+  </table>
+<p><b>Returns:</b> The composed path.</p>
+
+<p><b>Postcondition:</b> For the returned path, <code>p</code>; if <code>p.empty()</code> 
+then&nbsp; <code>p.is_complete()</code> is false, otherwise <code>p.is_complete()</code> 
+is true.</p>
+
+<p><b><a name="complete_note">Note</a>:</b> When portable behavior is required, 
+use <i>complete()</i>. When operating system dependent behavior is required, use
+<i>system_complete()</i>.</p>
+
+<p>Portable behavior is preferred when dealing with paths created internally 
+within a program, particularly where the program should exhibit the same 
+behavior on all operating systems.</p>
+
+<p>Operating system dependent behavior is preferred when dealing with paths 
+supplied by user input, reported to program users, or which should result in 
+program behavior familiar to and expected by program users. The
+<a href="../example/simple_ls.cpp">simple_ls.cpp</a> program, for example, 
+operates on a path supplied in the native operating system format, so uses&nbsp;
+<i>system_complete()</i> to ensure that the path behaves as expected for the 
+particular operating system.</p>
+
+<p><b>Rationale:</b> The <code>!ph.has_root_name()</code> portion of the 
+precondition disallows the error condition of <code>ph.root_name()</code> 
+being not equivalent to <code>base.root_name()</code>. The restriction is 
+broader that would appear necessary, in that is also prohibits the case where 
+they are equivalent. There is, however,&nbsp; no portable way to express the 
+root_name() equivalence requirement.</p>
+
+</blockquote>
+<h3><a name="system_complete">system_complete</a></h3>
+
+<blockquote>
+<p><code>path system_complete( const path &amp; ph );</code></p>
+
+<p><b>Effects:</b> Composes a complete path from <code>ph</code>, using the same 
+rules used by the operating system to resolve a path passed as the filename 
+argument to standard library open functions.</p>
+
+<p>For POSIX-like systems, system_complete( ph ) has the same semantics as <code>
+complete( ph, current_path() )</code>.</p>
+
+<p><a name="windows_effects">For Widows</a>, system_complete( ph ) has the same 
+semantics as <code>complete( ph, current_path() )</code> if ph.is_complete() || 
+!ph.has_root_name() or ph and base have the same root_name(). 
+Otherwise it acts like <code>complete( ph, kinky )</code>, where <code>kinky</code> 
+is the current directory for the <code>ph.root_name()</code> drive. This 
+will be the current directory of that drive the last time it was set, and thus 
+may well be <b>residue left over from some prior program</b> run by the command 
+processor! Although these semantics are often useful, they are also very 
+error-prone, and certainly deserve to be called &quot;kinky&quot;.</p>
+
+<p><b>Returns:</b> The composed path.</p>
+
+<p><b>Postcondition:</b> For the returned path, <code>p</code>; if <code>p.empty()</code> 
+then&nbsp; <code>p.is_complete()</code> is false, otherwise <code>p.is_complete()</code> 
+is true.</p>
+
+<p><b>Note:</b> See <a href="#complete_note"><i>complete()</i> note</a> for 
+usage suggestions.</p>
+
+<p><b>Warning:</b> This function relies on a global variable (current_path()), 
+and so tends to be more error-prone than the similar function
+<a href="#complete">complete()</a>. This function is doubly dangerous on 
+Windows, where under cross-drive conditions it may be relying on a directory set 
+by a prior program run by the command processor.</p>
+
+</blockquote>
+
 <hr>
 <p>© Copyright Beman Dawes, 2002</p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 September, 2002<!--webbot bot="Timestamp" endspan i-checksum="39335" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 December, 2002<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
 
 </body>
 

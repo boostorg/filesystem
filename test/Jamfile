@@ -13,19 +13,15 @@ include testing.jam ;
    test-suite "filesystem"
        : [ run libs/filesystem/test/path_test.cpp
                <lib>../../../libs/filesystem/build/fs
-               <lib>../../../libs/test/build/test_exec_monitor
          ]
          [ run libs/filesystem/test/operations_test.cpp
                <lib>../../../libs/filesystem/build/fs
-               <lib>../../../libs/test/build/test_exec_monitor
          ]
          [ run libs/filesystem/test/fstream_test.cpp
                <lib>../../../libs/filesystem/build/fs
-               <lib>../../../libs/test/build/test_exec_monitor
          ]
 #         [ run libs/filesystem/test/recursive_dir_itr_test.cpp
 #               <lib>../../../libs/filesystem/build/fs
-#               <lib>../../../libs/test/build/test_exec_monitor
 #         ]
        ;
 }

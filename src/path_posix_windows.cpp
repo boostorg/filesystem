@@ -6,7 +6,7 @@
 //  without express or implied warranty, and with no claim as to its
 //  suitability for any purpose.
 
-//  See http://www.boost.org for most recent version including documentation.
+//  See http://www.boost.org/libs/filesystem for documentation.
 
 
 //****************************************************************************//
@@ -40,6 +40,7 @@ namespace fs = boost::filesystem;
   namespace std { using ::strlen; }
 #endif
 
+#include <boost/throw_exception.hpp>
 #include <cstring>  // SGI MIPSpro compilers need this
 #include <vector>
 #include <cassert>
@@ -50,22 +51,17 @@ namespace
 {
   // POSIX & Windows cases: "", "/", "/foo", "foo", "foo/bar"
   // Windows only cases: "c:", "c:/", "c:foo", "c:/foo",
-  //                     "prn:", "//share", "//share/foo"
+  //                     "prn:", "//share", "//share/", "//share/foo"
 
   std::string::size_type leaf_pos( const std::string & str,
     std::string::size_type end_pos ) // end_pos is past-the-end position
   // return 0 if str itself is leaf (or empty) 
   {
-    if ( (end_pos == 1 && str[0] == '/')
-#     ifdef BOOST_WINDOWS
-      || (end_pos > 1 // drive or device
-      && (str[end_pos-1] == ':' || str[end_pos-2] == ':'))
-#     endif
-      ) return 0;
-
+    if ( end_pos && str[end_pos-1] == '/' ) return end_pos-1;
+    
     std::string::size_type pos( str.find_last_of( '/', end_pos-1 ) );
 #   ifdef BOOST_WINDOWS
-    if ( pos == std::string::npos ) pos = str.find_last_of( ':', end_pos-1 );
+    if ( pos == std::string::npos ) pos = str.find_last_of( ':', end_pos-2 );
 #   endif
 
     return ( pos == std::string::npos // path itself must be a leaf (or empty)
@@ -99,8 +95,6 @@ namespace
     if ( *itr == ':' )
     {
       target += *itr++;
-      if ( itr == src.end() ) return;
-      if ( *itr == '/' ) { target += *itr++; }
       return;
     }
 #   endif
@@ -137,7 +131,6 @@ namespace boost
 
     //  error checking functions  --------------------------------------------//
 
-
     bool generic_name( const std::string & name )
     {
       return name.size() != 0
@@ -157,8 +150,8 @@ namespace boost
     const path & check_posix_leaf( const path & ph )
     {
       if ( !posix_name( ph.leaf() ) )
-        throw filesystem_error( "invalid posix name: \""
-          + ph.leaf() + "\"" );
+        boost::throw_exception( filesystem_error( "invalid posix name: \""
+          + ph.leaf() + "\"", path_error ) );
       return ph;
     }
 
@@ -175,7 +168,7 @@ namespace boost
         && name.find_first_not_of( valid_boost_directory ) == std::string::npos;     
     }
 
-    //  path implementation  -------------------------------------------------//
+//  path implementation  -----------------------------------------------------//
 
     path::path( const std::string & src )
     {
@@ -197,7 +190,7 @@ namespace boost
       m_path_append( src, platform );
     }
 
-    path & path::operator <<=( const path & rhs )
+    path & path::operator /=( const path & rhs )
     {
       m_path_append( rhs.m_path, nocheck );
       return *this;
@@ -215,31 +208,57 @@ namespace boost
 
       std::string::const_iterator itr( src.begin() );
 
-      // system-specific-root like drive: or first slash of //share
-      if ( context != generic )
+      // [root-filesystem]
+#     ifdef BOOST_WINDOWS
+      if ( context != generic && src.size() >= 2 )
       {
-        if ( *itr == '/'
+        // drive or device
+        if ( src[1] == ':' || src[src.size()-1] == ':' )
+        {        
+          for ( ; *itr != ':'; ++itr ) m_path += *itr;
+          m_path += ':';
+          ++itr;
+        }
+
+        // share
+        else if ( (*itr == '/' || (*itr == '\\' && context == platform))
+          && (*(itr+1) == '/' || (*(itr+1) == '\\' && context == platform)) )
+        {
+          m_path += "//";
+          for ( itr += 2;
+                itr != src.end() && *itr != '/' && *itr != '\\';
+                ++itr ) m_path += *itr;
+        }
+      }
+#     endif
+
+      // root directory [ "/" ]
+      if ( itr != src.end() && (*itr == '/'
 #         ifdef BOOST_WINDOWS
           || (*itr == '\\' && context == platform)
 #         endif
-          ) { ++itr; m_path += '/'; }
-        else if ( itr+1 != src.end() && *(itr+1) == ':' )
-          { m_path += *itr++; m_path += *itr++; }
-
-#       ifdef BOOST_WINDOWS
-        // "/" or second slash of //share
-        if ( *itr == '/' || (*itr == '\\' && context == platform) )
-          { ++itr; m_path += '/';}
-#       endif
-
-        if ( itr == src.end() ) return;
+          ) )
+      {
+        ++itr;
+        if ( m_path.size() == 0
+#         ifdef BOOST_WINDOWS
+          || m_path[m_path.size()-1] == ':' // drive or device
+          || (  // share
+             m_path.size() > 2
+             && m_path[0] == '/'
+             && m_path[1] == '/'
+             && m_path.find( '/', 2 ) == std::string::npos
+             )
+#         endif
+          ) m_path += '/';
       }
 
-      // relative-path ::= element { "/" element }
+      // element { "/" element } [ "/" ]
       while ( itr != src.end() )
       {
+
         // append '/' if needed
-        if ( !is_null() // append '/'
+        if ( !empty()
             && *(m_path.end()-1) != ':' && *(m_path.end()-1) != '/' )
             m_path += '/'; 
 
@@ -278,7 +297,7 @@ namespace boost
           ++itr;
           ++itr;
         } // ".."
-        else // name
+        else // element is name
         {
           std::string name;
           do
@@ -291,31 +310,49 @@ namespace boost
 
           if ( context == generic && !generic_name( name ) )
           {
-            throw filesystem_error( "invalid path name: \""
-              + src + "\"" );
+            boost::throw_exception( filesystem_error( "invalid path name: \""
+               + src + "\"", path_error ) );
           }
 
           m_path += name;
         }
 
         if ( itr != src.end() )
-        {  
-          if ( !( (*itr == '/'
-#           ifdef BOOST_WINDOWS
-            || (context == platform && *itr == '\\')
-#           endif
-            ) && (itr+1) != src.end() ) )
-          {
-            throw filesystem_error( "invalid path syntax: \""
-              + src + "\"" );
-          }
-          ++itr;
+        {
+          if ( *itr == '/'
+#         ifdef BOOST_WINDOWS
+          || (*itr == '\\' && context == platform)
+#         endif
+          ) ++itr;
+          else 
+            boost::throw_exception( filesystem_error( "invalid path syntax: \""
+               + src + "\"", path_error ) );
         }
 
       } // while more elements
     }
 
-    const path::iterator path::begin() const
+// path conversion functions  ------------------------------------------------//
+
+    std::string path::native_file_string() const
+    {
+#   ifdef BOOST_WINDOWS
+      std::string s( m_path );
+      for ( std::string::iterator itr( s.begin() );
+        itr != s.end(); ++itr )
+        if ( *itr == '/' ) *itr = '\\';
+      return s;
+#   else
+      return m_path;
+#   endif
+    }
+
+    std::string path::native_directory_string() const
+      { return native_file_string(); }
+
+// path decomposition functions  ---------------------------------------------//
+
+    path::iterator path::begin() const
     {
       iterator itr;
       itr.base().path_ptr = this;
@@ -330,35 +367,167 @@ namespace boost
       m_path += new_leaf;
     }
 
-    const std::string path::leaf() const
+    std::string path::leaf() const
     {
       return m_path.substr( leaf_pos( m_path, m_path.size() ) );
     }
 
-    const path path::branch() const
+    namespace detail
     {
-      std::string::size_type len( leaf_pos( m_path, m_path.size() ) );
-       
-      if ( len > 1  // unless delimiter is part of root, don't include it
-#     ifdef BOOST_WINDOWS
-        && m_path[len-1] != ':'
-        && m_path[len-2] != ':'
-#     endif
-        ) --len;
-
-      return path( m_path.substr( 0, len ), system_specific );
+      inline bool is_absolute_root( const std::string & s,
+        std::string::size_type len )
+      {
+        return
+          len && s[len-1] == '/'
+          &&
+          (
+            len == 1 // "/"
+#       ifdef BOOST_WINDOWS
+            || ( len > 1
+                 && ( s[len-2] == ':' // drive or device
+                   || ( s[0] == '/'   // share
+                     && s[1] == '/'
+                     && s.find( '/', 2 ) == len-1
+                      )
+                    )
+                )
+#       endif
+          );
+      }
     }
 
-    //bool path::is_absolute() const
-    //{
-    //  return ( m_path.size() 
-    //           && m_path[0] == '/' )  // covers both "/" and "//share"
-    //      || ( m_path.size() > 2
-    //           && m_path[1] == ':'
-    //           && m_path[2] == '/' )  // "c:/"
-    //      || ( m_path.size() > 3
-    //           && m_path[m_path.size()-1] == ':' ); // "device:"
-    //}
+    path path::branch_path() const
+    {
+      std::string::size_type end_pos( leaf_pos( m_path, m_path.size() ) );
+
+      // skip a '/' unless it is a root directory
+      if ( end_pos && m_path[end_pos-1] == '/'
+        && !detail::is_absolute_root( m_path, end_pos ) ) --end_pos;
+      return path( m_path.substr( 0, end_pos ), native );
+    }
+
+    path path::relative_path() const
+    {
+      std::string::size_type pos( 0 );
+      if ( m_path.size() && m_path[0] == '/' )
+      { pos = 1;
+#     ifdef BOOST_WINDOWS
+        if ( m_path.size()>1 && m_path[1] == '/' ) // share
+        {
+          if ( (pos = m_path.find( '/', 2 )) != std::string::npos ) ++pos;
+          else return path();
+        }
+      }
+      else if ( (pos = m_path.find( ':' )) == std::string::npos ) pos = 0;
+      else // has ':'
+      {
+        if ( ++pos < m_path.size() && m_path[pos] == '/' ) ++pos;
+#     endif
+      }
+      return path( m_path.substr( pos ) );
+    }
+
+    std::string path::root_name() const
+    {
+#   ifdef BOOST_WINDOWS
+      std::string::size_type pos( m_path.find( ':' ) );
+      if ( pos != std::string::npos ) return m_path.substr( 0, pos+1 );
+      if ( m_path.size() > 2 && m_path[0] == '/' && m_path[1] == '/' )
+      {
+        pos = m_path.find( '/', 2 );
+        return m_path.substr( 0, pos );
+      }
+#   endif
+      return std::string();
+    }
+
+    std::string path::root_directory() const
+    {
+      return std::string(
+        ( m_path.size() && m_path[0] == '/' )  // covers both "/" and "//share"
+#       ifdef BOOST_WINDOWS
+          || ( m_path.size() > 2
+               && m_path[1] == ':'
+               && m_path[2] == '/' )  // "c:/"
+#       endif
+               ? "/" : "" );
+    }
+
+    path path::root_path() const
+    {
+      return path(
+#   ifdef BOOST_WINDOWS
+        root_name(), native ) /= root_directory();
+#   else
+        root_directory() );
+#   endif
+    }
+
+// path query functions  -----------------------------------------------------//
+
+    bool path::is_complete() const
+    {
+#   ifdef BOOST_WINDOWS
+      return m_path.size() > 2
+        && ( (m_path[1] == ':' && m_path[2] == '/') // "c:/"
+          || (m_path[0] == '/' && m_path[1] == '/') // "//share"
+          || m_path[m_path.size()-1] == ':' );
+#   else
+      return m_path.size() && m_path[0] == '/';
+#   endif
+
+
+      return ( m_path.size() 
+               && m_path[0] == '/' )  // covers both "/" and "//share"
+#            ifdef BOOST_WINDOWS
+               || ( m_path.size() > 1 && m_path[1] == ':' ) // "c:" and "c:/"
+               || ( m_path.size() > 3
+                    && m_path[m_path.size()-1] == ':' ) // "device:"
+#            endif
+               ;
+    }
+
+    bool path::has_root_path() const
+    {
+      return ( m_path.size() 
+               && m_path[0] == '/' )  // covers both "/" and "//share"
+#            ifdef BOOST_WINDOWS
+               || ( m_path.size() > 1 && m_path[1] == ':' ) // "c:" and "c:/"
+               || ( m_path.size() > 3
+                    && m_path[m_path.size()-1] == ':' ) // "device:"
+#            endif
+               ;
+    }
+
+    bool path::has_root_name() const
+    {
+#   ifdef BOOST_WINDOWS
+      return m_path.size() > 1
+        && ( m_path[1] == ':' // "c:"
+          || m_path[m_path.size()-1] == ':' // "prn:"
+          || (m_path[0] == '/' && m_path[1] == '/') // "//share"
+           );
+#   else
+      return false;
+#   endif
+    }
+
+    bool path::has_root_directory() const
+    {
+      return ( m_path.size() 
+               && m_path[0] == '/' )  // covers both "/" and "//share"
+#            ifdef BOOST_WINDOWS
+               || ( m_path.size() > 2
+                    && m_path[1] == ':' && m_path[2] == '/' ) // "c:/"
+#            endif
+               ;
+    }
+
+    bool path::has_relative_path() const { return !relative_path().empty(); }
+    bool path::has_branch_path() const { return !branch_path().empty(); }
+
+
+// path_itr_imp implementation  ----------------------------------------------// 
 
     namespace detail
     {
@@ -371,7 +540,18 @@ namespace boost
           name = "";  // not strictly required, but might aid debugging
           return;
         }
-        if ( path_ptr->m_path[pos] == '/' ) ++pos;
+        if ( path_ptr->m_path[pos] == '/' )
+        {
+#       ifdef BOOST_WINDOWS
+          if ( name[name.size()-1] == ':' // drive or device
+            || (name[0] == '/' && name[1] == '/') ) // share
+          {
+            name = "/";
+            return;
+          }
+#       endif
+          ++pos;
+        }
         std::string::size_type end_pos( path_ptr->m_path.find( '/', pos ) );
         if ( end_pos == std::string::npos ) end_pos = path_ptr->m_path.size();
         name = path_ptr->m_path.substr( pos, end_pos - pos );
@@ -381,13 +561,10 @@ namespace boost
       {                                                                                
         assert( pos ); // detect decrement of begin
         std::string::size_type end_pos( pos );
-        if ( end_pos != path_ptr->m_path.size()
-          && end_pos > 1
-#         ifdef BOOST_WINDOWS
-          && path_ptr->m_path[end_pos-1] != ':'
-          && path_ptr->m_path[end_pos-2] != ':'
-#         endif
-          ) --end_pos;
+
+        // skip a '/' unless it is a root directory
+        if ( path_ptr->m_path[end_pos-1] == '/'
+          && !detail::is_absolute_root( path_ptr->m_path, end_pos ) ) --end_pos;
         pos = leaf_pos( path_ptr->m_path, end_pos );
         name = path_ptr->m_path.substr( pos, end_pos - pos );
       }
