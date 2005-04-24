@@ -1,8 +1,23 @@
 
 project boost/filesystem
-    : source-location ../src
+    :
+    source-location ../src
     ;
 
-SOURCES = exception operations_posix_windows path_posix_windows convenience ;
+SOURCES =
+    exception operations_posix_windows path_posix_windows convenience ;
 
-lib boost_filesystem : $(SOURCES).cpp ;
+lib boost_filesystem
+    :
+    $(SOURCES).cpp
+    :
+    <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1 # tell source we're building dll's
+    ;
+
+install dist-lib
+    :
+    boost_filesystem
+    :
+    <install-type>LIB
+    <location>../../../dist/lib
+    ;
