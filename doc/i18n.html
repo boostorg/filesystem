@@ -144,9 +144,28 @@ applied to both learning the library and writing code which uses the library.</p
 <p>There is an additional motivation; other than the name checking portion of 
 class path,&nbsp; the existing interface has proven to be useful and robust, so 
 there is no reason to fiddle with it.</p>
+<h3><a name="Single_path_design">Single path design</a></h3>
+<p>During preliminary internationalization discussion on the Boost developer's 
+list, a design was considered for a single path class which could hold either 
+narrow or wide character based paths. That design was rejected because:</p>
+<ul>
+  <li>There were technical issues with conversions when a narrow path was 
+  appended to a wide path, and visa versa. The concern was that double 
+  conversions could cause incorrect results, that conversions best left to the 
+  operating system would be performed, and that the technical complexity was too 
+  great in relation to perceived benefits. User-defined types would only make 
+  the problem worse.<br>
+&nbsp;</li>
+  <li>The design was, for many applications, an over-generalization with runtime 
+  memory and speed costs which would have to be paid for even when not needed.<br>
+&nbsp;</li>
+  <li>There was concern that the design would be confusing to users, given that 
+  the standard library already uses single-value-type strings, rather than 
+  strings which morph value types as needed.</li>
+</ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28911" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13990" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 

@@ -6,20 +6,21 @@ Do-list</h1>
   <li>Windows: Some files seem to be poisoned to the point where you can't even 
   do is_directory() on them without an access error. For example,&nbsp; pagefile.sys. Should directory_iterator ignore these files?
   <i>Later: this is the is_accessible() versus exists() problem. Modify the 
-  sample program accordingly.</i><br>
+  sample program accordingly. Still Later: use status() or symlink_status().</i><br>
 &nbsp;</li>
   <li>Windows: //network-name style paths need more analysis and test cases for system_complete() 
   and complete(). Also, path_test cases at line 410 need review, correction.<br>
 &nbsp;</li>
   <li>Add a path::swap member function guaranteed not to throw. (Geurt Vos).<br>
 &nbsp;</li>
-  <li>Operations_test line 171 - why only check iterator tag? Why not 
-  Assignable, etc?<br>
+  <li>Add hard link support.<br>
 &nbsp;</li>
+  <li>POSIX wpath conversion probably needs at least an option to use global 
+  locale to support encodings like Russian koi8-r.</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28898" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13990" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
