@@ -20,6 +20,7 @@
 #include <boost/static_assert.hpp>
 #include <string>
 #include <algorithm> // for lexicographical_compare
+#include <stdexcept>
 #include <cassert>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
@@ -109,6 +110,9 @@ namespace boost
 
     template<class Path>
     class basic_filesystem_error : public std::exception
+    //                                         ^^^^^^^^^
+    // should probably derive from runtime_error, but that causes a default
+    // constructor problem. changed back to std::exception as a workaround.
     {
     // see www.boost.org/more/error_handling.html for design rationale
     public:

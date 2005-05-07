@@ -44,7 +44,14 @@ namespace boost
   {
     template<class Path> class basic_directory_iterator;
 
-    namespace detail
+    typedef char status_flag;
+    static const status_flag  error_flag = 1;
+    static const status_flag  not_found_flag = 2;
+    static const status_flag  directory_flag = 4;
+    static const status_flag  file_flag = 8;
+    static const status_flag  symlink_flag = 16;
+
+namespace detail
     {
       typedef std::pair< boost::filesystem::system_error_type, bool >
         query_pair;
@@ -62,14 +69,15 @@ namespace boost
           typename Path::external_string_type > type;
       };
 
+
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+        status_api( const std::string & ph,
+                    boost::filesystem::system_error_type * ec = 0 );
+#   ifndef BOOST_WINDOWS_API
       BOOST_FILESYSTEM_DECL bool
-        exists_api( const std::string & ph );
-      BOOST_FILESYSTEM_DECL bool 
-        is_accessible_api( const std::string & ph );
-      BOOST_FILESYSTEM_DECL bool 
-        symbolic_link_exists_api( const std::string & ph );
-      BOOST_FILESYSTEM_DECL query_pair
-        is_directory_api( const std::string & ph );
+        symlink_status_api( const std::string & ph,
+                    boost::filesystem::system_error_type * ec = 0 );
+#   endif
       BOOST_FILESYSTEM_DECL query_pair
         is_empty_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL query_pair
@@ -90,14 +98,9 @@ namespace boost
         rename_api( const std::string & from, const std::string & to );
 
 #   ifdef BOOST_WINDOWS_API
-      BOOST_FILESYSTEM_DECL bool 
-        exists_api( const std::wstring & ph );
-      BOOST_FILESYSTEM_DECL bool 
-        is_accessible_api( const std::wstring & ph );
-      BOOST_FILESYSTEM_DECL bool 
-        symbolic_link_exists_api( const std::wstring & ph );
-      BOOST_FILESYSTEM_DECL query_pair 
-        is_directory_api( const std::wstring & ph );
+      BOOST_FILESYSTEM_DECL  boost::filesystem::status_flag
+        status_api( const std::wstring & ph,
+                    boost::filesystem::system_error_type * ec = 0 );
       BOOST_FILESYSTEM_DECL query_pair 
         is_empty_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL query_pair
@@ -127,51 +130,101 @@ namespace boost
 
     } // namespace detail
 
-//  query functions  ---------------------------------------------------------//
+//  operations functions  ----------------------------------------------------//
 
     //  The non-template overloads enable automatic conversion from std and
     //  C-style strings. See basic_path constructors. The enable_if for the
     //  templates implements the famous "do-the-right-thing" rule.
 
+//  query functions  ---------------------------------------------------------//
+
+    template<class Path>
+    inline typename boost::enable_if<is_basic_path<Path>, status_flag>::type
+    status( const Path & ph, system_error_type * ec = 0 )
+      { return detail::status_api( ph.external_file_string(), ec ); }
+    inline status_flag status( const path & ph, system_error_type * ec = 0 )
+      { return status<path>( ph, ec ); }
+    inline status_flag status( const wpath & ph, system_error_type * ec = 0 )
+      { return status<wpath>( ph, ec ); }
+
+    template<class Path>
+    inline typename boost::enable_if<is_basic_path<Path>, status_flag>::type
+    symlink_status( const Path & ph, system_error_type * ec = 0 )
+#   ifdef BOOST_WINDOWS_API
+      { return detail::status_api( ph.external_file_string(), ec ); }
+#   else
+      { return detail::symlink_status_api( ph.external_file_string(), ec ); }
+#   endif
+    inline status_flag symlink_status( const path & ph, system_error_type * ec = 0 )
+      { return symlink_status<path>( ph, ec ); }
+    inline status_flag symlink_status( const wpath & ph, system_error_type * ec = 0 )
+      { return symlink_status<wpath>( ph, ec ); }
+
     template<class Path>
     typename boost::enable_if<is_basic_path<Path>, bool>::type
     exists( const Path & ph )
-      { return detail::exists_api( ph.external_file_string() ); }
+    { 
+      system_error_type ec;
+      status_flag sf( detail::status_api( ph.external_file_string(), &ec ) );
+      if ( sf == error_flag )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::exists", ph, ec ) );
+      return sf != not_found_flag;
+    }
     inline bool exists( const path & ph ) { return exists<path>( ph ); }
     inline bool exists( const wpath & ph ) { return exists<wpath>( ph ); }
 
     template<class Path>
     typename boost::enable_if<is_basic_path<Path>, bool>::type
-    is_accessible( const Path & ph )
-      { return detail::is_accessible_api( ph.external_file_string() ); }
-    inline bool is_accessible( const path & ph )
-      { return is_accessible<path>( ph ); }
-    inline bool is_accessible( const wpath & ph )
-      { return is_accessible<wpath>( ph ); }
-
-    template<class Path>
-    typename boost::enable_if<is_basic_path<Path>, bool>::type
-    symbolic_link_exists( const Path & ph )
-      { return detail::symbolic_link_exists_api( ph.external_file_string() ); }
-    inline bool symbolic_link_exists( const path & ph )
-      { return symbolic_link_exists<path>( ph ); }
-    inline bool symbolic_link_exists( const wpath & ph )
-      { return symbolic_link_exists<wpath>( ph ); }
-
-    template<class Path>
-    typename boost::enable_if<is_basic_path<Path>, bool>::type
     is_directory( const Path & ph )
-    {
-      detail::query_pair result = detail::is_directory_api( ph.external_file_string() );
-      if ( result.first != 0 )
+    { 
+      system_error_type ec;
+      status_flag sf( detail::status_api( ph.external_file_string(), &ec ) );
+      if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
-          "boost::filesystem::is_directory", ph, result.first ) );
-      return result.second;
+          "boost::filesystem::is_directory", ph, ec ) );
+      return sf == directory_flag;
     }
     inline bool is_directory( const path & ph )
       { return is_directory<path>( ph ); }
     inline bool is_directory( const wpath & ph )
       { return is_directory<wpath>( ph ); }
+
+    template<class Path>
+    typename boost::enable_if<is_basic_path<Path>, bool>::type
+    is_file( const Path & ph )
+    { 
+      system_error_type ec;
+      status_flag sf( detail::status_api( ph.external_file_string(), &ec ) );
+      if ( sf == error_flag )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::is_file", ph, ec ) );
+      return sf == file_flag;
+    }
+    inline bool is_file( const path & ph )
+      { return is_file<path>( ph ); }
+    inline bool is_file( const wpath & ph )
+      { return is_file<wpath>( ph ); }
+
+    template<class Path>
+    typename boost::enable_if<is_basic_path<Path>, bool>::type
+    is_symlink( const Path & ph )
+    { 
+#   ifdef BOOST_WINDOWS_API
+      return false;
+#   else
+      system_error_type ec;
+      status_flag sf( detail::symlink_status_api( ph.external_file_string(), &ec ) );
+      if ( sf == error_flag )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::is_symlink", ph, ec ) );
+      return sf == symlink_flag;
+#   endif
+    }
+    inline bool is_symlink( const path & ph )
+      { return is_symlink<path>( ph ); }
+    inline bool is_symlink( const wpath & ph )
+      { return is_symlink<wpath>( ph ); }
 
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
     // between boost::filesystem::is_empty and the unrelated type trait
@@ -266,10 +319,10 @@ namespace boost
     remove( const Path & ph )
     {
       if ( exists( ph )
-        || symbolic_link_exists( ph ) ) // handle dangling symbolic links
+        || is_symlink( ph ) ) // handle dangling symbolic links
         // note that the POSIX behavior for symbolic links is what we want;
         // the link rather than what it points to is deleted. Windows behavior
-        // doesn't matter; symbolic_link_exists() is always false on Windows.
+        // doesn't matter; is_symlink() is always false on Windows.
       {
         system_error_type result = detail::remove_api( ph.external_file_string() );
         if ( result != 0 )
@@ -290,7 +343,7 @@ namespace boost
     typename boost::enable_if<is_basic_path<Path>, unsigned long>::type
     remove_all( const Path & ph )
     {
-      return exists( ph )|| symbolic_link_exists( ph )
+      return exists( ph )|| is_symlink( ph )
         ? detail::remove_all_aux( ph ) : 0;
     }
     inline unsigned long remove_all( const path & ph )
@@ -422,7 +475,7 @@ namespace boost
       {
         static const boost::filesystem::basic_directory_iterator<Path> end_itr;
         unsigned long count = 1;
-        if ( !boost::filesystem::symbolic_link_exists( ph ) // don't recurse symbolic links
+        if ( !boost::filesystem::is_symlink( ph ) // don't recurse symbolic links
           && boost::filesystem::is_directory( ph ) )
         {
           for ( boost::filesystem::basic_directory_iterator<Path> itr( ph );

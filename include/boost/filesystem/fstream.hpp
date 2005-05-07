@@ -34,7 +34,12 @@ namespace boost
     namespace detail
     {
 #   ifdef BOOST_WINDOWS_API
-      BOOST_FILESYSTEM_DECL bool exists_api( const std::wstring & ph );
+      // The 8.3 hack:
+      // C++98 does not supply a wchar_t open, so try to get an equivalent
+      // narrow char name based on the short, so-called 8.3, name.
+      BOOST_FILESYSTEM_DECL  boost::filesystem::status_flag
+        status_api( const std::wstring & ph,
+                    boost::filesystem::system_error_type * ec );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         remove_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL bool create_file_api( const std::wstring & ph,
@@ -42,16 +47,13 @@ namespace boost
       BOOST_FILESYSTEM_DECL std::string narrow_path_api(
         const std::wstring & ph ); // return is empty if fails
 
-      // narrow_path()
-      //   return will be empty() if cannot supply narrow short path
-      // C++98 does not supply a wchar_t open, so try to get an equivalent
-      // narrow char name based on the short, so-called 8.3, name.
       std::string narrow_path( const std::wstring & file_ph,
         std::ios_base::openmode mode )
+      //   return will be empty() if cannot supply narrow short path
       {
         std::string narrow_ph;
         bool created_file( false );
-        if ( !exists_api( file_ph ) )
+        if ( status_api( file_ph, 0 ) == boost::filesystem::not_found_flag )
         {
           if ( (mode & std::ios_base::out) == 0 
             || !create_file_api( file_ph, mode ) ) return narrow_ph;
