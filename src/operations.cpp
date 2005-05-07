@@ -1,6 +1,6 @@
 //  operations.cpp  ----------------------------------------------------------//
 
-//  Copyright © 2002 Beman Dawes
+//  Copyright © 2002-2005 Beman Dawes
 //  Copyright © 2001 Dietmar Kühl
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy
@@ -88,38 +88,21 @@ namespace
     { return ::GetFileAttributesW( ph ); }
 
   template< class String >
-  inline bool exists_template( const String & ph )
+  fs::status_flag status_template( const String & ph,
+    boost::filesystem::system_error_type * ec )
   {
-    if ( get_file_attributes( ph.c_str() ) == 0xFFFFFFFF )
+    DWORD attr( get_file_attributes( ph.c_str() ) );
+    if ( attr == 0xFFFFFFFF )
     {
         UINT err = ::GetLastError();
-        if((err == ERROR_FILE_NOT_FOUND)
-          || (err == ERROR_INVALID_PARAMETER)
+        if ( ec != 0 ) *ec = err;
+        return ((err == ERROR_FILE_NOT_FOUND)
           || (err == ERROR_PATH_NOT_FOUND)
-          || (err == ERROR_INVALID_NAME)
           || (err == ERROR_BAD_NETPATH ))
-          return false; // GetFileAttributes failed because the path does not exist
-        // for any other error we assume the file does exist and fall through,
-        // this may not be the best policy though...  (JM 20040330)
-        return true;
+          ? fs::not_found_flag : fs::error_flag;
     }
-    return true;
-  }
-
-  template< class String >
-  inline bool is_accessible_template( const String & ph )
-  {
-    return get_file_attributes( ph.c_str() ) != 0xFFFFFFFF;
-  }
-
-  template< class String >
-  boost::filesystem::detail::query_pair
-  is_directory_template( const String & ph )
-  {
-    DWORD attributes = get_file_attributes( ph.c_str() );
-    return std::make_pair(
-      attributes == 0xFFFFFFFF ? ::GetLastError() : 0,
-      (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0 );
+    return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0
+      ? fs::directory_flag : fs::file_flag;
   }
 
   static const fs::wdirectory_iterator wend_itr;
@@ -405,9 +388,10 @@ namespace
   boost::filesystem::system_error_type
   remove_template( const String & ph )
   {
-    fs::detail::query_pair result( fs::detail::is_directory_api( ph ) );
-    if ( result.first != 0 ) return result.first;
-    if ( result.second )
+    fs::system_error_type ec;
+    fs::status_flag sf( fs::detail::status_api( ph, &ec ) );
+    if ( sf == fs::error_flag ) return ec;
+    if ( sf == fs::directory_flag )
     {
       if ( !remove_directory( ph ) )
         return ::GetLastError();
@@ -447,10 +431,11 @@ namespace
     boost::filesystem::system_error_type error(0);
     if ( create_directory( dir_ph ) ) return std::make_pair( error, true );
     error = ::GetLastError();
-    if ( error != ERROR_ALREADY_EXISTS 
-      || !fs::detail::is_directory_api( dir_ph ).second )
-      return std::make_pair( error, false );
-    return std::make_pair( 0, false );
+    // an error here may simply mean the postcondition is already met
+    if ( error == ERROR_ALREADY_EXISTS
+      && fs::detail::status_api( dir_ph ) == fs::directory_flag )
+      return std::make_pair( 0, false );
+    return std::make_pair( error, false );
   }
 
 #endif
@@ -477,17 +462,15 @@ namespace boost
 
 #   ifdef BOOST_WINDOWS_API
 
-      BOOST_FILESYSTEM_DECL bool exists_api( const std::string & ph )
-        { return exists_template( ph ); }
+      BOOST_FILESYSTEM_DECL fs::status_flag
+      status_api( const std::string & ph,
+        boost::filesystem::system_error_type * ec )
+        { return status_template( ph, ec ); }
 
-      BOOST_FILESYSTEM_DECL bool exists_api( const std::wstring & ph )
-        { return exists_template( ph ); }
-
-      BOOST_FILESYSTEM_DECL bool is_accessible_api( const std::string & ph )
-        { return is_accessible_template( ph ); }
-
-      BOOST_FILESYSTEM_DECL bool is_accessible_api( const std::wstring & ph )
-        { return is_accessible_template( ph ); }
+      BOOST_FILESYSTEM_DECL fs::status_flag
+      status_api( const std::wstring & ph,
+        boost::filesystem::system_error_type * ec )
+        { return status_template( ph, ec ); }
 
       // suggested by Walter Landry
       BOOST_FILESYSTEM_DECL bool symbolic_link_exists_api( const std::string & )
@@ -495,14 +478,6 @@ namespace boost
 
       BOOST_FILESYSTEM_DECL bool symbolic_link_exists_api( const std::wstring & )
         { return false; }
-
-      BOOST_FILESYSTEM_DECL
-      fs::detail::query_pair is_directory_api( const std::string & ph )
-        { return is_directory_template( ph ); }
-
-      BOOST_FILESYSTEM_DECL
-      fs::detail::query_pair is_directory_api( const std::wstring & ph )
-        { return is_directory_template( ph ); }
 
       BOOST_FILESYSTEM_DECL
       fs::detail::query_pair is_empty_api( const std::string & ph )
@@ -853,8 +828,9 @@ namespace boost
       {
         if ( ::mkdir( dir_ph.c_str(), S_IRWXU|S_IRWXG|S_IRWXO ) == 0 )
           return std::make_pair( 0, true );
-        if ( errno != EEXIST ) return std::make_pair( errno, false );
-        if ( !is_directory_api( dir_ph ).second )
+     // an error here may simply mean the postcondition is already met
+       if ( errno != EEXIST ) return std::make_pair( errno, false );
+        if ( status_api( dir_ph ) != fs::directory_flag )
           return std::make_pair( ENOTDIR, false );
         return std::make_pair( 0, false );
       }
