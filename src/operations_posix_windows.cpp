@@ -354,6 +354,7 @@ namespace boost
          UINT err = ::GetLastError();
          if((err == ERROR_FILE_NOT_FOUND)
            || (err == ERROR_INVALID_PARAMETER)
+           || (err == ERROR_NOT_READY)
            || (err == ERROR_PATH_NOT_FOUND)
            || (err == ERROR_INVALID_NAME)
            || (err == ERROR_BAD_NETPATH ))
