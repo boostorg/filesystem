@@ -74,7 +74,7 @@ namespace detail
         status_api( const std::string & ph,
                     boost::filesystem::system_error_type * ec = 0 );
 #   ifndef BOOST_WINDOWS_API
-      BOOST_FILESYSTEM_DECL bool
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
         symlink_status_api( const std::string & ph,
                     boost::filesystem::system_error_type * ec = 0 );
 #   endif

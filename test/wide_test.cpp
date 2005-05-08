@@ -29,8 +29,11 @@ namespace
   void create_file( const Path & ph, const std::string & contents )
   {
     // TODO: why missing symbol error on Darwin
+# ifndef __APPLE__
     fs::ofstream f( ph );
-//  std::ofstream f( ph.external_file_string().c_str() );
+# else    
+    std::ofstream f( ph.external_file_string().c_str() );
+# endif    
     if ( !f )
       throw fs::basic_filesystem_error<Path>( "wide_test create_file",
         ph, errno );

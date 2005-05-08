@@ -94,12 +94,12 @@ namespace
     DWORD attr( get_file_attributes( ph.c_str() ) );
     if ( attr == 0xFFFFFFFF )
     {
-        UINT err = ::GetLastError();
-        if ( ec != 0 ) *ec = err;
-        return ((err == ERROR_FILE_NOT_FOUND)
-          || (err == ERROR_PATH_NOT_FOUND)
-          || (err == ERROR_BAD_NETPATH ))
-          ? fs::not_found_flag : fs::error_flag;
+      UINT err = ::GetLastError();
+      if ( ec != 0 ) *ec = err;
+      return ((err == ERROR_FILE_NOT_FOUND)
+        || (err == ERROR_PATH_NOT_FOUND)
+        || (err == ERROR_BAD_NETPATH ))
+        ? fs::not_found_flag : fs::error_flag;
     }
     return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0
       ? fs::directory_flag : fs::file_flag;
@@ -701,25 +701,35 @@ namespace boost
 
 #   else // BOOST_POSIX_API
 
-      BOOST_FILESYSTEM_DECL bool
-      exists_api( const std::string & ph )
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+      status_api( const std::string & ph,
+                  boost::filesystem::system_error_type * ec )
       {
         struct stat path_stat;
         if ( ::stat( ph.c_str(), &path_stat ) != 0 )
         {
-          if ( ( errno == ENOENT ) || ( errno == ENOTDIR ) )
-              return false;  // stat failed because the path does not exist
-          // for any other error we assume the file does exist and fall through,
-          // this may not be the best policy though...  (JM 20040330)
+          if ( ec != 0 ) *ec = errno;
+          return ( (errno == ENOENT) || (errno == ENOTDIR) )
+            ? fs::not_found_flag : fs::error_flag;
         }
-        return true;
+        return S_ISDIR( path_stat.st_mode )
+          ? fs::directory_flag : fs::file_flag;
       }
 
-      BOOST_FILESYSTEM_DECL bool
-      is_accessible_api( const std::string & ph )
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+      symlink_status_api( const std::string & ph,
+                          boost::filesystem::system_error_type * ec )
       {
         struct stat path_stat;
-        return ::stat( ph.c_str(), &path_stat ) == 0;
+        if ( ::lstat( ph.c_str(), &path_stat ) != 0 )
+        {
+          if ( ec != 0 ) *ec = errno;
+          return ( (errno == ENOENT) || (errno == ENOTDIR) )
+            ? fs::not_found_flag : fs::error_flag;
+        }
+        if ( S_ISLNK( path_stat.st_mode ) ) return fs::symlink_flag;
+        return S_ISDIR( path_stat.st_mode )
+          ? fs::directory_flag : fs::file_flag;
       }
 
       // suggested by Walter Landry
@@ -729,15 +739,6 @@ namespace boost
         struct stat path_stat;
         return ::lstat( ph.c_str(), &path_stat ) == 0
           && S_ISLNK( path_stat.st_mode );
-      }
-
-      BOOST_FILESYSTEM_DECL query_pair
-      is_directory_api( const std::string & ph )
-      {
-        struct stat ph_stat;
-        if ( ::stat( ph.c_str(), &ph_stat ) != 0 )
-          return std::make_pair( errno, false );
-        return std::make_pair( 0, S_ISDIR( ph_stat.st_mode ) );
       }
 
       BOOST_FILESYSTEM_DECL query_pair
@@ -855,7 +856,8 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       rename_api( const std::string & from, const std::string & to )
       {
-        if ( exists_api( to ) ) // POSIX is too permissive so must check
+        // POSIX is too permissive so must check
+        if ( (status_api( to ) & (fs::directory_flag|fs::file_flag)) != 0 ) 
           return EEXIST;
         return std::rename( from.c_str(), to.c_str() ) != 0 
           ? errno : 0;

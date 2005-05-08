@@ -17,7 +17,7 @@
 //  described in http://www.boost.org/more/separate_compilation.html
 
 #include <boost/filesystem/path.hpp>
-#include <boost/detail/utf8_codecvt_facet.hpp>
+#include "../src//utf8_codecvt_facet.hpp"
 #include <boost/scoped_array.hpp>
 
 namespace

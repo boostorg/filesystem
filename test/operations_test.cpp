@@ -195,8 +195,13 @@ int test_main( int argc, char * argv[] )
 #endif
   BOOST_CHECK( !fs::create_directory( dir ) );
 
+  BOOST_CHECK( !fs::is_symlink( dir ) );
+  BOOST_CHECK( !fs::is_symlink( "nosuchfileordirectory" ) );
+
+#if 0
   BOOST_CHECK( !fs::symbolic_link_exists( dir ) );
   BOOST_CHECK( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
+#endif
 
   fs::path d1( dir / "d1" );
   BOOST_CHECK( fs::create_directory( d1 ) );
