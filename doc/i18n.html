@@ -10,7 +10,7 @@
 
 <body bgcolor="#FFFFFF">
 
-<h1>1.33 (Internationalization) Changes</h1>
+<h1>1.34 (Internationalization) Changes</h1>
 <h2>Introduction</h2>
 <p>This release is a major upgrade for the Filesystem Library, in preparation 
 for submission to the C++ Standards Committee. Features of this release 
@@ -22,7 +22,11 @@ include:</p>
 &nbsp;</li>
   <li><a href="#Simplification">Simplification</a> of the path interface, 
   including elimination of distinction between native and generic formats, 
-  and separation of name checking functionality from general path functionality.<br>
+  and separation of name checking functionality from general path functionality. 
+  Also simplification of <i>basic_filesystem_error</i>.<br>
+&nbsp;</li>
+  <li><a href="#Rationalization">Rationalization</a> of predicate function 
+  design, including the addition of several new functions.<br>
 &nbsp;</li>
   <li><a href="#Preservation">Preservation</a> of existing user code whenever 
   possible.</li>
@@ -82,6 +86,133 @@ interface has now been simplified:</p>
   separate free-functions. This still provides name checking for those who need 
   it, but with much less impact on those who don't need it.</li>
 </ul>
+<p>Additionally, <a href="exception.htm">basic_filesystem_error</a> has been put 
+on a diet and generally simplified.</p>
+<h2><a name="Rationalization">Rationalization</a> of predicate functions</h2>
+<p>Nn discussions and bug reports on the Boost developers mailing list, it 
+became obvious that Boost.Filesystem's exists(), symbolic_link_exists(), and 
+is_directory() predicate functions were poorly specified. There were suggestions 
+to add an is_accessible() function, but Peter Dimov that this amounted to 
+papering over the lack of a clear specification and would likely lead to future 
+problems.</p>
+<p>Peter suggested that an interesting way to analyze the problem was to ask 
+what the expectations were for true and false values of the various predicates. 
+See the <a href="#table">table</a> below.</p>
+<h3>status()</h3>
+<p>As part of the predicate discussions, particularly with Rob Stewart, it 
+became obvious that sometimes applications need access to raw status information 
+without any possibility of an exception being thrown. The status() and 
+symlink_status() functions were added to meet this need. It also proved clearer 
+to specify the semantics of predicate functions in terms of status() and 
+symlink_status().</p>
+<h3>is_file()</h3>
+<p>About the same time, Jeff Garland suggested that an is_file() predicate would 
+compliment is_directory(). In working on the analysis below, it became obvious 
+that the expectations for is_file() were different from the expectations for !is_directory(), 
+and that it was easier to specify the expectations for exists() if is_file() was 
+present. So is_file() was added. </p>
+<h3>Should predicates throw on errors?</h3>
+<p>Some conditions reported by operating systems as errors (see
+<a href="#Footnote">footnote</a>) clearly simply indicate that the predicate is 
+false, rather than indicating serious failure. But other errors represent 
+serious hardware or network problems, or permissions problems.</p>
+<p>Some people, particularly Rob Stewart, argue that in a function like 
+is_directory(), any error should simply cause the function to return false. If 
+there is actually an underlying problem, it will be detected it due course when 
+a directory_iterator or fstream operation is attempted.</p>
+<p>That view is was rejected because of the following considerations:</p>
+<ul>
+  <li>As a general principle, the earlier errors can be reported, the better. 
+  The rationale being that it is often much cheaper to fix errors sooner rather 
+  than later. I've also had a lot of negative experiences where failure to 
+  detect errors early caused a lot of pain and unhappy customers. Some of these 
+  were directly caused by ignoring error returns from file system operations.<br>
+  &nbsp;</li>
+  <li>Analysis of existing programs indicated that as much as 30% of the use of 
+  a predicate was not followed by directory_iterator or fstream operations on 
+  the path in question. Instead, the applications performed reporting or 
+  fall-back operations that would not fail, and thus were either misleading or 
+  completely wrong if the <i>false</i> return value was in fact caused by 
+  hardware or network failure, or permissions problems.</li>
+</ul>
+<p>However, the discussion did identify that there are valid cases where 
+non-throwing behavior is a requirement, and a programmer may prefer to deal with 
+file or directory attributes and errors at a very low, bit-mask, level. 
+Functions <a href="#status">status()</a> and <a href="#status">symlink_status()</a> 
+are proposed to meet those needs.</p>
+<h3><a name="Expectations">Expectations</a> <a name="table">table</a></h3>
+<p>In the table below, <i>p</i> is a non-empty path.</p>
+<p>Unless otherwise specified, all functions throw on hardware or general 
+failure errors, permission or access errors, symbolic link loop errors, and 
+invalid path errors. If an O/S fails to distinguish between error types, 
+predicate operations return false on such ambiguous errors.</p>
+<p><i><b>Expectations</b></i> identify operations that are expected to succeed 
+or fail, assuming no hardware, permission, or access right errors, and no race 
+conditions.</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+  <tr>
+    <td width="22%" align="center"><b><i>Expression</i></b></td>
+    <td width="48%" align="center"><b><i>Expectations</i></b></td>
+    <td width="108%" align="center"><b><i>Semantics</i></b></td>
+  </tr>
+  <tr>
+    <td width="22%">is_directory(p)</td>
+    <td width="48%">Returns true if p is found and is a directory, else false.<br>
+    If true, then directory_iterator(p) would succeed.<br>
+    If false, then directory_iterator(p) would fail.</td>
+    <td width="108%">Throws: if <a href="#status">status()</a> &amp; error_flag<br>
+    Returns: status() &amp; directory_flag</td>
+  </tr>
+  <tr>
+    <td width="22%">is_file(p)</td>
+    <td width="48%">Returns true if p is found and is not a directory, else 
+    false.<br>
+    If true, then ifstream(p) would succeed.<br>
+    If false, then ifstream(p) would fail.</td>
+    <td width="108%">Throws: if status() &amp; error_flag<br>
+    Returns: status() &amp; file_flag</td>
+  </tr>
+  <tr>
+    <td width="22%">exists(p) </td>
+    <td width="48%">Returns is_dir(p) || is_file(p)<br>
+    If true, assert(is_dir(p) != is_file(p)) and either directory_iterator(p) or 
+    ifstream(p) would succeed.<br>
+    If false, then both directory_iterator(p) and ifstream(p) would fail.</td>
+    <td width="108%">Throws: if status() &amp; error_flag<br>
+    Returns: status() &amp;&nbsp;&nbsp; (directory_flag|file_flag)</td>
+  </tr>
+  <tr>
+    <td width="22%">is_symlink(p)</td>
+    <td width="48%">Returns true if p is found by shallow (non-transitive) 
+    search, and is a symbolic link, else false.<br>
+    If true, and p points to q, then for any filesystem function f except those 
+    specified as working shallowly on symlinks themselves, f(p) calls f(q), and 
+    returns any value returned by f(q).</td>
+    <td width="108%">Throws: if <a href="#status">symlink_status</a>() &amp; 
+    error_flag<br>
+    Returns: symlink_status() &amp; symlink_flag</td>
+  </tr>
+  <tr>
+    <td width="22%">!exists(p) &amp;&amp; ((p.has_branch_path() &amp;&amp; exists( p.branch_path()) 
+    || (!p.has_branch_path() &amp;&amp; !p.has_root_path()))<br>
+    <i>In other words, if the path does not exist, and (the branch does exist, 
+    or (there is no branch and no root)).</i></td>
+    <td width="48%">If true, create_directory(p) would succeed.<br>
+    If true, ofstream(p) would succeed.<br>
+    &nbsp;</td>
+    <td width="108%">&nbsp;</td>
+  </tr>
+  <tr>
+    <td width="22%">directory_iterator it(p)</td>
+    <td width="48%">If it != directory_iterator(), assert(exists(*it)||is_symlink(*it)). 
+    Note: exists(*it) may throw, and likewise status(*it) may return error_flag 
+    - there is no guarantee of accessibility.</td>
+    <td width="108%">&nbsp;</td>
+  </tr>
+</table>
+<h3><a name="Conclusion">Conclusion</a></h3>
+<p>Predicate operations is_directory(), is_file(), is_symlink(), and exists() 
+with the indicated semantics form a self-consistent set that meets expectations.</p>
 <h2><a name="Preservation">Preservation</a> of existing user code</h2>
 <p>Although the change to a template based approach required a complete overhaul 
 of the implementation code, the actual interface as seen by current user 
@@ -163,9 +294,24 @@ narrow or wide character based paths. That design was rejected because:</p>
   the standard library already uses single-value-type strings, rather than 
   strings which morph value types as needed.</li>
 </ul>
+<h3>No versions of status() and symlink_status() which throw exceptions on 
+errors</h3>
+<p>The rationale for not including versions of status() and symlink_status() 
+which throw exceptions on errors is that (1) the primary purpose of these 
+functions is to perform queries at a very low-level where exceptions are 
+unwanted, and (2) exceptions on errors are already provided by the predicate 
+functions. There would be no efficiency gain whatsoever from providing a 
+throwing version of status(), and any possible efficiency gain from a throwing 
+version of symlink_status() is marginal.</p>
+<h3>Separate status() and symlink_status() functions</h3>
+<p>The status() and symlink_status() functionality is provided by separate 
+functions rather than overloads (or optional arguments) for the same function 
+name because separately name functions are more appropriate when behavior 
+differs, which is the case here, while overloads are more appropriate when 
+behavior is the same but argument types differ (Iain Hanson).</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13990" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14004" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 

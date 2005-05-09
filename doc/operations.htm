@@ -18,10 +18,12 @@
 <a href="#directory_iterator">Class basic_directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
 <a href="#Non-member_functions">Operations functions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#status">status</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#symlink_status">symlink_status</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#symbolic_link_exists">symbolic_link_exists</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#is_accessible">is_accessible</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_file">is_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_file">is_file</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#file_size">file_size</a><br>
@@ -78,13 +80,25 @@ exposition, only the templated version of each non-member function is shown.</p>
     typedef basic_directory_iterator&lt;path&gt; directory_iterator;
     typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
 
+    typedef <i>bitmask-type</i> status_flag; // see C++ std 17.3.2.1.2 [lib.bitmask.types]
+
+    static const status_flag  error_flag;
+    static const status_flag  not_found_flag;
+    static const status_flag  directory_flag;
+    static const status_flag  file_flag;
+    static const status_flag  symlink_flag;
+
+    template&lt;class Path&gt; status_flag <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+
+    template&lt;class Path&gt; status_flag <a href="#symlink_status">symlink_status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+
     template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#symbolic_link_exists">symbolic_link_exists</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#is_accessible">is_accessible</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool is_file( const <code>Path</code> &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#is_directory">is_directory</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool is_symlink( const <code>Path</code> &amp; ph );
 
     template&lt;class Path&gt; bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
 
@@ -226,63 +240,129 @@ unattractive.</p>
 <b>Naming Rationale:</b> See class <i>path</i>
 <a href="path.htm#Naming_Rationale">Naming Rationale</a>.</p>
 
+<h3><a name="status">status</a></h3>
+<blockquote>
+  <pre>template&lt;class Path&gt; status_flag status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
+    <p><b>Effects:</b></p>
+    <ul>
+      <li>If ph.empty():<br>
+&nbsp;<ul>
+        <li>If ec != 0, set *ec to a system error code indicating &quot;not found&quot;.</li>
+        <li>Return <code>not_found_flag</code>.<br>
+&nbsp;</li>
+      </ul>
+      </li>
+      <li>Queries the operating system to determine the attributes of 
+    path <code>p</code>. If <code>p</code> is a symbolic link, the link is 
+      resolved (that is, deep semantics).<br>
+&nbsp;</li>
+      <li>If the operating system does not report an error for the query:<br>
+&nbsp;<ul>
+        <li>If the attributes indicate a directory (see
+        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        directory_flag</code>.</li>
+        <li>If the attributes indicate a file&nbsp; (see
+        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        file_flag</code>.</li>
+        <li>Otherwise, return <span style="background-color: #FF0000">XXXXXXXX</span>.</li>
+      </ul>
+      </li>
+  </ul>
+  <ul>
+    <li>If the operating system reports an error for the query:<br>
+&nbsp;<ul>
+      <li>If ec != 0, set *ec to the error code reported by the operating 
+      system.</li>
+      <li>If the operating system reports an error indicating that <code>p</code> 
+      could <a href="#not_found_remark">not be found</a>, return <code>
+      not_found_flag</code>.</li>
+      <li>Otherwise, return <code>error_flag</code>.</li>
+    </ul>
+    </li>
+  </ul>
+    <p><b>Returns:</b> <code>error_flag</code>, <code>not_found_flag</code>, <code>directory_flag</code>, or
+    <code>file_flag</code>.</p>
+    <p><b><a name="not_found_remark">Remark</a>:</b> On POSIX <code>
+    not_found_flag </code>is indicated by errors ENOENT and ENOTDIR. On Windows, 
+    by errors ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND, and ERROR_BAD_NETPATH.</p>
+  </blockquote>
+<h3><a name="symlink_status">symlink_status</a></h3>
+<blockquote>
+  <pre>template&lt;class Path&gt; status_flag symlink_status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
+    <p><b>Effects:</b></p>
+    <ul>
+      <li>If ph.empty():<br>
+&nbsp;<ul>
+        <li>If ec != 0, set *ec to a system error code indicating &quot;not found&quot;.</li>
+        <li>Return <code>not_found_flag</code>.<br>
+&nbsp;</li>
+      </ul>
+      </li>
+      <li>Queries the operating system to determine the attributes of 
+    path <code>p</code>. If <code>p</code> is a symbolic link, the link is not 
+      resolved (that is, shallow semantics).<br>
+&nbsp;</li>
+      <li>If the operating system does not report an error for the query:<br>
+&nbsp;<ul>
+        <li>If the attributes indicate a directory (see
+        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        directory_flag</code>.</li>
+        <li>If the attributes indicate a file&nbsp; (see
+        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        file_flag</code>.</li>
+        <li>If the attributes indicate a symbolic link&nbsp; (see
+        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        symlink_flag</code>.</li>
+        <li>Otherwise, return <span style="background-color: #FF0000">XXXXXXXX</span>.</li>
+      </ul>
+      </li>
+  </ul>
+  <ul>
+    <li>If the operating system reports an error for the query:<br>
+&nbsp;<ul>
+      <li>If ec != 0, set *ec to the error code reported by the operating 
+      system.</li>
+      <li>If the operating system reports an error indicating that <code>p</code> 
+      could <a href="#not_found_remark">not be found</a>, return <code>
+      not_found_flag</code>.</li>
+      <li>Otherwise, return <code>error_flag</code>.</li>
+    </ul>
+    </li>
+  </ul>
+    <p><b>Returns:</b> <code>error_flag</code>, <code>not_found_flag</code>, <code>directory_flag</code>,
+    <code>file_flag,</code> or
+    <code>symlink_flag</code>.</p>
+<p><b>Note:</b> The Microsoft Windows operating system does not currently 
+support symbolic links, so
+    <code>symlink_flag</code> is never returned on that platform. (Short-cut files (.lnk) are a Windows application 
+feature, not an O/S feature.) Programmers should still test for symbolic links 
+where applicable in case later Windows versions add the feature, and also so that programs 
+will be portable to systems like POSIX, where symbolic links may be present.</p>
+</blockquote>
+
 <h3><a name="exists">exists</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );</code></p>
-<p><b>Returns:</b> True if the operating system reports the path 
-represented by <i>ph</i> exists, else false.</p>
-<p><b>Note: </b>Even if <code>exists( ph ) == true</code>, there is no guarantee that it 
-will be possible to perform other operations on the file or directory. Access 
-rights or other security concerns, for example, may cause other operations to 
-fail. Thus <a href="#is_accessible">is_accessible()</a> may be the preferable 
-function to use.</p>
-<p><b>Note:</b> <code>exists(&quot;&quot;)</code> is valid and returns false.</p>
-</blockquote>
-<h3><a name="symbolic_link_exists">symbolic_link_exists</a></h3>
-<blockquote>
-<p><code>template&lt;class Path&gt; bool symbolic_link_exists( const Path &amp; ph );</code></p>
-<p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
-<i>ph</i> is present and is a <a href="index.htm#symbolic-link">symbolic link</a>, else false.</p>
-<p><b>Note:</b> See the <a href="#symbolic-link-warning">directory iterator 
-warning</a> for one use of <code>symbolic_link_exists()</code>.</p>
-<p><b>Note:</b> The Microsoft Windows operating system does not currently 
-support symbolic links, so <code>symbolic_link_exists()</code> always returns 
-false on that platform. (Short-cut files (.lnk) are a Windows application 
-feature, not an O/S feature.) Programmers should still test for symbolic links 
-where applicable in case Windows adds the feature, and also so that programs 
-will be portable to systems like POSIX, where symbolic links may be present.</p>
-<p><b>Rationale:</b> The function does not throw if <i>ph</i> is not present, 
-and is accordingly named <code>symbolic_link_exists</code> rather than <code>
-is_symbolic_link</code>. Non-throwing behavior permits testing for all four 
-possible conditions:</p>
-  <ul>
-    <li><i>ph</i> not present: <code>!exists(ph) &amp;&amp; !symbolic_link_exists(ph)</code></li>
-    <li><i>ph</i> present and is not a symbolic link: <code>exists(ph) &amp;&amp; !symbolic_link_exists(ph)</code></li>
-    <li><i>ph</i> present and is a symbolic link to a non-existent file or 
-    directory: <code>!exists(ph) &amp;&amp; symbolic_link_exists(ph)</code></li>
-    <li><i>ph</i> present and is a symbolic link to an existing file or 
-    directory: <code>exists(ph) &amp;&amp; symbolic_link_exists(ph)</code></li>
-  </ul>
-</blockquote>
-
-<h3><a name="is_accessible">is_accessible</a></h3>
-<blockquote>
-<p><code>template&lt;class Path&gt; bool is_accessible( const Path &amp; ph );</code></p>
-<p><b>Returns:</b> True if the operating system reports the path 
-represented by <i>ph</i> exists and it is possible to obtain the attributes, else false.</p>
-<p><b>Note:</b> <code>is_accessible(&quot;&quot;)</code> is valid and returns false.</p>
+<p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
+<p><b>Returns:</b> <code>!(status(ph) == not_found_flag)</code></p>
 </blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );</code></p>
-<p><b>Returns:</b> True if the operating system reports the path represented by&nbsp;
-<i>ph</i> is a directory, else false.</p>
-<p><b>Throws:</b> if <code>!exists(ph)</code></p>
-<p><b>Rationale:</b> Treating <code>!exists(ph)</code> as an exception rather 
-than just returning false came about because in real code <code>!exists(ph)</code> 
-has 
-often been the first indicate of a programming error.&nbsp; A compound function returning <code>
-exists(ph) &amp;&amp; is_directory(ph)</code> can always be added later.</p>
+<p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
+<p><b>Returns:</b> <code>status(ph) == directory_flag)</code></p>
+</blockquote>
+<h3><a name="is_file">is_file</a></h3>
+<blockquote>
+<p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );</code></p>
+<p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
+<p><b>Returns:</b> <code>status(ph) == file_flag)</code></p>
+</blockquote>
+<h3><a name="is_symlink">is_symlink</a></h3>
+<blockquote>
+<p><code>template&lt;class Path&gt; bool is_symlink( const Path &amp; ph );</code></p>
+<p><b>Throws:</b> If <code>symlink_status(ph) == error_flag</code>.</p>
+<p><b>Returns:</b> <code>symlink_status(ph) == symlink_flag)</code></p>
 </blockquote>
 <h3><a name="is_empty">is_empty</a></h3>
 <blockquote>
@@ -641,7 +721,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28898" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14002" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

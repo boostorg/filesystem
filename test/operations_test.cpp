@@ -51,7 +51,7 @@ namespace
     f >> contents;
     if ( contents != expected )
       throw fs::filesystem_error( "operations_test verify_file contents \""
-        + contents  + "\" != \"" + expected + "\"", ph );
+        + contents  + "\" != \"" + expected + "\"", ph, 0 );
   }
 
   template< typename F >

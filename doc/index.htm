@@ -33,6 +33,8 @@ Filesystem Library</h1>
 &nbsp;&nbsp;&nbsp; <a href="faq.htm">FAQ</a><br>
 &nbsp;&nbsp;&nbsp; <a href="portability_guide.htm">Portability Guide</a><br>
 &nbsp;&nbsp;&nbsp; <a href="path.htm"><b><i>path.hpp</i></b> documentation</a><br>
+&nbsp;&nbsp;&nbsp; <a href="exception.htm"><b><i>path.hpp</i></b> Error 
+    Reporting documentation</a><br>
 &nbsp;&nbsp;&nbsp; <a href="operations.htm"><b><i>operations.hpp</i></b> documentation</a><br>
 &nbsp;&nbsp;&nbsp; <a href="fstream.htm"><b><i>fstream.hpp</i></b> documentation</a><br>
 &nbsp;&nbsp;&nbsp; <a href="convenience.htm"><b><i>convenience.hpp</i></b> 
@@ -48,7 +50,16 @@ manipulate paths, files, and directories.</p>
 <p>The motivation for the library is the need to perform portable script-like operations from within C++ programs. The intent is not to 
 compete with Python, Perl, or shell languages, but rather to provide portable filesystem 
 operations when C++ is already the language of choice. The <a href="design.htm">
-design</a> encourages, but does not require, safe and portable filesystem usage.</p>
+design</a> encourages, but does not require, safe and portable  usage.</p>
+
+<p>Programs using the library are <b><i>portable</i></b>, both in the sense that 
+the syntax of program code is portable, and the sense that the semantics or 
+behavior of code is portable. The <a href="path.htm#Grammar">generic path 
+grammar</a> is another important aid to portability.</p>
+
+<p>Usage is <i><b>safe</b></i> in the sense that most functions throw C++ 
+exceptions when errors are detected, avoiding the need to explicitly check error 
+return codes.</p>
 
 <p>The Filesystem Library supplies several&nbsp; headers, all in 
 directory boost/filesystem:</p>
@@ -274,7 +285,7 @@ specifications, and so sometimes specify behavior in terms of postconditions. If
 a <a href="#Race-condition">race-condition</a> exists, a function's 
 postconditions may no longer be true by the time the function returns to the 
 caller.</p>
-<p><b>May throw exceptions</b> - Filesystem Library functions may throw <i>
+<p><b>May throw exceptions</b> - Filesystem Library functions throw <i>
 <a href="exception.htm">basic_filesystem_error</a></i> 
 exceptions if they cannot successfully complete their operational 
 specifications. Function implementations may use C++ Standard Library functions, 
@@ -288,7 +299,8 @@ boost::throw_exception()</a>. Thus exact behavior may differ depending on
 BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
 <p><b><a name="link_rules">Links follow operating system rules</a></b>- <a href="#link">Links</a> are 
 transparent in that Filesystem Library functions simply follow operating system 
-rules. That implies that some functions may throw <i><a href="exception.htm">filesystem_error</a></i> 
+rules. That implies that some functions may throw <i><a href="exception.htm">
+basic_filesystem_error</a></i> 
 exceptions if a link is cyclic or has other problems. Also, see an important
 <a href="operations.htm#symbolic-link-warning">symbolic links warning</a>.</p>
 <p>Typical operating systems rules call for deep operations on all links except 
@@ -301,7 +313,7 @@ functions which throw exceptions may leave the external file system in an
 altered state. It is suggested that implementations provide stronger guarantees 
 when reasonable.</p>
 <p>Rationale: Implementers shouldn't be required to provide guarantees which are 
-impossible to meet on some operating systems. Implementers should be given 
+impossible to meet on some operating systems. Implementers are given 
 normative encouragement to provide those guarantees when reasonable.</p>
 <p><b>Graceful degradation</b> -&nbsp; Filesystem Library functions which cannot 
 be fully supported on a particular operating system will be partially supported 
@@ -393,9 +405,9 @@ Boost.Filesystem's object-library.</p>
 <p>The Filesystem Library was designed and implemented by Beman Dawes. The 
 original <i>directory_iterator</i> and <i>filesystem_error</i> classes were 
 based on prior work from Dietmar Kühl, as modified by Jan Langer. Thomas Witt 
-was a particular help in later stages of initial development. Peter Dimov made 
-particularly helpful comments on internationalization issues, as did Howard 
-Hinnant.</p>
+was a particular help in later stages of initial development. Peter Dimov and 
+Rob Stewart made many useful suggestions and comments over a long period of 
+time. Howard Hinnant helped with internationalization issues.</p>
 
 <p>Key <a href="design.htm#Requirements">design requirements</a> and
 <a href="design.htm#Realities">design realities</a> were developed during 
@@ -507,10 +519,21 @@ version 1.31.0.</p>
   <li><a href="i18n.htm#Simplification">Simplification</a> of the path interface, 
   including elimination of distinction between native and generic formats, 
   and separation of name checking functionality from general path functionality.</li>
+  <li><a href="i18n.html#Rationalization">Rationalization</a> of predicate 
+  function design, including the addition of several new functions.</li>
   <li><a href="i18n.htm#Preservation">Preservation</a> of existing user code whenever 
-  possible.</li>
-  <li>is_accessible() function added.</li>
+  possible. Deprecated features (<i>symbolic_link_exists()</i>, etc.) remain 
+  available for legacy code.</li>
+  <li>Separation within the implementation of the distinction between the native 
+  operating system path syntax and API. This is important for CYGWIN users 
+  because it allows them to build for either the Windows or POSIX API's.</li>
   <li>Numerous small implementation fixes.</li>
+</ul>
+
+<h3>Version 1.33.0</h3>
+
+<ul>
+  <li>Some small implementation fixes.</li>
 </ul>
 
 <h3>Version 1.32.0</h3>
@@ -552,7 +575,7 @@ version 1.31.0.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13998" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14004" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

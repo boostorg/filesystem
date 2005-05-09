@@ -42,6 +42,7 @@ namespace
   const ec_xlate ec_table[] =
   {
 # ifdef BOOST_WINDOWS_API
+    { 0, fs::other_error },
     { ERROR_ACCESS_DENIED, fs::security_error },
     { ERROR_INVALID_ACCESS, fs::security_error },
     { ERROR_SHARING_VIOLATION, fs::security_error },
@@ -74,6 +75,7 @@ namespace
     { ERROR_NOT_ENOUGH_MEMORY, fs::out_of_memory_error },
     { ERROR_TOO_MANY_OPEN_FILES, fs::out_of_resource_error }
 # else
+    { 0, fs::other_error },
     { EACCES, fs::security_error },
     { EROFS, fs::read_only_error },
     { EIO, fs::io_error },
