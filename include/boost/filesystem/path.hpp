@@ -120,13 +120,8 @@ namespace boost
 
       typedef Path path_type;
 
-      explicit basic_filesystem_error( const std::string & what );
-
-      explicit basic_filesystem_error(
+      basic_filesystem_error(
         const std::string & what, system_error_type sys_ec );
-
-      basic_filesystem_error( const std::string & what,
-        const path_type & path1, error_code ec = other_error );
 
       basic_filesystem_error( const std::string & what,
         const path_type & path1, system_error_type sys_err_code );
@@ -140,7 +135,7 @@ namespace boost
 
       system_error_type  system_error() const { return m_sys_err; }
       // Note: system_error() == 0 implies a library (rather than system) error
-      error_code      error() const { return m_err; }
+
       const path_type & path1() const
       {
         static const path_type empty_path;
@@ -161,7 +156,6 @@ namespace boost
       };
       boost::shared_ptr<m_imp> m_imp_ptr;
       system_error_type m_sys_err;
-      error_code        m_err;
     };
 
     typedef basic_filesystem_error<path> filesystem_error;
@@ -855,40 +849,13 @@ namespace boost
 
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
-      const std::string & what )
-      : m_sys_err(0), m_err(other_error)
-    {
-      try
-      {
-        m_imp_ptr.reset( new m_imp );
-        m_imp_ptr->m_what = what;
-      }
-      catch (...) { m_imp_ptr.reset(); }
-    }
-
-    template<class Path>
-    basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, system_error_type sys_ec )
-      : m_sys_err(sys_ec), m_err(lookup_error_code(sys_ec))
+      : m_sys_err(sys_ec)
     {
       try
       {
         m_imp_ptr.reset( new m_imp );
         m_imp_ptr->m_what = what;
-      }
-      catch (...) { m_imp_ptr.reset(); }
-    }
-
-    template<class Path>
-    basic_filesystem_error<Path>::basic_filesystem_error(
-      const std::string & what, const path_type & path1, error_code ec )
-      : m_sys_err(0), m_err(ec)
-    {
-      try
-      {
-        m_imp_ptr.reset( new m_imp );
-        m_imp_ptr->m_what = what;
-        m_imp_ptr->m_path1 = path1;
       }
       catch (...) { m_imp_ptr.reset(); }
     }
@@ -897,7 +864,7 @@ namespace boost
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, const path_type & path1,
       system_error_type sys_err_code )
-      : m_sys_err(sys_err_code), m_err(lookup_error_code(sys_err_code))
+      : m_sys_err(sys_err_code)
     {
       try
       {
@@ -912,7 +879,7 @@ namespace boost
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, const path_type & path1,
       const path_type & path2, system_error_type sys_err_code )
-      : m_sys_err(sys_err_code), m_err(lookup_error_code(sys_err_code))
+      : m_sys_err(sys_err_code)
     {
       try
       {
