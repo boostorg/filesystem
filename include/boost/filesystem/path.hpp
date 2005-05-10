@@ -84,6 +84,7 @@ namespace boost
       not_found_error,
       not_directory_error,
       busy_error,       // implies trying again might succeed
+      not_ready_error,  // ditto
       already_exists_error,
       not_empty_error,
       is_directory_error,
@@ -589,7 +590,7 @@ namespace boost
     {
 #   ifdef BOOST_WINDOWS_PATH
       return m_path.size() > 1
-        && ( m_path[1] == ':' // "c:"
+        && ( m_path[1] == path_device_delim<path_type>::value // "c:"
           || m_path[m_path.size()-1] == path_device_delim<path_type>::value // "prn:"
           || (m_path[0] == path_separator<path_type>::value
             && m_path[1] == path_separator<path_type>::value) // "//share"
@@ -641,7 +642,7 @@ namespace boost
         ) )
         boost::throw_exception( basic_filesystem_error<path_type>(
          "boost::filesystem::basic_path operator/= appending / to",
-         *this, path_error ) );
+         *this, 0 ) );
 
       while ( *next_p != 0 )
       {
@@ -659,7 +660,7 @@ namespace boost
           && m_path[m_path.size()-1] == path_separator<path_type>::value )
           boost::throw_exception( basic_filesystem_error<path_type>(
             "boost::filesystem::basic_path operator/= appending / to",
-            *this, path_error ) );
+            *this, 0 ) );
         m_path += cur;
       }
 

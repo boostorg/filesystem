@@ -73,6 +73,8 @@ namespace detail
       BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
         status_api( const std::string & ph,
                     boost::filesystem::system_error_type * ec = 0 );
+      BOOST_FILESYSTEM_DECL bool
+        symbolic_link_exists_api( const std::string & ); // deprecated
 #   ifndef BOOST_WINDOWS_API
       BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
         symlink_status_api( const std::string & ph,
@@ -92,6 +94,9 @@ namespace detail
         get_current_path_api( std::string & ph );
       BOOST_FILESYSTEM_DECL query_pair
         create_directory_api( const std::string & ph );
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+        create_hard_link_api( const std::string & existing_ph,
+          const std::string & new_ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         remove_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -119,6 +124,9 @@ namespace detail
         get_current_path_api( std::wstring & ph );
       BOOST_FILESYSTEM_DECL query_pair
         create_directory_api( const std::wstring & ph );
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+        create_hard_link_api( const std::wstring & existing_ph,
+          const std::wstring & new_ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         remove_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -159,6 +167,9 @@ namespace detail
       { return symlink_status<path>( ph, ec ); }
     inline status_flag symlink_status( const wpath & ph, system_error_type * ec = 0 )
       { return symlink_status<wpath>( ph, ec ); }
+
+    inline bool symbolic_link_exists( const path & ph ) // deprecated
+    { return detail::symbolic_link_exists_api( ph.string() ); }
 
     template<class Path>
     typename boost::enable_if<is_basic_path<Path>, bool>::type
@@ -301,8 +312,8 @@ namespace detail
     typename boost::enable_if<is_basic_path<Path>, bool>::type
     create_directory( const Path & dir_ph )
     {
-      detail::query_pair result
-        = detail::create_directory_api( dir_ph.external_directory_string() );
+      detail::query_pair result(
+        detail::create_directory_api( dir_ph.external_directory_string() ) );
       if ( result.first != 0 )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::create_directory",
@@ -313,6 +324,26 @@ namespace detail
       { return create_directory<path>( dir_ph ); }
     inline bool create_directory( const wpath & dir_ph )
       { return create_directory<wpath>( dir_ph ); }
+
+    template<class Path>
+    typename boost::enable_if<is_basic_path<Path>, void>::type
+    create_hard_link( const Path & existing_file_ph, const Path & new_link_ph )
+    {
+      system_error_type result( 
+        detail::create_hard_link_api(
+          existing_file_ph.external_file_string(),
+          new_link_ph.external_file_string() ) );
+      if ( result != 0 )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::create_hard_link",
+          existing_file_ph, new_link_ph, result ) );
+    }
+    inline void create_hard_link( const path & existing_file_ph,
+      const path & new_link_ph )
+      { return create_hard_link<path>( existing_file_ph, new_link_ph ); }
+    inline void create_hard_link( const wpath & existing_file_ph,
+      const wpath & new_link_ph )
+      { return create_hard_link<wpath>( existing_file_ph, new_link_ph ); }
 
     template<class Path>
     typename boost::enable_if<is_basic_path<Path>, bool>::type
@@ -385,7 +416,7 @@ namespace detail
     }
 
     template< class Path >
-    Path initial_path()
+    const Path & initial_path()
     {
       static Path init_path;
       if ( init_path.empty() ) init_path = current_path<Path>();
