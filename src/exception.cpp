@@ -50,7 +50,7 @@ namespace
     { ERROR_LOCKED, fs::security_error },
     { ERROR_NOACCESS, fs::security_error },
     { ERROR_WRITE_PROTECT, fs::read_only_error },
-    { ERROR_NOT_READY, fs::io_error },
+    { ERROR_NOT_READY, fs::not_ready_error },
     { ERROR_SEEK, fs::io_error },
     { ERROR_READ_FAULT, fs::io_error },
     { ERROR_WRITE_FAULT, fs::io_error },

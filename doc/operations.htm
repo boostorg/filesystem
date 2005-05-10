@@ -29,11 +29,13 @@
 &nbsp;&nbsp;&nbsp; <a href="#file_size">file_size</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#create_hard_link">create_hard_link</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#current_path">current_path</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#complete">complete</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#system_complete">system_complete</a></p>
 
@@ -96,9 +98,9 @@ exposition, only the templated version of each non-member function is shown.</p>
 
     template&lt;class Path&gt; bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
 
-    template&lt;class Path&gt; bool is_file( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
 
-    template&lt;class Path&gt; bool is_symlink( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
 
     template&lt;class Path&gt; bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
 
@@ -111,6 +113,8 @@ exposition, only the templated version of each non-member function is shown.</p>
     template&lt;class Path&gt; void <a href="#last_write_time">last_write_time</a>( const <code>Path</code> &amp; ph, std::time_t new_time );
 
     template&lt;class Path&gt; bool <a href="#create_directory">create_directory</a>( const <code>Path</code> &amp; directory_ph );
+
+    template&lt;class Path&gt; void <a href="#create_hard_link">create_hard_link</a>( const Path &amp; existing_file_ph, const Path &amp; new_file_ph );
 
     template&lt;class Path&gt; bool <a href="#remove">remove</a>( const <code>Path</code> &amp; ph );
 
@@ -392,7 +396,7 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
       ftLastWriteTime.dwLowDateTime, and ftLastWriteTime.dwHighDateTime. 
       Note that for identical media (particularly bit-for-bit duplicate CD's, 
       Floppies, or memory cards)  equivalent() will return <code>true</code> even though the 
-      media are physically different. The Windows implementation does protect 
+      media are physically different. The Windows implementation  protects 
       against <a href="index.htm#Race-condition">race conditions</a>.</li>
     </ul>
   </blockquote>
@@ -455,6 +459,33 @@ establishment of the postcondition.</p>
 is_directory(directory_ph)</code></p>
 <p><b>Throws: </b>if <code>directory_ph.empty() || (exists(directory_ph) &amp;&amp; !is_directory(directory_ph)) || !exists(directory_ph/&quot;..&quot;)</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
+</blockquote>
+<h3><a name="create_hard_link">create_hard_link</a></h3>
+<blockquote>
+  <pre>template&lt;class Path&gt; void create_hard_link(
+   const Path &amp; existing_file_ph, const Path &amp; new_file_ph );</pre>
+  <p><b>Precondition:</b> <code>exists(existing_file_ph) &amp;&amp; !is_directory(existing_file_ph)<br>
+&nbsp;&nbsp; &amp;&amp; !exists(new_file_ph) &amp;&amp; !is_symlink(new_file_ph)</code></p>
+  <p><b>Postconditions:</b></p>
+  <ul>
+    <li><code>exists(existing_file_ph) &amp;&amp; exists(new_file_ph)<br>
+&nbsp;&nbsp; &amp;&amp; equivalent( existing_file_ph, new_file_ph )</code></li>
+    <li>The contents of the file <code>existing_file_ph</code> are unchanged.</li>
+  </ul>
+  <p><b>Remarks:</b> As with all Boost.Filesystem functions,
+  <a href="exception.htm">basic_filesystem_error</a> will be thrown if the 
+  operation fails. See <a href="index.htm#Common_Specifications">Common 
+  Specifications</a>. The exact causes of possible failures vary with the 
+  operating system. For example,&nbsp; some file systems do not support hard 
+  links at all, even on operating systems with hard link support. Many 
+  operating systems do not permit hard links between file systems, and many 
+  limit the number of links per file to a fairly small value (1023, on Windows NTFS, for example). See the Open Group Base Specifications System Interface 
+  for link() at
+  <a href="http://www.opengroup.org/onlinepubs/009695399/functions/link.html">
+  www.opengroup.org/onlinepubs/009695399/functions/link.html</a> for a complete 
+  list of POSIX errors which may be encountered.</p>
+  <p><b>Rationale:</b> Hard links to directories are not allowed because they 
+  are too non-portable.</p>
 </blockquote>
 <h3><a name="remove">remove</a></h3>
 <blockquote>
@@ -615,7 +646,7 @@ initial_path()</i>.</p>
 <blockquote>
 <p><code>template&lt;class Path&gt; Path complete( const Path &amp; ph, const Path &amp; base = initial_path&lt;Path&gt;() );</code></p>
 
-<p><b>Precondition:</b> <code>!ph.empty() &amp;&amp; base.is_complete() &amp;&amp; (ph.is_complete() || !ph.has_root_name())</code></p>
+<p><b>Precondition:</b> <code>base.is_complete() &amp;&amp; (ph.is_complete() || !ph.has_root_name())</code></p>
 
 <p><b>Effects:</b> Composes a complete path from <code>ph</code> and <code>base</code>, 
 using the following rules:</p>
@@ -721,7 +752,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14002" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13987" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

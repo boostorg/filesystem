@@ -34,6 +34,7 @@
 namespace fs = boost::filesystem;
 
 # if defined(BOOST_WINDOWS_API)
+#   define _WIN32_WINNT 0x0500 // Windows 2K or later
 #   include "windows.h"
 #   if defined(__BORLANDC__) || defined(__MWERKS__)
 #     if defined(__BORLANDC__)
@@ -438,6 +439,25 @@ namespace
     return std::make_pair( error, false );
   }
 
+  inline bool create_hard_link( const std::string & existing_ph,
+    const std::string & new_ph )
+    {  return ::CreateHardLinkA( new_ph.c_str(), existing_ph.c_str(), 0 ) != 0; }
+  inline bool create_hard_link( const std::wstring & existing_ph,
+    const std::wstring & new_ph )
+    {  return ::CreateHardLinkW( new_ph.c_str(), existing_ph.c_str(), 0 ) != 0; }
+         
+  template<class String>
+  boost::filesystem::system_error_type
+  create_hard_link_template( const String & existing_ph,
+    const String & new_ph )
+  {
+    // we don't allow hard links to directories; too non-portable
+    if ( fs::detail::status_api( existing_ph ) == fs::directory_flag )
+      return ERROR_ACCESS_DENIED;
+    return create_hard_link( existing_ph.c_str(), new_ph.c_str() )
+      ? 0 : ::GetLastError();
+  }
+
 #endif
 } // unnamed namespace
 
@@ -546,6 +566,16 @@ namespace boost
       BOOST_FILESYSTEM_DECL fs::detail::query_pair
       create_directory_api( const std::wstring & ph )
         { return create_directory_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL fs::system_error_type
+      create_hard_link_api( const std::string & existing_ph,
+        const std::string & new_ph )
+        { return create_hard_link_template( existing_ph, new_ph ); }
+
+      BOOST_FILESYSTEM_DECL fs::system_error_type
+      create_hard_link_api( const std::wstring & existing_ph,
+        const std::wstring & new_ph )
+        { return create_hard_link_template( existing_ph, new_ph ); }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       remove_api( const std::string & ph ) { return remove_template( ph ); }
@@ -824,16 +854,15 @@ namespace boost
         return 0;
       }
 
-      BOOST_FILESYSTEM_DECL query_pair
-      create_directory_api( const std::string & dir_ph )
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+      create_hard_link_api( const std::string & existing_ph,
+          const std::string & new__ph )
       {
-        if ( ::mkdir( dir_ph.c_str(), S_IRWXU|S_IRWXG|S_IRWXO ) == 0 )
-          return std::make_pair( 0, true );
-     // an error here may simply mean the postcondition is already met
-       if ( errno != EEXIST ) return std::make_pair( errno, false );
-        if ( status_api( dir_ph ) != fs::directory_flag )
-          return std::make_pair( ENOTDIR, false );
-        return std::make_pair( 0, false );
+        // we don't allow hard links to directories; too non-portable
+        if ( status_api( existing_ph ) == fs::directory_flag )
+          return EISDIR;
+        return ::link( existing_ph.c_str(), new_ph.c_str() ) == 0
+          ? 0 : errno;
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
