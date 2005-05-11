@@ -315,13 +315,14 @@ int test_main( int argc, char * argv[] )
   std::cout << "Local time one year ago should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
   std::cout << "Now get time difference" << std::endl;
   time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
+  time_diff -= 365*24*3600.0;
   std::cout << "Time difference is : " << time_diff << std::endl;
-  BOOST_CHECK( time_diff >= 365*24*3600.0 && time_diff < (366*24*3600.0 + 60.0) );
+  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
   std::cout << "Reset to current time" << std::endl;
   fs::last_write_time( file_ph, std::time(0) );
   std::cout << "And check that" << std::endl;
   time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_CHECK( time_diff >= -60.0 && time_diff < 60.0 );
+  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
   ft = fs::last_write_time( file_ph );
   std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
 
