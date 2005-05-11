@@ -686,12 +686,23 @@ namespace boost
           old_path, new_path, fs::detail::system_error_code() ) );
     }
 
+#ifdef BOOST_POSIX
+    namespace detail
+    {
+      void throw_copy_file_error( const path & from_file_ph,
+                    const path & to_file_ph )
+      {
+        boost::throw_exception( fs::filesystem_error(
+          "boost::filesystem::copy_file",
+          from_file_ph, to_file_ph, system_error_code() ) );
+      }
+    }
+#endif
+
     BOOST_FILESYSTEM_DECL void copy_file( const path & from_file_ph,
                     const path & to_file_ph )
     {
 #   ifdef BOOST_POSIX
-      // TODO: Ask POSIX experts if this is the best way to copy a file
-
       const std::size_t buf_sz = 32768;
       boost::scoped_array<char> buf( new char [buf_sz] );
       int infile=0, outfile=0;  // init quiets compiler warning
@@ -704,27 +715,40 @@ namespace boost
                               O_WRONLY | O_CREAT | O_EXCL,
                               from_stat.st_mode )) < 0 )
       {
-        if ( infile != 0 ) ::close( infile );
-        boost::throw_exception( filesystem_error(
-          "boost::filesystem::copy_file",
-          from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
+        if ( infile >= 0 ) ::close( infile );
+        detail::throw_copy_file_error( from_file_ph, to_file_ph );
       }
 
-      ssize_t sz;
-      while ( (sz = ::read( infile, buf.get(), buf_sz )) > 0
-        && (sz = ::write( outfile, buf.get(), sz )) > 0 ) {}
+      ssize_t sz, sz_read=1, sz_write;
+      while ( sz_read > 0
+        && (sz_read = ::read( infile, buf.get(), buf_sz )) > 0 )
+      {
+        // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
+        // Marc Rochkind, Addison-Wesley, 2004, page 94
+        sz_write = 0;
+        do
+        {
+          if ( (sz = ::write( outfile, buf.get(), sz_read - sz_write )) < 0 )
+          { 
+            sz_read = sz; // cause read loop termination
+            break;        //  and error to be thrown after closes
+          }
+          sz_write += sz;
+        } while ( sz_write < sz_read );
+      }
 
-      ::close( infile );
-      ::close( outfile );
+      if ( ::close( infile) < 0 ) sz_read = -1;
+      if ( ::close( outfile) < 0 ) sz_read = -1;
 
-      if ( sz != 0 )
+      if ( sz_read < 0 )
+        detail::throw_copy_file_error( from_file_ph, to_file_ph );
 #   else
       if ( !::CopyFileA( from_file_ph.string().c_str(),
                       to_file_ph.string().c_str(), /*fail_if_exists=*/true ) )
-#   endif
-        boost::throw_exception( filesystem_error(
+        boost::throw_exception( fs::filesystem_error(
           "boost::filesystem::copy_file",
-          from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
+          from_file_ph, to_file_ph, detail::system_error_code() ) );
+#   endif
     }
 
     BOOST_FILESYSTEM_DECL path current_path()
