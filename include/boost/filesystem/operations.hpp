@@ -101,6 +101,8 @@ namespace detail
         remove_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         rename_api( const std::string & from, const std::string & to );
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+        copy_file_api( const std::string & from, const std::string & to );
 
 #   ifdef BOOST_WINDOWS_API
       BOOST_FILESYSTEM_DECL  boost::filesystem::status_flag
@@ -131,6 +133,8 @@ namespace detail
         remove_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         rename_api( const std::wstring & from, const std::wstring & to );
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+        copy_file_api( const std::wstring & from, const std::wstring & to );
 #   endif
 
       template<class Path>
@@ -399,10 +403,22 @@ namespace detail
     inline void rename( const wpath & from_path, const wpath & to_path )
       { return rename<wpath>( from_path, to_path ); }
 
-    BOOST_FILESYSTEM_DECL void copy_file( const path & from_file_ph,
-                    const path & to_file_ph );
-    BOOST_FILESYSTEM_DECL void copy_file( const wpath & from_file_ph,
-                    const wpath & to_file_ph );
+    template<class Path>
+    typename boost::enable_if<is_basic_path<Path>, void>::type
+    copy_file( const Path & from_path, const Path & to_path )
+    {
+      system_error_type result = detail::copy_file_api(
+        from_path.external_directory_string(),
+        to_path.external_directory_string() );
+      if ( result != 0 )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::copy_file",
+          from_path, to_path, result ) );
+    }
+    inline void copy_file( const path & from_path, const path & to_path )
+      { return copy_file<path>( from_path, to_path ); }
+    inline void copy_file( const wpath & from_path, const wpath & to_path )
+      { return copy_file<wpath>( from_path, to_path ); }
 
     template< class Path >
     Path current_path()
