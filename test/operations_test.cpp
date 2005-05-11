@@ -335,12 +335,15 @@ int test_main( int argc, char * argv[] )
   }
 
   // copy_file() tests
-/*  fs::copy_file( file_ph, d1 / "f2" );
+  std::cout << "begin copy_file test..." << std::endl;
+  fs::copy_file( file_ph, d1 / "f2" );
+  std::cout << "copying complete" << std::endl;
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
   BOOST_CHECK( !fs::is_directory( d1 / "f2" ) );
   verify_file( d1 / "f2", "foobar1" );
-*/
+  std::cout << "copy_file test complete" << std::endl;
+
   // rename() test case numbers refer to operations.htm#rename table
 
   // [case 1] make sure can't rename() a non-existent file
