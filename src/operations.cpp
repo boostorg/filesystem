@@ -404,22 +404,6 @@ namespace
     return 0;
   }
 
-  inline boost::filesystem::system_error_type
-  move_file( const char * from, const char * to )
-   { return ::MoveFileA( from, to ); }
-
-  inline boost::filesystem::system_error_type
-  move_file( const wchar_t * from, const wchar_t * to )
-   { return ::MoveFileW( from, to ); }
-
-    template<class String>
-  boost::filesystem::system_error_type
-  inline rename_template( const String & from, const String & to )
-  {
-    return move_file( from.c_str(), to.c_str() )
-      ? 0 : ::GetLastError();
-  }
-
   inline bool create_directory( const std::string & dir )
     {  return ::CreateDirectoryA( dir.c_str(), 0 ) != 0; }
   inline bool create_directory( const std::wstring & dir )
@@ -585,11 +569,31 @@ namespace boost
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       rename_api( const std::string & from, const std::string & to )
-        { return rename_template( from, to ); }
+      {
+        return ::MoveFileA( from.c_str(), to.c_str() )
+          ? 0 : ::GetLastError();
+      }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       rename_api( const std::wstring & from, const std::wstring & to )
-        { return rename_template( from, to ); }
+      {
+        return ::MoveFileW( from.c_str(), to.c_str() )
+          ? 0 : ::GetLastError();
+      }
+
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+      copy_file_api( const std::string & from, const std::string & to )
+      {
+        return ::CopyFileA( from.c_str(), to.c_str(), /*fail_if_exists=*/true )
+          ? 0 : ::GetLastError();
+      }
+
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+      copy_file_api( const std::wstring & from, const std::wstring & to )
+      {
+        return ::CopyFileW( from.c_str(), to.c_str(), /*fail_if_exists=*/true )
+          ? 0 : ::GetLastError();
+      }
 
       BOOST_FILESYSTEM_DECL bool create_file_api( const std::wstring & ph,
         std::ios_base::openmode mode ) // true if succeeds
@@ -854,9 +858,21 @@ namespace boost
         return 0;
       }
 
+      BOOST_FILESYSTEM_DECL fs::detail::query_pair
+      create_directory_api( const std::string & ph )
+      {
+        if ( ::mkdir( ph.c_str(), S_IRWXU|S_IRWXG|S_IRWXO ) == 0 )
+          { return std::make_pair( 0, true ); }
+        if ( errno != EEXIST )
+          { return std::make_pair( errno, false ); }
+        if ( status_api( ph ) != fs::directory_flag )
+          { return std::make_pair( ENOTDIR, false ); }
+        return std::make_pair( 0, false );
+      }
+
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       create_hard_link_api( const std::string & existing_ph,
-          const std::string & new__ph )
+          const std::string & new_ph )
       {
         // we don't allow hard links to directories; too non-portable
         if ( status_api( existing_ph ) == fs::directory_flag )
@@ -890,6 +906,50 @@ namespace boost
           return EEXIST;
         return std::rename( from.c_str(), to.c_str() ) != 0 
           ? errno : 0;
+      }
+
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+      copy_file_api( const std::string & from_file_ph,
+        const std::string & to_file_ph )
+      {
+        const std::size_t buf_sz = 32768;
+        boost::scoped_array<char> buf( new char [buf_sz] );
+        int infile=0, outfile=0;  // init quiets compiler warning
+        struct stat from_stat;
+
+        if ( ::stat( from_file_ph.c_str(), &from_stat ) != 0
+          || (infile = ::open( from_file_ph.c_str(),
+                              O_RDONLY )) < 0
+          || (outfile = ::open( to_file_ph.c_str(),
+                                O_WRONLY | O_CREAT | O_EXCL,
+                                from_stat.st_mode )) < 0 )
+        {
+          if ( infile >= 0 ) ::close( infile );
+          return errno;
+        }
+
+        ssize_t sz, sz_read=1, sz_write;
+        while ( sz_read > 0
+          && (sz_read = ::read( infile, buf.get(), buf_sz )) > 0 )
+        {
+          // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
+          // Marc Rochkind, Addison-Wesley, 2004, page 94
+          sz_write = 0;
+          do
+          {
+            if ( (sz = ::write( outfile, buf.get(), sz_read - sz_write )) < 0 )
+            { 
+              sz_read = sz; // cause read loop termination
+              break;        //  and error to be thrown after closes
+            }
+            sz_write += sz;
+          } while ( sz_write < sz_read );
+        }
+
+        if ( ::close( infile) < 0 ) sz_read = -1;
+        if ( ::close( outfile) < 0 ) sz_read = -1;
+
+        return sz_read < 0 ? errno : 0;
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -949,56 +1009,3 @@ namespace boost
     } // namespace detail
   } // namespace filesystem
 } // namespace boost
-
-#if 0
-  
-namespace boost
-{
-  namespace filesystem
-  {
-
-
-    BOOST_FILESYSTEM_DECL void copy_file( const path & from_file_ph,
-                    const path & to_file_ph )
-    {
-#   ifdef BOOST_POSIX_API
-      // TODO: Ask POSIX experts if this is the best way to copy a file
-
-      const std::size_t buf_sz = 32768;
-      boost::scoped_array<char> buf( new char [buf_sz] );
-      int infile=0, outfile=0;  // init quiets compiler warning
-      struct stat from_stat;
-
-      if ( ::stat( from_file_ph.string().c_str(), &from_stat ) != 0
-        || (infile = ::open( from_file_ph.string().c_str(),
-                             O_RDONLY )) < 0
-        || (outfile = ::open( to_file_ph.string().c_str(),
-                              O_WRONLY | O_CREAT | O_EXCL,
-                              from_stat.st_mode )) < 0 )
-      {
-        if ( infile != 0 ) ::close( infile );
-        boost::throw_exception( filesystem_error(
-          "boost::filesystem::copy_file",
-          from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
-      }
-
-      ssize_t sz;
-      while ( (sz = ::read( infile, buf.get(), buf_sz )) > 0
-        && (sz = ::write( outfile, buf.get(), sz )) > 0 ) {}
-
-      ::close( infile );
-      ::close( outfile );
-
-      if ( sz != 0 )
-#   else
-      if ( !::CopyFileA( from_file_ph.string().c_str(),
-                      to_file_ph.string().c_str(), /*fail_if_exists=*/true ) )
-#   endif
-        boost::throw_exception( filesystem_error(
-          "boost::filesystem::copy_file",
-          from_file_ph, to_file_ph, fs::detail::system_error_code() ) );
-    }
-
-  } // namespace filesystem
-} // namespace boost
-#endif

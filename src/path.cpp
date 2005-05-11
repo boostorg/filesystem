@@ -20,6 +20,8 @@
 #include "../src//utf8_codecvt_facet.hpp"
 #include <boost/scoped_array.hpp>
 
+#include <cerrno>
+
 namespace
 {
   // for operating systems where UTF-8 is not the preferred external
@@ -47,9 +49,9 @@ namespace boost
         if ( convertor.out( 
           state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
           work.get()+work_size, to_next ) != std::codecvt_base::ok )
-          boost::throw_exception( wfilesystem_error(
+          boost::throw_exception( boost::filesystem::wfilesystem_error(
             "boost::filesystem::wpath::to_external conversion error",
-            ph, path_error ) );
+            ph, EINVAL ) );
         *to_next = '\0';
         return external_string_type( work.get() );
       }
@@ -65,8 +67,8 @@ namespace boost
         if ( convertor.in( 
           state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
           work.get()+work_size, to_next ) != std::codecvt_base::ok )
-          boost::throw_exception( wfilesystem_error(
-            "boost::filesystem::wpath::to_internal conversion error" ) );
+          boost::throw_exception( boost::filesystem::wfilesystem_error(
+            "boost::filesystem::wpath::to_internal conversion error", EINVAL ) );
         *to_next = L'\0';
         return internal_string_type( work.get() );
       }

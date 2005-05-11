@@ -349,29 +349,28 @@ int test_main( int argc, char * argv[] )
   // [case 1] make sure can't rename() a non-existent file
   BOOST_CHECK( !fs::exists( d1 / "f99" ) );
   BOOST_CHECK( !fs::exists( d1 / "f98" ) );
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, d1 / "f99", d1 / "f98" ),
-///    fs::not_found_error ) );
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, fs::path(""), d1 / "f98" ),
-///    fs::not_found_error ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, d1 / "f99", d1 / "f98" ),
+    fs::not_found_error ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, fs::path(""), d1 / "f98" ),
+    fs::not_found_error ) );
 
   // [case 2] rename() target.empty()
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, file_ph, "" ),
-///    fs::not_found_error ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, file_ph, "" ),
+    fs::not_found_error ) );
 
-#if 0
   // [case 3] make sure can't rename() to an existent file or directory
-///  BOOST_CHECK( fs::exists( dir / "f1" ) );
+  BOOST_CHECK( fs::exists( dir / "f1" ) );
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, dir / "f1", d1 / "f2" ) ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, dir / "f1", d1 / "f2" ) ) );
   // several POSIX implementations (cygwin, openBSD) report ENOENT instead of EEXIST,
   // so we don't verify error type on the above test.
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, dir, d1 ) ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, dir, d1 ) ) );
 
   // [case 4A] can't rename() file to a nonexistent parent directory
   BOOST_CHECK( !fs::is_directory( dir / "f1" ) );
   BOOST_CHECK( !fs::exists( dir / "d3/f3" ) );
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ),
-///    fs::not_found_error ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, dir / "f1", dir / "d3/f3" ),
+    fs::not_found_error ) );
 
   // [case 4B] rename() file in same directory
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
@@ -397,8 +396,8 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( !fs::exists( dir / "d3/d5" ) );
   BOOST_CHECK( !fs::exists( dir / "d3" ) );
-///  BOOST_CHECK( throws_fs_error( bind( fs::rename, d1, dir / "d3/d5" ),
-///    fs::not_found_error ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::rename<fs::path>, d1, dir / "d3/d5" ),
+    fs::not_found_error ) );
 
   // [case 5B] rename() on directory
   fs::path d3( dir / "d3" );
@@ -428,7 +427,7 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( !fs::exists( d2 / "d20" ) );
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
-#endif
+
   // remove() tests on file
   file_ph = dir / "shortlife";
   BOOST_CHECK( !fs::exists( file_ph ) );

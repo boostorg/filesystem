@@ -79,6 +79,7 @@ namespace
     { EACCES, fs::security_error },
     { EROFS, fs::read_only_error },
     { EIO, fs::io_error },
+    { EINVAL, fs::path_error },
     { ENAMETOOLONG, fs::path_error },
     { ENOENT, fs::not_found_error },
     { ENOTDIR, fs::not_directory_error },
