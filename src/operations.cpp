@@ -392,7 +392,7 @@ namespace
     fs::system_error_type ec;
     fs::status_flag sf( fs::detail::status_api( ph, &ec ) );
     if ( sf == fs::error_flag ) return ec;
-    if ( sf == fs::directory_flag )
+    if ( (sf & fs::directory_flag) != 0 )
     {
       if ( !remove_directory( ph ) )
         return ::GetLastError();
@@ -418,7 +418,7 @@ namespace
     error = ::GetLastError();
     // an error here may simply mean the postcondition is already met
     if ( error == ERROR_ALREADY_EXISTS
-      && fs::detail::status_api( dir_ph ) == fs::directory_flag )
+      && (fs::detail::status_api( dir_ph ) & fs::directory_flag) != 0 )
       return std::make_pair( 0, false );
     return std::make_pair( error, false );
   }
@@ -435,8 +435,9 @@ namespace
   create_hard_link_template( const String & existing_ph,
     const String & new_ph )
   {
-    // we don't allow hard links to directories; too non-portable
-    if ( fs::detail::status_api( existing_ph ) == fs::directory_flag )
+    // we don't allow hard links to directories; too non-portable.
+    // check in case future Windows allows hard links to directories
+    if ( (fs::detail::status_api( existing_ph ) & fs::directory_flag) != 0 )
       return ERROR_ACCESS_DENIED;
     return create_hard_link( existing_ph.c_str(), new_ph.c_str() )
       ? 0 : ::GetLastError();
@@ -746,8 +747,10 @@ namespace boost
           return ( (errno == ENOENT) || (errno == ENOTDIR) )
             ? fs::not_found_flag : fs::error_flag;
         }
-        return S_ISDIR( path_stat.st_mode )
-          ? fs::directory_flag : fs::file_flag;
+        fs::status_flag result(0);
+        if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
+        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
+        return result;
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
@@ -762,8 +765,10 @@ namespace boost
             ? fs::not_found_flag : fs::error_flag;
         }
         if ( S_ISLNK( path_stat.st_mode ) ) return fs::symlink_flag;
-        return S_ISDIR( path_stat.st_mode )
-          ? fs::directory_flag : fs::file_flag;
+        fs::status_flag result(0);
+        if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
+        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
+        return result;
       }
 
       // suggested by Walter Landry
@@ -863,10 +868,9 @@ namespace boost
       {
         if ( ::mkdir( ph.c_str(), S_IRWXU|S_IRWXG|S_IRWXO ) == 0 )
           { return std::make_pair( 0, true ); }
-        if ( errno != EEXIST )
+        if ( errno != EEXIST 
+          || (status_api( ph ) & fs::directory_flag) == 0 )
           { return std::make_pair( errno, false ); }
-        if ( status_api( ph ) != fs::directory_flag )
-          { return std::make_pair( ENOTDIR, false ); }
         return std::make_pair( 0, false );
       }
 
@@ -875,7 +879,7 @@ namespace boost
           const std::string & new_ph )
       {
         // we don't allow hard links to directories; too non-portable
-        if ( status_api( existing_ph ) == fs::directory_flag )
+        if ( (status_api( dir_ph ) & fs::directory_flag) != 0 )
           return EISDIR;
         return ::link( existing_ph.c_str(), new_ph.c_str() ) == 0
           ? 0 : errno;
@@ -902,7 +906,7 @@ namespace boost
       rename_api( const std::string & from, const std::string & to )
       {
         // POSIX is too permissive so must check
-        if ( (status_api( to ) & (fs::directory_flag|fs::file_flag)) != 0 ) 
+        if ( status_api( to ) != fs::not_found_flag ) 
           return EEXIST;
         return std::rename( from.c_str(), to.c_str() ) != 0 
           ? errno : 0;
