@@ -113,6 +113,15 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::complete( "foo" ).string() == fs::initial_path<fs::path>().string()+"/foo" );
   BOOST_CHECK( fs::complete( "/foo" ).string() == fs::initial_path<fs::path>().root_path().string()+"foo" );
 
+  // predicate and status tests
+  fs::path ng( " no-way, Jose" );
+  BOOST_CHECK( !fs::exists( ng ) );
+  BOOST_CHECK( !fs::is_directory( ng ) );
+  BOOST_CHECK( !fs::is_file( ng ) );
+  BOOST_CHECK( !fs::is_symlink( ng ) );
+  BOOST_CHECK( (fs::status( ng ) & fs::not_found_flag) != 0 );
+  BOOST_CHECK( (fs::status( "" ) & fs::not_found_flag) != 0 );
+
   fs::path dir(  fs::initial_path<fs::path>() / "temp_fs_test_directory" );
   
   // Windows only tests
@@ -157,9 +166,6 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::system_complete( "/foo" ).string()
       == fs::initial_path<fs::path>().root_path().string()+"foo" );
   } // POSIX
-
-  fs::path ng( " no-way, Jose" );
-  BOOST_CHECK( !fs::is_directory( ng ) );
 
   fs::remove_all( dir );  // in case residue from prior failed tests
   BOOST_CHECK( !fs::exists( dir ) );
@@ -258,6 +264,7 @@ int test_main( int argc, char * argv[] )
   create_file( file_ph, "" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
   BOOST_CHECK( fs::is_empty( file_ph ) );
   BOOST_CHECK( fs::file_size( file_ph ) == 0 );
   BOOST_CHECK( throws_fs_error( bind( fs::create_directory<fs::path>, file_ph ),
@@ -283,12 +290,26 @@ int test_main( int argc, char * argv[] )
   fs::path link_ph( dir / "f3" );
   BOOST_CHECK( !exists( link_ph ) );
   BOOST_CHECK( exists( file_ph ) );
-  fs::create_hard_link( file_ph, link_ph );
-  BOOST_CHECK( exists( link_ph ) );
-  BOOST_CHECK( exists( file_ph ) );
-  BOOST_CHECK( fs::equivalent( link_ph, file_ph ) );
-  BOOST_CHECK( throws_fs_error(
-    bind( fs::create_hard_link<fs::path>, dir, dir/"shouldnotwork" ), fs::not_found_error ) );
+  bool create_hard_link_ok(true);
+  try { fs::create_hard_link( file_ph, link_ph ); }
+  catch ( const fs::filesystem_error & ex )
+  {
+    create_hard_link_ok = false;
+    std::cout
+      << "create_hard_link() attempt failed\n"
+      << "filesystem_error.what() reports: " << ex.what() << '\n'
+      << "create_hard_link() may not be supported on this file system\n";
+  }
+
+  if ( create_hard_link_ok )
+  {
+    std::cout << "create_hard_link() succeeded\n";
+    BOOST_CHECK( exists( link_ph ) );
+    BOOST_CHECK( exists( file_ph ) );
+    BOOST_CHECK( fs::equivalent( link_ph, file_ph ) );
+    BOOST_CHECK( throws_fs_error(
+      bind( fs::create_hard_link<fs::path>, dir, dir/"shouldnotwork" ), fs::not_found_error ) );
+  }
 
   // write time tests
   std::time_t ft = fs::last_write_time( file_ph );
