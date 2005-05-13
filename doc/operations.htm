@@ -82,7 +82,7 @@ exposition, only the templated version of each non-member function is shown.</p>
     typedef basic_directory_iterator&lt;path&gt; directory_iterator;
     typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
 
-    typedef <i>bitmask-type</i> status_flag; // see C++ std 17.3.2.1.2 [lib.bitmask.types]
+    typedef <i>bitmask-type</i> <a name="status_flag">status_flag</a>; // see C++ std 17.3.2.1.2 [lib.bitmask.types]
 
     static const status_flag  error_flag;
     static const status_flag  not_found_flag;
@@ -246,7 +246,7 @@ unattractive.</p>
 
 <h3><a name="status">status</a></h3>
 <blockquote>
-  <pre>template&lt;class Path&gt; status_flag status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
+  <pre>template&lt;class Path&gt; <a href="#status_flag">status_flag</a> status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
     <p><b>Effects:</b></p>
     <ul>
       <li>If ph.empty():<br>
@@ -257,35 +257,44 @@ unattractive.</p>
       </ul>
       </li>
       <li>Queries the operating system to determine the attributes of 
-    path <code>p</code>. If <code>p</code> is a symbolic link, the link is 
+    path <code>p</code>, as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
+      stat(). Thus if <code>p</code> is a symbolic link, the link is 
       resolved (that is, deep semantics).<br>
 &nbsp;</li>
-      <li>If the operating system does not report an error for the query:<br>
+      <li>If the query does not report an error:<br>
 &nbsp;<ul>
-        <li>If the attributes indicate a directory (see
-        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        <li>Set result to 0;</li>
+        <li>If the attributes indicate a directory, as if by
+        <a href="design.htm#POSIX-01">[POSIX-01]</a> S_ISDIR() (also see
+        <a href="i18n.html#Expectations">expectations</a>), <code>result |=
         directory_flag</code>.</li>
-        <li>If the attributes indicate a file&nbsp; (see
-        <a href="i18n.html#Expectations">expectations</a>), return <code>
+        <li>If the attributes indicate a file, as if by
+        <a href="design.htm#POSIX-01">[POSIX-01]</a>&nbsp;S_ISREG() (also see
+        <a href="i18n.html#Expectations">expectations</a>), <code>result |=
         file_flag</code>.</li>
-        <li>Otherwise, return <span style="background-color: #FF0000">XXXXXXXX</span>.</li>
+        <li>Return result.</li>
       </ul>
       </li>
   </ul>
   <ul>
-    <li>If the operating system reports an error for the query:<br>
+    <li>If the query reports an error:<br>
 &nbsp;<ul>
       <li>If ec != 0, set *ec to the error code reported by the operating 
       system.</li>
-      <li>If the operating system reports an error indicating that <code>p</code> 
+      <li>If the query reports an error indicating that <code>p</code> 
       could <a href="#not_found_remark">not be found</a>, return <code>
       not_found_flag</code>.</li>
       <li>Otherwise, return <code>error_flag</code>.</li>
     </ul>
     </li>
   </ul>
-    <p><b>Returns:</b> <code>error_flag</code>, <code>not_found_flag</code>, <code>directory_flag</code>, or
-    <code>file_flag</code>.</p>
+    <p><b>Returns:</b> </p>
+    <ul>
+      <li> <code>error_flag</code> or <code>not_found_flag</code></li>
+      <li>Otherwise, any (or none) of the following, or'ed together: <code>
+      directory_flag</code>,&nbsp;
+    <code>file_flag</code>. <i>[More status bits may be added in the future.]</i></li>
+  </ul>
     <p><b><a name="not_found_remark">Remark</a>:</b> On POSIX <code>
     not_found_flag </code>is indicated by errors ENOENT and ENOTDIR. On Windows, 
     by errors ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND, and ERROR_BAD_NETPATH.</p>
@@ -303,44 +312,54 @@ unattractive.</p>
       </ul>
       </li>
       <li>Queries the operating system to determine the attributes of 
-    path <code>p</code>. If <code>p</code> is a symbolic link, the link is not 
-      resolved (that is, shallow semantics).<br>
+    path <code>p</code>, as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
+      lstat(). Thus if <code>p</code> is a symbolic link, the link is 
+      no resolved (that is, shallow semantics).<br>
 &nbsp;</li>
-      <li>If the operating system does not report an error for the query:<br>
+      <li>If the query does not report an error:<br>
 &nbsp;<ul>
-        <li>If the attributes indicate a directory (see
-        <a href="i18n.html#Expectations">expectations</a>), return <code>
-        directory_flag</code>.</li>
-        <li>If the attributes indicate a file&nbsp; (see
-        <a href="i18n.html#Expectations">expectations</a>), return <code>
-        file_flag</code>.</li>
-        <li>If the attributes indicate a symbolic link&nbsp; (see
+        <li>If the attributes indicate a symbolic link, as if by
+        <a href="design.htm#POSIX-01">[POSIX-01]</a> S_ISLNK() (also see
         <a href="i18n.html#Expectations">expectations</a>), return <code>
         symlink_flag</code>.</li>
-        <li>Otherwise, return <span style="background-color: #FF0000">XXXXXXXX</span>.</li>
+        <li>Set result to 0;</li>
+        <li>If the attributes indicate a directory, as if by
+        <a href="design.htm#POSIX-01">[POSIX-01]</a> S_ISDIR() (also see
+        <a href="i18n.html#Expectations">expectations</a>), <code>result |=
+        directory_flag</code>.</li>
+        <li>If the attributes indicate a file, as if by
+        <a href="design.htm#POSIX-01">[POSIX-01]</a>&nbsp;S_ISREG() (also see
+        <a href="i18n.html#Expectations">expectations</a>), <code>result |=
+        file_flag</code>.</li>
+        <li>Return result.</li>
       </ul>
       </li>
   </ul>
   <ul>
-    <li>If the operating system reports an error for the query:<br>
+    <li>If the query reports an error:<br>
 &nbsp;<ul>
       <li>If ec != 0, set *ec to the error code reported by the operating 
       system.</li>
-      <li>If the operating system reports an error indicating that <code>p</code> 
+      <li>If the query reports an error indicating that <code>p</code> 
       could <a href="#not_found_remark">not be found</a>, return <code>
       not_found_flag</code>.</li>
       <li>Otherwise, return <code>error_flag</code>.</li>
     </ul>
     </li>
   </ul>
-    <p><b>Returns:</b> <code>error_flag</code>, <code>not_found_flag</code>, <code>directory_flag</code>,
-    <code>file_flag,</code> or
-    <code>symlink_flag</code>.</p>
+    <p><b>Returns:</b> </p>
+    <ul>
+      <li> <code>error_flag,</code> <code>not_found_flag</code>, or <code>
+      symlink_flag</code>.</li>
+      <li>Otherwise, any (or none) of the following, or'ed together: <code>
+      directory_flag</code>,&nbsp;
+    <code>file_flag</code>. <i>[More status bits may be added in the future.]</i></li>
+  </ul>
 <p><b>Note:</b> The Microsoft Windows operating system does not currently 
 support symbolic links, so
     <code>symlink_flag</code> is never returned on that platform. (Short-cut files (.lnk) are a Windows application 
-feature, not an O/S feature.) Programmers should still test for symbolic links 
-where applicable in case later Windows versions add the feature, and also so that programs 
+feature, not an O/S feature.) Windows programmers should still test for symbolic links 
+if applicable, in case later Windows versions add the feature, and also so that programs 
 will be portable to systems like POSIX, where symbolic links may be present.</p>
 </blockquote>
 
@@ -348,19 +367,19 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
-<p><b>Returns:</b> <code>!(status(ph) == not_found_flag)</code></p>
+<p><b>Returns:</b> <code>status(ph) != not_found_flag</code></p>
 </blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
-<p><b>Returns:</b> <code>status(ph) == directory_flag)</code></p>
+<p><b>Returns:</b> <code>(status(ph) &amp; directory_flag) != 0</code></p>
 </blockquote>
 <h3><a name="is_file">is_file</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
-<p><b>Returns:</b> <code>status(ph) == file_flag)</code></p>
+<p><b>Returns:</b> <code>(status(ph) &amp; file_flag) != 0</code></p>
 </blockquote>
 <h3><a name="is_symlink">is_symlink</a></h3>
 <blockquote>
@@ -379,27 +398,24 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
   use the <i><a href="path.htm#empty">basic_path::empty()</a></i> function.</p>
 </blockquote>
   <h3><a name="equivalent">equivalent</a></h3>
-<blockquote>
   <pre><code>template&lt;class Path&gt; </code>bool equivalent( const Path &amp; ph1, const Path &amp; ph2 );</pre>
+  <blockquote>
   <p><b>Returns:</b> <code>false</code> if <code>!exists(ph1) || !exists(ph2)</code>. 
   Otherwise, returns <code>true</code> if ph1 and ph2 resolve to the same file 
-  or directory, else <code>false</code>. The criteria used to determine sameness 
-  are implementation defined:</p>
-  <blockquote>
-    <ul>
-      <li>POSIX: stat() reports identical st_dev, st_ino, st_size, and st_mtime 
-      values. The POSIX implementation does not protect against
-      <a href="index.htm#Race-condition">race conditions</a>.<br>
-&nbsp;</li>
-      <li>Windows: GetFileInformationByHandle() reports identical dwVolumeSerialNumber, 
-      nFileIndexHigh, nFileIndexLow, nFileSizeHigh, nFileSizeLow values, 
-      ftLastWriteTime.dwLowDateTime, and ftLastWriteTime.dwHighDateTime. 
-      Note that for identical media (particularly bit-for-bit duplicate CD's, 
-      Floppies, or memory cards)  equivalent() will return <code>true</code> even though the 
-      media are physically different. The Windows implementation  protects 
-      against <a href="index.htm#Race-condition">race conditions</a>.</li>
-    </ul>
-  </blockquote>
+  or directory, else <code>false</code>.</p>
+  <p>The criteria used to determine sameness is as if
+  <a href="design.htm#POSIX-01">[POSIX-01]</a> stat() reports identical st_dev, st_ino, st_size, and st_mtime 
+      values.</p>
+    <p><b>Note:</b> The POSIX implementation does not protect against
+      <a href="index.htm#Race-condition">race conditions</a>. POSIX requires 
+    that <i>&quot;st_dev</i> must be unique within a Local Area Network&quot;.</p>
+    <p><b>Note: </b>The Windows implementation protects against <a href="index.htm#Race-condition">race conditions</a>. 
+    As a surrogate for <a href="design.htm#POSIX-01">[POSIX-01]</a> stat(), the 
+    Windows implementation uses GetFileInformationByHandle(), and considers 
+    &quot;same&quot; to be equal values forl dwVolumeSerialNumber, 
+      nFileIndexHigh, nFileIndexLow, nFileSizeHigh, nFileSizeLow, ftLastWriteTime.dwLowDateTime, and ftLastWriteTime.dwHighDateTime. 
+      Thus for identical media (such as bit-for-bit duplicate CD's, floppies, or memory cards)  equivalent() will return <code>true</code> 
+    even though the media are physically different. </p>
   <p><b>Throws:</b> if <code>!exists(ph1) &amp;&amp; !exists(ph2)</code></p>
   <p><b>Warning:</b> This function may be impossible to implement on some 
   operating systems; users may wish to avoid use for code which may be ported to 
@@ -410,7 +426,7 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
   <p><code>template&lt;class Path&gt; boost::intmax_t file_size( const Path &amp; ph );</code></p>
   <p><b>Returns:</b> The size of the file in bytes as reported by the operating 
   system.</p>
-  <p><b>Throws:</b> if <code>!exists(ph) || is_directory(ph)</code></p>
+  <p><b>Throws:</b> if <code>!is_file(ph)</code></p>
 <p><b>Warming:</b> If a compiler does not support <code>maxint_t</code> large 
 enough to represent the operating system's maximum file size, or if the 
 implementation does not know how to query the operating system for large file 
@@ -427,6 +443,7 @@ function which iterates over a directory returning a count.</p>
 <h3><a name="last_write_time">last_write_time</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; std::time_t last_write_time( const Path &amp; ph );</code></p>
+<blockquote>
 <p><b>Warning:</b> The times associated with files are subject to many 
 vicissitudes. Each type of file system differs slightly in the details and 
 resolution of how times are recorded. The resolution is as low as one hour on 
@@ -441,7 +458,9 @@ operating system. If the time cannot be determined, returns (std::time_t)(-1).</
 <p>To convert the returned value to UTC or local time, use <code>std::gmtime()</code> 
 or <code>std::localtime()</code> respectively.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
+</blockquote>
 <p><code>template&lt;class Path&gt; void last_write_time( const Path &amp; ph, std::time_t new_time );</code></p>
+<blockquote>
 <p><b>Effects:</b> Asks the operating system to set the last write time to <code>
 new_time</code>, or to the current time if <code>new_time==std::time_t()</code>.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
@@ -449,14 +468,17 @@ new_time</code>, or to the current time if <code>new_time==std::time_t()</code>.
 as a postcondition because the times may differ somewhat on some operating 
 systems.</p>
 </blockquote>
+</blockquote>
 <h3><a name="create_directory">create_directory</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool create_directory( const Path &amp; directory_ph );</code></p>
 <p><b>Precondition:</b> <code>!directory_ph.empty()</code></p>
+<p><b>Effects:</b> If the postcondition is not already met, it is established as 
+if by <a href="design.htm#POSIX-01">[POSIX-01]</a> mkdir() with a second 
+argument of S_IRWXU|S_IRWXG|S_IRWXO.</p>
 <p><b>Returns:</b> The value of <code>!exists( directory_ph )</code> prior to the 
 establishment of the postcondition.</p>
-<p><b>Postcondition:</b> <code>exists(directory_ph) &amp;&amp; 
-is_directory(directory_ph)</code></p>
+<p><b>Postcondition:</b> <code>is_directory(directory_ph)</code></p>
 <p><b>Throws: </b>if <code>directory_ph.empty() || (exists(directory_ph) &amp;&amp; !is_directory(directory_ph)) || !exists(directory_ph/&quot;..&quot;)</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
 </blockquote>
@@ -466,6 +488,8 @@ See <a href="#empty_rationale">empty path rationale</a>.</p>
    const Path &amp; existing_file_ph, const Path &amp; new_file_ph );</pre>
   <p><b>Precondition:</b> <code>exists(existing_file_ph) &amp;&amp; !is_directory(existing_file_ph)<br>
 &nbsp;&nbsp; &amp;&amp; !exists(new_file_ph) &amp;&amp; !is_symlink(new_file_ph)</code></p>
+<p><b>Effects:</b> The postcondition is established, as if by
+<a href="design.htm#POSIX-01">[POSIX-01]</a> link().</p>
   <p><b>Postconditions:</b></p>
   <ul>
     <li><code>exists(existing_file_ph) &amp;&amp; exists(new_file_ph)<br>
@@ -479,10 +503,9 @@ See <a href="#empty_rationale">empty path rationale</a>.</p>
   operating system. For example,&nbsp; some file systems do not support hard 
   links at all, even on operating systems with hard link support. Many 
   operating systems do not permit hard links between file systems, and many 
-  limit the number of links per file to a fairly small value (1023, on Windows NTFS, for example). See the Open Group Base Specifications System Interface 
-  for link() at
-  <a href="http://www.opengroup.org/onlinepubs/009695399/functions/link.html">
-  www.opengroup.org/onlinepubs/009695399/functions/link.html</a> for a complete 
+  limit the number of links per file to a fairly small value (1023, on Windows NTFS, 
+  for example). See <a href="design.htm#POSIX-01">[POSIX-01]</a> link() 
+  specifications for a complete 
   list of POSIX errors which may be encountered.</p>
   <p><b>Rationale:</b> Hard links to directories are not allowed because they 
   are too non-portable.</p>
@@ -491,6 +514,8 @@ See <a href="#empty_rationale">empty path rationale</a>.</p>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool remove( const Path &amp; ph );</code></p>
 <p><b>Precondition:</b> <code>!ph.empty()</code></p>
+<p><b>Effects:</b> If the postcondition is not already met, it is established as 
+if by <a href="design.htm#POSIX-01">[POSIX-01]</a> remove().</p>
 <p><b>Returns:</b> The value of <code>exists( ph )</code> prior to the 
 establishment of the postcondition. </p>
 <p><b>Postcondition:</b> <code>!exists( ph )</code></p>
@@ -517,7 +542,7 @@ was changed to reflect user complaints.</p>
 <blockquote>
 <p><code>template&lt;class Path&gt; unsigned long remove_all( const Path &amp; ph );</code></p>
 <p><b>Precondition:</b> <code>!ph.empty()</code></p>
-<p><b>Postcondition:</b> <code>!exists( ph ) &amp;&amp; !symbolic_link_exists( ph )</code></p>
+<p><b>Postcondition:</b> <code>!exists( ph ) &amp;&amp; !is_symlink( ph )</code></p>
 <p><b>Returns:</b> The number of files and directories removed.</p>
 <p><b>Throws:</b> if<code> ph.empty()</code>. See <a href="#empty_rationale">
 empty path rationale</a>.</p>
@@ -526,11 +551,12 @@ themselves deleted, rather than what they point to being deleted.</p>
 </blockquote>
 <h3><a name="rename">rename</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; void rename( const Path &amp; source, const Path &amp; target 
+<p><code>template&lt;class Path&gt; void rename( const Path &amp; old_ph, const Path &amp; new_ph 
 );</code></p>
-<p><b>Precondition:</b> <code>!source.empty() &amp;&amp; !target.empty()</code></p>
-<p><b>Effects:</b> Changes the name of&nbsp; file or directory <i>source</i> 
-to <i>target</i>. Specifically:</p>
+<p><b>Precondition:</b> <code>!old_ph.empty() &amp;&amp; !new_ph.empty()</code></p>
+<p><b>Effects:</b> As if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
+rename(), changes the name of&nbsp; file or directory <i>old_ph</i> 
+to <i>new_ph</i>. Specifically:</p>
 <table border="1" cellpadding="5">
   <tr>
     <td><b>Source</b></td>
@@ -541,11 +567,11 @@ to <i>target</i>. Specifically:</p>
     <td>!exists()</td>
     <td>&nbsp;</td>
     <td>Throw <a href="exception.htm">filesystem_error</a>. Note that !exists() 
-    covers the source.empty() case. [case 1] </td>
+    covers the old_ph.empty() case. [case 1] </td>
   </tr>
   <tr>
     <td>&nbsp;</td>
-    <td>target.empty()</td>
+    <td>new_ph.empty()</td>
     <td>Throw <a href="exception.htm">filesystem_error</a>. See
     <a href="#empty_rationale">create_directory() rationale</a>. [case 2] </td>
   </tr>
@@ -557,33 +583,33 @@ to <i>target</i>. Specifically:</p>
   <tr>
     <td>!is_directory()</td>
     <td>&nbsp;</td>
-    <td>If !exists( target / &quot;..&quot; ) throw <a href="exception.htm">
+    <td>If !exists( new_ph / &quot;..&quot; ) throw <a href="exception.htm">
     filesystem_error</a>. [case 4A] <br>
-    The source.leaf() name is changed to 
-    target.leaf(). [case 4B] <br>
-    If source / &quot;..&quot; resolves to a different directory than 
-    target / &quot;..&quot;, the renamed source file is moved there. [case 4C] </td>
+    The old_ph.leaf() name is changed to 
+    new_ph.leaf(). [case 4B] <br>
+    If old_ph / &quot;..&quot; resolves to a different directory than 
+    new_ph / &quot;..&quot;, the renamed old_ph file is moved there. [case 4C] </td>
   </tr>
   <tr>
     <td>is_directory()</td>
     <td>&nbsp;</td>
-    <td>If !exists( target / &quot;..&quot; ) throw <a href="exception.htm">
+    <td>If !exists( new_ph / &quot;..&quot; ) throw <a href="exception.htm">
     filesystem_error</a>. [case 5A]<br>
-    The source.leaf() name is changed to 
-    target.leaf(). [case 5B] <br>
-    If system_complete(source.banch_path()) resolves to a 
-    different directory than system_complete(target.branch_path()),&nbsp; the 
-    renamed source directory is moved there. [case 5C] </td>
+    The old_ph.leaf() name is changed to 
+    new_ph.leaf(). [case 5B] <br>
+    If system_complete(old_ph.banch_path()) resolves to a 
+    different directory than system_complete(new_ph.branch_path()),&nbsp; the 
+    renamed old_ph directory is moved there. [case 5C] </td>
   </tr>
   </table>
-<p><b>Postconditions:</b> <code>!exists(source) &amp;&amp; exists(target)</code>, 
-and the <i>source</i> file or directory contents and attributes are otherwise unchanged.</p>
+<p><b>Postconditions:</b> <code>!exists(old_ph) &amp;&amp; exists(new_ph)</code>, 
+and the <i>old_ph</i> file or directory contents and attributes are otherwise unchanged.</p>
 <p><b>Throws:</b> See Effects table above. See <a href="#empty_rationale">empty 
 path rationale</a>.</p>
-<p><b>Rationale:</b> Because <i>rename</i> is logically the same operation as <i>move</i>, 
-there is no need for a separate <i>move</i> function. The choice of the name is 
-based on existing practice in the C, C++, and POSIX libraries, and because the 
-name <i>move</i> implies physical file movement, which does not in fact occur.</p>
+<p><b>Rationale:</b> A separate <i>move</i> function is not provided because <i>rename</i> is logically the same operation as <i>move</i>,. The choice of the
+<i>rename</i> name is based on existing practice in the C, C++, and POSIX 
+libraries. Existence of <i>new_ph</i> is considered an error because that is 
+safer that removing an existing <i>new_ph</i>.</p>
 <p><b>Note:</b> Some operating systems with
 <a href="index.htm#multi-root_filesystem">multiple roots</a> do not allow <i>rename</i> 
 operations between roots, and such an attempted <i>rename</i> with throw a <i>
@@ -595,13 +621,13 @@ themselves renamed, rather than what they point to being renamed.</p>
 </blockquote>
 <h3><a name="copy_file">copy_file</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; void copy_file( const Path &amp; source_file, const 
-Path &amp; target_file );</code></p>
-<p><b>Precondition:</b> <code>!source.empty() &amp;&amp; !target.empty()</code></p>
-<p><b>Effects:</b> Copies the file represented by <i>source_file</i> to <i>
-target_file</i>.</p>
-<p><b>Throws:</b> if <code>!exists(source_file) || is_directory(source_file) 
-|| exists(target_file) || target_file.empty() || !exists(to_file_path/&quot;..&quot;))</code>. 
+<p><code>template&lt;class Path&gt; void copy_file( const Path &amp; old_ph_file, const 
+Path &amp; new_ph_file );</code></p>
+<p><b>Precondition:</b> <code>!old_ph.empty() &amp;&amp; !new_ph.empty()</code></p>
+<p><b>Effects:</b> Copies the file represented by <i>old_ph_file</i> to <i>
+new_ph_file</i>.</p>
+<p><b>Throws:</b> if <code>!exists(old_ph_file) || is_directory(old_ph_file) 
+|| exists(new_ph_file) || new_ph_file.empty() || !exists(to_file_path/&quot;..&quot;))</code>. 
 See <a href="#empty_rationale">empty path rationale</a>.</p>
 <p><b>Note:</b> File attributes are also copied. Specifically, POSIX <i>
 stat::st_mode</i>, and Windows <i>BY_HANDLE_FILE_INFORMATION::dwFileAttributes</i>. </p>
@@ -629,10 +655,9 @@ initial_path()</i>.</p>
 <h3><a name="current_path">current_path</a></h3>
 <blockquote>
   <pre><code>template&lt;class Path&gt; </code>Path current_path();</pre>
-  <p><b>Returns:</b> The current path as maintained by the operating system.</p>
+  <p><b>Returns:</b> The current path, as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
+  getcwd().</p>
   <p><b>Postcondition:</b> <code>current_path().is_complete()</code></p>
-  <p><b>Note:</b> The equivalent POSIX function is <i>getcwd()</i>. The 
-  equivalent Windows function is <i>GetCurrentDirectoryA()</i>.</p>
   <p><b>Warning:</b> The current path maintained by the operating system is 
   in-effect a dangerous global variable. It may be changed unexpectedly by a 
   third-party or system library function, or by another thread. For a safer 
@@ -752,7 +777,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13987" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13993" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

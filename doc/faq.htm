@@ -5,7 +5,7 @@
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 FAQ</h1>
 <p><b>Why base the generic-path string format on POSIX?</b></p>
-<p><a href="design.htm#POSIX-01">POSIX</a> is the basis for the most familiar path-string formats, including the 
+<p><a href="design.htm#POSIX-01">[POSIX-01]</a> is the basis for the most familiar path-string formats, including the 
 URL portion of URI's and the native Windows format. It is ubiquitous and 
 familiar.&nbsp; On many systems, it is very easy to implement because it is 
 either the native operating system format (Unix and Windows) or via a 
@@ -34,9 +34,10 @@ library.&nbsp;Gaining some advantage by using features specific to particular
 operating systems is not a requirement. There doesn't appear to be much need for 
 the ability to manipulate, say, a classic Mac OS path while running on an 
 OpenVMS machine.</p>
-<p>Furthermore, concepts like &quot;posix_file_system&quot; 
-are very slippery. What happens when a NTFS or ISO 9660 file system is mounted 
-in directory on a machine running a POSIX-like operating system, for example?</p>
+<p>Furthermore, concepts like &quot;file system&quot; 
+are very slippery. What happens when a NTFS or FAT file system is mounted 
+in directory on a machine running a POSIX-like operating system, for example? 
+Some of the POSIX API's may return very un-POSIX like results.</p>
 <p><b>Why not supply a 'handle' type, and let the file and directory operations 
 traffic in it?</b></p>
 <p>It isn't clear there is any feasible way to meet the &quot;portable script-style 
@@ -129,9 +130,6 @@ system depend as to be disqualified as a &quot;guaranteed presence&quot; operati
 <p>Global variables are considered harmful [<a href="design.htm#Wulf-Shaw-73">wulf-shaw-73</a>]. 
 While we can't prevent people from shooting themselves in the foot, we aren't 
 about to hand them a loaded gun pointed right at their big toe.</p>
-<p><b>Why aren't there query functions for compound conditions like existing_directory?</b></p>
-<p>After several attempts, named queries for multi-attribute proved a 
-slippery-slope; where do you stop?</p>
 <p><b>Why aren't <a name="wide-character_names">wide-character names</a> supported? Why not std::wstring or even 
 a templated type?</b></p>
 <p>They <u>are</u> supported, starting with version 1.33. See
@@ -158,7 +156,7 @@ canonical form. See <a href="design.htm#symbolic-link-use-case">use case</a>
 from Walter Landry.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28911" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13993" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

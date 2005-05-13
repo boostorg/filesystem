@@ -277,8 +277,40 @@ link itself. A few uses, such as remove() and rename(), modify the symbolic link
 rather than it's target. See an important
 <a href="operations.htm#symbolic-link-warning">symbolic links warning</a>.</p>
 <h2><a name="Common_Specifications">Common Specifications</a></h2>
+<p>Portions of the Boost.Filesystem specifications are defined by reference to 
+the <a href="design.htm#POSIX-01">[POSIX-01]</a> standard. How such 
+functionality is actually implemented is unspecified. In other words, an &quot;as if&quot; 
+rule applies to the actual implementation.</p>
+<p><b>Rationale:</b> Reference to <a href="design.htm#POSIX-01">[POSIX-01]</a> 
+allows precise semantics based on a joint ISO and IEEE standard that is widely 
+implemented and has been proven and refined during many years of existing 
+practice. Operating-system wars neutrality is preserved by allowing implementers 
+freedom to use native operating system API's for actual implementations.</p>
+<p>Implementations are encouraged, but not required, to provide behavior as 
+specified for each Boost.Filesystem function. If the specified behavior is not 
+provided, an implementation shall document the actual behavior provided.</p>
+<p><b>Rationale:</b> Portable behavior is strongly encouraged, since this is a 
+key objective of the library.&nbsp; It is not required because in some environments 
+portable behavior is impossible or unreasonably difficult to implement. The 
+documentation requirement allows users to be aware of potential portability 
+problems.</p>
+<p>For environments not supporting file systems with hierarchical directory 
+structures Boost.Filesystem headers shall fail to compile.</p>
+<p>If no file systems with hierarchical directory structures are available at 
+runtime, all Boost.Filesystem functions shall throw a basic_filesystem_error&lt;path&gt; 
+exception.</p>
+<p>&nbsp;If a Boost.Filesystem component depends on file system functionality not 
+available in the current environment:</p>
+<ul>
+  <li>Safe fallback behavior must be provided if possible.</li>
+  <li>Otherwise a basic_filesystem_error exception is thrown.</li>
+</ul>
+<p><b>Rationale:</b> Although the Boost.Filesystem implement runs on POSIX or 
+Windows, the above guidance is provided for implementations on operating systems 
+which can be supported only partially or not at all.</p>
+<h3>Requirements on implementations</h3>
 <p>Unless otherwise specified, all Filesystem Library member and non-member 
-functions have the following common specifications:</p>
+functions meet the following common requirements:</p>
 <p><b>Postconditions not guaranteed in the presence of race-conditions</b> - 
 Filesystem function specifications follow the form of C++ Standard Library 
 specifications, and so sometimes specify behavior in terms of postconditions. If 
@@ -288,7 +320,7 @@ caller.</p>
 <p><b>May throw exceptions</b> - Filesystem Library functions throw <i>
 <a href="exception.htm">basic_filesystem_error</a></i> 
 exceptions if they cannot successfully complete their operational 
-specifications. Function implementations may use C++ Standard Library functions, 
+specifications. Also, implementations may use C++ Standard Library functions, 
 which may throw <i>std::bad_alloc</i>. These exceptions may be thrown even 
 though the error condition leading to the exception is not explicitly specified 
 in the function's &quot;Throws&quot; paragraph.</p>
@@ -524,11 +556,11 @@ version 1.31.0.</p>
   <li><a href="i18n.htm#Preservation">Preservation</a> of existing user code whenever 
   possible. Deprecated features (<i>symbolic_link_exists()</i>, etc.) remain 
   available for legacy code.</li>
-  <li>New functions <a href="operations.htm#create_hard_link">create_hard_link</a>,
+  <li>New functions
   <a href="operations.htm#status">status</a>,
   <a href="operations.htm#symlink_status">symlink_status</a>,
-  <a href="operations.htm#is_symlink">is_symlink</a>
-  <span style="background-color: #FF0000">xxxxxxxxx</span></li>
+  <a href="operations.htm#is_file">is_file</a>,
+  <a href="operations.htm#is_symlink">is_symlink</a>, <a href="operations.htm#create_hard_link">create_hard_link</a>.</li>
   <li>Separation within the implementation of the distinction between the native 
   operating system path syntax and API. This is important for CYGWIN users 
   because it allows them to build for either the Windows or POSIX API's.</li>
@@ -580,7 +612,7 @@ version 1.31.0.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->09 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14004" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13991" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
