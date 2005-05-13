@@ -198,7 +198,7 @@ namespace detail
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::is_directory", ph, ec ) );
-      return sf == directory_flag;
+      return (sf & directory_flag) != 0;
     }
     inline bool is_directory( const path & ph )
       { return is_directory<path>( ph ); }
@@ -214,7 +214,7 @@ namespace detail
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::is_file", ph, ec ) );
-      return sf == file_flag;
+      return (sf & file_flag) != 0;
     }
     inline bool is_file( const path & ph )
       { return is_file<path>( ph ); }
