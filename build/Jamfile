@@ -9,7 +9,7 @@
 
 subproject libs/filesystem/build ;
 
-SOURCES = exception operations convenience utf8_codecvt_facet path ;
+SOURCES = convenience exception operations path portability utf8_codecvt_facet ;
 
 lib boost_filesystem
      : ../src/$(SOURCES).cpp
