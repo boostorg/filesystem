@@ -355,17 +355,17 @@ namespace boost
    
   //  path::name_checks  -----------------------------------------------------//
 
-/*      
     BOOST_FILESYSTEM_DECL bool portable_posix_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool windows_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_directory_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_file_name( const std::string & name );
-    BOOST_FILESYSTEM_DECL bool no_check( const std::string & name );   // always returns true
     BOOST_FILESYSTEM_DECL bool native( const std::string & name );
       // native(name) must return true for any name which MIGHT be valid
       // on the native platform.
-*/
+    inline bool no_check( const std::string & )
+      { return true; }
+
 // implementation  -----------------------------------------------------------//
 
     namespace detail

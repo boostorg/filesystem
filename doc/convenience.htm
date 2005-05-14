@@ -16,14 +16,6 @@
 <h1>
 <img border="0" src="../../../boost.png" align="center" width="277" height="86"><a href="../../../boost/filesystem/convenience.hpp">boost/filesystem/convenience.hpp</a></h1>
 
-<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
-  <tr>
-    <td width="100%"><span style="background-color: #FFFF00">&nbsp; The contents 
-    of this header have not been internationalized yet. Thus it can't be used 
-    until that work is done:-(&nbsp; </span></td>
-  </tr>
-</table>
-
 <p>Header <a href="../../../boost/filesystem/convenience.hpp">convenience.hpp</a> 
 provides convenience functions that combine lower-level functions in useful 
 ways.</p>
@@ -41,7 +33,8 @@ ways.</p>
 
 <blockquote>
 
-<p><code>bool create_directories( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+bool create_directories( const Path &amp; ph );</code></p>
 
 <p><b>Precondition:</b> <code>ph.empty() || <br>
 forall p: p == ph || is_parent(p, ph): is_directory(p) || !exists( p )</code>
@@ -49,7 +42,7 @@ forall p: p == ph || is_parent(p, ph): is_directory(p) || !exists( p )</code>
 <p><b>Returns:</b> The value of <code>!exists(ph)</code> prior to the 
 establishment of the postcondition.</p>
 
-<p><b>Postcondition:</b> <code>exists(ph) &amp;&amp; is_directory(ph)</code></p>
+<p><b>Postcondition:</b> <code>is_directory(ph)</code></p>
 
 <p><b>Throws:</b> <code>exists(ph) &amp;&amp; !is_directory(ph)</code></p>
 
@@ -61,11 +54,12 @@ establishment of the postcondition.</p>
 
 <blockquote>
 
-<p><code>std::string extension( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+typename Path::string_type extension( const Path &amp; ph );</code></p>
 
 <p><b>Returns:</b> if <code>ph.leaf()</code> contains a dot ('.'),
 returns the substring of <code>ph.leaf()</code> starting from the last dot and
-ending at the string's end. Otherwise, returns empty string.
+ending at the string's end. Otherwise, returns an empty string.
 <p><b>Rationale:</b> <ul>
 <li>The dot is included in the return value so that it's
 possible to tell if extension is empty or absent.
@@ -85,7 +79,8 @@ discussed the ADS issue.
 
 <blockquote>
 
-<p><code>std::string basename( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+typename Path::string_type basename( const Path &amp; ph );</code></p>
 
 <p><b>Returns:</b> if <code>ph.leaf()</code> contains a dot ('.'),
 returns the substring of <code>ph.leaf()</code> starting from beginning and
@@ -102,7 +97,8 @@ ending at the last dot (the dot is not included). Otherwise, returns
 
 <blockquote>
 
-<p><code>path change_extension( const path &amp; ph, const std::string &amp; new_extension );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+Path change_extension( const Path &amp; ph, const typename Path::string_type &amp; new_extension );</code></p>
 
 <p><b>Postcondition:</b> <code>basename(return_value) == basename(ph)
 &amp;&amp; extension(return_value) == new_extension</code>
@@ -124,7 +120,7 @@ is to drop the precondition.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28898" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13995" --></p>
 <p>© Copyright Vladimir Prus, 2003</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

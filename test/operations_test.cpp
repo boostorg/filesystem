@@ -63,8 +63,10 @@ namespace
     catch ( const fs::filesystem_error & ex )
     {
       if ( report_throws ) std::cout << ex.what() << "\n";
-      if ( ec == fs::no_error || ec == fs::lookup_error_code(ex.system_error()) ) return true;
-      std::cout << "exception reports " << fs::lookup_error_code(ex.system_error())
+      if ( ec == fs::no_error
+        || ec == fs::lookup_error_code(ex.system_error()) ) return true;
+      std::cout
+        << "exception reports " << fs::lookup_error_code(ex.system_error())
         << ", should be " << ec
         << "\n system_error() is " << ex.system_error()
         << std::endl;
