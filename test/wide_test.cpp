@@ -69,7 +69,7 @@ namespace
     BOOST_CHECK( count == 1 );
   }
 
-  // test boost::detail::utf8_codecvt_facet; even though it is not used by
+  // test boost::detail::utf8_codecvt_facet - even though it is not used by
   // Boost.Filesystem on Windows, early detection of problems is worthwhile.
   std::string to_external( const std::wstring & src )
   {
@@ -87,13 +87,18 @@ namespace
     return std::string( work.get() );
   }
 
-
 } // unnamed namespace
 
 //  test_main  ---------------------------------------------------------------//
 
 int test_main( int argc, char * argv[] )
 {
+
+  // So that tests are run with known encoding, use Boost UTF8 codecvt
+  std::locale global_loc = std::locale();
+  std::locale loc( global_loc, new boost::detail::utf8_codecvt_facet );
+  fs::wpath_traits::imbue( loc );
+
   std::string s( to_external( L"\x2780" ) );
   for (std::size_t i = 0; i < s.size(); ++i )
     std::cout << std::hex << int( static_cast<unsigned char>(s[i]) ) << " ";
@@ -101,13 +106,22 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( to_external( L"\x2780" ).size() == 3 );
   BOOST_CHECK( to_external( L"\x2780" ) == "\xE2\x9E\x80" );
 
+  std::cout << "begin path test..." << std::endl;
   test( fs::path( "foo" ), fs::path( "bar" ), fs::path( "." ) );
+  std::cout << "complete\n\n";
+
+  //  x2780 is circled 1 against white background == e2 9e 80 in UTF-8
+  //  x2781 is circled 2 against white background == e2 9e 81 in UTF-8
+  std::cout << "begin wpath test..." << std::endl;
   test( fs::wpath( L"\x2780" ), fs::wpath( L"\x2781" ), fs::wpath( L"." ) );
+  std::cout << "complete\n\n";
 
   const long dir[] = { 'm', 'o', 'o', 0 };
   const long file[] = { 'f', 'a', 'r', 0 };
   const long dot[] = { '.', 0 };
+  std::cout << "begin lpath test..." << std::endl;
   test( ::user::lpath( dir ), ::user::lpath( file ), ::user::lpath( dot ) );
+  std::cout << "complete\n\n";
 
   return 0;
 }

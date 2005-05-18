@@ -41,10 +41,10 @@ namespace
 }
 int test_main( int, char*[] )
 {
-//  path::default_name_check( fs::no_check ); // names below not valid on all O/S's
+  path::default_name_check( fs::no_check ); // names below not valid on all O/S's
                                             // but they must be tested anyhow
 
- //  create_directories() tests  ----------------------------------------------//
+//  create_directories() tests  ----------------------------------------------//
 
   BOOST_CHECK( !fs::create_directories( "" ) );  // should be harmless
   BOOST_CHECK( !fs::create_directories( "/" ) ); // ditto
@@ -74,7 +74,7 @@ int test_main( int, char*[] )
   BOOST_CHECK(
     throws_fs_error( boost::bind( fs::create_directories<fs::path>, is_a_file / "aa" ) ) );
   
-// extension() tests ----------------------------------------------------------//
+// extension() tests ---------------------------------------------------------//
 
   BOOST_CHECK( fs::extension("a/b") == "" );
   BOOST_CHECK( fs::extension("a/b.txt") == ".txt" );

@@ -879,7 +879,7 @@ namespace boost
           const std::string & new_ph )
       {
         // we don't allow hard links to directories; too non-portable
-        if ( (status_api( dir_ph ) & fs::directory_flag) != 0 )
+        if ( (status_api( existing_ph ) & fs::directory_flag) != 0 )
           return EISDIR;
         return ::link( existing_ph.c_str(), new_ph.c_str() ) == 0
           ? 0 : errno;

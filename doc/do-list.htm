@@ -3,24 +3,31 @@
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
 <ul>
-  <li>Windows: Some files seem to be poisoned to the point where you can't even 
-  do is_directory() on them without an access error. For example,&nbsp; pagefile.sys. Should directory_iterator ignore these files?
-  <i>Later: this is the is_accessible() versus exists() problem. Modify the 
-  sample program accordingly. Still Later: use status() or symlink_status().</i><br>
+  <li>Update, test, simple_ls.cpp.<br>
+&nbsp;</li>
+  <li>Need a recursive, glob-style directory iterator. See posts by John Maddock, 
+  others.<br>
 &nbsp;</li>
   <li>Windows: //network-name style paths need more analysis and test cases for system_complete() 
   and complete(). Also, path_test cases at line 410 need review, correction.<br>
 &nbsp;</li>
+  <li>On Darwin, &quot;foo//bar&quot; is valid and equivalent to &quot;foo/bar&quot;. (But foo//bar 
+  is an error on Windows.)<ul>
+  <li>Remove &quot;//&quot; check from basic_path::append</li>
+  <li>Should generic grammar be changed? What does POSIX say?</li>
+  <li>Should the generic grammar be defined by reference to POSIX?<br>
+&nbsp;</li>
+</ul>
+  </li>
   <li>Add a path::swap member function guaranteed not to throw. (Geurt Vos).<br>
 &nbsp;</li>
   <li>Should operations.cpp assert or BOOST_ASSERT on preconditions?<br>
 &nbsp;</li>
-  <li>POSIX wpath conversion probably needs at least an option to use global 
-  locale to support encodings like Russian koi8-r.</li>
+  <li>Document path traits, including wpath_traits imbue().</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13987" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14003" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
