@@ -13,6 +13,7 @@
 #define BOOST_FILESYSTEM_PATH_HPP
 
 #include <boost/filesystem/config.hpp>
+#include <boost/filesystem/mutable_constant.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/shared_ptr.hpp>
@@ -20,6 +21,7 @@
 #include <boost/static_assert.hpp>
 #include <string>
 #include <algorithm> // for lexicographical_compare
+#include <locale>
 #include <stdexcept>
 #include <cassert>
 
@@ -31,45 +33,42 @@ namespace boost
 {
   namespace filesystem
   {
-    namespace detail
-    {
-      struct path_traits;
-      struct wpath_traits;
-    }
+    struct path_traits;
+    struct wpath_traits;
 
     template<class String, class Traits> class basic_path;
-    typedef basic_path< std::string, detail::path_traits >    path;
-    typedef basic_path< std::wstring, detail::wpath_traits >  wpath;
+    typedef basic_path< std::string, path_traits >    path;
+    typedef basic_path< std::wstring, wpath_traits >  wpath;
 
-    namespace detail
+    struct path_traits
     {
-      struct path_traits
-      {
-        typedef std::string internal_string_type;
-        typedef std::string external_string_type;
-        static external_string_type to_external( const path &,
-          const internal_string_type & src ) { return src; }
-        static internal_string_type to_internal(
-          const external_string_type & src ) { return src; }
-      };
-      struct wpath_traits
-      {
-        typedef std::wstring internal_string_type;
+      typedef std::string internal_string_type;
+      typedef std::string external_string_type;
+      static external_string_type to_external( const path &,
+        const internal_string_type & src ) { return src; }
+      static internal_string_type to_internal(
+        const external_string_type & src ) { return src; }
+    };
+    struct wpath_traits
+    {
+      typedef std::wstring internal_string_type;
 # ifdef BOOST_WINDOWS_API
-        typedef std::wstring external_string_type;
-        static external_string_type to_external( const wpath &,
-          const internal_string_type & src ) { return src; }
-        static internal_string_type to_internal(
-          const external_string_type & src ) { return src; }
+      typedef std::wstring external_string_type;
+      static external_string_type to_external( const wpath &,
+        const internal_string_type & src ) { return src; }
+      static internal_string_type to_internal(
+        const external_string_type & src ) { return src; }
 # else
-        typedef std::string external_string_type;
-        static external_string_type to_external( const wpath & ph,
-          const internal_string_type & src );
-        static internal_string_type to_internal(
-          const external_string_type & src );
+      typedef std::string external_string_type;
+      static external_string_type to_external( const wpath & ph,
+        const internal_string_type & src );
+      static internal_string_type to_internal(
+        const external_string_type & src );
 # endif
-      };
-    } // namespace detail
+      BOOST_FILESYSTEM_DECL static void imbue( const std::locale & loc );
+      BOOST_FILESYSTEM_DECL static bool imbue( const std::locale & loc,
+        const std::nothrow_t & );
+    };
 
     enum error_code
     {
@@ -121,8 +120,8 @@ namespace boost
 
       typedef Path path_type;
 
-      basic_filesystem_error(
-        const std::string & what, system_error_type sys_ec );
+      explicit basic_filesystem_error(
+        const std::string & what, system_error_type sys_ec = 0 );
 
       basic_filesystem_error( const std::string & what,
         const path_type & path1, system_error_type sys_err_code );
