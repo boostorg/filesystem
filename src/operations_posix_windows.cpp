@@ -760,7 +760,12 @@ namespace boost
           buf( new char[static_cast<std::size_t>(path_max)] );
         if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
         {
-          if ( errno != ERANGE )
+          if ( errno != ERANGE
+// there is a bug in some versions of the Metrowerks C lib on the Mac: wrong errno set 
+#if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+            && errno != 0
+#endif
+            )
             boost::throw_exception(
               filesystem_error( "boost::filesystem::current_path", path(),
                 fs::detail::system_error_code() ) );
