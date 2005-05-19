@@ -10,9 +10,10 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include "../src/utf8_codecvt_facet.hpp"
 #include <boost/scoped_array.hpp>
 #include <boost/test/minimal.hpp>
+
+#include "../src/utf8_codecvt_facet.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -73,7 +74,7 @@ namespace
   // Boost.Filesystem on Windows, early detection of problems is worthwhile.
   std::string to_external( const std::wstring & src )
   {
-    boost::detail::utf8_codecvt_facet convertor;
+    fs::detail::utf8_codecvt_facet convertor;
     std::size_t work_size( convertor.max_length() * (src.size()+1) );
     boost::scoped_array<char> work( new char[ work_size ] );
     std::mbstate_t state;
@@ -96,7 +97,7 @@ int test_main( int argc, char * argv[] )
 
   // So that tests are run with known encoding, use Boost UTF8 codecvt
   std::locale global_loc = std::locale();
-  std::locale loc( global_loc, new boost::detail::utf8_codecvt_facet );
+  std::locale loc( global_loc, new fs::detail::utf8_codecvt_facet );
   fs::wpath_traits::imbue( loc );
 
   std::string s( to_external( L"\x2780" ) );
