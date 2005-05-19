@@ -32,13 +32,21 @@ namespace std
       return s1 == e ? 0 : (*s1<*s2 ? -1 : 1);
     }
     static size_t length(const char_type* s)
-    { const char_type* b=s; for(;*s!=0L;++s); return s-b; } 
-    static const char_type* find(const char_type* s, size_t n, const char_type& a){return 0;}
-    static char_type* move(char_type* s1, const char_type* s2, size_t n){return 0;}
+      { const char_type* b=s; for(;*s!=0L;++s); return s-b; } 
+ 
+    static const char_type* find(const char_type* s, size_t n, const char_type& a)
+    {   return 0; }
+
+    // copy semantics will do for wide_test
+    static char_type* move(char_type* s1, const char_type* s2, size_t n)
+      { char_type* b=s1; for(const char_type* e=s1+n;s1!=e;++s1,++s2) *s1=*s2; return b; }
+
     static char_type* copy(char_type* s1, const char_type* s2, size_t n)
-    { char_type* b=s1; for(const char_type* e=s1+n;s1!=e;++s1,++s2) *s1=*s2; return b; }
+      { char_type* b=s1; for(const char_type* e=s1+n;s1!=e;++s1,++s2) *s1=*s2; return b; }
+
     static char_type* assign(char_type* s, size_t n, char_type a)
-    { char_type* b=s; for(char_type* e=s+n;s!=e;++s) *s=a; return b; }
+      { char_type* b=s; for(char_type* e=s+n;s!=e;++s) *s=a; return b; }
+ 
     static int_type not_eof(const int_type& c);
     static char_type to_char_type(const int_type& c);
     static int_type to_int_type(const char_type& c);
@@ -64,7 +72,9 @@ namespace user
       external_string_type tmp;
       for ( internal_string_type::const_iterator it( src.begin() );
         it != src.end(); ++it )
+      {
         tmp += static_cast<external_string_type::value_type>(*it);
+      }
       return tmp;
     }
 

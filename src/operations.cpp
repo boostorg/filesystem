@@ -26,6 +26,10 @@
       // That is required at least on Solaris, and possibly on other
       // systems as well.
 
+// for some compilers (CodeWarrior, for example), windows.h
+// is getting included by some other boost header, so do this early:
+#define _WIN32_WINNT 0x0500 // Windows 2K or later
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
@@ -34,7 +38,6 @@
 namespace fs = boost::filesystem;
 
 # if defined(BOOST_WINDOWS_API)
-#   define _WIN32_WINNT 0x0500 // Windows 2K or later
 #   include "windows.h"
 #   if defined(__BORLANDC__) || defined(__MWERKS__)
 #     if defined(__BORLANDC__)

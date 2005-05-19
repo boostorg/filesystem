@@ -206,9 +206,10 @@ namespace boost
 
       basic_path(){}
 
-      basic_path( const string_type & str ) { operator/=( str ); }
+      basic_path( const string_type & str )
+        { operator/=( str ); }
       basic_path( const typename string_type::value_type * s )
-        { operator/=( s );}
+        { operator/=( s ); }
 
       ~basic_path() {}
 

@@ -275,6 +275,12 @@ int test_main( int argc, char * argv[] )
   file_ph = dir / "f1";
   create_file( file_ph, "foobar1" );
 
+  BOOST_CHECK( fs::exists( file_ph ) );
+  BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
+  BOOST_CHECK( fs::file_size( file_ph ) == 7 );
+  verify_file( file_ph, "foobar1" );
+
   // equivalence tests
   fs::path ng2("does_not_exist2");
   BOOST_CHECK( throws_fs_error( bind( fs::equivalent<fs::path>, ng, ng2 ) ) );
@@ -312,43 +318,6 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( throws_fs_error(
       bind( fs::create_hard_link<fs::path>, dir, dir/"shouldnotwork" ), fs::not_found_error ) );
   }
-
-  // write time tests
-  std::time_t ft = fs::last_write_time( file_ph );
-  std::cout << "UTC should currently be about " << std::asctime(std::gmtime(&ft)) << "\n";
-  std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << std::endl;
-
-  // hard to test time exactly, but except under the most unusual circumstances,
-  // time since file creation should be no more than one minute, I'm hoping.
-  double time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_CHECK( time_diff > -60.0 && time_diff < 60.0 );
-
-  BOOST_CHECK( fs::exists( file_ph ) );
-  BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::file_size( file_ph ) == 7 );
-  verify_file( file_ph, "foobar1" );
-
-  std::tm * tmp = std::localtime( &ft );
-  std::cout << "Year is " << tmp->tm_year << std::endl;
-  --tmp->tm_year;
-  std::cout << "Change year to " << tmp->tm_year << std::endl;
-  fs::last_write_time( file_ph, std::mktime( tmp ) );
-  std::cout << "Get new value" << std::endl;
-  ft = fs::last_write_time( file_ph );
-  std::cout << "Local time one year ago should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
-  std::cout << "Now get time difference" << std::endl;
-  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  time_diff -= 365*24*3600.0;
-  std::cout << "Time difference is : " << time_diff << std::endl;
-  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
-  std::cout << "Reset to current time" << std::endl;
-  fs::last_write_time( file_ph, std::time(0) );
-  std::cout << "And check that" << std::endl;
-  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
-  ft = fs::last_write_time( file_ph );
-  std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
-
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.
   {
@@ -469,9 +438,46 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( fs::is_directory( d1 ) );
   BOOST_CHECK( fs::is_empty( d1 ) );
-///  BOOST_CHECK( throws_fs_error( bind( fs::remove, dir ), fs::not_empty_error ) );
+  BOOST_CHECK( throws_fs_error( bind( fs::remove<fs::path>, dir ), fs::not_empty_error ) );
   BOOST_CHECK( fs::remove( d1 ) );
   BOOST_CHECK( !fs::exists( d1 ) );
+
+  // write time tests
+
+  file_ph = dir / "foobar2";
+  create_file( file_ph, "foobar2" );
+  BOOST_CHECK( fs::exists( file_ph ) );
+  BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
+  BOOST_CHECK( fs::file_size( file_ph ) == 7 );
+  verify_file( file_ph, "foobar2" );
+
+  // Some file system report last write time as local (FAT), while
+  // others (NTFS) report it as UTC. The C standard does not specify
+  // if time_t is local or UTC. 
+
+  std::time_t ft = fs::last_write_time( file_ph );
+  std::cout << "\nUTC last_write_time() for a file just created is "
+    << std::asctime(std::gmtime(&ft)) << std::endl;
+
+  std::tm * tmp = std::localtime( &ft );
+  std::cout << "\nYear is " << tmp->tm_year << std::endl;
+  --tmp->tm_year;
+  std::cout << "Change year to " << tmp->tm_year << std::endl;
+  fs::last_write_time( file_ph, std::mktime( tmp ) );
+  std::time_t ft2 = fs::last_write_time( file_ph );
+  std::cout << "last_write_time() for the file is now "
+    << std::asctime(std::gmtime(&ft2)) << std::endl;
+  BOOST_CHECK( ft != fs::last_write_time( file_ph ) );
+
+
+  std::cout << "\nReset to current time" << std::endl;
+  fs::last_write_time( file_ph, ft );
+  double time_diff = std::difftime( ft, fs::last_write_time( file_ph ) );
+  std::cout 
+    << "original last_write_time() - current last_write_time() is "
+    << time_diff << " seconds" << std::endl;
+  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
 
   // post-test cleanup
   BOOST_CHECK( fs::remove_all( dir ) != 0 );

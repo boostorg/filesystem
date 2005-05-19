@@ -117,7 +117,7 @@ int test_main( int argc, char * argv[] )
   test( fs::wpath( L"\x2780" ), fs::wpath( L"\x2781" ), fs::wpath( L"." ) );
   std::cout << "complete\n\n";
 
-  const long dir[] = { 'm', 'o', 'o', 0 };
+  const long dir[] = { 'b', 'o', 'o', 0 };
   const long file[] = { 'f', 'a', 'r', 0 };
   const long dot[] = { '.', 0 };
   std::cout << "begin lpath test..." << std::endl;

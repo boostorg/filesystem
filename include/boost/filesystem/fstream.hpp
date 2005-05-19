@@ -12,7 +12,7 @@
 #ifndef BOOST_FILESYSTEM_FSTREAM_HPP
 #define BOOST_FILESYSTEM_FSTREAM_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp> // for 8.3 hack (see below)
 #include <boost/utility/enable_if.hpp>
 #include <boost/detail/workaround.hpp>
 
@@ -37,11 +37,6 @@ namespace boost
       // The 8.3 hack:
       // C++98 does not supply a wchar_t open, so try to get an equivalent
       // narrow char name based on the short, so-called 8.3, name.
-      BOOST_FILESYSTEM_DECL  boost::filesystem::status_flag
-        status_api( const std::wstring & ph,
-                    boost::filesystem::system_error_type * ec );
-      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        remove_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL bool create_file_api( const std::wstring & ph,
         std::ios_base::openmode mode ); // true if succeeds
       BOOST_FILESYSTEM_DECL std::string narrow_path_api(

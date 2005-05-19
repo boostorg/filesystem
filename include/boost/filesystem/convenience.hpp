@@ -53,7 +53,7 @@ namespace boost
       typedef typename Path::string_type string_type;
       string_type leaf = ph.leaf();
 
-      string_type::size_type n = leaf.rfind('.');
+      typename string_type::size_type n = leaf.rfind('.');
       if (n != string_type::npos)
         return leaf.substr(n);
       else
@@ -71,7 +71,7 @@ namespace boost
     {
       typedef typename Path::string_type string_type;
       string_type leaf = ph.leaf();
-      string_type::size_type n = leaf.rfind('.');
+      typename string_type::size_type n = leaf.rfind('.');
       return leaf.substr(0, n);
     }
     inline std::string basename(const path& ph)
