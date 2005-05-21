@@ -8,6 +8,11 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+#include <boost/filesystem/config.hpp>
+# ifdef BOOST_FILESYSTEM_NARROW_ONLY
+#   error Narrow character paths only for this compiler and library combo
+# endif
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/scoped_array.hpp>

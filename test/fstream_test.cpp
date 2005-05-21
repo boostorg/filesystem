@@ -119,11 +119,17 @@ int test_main( int, char*[] )
 {
   std::cout << "path tests:\n";
   test( fs::path( "fstream_test_foo" ) );
+
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+
   std::cout << "\nwpath tests:\n";
   test( fs::wpath( L"fstream_test_\x2780" ) );
   const long lname[] = { 'f', 's', 'r', 'e', 'a', 'm', '_', 't', 'e', 's',
     't', '_', 'l', 'p', 'a', 't', 'h', 0 };
   std::cout << "\nlpath tests:\n";
   test( user::lpath( lname ) );
+
+#endif
+
   return 0;
 }

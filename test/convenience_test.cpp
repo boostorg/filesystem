@@ -17,6 +17,14 @@ using fs::path;
 #include <fstream>
 #include <iostream>
 
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# define BOOST_FS_IS_EMPTY fs::is_empty
+# define BOOST_BND(BOOST_FUNC_TO_DO) BOOST_FUNC_TO_DO<fs::path>
+#else
+# define BOOST_FS_IS_EMPTY fs::_is_empty
+# define BOOST_BND(BOOST_FUNC_TO_DO) BOOST_FUNC_TO_DO
+#endif
+
 namespace
 {
   template< typename F >
@@ -69,10 +77,10 @@ int test_main( int, char*[] )
     std::ofstream f( is_a_file.native_file_string().c_str() );
     BOOST_CHECK( !!f );
   }
-  BOOST_CHECK(
-    throws_fs_error( boost::bind( fs::create_directories<fs::path>, is_a_file ) ) );
-  BOOST_CHECK(
-    throws_fs_error( boost::bind( fs::create_directories<fs::path>, is_a_file / "aa" ) ) );
+  BOOST_CHECK( throws_fs_error(
+    boost::bind( BOOST_BND(fs::create_directories), is_a_file ) ) );
+  BOOST_CHECK( throws_fs_error(
+    boost::bind( BOOST_BND(fs::create_directories), is_a_file / "aa" ) ) );
   
 // extension() tests ---------------------------------------------------------//
 

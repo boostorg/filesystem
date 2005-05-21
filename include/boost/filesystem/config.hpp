@@ -37,6 +37,12 @@
 #   define BOOST_WINDOWS_PATH
 # endif
 
+//  narrow support only for badly broken compilers or libraries  -------------//
+
+# if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE)
+#   define BOOST_FILESYSTEM_NARROW_ONLY
+# endif
+
 //  enable dynamic linking on Windows  ---------------------------------------//
 
 #ifdef BOOST_HAS_DECLSPEC // defined in config system

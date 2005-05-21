@@ -167,7 +167,7 @@ namespace boost
         }
       }
 
-#   ifdef BOOST_WINDOWS_API
+#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
       BOOST_FILESYSTEM_DECL void
       what_formatter( system_error_type sys_err_code,
         const std::wstring &, const std::wstring &, std::string & target )

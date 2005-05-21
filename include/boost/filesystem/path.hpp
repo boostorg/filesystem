@@ -21,9 +21,12 @@
 #include <boost/static_assert.hpp>
 #include <string>
 #include <algorithm> // for lexicographical_compare
-#include <locale>
 #include <stdexcept>
 #include <cassert>
+
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   include <locale>
+# endif
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -34,11 +37,9 @@ namespace boost
   namespace filesystem
   {
     struct path_traits;
-    struct wpath_traits;
 
     template<class String, class Traits> class basic_path;
     typedef basic_path< std::string, path_traits >    path;
-    typedef basic_path< std::wstring, wpath_traits >  wpath;
 
     struct path_traits
     {
@@ -49,6 +50,13 @@ namespace boost
       static internal_string_type to_internal(
         const external_string_type & src ) { return src; }
     };
+
+
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+
+    struct wpath_traits;
+    typedef basic_path< std::wstring, wpath_traits >  wpath;
+
     struct wpath_traits
     {
       typedef std::wstring internal_string_type;
@@ -69,6 +77,7 @@ namespace boost
       BOOST_FILESYSTEM_DECL static bool imbue( const std::locale & loc,
         const std::nothrow_t & );
     };
+# endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
     enum error_code
     {
@@ -101,7 +110,7 @@ namespace boost
     system_message( system_error_type sys_err_code, std::string & target );
     // Effects: appends error message to target
 
-# ifdef BOOST_WINDOWS_API
+# if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
     BOOST_FILESYSTEM_DECL void
     system_message( system_error_type sys_err_code, std::wstring & target );
 # endif
@@ -159,30 +168,49 @@ namespace boost
     };
 
     typedef basic_filesystem_error<path> filesystem_error;
+
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
     typedef basic_filesystem_error<wpath> wfilesystem_error;
+# endif
 
     //  path traits  ---------------------------------------------------------//
 
     template<class Path> struct is_basic_path
-     { static const bool value = false; };
-    template<> struct is_basic_path<path> { static const bool value = true; };
-    template<> struct is_basic_path<wpath> { static const bool value = true; };
+      { BOOST_STATIC_CONSTANT( bool, value = false ); };
+    template<> struct is_basic_path<path>
+      { BOOST_STATIC_CONSTANT( bool, value = true ); };
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+    template<> struct is_basic_path<wpath>
+      { BOOST_STATIC_CONSTANT( bool, value = true ); };
+# endif
 
     // these only have to be specialized if Path::string_type::value_type
     // is not convertible from char
     template<class Path> struct path_separator
-      { static const char value = '/'; };
+      { BOOST_STATIC_CONSTANT( char, value = '/' ); };
 
     template<class Path> struct path_relative
-      { static const char value = '.'; };
+      { BOOST_STATIC_CONSTANT( char, value = '.' ); };
 
 # ifdef BOOST_WINDOWS_PATH
     template<class Path> struct path_alt_separator
-      { static const char value = '\\'; };
+      { BOOST_STATIC_CONSTANT( char, value = '\\' ); };
 
     template<class Path> struct path_device_delim
-      { static const char value = ':'; };
+      { BOOST_STATIC_CONSTANT( char, value = ':' ); };
 # endif
+
+    //  workaround for VC++ 7.0 and earlier issues with nested classes
+    namespace detail
+    {
+      template<class Path>
+      class iterator_helper
+      {
+      public:
+        static void do_increment( typename Path::iterator  & ph );
+        static void do_decrement( typename Path::iterator  & ph );
+      };
+    }
 
     //  basic_path  ----------------------------------------------------------//
   
@@ -221,11 +249,11 @@ namespace boost
        { return operator /=( rhs.c_str() ); }
 
       basic_path operator /( const basic_path & rhs ) const
-        { return basic_path( *this ) /= rhs; }
+        { return basic_path<String, Traits>( *this ) /= rhs; }
       basic_path operator /( const string_type & rhs ) const
-        { return basic_path( *this ) /= rhs; }
+        { return basic_path<String, Traits>( *this ) /= rhs; }
       basic_path operator /( const typename string_type::value_type * rhs ) const
-        { return basic_path( *this ) /= rhs; }
+        { return basic_path<String, Traits>( *this ) /= rhs; }
 
       // modification functions:
       basic_path & normalize();
@@ -275,12 +303,24 @@ namespace boost
         friend class boost::iterator_core_access;
         friend class boost::filesystem::basic_path<String, Traits>;
 
-        typename basic_path<String, Traits>::iterator::reference dereference() const
+//        typename basic_path<String, Traits>::iterator::reference dereference() const
+        const string_type & dereference() const
           { return m_name; }
         bool equal( const iterator & rhs ) const
           { return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos; }
-        void increment();
-        void decrement();
+
+        friend class boost::filesystem::detail::iterator_helper<path_type>;
+
+        void increment()
+        { 
+          boost::filesystem::detail::iterator_helper<path_type>::do_increment(
+            *this );
+        }
+        void decrement()
+        { 
+          boost::filesystem::detail::iterator_helper<path_type>::do_decrement(
+            *this );
+        }
 
         string_type             m_name;     // cache current element.
         const basic_path *      m_path_ptr; // path being iterated over.
@@ -326,6 +366,7 @@ namespace boost
       // Was qualified; como433beta8 reports:
       //    warning #427-D: qualified name is not allowed in member declaration 
       friend class iterator;
+      friend class boost::filesystem::detail::iterator_helper<path_type>;
 
       // Deprecated features ease transition for existing code. Don't use these
       // in new code.
@@ -802,49 +843,56 @@ namespace boost
         return itr;
       }
 
-    template<class String, class Traits>
-    void basic_path<String, Traits>::iterator::increment()
+    namespace detail
     {
-      assert( m_pos < m_path_ptr->m_path.size() ); // detect increment past end
-      m_pos += m_name.size();
-      if ( m_pos == m_path_ptr->m_path.size() )
+      template<class Path>
+      void iterator_helper<Path>::do_increment( typename Path::iterator & ph )
       {
-        m_name.clear();  // not strictly required, but might aid debugging
-        return;
-      }
-      if ( m_path_ptr->m_path[m_pos] == path_separator<path_type>::value )
-      {
-#       ifdef BOOST_WINDOWS_PATH
-        if ( m_name[m_name.size()-1] == path_device_delim<path_type>::value // drive or device
-          || (m_name[0] == '/' && m_name[1]
-            == path_separator<path_type>::value) ) // share
+        assert( ph.m_pos < ph.m_path_ptr->m_path.size() ); // detect increment past end
+        ph.m_pos += ph.m_name.size();
+        if ( ph.m_pos == ph.m_path_ptr->m_path.size() )
         {
-          m_name = path_separator<path_type>::value;
+          ph.m_name.clear();  // not strictly required, but might aid debugging
           return;
         }
-#       endif
-        ++m_pos;
+        if ( ph.m_path_ptr->m_path[ph.m_pos] == path_separator<Path>::value )
+        {
+  #       ifdef BOOST_WINDOWS_PATH
+          if ( ph.m_name[ph.m_name.size()-1] == path_device_delim<Path>::value // drive or device
+            || (ph.m_name[0] == '/' && ph.m_name[1]
+              == path_separator<Path>::value) ) // share
+          {
+            ph.m_name = path_separator<Path>::value;
+            return;
+          }
+  #       endif
+          ++ph.m_pos;
+        }
+        typename Path::string_type::size_type end_pos(
+          ph.m_path_ptr->m_path.find( path_separator<Path>::value, ph.m_pos ) );
+        typedef typename Path::string_type string_type;
+        if ( end_pos == string_type::npos )
+          end_pos = ph.m_path_ptr->m_path.size();
+        ph.m_name = ph.m_path_ptr->m_path.substr( ph.m_pos, end_pos - ph.m_pos );
+      } 
+
+      template<class Path>
+      void iterator_helper<Path>::do_decrement( typename Path::iterator & ph )
+      {                                                                                
+        assert( ph.m_pos ); // detect decrement of begin
+        typename Path::string_type::size_type end_pos( ph.m_pos );
+
+        // skip a '/' unless it is a root directory
+        if ( ph.m_path_ptr->m_path[end_pos-1] == path_separator<Path>::value
+          && !detail::is_absolute_root
+            <typename Path::string_type, typename Path::traits_type>(
+              ph.m_path_ptr->m_path, end_pos ) ) --end_pos;
+        ph.m_pos = detail::leaf_pos
+          <typename Path::string_type, typename Path::traits_type>
+            ( ph.m_path_ptr->m_path, end_pos );
+        ph.m_name = ph.m_path_ptr->m_path.substr( ph.m_pos, end_pos - ph.m_pos );
       }
-      typename String::size_type end_pos(
-        m_path_ptr->m_path.find( path_separator<path_type>::value, m_pos ) );
-      if ( end_pos == std::string::npos )
-        end_pos = m_path_ptr->m_path.size();
-      m_name = m_path_ptr->m_path.substr( m_pos, end_pos - m_pos );
-    }
-
-    template<class String, class Traits>
-    void basic_path<String, Traits>::iterator::decrement()
-    {                                                                                
-      assert( m_pos ); // detect decrement of begin
-      typename String::size_type end_pos( m_pos );
-
-      // skip a '/' unless it is a root directory
-      if ( m_path_ptr->m_path[end_pos-1] == path_separator<path_type>::value
-        && !detail::is_absolute_root<String, Traits>(
-          m_path_ptr->m_path, end_pos ) ) --end_pos;
-      m_pos = detail::leaf_pos<String, Traits>( m_path_ptr->m_path, end_pos );
-      m_name = m_path_ptr->m_path.substr( m_pos, end_pos - m_pos );
-    }
+    } // namespace detail
 
     //  basic_filesystem_error implementation --------------------------------//
 
@@ -898,7 +946,7 @@ namespace boost
       what_formatter( system_error_type sys_err_code,
         const std::string & p1, const std::string & p2, std::string & target );
 
-#   ifdef BOOST_WINDOWS_API
+#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
       BOOST_FILESYSTEM_DECL void
       what_formatter( system_error_type sys_err_code,
         const std::wstring &, const std::wstring &, std::string & target );

@@ -11,6 +11,8 @@
 
 #include <boost/filesystem/config.hpp>
 
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+
 #include <boost/filesystem/path.hpp>
 #include <boost/scoped_array.hpp>
 
@@ -95,3 +97,6 @@ namespace boost
 
   } // namespace filesystem
 } // namespace boost
+
+#endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
+

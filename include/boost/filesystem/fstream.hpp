@@ -33,7 +33,7 @@ namespace boost
   {
     namespace detail
     {
-#   ifdef BOOST_WINDOWS_API
+#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
       // The 8.3 hack:
       // C++98 does not supply a wchar_t open, so try to get an equivalent
       // narrow char name based on the short, so-called 8.3, name.
@@ -76,20 +76,19 @@ namespace boost
       basic_filebuf() {}
       virtual ~basic_filebuf() {}
 
+#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>,
         basic_filebuf<charT,traits> *>::type
       open( const Path & file_ph, std::ios_base::openmode mode );
 
       basic_filebuf<charT,traits> *
-      open( const path & file_ph, std::ios_base::openmode mode );
+      open( const wpath & file_ph, std::ios_base::openmode mode );
+#   endif
 
       basic_filebuf<charT,traits> *
-      open( const wpath & file_ph, std::ios_base::openmode mode );
+      open( const path & file_ph, std::ios_base::openmode mode );
     };
-
-    typedef basic_filebuf<char> filebuf;
-    typedef basic_filebuf<wchar_t> wfilebuf;
 
     template < class charT, class traits = std::char_traits<charT> >
     class basic_ifstream : public std::basic_ifstream<charT,traits>
@@ -103,35 +102,38 @@ namespace boost
       // use two signatures, rather than one signature with default second
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
+#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+
       template<class Path>
       explicit basic_ifstream( const Path & file_ph,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
-      explicit basic_ifstream( const path & file_ph );
-      explicit basic_ifstream( const wpath & file_ph );
 
       template<class Path>
       basic_ifstream( const Path & file_ph, std::ios_base::openmode mode,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
-      basic_ifstream( const path & file_ph, std::ios_base::openmode mode );
-      basic_ifstream( const wpath & file_ph, std::ios_base::openmode mode );
 
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>, void>::type
       open( const Path & file_ph );
-      void open( const path & file_ph );
-      void open( const wpath & file_ph );
 
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>, void>::type
       open( const Path & file_ph, std::ios_base::openmode mode );
-      void open( const path & file_ph, std::ios_base::openmode mode );
+
+      explicit basic_ifstream( const wpath & file_ph );
+      basic_ifstream( const wpath & file_ph, std::ios_base::openmode mode );
+      void open( const wpath & file_ph );
       void open( const wpath & file_ph, std::ios_base::openmode mode );
+
+#   endif
+
+      explicit basic_ifstream( const path & file_ph );
+      basic_ifstream( const path & file_ph, std::ios_base::openmode mode );
+      void open( const path & file_ph );
+      void open( const path & file_ph, std::ios_base::openmode mode );
 
       virtual ~basic_ifstream() {}
     };
-
-    typedef basic_ifstream<char> ifstream;
-    typedef basic_ifstream<wchar_t> wifstream;
 
     template < class charT, class traits = std::char_traits<charT> >
     class basic_ofstream : public std::basic_ofstream<charT,traits>
@@ -145,35 +147,37 @@ namespace boost
       // use two signatures, rather than one signature with default second
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
+#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+
       template<class Path>
       explicit basic_ofstream( const Path & file_ph,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
-      explicit basic_ofstream( const path & file_ph );
       explicit basic_ofstream( const wpath & file_ph );
 
       template<class Path>
       basic_ofstream( const Path & file_ph, std::ios_base::openmode mode,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
-      basic_ofstream( const path & file_ph, std::ios_base::openmode mode );
       basic_ofstream( const wpath & file_ph, std::ios_base::openmode mode );
 
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>, void>::type
       open( const Path & file_ph );
-      void open( const path & file_ph );
       void open( const wpath & file_ph );
 
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>, void>::type
       open( const Path & file_ph, std::ios_base::openmode mode );
-      void open( const path & file_ph, std::ios_base::openmode mode );
       void open( const wpath & file_ph, std::ios_base::openmode mode );
+
+#   endif
+
+      explicit basic_ofstream( const path & file_ph );
+      basic_ofstream( const path & file_ph, std::ios_base::openmode mode );
+      void open( const path & file_ph );
+      void open( const path & file_ph, std::ios_base::openmode mode );
 
       virtual ~basic_ofstream() {}
     };
-
-    typedef basic_ofstream<char> ofstream;
-    typedef basic_ofstream<wchar_t> wofstream;
 
     template < class charT, class traits = std::char_traits<charT> >
     class basic_fstream : public std::basic_fstream<charT,traits>
@@ -187,35 +191,52 @@ namespace boost
       // use two signatures, rather than one signature with default second
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
+#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+
       template<class Path>
       explicit basic_fstream( const Path & file_ph,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
-      explicit basic_fstream( const path & file_ph );
       explicit basic_fstream( const wpath & file_ph );
 
       template<class Path>
       basic_fstream( const Path & file_ph, std::ios_base::openmode mode,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
-      basic_fstream( const path & file_ph, std::ios_base::openmode mode );
       basic_fstream( const wpath & file_ph, std::ios_base::openmode mode );
 
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>, void>::type
       open( const Path & file_ph );
-      void open( const path & file_ph );
       void open( const wpath & file_ph );
 
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>, void>::type
       open( const Path & file_ph, std::ios_base::openmode mode );
-      void open( const path & file_ph, std::ios_base::openmode mode );
       void open( const wpath & file_ph, std::ios_base::openmode mode );
 
+#   endif
+
+      explicit basic_fstream( const path & file_ph );
+      basic_fstream( const path & file_ph, std::ios_base::openmode mode );
+      void open( const path & file_ph );
+      void open( const path & file_ph, std::ios_base::openmode mode );
+
       virtual ~basic_fstream() {}
+
     };
  
+    typedef basic_filebuf<char> filebuf;
+    typedef basic_ifstream<char> ifstream;
+    typedef basic_ofstream<char> ofstream;
     typedef basic_fstream<char> fstream;
+
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+    typedef basic_filebuf<wchar_t> wfilebuf;
+    typedef basic_ifstream<wchar_t> wifstream;
     typedef basic_fstream<wchar_t> wfstream;
+    typedef basic_ofstream<wchar_t> wofstream;
+# endif
+    
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
 //  basic_filebuf definitions  -----------------------------------------------//
 
@@ -236,15 +257,6 @@ namespace boost
 
     template <class charT, class traits>
     basic_filebuf<charT,traits> *
-    basic_filebuf<charT, traits>::open( const path & file_ph,
-      std::ios_base::openmode mode )
-    {
-      return std::basic_filebuf<charT,traits>::open(
-        file_ph.file_string().c_str(), mode ) == 0 ? 0 : this;
-    }
-
-    template <class charT, class traits>
-    basic_filebuf<charT,traits> *
     basic_filebuf<charT, traits>::open( const wpath & file_ph,
       std::ios_base::openmode mode )
     {
@@ -261,16 +273,11 @@ namespace boost
           std::ios_base::in ).c_str(), std::ios_base::in ) {}
 
     template <class charT, class traits>
-    basic_ifstream<charT,traits>::basic_ifstream( const path & file_ph )
-      : std::basic_ifstream<charT,traits>(
-          file_ph.file_string().c_str(), std::ios_base::in ) {}
-
-    template <class charT, class traits>
     basic_ifstream<charT,traits>::basic_ifstream( const wpath & file_ph )
       : std::basic_ifstream<charT,traits>(
         detail::narrow_path( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in ) {}
-
+    
     template <class charT, class traits> template<class Path>
     basic_ifstream<charT,traits>::basic_ifstream( const Path & file_ph,
       std::ios_base::openmode mode,
@@ -279,12 +286,6 @@ namespace boost
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode ) {}
 
-    template <class charT, class traits>
-    basic_ifstream<charT,traits>::basic_ifstream( const path & file_ph,
-      std::ios_base::openmode mode )
-      : std::basic_ifstream<charT,traits>(
-          file_ph.file_string().c_str(), mode ) {}
-    
     template <class charT, class traits>
     basic_ifstream<charT,traits>::basic_ifstream( const wpath & file_ph,
       std::ios_base::openmode mode )
@@ -300,14 +301,7 @@ namespace boost
         detail::narrow_path( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in );
     }
-    
-    template <class charT, class traits>
-    void basic_ifstream<charT,traits>::open( const path & file_ph )
-    {
-      std::basic_ifstream<charT,traits>::open(
-        file_ph.file_string().c_str(), std::ios_base::in );
-    }
-    
+
     template <class charT, class traits>
     void basic_ifstream<charT,traits>::open( const wpath & file_ph )
     {
@@ -315,7 +309,7 @@ namespace boost
         detail::narrow_path( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in );
     }
-
+    
     template <class charT, class traits> template<class Path>
     typename boost::enable_if<is_basic_path<Path>, void>::type
     basic_ifstream<charT,traits>::open( const Path & file_ph,
@@ -324,14 +318,6 @@ namespace boost
       std::basic_ifstream<charT,traits>::open(
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode );
-    }
-    
-    template <class charT, class traits>
-    void basic_ifstream<charT,traits>::open( const path & file_ph,
-      std::ios_base::openmode mode )
-    {
-      std::basic_ifstream<charT,traits>::open(
-        file_ph.file_string().c_str(), mode );
     }
     
     template <class charT, class traits>
@@ -353,11 +339,6 @@ namespace boost
           std::ios_base::out ).c_str(), std::ios_base::out ) {}
 
     template <class charT, class traits>
-    basic_ofstream<charT,traits>::basic_ofstream( const path & file_ph )
-      : std::basic_ofstream<charT,traits>(
-          file_ph.file_string().c_str(), std::ios_base::out ) {}
-
-    template <class charT, class traits>
     basic_ofstream<charT,traits>::basic_ofstream( const wpath & file_ph )
       : std::basic_ofstream<charT,traits>(
         detail::narrow_path( file_ph.external_file_string(),
@@ -372,18 +353,12 @@ namespace boost
           mode ).c_str(), mode ) {}
 
     template <class charT, class traits>
-    basic_ofstream<charT,traits>::basic_ofstream( const path & file_ph,
-      std::ios_base::openmode mode )
-      : std::basic_ofstream<charT,traits>(
-          file_ph.file_string().c_str(), mode ) {}
-    
-    template <class charT, class traits>
     basic_ofstream<charT,traits>::basic_ofstream( const wpath & file_ph,
       std::ios_base::openmode mode )
       : std::basic_ofstream<charT,traits>(
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode ) {}
-
+    
     template <class charT, class traits> template<class Path>
     typename boost::enable_if<is_basic_path<Path>, void>::type
     basic_ofstream<charT,traits>::open( const Path & file_ph )
@@ -394,20 +369,13 @@ namespace boost
     }
     
     template <class charT, class traits>
-    void basic_ofstream<charT,traits>::open( const path & file_ph )
-    {
-      std::basic_ofstream<charT,traits>::open(
-        file_ph.file_string().c_str(), std::ios_base::out );
-    }
-    
-    template <class charT, class traits>
     void basic_ofstream<charT,traits>::open( const wpath & file_ph )
     {
       std::basic_ofstream<charT,traits>::open(
         detail::narrow_path( file_ph.external_file_string(),
           std::ios_base::out ).c_str(), std::ios_base::out );
     }
-
+    
     template <class charT, class traits> template<class Path>
     typename boost::enable_if<is_basic_path<Path>, void>::type
     basic_ofstream<charT,traits>::open( const Path & file_ph,
@@ -417,15 +385,7 @@ namespace boost
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode );
     }
-    
-    template <class charT, class traits>
-    void basic_ofstream<charT,traits>::open( const path & file_ph,
-      std::ios_base::openmode mode )
-    {
-      std::basic_ofstream<charT,traits>::open(
-        file_ph.file_string().c_str(), mode );
-    }
-    
+
     template <class charT, class traits>
     void basic_ofstream<charT,traits>::open( const wpath & file_ph,
       std::ios_base::openmode mode )
@@ -446,12 +406,6 @@ namespace boost
           std::ios_base::in|std::ios_base::out ) {}
 
     template <class charT, class traits>
-    basic_fstream<charT,traits>::basic_fstream( const path & file_ph )
-      : std::basic_fstream<charT,traits>(
-          file_ph.file_string().c_str(),
-          std::ios_base::in|std::ios_base::out ) {}
-
-    template <class charT, class traits>
     basic_fstream<charT,traits>::basic_fstream( const wpath & file_ph )
       : std::basic_fstream<charT,traits>(
         detail::narrow_path( file_ph.external_file_string(),
@@ -465,12 +419,6 @@ namespace boost
       : std::basic_fstream<charT,traits>(
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode ) {}
-
-    template <class charT, class traits>
-    basic_fstream<charT,traits>::basic_fstream( const path & file_ph,
-      std::ios_base::openmode mode )
-      : std::basic_fstream<charT,traits>(
-          file_ph.file_string().c_str(), mode ) {}
     
     template <class charT, class traits>
     basic_fstream<charT,traits>::basic_fstream( const wpath & file_ph,
@@ -478,7 +426,7 @@ namespace boost
       : std::basic_fstream<charT,traits>(
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode ) {}
-
+      
     template <class charT, class traits> template<class Path>
     typename boost::enable_if<is_basic_path<Path>, void>::type
     basic_fstream<charT,traits>::open( const Path & file_ph )
@@ -488,14 +436,7 @@ namespace boost
           std::ios_base::in|std::ios_base::out ).c_str(),
           std::ios_base::in|std::ios_base::out );
     }
-    
-    template <class charT, class traits>
-    void basic_fstream<charT,traits>::open( const path & file_ph )
-    {
-      std::basic_fstream<charT,traits>::open(
-        file_ph.file_string().c_str(), std::ios_base::in|std::ios_base::out );
-    }
-    
+
     template <class charT, class traits>
     void basic_fstream<charT,traits>::open( const wpath & file_ph )
     {
@@ -504,7 +445,7 @@ namespace boost
           std::ios_base::in|std::ios_base::out ).c_str(),
           std::ios_base::in|std::ios_base::out );
     }
-
+    
     template <class charT, class traits> template<class Path>
     typename boost::enable_if<is_basic_path<Path>, void>::type
     basic_fstream<charT,traits>::open( const Path & file_ph,
@@ -514,15 +455,7 @@ namespace boost
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode );
     }
-    
-    template <class charT, class traits>
-    void basic_fstream<charT,traits>::open( const path & file_ph,
-      std::ios_base::openmode mode )
-    {
-      std::basic_fstream<charT,traits>::open(
-        file_ph.file_string().c_str(), mode );
-    }
-    
+
     template <class charT, class traits>
     void basic_fstream<charT,traits>::open( const wpath & file_ph,
       std::ios_base::openmode mode )
@@ -530,6 +463,97 @@ namespace boost
       std::basic_fstream<charT,traits>::open(
         detail::narrow_path( file_ph.external_file_string(),
           mode ).c_str(), mode );
+    }
+
+# endif
+
+    template <class charT, class traits>
+    basic_filebuf<charT,traits> *
+    basic_filebuf<charT, traits>::open( const path & file_ph,
+      std::ios_base::openmode mode )
+    {
+      return std::basic_filebuf<charT,traits>::open(
+        file_ph.file_string().c_str(), mode ) == 0 ? 0 : this;
+    }
+
+    template <class charT, class traits>
+    basic_ifstream<charT,traits>::basic_ifstream( const path & file_ph )
+      : std::basic_ifstream<charT,traits>(
+          file_ph.file_string().c_str(), std::ios_base::in ) {}
+
+    template <class charT, class traits>
+    basic_ifstream<charT,traits>::basic_ifstream( const path & file_ph,
+      std::ios_base::openmode mode )
+      : std::basic_ifstream<charT,traits>(
+          file_ph.file_string().c_str(), mode ) {}
+    
+    template <class charT, class traits>
+    void basic_ifstream<charT,traits>::open( const path & file_ph )
+    {
+      std::basic_ifstream<charT,traits>::open(
+        file_ph.file_string().c_str(), std::ios_base::in );
+    }
+    
+    template <class charT, class traits>
+    void basic_ifstream<charT,traits>::open( const path & file_ph,
+      std::ios_base::openmode mode )
+    {
+      std::basic_ifstream<charT,traits>::open(
+        file_ph.file_string().c_str(), mode );
+    }
+
+    template <class charT, class traits>
+    basic_ofstream<charT,traits>::basic_ofstream( const path & file_ph )
+      : std::basic_ofstream<charT,traits>(
+          file_ph.file_string().c_str(), std::ios_base::out ) {}
+
+    template <class charT, class traits>
+    basic_ofstream<charT,traits>::basic_ofstream( const path & file_ph,
+      std::ios_base::openmode mode )
+      : std::basic_ofstream<charT,traits>(
+          file_ph.file_string().c_str(), mode ) {}
+    
+    template <class charT, class traits>
+    void basic_ofstream<charT,traits>::open( const path & file_ph )
+    {
+      std::basic_ofstream<charT,traits>::open(
+        file_ph.file_string().c_str(), std::ios_base::out );
+    }
+    
+    template <class charT, class traits>
+    void basic_ofstream<charT,traits>::open( const path & file_ph,
+      std::ios_base::openmode mode )
+    {
+      std::basic_ofstream<charT,traits>::open(
+        file_ph.file_string().c_str(), mode );
+    }
+
+    template <class charT, class traits>
+    basic_fstream<charT,traits>::basic_fstream( const path & file_ph )
+      : std::basic_fstream<charT,traits>(
+          file_ph.file_string().c_str(),
+          std::ios_base::in|std::ios_base::out ) {}
+
+
+    template <class charT, class traits>
+    basic_fstream<charT,traits>::basic_fstream( const path & file_ph,
+      std::ios_base::openmode mode )
+      : std::basic_fstream<charT,traits>(
+          file_ph.file_string().c_str(), mode ) {}
+
+          template <class charT, class traits>
+    void basic_fstream<charT,traits>::open( const path & file_ph )
+    {
+      std::basic_fstream<charT,traits>::open(
+        file_ph.file_string().c_str(), std::ios_base::in|std::ios_base::out );
+    }
+
+    template <class charT, class traits>
+    void basic_fstream<charT,traits>::open( const path & file_ph,
+      std::ios_base::openmode mode )
+    {
+      std::basic_fstream<charT,traits>::open(
+        file_ph.file_string().c_str(), mode );
     }
 
   } // namespace filesystem
