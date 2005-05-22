@@ -606,34 +606,7 @@ namespace detail
     public:
       basic_directory_iterator(){}  // creates the "end" iterator
 
-      // TODO: move definition out of class body
-      explicit basic_directory_iterator( const Path & dir_path )
-        : m_imp( new detail::dir_itr_imp<Path> )
-      {
-        system_error_type sys_err(0);
-        typename Path::external_string_type name;
-
-        if ( dir_path.empty()
-          || (sys_err = detail::dir_itr_first( m_imp->m_handle,
-          dir_path.external_directory_string(), name )) != 0 )
-        {
-          boost::throw_exception( basic_filesystem_error<Path>(  
-            "boost::filesystem::basic_directory_iterator constructor",
-            dir_path, sys_err ) );
-        }
-        
-        if ( m_imp->m_handle == 0 ) m_imp.reset(); // eof, so make end iterator
-        else // not eof
-        {
-          m_imp->m_path = dir_path;
-          m_imp->m_path /= Path::traits_type::to_internal( name );
-          if ( name[0] == path_relative<Path>::value // dot or dot-dot
-            && (name.size() == 1
-              || (name[1] == path_relative<Path>::value
-                && name.size() == 2)) )
-            {  increment(); }
-        }
-      }
+      explicit basic_directory_iterator( const Path & dir_path );
 
     private:
       // shared_ptr provides shallow-copy semantics required for InputIterators.
@@ -649,36 +622,7 @@ namespace detail
         return m_imp->m_path;
       }
 
-      // TODO: move definition out of class body
-      void increment()
-      {
-        BOOST_ASSERT( m_imp.get() && "attempt to increment end iterator" );
-        BOOST_ASSERT( m_imp->m_handle != 0 && "internal program error" );
-        
-        system_error_type sys_err(0);
-        typename Path::external_string_type name;
-
-        for (;;)
-        {
-          if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle, name ))
-            != 0 )
-          {
-            boost::throw_exception( basic_filesystem_error<Path>(  
-              "boost::filesystem::basic_directory_iterator increment",
-              m_imp->m_path.branch_path(), sys_err ) );
-          }
-          if ( m_imp->m_handle == 0 ) { m_imp.reset(); return; } // eof, make end
-          if ( !(name[0] == path_relative<Path>::value // !(dot or dot-dot)
-            && (name.size() == 1
-              || (name[1] == path_relative<Path>::value
-                && name.size() == 2))) )
-          {
-            m_imp->m_path.remove_leaf();
-            m_imp->m_path /= Path::traits_type::to_internal( name );
-            return;
-          }
-        }
-      }
+      void increment();
 
       bool equal( const basic_directory_iterator & rhs ) const
         { return m_imp == rhs.m_imp; }
@@ -689,6 +633,65 @@ namespace detail
     typedef basic_directory_iterator< wpath > wdirectory_iterator;
 # endif
 
+    template<class Path>
+    basic_directory_iterator<Path>::basic_directory_iterator(
+      const Path & dir_path ) : m_imp( new detail::dir_itr_imp<Path> )
+    {
+      system_error_type sys_err(0);
+      typename Path::external_string_type name;
+
+      if ( dir_path.empty()
+        || (sys_err = detail::dir_itr_first( m_imp->m_handle,
+        dir_path.external_directory_string(), name )) != 0 )
+      {
+        boost::throw_exception( basic_filesystem_error<Path>(  
+          "boost::filesystem::basic_directory_iterator constructor",
+          dir_path, sys_err ) );
+      }
+      
+      if ( m_imp->m_handle == 0 ) m_imp.reset(); // eof, so make end iterator
+      else // not eof
+      {
+        m_imp->m_path = dir_path;
+        m_imp->m_path /= Path::traits_type::to_internal( name );
+        if ( name[0] == path_relative<Path>::value // dot or dot-dot
+          && (name.size() == 1
+            || (name[1] == path_relative<Path>::value
+              && name.size() == 2)) )
+          {  increment(); }
+      }
+    }
+
+    template<class Path>
+    void basic_directory_iterator<Path>::increment()
+    {
+      BOOST_ASSERT( m_imp.get() && "attempt to increment end iterator" );
+      BOOST_ASSERT( m_imp->m_handle != 0 && "internal program error" );
+      
+      system_error_type sys_err(0);
+      typename Path::external_string_type name;
+
+      for (;;)
+      {
+        if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle, name ))
+          != 0 )
+        {
+          boost::throw_exception( basic_filesystem_error<Path>(  
+            "boost::filesystem::basic_directory_iterator increment",
+            m_imp->m_path.branch_path(), sys_err ) );
+        }
+        if ( m_imp->m_handle == 0 ) { m_imp.reset(); return; } // eof, make end
+        if ( !(name[0] == path_relative<Path>::value // !(dot or dot-dot)
+          && (name.size() == 1
+            || (name[1] == path_relative<Path>::value
+              && name.size() == 2))) )
+        {
+          m_imp->m_path.remove_leaf();
+          m_imp->m_path /= Path::traits_type::to_internal( name );
+          return;
+        }
+      }
+    }
   } // namespace filesystem
 } // namespace boost
 
