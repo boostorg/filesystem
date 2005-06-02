@@ -365,6 +365,14 @@ namespace detail
       return init_path;
     }
 
+    // legacy support
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    inline path current_path()  // overload supports pre-i18n apps
+      { return current_path<boost::filesystem::path>(); }
+    inline const path & initial_path() // overload supports pre-i18n apps
+      { return initial_path<boost::filesystem::path>(); }
+# endif
+
     BOOST_FS_FUNC(Path) system_complete( const Path & ph )
     {
 # ifdef BOOST_WINDOWS_API
