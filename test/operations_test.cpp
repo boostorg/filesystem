@@ -90,6 +90,24 @@ namespace
     return false;
   }
 
+  // compile-only two argument "do-the-right-thing" tests
+  //   verifies that all overload combinations compile without error
+  void do_not_call()
+  {
+    fs::path p;
+    std::string s;
+    const char * a = 0;
+    fs::copy_file( p, p );
+    fs::copy_file( s, p );
+    fs::copy_file( a, p );
+    fs::copy_file( p, s );
+    fs::copy_file( p, a );
+    fs::copy_file( s, s );
+    fs::copy_file( a, s );
+    fs::copy_file( s, a );
+    fs::copy_file( a, a );
+  }
+
 } // unnamed namespace
 
 //  test_main  ---------------------------------------------------------------//
