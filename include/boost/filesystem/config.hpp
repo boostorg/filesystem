@@ -12,6 +12,8 @@
 #ifndef BOOST_FILESYSTEM_CONFIG_HPP
 #define BOOST_FILESYSTEM_CONFIG_HPP
 
+#define BOOST_FILESYSTEM_I18N  // aid users wishing to compile several versions
+
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
 
