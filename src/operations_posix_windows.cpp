@@ -631,7 +631,7 @@ namespace boost
 #   ifdef BOOST_POSIX
         || symbolic_link_exists( ph ) ) // handle dangling symbolic links
       {
-#     if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))some 
+#     if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
         // some Metrowerks C library versions fail by removing directories
         // which are not empty - workaround by detecting ourselves
         if ( is_directory( ph ) && !is_empty( ph ) )
