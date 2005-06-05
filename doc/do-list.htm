@@ -3,35 +3,13 @@
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
 <ul>
-  <li>Are there &quot;Do the right thing&quot; tests for two argument operational 
-  functions?</li>
-  <li>Test cases for narrow and wide is_empty on directories?</li>
-  <li>Test cases for narrow and wide file_size()?<br>
-  Test cases for narrow and wide current and ititial directory()?<br>
-&nbsp;</li>
-  <li>bjam tests.<br>
-&nbsp;</li>
   <li>Linux tests.<br>
-&nbsp;</li>
-  <li>process_jam_log, compiler_status, reworks.<br>
-&nbsp;</li>
-  <li>Broken compiler tests, workarounds.<br>
-&nbsp;</li>
-  <li>Need a recursive, glob-style directory iterator. See posts by John Maddock, 
-  others.<br>
 &nbsp;</li>
   <li>Windows: //network-name style paths need more analysis and test cases for system_complete() 
   and complete(). Also, path_test cases at line 410 need review, correction.<br>
 &nbsp;</li>
-  <li>On Darwin, &quot;foo//bar&quot; is valid and equivalent to &quot;foo/bar&quot;. (But foo//bar 
-  is an error on Windows.)<ul>
-  <li>Remove &quot;//&quot; check from basic_path::append</li>
-  <li>Should generic grammar be changed? What does POSIX say?</li>
-  <li>Should the generic grammar be defined by reference to POSIX?<br>
-&nbsp;</li>
-</ul>
-  </li>
-  <li>Add a path::swap member function guaranteed not to throw. (Geurt Vos).<br>
+  <li>POSIX says &quot;<b><code>foo/</code></b>&quot; is equivalent to &quot;<b><code>foo/.</code></b>&quot; 
+  Which is best for normal form? Add code and test cases.<br>
 &nbsp;</li>
   <li>Should operations.cpp assert or BOOST_ASSERT on preconditions?<br>
 &nbsp;</li>
@@ -39,11 +17,59 @@ Do-list</h1>
 &nbsp;</li>
   <li>Fix operations_test wrong error code messages &amp; harden test.<br>
 &nbsp;</li>
-  <li>Grep for &quot;TODO&quot;</li>
+  <li>Move two recent HEAD operations_posix_windows.cpp fixes for __APPLE__ to 
+  i18n operations.cpp.</li>
+</ul>
+<h2>Defer until after mini-review</h2>
+<ul>
+  <li>Filtered directory iterator, glob syntax -&gt; regex syntax converter. See 
+  Rich Johnson's <a href="http://lists.boost.org/boost-users/2004/01/5770.php">
+  lists.boost.org/boost-users/2004/01/5770.php</a>, and John Maddock's
+  <a href="http://lists.boost.org/boost-users/2004/01/5770.php">lists.boost.org/boost-users/2004/01/5770.php</a></li>
+  <li>Recursive directory iterator. See thread beginning with Thorsten Ottosen's
+  <a href="http://lists.boost.org/boost/2004/03/2842.php">lists.boost.org/boost/2004/03/2842.php</a><ul>
+    <li>Depth first vs breadth first - Unspecified. Most imps will use depth 
+    first as more efficicient.</li>
+    <li>Issue of duplicates (caused by symlinks and hard links) is critical. 
+    Both duplicate detecting and non-detecting are needed; non-detecting is far 
+    more efficient, but some apps will require duplicate detection.<ul>
+      <li>Names are useless for dup detection because of links, other file 
+      system alias mechanisms such as drive mapping, mounts.</li>
+      <li>inodes are unstable if handles are not held open, and it isn't 
+      feasible to hold unlimited number of handles open.</li>
+      <li>Size, dates, etc., are subject to race conditions.</li>
+      <li>No one method is likely to serve all needs, but a starting point might 
+      be to keep a hash-table keyed on a size/dates based signature, then do 
+      equivalent() on all equal keys.</li>
+    </ul>
+    </li>
+  </ul>
+  </li>
+  <li>Note Terence Wilson's efficiency concerns re: filtering; see
+  <a href="http://lists.boost.org/MailArchives/boost/msg79583.php">
+  //lists.boost.org/MailArchives/boost/msg79583.php</a></li>
+  <li>Some or all of the above concerns may be easier to meet if 
+  directory_iterator (or a wrapper) called a function object:<ul>
+    <li>Argument is const char * name or const path &amp; (is there a significant 
+    efficiency difference?)</li>
+    <li>Return is a code:<ul>
+      <li>Continue; that is, return iterator pointing to this entry.</li>
+      <li>Skip; ignore this entry completely.</li>
+      <li>Skip returning this entry, but do iterate into it if directory 
+      (assuming recursive iteration).</li>
+      <li>Do return this entry, but don't iterate into if if a directory (don't 
+      recurse).</li>
+      <li>Skip and stop; return end iterator.</li>
+      <li>Do return this entry, but force end iterator on next increment.</li>
+    </ul>
+    </li>
+  </ul>
+  </li>
+  <li>Add a path::swap member function guaranteed not to throw. (Geurt Vos).</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13988" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

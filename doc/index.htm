@@ -286,6 +286,10 @@ allows precise semantics based on a joint ISO and IEEE standard that is widely
 implemented and has been proven and refined during many years of existing 
 practice. Operating-system wars neutrality is preserved by allowing implementers 
 freedom to use native operating system API's for actual implementations.</p>
+<h3>Requirements on implementations</h3>
+<p>Unless otherwise specified, all Filesystem Library member and non-member 
+functions meet the following common requirements.</p>
+<h4>Portable Behavior</h4>
 <p>Implementations are encouraged, but not required, to provide behavior as 
 specified for each Boost.Filesystem function. If the specified behavior is not 
 provided, an implementation shall document the actual behavior provided.</p>
@@ -294,12 +298,18 @@ key objective of the library.&nbsp; It is not required because in some environme
 portable behavior is impossible or unreasonably difficult to implement. The 
 documentation requirement allows users to be aware of potential portability 
 problems.</p>
+<h4>Graceful degradation</h4>
+<p>Filesystem Library functions which cannot 
+be fully supported on a particular operating system will be partially supported 
+if possible. Implementations must document such partial support. Functions which 
+are requested to provide some operation which they cannot support should report 
+an error at compile time (preferred) or throw an exception at runtime.</p>
 <p>For environments not supporting file systems with hierarchical directory 
 structures Boost.Filesystem headers shall fail to compile.</p>
 <p>If no file systems with hierarchical directory structures are available at 
 runtime, all Boost.Filesystem functions shall throw a basic_filesystem_error&lt;path&gt; 
 exception.</p>
-<p>&nbsp;If a Boost.Filesystem component depends on file system functionality not 
+<p>If a Boost.Filesystem component depends on file system functionality not 
 available in the current environment:</p>
 <ul>
   <li>Safe fallback behavior must be provided if possible.</li>
@@ -307,29 +317,30 @@ available in the current environment:</p>
 </ul>
 <p><b>Rationale:</b> Although the Boost.Filesystem implement runs on POSIX or 
 Windows, the above guidance is provided for implementations on operating systems 
-which can be supported only partially or not at all.</p>
-<h3>Requirements on implementations</h3>
-<p>Unless otherwise specified, all Filesystem Library member and non-member 
-functions meet the following common requirements:</p>
-<p><b>Postconditions not guaranteed in the presence of race-conditions</b> - 
-Filesystem function specifications follow the form of C++ Standard Library 
+which can be supported only partially or not at all. Implementations on 
+less-powerful operating systems should provide useful functionality if possible, 
+but are not be required to simulate features not present in the underlying 
+operating system.</p>
+<h4><b>Postconditions not guaranteed in the presence of race-conditions</b></h4>
+<p>Filesystem function specifications follow the form of C++ Standard Library 
 specifications, and so sometimes specify behavior in terms of postconditions. If 
 a <a href="#Race-condition">race-condition</a> exists, a function's 
 postconditions may no longer be true by the time the function returns to the 
 caller.</p>
-<p><b>May throw exceptions</b> - Filesystem Library functions throw <i>
+<h4><b>May throw exceptions</b></h4>
+<p>Filesystem Library functions throw <i>
 <a href="exception.htm">basic_filesystem_error</a></i> 
 exceptions if they cannot successfully complete their operational 
 specifications. Also, implementations may use C++ Standard Library functions, 
 which may throw <i>std::bad_alloc</i>. These exceptions may be thrown even 
 though the error condition leading to the exception is not explicitly specified 
 in the function's &quot;Throws&quot; paragraph.</p>
-<p><b>Exceptions thrown via <a href="../../utility/throw_exception.html">
-boost::throw_exception()</a></b> - All exceptions thrown by the Filesystem 
+<p>All exceptions thrown by the Filesystem 
 Library are implemented by calling <a href="../../utility/throw_exception.html">
 boost::throw_exception()</a>. Thus exact behavior may differ depending on 
 BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
-<p><b><a name="link_rules">Links follow operating system rules</a></b>- <a href="#link">Links</a> are 
+<h4>Symbolic and hard links</h4>
+<p><a name="link_rules">Links follow operating system rules</a>- <a href="#link">Links</a> are 
 transparent in that Filesystem Library functions simply follow operating system 
 rules. That implies that some functions may throw <i><a href="exception.htm">
 basic_filesystem_error</a></i> 
@@ -339,22 +350,15 @@ exceptions if a link is cyclic or has other problems. Also, see an important
 that destructive operations on non-reference counted links are either shallow, 
 or fail altogether in the case of trying to remove a non-reference counted link 
 to a directory.</p>
-<p>Rationale: Follows existing practice (POSIX, Windows, etc.).</p>
-<p><b>No atomic-operation or rollback guarantee</b> - Filesystem Library 
+<p><b>Rationale:</b> Follows existing practice (POSIX, Windows, etc.).</p>
+<h4><b>No atomic-operation or rollback guarantee</b></h4>
+<p>Filesystem Library 
 functions which throw exceptions may leave the external file system in an 
 altered state. It is suggested that implementations provide stronger guarantees 
 when reasonable.</p>
-<p>Rationale: Implementers shouldn't be required to provide guarantees which are 
+<p><b>Rationale:</b> Implementers shouldn't be required to provide guarantees which are 
 impossible to meet on some operating systems. Implementers are given 
 normative encouragement to provide those guarantees when reasonable.</p>
-<p><b>Graceful degradation</b> -&nbsp; Filesystem Library functions which cannot 
-be fully supported on a particular operating system will be partially supported 
-if possible. Implementations must document such partial support. Functions which 
-are requested to provide some operation which they cannot support should report 
-an error at compile time (preferred) or throw an exception at runtime.</p>
-<p>Rationale: Implementations on less-powerful operating systems should provide 
-useful functionality if possible, but are not be required to simulate 
-features not present in the underlying operating system.</p>
 <h2><a name="Race-condition">Race-condition</a> d<a name="Dangers">anger</a></h2>
 <p>The state of files and directories is often
 globally shared, and thus may be changed unexpectedly by other threads, 
@@ -556,6 +560,9 @@ version 1.31.0.</p>
   <li><a href="i18n.htm#Preservation">Preservation</a> of existing user code whenever 
   possible. Deprecated features (<i>symbolic_link_exists()</i>, etc.) remain 
   available for legacy code.</li>
+  <li>Clearer specification, by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
+  the ISO/IEEE Single Unix Standard, with provisions for Windows and other 
+  operating systems.</li>
   <li>New functions
   <a href="operations.htm#status">status</a>,
   <a href="operations.htm#symlink_status">symlink_status</a>,
@@ -612,7 +619,7 @@ version 1.31.0.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13991" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->29 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="14006" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

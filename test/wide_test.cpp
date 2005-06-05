@@ -49,6 +49,8 @@ namespace
   template< class Path >
   void test( const Path & dir, const Path & file, const Path & dot )
   {
+    fs::initial_path<Path>();
+    fs::current_path<Path>();
     fs::remove( dir / file );
     fs::remove( dir );
     BOOST_CHECK( !fs::exists( dir / file ) );

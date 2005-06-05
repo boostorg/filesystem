@@ -28,6 +28,10 @@ include:</p>
   <li><a href="#Rationalization">Rationalization</a> of predicate function 
   design, including the addition of several new functions.<br>
 &nbsp;</li>
+  <li>Clearer specification, by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
+  the ISO/IEEE Single Unix Standard, with provisions for Windows and other 
+  operating systems.<br>
+&nbsp;</li>
   <li><a href="#Preservation">Preservation</a> of existing user code whenever 
   possible.</li>
 </ul>
@@ -215,37 +219,29 @@ conditions.</p>
 with the indicated semantics form a self-consistent set that meets expectations.</p>
 <h2><a name="Preservation">Preservation</a> of existing user code</h2>
 <p>Although the change to a template based approach required a complete overhaul 
-of the implementation code, the actual interface as seen by current user 
-programs is mostly unchanged. The bulk of the conversion problems which would 
-otherwise affect user code have been reduced by providing deprecated member 
-functions to ease transition. The deprecated members are:</p>
+of the implementation code, the  interface as used by existing applications is mostly unchanged. 
+Conversion problems which would 
+otherwise affect user code have been reduced by providing deprecated 
+functions to ease transition. The deprecated functions are:</p>
 <blockquote>
-  <pre>// 2nd argument ignored:
+  <pre>// class basic_path - 2nd constructor argument ignored:
 basic_path( const string_type &amp; str, name_check );
 basic_path( const typename string_type::value_type * s, name_check );
 
-// old names for renamed functions:
+// class basic_path - old names provided for renamed functions:
 string_type native_file_string() const;
 string_type native_directory_string() const;
 
-// now defined such that these no longer have any real effect:
+// class basic_path - now defined such that these no longer have any real effect:
 static bool default_name_check_writable() { return false; } 
 static void default_name_check( name_check ) {}
 static name_check default_name_check() { return 0; }</pre>
+  <pre>// non-deducible operations functions assume class path
+inline path current_path()
+inline const path &amp; initial_path()</pre>
 </blockquote>
-<p>Of course, the user code will have to be changed before the 
-deprecated members are removed in future releases.</p>
-<p>The use of certain functions require immediate user-program changes:</p>
-<blockquote>
-  <pre>template&lt;class Path&gt; Path current_path();
-template&lt;class Path&gt; Path initial_path();</pre>
-</blockquote>
-<p>Because the template argument cannot be deduced, calls to these 
-functions must be changed from:</p>
-<blockquote>
-  <pre>current_path()   to   current_path&lt;path&gt;()
-initial_path()   to   initial_path&lt;path&gt;()</pre>
-</blockquote>
+<p>If you do not want to use the deprecated functions, define the macro 
+BOOST_FILESYSTEM_NO_DEPRECATED.</p>
 <h2><a name="Rationale">Rationale</a></h2>
 <h3>Elimination of the native versus generic <a name="distinction">distinction</a></h3>
 <p>Elimination of user confusion and general design simplification was the 
@@ -311,7 +307,7 @@ differs, which is the case here, while overloads are more appropriate when
 behavior is the same but argument types differ (Iain Hanson).</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13991" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19910" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 
