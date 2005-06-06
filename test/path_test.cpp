@@ -114,7 +114,7 @@ namespace
     PATH_CHECK( path("foo/../..").normalize(), ".." );
     PATH_CHECK( path("foo/../../").normalize(), "../." );
     PATH_CHECK( path("foo/../../..").normalize(), "../.." );
-    PATH_CHECK( path("foo/../../../").normalize(), "../../" );
+    PATH_CHECK( path("foo/../../../").normalize(), "../../." );
     PATH_CHECK( path("foo/../bar").normalize(), "bar" );
     PATH_CHECK( path("foo/../bar/").normalize(), "bar/." );
     PATH_CHECK( path("foo/bar/..").normalize(), "foo" );
@@ -129,12 +129,12 @@ namespace
     PATH_CHECK( path("foo/bar/blah/../..").normalize(), "foo" );
     PATH_CHECK( path("foo/bar/blah/../../bletch").normalize(), "foo/bletch" );
     PATH_CHECK( path( "//net" ).normalize(), "//net" );
-    PATH_CHECK( path( "//net/" ).normalize(), "//net/." );
+    PATH_CHECK( path( "//net/" ).normalize(), "//net/" );
     PATH_CHECK( path( "//..net" ).normalize(), "//..net" );
-    PATH_CHECK( path( "//net/.." ).normalize(), "//net" );
+    PATH_CHECK( path( "//net/.." ).normalize(), "//net/.." );
     PATH_CHECK( path( "//net/foo" ).normalize(), "//net/foo" );
     PATH_CHECK( path( "//net/foo/" ).normalize(), "//net/foo/." );
-    PATH_CHECK( path( "//net/foo/.." ).normalize(), "//net" );
+    PATH_CHECK( path( "//net/foo/.." ).normalize(), "//net/" );
     PATH_CHECK( path( "//net/foo/../" ).normalize(), "//net/." );
 
     PATH_CHECK( path( "/net/foo/bar" ).normalize(), "/net/foo/bar" );
@@ -143,33 +143,32 @@ namespace
     PATH_CHECK( path( "/net/foo/../" ).normalize(), "/net/." );
 
     PATH_CHECK( path( "//net//foo//bar" ).normalize(), "//net/foo/bar" );
-    PATH_CHECK( path( "//net//foo//bar//" ).normalize(), "//net/foo/bar/" );
-    PATH_CHECK( path( "//net//foo//.." ).normalize(), "//net" );
+    PATH_CHECK( path( "//net//foo//bar//" ).normalize(), "//net/foo/bar/." );
+    PATH_CHECK( path( "//net//foo//.." ).normalize(), "//net/" );
     PATH_CHECK( path( "//net//foo//..//" ).normalize(), "//net/." );
 
-    PATH_CHECK( path( "///net///foo///bar" ).normalize(), "//net/foo/bar" );
-    PATH_CHECK( path( "///net///foo///bar///" ).normalize(), "//net/foo/bar/." );
-    PATH_CHECK( path( "///net///foo///.." ).normalize(), "//net" );
-    PATH_CHECK( path( "///net///foo///..///" ).normalize(), "//net/." );
+    PATH_CHECK( path( "///net///foo///bar" ).normalize(), "/net/foo/bar" );
+    PATH_CHECK( path( "///net///foo///bar///" ).normalize(), "/net/foo/bar/." );
+    PATH_CHECK( path( "///net///foo///.." ).normalize(), "/net" );
+    PATH_CHECK( path( "///net///foo///..///" ).normalize(), "/net/." );
 
     if ( platform == "Windows" )
     {
       PATH_CHECK( path( "c:.." ).normalize(), "c:.." );
       PATH_CHECK( path( "c:foo/.." ).normalize(), "c:" );
 
-      // should the results of this one be "c:./"? 
-      PATH_CHECK( path( "c:foo/../" ).normalize(), "c:" );
+      PATH_CHECK( path( "c:foo/../" ).normalize(), "c:." );
 
       PATH_CHECK( path( "c:/foo/.." ).normalize(), "c:/" );
-      PATH_CHECK( path( "c:/foo/../" ).normalize(), "c:/" );
+      PATH_CHECK( path( "c:/foo/../" ).normalize(), "c:/." );
       PATH_CHECK( path( "c:/.." ).normalize(), "c:/.." );
-      PATH_CHECK( path( "c:/../" ).normalize(), "c:/../" );
+      PATH_CHECK( path( "c:/../" ).normalize(), "c:/../." );
       PATH_CHECK( path( "c:/../.." ).normalize(), "c:/../.." );
-      PATH_CHECK( path( "c:/../../" ).normalize(), "c:/../../" );
+      PATH_CHECK( path( "c:/../../" ).normalize(), "c:/../../." );
       PATH_CHECK( path( "c:/../foo" ).normalize(), "c:/../foo" );
-      PATH_CHECK( path( "c:/../foo/" ).normalize(), "c:/../foo/" );
+      PATH_CHECK( path( "c:/../foo/" ).normalize(), "c:/../foo/." );
       PATH_CHECK( path( "c:/../../foo" ).normalize(), "c:/../../foo" );
-      PATH_CHECK( path( "c:/../../foo/" ).normalize(), "c:/../../foo/" );
+      PATH_CHECK( path( "c:/../../foo/" ).normalize(), "c:/../../foo/." );
       PATH_CHECK( path( "c:/..foo" ).normalize(), "c:/..foo" );
     }
     else // POSIX
@@ -419,6 +418,14 @@ int test_main( int, char*[] )
   CHECK_EQUAL( *--itr, "foo" );
   CHECK_EQUAL( *--itr, "/" );
 
+  itr_ck = "../f"; // previously failed due to short name bug
+  itr = itr_ck.begin();
+  CHECK_EQUAL( *itr, ".." );
+  CHECK_EQUAL( *++itr, "f" );
+  BOOST_CHECK( ++itr == itr_ck.end() );
+  CHECK_EQUAL( *--itr, "f" );
+  CHECK_EQUAL( *--itr, ".." );
+
   // POSIX says treat "/foo/bar/" as "/foo/bar/."
   itr_ck = "/foo/bar/";
   itr = itr_ck.begin();
@@ -430,6 +437,19 @@ int test_main( int, char*[] )
   CHECK_EQUAL( *--itr, "." );
   CHECK_EQUAL( *--itr, "bar" );
   CHECK_EQUAL( *--itr, "foo" );
+  CHECK_EQUAL( *--itr, "/" );
+
+  // POSIX says treat "/f/b/" as "/f/b/."
+  itr_ck = "/f/b/";
+  itr = itr_ck.begin();
+  CHECK_EQUAL( *itr, "/" );
+  CHECK_EQUAL( *++itr, "f" );
+  CHECK_EQUAL( *++itr, "b" );
+  CHECK_EQUAL( *++itr, "." );
+  BOOST_CHECK( ++itr == itr_ck.end() );
+  CHECK_EQUAL( *--itr, "." );
+  CHECK_EQUAL( *--itr, "b" );
+  CHECK_EQUAL( *--itr, "f" );
   CHECK_EQUAL( *--itr, "/" );
 
   itr_ck = "//net";

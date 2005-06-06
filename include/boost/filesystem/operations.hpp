@@ -395,7 +395,8 @@ namespace detail
       const Path & base/* = initial_path<Path>() */)
     {
       BOOST_ASSERT( base.is_complete()
-        && (ph.is_complete() || !ph.has_root_name()) ); // preconditions
+        && (ph.is_complete() || !ph.has_root_name())
+        && "boost::filesystem::complete() precondition not met" );
 #   ifdef BOOST_WINDOWS_PATH
       if (ph.empty() || ph.is_complete()) return ph;
       if ( !ph.has_root_name() )

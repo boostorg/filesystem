@@ -256,6 +256,7 @@ namespace boost
         { return basic_path<String, Traits>( *this ) /= rhs; }
 
       // modification functions:
+      basic_path & canonize();
       basic_path & normalize();
       basic_path & remove_leaf();   // no effect if !branch_path()
 
@@ -724,11 +725,16 @@ namespace boost
     return *this;
     }
 
-    // normalize  ------------------------------------------------------------//
+    // canonize  ------------------------------------------------------------//
 
     template<class String, class Traits>
-    basic_path<String, Traits> & basic_path<String, Traits>::normalize()
+    basic_path<String, Traits> & basic_path<String, Traits>::canonize()
     {
+      static const string_type::value_type dot[]
+        = { path_relative<path_type>::value, 0 };
+
+      if ( m_path.empty() ) return *this;
+        
       path_type temp;
 
       for ( iterator itr( begin() ); itr != end(); ++itr )
@@ -736,95 +742,83 @@ namespace boost
         temp /= *itr;
       };
 
+      if ( temp.empty() ) temp /= dot;
       m_path = temp.m_path;
       return *this;
     }
 
+    // normalize  ------------------------------------------------------------//
 
+    template<class String, class Traits>
+    basic_path<String, Traits> & basic_path<String, Traits>::normalize()
+    {
+      static const string_type::value_type dot[]
+        = { path_relative<path_type>::value, 0 };
 
-
-/*
-      static const typename string_type::value_type parent_dir[]
-        = { path_separator<path_type>::value,
-            path_relative<path_type>::value,
-            path_relative<path_type>::value,
-            0 };
       if ( m_path.empty() ) return *this;
-      bool trailing_separator( 
-        m_path[m_path.size()-1] == path_separator<path_type>::value );
-      std::string::size_type end, beg(0), start(0);
-
-#   ifdef BOOST_WINDOWS_PATH
-      // ignore any drive specifier
-      if ( m_path.size() > 2
-        && m_path[0] != path_separator<path_type>::value
-        && m_path[1] == path_device_delim<path_type>::value )
-        { start = 2; }
-#     endif
-
-      // ignore '/' or "//name"
-      if ( start < m_path.size()
-        && m_path[start] == path_separator<path_type>::value )
+        
+      path_type temp;
+      iterator start( begin() );
+      iterator last( end() );
+      iterator stop( last-- );
+      for ( iterator itr( start ); itr != stop; ++itr )
       {
-        ++start;
-        if ( start < m_path.size()
-          && m_path[start] == path_separator<path_type>::value )
+        // ignore "." except at start and last
+        if ( itr->size() == 1
+          && (*itr)[0] == path_relative<path_type>::value
+          && itr != start
+          && itr != last ) continue;
+
+        // ignore a name and following ".."
+        if ( !temp.empty()
+          && itr->size() == 2
+          && (*itr)[0] == path_relative<path_type>::value
+          && (*itr)[1] == path_relative<path_type>::value ) // dot dot
         {
-          ++start;
-          while ( start < m_path.size()
-            && m_path[start] != path_separator<path_type>::value ) ++start;
-        }
-      }
+          string_type lf( temp.leaf() );  
+          if ( lf.size() > 0  
+            && (lf.size() != 1
+              || (lf[0] != path_relative<path_type>::value
+                && lf[0] != path_separator<path_type>::value))
+            && (lf.size() != 2 
+              || (lf[0] != path_relative<path_type>::value
+                && lf[1] != path_relative<path_type>::value
+#             ifdef BOOST_WINDOWS_PATH
+                && lf[1] != path_device_delim<path_type>::value
+#             endif
+                 )
+               )
+            )
+          {
+            temp.remove_leaf();
+            // if not root directory, must also remove "/" if any
+            if ( temp.m_path.size() > 0
+              && temp.m_path[temp.m_path.size()-1]
+                == path_separator<path_type>::value )
+            {
+              string_type::size_type rds(
+                detail::root_directory_start<String,Traits>( temp.m_path,
+                  temp.m_path.size() ) );
+              if ( rds == string_type::npos
+                || rds != temp.m_path.size()-1 ) 
+                { temp.m_path.erase( temp.m_path.size()-1 ); }
+            }
 
-      // for each "/.."
-      beg = start;
-      while ( (beg=m_path.find( parent_dir, beg )) != std::string::npos )
-      {
-        end = beg + 3;
-        // cases ".", "..", "/.." where we don't want to erase prior element
-        if ( (beg == 1 && m_path[0] == path_relative<path_type>::value)
-          || (beg == 2 && m_path[0] == path_relative<path_type>::value
-            && m_path[1] == path_relative<path_type>::value)
-          || (beg > 2 && m_path[beg-3] == path_separator<path_type>::value
-                      && m_path[beg-2] == path_relative<path_type>::value
-                      && m_path[beg-1] == path_relative<path_type>::value) )
-        {
-          beg = end;
-          continue;
-        }
-
-        // detect name starting with ..
-        if ( end < m_path.size()
-          && m_path[end] != path_separator<path_type>::value )
-          { beg = end; continue; }
-
-        // end is one past end of substr to be erased; now set beg
-        while ( beg > start
-          && m_path[--beg] != path_separator<path_type>::value ) {}
-
-        // the end should be removed if it is '/'
-        bool need_to_backup( false );
-        if ( end < m_path.size()
-          && m_path[end] == path_separator<path_type>::value )
-          { 
-            ++end;
-            if ( m_path[beg] == path_separator<path_type>::value )
-             { ++beg; need_to_backup = true; }
+            iterator next( itr );
+            if ( temp.empty() && ++next != stop
+              && next == last && *last == dot ) temp /= dot;
+            continue;
           }
+        }
 
-        m_path.erase( beg, end - beg );
-        if ( need_to_backup ) --beg;
-      }
+        temp /= *itr;
+      };
 
-      // if the path is now empty, it is a reference to the current directory
-      if ( m_path.empty() )
-      { 
-        m_path = path_relative<path_type>::value;
-        if ( trailing_separator ) m_path += path_separator<path_type>::value;
-      }
+      if ( temp.empty() ) temp /= dot;
+      m_path = temp.m_path;
       return *this;
     }
-*/
+
     // remove_leaf  ----------------------------------------------------------//
 
     template<class String, class Traits>
@@ -946,13 +940,14 @@ namespace boost
             return;
           }
 
-          while ( ph.m_pos != (ph.m_path_ptr->m_path.size()-1)
+          while ( ph.m_pos != ph.m_path_ptr->m_path.size()
             && ph.m_path_ptr->m_path[ph.m_pos] == path_separator<Path>::value )
             { ++ph.m_pos; }
 
           // treat trailing "/" as if "/.", per POSIX spec
-          if ( ph.m_pos == (ph.m_path_ptr->m_path.size()-1) ) 
+          if ( ph.m_pos == ph.m_path_ptr->m_path.size() ) 
           {
+            --ph.m_pos;
             ph.m_name = path_relative<Path>::value;
             return;
           }
