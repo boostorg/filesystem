@@ -362,7 +362,7 @@ namespace boost
       // directory_string() formats, or simply that the implementer
       // was willing expend additional memory to achieve greater speed.
 
-      string_type  m_path;
+      string_type  m_path; // invariant: portable generic path grammar
 
       // Was qualified; como433beta8 reports:
       //    warning #427-D: qualified name is not allowed in member declaration 
@@ -430,19 +430,23 @@ namespace boost
       // leaf_pos helper  ----------------------------------------------------//
 
       template<class String, class Traits>
-      typename String::size_type leaf_pos( const String & str,
+      typename String::size_type leaf_pos(
+        const String & str, // precondition: portable generic path grammar
         typename String::size_type end_pos ) // end_pos is past-the-end position
-      // return 0 if str itself is leaf (or empty) 
+      // return 0 if str itself is leaf (or empty)
       {
         typedef typename boost::filesystem::basic_path<String, Traits> path_type;
 
+        // case: "//"
         if ( end_pos == 2 
-          && is_separator<path_type>( str[0] )
-          && is_separator<path_type>( str[1] ) ) return 0;
+          && str[0] == path_separator<path_type>::value
+          && str[1] == path_separator<path_type>::value ) return 0;
 
-        if ( end_pos && is_separator<path_type>( str[end_pos-1] ) )
+        // case: ends in "/"
+        if ( end_pos && str[end_pos-1] == path_separator<path_type>::value )
           return end_pos-1;
         
+        // set pos to start of last element
         typename String::size_type pos(
           str.find_last_of( path_separator<path_type>::value, end_pos-1 ) );
 #       ifdef BOOST_WINDOWS_PATH
@@ -453,7 +457,7 @@ namespace boost
 #       endif
 
         return ( pos == String::npos // path itself must be a leaf (or empty)
-          || (pos == 1 && is_separator<path_type>( str[0] )) ) // or net
+          || (pos == 1 && str[0] == path_separator<path_type>::value) ) // or net
             ? 0 // so leaf is entire string
             : pos + 1; // or starts after delimiter
       }
@@ -463,7 +467,8 @@ namespace boost
       //   if src.empty(), sets pos,len, to 0,0.
 
       template<class String, class Traits>
-        void first_element( const String & src,
+        void first_element(
+          const String & src, // precondition: portable generic path grammar
           typename String::size_type & element_pos,
           typename String::size_type & element_size,
           typename String::size_type size = -1
@@ -479,22 +484,22 @@ namespace boost
         typename String::size_type cur(0);
         
         // deal with // [network]
-        if ( size >= 2 && is_separator<path_type>( src[0] )
-          && is_separator<path_type>( src[1] )
+        if ( size >= 2 && src[0] == path_separator<path_type>::value
+          && src[1] == path_separator<path_type>::value
           && (size == 2
-            || !is_separator<path_type>( src[2] )) )
+            || src[2] != path_separator<path_type>::value) )
         { 
           cur += 2;
           element_size += 2;
         }
 
         // leading (not non-network) separator
-        else if ( is_separator<path_type>( src[0] ) )
+        else if ( src[0] == path_separator<path_type>::value )
         {
           ++element_size;
           // bypass extra leading separators
           while ( cur+1 < size
-            && is_separator<path_type>( src[cur+1] ) )
+            && src[cur+1] == path_separator<path_type>::value )
           {
             ++cur;
             ++element_pos;
@@ -510,7 +515,7 @@ namespace boost
 #         ifdef BOOST_WINDOWS_PATH
           && src[cur] != path_device_delim<path_type>::value
 #         endif
-          && !is_separator<path_type>( src[cur] ) )
+          && src[cur] != path_separator<path_type>::value )
         {
           ++cur;
           ++element_size;
@@ -529,7 +534,8 @@ namespace boost
       // root_directory_start helper  ----------------------------------------//
 
       template<class String, class Traits>
-      typename String::size_type root_directory_start( const String & s,
+      typename String::size_type root_directory_start(
+        const String & s, // precondition: portable generic path grammar
         typename String::size_type size )
       // return npos if no root_directory found
       {
@@ -539,31 +545,27 @@ namespace boost
         // case "c:/"
         if ( size > 2
           && s[1] == path_device_delim<path_type>::value
-          && detail::is_separator<path_type>( s[2] ) ) return 2;
+          && s[2] == path_separator<path_type>::value ) return 2;
 #     endif
 
         // case "//"
         if ( size == 2
-          && detail::is_separator<path_type>( s[0] )
-          && detail::is_separator<path_type>( s[1] ) ) return String::npos;
+          && s[0] == path_separator<path_type>::value
+          && s[1] == path_separator<path_type>::value ) return String::npos;
 
         // case "//net {/}"
         if ( size > 3
-          && detail::is_separator<path_type>( s[0] )
-          && detail::is_separator<path_type>( s[1] )
-          && !detail::is_separator<path_type>( s[2] ) )
+          && s[0] == path_separator<path_type>::value
+          && s[1] == path_separator<path_type>::value
+          && s[2] != path_separator<path_type>::value )
         {
           typename String::size_type pos(
             s.find( path_separator<path_type>::value, 2 ) );
-#       ifdef BOOST_WINDOWS_PATH
-          if ( pos == String::npos )
-            pos = s.find( path_alt_separator<path_type>::value, 2 );
-#       endif
           return pos < size ? pos : String::npos;
         }
         
         // case "/"
-        if ( size > 0 && detail::is_separator<path_type>( s[0] ) ) return 0;
+        if ( size > 0 && s[0] == path_separator<path_type>::value ) return 0;
 
         return String::npos;
 
@@ -585,8 +587,8 @@ namespace boost
       typename String::size_type end_pos(
         detail::leaf_pos<String, Traits>( m_path, m_path.size() ) );
 
-      bool leaf_was_separator(
-        m_path.size() && detail::is_separator<path_type>( m_path[end_pos] ) );
+      bool leaf_was_separator( m_path.size()
+        && m_path[end_pos] == path_separator<path_type>::value );
 
       // skip separators unless root directory
       string_type::size_type root_dir_pos( detail::root_directory_start
@@ -594,7 +596,7 @@ namespace boost
       for ( ; 
         end_pos > 0
         && (end_pos-1) != root_dir_pos
-        && detail::is_separator<path_type>( m_path[end_pos-1] )
+        && m_path[end_pos-1] == path_separator<path_type>::value
         ;
         --end_pos ) {}
 
@@ -608,7 +610,7 @@ namespace boost
     {
       iterator itr( begin() );
       for ( ; itr.m_pos != m_path.size()
-          && detail::is_separator<path_type>( itr.m_name[0] )
+          && itr.m_name[0] == path_separator<path_type>::value
 #     ifdef BOOST_WINDOWS_PATH
           || itr.m_name[itr.m_name.size()-1]
             == path_device_delim<path_type>::value
@@ -626,8 +628,8 @@ namespace boost
       return ( itr.m_pos != m_path.size()
         && (
             ( itr.m_name.size() > 1
-              && detail::is_separator<path_type>( itr.m_name[0] )
-              && detail::is_separator<path_type>( itr.m_name[1] )
+              && itr.m_name[0] == path_separator<path_type>::value
+              && itr.m_name[1] == path_separator<path_type>::value
             )
 #     ifdef BOOST_WINDOWS_PATH
           || itr.m_name[itr.m_name.size()-1]
@@ -641,20 +643,12 @@ namespace boost
     template<class String, class Traits>
     String basic_path<String, Traits>::root_directory() const
     {
-      static const string_type::value_type separators[] = {
-        path_separator<path_type>::value,
-#     ifdef BOOST_WINDOWS_PATH
-        path_alt_separator<path_type>::value,
-#     endif
-        0 };
-
       string_type::size_type start(
         detail::root_directory_start<String, Traits>( m_path, m_path.size() ) );
 
       return start == string_type::npos
         ? string_type()
-        : m_path.substr(
-        start, m_path.find_first_not_of( separators, start ) - start );
+        : m_path.substr( start, 1 );
     }
 
     template<class String, class Traits>
@@ -710,12 +704,21 @@ namespace boost
 #     ifdef BOOST_WINDOWS_PATH
         && *(m_path.end()-1) != path_device_delim<path_type>::value
 #     endif
-        &&  !detail::is_separator<path_type>( *(m_path.end()-1) ) )
+        && *(m_path.end()-1) != path_separator<path_type>::value )
           { m_path += path_separator<path_type>::value; }
 
       for ( ; *next_p != 0; ++next_p )
       {
-       m_path += *next_p;
+#     ifdef BOOST_WINDOWS_PATH
+        // for BOOST_WINDOWS_PATH, convert alt_separator ('\') to separator ('/')
+        if ( *next_p == path_alt_separator<path_type>::value )
+        {
+          m_path += path_separator<path_type>::value;
+        }
+        else m_path += *next_p;
+#     else
+        m_path += *next_p;
+#     endif
       }
 
     return *this;
@@ -851,8 +854,8 @@ namespace boost
       {
         // special case // [net]
         if ( pos == 0 && m_path.size() > 1
-          && detail::is_separator<path_type>( m_path[0] )
-          && detail::is_separator<path_type>( m_path[1] )
+          && m_path[0] == path_separator<path_type>::value
+          && m_path[1] == path_separator<path_type>::value
           && ( m_path.size() == 2 
             || !detail::is_separator<path_type>( m_path[2] )
              ) )
@@ -863,15 +866,12 @@ namespace boost
           continue;
         }   
 
-        if ( pos > root_dir_start
-          && !detail::is_separator<path_type>( m_path[pos] ) )
-          { in_root = false; }
-
+        // bypass extra root separators
         if ( in_root )
         { 
           if ( s.size() > 0
             && s[s.size()-1] == path_alt_separator<path_type>::value
-            && detail::is_separator<path_type>( m_path[pos] )
+            && m_path[pos] == path_separator<path_type>::value
             ) continue;
         }
 
@@ -879,6 +879,10 @@ namespace boost
           s += path_alt_separator<path_type>::value;
         else
           s += m_path[pos];
+
+        if ( pos > root_dir_start
+          && m_path[pos] == path_separator<path_type>::value )
+          { in_root = false; }
       }
       return s;
 #   else
@@ -918,9 +922,9 @@ namespace boost
         assert( ph.m_pos < ph.m_path_ptr->m_path.size() && "basic_path::iterator increment past end()" );
 
         bool was_net( ph.m_name.size() > 2
-          && detail::is_separator<Path>( ph.m_name[0] )
-          && detail::is_separator<Path>( ph.m_name[1] )
-          && !detail::is_separator<Path>( ph.m_name[2] ) );
+          && ph.m_name[0] == path_separator<Path>::value
+          && ph.m_name[1] == path_separator<Path>::value
+          && ph.m_name[2] != path_separator<Path>::value );
 
         ph.m_pos += ph.m_name.size();
         if ( ph.m_pos == ph.m_path_ptr->m_path.size() ) // end
@@ -929,7 +933,7 @@ namespace boost
           return;
         }
 
-        if ( detail::is_separator<Path>( ph.m_path_ptr->m_path[ph.m_pos] ) )
+        if ( ph.m_path_ptr->m_path[ph.m_pos] == path_separator<Path>::value )
         {
           if ( was_net
   #       ifdef BOOST_WINDOWS_PATH
@@ -943,7 +947,7 @@ namespace boost
           }
 
           while ( ph.m_pos != (ph.m_path_ptr->m_path.size()-1)
-            && detail::is_separator<Path>( ph.m_path_ptr->m_path[ph.m_pos] ) )
+            && ph.m_path_ptr->m_path[ph.m_pos] == path_separator<Path>::value )
             { ++ph.m_pos; }
 
           // treat trailing "/" as if "/.", per POSIX spec
@@ -990,7 +994,7 @@ namespace boost
         // if at end and there was a trailing non-root '/', return "."
         if ( ph.m_pos == ph.m_path_ptr->m_path.size()
           && ph.m_path_ptr->m_path.size() > 1
-          && detail::is_separator<Path>( ph.m_path_ptr->m_path[ph.m_pos-1] )
+          && ph.m_path_ptr->m_path[ph.m_pos-1] == path_separator<Path>::value
           && (root_dir_pos == string_type::npos // there is no root
           || ph.m_path_ptr->m_path.find_first_not_of( separators,
             root_dir_pos ) != string_type::npos) // this is not the root
@@ -1006,7 +1010,7 @@ namespace boost
           ; 
           end_pos > 0
           && (end_pos-1) != root_dir_pos
-          && detail::is_separator<Path>( ph.m_path_ptr->m_path[end_pos-1] )
+          && ph.m_path_ptr->m_path[end_pos-1] == path_separator<Path>::value
           ;
           --end_pos ) {}
 

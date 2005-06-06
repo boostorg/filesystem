@@ -575,8 +575,8 @@ int test_main( int, char*[] )
   CHECK_EQUAL( p.branch_path().string(), "" );
   CHECK_EQUAL( p.leaf(), "/" );
   CHECK_EQUAL( p.root_name(), "" );
-  CHECK_EQUAL( p.root_directory(), "///" );
-  CHECK_EQUAL( p.root_path().string(), "///" );
+  CHECK_EQUAL( p.root_directory(), "/" );
+  CHECK_EQUAL( p.root_path().string(), "/" );
   BOOST_CHECK( p.has_root_path() );
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
@@ -656,8 +656,8 @@ int test_main( int, char*[] )
   CHECK_EQUAL( p.branch_path().string(), "/" );
   CHECK_EQUAL( p.leaf(), "foo" );
   CHECK_EQUAL( p.root_name(), "" );
-  CHECK_EQUAL( p.root_directory(), "///" );
-  CHECK_EQUAL( p.root_path().string(), "///" );
+  CHECK_EQUAL( p.root_directory(), "/" );
+  CHECK_EQUAL( p.root_path().string(), "/" );
   BOOST_CHECK( p.has_root_path() );
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
@@ -789,23 +789,8 @@ int test_main( int, char*[] )
   CHECK_EQUAL( p.branch_path().string(), "//net/" );
   CHECK_EQUAL( p.leaf(), "foo" );
   CHECK_EQUAL( p.root_name(), "//net" );
-  CHECK_EQUAL( p.root_directory(), "///" );
-  CHECK_EQUAL( p.root_path().string(), "//net///" );
-  BOOST_CHECK( p.has_root_path() );
-  BOOST_CHECK( p.has_root_name() );
-  BOOST_CHECK( p.has_root_directory() );
-  BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
-  BOOST_CHECK( p.is_complete() );
-
-  p = path( "\\\\net\\\\\\foo" );
-  CHECK_EQUAL( p.relative_path().string(), "foo" );
-  CHECK_EQUAL( p.branch_path().string(), "\\\\net\\" );
-  CHECK_EQUAL( p.leaf(), "foo" );
-  CHECK_EQUAL( p.root_name(), "\\\\net" );
-  CHECK_EQUAL( p.root_directory(), "\\\\\\" );
-  CHECK_EQUAL( p.root_path().string(), "\\\\net\\\\\\" );
+  CHECK_EQUAL( p.root_directory(), "/" );
+  CHECK_EQUAL( p.root_path().string(), "//net/" );
   BOOST_CHECK( p.has_root_path() );
   BOOST_CHECK( p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
@@ -823,49 +808,41 @@ int test_main( int, char*[] )
     DIR_CHECK( path( "\\/foo\\/bar\\/" ), "\\\\foo\\bar\\\\" );
     DIR_CHECK( path( "\\//foo\\//bar\\//" ), "\\foo\\\\\\bar\\\\\\" );
 
-    DIR_CHECK( path( "/\\foo/\\bar/\\" ), "\\\\foo\\bar\\\\" );
-    DIR_CHECK( path( "/\\/foo/\\/bar/\\/" ), "\\foo\\\\\\bar\\\\\\" );
-
-    DIR_CHECK( path( "//\\foo//\\bar//\\" ), "\\foo\\\\\\bar\\\\\\" );
-
-    DIR_CHECK( path( "/\\\\foo/\\\\bar/\\\\" ), "\\foo\\\\\\bar\\\\\\" );
-
-    DIR_CHECK( path( "\\\\/foo\\\\/bar\\\\/" ), "\\foo\\\\\\bar\\\\\\" );
 
     DIR_CHECK( path( "\\foo\\bar\\" ), "\\foo\\bar\\" );
     DIR_CHECK( path( "\\\\foo\\\\bar\\\\" ), "\\\\foo\\bar\\\\" );
     DIR_CHECK( path( "\\\\\\foo\\\\\\bar\\\\\\" ), "\\foo\\\\\\bar\\\\\\" );
 
-    PATH_CHECK( path( "\\" ), "\\" );
-    PATH_CHECK( path( "\\f" ), "\\f" );
-    PATH_CHECK( path( "\\foo" ), "\\foo" );
-    PATH_CHECK( path( "foo\\bar" ), "foo\\bar" );
+    PATH_CHECK( path( "\\" ), "/" );
+    PATH_CHECK( path( "\\f" ), "/f" );
+    PATH_CHECK( path( "\\foo" ), "/foo" );
+    PATH_CHECK( path( "foo\\bar" ), "foo/bar" );
     PATH_CHECK( path( "foo bar" ), "foo bar" );
     PATH_CHECK( path( "c:" ), "c:" );
     PATH_CHECK( path( "c:/" ), "c:/" );
     PATH_CHECK( path( "c:." ), "c:." );
     PATH_CHECK( path( "c:./foo" ), "c:./foo" );
-    PATH_CHECK( path( "c:.\\foo" ), "c:.\\foo" );
+    PATH_CHECK( path( "c:.\\foo" ), "c:./foo" );
     PATH_CHECK( path( "c:.." ), "c:.." );
     PATH_CHECK( path( "c:/." ), "c:/." );
     PATH_CHECK( path( "c:/.." ), "c:/.." );
     PATH_CHECK( path( "c:/../" ), "c:/../" );
-    PATH_CHECK( path( "c:\\..\\" ), "c:\\..\\" );
+    PATH_CHECK( path( "c:\\..\\" ), "c:/../" );
     PATH_CHECK( path( "c:/../.." ), "c:/../.." );
     PATH_CHECK( path( "c:/../foo" ), "c:/../foo" );
-    PATH_CHECK( path( "c:\\..\\foo" ), "c:\\..\\foo" );
+    PATH_CHECK( path( "c:\\..\\foo" ), "c:/../foo" );
     PATH_CHECK( path( "c:../foo" ), "c:../foo" );
-    PATH_CHECK( path( "c:..\\foo" ), "c:..\\foo" );
+    PATH_CHECK( path( "c:..\\foo" ), "c:../foo" );
     PATH_CHECK( path( "c:/../../foo" ), "c:/../../foo" );
-    PATH_CHECK( path( "c:\\..\\..\\foo" ), "c:\\..\\..\\foo" );
+    PATH_CHECK( path( "c:\\..\\..\\foo" ), "c:/../../foo" );
     PATH_CHECK( path( "c:foo/.." ), "c:foo/.." );
     PATH_CHECK( path( "c:/foo/.." ), "c:/foo/.." );
     PATH_CHECK( path( "c:/..foo" ), "c:/..foo" );
     PATH_CHECK( path( "c:foo" ), "c:foo" );
     PATH_CHECK( path( "c:/foo" ), "c:/foo" );
-    PATH_CHECK( path( "\\\\netname" ), "\\\\netname" );
-    PATH_CHECK( path( "\\\\netname\\" ), "\\\\netname\\" );
-    PATH_CHECK( path( "\\\\netname\\foo" ), "\\\\netname\\foo" );
+    PATH_CHECK( path( "\\\\netname" ), "//netname" );
+    PATH_CHECK( path( "\\\\netname\\" ), "//netname/" );
+    PATH_CHECK( path( "\\\\netname\\foo" ), "//netname/foo" );
     PATH_CHECK( path( "c:/foo" ), "c:/foo" );
     PATH_CHECK( path( "prn:" ), "prn:" );
 
@@ -958,6 +935,21 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_leaf() );
     BOOST_CHECK( !p.has_branch_path() );
     BOOST_CHECK( !p.is_complete() );
+
+    p = path( "\\\\net\\\\\\foo" );
+    CHECK_EQUAL( p.relative_path().string(), "foo" );
+    CHECK_EQUAL( p.branch_path().string(), "//net/" );
+    CHECK_EQUAL( p.leaf(), "foo" );
+    CHECK_EQUAL( p.root_name(), "//net" );
+    CHECK_EQUAL( p.root_directory(), "/" );
+    CHECK_EQUAL( p.root_path().string(), "//net/" );
+    BOOST_CHECK( p.has_root_path() );
+    BOOST_CHECK( p.has_root_name() );
+    BOOST_CHECK( p.has_root_directory() );
+    BOOST_CHECK( p.has_relative_path() );
+    BOOST_CHECK( p.has_leaf() );
+    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.is_complete() );
 
     itr_ck = path( "c:" );
     BOOST_CHECK( *itr_ck.begin() == std::string( "c:" ) );
