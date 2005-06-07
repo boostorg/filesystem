@@ -165,7 +165,12 @@ namespace
   // a ERROR_FILE_NOT_FOUND error which we do not considered an error. Instead,
   // the handle is set to BOOST_INVALID_HANDLE_VALUE and a non-zero is returned.
   {
-    std::string dirpath( std::string(dir) + "/*" );
+    // use a form of search Sebastian Martel reports will work with Win98
+    std::string dirpath( dir );
+    dirpath += (dirpath.empty()
+      || (dirpath[dirpath.size()-1] != '\\'
+      && dirpath[dirpath.size()-1] != '/')) ? "\\*" : "*";
+
     return ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
       == BOOST_INVALID_HANDLE_VALUE
       && ::GetLastError() != ERROR_FILE_NOT_FOUND) ? 0 : data.cFileName;
