@@ -632,16 +632,18 @@ namespace boost
         || symbolic_link_exists( ph ) ) // handle dangling symbolic links
       {
 #     if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
-        // some Metrowerks C library versions fail by removing directories
-        // which are not empty - workaround by detecting ourselves
-        if ( is_directory( ph ) && !is_empty( ph ) )
-          boost::throw_exception( filesystem_error(
-            "boost::filesystem::remove", ph, ENOTEMPTY ) );
-#     endif
-
+        // Some Metrowerks C library versions fail on directories because of a
+        // known Metrowerks coding error in ::remove. Workaround is to call
+        // rmdir() or unlink() as indicated.
+        if ( (is_directory( ph )
+          ? ::rmdir( ph.string().c_str() )
+          : ::unlink( ph.string().c_str() )) != 0 )
+#     else
         // note that the POSIX behavior for symbolic links is what we want;
         // the link rather than what it points to is deleted
         if ( std::remove( ph.string().c_str() ) != 0 )
+#     endif
+
         {
           int error = fs::detail::system_error_code();
           // POSIX says "If the directory is not an empty directory, rmdir()
