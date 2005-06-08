@@ -622,7 +622,11 @@ namespace boost
       dir_itr_first(
         void *& handle, const std::wstring & dir, std::wstring & target )
       {
-        std::wstring dirpath( dir + L"/*" );
+        // use a form of search Sebastian Martel reports will work with Win98
+        std::wstring dirpath( dir );
+        dirpath += (dirpath.empty()
+          || dirpath[dirpath.size()-1] != L'\\') ? L"\\*" : L"*";
+
         WIN32_FIND_DATAW data;
         if ( (handle = ::FindFirstFileW( dirpath.c_str(), &data ))
           == INVALID_HANDLE_VALUE )
@@ -718,7 +722,11 @@ namespace boost
       // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
       // error. It is treated as eof instead.
       {
-        std::string dirpath( dir + "/*" );
+        // use a form of search Sebastian Martel reports will work with Win98
+        std::string dirpath( dir );
+        dirpath += (dirpath.empty()
+          || dirpath[dirpath.size()-1] != '\\') ? "\\*" : "*";
+
         WIN32_FIND_DATAA data;
         if ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
           == INVALID_HANDLE_VALUE )

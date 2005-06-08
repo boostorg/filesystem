@@ -28,21 +28,20 @@ using fs::path;
 namespace
 {
   template< typename F >
-    bool throws_fs_error( F func, fs::error_code ec =
-      ::boost::filesystem::no_error ) // VC++ 7.1 build 2292 won't accept fs::
+    bool throws_fs_error( F func, fs::errno_type ec = 0 )
   {
     try { func(); }
 
     catch ( const fs::filesystem_error & ex )
     {
-      if ( ec == fs::no_error
+      if ( ec == 0
         || ec == fs::lookup_error_code(ex.system_error()) ) return true;
       std::cout
         << "exception reports " << fs::lookup_error_code(ex.system_error())
         << ", should be " << ec
         << "\n system_error() is " << ex.system_error()
         << std::endl;
-      return true;
+      return false;
     }
     return false;
   }

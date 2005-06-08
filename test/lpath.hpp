@@ -32,7 +32,7 @@ namespace std
       return s1 == e ? 0 : (*s1<*s2 ? -1 : 1);
     }
     static size_t length(const char_type* s)
-      { const char_type* b=s; for(;*s!=0L;++s); return s-b; } 
+    { const char_type* b=s; for(;*s!=0L;++s){} return s-b; } 
  
     static const char_type* find(const char_type* s, size_t n, const char_type& a)
     {   return 0; }

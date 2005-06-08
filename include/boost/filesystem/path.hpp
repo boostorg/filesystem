@@ -79,35 +79,23 @@ namespace boost
     };
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-    enum error_code
-    {
-      no_error = 0,
-      system_error,     // system generated error; if possible, is translated
-                        // to one of the more specific errors below.
-      other_error,      // library generated error
-      security_error,   // includes access rights, permissions failures
-      read_only_error,
-      io_error,
-      path_error,       // such as bad syntax
-      not_found_error,
-      not_directory_error,
-      busy_error,       // implies trying again might succeed
-      not_ready_error,  // ditto
-      already_exists_error,
-      not_empty_error,
-      is_directory_error,
-      out_of_space_error,
-      out_of_memory_error,
-      out_of_resource_error
-    };
+    typedef int errno_type;  // determined by C standard
+    typedef int system_error_type; // both POSIX and Windows use int
 
-    typedef int system_error_type;
+# ifdef BOOST_WINDOWS_API
+    BOOST_FILESYSTEM_DECL
+    errno_type lookup_errno( system_error_type sys_err_code );
+# else
+    inline errno_type lookup_errno( system_error_type sys_err_code )
+      { return sys_err_code; }
+# endif
 
-    BOOST_FILESYSTEM_DECL error_code
-    lookup_error_code( system_error_type sys_err_code );
- 
-    BOOST_FILESYSTEM_DECL void
-    system_message( system_error_type sys_err_code, std::string & target );
+    // deprecated support for legacy function name
+    inline errno_type lookup_error_code( system_error_type sys_err_code )
+      { return lookup_errno( sys_err_code ); }
+
+    BOOST_FILESYSTEM_DECL
+    void system_message( system_error_type sys_err_code, std::string & target );
     // Effects: appends error message to target
 
 # if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
@@ -475,7 +463,7 @@ namespace boost
           typename String::size_type size = -1
           )
       {
-        if ( size == -1 ) size = src.size();
+        if ( size == String::npos ) size = src.size();
         element_pos = 0;
         element_size = 0;
         if ( src.empty() ) return;
@@ -592,7 +580,7 @@ namespace boost
         && m_path[end_pos] == path_separator<path_type>::value );
 
       // skip separators unless root directory
-      string_type::size_type root_dir_pos( detail::root_directory_start
+      typename string_type::size_type root_dir_pos( detail::root_directory_start
         <string_type, traits_type>( m_path, end_pos ) );
       for ( ; 
         end_pos > 0
@@ -644,7 +632,7 @@ namespace boost
     template<class String, class Traits>
     String basic_path<String, Traits>::root_directory() const
     {
-      string_type::size_type start(
+      typename string_type::size_type start(
         detail::root_directory_start<String, Traits>( m_path, m_path.size() ) );
 
       return start == string_type::npos
@@ -730,7 +718,7 @@ namespace boost
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::canonize()
     {
-      static const string_type::value_type dot[]
+      static const typename string_type::value_type dot[]
         = { path_relative<path_type>::value, 0 };
 
       if ( m_path.empty() ) return *this;
@@ -752,7 +740,7 @@ namespace boost
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::normalize()
     {
-      static const string_type::value_type dot[]
+      static const typename string_type::value_type dot[]
         = { path_relative<path_type>::value, 0 };
 
       if ( m_path.empty() ) return *this;
@@ -796,7 +784,7 @@ namespace boost
               && temp.m_path[temp.m_path.size()-1]
                 == path_separator<path_type>::value )
             {
-              string_type::size_type rds(
+              typename string_type::size_type rds(
                 detail::root_directory_start<String,Traits>( temp.m_path,
                   temp.m_path.size() ) );
               if ( rds == string_type::npos
@@ -839,11 +827,11 @@ namespace boost
       // for Windows, use the alternate separator, and bypass extra 
       // root separators
 
-      string_type::size_type root_dir_start(
+      typename string_type::size_type root_dir_start(
         detail::root_directory_start<String, Traits>( m_path, m_path.size() ) );
       bool in_root( root_dir_start != string_type::npos );
       String s;
-      for ( string_type::size_type pos( 0 );
+      for ( typename string_type::size_type pos( 0 );
         pos != m_path.size(); ++pos )
       {
         // special case // [net]
@@ -891,7 +879,7 @@ namespace boost
     {
       iterator itr;
       itr.m_path_ptr = this;
-      string_type::size_type element_size;
+      typename string_type::size_type element_size;
       detail::first_element<String, Traits>( m_path, itr.m_pos, element_size );
       itr.m_name = m_path.substr( itr.m_pos, element_size );
       return itr;
@@ -954,7 +942,7 @@ namespace boost
         }
 
         typedef typename Path::string_type string_type;
-        string_type::size_type end_pos(
+        typename string_type::size_type end_pos(
           ph.m_path_ptr->m_path.find( path_separator<Path>::value, ph.m_pos ) );
 #     ifdef BOOST_WINDOWS_PATH
         if ( end_pos == string_type::npos )
@@ -973,17 +961,17 @@ namespace boost
 
         typedef typename Path::string_type string_type;
 
-        static const string_type::value_type separators[] = {
+        static const typename string_type::value_type separators[] = {
           path_separator<Path>::value,
 #       ifdef BOOST_WINDOWS_PATH
           path_alt_separator<Path>::value,
 #       endif
           0 };
 
-        string_type::size_type end_pos( ph.m_pos );
+        typename string_type::size_type end_pos( ph.m_pos );
 
-        string_type::size_type root_dir_pos( detail::root_directory_start
-          <string_type, typename Path::traits_type>(
+        typename string_type::size_type root_dir_pos(
+          detail::root_directory_start<string_type, typename Path::traits_type>(
             ph.m_path_ptr->m_path, end_pos ) );
 
         // if at end and there was a trailing non-root '/', return "."
