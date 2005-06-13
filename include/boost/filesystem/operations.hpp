@@ -63,6 +63,9 @@ namespace boost
     static const status_flags  file_flag = 8;
     static const status_flags  symlink_flag = 16;
 
+    struct symlink_t{};
+    extern const symlink_t symlink;
+
 namespace detail
     {
       typedef std::pair< boost::filesystem::system_error_type, bool >
@@ -173,7 +176,7 @@ namespace detail
       { return detail::status_api( ph.external_file_string(), ec ); }
 
     BOOST_FS_FUNC(status_flags)
-    symlink_status( const Path & ph, system_error_type * ec = 0 )
+    status( const Path & ph, const symlink_t &, system_error_type * ec = 0 )
 #   ifdef BOOST_WINDOWS_API
       { return detail::status_api( ph.external_file_string(), ec ); }
 #   else
@@ -433,10 +436,12 @@ namespace detail
     inline status_flags status( const wpath & ph, system_error_type * ec = 0 )
       { return status<wpath>( ph, ec ); }
 
-    inline status_flags symlink_status( const path & ph, system_error_type * ec = 0 )
-      { return symlink_status<path>( ph, ec ); }
-    inline status_flags symlink_status( const wpath & ph, system_error_type * ec = 0 )
-      { return symlink_status<wpath>( ph, ec ); }
+    inline status_flags status( const path & ph, const symlink_t &,
+      system_error_type * ec = 0 )
+      { return status<path>( ph, symlink, ec ); }
+    inline status_flags status( const wpath & ph, const symlink_t &,
+      system_error_type * ec = 0 )
+      { return status<wpath>( ph, symlink, ec ); }
 
     inline bool exists( const path & ph ) { return exists<path>( ph ); }
     inline bool exists( const wpath & ph ) { return exists<wpath>( ph ); }
