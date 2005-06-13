@@ -56,12 +56,12 @@ namespace boost
   {
     template<class Path> class basic_directory_iterator;
 
-    typedef char status_flag;
-    static const status_flag  error_flag = 1;
-    static const status_flag  not_found_flag = 2;
-    static const status_flag  directory_flag = 4;
-    static const status_flag  file_flag = 8;
-    static const status_flag  symlink_flag = 16;
+    typedef char status_flags;
+    static const status_flags  error_flag = 1;
+    static const status_flags  not_found_flag = 2;
+    static const status_flags  directory_flag = 4;
+    static const status_flags  file_flag = 8;
+    static const status_flags  symlink_flag = 16;
 
 namespace detail
     {
@@ -82,13 +82,13 @@ namespace detail
       };
 
 
-      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flags
         status_api( const std::string & ph,
                     boost::filesystem::system_error_type * ec = 0 );
       BOOST_FILESYSTEM_DECL bool
         symbolic_link_exists_api( const std::string & ); // deprecated
 #   ifndef BOOST_WINDOWS_API
-      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flags
         symlink_status_api( const std::string & ph,
                     boost::filesystem::system_error_type * ec = 0 );
 #   endif
@@ -123,7 +123,7 @@ namespace detail
 
 #     if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 
-      BOOST_FILESYSTEM_DECL  boost::filesystem::status_flag
+      BOOST_FILESYSTEM_DECL  boost::filesystem::status_flags
         status_api( const std::wstring & ph,
                     boost::filesystem::system_error_type * ec = 0 );
       BOOST_FILESYSTEM_DECL query_pair 
@@ -168,11 +168,11 @@ namespace detail
 
 //  query functions  ---------------------------------------------------------//
 
-    BOOST_FS_FUNC(status_flag)
+    BOOST_FS_FUNC(status_flags)
     status( const Path & ph, system_error_type * ec = 0 )
       { return detail::status_api( ph.external_file_string(), ec ); }
 
-    BOOST_FS_FUNC(status_flag)
+    BOOST_FS_FUNC(status_flags)
     symlink_status( const Path & ph, system_error_type * ec = 0 )
 #   ifdef BOOST_WINDOWS_API
       { return detail::status_api( ph.external_file_string(), ec ); }
@@ -186,7 +186,7 @@ namespace detail
     BOOST_FS_FUNC(bool) exists( const Path & ph )
     { 
       system_error_type ec;
-      status_flag sf( detail::status_api( ph.external_file_string(), &ec ) );
+      status_flags sf( detail::status_api( ph.external_file_string(), &ec ) );
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::exists", ph, ec ) );
@@ -196,7 +196,7 @@ namespace detail
     BOOST_FS_FUNC(bool) is_directory( const Path & ph )
     { 
       system_error_type ec;
-      status_flag sf( detail::status_api( ph.external_file_string(), &ec ) );
+      status_flags sf( detail::status_api( ph.external_file_string(), &ec ) );
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::is_directory", ph, ec ) );
@@ -206,7 +206,7 @@ namespace detail
     BOOST_FS_FUNC(bool) is_file( const Path & ph )
     { 
       system_error_type ec;
-      status_flag sf( detail::status_api( ph.external_file_string(), &ec ) );
+      status_flags sf( detail::status_api( ph.external_file_string(), &ec ) );
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::is_file", ph, ec ) );
@@ -219,7 +219,7 @@ namespace detail
       return false;
 #   else
       system_error_type ec;
-      status_flag sf( detail::symlink_status_api( ph.external_file_string(), &ec ) );
+      status_flags sf( detail::symlink_status_api( ph.external_file_string(), &ec ) );
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::is_symlink", ph, ec ) );
@@ -428,14 +428,14 @@ namespace detail
 
     // "do-the-right-thing" overloads  ---------------------------------------//
 
-    inline status_flag status( const path & ph, system_error_type * ec = 0 )
+    inline status_flags status( const path & ph, system_error_type * ec = 0 )
       { return status<path>( ph, ec ); }
-    inline status_flag status( const wpath & ph, system_error_type * ec = 0 )
+    inline status_flags status( const wpath & ph, system_error_type * ec = 0 )
       { return status<wpath>( ph, ec ); }
 
-    inline status_flag symlink_status( const path & ph, system_error_type * ec = 0 )
+    inline status_flags symlink_status( const path & ph, system_error_type * ec = 0 )
       { return symlink_status<path>( ph, ec ); }
-    inline status_flag symlink_status( const wpath & ph, system_error_type * ec = 0 )
+    inline status_flags symlink_status( const wpath & ph, system_error_type * ec = 0 )
       { return symlink_status<wpath>( ph, ec ); }
 
     inline bool exists( const path & ph ) { return exists<path>( ph ); }

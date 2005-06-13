@@ -39,6 +39,14 @@
 #   define BOOST_WINDOWS_PATH
 # endif
 
+//  BOOST_FILESYSTEM_STATUS_CACHE enables status_flags cache in
+//   basic_directory_iterator  -----------------------------------------------//
+
+// TODO: find out how Linux, others, enable dirent::d_type. __USE_BSD????
+# if defined(BOOST_WINDOWS_API) || defined(__APPLE__)
+#   define BOOST_FILESYSTEM_STATUS_CACHE
+# endif
+
 //  narrow support only for badly broken compilers or libraries  -------------//
 
 # if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE)

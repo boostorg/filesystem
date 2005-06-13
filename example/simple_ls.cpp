@@ -10,12 +10,14 @@
 
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+#include "boost/progress.hpp"
 #include <iostream>
 
 namespace fs = boost::filesystem;
 
 int main( int argc, char* argv[] )
 {
+  boost::progress_timer t( std::clog );
 
   fs::path full_path( fs::initial_path<fs::path>() );
 
@@ -46,12 +48,18 @@ int main( int argc, char* argv[] )
     {
       try
       {
-        if ( fs::is_directory( *dir_itr ) )
+#if 1
+        fs::status_flag  flags( fs::status( *dir_itr ) );
+#else
+        fs::status_flag  flags( fs::file_flag );
+#endif
+
+        if ( (flags & fs::directory_flag) == fs::directory_flag )
         {
           ++dir_count;
           std::cout << dir_itr->leaf() << " [directory]\n";
         }
-        else if ( fs::is_file( *dir_itr ) )
+        else if ( (flags & fs::file_flag) == fs::file_flag )
         {
           ++file_count;
           std::cout << dir_itr->leaf() << "\n";

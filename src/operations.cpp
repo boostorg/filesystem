@@ -140,7 +140,7 @@ namespace
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
   template< class String >
-  fs::status_flag status_template( const String & ph,
+  fs::status_flags status_template( const String & ph,
     boost::filesystem::system_error_type * ec )
   {
     DWORD attr( get_file_attributes( ph.c_str() ) );
@@ -414,7 +414,7 @@ namespace
   remove_template( const String & ph )
   {
     fs::system_error_type ec;
-    fs::status_flag sf( fs::detail::status_api( ph, &ec ) );
+    fs::status_flags sf( fs::detail::status_api( ph, &ec ) );
     if ( sf == fs::error_flag ) return ec;
     if ( (sf & fs::directory_flag) != 0 )
     {
@@ -486,14 +486,14 @@ namespace boost
 
 #   ifdef BOOST_WINDOWS_API
 
-      BOOST_FILESYSTEM_DECL fs::status_flag
+      BOOST_FILESYSTEM_DECL fs::status_flags
       status_api( const std::string & ph,
         boost::filesystem::system_error_type * ec )
         { return status_template( ph, ec ); }
 
 #     ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-      BOOST_FILESYSTEM_DECL fs::status_flag
+      BOOST_FILESYSTEM_DECL fs::status_flags
       status_api( const std::wstring & ph,
         boost::filesystem::system_error_type * ec )
         { return status_template( ph, ec ); }
@@ -767,7 +767,7 @@ namespace boost
 
 #   else // BOOST_POSIX_API
 
-      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flags
       status_api( const std::string & ph,
                   boost::filesystem::system_error_type * ec )
       {
@@ -778,13 +778,13 @@ namespace boost
           return ( (errno == ENOENT) || (errno == ENOTDIR) )
             ? fs::not_found_flag : fs::error_flag;
         }
-        fs::status_flag result(0);
+        fs::status_flags result(0);
         if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
         if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
         return result;
       }
 
-      BOOST_FILESYSTEM_DECL boost::filesystem::status_flag
+      BOOST_FILESYSTEM_DECL boost::filesystem::status_flags
       symlink_status_api( const std::string & ph,
                           boost::filesystem::system_error_type * ec )
       {
@@ -796,7 +796,7 @@ namespace boost
             ? fs::not_found_flag : fs::error_flag;
         }
         if ( S_ISLNK( path_stat.st_mode ) ) return fs::symlink_flag;
-        fs::status_flag result(0);
+        fs::status_flags result(0);
         if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
         if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
         return result;
