@@ -82,17 +82,17 @@ exposition, only the templated version of each non-member function is shown.</p>
     typedef basic_directory_iterator&lt;path&gt; directory_iterator;
     typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
 
-    typedef <i>bitmask-type</i> <a name="status_flag">status_flag</a>; // see C++ std 17.3.2.1.2 [lib.bitmask.types]
+    typedef <i>bitmask-type</i> <a name="status_flag">status_flag</a>s; // see C++ std 17.3.2.1.2 [lib.bitmask.types]
 
-    static const status_flag  error_flag;
-    static const status_flag  not_found_flag;
-    static const status_flag  directory_flag;
-    static const status_flag  file_flag;
-    static const status_flag  symlink_flag;
+    static const status_flags  error_flag;
+    static const status_flags  not_found_flag;
+    static const status_flags  directory_flag;
+    static const status_flags  file_flag;
+    static const status_flags  symlink_flag;
 
-    template&lt;class Path&gt; status_flag <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+    template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
 
-    template&lt;class Path&gt; status_flag <a href="#symlink_status">symlink_status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+    template&lt;class Path&gt; status_flags <a href="#symlink_status">symlink_status</a>( const Path &amp; ph, system_error_type * ec = 0 );
 
     template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
 
@@ -246,7 +246,7 @@ unattractive.</p>
 
 <h3><a name="status">status</a></h3>
 <blockquote>
-  <pre>template&lt;class Path&gt; <a href="#status_flag">status_flag</a> status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
+  <pre>template&lt;class Path&gt; <a href="#status_flag">status_flags</a> status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
     <p><b>Effects:</b></p>
     <ul>
       <li>If ph.empty():<br>
@@ -301,7 +301,7 @@ unattractive.</p>
   </blockquote>
 <h3><a name="symlink_status">symlink_status</a></h3>
 <blockquote>
-  <pre>template&lt;class Path&gt; status_flag symlink_status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
+  <pre>template&lt;class Path&gt; <a href="#status_flag">status_flags</a> symlink_status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
     <p><b>Effects:</b></p>
     <ul>
       <li>If ph.empty():<br>
@@ -777,7 +777,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13993" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19909" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
