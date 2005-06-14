@@ -138,7 +138,7 @@ int test_main( int argc, char * argv[] )
             << "\"\n";
   std::cout << "\ninitial_path<fs::path>().file_string() is\n  \""
             << fs::initial_path<fs::path>().file_string()
-            << "\"\n";
+            << "\"\n\n";
   BOOST_CHECK( fs::initial_path<fs::path>().is_complete() );
   BOOST_CHECK( fs::current_path<fs::path>().is_complete() );
   BOOST_CHECK( fs::initial_path<fs::path>().string()
@@ -246,6 +246,8 @@ int test_main( int argc, char * argv[] )
 
   {
     fs::directory_iterator dir_itr( dir );
+    BOOST_CHECK( fs::status( dir_itr ) == fs::directory_flag );
+    BOOST_CHECK( fs::status( dir_itr, fs::symlink ) == fs::directory_flag );
     BOOST_CHECK( dir_itr->leaf() == "d1" );
   }
 
@@ -259,6 +261,11 @@ int test_main( int argc, char * argv[] )
   // stepping one iterator doesn't affect a different iterator.
   {
     fs::directory_iterator dir_itr( dir );
+    BOOST_CHECK( fs::exists( dir_itr ) );
+    BOOST_CHECK( fs::is_directory( dir_itr ) );
+    BOOST_CHECK( !fs::is_file( dir_itr ) );
+    BOOST_CHECK( !fs::is_symlink( dir_itr ) );
+
     fs::directory_iterator dir_itr2( dir );
     BOOST_CHECK( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
     BOOST_CHECK( dir_itr2->leaf() == "d1" || dir_itr2->leaf() == "d2" );

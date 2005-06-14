@@ -18,6 +18,7 @@
 #include <boost/filesystem/path.hpp>  // includes <boost/filesystem/config.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/iterator.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/assert.hpp>
@@ -40,10 +41,16 @@
 #   define BOOST_FS_FUNC(BOOST_FS_TYPE) \
       template<class Path> typename boost::enable_if<is_basic_path<Path>, \
       BOOST_FS_TYPE>::type
+#   define BOOST_FS_ITR_FUNC(BOOST_FS_TYPE) \
+      template<class BasicDirItr> typename boost::enable_if<is_same<BasicDirItr,\
+        basic_directory_iterator<typename BasicDirItr::path_type> >,\
+      BOOST_FS_TYPE>::type
 #   define BOOST_FS_TYPENAME typename
 # else
 #   define BOOST_FS_FUNC(BOOST_FS_TYPE) inline BOOST_FS_TYPE
+#   define BOOST_FS_ITR_FUNC(BOOST_FS_TYPE) inline BOOST_FS_TYPE
     typedef boost::filesystem::path Path;
+#   define BasicDirItr boost::filesystem::directory_iterator
 #   define BOOST_FS_TYPENAME
 # endif
 
@@ -56,15 +63,19 @@ namespace boost
   {
     template<class Path> class basic_directory_iterator;
 
+    // BOOST_FILESYSTEM_NARROW_ONLY needs this:
+    typedef basic_directory_iterator<path> directory_iterator;
+
     typedef char status_flags;
     static const status_flags  error_flag = 1;
     static const status_flags  not_found_flag = 2;
     static const status_flags  directory_flag = 4;
     static const status_flags  file_flag = 8;
-    static const status_flags  symlink_flag = 16;
+    static const status_flags  other_flag = 16;
+    static const status_flags  symlink_flag = 32;
 
     struct symlink_t{};
-    extern const symlink_t symlink;
+    extern symlink_t symlink;
 
 namespace detail
     {
@@ -571,12 +582,13 @@ namespace detail
 //    problems. They also overload to the proper external path character type.
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_first(
-          void *& handle, const std::string & dir_path, std::string & target );
+        dir_itr_first( void *& handle, const std::string & dir_path,
+          std::string & target, status_flags & sf, status_flags & symlink_sf );
       // eof: return==0 && handle==0
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_increment( void *& handle, std::string & target );
+        dir_itr_increment( void *& handle, std::string & target,
+          status_flags & sf, status_flags & symlink_sf );
       // eof: return==0 && handle==0
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -585,20 +597,24 @@ namespace detail
 
 #     if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_first(
-          void *& handle, const std::wstring & ph, std::wstring & target );
+        dir_itr_first( void *& handle, const std::wstring & ph,
+          std::wstring & target, status_flags & sf, status_flags & symlink_sf );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_increment( void *& handle, std::wstring & target );
+        dir_itr_increment( void *& handle, std::wstring & target,
+          status_flags & sf, status_flags & symlink_sf );
 #     endif
 
       template< class Path >
       class dir_itr_imp
       {
       public:  
-        Path    m_path;
-        void *  m_handle;
+        Path          m_path;
+        void *        m_handle;
+        status_flags  m_status;          // stat()-like
+        status_flags  m_symlink_status;  // lstat()-like
 
-        dir_itr_imp() : m_handle(0) {}
+
+        dir_itr_imp() : m_handle(0), m_status(0), m_symlink_status(0)  {}
 
         ~dir_itr_imp()
         {
@@ -618,11 +634,21 @@ namespace detail
       boost::single_pass_traversal_tag >
     {
     public:
+      typedef Path path_type;
+
       basic_directory_iterator(){}  // creates the "end" iterator
 
       explicit basic_directory_iterator( const Path & dir_path );
 
-    private:
+// TODO: Why aren't friends working? The first works on VC++7.1 but not Intel.
+// The second is treated as a new declaration on both VC++7.1 and Intel 8.1
+//    private:
+//      template<class BasicDirItr>
+//        friend status_flags status( const BasicDirItr &, system_error_type * );
+//      template<class BasicDirItr>
+//        friend bool is_directory( const BasicDirItr & );
+
+
       // shared_ptr provides shallow-copy semantics required for InputIterators.
       // m_imp.get()==0 indicates the end iterator.
       boost::shared_ptr< detail::dir_itr_imp< Path > >  m_imp;
@@ -647,6 +673,8 @@ namespace detail
     typedef basic_directory_iterator< wpath > wdirectory_iterator;
 # endif
 
+    //  basic_directory_implementation  ---------------------------------------//
+
     template<class Path>
     basic_directory_iterator<Path>::basic_directory_iterator(
       const Path & dir_path ) : m_imp( new detail::dir_itr_imp<Path> )
@@ -656,7 +684,8 @@ namespace detail
 
       if ( dir_path.empty()
         || (sys_err = detail::dir_itr_first( m_imp->m_handle,
-        dir_path.external_directory_string(), name )) != 0 )
+        dir_path.external_directory_string(),
+        name, m_imp->m_status, m_imp->m_symlink_status )) != 0 )
       {
         boost::throw_exception( basic_filesystem_error<Path>(  
           "boost::filesystem::basic_directory_iterator constructor",
@@ -687,8 +716,8 @@ namespace detail
 
       for (;;)
       {
-        if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle, name ))
-          != 0 )
+        if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle, name,
+          m_imp->m_status, m_imp->m_symlink_status )) != 0 )
         {
           boost::throw_exception( basic_filesystem_error<Path>(  
             "boost::filesystem::basic_directory_iterator increment",
@@ -706,6 +735,82 @@ namespace detail
         }
       }
     }
+
+//  query operational function BasicDirItr  ----------------------------------//
+
+//  located here because BOOST_FILESYSTEM_NARROW_ONLY requires them to be after
+//  the full basic_directory_iterator definitions
+
+    BOOST_FS_ITR_FUNC(status_flags)
+    status( const BasicDirItr & it, system_error_type * ec = 0 )
+    {
+      if ( it.m_imp->m_status == 0 )
+      {
+        if ( it.m_imp->m_symlink_status != 0
+          && (it.m_imp->m_symlink_status & symlink_flag) != symlink_flag )
+          { it.m_imp->m_status = it.m_imp->m_symlink_status; }
+        else { it.m_imp->m_status = status( it.m_imp->m_path, ec ); }
+      }
+      return it.m_imp->m_status;
+    }
+
+
+    BOOST_FS_ITR_FUNC(status_flags)
+    status( const BasicDirItr & it, const symlink_t &,
+      system_error_type * ec = 0 )
+    {
+      if ( it.m_imp->m_symlink_status == 0 )
+        it.m_imp->m_symlink_status = status( it.m_imp->m_path, symlink, ec );
+      return it.m_imp->m_status;
+    }
+
+    BOOST_FS_ITR_FUNC(bool) exists( const BasicDirItr & it )
+    {
+      if ( it.m_imp->m_status == 0 )
+      {
+        if ( it.m_imp->m_symlink_status != 0
+          && (it.m_imp->m_symlink_status & symlink_flag) != symlink_flag )
+          { it.m_imp->m_status = it.m_imp->m_symlink_status; }
+        else { it.m_imp->m_status = status( it.m_imp->m_path ); }
+      }
+      return it.m_imp->m_status != not_found_flag;
+    }
+
+    BOOST_FS_ITR_FUNC(bool) is_directory( const BasicDirItr & it )
+    {
+      if ( it.m_imp->m_status == 0 )
+      {
+        if ( it.m_imp->m_symlink_status != 0
+          && (it.m_imp->m_symlink_status & symlink_flag) != symlink_flag )
+          { it.m_imp->m_status = it.m_imp->m_symlink_status; }
+        else { it.m_imp->m_status = status( it.m_imp->m_path ); }
+      }
+      return (it.m_imp->m_status & directory_flag) == directory_flag;
+    }
+
+     BOOST_FS_ITR_FUNC(bool) is_file( const BasicDirItr & it )
+    {
+      if ( it.m_imp->m_status == 0 )
+      {
+        if ( it.m_imp->m_symlink_status != 0
+          && (it.m_imp->m_symlink_status & symlink_flag) != symlink_flag )
+          { it.m_imp->m_status = it.m_imp->m_symlink_status; }
+        else { it.m_imp->m_status = status( it.m_imp->m_path ); }
+      }
+      return (it.m_imp->m_status & file_flag) == file_flag;
+    }
+
+     BOOST_FS_ITR_FUNC(bool) is_symlink( const BasicDirItr & it )
+    {
+#   ifdef BOOST_WINDOWS_API
+      return false;
+#   else
+      if ( it.m_imp->m_symlink_status == 0 )
+        it.m_imp->m_symlink_status_status = status( it.m_imp->m_path, symlink );
+      return (it.m_imp->m_symlink_status & symlink_flag) == symlink_flag;
+#   endif
+    }
+
   } // namespace filesystem
 } // namespace boost
 

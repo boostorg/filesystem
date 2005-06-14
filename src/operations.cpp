@@ -14,6 +14,8 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
+#define __USE_BSD // needed to get struct dirent d_type defines on Linux
+
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
       // 64-bit systems or on 32-bit systems which don't have files larger 
@@ -469,6 +471,8 @@ namespace boost
 {
   namespace filesystem
   {
+    symlink_t symlink; 
+
     namespace detail
     {
 
@@ -619,8 +623,8 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_first(
-        void *& handle, const std::wstring & dir, std::wstring & target )
+      dir_itr_first( void *& handle, const std::wstring & dir,
+        std::wstring & target, status_flags & sf, status_flags & symlink_sf )
       {
         // use a form of search Sebastian Martel reports will work with Win98
         std::wstring dirpath( dir );
@@ -636,11 +640,16 @@ namespace boost
             ? 0 : ::GetLastError();
         }
         target = data.cFileName;
+        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+          == FILE_ATTRIBUTE_DIRECTORY)
+          ? fs::directory_flag
+          : fs::file_flag;
         return 0;
       }  
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_increment( void *& handle, std::wstring & target )
+      dir_itr_increment( void *& handle, std::wstring & target,
+        status_flags & sf, status_flags & symlink_sf )
       {
         WIN32_FIND_DATAW data;
         if ( ::FindNextFileW( handle, &data ) == 0 ) // fails
@@ -650,6 +659,10 @@ namespace boost
           return error == ERROR_NO_MORE_FILES ? 0 : error;
         }
         target = data.cFileName;
+        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+          == FILE_ATTRIBUTE_DIRECTORY)
+          ? fs::directory_flag
+          : fs::file_flag;
         return 0;
       }
 
@@ -716,8 +729,8 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_first(
-        void *& handle, const std::string & dir, std::string & target )
+      dir_itr_first( void *& handle, const std::string & dir,
+        std::string & target, status_flags & sf, status_flags & symlink_sf )
       // Note: an empty root directory has no "." or ".." entries, so this
       // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
       // error. It is treated as eof instead.
@@ -736,6 +749,10 @@ namespace boost
             ? 0 : ::GetLastError();
         }
         target = data.cFileName;
+        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+          == FILE_ATTRIBUTE_DIRECTORY)
+          ? fs::directory_flag
+          : fs::file_flag;
         return 0;
       }
 
@@ -752,7 +769,8 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_increment( void *& handle, std::string & target )
+      dir_itr_increment( void *& handle, std::string & target,
+        status_flags & sf, status_flags & symlink_sf )
       {
         WIN32_FIND_DATAA data;
         if ( ::FindNextFileA( handle, &data ) == 0 ) // fails
@@ -762,6 +780,10 @@ namespace boost
           return error == ERROR_NO_MORE_FILES ? 0 : error;
         }
         target = data.cFileName;
+        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+          == FILE_ATTRIBUTE_DIRECTORY)
+          ? fs::directory_flag
+          : fs::file_flag;
         return 0;
       }
 
@@ -781,6 +803,7 @@ namespace boost
         fs::status_flags result(0);
         if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
         if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
+        if ( result == 0 ) result = fs::other_flag;
         return result;
       }
 
@@ -795,10 +818,11 @@ namespace boost
           return ( (errno == ENOENT) || (errno == ENOTDIR) )
             ? fs::not_found_flag : fs::error_flag;
         }
-        if ( S_ISLNK( path_stat.st_mode ) ) return fs::symlink_flag;
         fs::status_flags result(0);
+        if ( S_ISLNK( path_stat.st_mode ) ) result |= fs::symlink_flag;
         if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
         if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
+        if ( result == 0 ) result = fs::other_flag;
         return result;
       }
 
@@ -988,8 +1012,8 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_first(
-        void *& handle, const std::string & dir, std::string & target )
+      dir_itr_first( void *& handle, const std::string & dir,
+        std::string & target, status_flags &, status_flags & )
       {
         static const std::string dummy_first_name( "." );
         if ( (handle = ::opendir( dir.c_str() )) == 0 ) return errno;
@@ -1029,7 +1053,8 @@ namespace boost
         }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_increment( void *& handle, std::string & target )
+      dir_itr_increment( void *& handle, std::string & target,
+        status_flags & sf, status_flags & symlink_sf )
       {
         struct dirent entry, * result;
         int return_code;
@@ -1037,6 +1062,15 @@ namespace boost
           &entry, &result )) != 0 ) return errno;
         if ( result == 0 ) return dir_itr_close( handle );
         target = entry.d_name;
+#     ifdef BOOST_FILESYSTEM_STATUS_CACHE
+        if ( entry.d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
+        else if ( entry.d_type == DT_REG ) sf = symlink_sf = fs::file_flag;
+        else if ( entry.d_type == DT_LNK )
+          { sf = 0; symlink_sf = fs::symlink_flag; }
+        else sf = symlink_sf = fs::other_flag;
+#     else
+        sf = symlink_sf = 0;
+#     endif
         return 0;
       }
 
