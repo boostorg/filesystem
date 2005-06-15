@@ -49,7 +49,7 @@ int main( int argc, char* argv[] )
       try
       {
 #if 1
-        fs::status_flag  flags( fs::status( *dir_itr ) );
+        fs::status_flags  flags( fs::status( *dir_itr ) );
 #else
         fs::status_flag  flags( fs::file_flag );
 #endif

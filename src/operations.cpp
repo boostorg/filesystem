@@ -289,8 +289,8 @@ namespace
     if ( (sz = get_current_directory( 0,
       static_cast<typename String::value_type*>(0) )) == 0 )
       { sz = 1; }
-    boost::scoped_array<typename String::value_type>
-      buf( new typename String::value_type[sz] );
+    typedef typename String::value_type value_type;
+    boost::scoped_array<value_type> buf( new value_type[sz] );
     if ( get_current_directory( sz, buf.get() ) == 0 )
       return ::GetLastError();
     ph = buf.get();
@@ -318,8 +318,8 @@ namespace
     if ( len == 0 ) return ::GetLastError();
     if ( len > buf_size )
     {
-      boost::scoped_array<typename String::value_type>
-        big_buf( new typename String::value_type[len] );
+      typedef typename String::value_type value_type;
+      boost::scoped_array<value_type> big_buf( new value_type[len] );
       if ( (len=get_full_path_name( ph, len , big_buf.get(), &pfn ))
         == 0 ) return ::GetLastError();
       big_buf[len] = '\0';

@@ -195,8 +195,9 @@ namespace boost
       class iterator_helper
       {
       public:
-        static void do_increment( typename Path::iterator  & ph );
-        static void do_decrement( typename Path::iterator  & ph );
+        typedef typename Path::iterator iterator;
+        static void do_increment( iterator & ph );
+        static void do_decrement( iterator & ph );
       };
     }
 
@@ -217,6 +218,7 @@ namespace boost
 
       typedef basic_path<String, Traits> path_type;
       typedef String string_type;
+      typedef typename String::value_type value_type;
       typedef Traits traits_type;
       typedef typename Traits::external_string_type external_string_type; 
 
@@ -224,13 +226,13 @@ namespace boost
 
       basic_path( const string_type & str )
         { operator/=( str ); }
-      basic_path( const typename string_type::value_type * s )
+      basic_path( const value_type * s )
         { operator/=( s ); }
 
       ~basic_path() {}
 
       // append operations:
-      basic_path & operator /=( const typename string_type::value_type * rhs );
+      basic_path & operator /=( const value_type * rhs );
       basic_path & operator /=( const basic_path & rhs )
         { return operator /=( rhs.string().c_str() ); }
       basic_path & operator /=( const string_type & rhs )
@@ -240,7 +242,7 @@ namespace boost
         { return basic_path<String, Traits>( *this ) /= rhs; }
       basic_path operator /( const string_type & rhs ) const
         { return basic_path<String, Traits>( *this ) /= rhs; }
-      basic_path operator /( const typename string_type::value_type * rhs ) const
+      basic_path operator /( const value_type * rhs ) const
         { return basic_path<String, Traits>( *this ) /= rhs; }
 
       // modification functions:
@@ -685,7 +687,7 @@ namespace boost
       
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::operator /=
-      ( const typename string_type::value_type * next_p )
+      ( const value_type * next_p )
     {
       // append path_separator<path_type>::value if needed
       if ( !empty() && *next_p != 0
@@ -899,7 +901,7 @@ namespace boost
       //  do_increment  ------------------------------------------------------//
 
       template<class Path>
-      void iterator_helper<Path>::do_increment( typename Path::iterator & ph )
+      void iterator_helper<Path>::do_increment( iterator & ph )
       {
         assert( ph.m_pos < ph.m_path_ptr->m_path.size() && "basic_path::iterator increment past end()" );
 
@@ -911,7 +913,7 @@ namespace boost
         ph.m_pos += ph.m_name.size();
         if ( ph.m_pos == ph.m_path_ptr->m_path.size() ) // end
         {
-          ph.m_name.clear();  // not strictly required, but might aid debugging
+          ph.m_name.erase( ph.m_name.begin(), ph.m_name.end() ); // VC++ 6.0 lib didn't supply clear() 
           return;
         }
 
@@ -955,11 +957,12 @@ namespace boost
       //  do_decrement  ------------------------------------------------------//
 
       template<class Path>
-      void iterator_helper<Path>::do_decrement( typename Path::iterator & ph )
+      void iterator_helper<Path>::do_decrement( iterator & ph )
       {                                                                                
         assert( ph.m_pos && "basic_path::iterator decrement past begin()"  );
 
         typedef typename Path::string_type string_type;
+        typedef typename Path::traits_type traits_type;
 
         static const typename string_type::value_type separators[] = {
           path_separator<Path>::value,
@@ -971,7 +974,7 @@ namespace boost
         typename string_type::size_type end_pos( ph.m_pos );
 
         typename string_type::size_type root_dir_pos(
-          detail::root_directory_start<string_type, typename Path::traits_type>(
+          detail::root_directory_start<string_type, traits_type>(
             ph.m_path_ptr->m_path, end_pos ) );
 
         // if at end and there was a trailing non-root '/', return "."
@@ -997,8 +1000,7 @@ namespace boost
           ;
           --end_pos ) {}
 
-        ph.m_pos = detail::leaf_pos
-          <typename Path::string_type, typename Path::traits_type>
+        ph.m_pos = detail::leaf_pos<string_type, traits_type>
             ( ph.m_path_ptr->m_path, end_pos );
         ph.m_name = ph.m_path_ptr->m_path.substr( ph.m_pos, end_pos - ph.m_pos );
       }

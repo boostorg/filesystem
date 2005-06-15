@@ -12,7 +12,10 @@
 #include <string>
 #include <iostream>
 #include <cstdio> // for std::remove
-#include "lpath.hpp"
+
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#  include "lpath.hpp"
+#endif
 
 namespace fs = boost::filesystem;
 
