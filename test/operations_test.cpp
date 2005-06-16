@@ -449,6 +449,39 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::remove( d1 ) );
   BOOST_CHECK( !fs::exists( d1 ) );
 
+  if ( platform == "POSIX" )
+  {
+    // remove() test on dangling symbolic link
+    fs::path link( "dangling_link" );
+    fs::remove( link );
+    BOOST_CHECK( !fs::symbolic_link_exists( link ) );
+    BOOST_CHECK( !fs::exists( link ) );
+    std::system("ln -s nowhere dangling_link");
+    BOOST_CHECK( !fs::exists( link ) );
+    BOOST_CHECK( fs::symbolic_link_exists( link ) );
+    BOOST_CHECK( fs::remove( link ) );
+    BOOST_CHECK( !fs::symbolic_link_exists( link ) );
+
+    // remove() test on symbolic link to a file
+    file_ph = "link_target";
+    fs::remove( file_ph );
+    BOOST_CHECK( !fs::exists( file_ph ) );
+    create_file( file_ph, "" );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( !fs::is_directory( file_ph ) );
+    std::system("ln -s link_target non_dangling_link");
+    link = "non_dangling_link";
+    BOOST_CHECK( fs::exists( link ) );
+    BOOST_CHECK( !fs::is_directory( link ) );
+    BOOST_CHECK( fs::symbolic_link_exists( link ) );
+    BOOST_CHECK( fs::remove( link ) );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( !fs::exists( link ) );
+    BOOST_CHECK( !fs::symbolic_link_exists( link ) );
+    BOOST_CHECK( fs::remove( file_ph ) );
+    BOOST_CHECK( !fs::exists( file_ph ) );
+  }
+
   // post-test cleanup
   BOOST_CHECK( fs::remove_all( dir ) != 0 );
   // above was added just to simplify testing, but it ended up detecting
