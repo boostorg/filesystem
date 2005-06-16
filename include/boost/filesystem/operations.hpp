@@ -640,13 +640,11 @@ namespace detail
 
       explicit basic_directory_iterator( const Path & dir_path );
 
-// TODO: Why aren't friends working? The first works on VC++7.1 but not Intel.
-// The second is treated as a new declaration on both VC++7.1 and Intel 8.1
+// TODO: Why aren't friends working?
 //    private:
-//      template<class BasicDirItr>
-//        friend status_flags status( const BasicDirItr &, system_error_type * );
-//      template<class BasicDirItr>
-//        friend bool is_directory( const BasicDirItr & );
+//      typedef basic_directory_iterator<Path> bdi_type;
+//      friend status_flags status<>( const bdi_type &, system_error_type * );
+//      friend bool is_directory<>( const bdi_type & );
 
 
       // shared_ptr provides shallow-copy semantics required for InputIterators.
@@ -806,7 +804,7 @@ namespace detail
       return false;
 #   else
       if ( it.m_imp->m_symlink_status == 0 )
-        it.m_imp->m_symlink_status_status = status( it.m_imp->m_path, symlink );
+        it.m_imp->m_symlink_status = status( it.m_imp->m_path, symlink );
       return (it.m_imp->m_symlink_status & symlink_flag) == symlink_flag;
 #   endif
     }
