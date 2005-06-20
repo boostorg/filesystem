@@ -21,6 +21,7 @@ using boost::bind;
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <cstdlib> // for system()
 
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
 # define BOOST_BND(BOOST_FUNC_TO_DO) BOOST_FUNC_TO_DO<fs::path>
@@ -39,7 +40,7 @@ using boost::bind;
 
 # ifdef BOOST_NO_STDC_NAMESPACE
     namespace std { using ::asctime; using ::gmtime; using ::localtime;
-    using ::difftime; using ::time; using ::tm; using ::mktime; }
+    using ::difftime; using ::time; using ::tm; using ::mktime; using ::system; }
 # endif
 
 #define CHECK_EXCEPTION(b,e) throws_fs_error(b,e,__LINE__)
@@ -246,6 +247,7 @@ int test_main( int argc, char * argv[] )
 
   {
     fs::directory_iterator dir_itr( dir );
+    std::cout << "*****" << (int)fs::status(dir_itr) << std::endl;
     BOOST_CHECK( fs::status( dir_itr ) == fs::directory_flag );
     BOOST_CHECK( fs::status( dir_itr, fs::symlink ) == fs::directory_flag );
     BOOST_CHECK( dir_itr->leaf() == "d1" );
@@ -489,6 +491,42 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::remove), dir ), ENOTEMPTY ) );
   BOOST_CHECK( fs::remove( d1 ) );
   BOOST_CHECK( !fs::exists( d1 ) );
+
+// STLport is allergic to std::system, so don't use runtime platform test
+# ifdef BOOST_POSIX
+
+  // remove() test on dangling symbolic link
+  fs::path link( "dangling_link" );
+  fs::remove( link );
+  BOOST_CHECK( !fs::is_symlink( link ) );
+  BOOST_CHECK( !fs::exists( link ) );
+  std::system("ln -s nowhere dangling_link");
+  BOOST_CHECK( !fs::exists( link ) );
+  BOOST_CHECK( fs::is_symlink( link ) );
+  BOOST_CHECK( fs::remove( link ) );
+  BOOST_CHECK( !fs::is_symlink( link ) );
+
+  // remove() test on symbolic link to a file
+  file_ph = "link_target";
+  fs::remove( file_ph );
+  BOOST_CHECK( !fs::exists( file_ph ) );
+  create_file( file_ph, "" );
+  BOOST_CHECK( fs::exists( file_ph ) );
+  BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
+  std::system("ln -s link_target non_dangling_link");
+  link = "non_dangling_link";
+  BOOST_CHECK( fs::exists( link ) );
+  BOOST_CHECK( !fs::is_directory( link ) );
+  BOOST_CHECK( fs::is_file( link ) );
+  BOOST_CHECK( fs::is_symlink( link ) );
+  BOOST_CHECK( fs::remove( link ) );
+  BOOST_CHECK( fs::exists( file_ph ) );
+  BOOST_CHECK( !fs::exists( link ) );
+  BOOST_CHECK( !fs::is_symlink( link ) );
+  BOOST_CHECK( fs::remove( file_ph ) );
+  BOOST_CHECK( !fs::exists( file_ph ) );
+# endif
 
   // write time tests
 
