@@ -907,7 +907,12 @@ namespace boost
             buf( new char[static_cast<std::size_t>(path_max)] );
           if ( ::getcwd( buf.get(), static_cast<std::size_t>(path_max) ) == 0 )
           {
-            if ( errno != ERANGE ) return errno;
+            if ( errno != ERANGE
+          // bug in some versions of the Metrowerks C lib on the Mac: wrong errno set 
+#         if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+              && errno != 0
+#         endif
+              ) return errno;
           }
           else
           {
@@ -943,9 +948,18 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       remove_api( const std::string & ph )
       {
+#     if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+        // Some Metrowerks C library versions fail on directories because of a
+        // known Metrowerks coding error in ::remove. Workaround is to call
+        // rmdir() or unlink() as indicated.
+        if ( (is_directory( ph )
+          ? ::rmdir( ph.string().c_str() )
+          : ::unlink( ph.string().c_str() )) != 0 )
+#     else
         // note that the POSIX behavior for symbolic links is what we want;
         // the link rather than what it points to is deleted
         if ( std::remove( ph.c_str() ) != 0 )
+#     endif
         {
           int error = errno;
           // POSIX says "If the directory is not an empty directory, rmdir()
@@ -1063,6 +1077,8 @@ namespace boost
         if ( result == 0 ) return dir_itr_close( handle );
         target = entry.d_name;
 #     ifdef BOOST_FILESYSTEM_STATUS_CACHE
+//        std::cout << "entry.d_type is " << (int)entry.d_type << std::endl;
+//        std::cout << "DT_DIR is " << (int)DT_DIR << std::endl;
         if ( entry.d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
         else if ( entry.d_type == DT_REG ) sf = symlink_sf = fs::file_flag;
         else if ( entry.d_type == DT_LNK )

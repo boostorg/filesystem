@@ -21,7 +21,9 @@
 
 namespace
 {
-  std::locale loc = std::locale();
+  // ISO C calls this "the locale-specific native environment":
+  std::locale loc("");
+
   const std::codecvt<wchar_t, char, std::mbstate_t> *
     converter(
        &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
@@ -61,6 +63,7 @@ namespace boost
     wpath_traits::to_external( const wpath & ph, 
       const internal_string_type & src )
     {
+      locked = true;
       std::size_t work_size( converter->max_length() * (src.size()+1) );
       boost::scoped_array<char> work( new char[ work_size ] );
       std::mbstate_t state;

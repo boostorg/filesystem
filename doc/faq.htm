@@ -107,6 +107,15 @@ toolkit functions.&nbsp; See <a href="#Failed Attempts">Failed Attempts</a>.</p>
 <p>Yes, but experience with both this library, POSIX, and Windows indicates 
 the utility of certain convenience functions, and that it is possible to provide 
 simple, yet widely acceptable, semantics for them. For example, remove_all.</p>
+<p><b>Why are there basic_directory_iterator&lt;&gt; overloads for operations.hpp 
+predicate functions? Isn't two ways to do the same thing poor design?</b></p>
+<p>Yes, two ways to do the same thing is often a poor design practice. But the 
+iterator versions are often much more efficient. Calling status() during 
+iteration over a directory containing 15,000 files took 6 seconds for the path 
+overload, and 1 second for the iterator overload, for tests on a freshly booted 
+machine. Times were .90 seconds and .30 seconds, for tests after prior use of 
+the directory. This performance gain is large enough to justify deviating from 
+preferred design practices. Neither overload alone meets all needs.</p>
 <p><b>Why are library functions so picky about errors?</b></p>
 <p>Safety. The default is to be safe rather than sorry. This is particularly 
 important given the reality that on many computer systems files and directories 
@@ -156,7 +165,7 @@ canonical form. See <a href="design.htm#symbolic-link-use-case">use case</a>
 from Walter Landry.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 May, 2005<!--webbot bot="Timestamp" endspan i-checksum="13993" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->17 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19923" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

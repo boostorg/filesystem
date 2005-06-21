@@ -10,7 +10,7 @@
 
 #include <boost/filesystem/config.hpp>
 # ifdef BOOST_FILESYSTEM_NARROW_ONLY
-#   error Narrow character paths only for this compiler and library combo
+#   error This compiler or standard library does not support wide-character strings or paths
 # endif
 
 #include <boost/filesystem/operations.hpp>
@@ -102,7 +102,7 @@ namespace
 int test_main( int argc, char * argv[] )
 {
 
-  // So that tests are run with known encoding, use Boost UTF8 codecvt
+  // So that tests are run with known encoding, use Boost UTF-8 codecvt
   std::locale global_loc = std::locale();
   std::locale loc( global_loc, new fs::detail::utf8_codecvt_facet );
   fs::wpath_traits::imbue( loc );

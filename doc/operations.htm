@@ -18,8 +18,8 @@
 <a href="#directory_iterator">Class basic_directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
 <a href="#Non-member_functions">Operations functions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Do-the-right-thing">&quot;Do-the-right-thing&quot; rule</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#status">status</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#symlink_status">symlink_status</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_file">is_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_file">is_file</a><br>
@@ -57,19 +57,12 @@ header. </p>
 
 <h2>Header <a href="../../../boost/filesystem/operations.hpp">boost/filesystem/operations.hpp</a> </h2>
 
-<p>To allow automatic 
-conversions to function properly for classes <i>path</i> and <i>wpath</i>, as 
-well as supporting class template <i>basic_path</i>, three 
-overloads of each non-member function are supplied. The overloads must &quot;do the right thing&quot; using
-<code>boost::enable_if</code> or equivalent techniques, so that the correct 
-overload is selected for calls like <code>exists( &quot;foo&quot; )</code>. To simplify 
-exposition, only the templated version of each non-member function is shown.</p>
 <h2><a name="Synopsis">Synopsis</a></h2>
 <pre>namespace boost
 {
   namespace filesystem
   {
-    template&lt;class Path&gt; class basic_directory_iterator 
+    template&lt;class Path&gt; class <a href="#directory_iterator">basic_directory_iterator</a> 
       : public boost::iterator_facade&lt;
           basic_directory_iterator&lt;Path&gt;,
           Path, boost::single_pass_traversal_tag &gt;
@@ -88,21 +81,30 @@ exposition, only the templated version of each non-member function is shown.</p>
     static const status_flags  not_found_flag;
     static const status_flags  directory_flag;
     static const status_flags  file_flag;
+    static const status_flags  other_flag;
     static const status_flags  symlink_flag;
 
-    template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+    struct <a name="symlink_t">symlink_t</a>{};
+    extern symlink_t symlink;
 
-    template&lt;class Path&gt; status_flags <a href="#symlink_status">symlink_status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+    template&lt;class Path&gt;   status_flags <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+    template&lt;class DirItr&gt; status_flags <a href="#status">status</a>( const DirItr &amp; it, system_error_type * ec = 0 );
+    template&lt;class Path&gt;   status_flags <a href="#status">status</a>( const Path &amp; ph, const symlink_t &amp;, system_error_type * ec = 0 );
+    template&lt;class DirItr&gt; status_flags <a href="#status">status</a>( const DirItr &amp; it, const symlink_t &amp;, system_error_type * ec = 0 );
 
-    template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
+    template&lt;class Path&gt;   bool <a href="#exists">exists</a>( const Path &amp; ph );
+    template&lt;class DirItr&gt; bool <a href="#exists">exists</a>( const DirItr &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt;   bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
+    template&lt;class DirItr&gt; bool <a href="#is_file">is_directory</a>( const DirItr &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt;   bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
+    template&lt;class DirItr&gt; bool <a href="#is_file">is_file</a>( const DirItr &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt;   bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
+    template&lt;class DirItr&gt; bool <a href="#is_symlink">is_symlink</a>( const DirItr &amp; ph );
 
-    template&lt;class Path&gt; bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt;  bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
 
     template&lt;class Path&gt; bool <a href="#equivalent">equivalent</a>( const <code>Path</code> &amp; ph1, const <code>Path</code> &amp; ph2 );
 
@@ -140,7 +142,8 @@ exposition, only the templated version of each non-member function is shown.</p>
 
 <p>Class <i>basic_directory_iterator</i> provides a C++ standard conforming input 
 iterator which accesses the contents of a <a href="index.htm#directory">
-directory</a>. </p>
+directory</a>. Except as specified below, iteration is performed as if by 
+calling [<a href="design.htm#POSIX-01">POSIX-01</a>] readdir_r() or readdir().</p>
 
 <p>The value type is <i><a href="path.htm">boost::filesystem::basic_path</a></i>, so 
 dereferencing a <i>basic_directory_iterator</i> yields a <a href="index.htm#path">
@@ -153,10 +156,8 @@ the directory entry to the directory path supplied at construction.</p>
 of a <i>basic_directory_iterator</i> is unspecified. Thus depending on the ordering 
 provided by a particular implementation will result in non-portable code.</p>
 
-<p>A path returned by dereferencing a <i>basic_directory_iterator</i> is, if 
-representing a directory, suitable for use as an argument to Boost.Filesystem 
-functions specified as accepting paths or directory paths. If not representing a 
-directory, the dereferenced path is suitable for use as an argument to 
+<p>A directory path returned by dereferencing a <i>basic_directory_iterator</i> is suitable for use as an argument to Boost.Filesystem 
+functions specified as accepting paths or directory paths.  A file path returned by dereferencing a <i>basic_directory_iterator</i> is suitable for use as an argument to 
 Boost.Filesystem functions specified as accepting paths or file paths, or C++ 
 Standard Library functions specified as taking file names. The leaf of a path 
 returned by dereferencing a <i>basic_directory_iterator</i> will never be <code>&quot;..&quot;</code> 
@@ -168,13 +169,22 @@ path returned by dereferencing an iterator actually exists. It could be a
 <a href="index.htm#symbolic-link">symbolic link</a> to a non-existent file or 
 directory. Programs recursively walking directory trees for purposes of removing 
 and renaming entries may wish to avoid following symbolic links, which can be 
-detected with <a href="#symbolic_link_exists">symbolic_link_exists()</a>.</p>
+detected with the <a href="#symbolic_link_exists">is_symlink()</a> function.</p>
 
 <p><b>Warning:</b> If a file or sub-directory is removed from or added to a 
 directory after the construction of a <i>basic_directory_iterator</i> for the 
 directory, it is unspecified whether or not subsequent incrementing of the 
 iterator will ever result in an iterator whose value is the removed or added 
 directory entry.</p>
+
+<p><b><a name="Performance_note">Performance note</a>:</b> Implementations are 
+permitted to cache a copy of <a href="#status_flag">status information</a> for a directory entry within 
+an iterator. This attribute information can later be used by <a href="#status">
+status()</a> and other query functions taking iterator arguments, resulting in 3 
+to 6 times faster operation than for query functions taking Path arguments. However, 
+cached attributes are not updated when the contents of the external file system 
+changes, so the iterator form of query functions should not be used if stale 
+attributes might pose a problem.</p>
 
 <h3><a name="constructors">Constructors</a></h3>
 <blockquote>
@@ -200,7 +210,7 @@ directory_iterator(current_path&lt;path&gt;())</code> rather than <code>director
 
 <p>
 The non-member functions provide common operations on files and directories. 
-They follow traditional practice of the C and C++ standard libraries, except 
+They follow traditional practice of the C, and C++ standard libraries, except 
 that 
 they:</p>
 
@@ -244,85 +254,57 @@ unattractive.</p>
 <b>Naming Rationale:</b> See class <i>path</i>
 <a href="path.htm#Naming_Rationale">Naming Rationale</a>.</p>
 
+<h3>&quot;<a name="Do-the-right-thing">Do-the-right-thing</a>&quot; rule</h3>
+
+<p>To allow automatic 
+conversions to function properly for classes <i>path</i> and <i>wpath</i>, as 
+well as to support class template <i>basic_path</i>, several 
+overloads of each non-member function are supplied. The overloads must &quot;do-the-right-thing&quot; using
+<code><a href="../../utility/enable_if.html">boost::enable_if</a></code> or equivalent techniques, so that the correct 
+overload is selected for calls like <code>exists( &quot;foo&quot; )</code> which 
+depend on automatic conversion to the appropriate basic_path type. To simplify 
+exposition, only the templated version of each non-member function is shown.</p>
+
 <h3><a name="status">status</a></h3>
 <blockquote>
-  <pre>template&lt;class Path&gt; <a href="#status_flag">status_flags</a> status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
+  <pre>template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( const Path &amp; ph, system_error_type * ec = 0 );
+template&lt;class DirItr&gt; <a href="#status_flag">status_flags</a> status( const DirItr &amp; it, system_error_type * ec = 0 );
+template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( const Path &amp; ph, const <a href="#symlink_t">symlink_t</a> &amp;, system_error_type * ec = 0 );
+template&lt;class DirItr&gt; <a href="#status_flag">status_flags</a> status( const DirItr &amp; it, const <a href="#symlink_t">symlink_t</a> &amp;, system_error_type * ec = 0 );</pre>
     <p><b>Effects:</b></p>
     <ul>
-      <li>If ph.empty():<br>
+      <li>If <code>ph.empty()</code> or <code>it-&gt;empty()</code>:<br>
 &nbsp;<ul>
         <li>If ec != 0, set *ec to a system error code indicating &quot;not found&quot;.</li>
         <li>Return <code>not_found_flag</code>.<br>
 &nbsp;</li>
       </ul>
       </li>
-      <li>Queries the operating system to determine the attributes of 
-    path <code>p</code>, as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
-      stat(). Thus if <code>p</code> is a symbolic link, the link is 
+      <li>Determine the attributes of 
+    path <code>ph</code> or path <code>*it</code>.<br>
+      <br>
+      For <code>ph</code>, the attributes are always found by querying the 
+      operating system. For <code>*it</code>, the implementation is permitted, 
+      but not required, to associate a copy of previously obtained attribute 
+      information with the iterator.<br>
+      <br>
+      If the <code>symlink_t</code> argument is not present, the attributes are 
+      determined as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
+      stat(). Thus if <code>ph</code> or <code>*it</code> refers to a symbolic link, the link is 
       resolved (that is, deep semantics).<br>
+      <br>
+      If the <code>symlink_t</code> argument is present, the attributes are 
+      determined as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> lstat(). Thus if <code>ph</code> 
+      or <code>*it</code> refers to a symbolic link, the link is not 
+      resolved (that is, shallow semantics).<br>
 &nbsp;</li>
-      <li>If the query does not report an error:<br>
-&nbsp;<ul>
-        <li>Set result to 0;</li>
-        <li>If the attributes indicate a directory, as if by
-        <a href="design.htm#POSIX-01">[POSIX-01]</a> S_ISDIR() (also see
-        <a href="i18n.html#Expectations">expectations</a>), <code>result |=
-        directory_flag</code>.</li>
-        <li>If the attributes indicate a file, as if by
-        <a href="design.htm#POSIX-01">[POSIX-01]</a>&nbsp;S_ISREG() (also see
-        <a href="i18n.html#Expectations">expectations</a>), <code>result |=
-        file_flag</code>.</li>
-        <li>Return result.</li>
-      </ul>
-      </li>
-  </ul>
-  <ul>
-    <li>If the query reports an error:<br>
-&nbsp;<ul>
-      <li>If ec != 0, set *ec to the error code reported by the operating 
-      system.</li>
-      <li>If the query reports an error indicating that <code>p</code> 
-      could <a href="#not_found_remark">not be found</a>, return <code>
-      not_found_flag</code>.</li>
-      <li>Otherwise, return <code>error_flag</code>.</li>
-    </ul>
-    </li>
-  </ul>
-    <p><b>Returns:</b> </p>
-    <ul>
-      <li> <code>error_flag</code> or <code>not_found_flag</code></li>
-      <li>Otherwise, any (or none) of the following, or'ed together: <code>
-      directory_flag</code>,&nbsp;
-    <code>file_flag</code>. <i>[More status bits may be added in the future.]</i></li>
-  </ul>
-    <p><b><a name="not_found_remark">Remark</a>:</b> On POSIX <code>
-    not_found_flag </code>is indicated by errors ENOENT and ENOTDIR. On Windows, 
-    by errors ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND, and ERROR_BAD_NETPATH.</p>
-  </blockquote>
-<h3><a name="symlink_status">symlink_status</a></h3>
-<blockquote>
-  <pre>template&lt;class Path&gt; <a href="#status_flag">status_flags</a> symlink_status( const Path &amp; ph, system_error_type * ec = 0 );</pre>
-    <p><b>Effects:</b></p>
-    <ul>
-      <li>If ph.empty():<br>
-&nbsp;<ul>
-        <li>If ec != 0, set *ec to a system error code indicating &quot;not found&quot;.</li>
-        <li>Return <code>not_found_flag</code>.<br>
-&nbsp;</li>
-      </ul>
-      </li>
-      <li>Queries the operating system to determine the attributes of 
-    path <code>p</code>, as if by <a href="design.htm#POSIX-01">[POSIX-01]</a> 
-      lstat(). Thus if <code>p</code> is a symbolic link, the link is 
-      no resolved (that is, shallow semantics).<br>
-&nbsp;</li>
-      <li>If the query does not report an error:<br>
+      <li>If the attribute determination does not report an error:<br>
 &nbsp;<ul>
         <li>If the attributes indicate a symbolic link, as if by
         <a href="design.htm#POSIX-01">[POSIX-01]</a> S_ISLNK() (also see
         <a href="i18n.html#Expectations">expectations</a>), return <code>
         symlink_flag</code>.</li>
-        <li>Set result to 0;</li>
+        <li>Set result to 0.</li>
         <li>If the attributes indicate a directory, as if by
         <a href="design.htm#POSIX-01">[POSIX-01]</a> S_ISDIR() (also see
         <a href="i18n.html#Expectations">expectations</a>), <code>result |=
@@ -331,16 +313,18 @@ unattractive.</p>
         <a href="design.htm#POSIX-01">[POSIX-01]</a>&nbsp;S_ISREG() (also see
         <a href="i18n.html#Expectations">expectations</a>), <code>result |=
         file_flag</code>.</li>
+        <li>If result is 0, set result to <code>other_flag</code>.</li>
         <li>Return result.</li>
       </ul>
       </li>
   </ul>
   <ul>
-    <li>If the query reports an error:<br>
+    <li>If the attribute determination reports an error:<br>
 &nbsp;<ul>
       <li>If ec != 0, set *ec to the error code reported by the operating 
       system.</li>
-      <li>If the query reports an error indicating that <code>p</code> 
+      <li>If the query reports an error indicating that <code>ph</code> or <code>
+      *it</code> 
       could <a href="#not_found_remark">not be found</a>, return <code>
       not_found_flag</code>.</li>
       <li>Otherwise, return <code>error_flag</code>.</li>
@@ -349,41 +333,61 @@ unattractive.</p>
   </ul>
     <p><b>Returns:</b> </p>
     <ul>
-      <li> <code>error_flag,</code> <code>not_found_flag</code>, or <code>
-      symlink_flag</code>.</li>
-      <li>Otherwise, any (or none) of the following, or'ed together: <code>
+      <li> One of <code>error_flag</code>, <code>not_found_flag</code>, <code>
+      other_flag</code>, or <code>symlink_flag</code>. The <code>symlink_flag</code> 
+      is a possibility only when the <code>symlink_t</code> argument is present.</li>
+      <li>Otherwise, one or more of the following, or'ed together: <code>
       directory_flag</code>,&nbsp;
     <code>file_flag</code>. <i>[More status bits may be added in the future.]</i></li>
   </ul>
+    <p>See <a href="#Performance_note">performance note</a> for subtle 
+    differences between behavior of Path and DirItr template signatures.</p>
+    <p><b><a name="not_found_remark">Note</a>:</b> Certain conditions reported 
+    by the operating system as errors are treated as <code>
+    not_found_flag</code> rather than <code>
+    error_flag. </code>On POSIX, these are ENOENT and ENOTDIR. On Windows, 
+    these are ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND, and ERROR_BAD_NETPATH.</p>
 <p><b>Note:</b> The Microsoft Windows operating system does not currently 
 support symbolic links, so
     <code>symlink_flag</code> is never returned on that platform. (Short-cut files (.lnk) are a Windows application 
 feature, not an O/S feature.) Windows programmers should still test for symbolic links 
-if applicable, in case later Windows versions add the feature, and also so that programs 
+if applicable, so that programs will continue to work if later Windows versions add the feature, and also so that programs 
 will be portable to systems like POSIX, where symbolic links may be present.</p>
-</blockquote>
+  </blockquote>
 
 <h3><a name="exists">exists</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );</code></p>
-<p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
+<p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );<br>
+template&lt;class DirItr&gt; bool exists( const DirItr &amp; ph );</code></p>
+    <p>See <a href="#Performance_note">performance note</a> for subtle 
+    differences between behavior of Path and DirItr template signatures.</p>
+<p><b>Throws:</b> If <code>status(</code>ph<code>) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>status(ph) != not_found_flag</code></p>
 </blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );<br>
+template&lt;class DirItr&gt; bool is_directory( const DirItr &amp; ph );</code></p>
+    <p>See <a href="#Performance_note">performance note</a> for subtle 
+    differences between behavior of Path and DirItr template signatures.</p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; directory_flag) != 0</code></p>
 </blockquote>
 <h3><a name="is_file">is_file</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );<br>
+template&lt;class DirItr&gt; bool is_file( const DirItr &amp; ph );</code></p>
+    <p>See <a href="#Performance_note">performance note</a> for subtle 
+    differences between behavior of Path and DirItr template signatures.</p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; file_flag) != 0</code></p>
 </blockquote>
 <h3><a name="is_symlink">is_symlink</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool is_symlink( const Path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool is_symlink( const Path &amp; ph );<br>
+template&lt;class DirItr&gt; bool is_symlink( const DirItr &amp; ph );</code></p>
+    <p>See <a href="#Performance_note">performance note</a> for subtle 
+    differences between behavior of Path and DirItr template signatures.</p>
 <p><b>Throws:</b> If <code>symlink_status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>symlink_status(ph) == symlink_flag)</code></p>
 </blockquote>
@@ -777,7 +781,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19909" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19910" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

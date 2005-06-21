@@ -31,6 +31,7 @@ namespace
   template< class Path >
   void test( const Path & p )
   {
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     { 
       std::cout << " in test 1\n";
       fs::filebuf fb;
@@ -49,6 +50,11 @@ namespace
       fb2.open( p, std::ios_base::in );
       BOOST_CHECK( fb2.is_open() );
     }
+#  else
+    std::cout << "<note>\n";
+    std::cout <<
+      "VC++6.0 does not support boost::filesystem open()\n";
+#  endif
     {
       std::cout << " in test 4\n";
       fs::ifstream tfs( p );
@@ -59,6 +65,7 @@ namespace
       fs::ifstream tfs( p, std::ios_base::in );
       BOOST_CHECK( tfs.is_open() );
     }
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     {
       std::cout << " in test 6\n";
       fs::ifstream tfs;
@@ -71,6 +78,7 @@ namespace
       tfs.open( p, std::ios_base::in );
       BOOST_CHECK( tfs.is_open() );
     }
+#  endif
     {
       std::cout << " in test 8\n";
       fs::ofstream tfs( p );
@@ -81,6 +89,7 @@ namespace
       fs::ofstream tfs( p, std::ios_base::out );
       BOOST_CHECK( tfs.is_open() );
     }
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     {
       std::cout << " in test 10\n";
       fs::ofstream tfs;
@@ -93,6 +102,7 @@ namespace
       tfs.open( p, std::ios_base::out );
       BOOST_CHECK( tfs.is_open() );
     }
+# endif
     {
       std::cout << " in test 12\n";
       fs::fstream tfs( p );
@@ -103,6 +113,7 @@ namespace
       fs::fstream tfs( p, std::ios_base::in|std::ios_base::out );
       BOOST_CHECK( tfs.is_open() );
     }
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     {
       std::cout << " in test 14\n";
       fs::fstream tfs;
@@ -115,6 +126,7 @@ namespace
       tfs.open( p, std::ios_base::in|std::ios_base::out );
       BOOST_CHECK( tfs.is_open() );
     }
+#  endif
   } // test
 } // unnamed namespace
 

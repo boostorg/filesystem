@@ -45,5 +45,9 @@ DEPENDS all : test ;
                <lib>../../../libs/filesystem/build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB=1
          ]
+         [ compile libs/filesystem/example/mbcopy.cpp ]
+         [ compile libs/filesystem/example/mbpath.cpp ]
+         [ compile libs/filesystem/example/simple_ls.cpp
+         ]
        ;
 }

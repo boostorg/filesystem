@@ -27,6 +27,7 @@ programmers</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#relative_paths_good">Good programming practice: 
 relative paths</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Path_equality">Path equality vs path equivalence</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#mbpath">User-defined path example</a><br>
 <a href="#Member">Member functions</a><br>
 <a href="#Non-member_functions">Non-member functions</a><br>
 <a href="#Rationale">Rationale</a><br>
@@ -150,11 +151,36 @@ boost/filesystem/basic_path.hpp</a> <a name="synopsis">synopsis</a></h2>
   namespace filesystem
   {
     template&lt;class String, class Traits&gt; class basic_path;
-    typedef basic_path&lt; string_type, detail::path_traits &gt; path;
-    typedef basic_path&lt; std::wstring, detail::wpath_traits &gt; wpath;
+
+    struct path_traits;
+    struct wpath_traits;
+
+    typedef basic_path&lt; string_type, path_traits &gt; path;
+    typedef basic_path&lt; std::wstring, wpath_traits &gt; wpath;
+
+    struct <a href="#path_traits">path_traits</a>
+    {
+      typedef std::string internal_string_type;
+      typedef <b><i>implementation-defined</i></b> external_string_type;
+      static external_string_type to_external( const path &amp;, const internal_string_type &amp; src );
+      static internal_string_type to_internal( const external_string_type &amp; src );
+    };
+
+    struct <a href="#wpath_traits">wpath_traits</a>
+    {
+      typedef std::wstring internal_string_type;
+      typedef <b><i>implementation-defined</i></b> external_string_type;
+      static external_string_type to_external( const path &amp;, const internal_string_type &amp; src );
+      static internal_string_type to_internal( const external_string_type &amp; src );
+      static void imbue( const std::locale &amp; loc );
+      static bool imbue( const std::locale &amp; loc, const std::nothrow_t &amp; );
+    private:
+      static bool m_locked = false; // for exposition only
+      static std::locale m_locale = std::locale(&quot;&quot;); // for exposition only
+    };
 
     template&lt;class String, class Traits&gt;
-    class basic_path
+    class <a href="#basic_path">basic_path</a>
     {
     public:
       typedef basic_path&lt;String, Traits&gt; path_type;
@@ -242,18 +268,171 @@ boost/filesystem/basic_path.hpp</a> <a name="synopsis">synopsis</a></h2>
     bool <a href="portability_guide.htm#portable_directory_name">portable_directory_name</a>( const std::string &amp; name );
     bool <a href="portability_guide.htm#portable_file_name">portable_file_name</a>( const std::string &amp; name );
     bool <a href="portability_guide.htm#native">native</a>( const std::string &amp; name );
+
+    // is_basic_path trait class
+    template&lt;class Path&gt; struct is_basic_path { static constant bool value = false; };
+
+    // specializations for library supplied basic_path instances
+    // ( must also be specialized by user for user supplied basic_path types )
+    template&lt;&gt; struct is_basic_path&lt;path&gt; { static constant bool value = true; };
+    template&lt;&gt; struct is_basic_path&lt;wpath&gt; { static constant bool value = true; };
   }
 }</pre>
-<p>For the sake of exposition, class <i>basic_path</i> member functions are described 
+<h2><a name="basic_path">basic_path</a> and related classes</h2>
+<p> <i>String</i> template arguments shall support the same set of well-formed 
+expressions as <i>std::basic_string</i>.</p>
+<p> <i>Traits</i> template arguments shall support as well-formed the expressions in the following 
+table, where <code>p</code> is an object of type <code>
+basic_path&lt;String, Traits&gt;</code>, <code>s</code> is an object of type <code>
+String</code>, and <code>loc</code> is an object of type <code>std::locale</code>. </p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+  <tr>
+    <td width="50%" align="center" colspan="2"><b><font size="4">Traits </font> <i>
+    <font size="4">Requirements</font></i></b></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><b><i>Expression</i></b></td>
+    <td width="50%" align="center"><b><i>T</i></b><i><b>ype</b></i></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><code>Traits::internal_string_type</code></td>
+    <td width="50%" valign="top">Implementation defined</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><code>Traits::external_string_type</code></td>
+    <td width="50%" valign="top">Implementation defined</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><code>Traits::to_internal(p, s)</code></td>
+    <td width="50%" valign="top"><code>internal_string_type</code></td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><code>Traits::to_external(p, s)</code></td>
+    <td width="50%" valign="top"><code>external_string_type</code></td>
+  </tr>
+  </table>
+<p>Class <i>path</i> is supplied with the following traits members:</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" height="116">
+  <tr>
+    <td width="27%" align="center" height="19" colspan="2"><b><font size="4"><i>
+    Struct </i><a name="path_traits">path_traits</a></font></b></td>
+  </tr>
+  <tr>
+    <td width="27%" align="center" height="19"><b><i>Member</i></b></td>
+    <td width="73%" align="center" height="19"><b><i>Behavior</i></b></td>
+  </tr>
+  <tr>
+    <td width="27%" height="16"><code>internal_string_type</code></td>
+    <td width="73%" height="16"><code>std::string</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>external_string_type</code></td>
+    <td width="73%" height="19">For POSIX and Windows: <code>std::string</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>to_internal(p, s)</code></td>
+    <td width="73%" height="19"><b>Returns: </b><code>s</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>to_external(p, s)</code></td>
+    <td width="73%" height="19"><b>Returns: </b><code>s</code></td>
+  </tr>
+</table>
+<p>For POSIX implementations, class <i>wpath</i> is supplied with the following traits members:</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" height="116">
+  <tr>
+    <td width="27%" align="center" height="19" colspan="2"><font size="4"><b><i>
+    Struct</i></b></font><b><i><font size="4"> </i><a name="wpath_traits">wpath_traits</a><i> for POSIX</i></font></b></td>
+  </tr>
+  <tr>
+    <td width="27%" align="center" height="19"><b><i>Member</i></b></td>
+    <td width="73%" align="center" height="19"><b><i>Behavior</i></b></td>
+  </tr>
+  <tr>
+    <td width="27%" height="16"><code>internal_string_type</code></td>
+    <td width="73%" height="16"><code>std::string</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>external_string_type</code></td>
+    <td width="73%" height="19">For POSIX: <code>std::string</code>. For Windows: <code>std::wstring</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>to_internal(p, s)</code></td>
+    <td width="73%" height="19"><b>Effects:</b> <code>m_locked = true;</code><b><br>
+    Returns: </b><code>s</code>, converted by <code>m_locale</code>'s codecvt facet 
+    to the internal string type and encoding.</td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>to_external(p, s)</code></td>
+    <td width="73%" height="19"><b>Effects:</b> <code>m_locked = true;</code><b><br>
+    Returns: </b><code>s</code>, converted by <code>m_locale</code>'s codecvt facet 
+    to the internal string type and encoding.</td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>imbue(loc)</code></td>
+    <td width="73%" height="19"><b>Throws:</b> if <code>m_locked == true</code>.<br>
+    <b>Effects:</b> <code>m_locked = true; m_locale = loc;<br>
+    </code><b>Returns:</b> <code>void</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>imbue(loc, std::nothrow)</code></td>
+    <td width="73%" height="19">
+    <b>Effects:</b> <code>if (!m_locked) m_locale = loc; bool temp(m_locked); m_locked = true;<br>
+    </code><b>Returns:</b> <code>temp</code></td>
+  </tr>
+</table>
+<p>For Windows implementations, class <i>wpath</i> is supplied with the following traits members:</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" height="116">
+  <tr>
+    <td width="27%" align="center" height="19" colspan="2"><b><i><font size="4">
+    Struct </i>wpath_traits<i> for </i>
+    </font> </b><font size="4"><b><i>Windows</i></b></font></td>
+  </tr>
+  <tr>
+    <td width="27%" align="center" height="19"><b><i>Member</i></b></td>
+    <td width="73%" align="center" height="19"><b><i>Behavior</i></b></td>
+  </tr>
+  <tr>
+    <td width="27%" height="16"><code>internal_string_type</code></td>
+    <td width="73%" height="16"><code>std::string</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>external_string_type</code></td>
+    <td width="73%" height="19">For POSIX: <code>std::string</code>. For Windows: <code>std::wstring</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>to_internal(p, s)</code></td>
+    <td width="73%" height="19"><b>Effects:</b> <code>m_locked = true;</code><b><br>
+    Returns: </b><code>s</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>to_external(p, s)</code></td>
+    <td width="73%" height="19"><b>Effects:</b> <code>m_locked = true;</code><b><br>
+    Returns: </b><code>s</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>imbue(loc)</code></td>
+    <td width="73%" height="19"><b>Throws:</b> if <code>m_locked == true</code>.<br>
+    <b>Effects:</b> <code>m_locked = true;<br>
+    </code><b>Returns:</b> <code>void</code></td>
+  </tr>
+  <tr>
+    <td width="27%" height="19"><code>imbue(loc, std::nothrow)</code></td>
+    <td width="73%" height="19">
+    <b>Effects:</b> <code>bool temp(m_locked); m_locked = true;<br>
+    </code><b>Returns:</b> <code>temp</code></td>
+  </tr>
+</table>
+<p>For an example of a user supplied Traits class, see
+<a href="../test/lpath.hpp">lpath.hpp</a>, which is used to test user defined 
+wide character support.</p>
+<p>For the sake of exposition, certain member functions are described 
 as if the class contains the indicated private members. 
 Actual implementations may differ.</p>
 <p>For functions <i>string</i>, <i>file_string</i>, <i>directory_string</i>, <i>
 external_file_string</i>, and <i>external_directory_string</i>, implementations 
 are permitted to return either <code>const</code> or <code>const &amp;</code> 
 values.</p>
-<p>Class path member, or non-member operator/, functions may throw a
-<a href="exception.htm">basic_filesystem_error</a> exception if the path is not in the 
-syntax specified for the <a href="#Grammar">grammar</a>.</p>
 <p><b>Note:</b> There is no guarantee that a <i>basic_path</i> object represents a 
 path which is considered valid by the current operating system. A path might be 
 invalid to the operating system because it contains invalid names (too long, 
@@ -335,19 +514,22 @@ programmer should only use this  path as a file path. (There is also a
 <a href="portability_guide.htm#recommendations">portability recommendation</a> 
 to not use periods in directory names.)</p>
 <h3><a name="Caution_POSIX">Caution</a> for POSIX and UNIX programmers</h3>
-<p>POSIX and other UNIX-like operating systems have a single root, while most other 
-operating systems have multiple roots. Multi-root operating systems require a 
+<p>POSIX and other UNIX-like operating systems have a single root, while many other 
+operating systems support multiple roots. Multi-root operating systems require a 
 root-name 
-such as a drive, device, disk, volume, or share name for a basic_path to be resolved 
+such as a drive, device, disk, volume, or network name for a basic_path to be resolved 
 to an actual specific file or directory.&nbsp; 
-Because of this, the <i>root()</i> and <i>root_directory()</i> functions return 
+Because of this, the <a href="#root_path">root_path()</a> and
+<a href="#root_directory">root_directory()</a> functions return 
 identical results on UNIX and other single-root operating systems, but different 
 results on multi-root operating systems. Thus use of the wrong function will not be 
 apparent on UNIX-like systems, but will result in non-portable code which will 
 fail when used on multi-root systems. UNIX programmers are cautioned to use 
-particular care in choosing between <i>root()</i> and <i>root_directory()</i>. If 
-undecided, use <i>root()</i>.</p>
-<p>The same warning applies to <i>has_root()</i> and <i>has_root_directory()</i>.</p>
+particular care in choosing between <a href="#root_path">root_path()</a> and
+<a href="#root_directory">root_directory()</a>. If 
+undecided, use <a href="#root_path">root_path()</a>.</p>
+<p>The same warning applies to <a href="#has_root_path">has_root_path()</a> and
+<a href="#has_root_directory">has_root_directory()</a>.</p>
 <h3><a name="relative_paths_good">Good programming practice: relative paths</a></h3>
 <p>It is usually bad programming practice to hard-code <a href="#is_complete">
 complete paths</a> into programs. Such programs tend to be fragile because they 
@@ -369,17 +551,30 @@ ways:</p>
   and <a href="operations.htm#system_complete">system_complete()</a> functions.</li>
 </ul>
 <h3><a name="Path_equality">Path equality</a> vs path equivalence</h3>
-<p>Are paths &quot;abc&quot; and &quot;ABC&quot; equal? No, never, if you determine equality via 
-class <i>basic_path</i>'s <code>operator==</code>, which considers only the two path's 
-lexical representations.</p>
+<p>Are paths &quot;abc&quot; and &quot;ABC&quot; equal? No, never, when equality 
+is determined via 
+class <i>basic_path</i>'s <code><a href="#operator_eq">operator==</a></code>, which considers  the two path's 
+lexical representations only.</p>
 <p>Do paths &quot;abc&quot; and &quot;ABC&quot; resolve to the same file or directory? The answer is 
 &quot;yes&quot;, &quot;no&quot;, or &quot;maybe&quot; depending on the operating 
-system and external file system. The  operations function 
-<i>equivalent()</i> is the only way to determine if two paths 
+system and external file system. The  operations function
+<a href="operations.htm#equivalent">equivalent()</a> determines if two paths 
 resolve to the same external file system entity.</p>
 <p>Programmers wishing to determine if two paths are &quot;the same&quot; must decide if 
 &quot;the same&quot; means &quot;the same representation&quot; or &quot;resolve to the same actual file or 
 directory&quot;, and choose the appropriate function accordingly.</p>
+<h3><a name="mbpath">User-defined path example</a></h3>
+<p>The example class <i><b>mbpath</b></i> provides a wide-character <i>
+basic_path</i> which uses a multi-byte character string as the external 
+representation. This is the same behavior as <i>wpath</i> on POSIX, but <i>wpath</i> 
+on Windows assumes wide character representation supplied by NTFS and other file 
+systems which support wide-character filenames. Class <i>mbpath</i> is thus 
+useful because it always works as intended, even on FAT or other 
+narrow-character name file systems. It is also useful when the same program must 
+support multiple locales.</p>
+<p>See <a href="../example/mbpath.hpp">mbpath.hpp</a> and
+<a href="../example/mbpath.cpp">mbpath.cpp</a>. For a use example, see
+<a href="../example/mbcopy.cpp">mbcopy.cpp</a>. </p>
 <h2><a name="Member">Member</a> functions</h2>
 <h3><a name="constructors">constructors</a></h3>
 <blockquote>
@@ -967,7 +1162,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19920" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

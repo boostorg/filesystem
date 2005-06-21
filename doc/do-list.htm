@@ -3,25 +3,18 @@
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
 <ul>
-  <li>Linux tests.<br>
+  <li>Should operations.cpp assert or BOOST_ASSERT on more preconditions?<br>
 &nbsp;</li>
-  <li>Windows: //network-name style paths need more analysis and test cases for system_complete() 
-  and complete(). Also, path_test cases at line 410 need review, correction.<br>
+  <li>On Windows, wpath::imbue() should be present, but have no effect. Add test 
+  case to wide_test.<br>
 &nbsp;</li>
-  <li>POSIX says &quot;<b><code>foo/</code></b>&quot; is equivalent to &quot;<b><code>foo/.</code></b>&quot; 
-  Which is best for normal form? Add code and test cases.<br>
+  <li>path.hpp doc synopsis doesn't include basic_filesystem_error.<br>
 &nbsp;</li>
-  <li>Should operations.cpp assert or BOOST_ASSERT on preconditions?<br>
-&nbsp;</li>
-  <li>Document path traits, including wpath_traits imbue().<br>
-&nbsp;</li>
-  <li>Fix operations_test wrong error code messages &amp; harden test.<br>
-&nbsp;</li>
-  <li>Move two recent HEAD operations_posix_windows.cpp fixes for __APPLE__ to 
-  i18n operations.cpp.</li>
 </ul>
 <h2>Defer until after mini-review</h2>
 <ul>
+  <li>Look into the basic_directory_iterator friend problem in more detail.</li>
+  <li>Apply PJP's Wide/Narrow conversion proposal to traits, once it stabilizes.</li>
   <li>Filtered directory iterator, glob syntax -&gt; regex syntax converter. See 
   Rich Johnson's <a href="http://lists.boost.org/boost-users/2004/01/5770.php">
   lists.boost.org/boost-users/2004/01/5770.php</a>, and John Maddock's
@@ -29,7 +22,7 @@ Do-list</h1>
   <li>Recursive directory iterator. See thread beginning with Thorsten Ottosen's
   <a href="http://lists.boost.org/boost/2004/03/2842.php">lists.boost.org/boost/2004/03/2842.php</a><ul>
     <li>Depth first vs breadth first - Unspecified. Most imps will use depth 
-    first as more efficicient.</li>
+    first as more efficient.</li>
     <li>Issue of duplicates (caused by symlinks and hard links) is critical. 
     Both duplicate detecting and non-detecting are needed; non-detecting is far 
     more efficient, but some apps will require duplicate detection.<ul>
@@ -69,7 +62,7 @@ Do-list</h1>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
