@@ -640,12 +640,8 @@ namespace detail
 
       explicit basic_directory_iterator( const Path & dir_path );
 
-// TODO: Why aren't friends working?
+// TODO: Figure out how to make friendship with predicate functions work
 //    private:
-//      typedef basic_directory_iterator<Path> bdi_type;
-//      friend status_flags status<>( const bdi_type &, system_error_type * );
-//      friend bool is_directory<>( const bdi_type & );
-
 
       // shared_ptr provides shallow-copy semantics required for InputIterators.
       // m_imp.get()==0 indicates the end iterator.
@@ -751,7 +747,6 @@ namespace detail
       }
       return it.m_imp->m_status;
     }
-
 
     BOOST_FS_ITR_FUNC(status_flags)
     status( const BasicDirItr & it, const symlink_t &,
