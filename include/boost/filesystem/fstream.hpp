@@ -86,8 +86,10 @@ namespace boost
       open( const wpath & file_ph, std::ios_base::openmode mode );
 #   endif
 
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
       basic_filebuf<charT,traits> *
       open( const path & file_ph, std::ios_base::openmode mode );
+#   endif
     };
 
     template < class charT, class traits = std::char_traits<charT> >
@@ -103,7 +105,6 @@ namespace boost
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
 #   ifndef BOOST_FILESYSTEM_NARROW_ONLY
-
       template<class Path>
       explicit basic_ifstream( const Path & file_ph,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
@@ -124,14 +125,14 @@ namespace boost
       basic_ifstream( const wpath & file_ph, std::ios_base::openmode mode );
       void open( const wpath & file_ph );
       void open( const wpath & file_ph, std::ios_base::openmode mode );
-
 #   endif
 
       explicit basic_ifstream( const path & file_ph );
       basic_ifstream( const path & file_ph, std::ios_base::openmode mode );
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
       void open( const path & file_ph );
       void open( const path & file_ph, std::ios_base::openmode mode );
-
+#   endif
       virtual ~basic_ifstream() {}
     };
 
@@ -173,9 +174,10 @@ namespace boost
 
       explicit basic_ofstream( const path & file_ph );
       basic_ofstream( const path & file_ph, std::ios_base::openmode mode );
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
       void open( const path & file_ph );
       void open( const path & file_ph, std::ios_base::openmode mode );
-
+#   endif
       virtual ~basic_ofstream() {}
     };
 
@@ -217,9 +219,10 @@ namespace boost
 
       explicit basic_fstream( const path & file_ph );
       basic_fstream( const path & file_ph, std::ios_base::openmode mode );
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
       void open( const path & file_ph );
       void open( const path & file_ph, std::ios_base::openmode mode );
-
+#   endif
       virtual ~basic_fstream() {}
 
     };
@@ -467,6 +470,7 @@ namespace boost
 
 # endif
 
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
     template <class charT, class traits>
     basic_filebuf<charT,traits> *
     basic_filebuf<charT, traits>::open( const path & file_ph,
@@ -475,6 +479,7 @@ namespace boost
       return std::basic_filebuf<charT,traits>::open(
         file_ph.file_string().c_str(), mode ) == 0 ? 0 : this;
     }
+#  endif
 
     template <class charT, class traits>
     basic_ifstream<charT,traits>::basic_ifstream( const path & file_ph )
@@ -487,6 +492,7 @@ namespace boost
       : std::basic_ifstream<charT,traits>(
           file_ph.file_string().c_str(), mode ) {}
     
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
     template <class charT, class traits>
     void basic_ifstream<charT,traits>::open( const path & file_ph )
     {
@@ -501,6 +507,7 @@ namespace boost
       std::basic_ifstream<charT,traits>::open(
         file_ph.file_string().c_str(), mode );
     }
+#   endif
 
     template <class charT, class traits>
     basic_ofstream<charT,traits>::basic_ofstream( const path & file_ph )
@@ -513,6 +520,7 @@ namespace boost
       : std::basic_ofstream<charT,traits>(
           file_ph.file_string().c_str(), mode ) {}
     
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
     template <class charT, class traits>
     void basic_ofstream<charT,traits>::open( const path & file_ph )
     {
@@ -527,6 +535,7 @@ namespace boost
       std::basic_ofstream<charT,traits>::open(
         file_ph.file_string().c_str(), mode );
     }
+#   endif
 
     template <class charT, class traits>
     basic_fstream<charT,traits>::basic_fstream( const path & file_ph )
@@ -541,7 +550,8 @@ namespace boost
       : std::basic_fstream<charT,traits>(
           file_ph.file_string().c_str(), mode ) {}
 
-          template <class charT, class traits>
+#   if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
+    template <class charT, class traits>
     void basic_fstream<charT,traits>::open( const path & file_ph )
     {
       std::basic_fstream<charT,traits>::open(
@@ -555,7 +565,7 @@ namespace boost
       std::basic_fstream<charT,traits>::open(
         file_ph.file_string().c_str(), mode );
     }
-
+#   endif
   } // namespace filesystem
 } // namespace boost
 
