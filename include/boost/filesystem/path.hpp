@@ -79,6 +79,8 @@ namespace boost
     };
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
+//  error reporting support  -------------------------------------------------//
+
     typedef int errno_type;  // determined by C standard
     typedef int system_error_type; // both POSIX and Windows use int
 
@@ -111,7 +113,7 @@ namespace boost
     // should probably derive from runtime_error, but that causes a default
     // constructor problem. changed back to std::exception as a workaround.
     {
-    // see www.boost.org/more/error_handling.html for design rationale
+    // see http://www.boost.org/more/error_handling.html for design rationale
     public:
       // compiler generates copy constructor and copy assignment
 

@@ -114,16 +114,19 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( to_external( L"\x2780" ).size() == 3 );
   BOOST_CHECK( to_external( L"\x2780" ) == "\xE2\x9E\x80" );
 
+  // test fs::path
   std::cout << "begin path test..." << std::endl;
   test( fs::path( "foo" ), fs::path( "bar" ), fs::path( "." ) );
   std::cout << "complete\n\n";
 
+  // test fs::wpath
   //  x2780 is circled 1 against white background == e2 9e 80 in UTF-8
   //  x2781 is circled 2 against white background == e2 9e 81 in UTF-8
   std::cout << "begin wpath test..." << std::endl;
   test( fs::wpath( L"\x2780" ), fs::wpath( L"\x2781" ), fs::wpath( L"." ) );
   std::cout << "complete\n\n";
 
+  // test user supplied basic_path
   const long dir[] = { 'b', 'o', 'o', 0 };
   const long file[] = { 'f', 'a', 'r', 0 };
   const long dot[] = { '.', 0 };

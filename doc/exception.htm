@@ -26,7 +26,7 @@ Reporting</h1>
 
 <p>The <a href="../../../boost/filesystem/path.hpp">boost/filesystem/path.hpp</a> header provides 
 various error reporting facilities, including class template <i>basic_filesystem_error</i>, publicly derived from <i>
-std::runtime_error</i>. These facilities are used by functions in the Filesystem Library to 
+std::exception</i>. These facilities are used by functions in the Filesystem Library to 
 report operational errors.</p>
 
 <p>The design evolved based on user requests to ease portability and 
@@ -38,30 +38,10 @@ Error and Exception Handling</a> guidelines.</p>
 {
   namespace filesystem
   {
-    enum <a name="error_code">error_code</a>
-    {
-      no_error = 0,
-      system_error,     // system generated error; if possible, is translated
-                        // to one of the more specific errors below.
-      other_error,      // library generated error
-      security_error,   // includes access rights, permissions failures
-      read_only_error,
-      io_error,
-      path_error,
-      not_found_error,
-      not_directory_error,
-      busy_error,       // implies trying again might succeed
-      already_exists_error,
-      not_empty_error,
-      is_directory_error,
-      out_of_space_error,
-      out_of_memory_error,
-      out_of_resource_error
-    };
+    typedef int <a name="errno_type">errno_type</a>; // determined by C standard; POSIX defers to C standard
+    typedef <i>implementation-defined</i> <a name="system_error_type">system_error_type</a>;
 
-    typedef <i>implementation-defined</i> system_error_type;
-
-    error_code <a href="#lookup_error_code">lookup_error_code</a>( system_error_type sys_err_code );
+    errno_type <a href="#lookup_error_code">lookup_error_code</a>( system_error_type sys_err_code );
     
     void <a href="#system_message">system_message</a>( system_error_type sys_err_code, std::string &amp; target );
 
@@ -117,7 +97,7 @@ return a simpler static string.</p>
 </blockquote>
 <h3><a name="system_error">system_error</a></h3>
 <blockquote>
-  <p><code>system_error_type system_error() const;</code></p>
+  <p><code><a href="#system_error_type">system_error_type</a> system_error() const;</code></p>
   <p><b>Returns:</b> The <code>se</code> argument to the constructor.</p>
 </blockquote>
 
@@ -146,9 +126,13 @@ processing.</p>
 <h3><a name="lookup_error_code">lookup_error_code</a></h3>
 
 <blockquote>
-  <pre>error_code lookup_error_code( system_error_type sys_err_code );</pre>
-  <p><b>Returns:</b> <code><a href="#error_code">error_code</a></code> 
-  corresponding to <code>sys_err_code</code></p>
+  <pre><a href="#errno_type">errno_type</a> lookup_error_code( <a href="#system_error_type">system_error_type</a> sys_err_code );</pre>
+  <p><b>Returns:</b> A value 
+  corresponding to <code>sys_err_code.</code> Macros for errno_type values are 
+  defined in <a href="../../../boost/filesystem/cerrno.hpp">&lt;boost/filesystem/cerrno.hpp&gt;</a>, 
+  and are described in [<a href="design.htm#POSIX-01">POSIX-01</a>] under
+  <a href="http://www.opengroup.org/onlinepubs/009695399/basedefs/errno.h.html">
+  &lt;errno.h&gt;</a>..</p>
 </blockquote>
 
 <h3><a name="system_message">system_message</a></h3>
@@ -166,7 +150,7 @@ internationalization of error messages. He also suggested basing the portable
 error codes on POSIX.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

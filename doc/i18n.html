@@ -87,12 +87,14 @@ interface has now been simplified:</p>
 </ul>
 <p>Additionally, <a href="exception.htm">basic_filesystem_error</a> has been put 
 on a diet and generally simplified.</p>
-<p>Error codes have been simplified and aligned with [POSIX-01].</p>
+<p>Error codes have been simplified and aligned with [POSIX-01]. A supporting 
+header <a href="../../../boost/filesystem/cerrno.hpp">
+&lt;boost/filesystem/cerrno.hpp&gt;</a> is also provided.</p>
 <h2><a name="Rationalization">Rationalization</a> of predicate functions</h2>
-<p>Nn discussions and bug reports on the Boost developers mailing list, it 
+<p>In discussions and bug reports on the Boost developers mailing list, it 
 became obvious that Boost.Filesystem's exists(), symbolic_link_exists(), and 
 is_directory() predicate functions were poorly specified. There were suggestions 
-to add an is_accessible() function, but Peter Dimov that this amounted to 
+to add an is_accessible() function, but Peter Dimov argued that this amounted to 
 papering over the lack of a clear specification and would likely lead to future 
 problems.</p>
 <p>Peter suggested that an interesting way to analyze the problem was to ask 
@@ -108,7 +110,8 @@ terms of status().</p>
 <h3>is_file()</h3>
 <p>About the same time, Jeff Garland suggested that an 
 <a href="operations.htm#is_file">is_file()</a> predicate would 
-compliment is_directory(). In working on the analysis below, it became obvious 
+compliment  
+<a href="operations.htm#is_directory">is_directory()</a>. In working on the analysis below, it became obvious 
 that the expectations for is_file() were different from the expectations for !is_directory(), 
 so is_file() was added. </p>
 <h3>Should predicates throw on errors?</h3>
@@ -303,16 +306,16 @@ chosen in this particular case because a subjective judgment that a single
 function name with an optional &quot;symlink&quot; second argument produced more 
 understandable code. The original implementation of the function used the name &quot;symlink_status&quot;, 
 but that just didn't read right in real code.</p>
-<h3>POSIX wpath_traits defaults to locale(), but allows imbuing of locale</h3>
+<h3>POSIX wpath_traits defaults to locale(&quot;&quot;), but allows imbuing of locale</h3>
 <p>Vladimir Prus pointed out that for Linux (and presumably other POSIX 
 operating systems) that need to convert wide character paths to narrow 
 characters, the default conversion should not depend on the operating system 
-alone, but on the std::locale(&quot;&quot;) default. For example, the standard encoding 
-for Russian on Linux is koi8-r. The ability to safely specify a different locale 
+alone, but on the std::locale(&quot;&quot;) default. For example, the usual encoding 
+for Russian on Linux (and Russian web sites) is KOI8-R (RFC1489). The ability to safely specify a different locale 
 is also provided, to meet unforeseen needs.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19910" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 
