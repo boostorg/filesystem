@@ -1050,7 +1050,8 @@ namespace boost
         {
     #     if defined(_POSIX_THREAD_SAFE_FUNCTIONS) \
           && defined(_SC_THREAD_SAFE_FUNCTIONS) \
-          && _POSIX_THREAD_SAFE_FUNCTIONS >= 0
+          && (_POSIX_THREAD_SAFE_FUNCTIONS+0 >= 0) \
+          && (!defined(__HP_aCC) || (defined(__HP_aCC) && defined(_REENTRANT)))
           if ( ::sysconf( _SC_THREAD_SAFE_FUNCTIONS ) >= 0 )
             { return ::readdir_r( dirp, entry, result ); }
     #     endif
