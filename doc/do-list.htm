@@ -2,12 +2,15 @@
 <h1>
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 Do-list</h1>
-<p><i><b>(The pre-mini-review do list is now clear!)</b></i></p>
+<h2>Current</h2>
+<ul>
+  <li>Mini-review</li>
+</ul>
 <h2>Defer until after mini-review</h2>
 <ul>
   <li>Should operations.cpp assert or BOOST_ASSERT on more preconditions?</li>
   <li>Look into the basic_directory_iterator friend problem in more detail.</li>
-  <li>Apply PJP's Wide/Narrow conversion proposal to traits, once it stabilizes.</li>
+  <li>Apply PJP's Wide/Narrow conversion proposal to traits, once he stabilizes it.</li>
   <li>Filtered directory iterator, glob syntax -&gt; regex syntax converter. See 
   Rich Johnson's <a href="http://lists.boost.org/boost-users/2004/01/5770.php">
   lists.boost.org/boost-users/2004/01/5770.php</a>, and John Maddock's
@@ -36,7 +39,7 @@ Do-list</h1>
   //lists.boost.org/MailArchives/boost/msg79583.php</a></li>
   <li>Some or all of the above concerns may be easier to meet if 
   directory_iterator (or a wrapper) called a function object:<ul>
-    <li>Argument is const char * name or const path &amp; (is there a significant 
+    <li>Argument is const char * name or const path &amp; or ?&nbsp; (is there a significant 
     efficiency difference?)</li>
     <li>Return is a code:<ul>
       <li>Continue; that is, return iterator pointing to this entry.</li>
@@ -52,10 +55,12 @@ Do-list</h1>
   </ul>
   </li>
   <li>Add a path::swap member function guaranteed not to throw. (Geurt Vos).</li>
+  <li>Add an operations function based on statvfs/GetDiskFreeSpaceEx. (Steve 
+  Hartmann/Thomas Matelich)</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
