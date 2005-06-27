@@ -563,18 +563,18 @@ performance issues.</p>
 
 <h2><a name="Change-history">Change history</a></h2>
 
-<h3>Version 1.34.0</h3>
+<h3><a href="i18n.html">Version 1.34.0</a></h3>
 
 <ul>
-  <li><a href="i18n.htm#Internationalization">Internationalization</a>, provided by 
+  <li><a href="i18n.html#Internationalization">Internationalization</a>, provided by 
   class templates <i>basic_path</i>, <i>basic_filesystem_error</i>, and <i>
   basic_directory_iterator</i>.</li>
-  <li><a href="i18n.htm#Simplification">Simplification</a> of the path interface, 
+  <li><a href="i18n.html#Simplification">Simplification</a> of the path interface, 
   including elimination of distinction between native and generic formats, 
   and separation of name checking functionality from general path functionality.</li>
   <li><a href="i18n.html#Rationalization">Rationalization</a> of predicate 
   function design, including the addition of several new functions.</li>
-  <li><a href="i18n.htm#Preservation">Preservation</a> of existing user code whenever 
+  <li><a href="i18n.html#Preservation">Preservation</a> of existing user code whenever 
   possible. Deprecated features (<i>symbolic_link_exists()</i>, etc.) remain 
   available for legacy code.</li>
   <li>Clearer specification, by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
@@ -585,6 +585,7 @@ performance issues.</p>
   <a href="operations.htm#symlink_status">symlink_status</a>,
   <a href="operations.htm#is_file">is_file</a>,
   <a href="operations.htm#is_symlink">is_symlink</a>, <a href="operations.htm#create_hard_link">create_hard_link</a>.</li>
+  <li><a href="#More_efficient">More efficient operations</a> when iterating over directories.</li>
   <li>Separation within the implementation of the distinction between the native 
   operating system path syntax and API. This is important for CYGWIN users 
   because it allows them to build for either the Windows or POSIX API's.</li>
@@ -636,7 +637,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19910" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
