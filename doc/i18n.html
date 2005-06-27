@@ -28,14 +28,14 @@ include:</p>
   <li><a href="#Rationalization">Rationalization</a> of predicate function 
   design, including the addition of several new functions.<br>
 &nbsp;</li>
-  <li>Clearer specification, by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
+  <li>Clearer specification by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
   the ISO/IEEE Single Unix Standard, with provisions for Windows and other 
   operating systems.<br>
 &nbsp;</li>
   <li><a href="#Preservation">Preservation</a> of existing user code whenever 
   possible.<br>
 &nbsp;</li>
-  <li>More efficient operations when iterating over directories.</li>
+  <li><a href="#More_efficient">More efficient operations</a> when iterating over directories.</li>
 </ul>
 <p><a href="#Rationale">Rationale</a> for some of the changes is also provided.</p>
 <h2><a name="Internationalization">Internationalization</a></h2>
@@ -237,8 +237,17 @@ static name_check default_name_check() { return 0; }</pre>
 inline path current_path()
 inline const path &amp; initial_path()</pre>
 </blockquote>
-<p>If you do not want to use the deprecated functions, define the macro 
-BOOST_FILESYSTEM_NO_DEPRECATED.</p>
+<p>If you do not want  the deprecated functions to be included, define the macro BOOST_FILESYSTEM_NO_DEPRECATED.</p>
+<h2><a name="More_efficient">More efficient</a> operations when iterating over 
+directories</h2>
+<p>Overloads taking <a href="operations.htm#directory_iterator">
+basic_directory_iterator</a> arguments are provided for
+<a href="operations.htm#status">status()</a>, <a href="operations.htm#exists">
+exists()</a>, <a href="operations.htm#is_directory">is_directory()</a>,
+<a href="operations.htm#is_file">is_file()</a>, and
+<a href="operations.htm#is_symlink">is_symlink()</a> functions. These overloads 
+allow caching of status flags, and are three to six times faster than the 
+overloads taking paths.</p>
 <h2><a name="Rationale">Rationale</a></h2>
 <h3>Elimination of the native versus generic <a name="distinction">distinction</a></h3>
 <p>Elimination of user confusion and general design simplification was the 
@@ -315,7 +324,7 @@ for Russian on Linux (and Russian web sites) is KOI8-R (RFC1489). The ability to
 is also provided, to meet unforeseen needs.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 

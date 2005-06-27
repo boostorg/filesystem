@@ -13,14 +13,6 @@
 <h1>
 <img border="0" src="../../../boost.png" align="center" width="277" height="86"><a href="../../../boost/filesystem/fstream.hpp">boost/filesystem/fstream.hpp</a></h1>
 
-<table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
-  <tr>
-    <td width="100%">&nbsp; <span style="background-color: #FFFF00">The contents 
-    of this header have been internationalized. The documentation has not yet 
-    been updated to reflect these changes.</span></td>
-  </tr>
-</table>
-
 <h2><a name="Introduction">Introduction</a></h2>
 
 <p>The C++ Standard Library's <i>&lt;fstream&gt;</i> header uses <i>const char*</i> to 
@@ -29,8 +21,13 @@ times.</p>
 
 <p>The Filesystem Library's <i>fstream.hpp</i> header provides equivalent 
 components, in namespace <i>
-boost::filesystem</i>, except that the seven&nbsp; <i>
-const char*</i> arguments have been replaced by <i>const path&amp;</i> arguments.</p>
+boost::filesystem</i>, except that the seven functions taking&nbsp; <i>
+const char*</i> arguments have been replaced by functions with
+<a href="path.htm#basic_path">basic_path</a> arguments. A
+<a href="operations.htm#Do-the-right-thing">&quot;do-the-right-thing&quot; rule</a> 
+applies, so that <i>path</i>, <i>wpath</i>, and user-defined <i>basic_path</i>'s 
+work appropriately. For ease of exposition, only the templated form is shown in 
+the following synopsis and documentation.</p>
 
 <p>The Filesystem Library's <i>fstream.hpp</i> header simply uses the <i>&lt;fstream&gt;</i> 
 standard library components as base classes, and then redeclares constructors 
@@ -52,7 +49,8 @@ examples</a>.</p>
     public:
       virtual ~basic_filebuf() {}
 
-      std::basic_filebuf&lt;charT,traits&gt; * open( const path &amp; file_ph,
+      template&lt;class Path&gt;
+      std::basic_filebuf&lt;charT,traits&gt; * open( const Path &amp; file_ph,
         std::ios_base::openmode mode );
     };
 
@@ -64,10 +62,15 @@ examples</a>.</p>
     {
     public:
       basic_ifstream() {}
-      explicit basic_ifstream( const path &amp; file_ph,
+
+      template&lt;class Path&gt;
+      explicit basic_ifstream( const Path &amp; file_ph,
         std::ios_base::openmode mode = std::ios_base::in );
+
       virtual ~basic_ifstream() {}
-      void open( const path &amp; file_ph,
+
+      template&lt;class Path&gt;
+      void open( const Path &amp; file_ph,
         std::ios_base::openmode mode = std::ios_base::in );
     };
 
@@ -79,10 +82,15 @@ examples</a>.</p>
     {
     public:
       basic_ofstream() {}
-      explicit basic_ofstream( const path &amp; file_ph,
+
+      template&lt;class Path&gt;
+      explicit basic_ofstream( const Path &amp; file_ph,
         std::ios_base::openmode mode = std::ios_base::out );
+
       virtual ~basic_ofstream() {}
-      void open( const path &amp; file_ph,
+
+      template&lt;class Path&gt;
+      void open( const Path &amp; file_ph,
         std::ios_base::openmode mode = std::ios_base::out );
     };
 
@@ -94,10 +102,15 @@ examples</a>.</p>
     {
     public:
       basic_fstream() {}
-      explicit basic_fstream( const path &amp; file_ph,
+
+      template&lt;class Path&gt;
+      explicit basic_fstream( const Path &amp; file_ph,
         std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out );
+
       virtual ~basic_fstream() {}
-      void open( const path &amp; file_ph,
+
+      template&lt;class Path&gt;
+      void open( const Path &amp; file_ph,
         std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out );
     };
  
@@ -108,7 +121,7 @@ examples</a>.</p>
 </pre>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28898" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
