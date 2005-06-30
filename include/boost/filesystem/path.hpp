@@ -13,7 +13,6 @@
 #define BOOST_FILESYSTEM_PATH_HPP
 
 #include <boost/filesystem/config.hpp>
-#include <boost/filesystem/mutable_constant.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/shared_ptr.hpp>
