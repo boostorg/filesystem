@@ -48,29 +48,29 @@ int main( int argc, char* argv[] )
     {
       try
       {
-        fs::status_flags  flags( dir_itr->status() );
+        fs::status_flags  flags( dir_itr.status() );
 
         if ( (flags & fs::directory_flag) == fs::directory_flag )
         {
           ++dir_count;
-          std::cout << dir_itr->path().leaf() << " [directory]\n";
+          std::cout << dir_itr->leaf() << " [directory]\n";
         }
         else if ( (flags & fs::file_flag) == fs::file_flag )
         {
           ++file_count;
-          std::cout << dir_itr->path().leaf() << "\n";
+          std::cout << dir_itr->leaf() << "\n";
         }
         else
         {
           ++other_count;
-          std::cout << dir_itr->path().leaf() << " [other]\n";
+          std::cout << dir_itr->leaf() << " [other]\n";
         }
 
       }
       catch ( const std::exception & ex )
       {
         ++err_count;
-        std::cout << dir_itr->path().leaf() << " " << ex.what() << std::endl;
+        std::cout << dir_itr->leaf() << " " << ex.what() << std::endl;
       }
     }
     std::cout << "\n" << file_count << " files\n"

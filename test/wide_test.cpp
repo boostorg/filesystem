@@ -70,8 +70,8 @@ namespace
     int count(0);
     for ( it_t it( dir ); it != it_t(); ++it )
     {
-      BOOST_CHECK( it->path() == dir / file );
-      BOOST_CHECK( !fs::is_empty( it->path() ) );
+      BOOST_CHECK( *it == dir / file );
+      BOOST_CHECK( !fs::is_empty( *it ) );
       ++count;
     }
     BOOST_CHECK( count == 1 );

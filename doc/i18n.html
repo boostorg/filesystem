@@ -35,7 +35,10 @@ include:</p>
   <li><a href="#Preservation">Preservation</a> of existing user code whenever 
   possible.<br>
 &nbsp;</li>
-  <li><a href="#More_efficient">More efficient operations</a> when iterating over directories.</li>
+  <li><a href="#More_efficient">More efficient operations</a> when iterating over directories.<br>
+&nbsp;</li>
+  <li>A <a href="convenience.htm#basic_recursive_directory_iterator">recursive 
+  directory iterator</a> is now provided. </li>
 </ul>
 <p><a href="#Rationale">Rationale</a> for some of the changes is also provided.</p>
 <h2><a name="Internationalization">Internationalization</a></h2>
@@ -107,13 +110,17 @@ without any possibility of an exception being thrown. The
 <a href="operations.htm#status">status()</a> function was added to meet this 
 need. It also proved clearer to specify the semantics of predicate functions in 
 terms of status().</p>
-<h3>is_file()</h3>
+<h3><a name="is_file">is_file</a>()</h3>
 <p>About the same time, Jeff Garland suggested that an 
 <a href="operations.htm#is_file">is_file()</a> predicate would 
 compliment  
 <a href="operations.htm#is_directory">is_directory()</a>. In working on the analysis below, it became obvious 
 that the expectations for is_file() were different from the expectations for !is_directory(), 
 so is_file() was added. </p>
+<h3><a name="is_other">is_other</a>()</h3>
+<p>On some operating systems, it is possible to have a directory entry which is 
+not for either a directory or a file. The <a href="operations.htm">is_other()</a> 
+function identifies such cases.</p>
 <h3>Should predicates throw on errors?</h3>
 <p>Some conditions reported by operating systems as errors (see
 <a href="#Footnote">footnote</a>) clearly simply indicate that the predicate is 

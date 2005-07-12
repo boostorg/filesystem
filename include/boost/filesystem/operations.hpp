@@ -1,4 +1,4 @@
-//  boost/filesystem/directory.hpp  ------------------------------------------//
+//  boost/filesystem/operations.hpp  -----------------------------------------//
 
 //  Copyright © 2002-2005 Beman Dawes
 //  Copyright © 2002 Jan Langer
@@ -72,8 +72,6 @@ namespace boost
 
     struct symlink_t{};
     extern symlink_t symlink;
-
-    template<class Path> class basic_directory_entry;
 
     namespace detail
     {
@@ -574,7 +572,7 @@ namespace boost
           for ( boost::filesystem::basic_directory_iterator<Path> itr( ph );
                 itr != end_itr; ++itr )
           {
-            count += remove_all_aux( itr->path() );
+            count += remove_all_aux( *itr );
           }
         }
         boost::filesystem::remove( ph );
@@ -621,12 +619,38 @@ namespace boost
       class dir_itr_imp
       {
       public:  
-        basic_directory_entry<Path> m_directory_entry;
-        void * m_handle;
+        Path          m_path;
+        void *        m_handle;
+        status_flags  m_status;          // stat()-like
+        status_flags  m_symlink_status;  // lstat()-like
 
-        explicit dir_itr_imp() : m_handle(0) {}
+        dir_itr_imp() : m_handle(0), m_status(0), m_symlink_status(0) {}
 
         ~dir_itr_imp() { dir_itr_close( m_handle ); }
+
+        // cache on query is guaranteed, even if directory iteration doesn't cache
+        void m_get_status_if_needed( system_error_type * ec = 0 )
+        {
+          if ( m_status == 0 )
+          {
+#         ifndef BOOST_WINDOWS_API
+            if ( m_symlink_status != 0
+              && (m_symlink_status & symlink_flag) != symlink_flag )
+              { m_status = m_symlink_status; }
+            else { m_status = boost::filesystem::status( m_path, ec ); }
+#         else
+            m_status = boost::filesystem::status( m_path, ec );
+#         endif
+          }
+        }
+
+#     ifndef BOOST_WINDOWS_API
+        void m_get_symlink_status_if_needed( system_error_type * ec = 0 )
+        {
+          if ( m_symlink_status == 0 )
+            m_symlink_status = boost::filesystem::status( m_path, symlink, ec );
+        }
+#     endif
       };
 
     } // namespace detail
@@ -637,7 +661,7 @@ namespace boost
     class basic_directory_iterator
       : public boost::iterator_facade<
           basic_directory_iterator<Path>,
-          basic_directory_entry<Path>,
+          Path,
           boost::single_pass_traversal_tag >
     {
     public:
@@ -647,6 +671,14 @@ namespace boost
 
       explicit basic_directory_iterator( const Path & dir_path );
 
+      status_flags  status( system_error_type * ec=0 ) const;
+      status_flags  status( const symlink_t &, system_error_type * ec=0 ) const;
+      bool          exists() const;
+      bool          is_directory() const;
+      bool          is_file() const;
+      bool          is_other() const;
+      bool          is_symlink() const;
+
     private:
 
       // shared_ptr provides shallow-copy semantics required for InputIterators.
@@ -655,13 +687,11 @@ namespace boost
 
       friend class boost::iterator_core_access;
 
-      typename boost::iterator_facade<
-        basic_directory_iterator<Path>,
-        basic_directory_entry<Path>,
+      typename boost::iterator_facade< basic_directory_iterator<Path>, Path,
         boost::single_pass_traversal_tag >::reference dereference() const 
       {
-        BOOST_ASSERT( m_imp.get() && "attempt to dereference end iterator" );
-        return m_imp->m_directory_entry;
+        BOOST_ASSERT( m_imp.get() && "dereference of end iterator" );
+        return m_imp->m_path;
       }
 
       void increment();
@@ -683,12 +713,11 @@ namespace boost
     {
       system_error_type sys_err(0);
       typename Path::external_string_type name;
-      status_flags sf, symlink_sf;
 
       if ( dir_path.empty()
         || (sys_err = detail::dir_itr_first( m_imp->m_handle,
         dir_path.external_directory_string(),
-        name, sf, symlink_sf )) != 0 )
+        name, m_imp->m_status, m_imp->m_symlink_status )) != 0 )
       {
         boost::throw_exception( basic_filesystem_error<Path>(  
           "boost::filesystem::basic_directory_iterator constructor",
@@ -698,8 +727,8 @@ namespace boost
       if ( m_imp->m_handle == 0 ) m_imp.reset(); // eof, so make end iterator
       else // not eof
       {
-        m_imp->m_directory_entry.assign( dir_path
-          / Path::traits_type::to_internal( name ), sf, symlink_sf );
+        m_imp->m_path = dir_path;
+        m_imp->m_path /= Path::traits_type::to_internal( name );
         if ( name[0] == path_relative<Path>::value // dot or dot-dot
           && (name.size() == 1
             || (name[1] == path_relative<Path>::value
@@ -716,16 +745,15 @@ namespace boost
       
       system_error_type sys_err(0);
       typename Path::external_string_type name;
-      status_flags sf, symlink_sf;
 
       for (;;)
       {
         if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle, name,
-          sf, symlink_sf )) != 0 )
+          m_imp->m_status, m_imp->m_symlink_status )) != 0 )
         {
           boost::throw_exception( basic_filesystem_error<Path>(  
             "boost::filesystem::basic_directory_iterator increment",
-            m_imp->m_directory_entry.path().branch_path(), sys_err ) );
+            m_imp->m_path.branch_path(), sys_err ) );
         }
         if ( m_imp->m_handle == 0 ) { m_imp.reset(); return; } // eof, make end
         if ( !(name[0] == path_relative<Path>::value // !(dot or dot-dot)
@@ -733,144 +761,78 @@ namespace boost
             || (name[1] == path_relative<Path>::value
               && name.size() == 2))) )
         {
-          m_imp->m_directory_entry.replace_leaf(
-            Path::traits_type::to_internal( name ), sf, symlink_sf );
+          m_imp->m_path.remove_leaf();
+          m_imp->m_path /= Path::traits_type::to_internal( name );
           return;
         }
       }
     }
 
-    //  basic_directory_entry  -----------------------------------------------//
-    
-    template<class Path>
-    class basic_directory_entry
-    {
-    public:
-      typedef Path path_type;
-      typedef typename Path::string_type string_type;
-
-      // compiler generated copy-ctor, copy assignment, and destructor apply
-
-      basic_directory_entry() : m_status(0), m_symlink_status(0) {}
-      explicit basic_directory_entry( const path_type & p,
-        status_flags sf = 0, status_flags symlink_sf = 0 )
-        : m_path(p), m_status(sf), m_symlink_status(symlink_sf)
-        {}
-
-      void assign( const path_type & p,
-        status_flags sf = 0, status_flags symlink_sf = 0 )
-        { m_path = p; m_status = sf; m_symlink_status = symlink_sf; }
-
-      void replace_leaf( const string_type & s,
-        status_flags sf = 0, status_flags symlink_sf = 0 )
-     {
-       m_path.remove_leaf();
-       m_path /= s;
-       m_status = sf;
-       m_symlink_status = symlink_sf;
-     }
-
-
-#   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-      // deprecated conversion preserves legacy code
-      operator const path_type &() const { return m_path; }
-#   endif
-
-      const Path &  path() const { return m_path; }
-      status_flags  status( system_error_type * ec=0 ) const;
-      status_flags  status( const symlink_t &, system_error_type * ec=0 ) const;
-
-      bool exists() const;
-      bool is_directory() const;
-      bool is_file() const;
-      bool is_other() const;
-      bool is_symlink() const;
-
-    private:
-      path_type             m_path;
-      mutable status_flags  m_status;           // stat()-like
-      mutable status_flags  m_symlink_status;   // lstat()-like
-
-      // cache on query is guaranteed, even if directory iteration doesn't cache
-      void m_get_status_if_needed( system_error_type * ec = 0 ) const
-      {
-        if ( m_status == 0 )
-        {
-          if ( m_symlink_status != 0
-            && (m_symlink_status & symlink_flag) != symlink_flag )
-            { m_status = m_symlink_status; }
-          else { m_status = boost::filesystem::status( m_path, ec ); }
-        }
-      }
-
-      void m_get_symlink_status_if_needed( system_error_type * ec = 0 ) const
-      {
-        if ( m_symlink_status == 0 )
-          m_symlink_status = boost::filesystem::status( m_path, symlink, ec );
-      }
-
-    }; // basic_directory_status
-
-    typedef basic_directory_entry<path> directory_entry;
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
-    typedef basic_directory_entry<wpath> wdirectory_entry;
-# endif
-
-    //  basic_directory_entry implementation  --------------------------------//
-
     template<class Path>
     status_flags
-    basic_directory_entry<Path>::status( system_error_type * ec ) const
+    basic_directory_iterator<Path>::status( system_error_type * ec ) const
     {
-      m_get_status_if_needed( ec );
-      return m_status;
+      BOOST_ASSERT( m_imp.get() && "status() on end iterator" );
+      m_imp->m_get_status_if_needed( ec );
+      return m_imp->m_status;
     }
 
     template<class Path>
     status_flags
-    basic_directory_entry<Path>::status( const symlink_t &,
+    basic_directory_iterator<Path>::status( const symlink_t &,
       system_error_type * ec ) const
     {
-      m_get_symlink_status_if_needed( ec );
-      return m_status;
+      BOOST_ASSERT( m_imp.get() && "status() on end iterator" );
+#   ifndef BOOST_WINDOWS_API
+      m_imp->m_get_symlink_status_if_needed( ec );
+      return m_imp->m_symlink_status;
+#   else
+      m_imp->m_get_status_if_needed( ec );
+      return m_imp->m_status;
+#   endif
     }
 
     template<class Path>
-    bool basic_directory_entry<Path>::exists() const
+    bool basic_directory_iterator<Path>::exists() const
     {
-      m_get_status_if_needed();
-      return m_status != not_found_flag;
+      BOOST_ASSERT( m_imp.get() && "exists() on end iterator" );
+      m_imp->m_get_status_if_needed();
+      return m_imp->m_status != not_found_flag;
     }
 
     template<class Path>
-    bool basic_directory_entry<Path>::is_directory() const
+    bool basic_directory_iterator<Path>::is_directory() const
     {
-      m_get_status_if_needed();
-      return (m_status & directory_flag) != 0;
+      BOOST_ASSERT( m_imp.get() && "is_directory() on end iterator" );
+      m_imp->m_get_status_if_needed();
+      return (m_imp->m_status & directory_flag) != 0;
     }
 
     template<class Path>
-    bool basic_directory_entry<Path>::is_file() const
+    bool basic_directory_iterator<Path>::is_file() const
     {
-      m_get_status_if_needed();
-      return (m_status & file_flag) != 0;
+      BOOST_ASSERT( m_imp.get() && "is_file() on end iterator" );
+      m_imp->m_get_status_if_needed();
+      return (m_imp->m_status & file_flag) != 0;
     }
 
     template<class Path>
-    bool basic_directory_entry<Path>::is_other() const
+    bool basic_directory_iterator<Path>::is_other() const
     {
-      m_get_status_if_needed();
-      return (m_status & other_flag) != 0;
+      BOOST_ASSERT( m_imp.get() && "is_other() on end iterator" );
+      m_imp->m_get_status_if_needed();
+      return (m_imp->m_status & other_flag) != 0;
     }
 
     template<class Path>
-    bool basic_directory_entry<Path>::is_symlink() const
+    bool basic_directory_iterator<Path>::is_symlink() const
     {
+      BOOST_ASSERT( m_imp.get() && "is_symlink() on end iterator" );
 #   ifdef BOOST_WINDOWS_API
       return false;
 #   else
-      m_get_symlink_status_if_needed();
-      return (m_symlink_status & symlink_flag) != 0;
+      m_imp->m_get_symlink_status_if_needed();
+      return (m_imp->m_symlink_status & symlink_flag) != 0;
 #   endif
     }
 

@@ -17,7 +17,8 @@
 <a href="#Synopsis">Header synopsis</a><br>
 <a href="#directory_iterator">Class basic_directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
-<a href="#Non-member_functions">Operations functions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Other-member-functions">Other member functions</a><br>
+<a href="#Non-member_functions">Operations non-member functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Do-the-right-thing">&quot;Do-the-right-thing&quot; rule</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#status">status</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
@@ -62,19 +63,6 @@ header. </p>
 {
   namespace filesystem
   {
-    template&lt;class Path&gt; class <a href="#directory_iterator">basic_directory_iterator</a> 
-      : public boost::iterator_facade&lt;
-          basic_directory_iterator&lt;Path&gt;,
-          Path, boost::single_pass_traversal_tag &gt;
-    {
-    public:
-      basic_directory_iterator(){} // creates the &quot;end&quot; iterator
-      explicit basic_directory_iterator( const Path &amp; directory_path );
-    };
-
-    typedef basic_directory_iterator&lt;path&gt; directory_iterator;
-    typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
-
     typedef <i>bitmask-type</i> <a name="status_flag">status_flag</a>s; // see C++ std 17.3.2.1.2 [lib.bitmask.types]
 
     static const status_flags  error_flag;
@@ -87,51 +75,51 @@ header. </p>
     struct <a name="symlink_t">symlink_t</a>{};
     extern symlink_t symlink;
 
-    template&lt;class Path&gt;   status_flags <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
-    template&lt;class DirItr&gt; status_flags <a href="#status">status</a>( const DirItr &amp; it, system_error_type * ec = 0 );
-    template&lt;class Path&gt;   status_flags <a href="#status">status</a>( const Path &amp; ph, const symlink_t &amp;, system_error_type * ec = 0 );
-    template&lt;class DirItr&gt; status_flags <a href="#status">status</a>( const DirItr &amp; it, const symlink_t &amp;, system_error_type * ec = 0 );
+    template&lt;class Path&gt; class <a href="#directory_iterator">basic_directory_iterator</a> 
+      : public boost::iterator_facade&lt;
+          basic_directory_iterator&lt;Path&gt;,
+          Path, boost::single_pass_traversal_tag &gt;
+    {
+    public:
+      typedef Path path_type;
 
-    template&lt;class Path&gt;   bool <a href="#exists">exists</a>( const Path &amp; ph );
-    template&lt;class DirItr&gt; bool <a href="#exists">exists</a>( const DirItr &amp; ph );
+      basic_directory_iterator(); // creates the &quot;end&quot; iterator
+      explicit basic_directory_iterator( const Path &amp; directory_path );
 
-    template&lt;class Path&gt;   bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
-    template&lt;class DirItr&gt; bool <a href="#is_file">is_directory</a>( const DirItr &amp; ph );
+      status_flags status( system_error_type * ec=0 ) const;
+      status_flags status( const symlink_t &amp;, system_error_type * ec=0 ) const;
+      bool exists() const;
+      bool is_directory() const;
+      bool is_file() const;
+      bool is_other() const;
+      bool is_symlink() const;
+    };
 
-    template&lt;class Path&gt;   bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
-    template&lt;class DirItr&gt; bool <a href="#is_file">is_file</a>( const DirItr &amp; ph );
+    typedef basic_directory_iterator&lt;path&gt; directory_iterator;
+    typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
 
-    template&lt;class Path&gt;   bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
-    template&lt;class DirItr&gt; bool <a href="#is_symlink">is_symlink</a>( const DirItr &amp; ph );
+    template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
+    template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, const symlink_t &amp;, system_error_type * ec = 0 );
 
-    template&lt;class Path&gt;  bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
-
+    template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_other">is_other</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
     template&lt;class Path&gt; bool <a href="#equivalent">equivalent</a>( const <code>Path</code> &amp; ph1, const <code>Path</code> &amp; ph2 );
-
     template&lt;class Path&gt; boost::intmax_t <a href="#file_size">file_size</a>( const <code>Path</code> &amp; ph );
-
     template&lt;class Path&gt; std::time_t <a href="#last_write_time">last_write_time</a>( const <code>Path</code> &amp; ph );
-
     template&lt;class Path&gt; void <a href="#last_write_time">last_write_time</a>( const <code>Path</code> &amp; ph, std::time_t new_time );
-
     template&lt;class Path&gt; bool <a href="#create_directory">create_directory</a>( const <code>Path</code> &amp; directory_ph );
-
     template&lt;class Path&gt; void <a href="#create_hard_link">create_hard_link</a>( const Path &amp; existing_file_ph, const Path &amp; new_file_ph );
-
     template&lt;class Path&gt; bool <a href="#remove">remove</a>( const <code>Path</code> &amp; ph );
-
     template&lt;class Path&gt; unsigned long <a href="#remove_all">remove_all</a>( const <code>Path</code> &amp; ph );
-
     template&lt;class Path&gt; void <a href="#rename">rename</a>( const <code>Path</code> &amp; from_path, const <code>Path</code> &amp; to_path );
-
     template&lt;class Path&gt; void <a href="#copy_file">copy_file</a>( const <code>Path</code> &amp; source_file, const <code>Path</code> &amp; target_file );
-
     template&lt;class Path&gt; <code>Path</code> <a href="#complete">complete</a>( const <code>Path</code> &amp; ph, const <code>Path</code> &amp; base = initial_path&lt;<code>Path&gt;</code>() );
-
     template&lt;class Path&gt; <code>Path</code> <a href="#system_complete">system_complete</a>( const <code>Path</code> &amp; ph );
-
     template&lt;class Path&gt; const<i><b> </b></i>Path<b><i> </i></b>&amp; <a href="#initial_path">initial_path</a>();
-
     template&lt;class Path&gt; <code>Path</code> <a href="#current_path">current_path</a>();
 
   } // namespace filesystem
@@ -179,10 +167,10 @@ directory entry.</p>
 
 <p><b><a name="Performance_note">Performance note</a>:</b> Implementations are 
 permitted to cache a copy of <a href="#status_flag">status information</a> for a directory entry within 
-an iterator. This attribute information can later be used by <a href="#status">
-status()</a> and other query functions taking iterator arguments, resulting in 3 
-to 6 times faster operation than for query functions taking Path arguments. However, 
-cached attributes are not updated when the contents of the external file system 
+a directory iterator. This attribute information can later be used by iterator 
+member query functions, resulting in 3 
+to 6 times faster operation than for the non-member query functions. Note, however, 
+that attributes cached in iterators are not updated when the contents of the external file system 
 changes, so the iterator form of query functions should not be used if stale 
 attributes might pose a problem.</p>
 
@@ -206,10 +194,18 @@ empty(directory_ph)</code>, the <i>past-the-end</i> value.</p>
 directory_iterator(current_path&lt;path&gt;())</code> rather than <code>directory_iterator(&quot;&quot;)</code>.</p>
 </blockquote>
 
-<h2><a name="Non-member_functions">Non-member functions</a></h2>
+<h3><a name="Other-member-functions">Other member functions</a></h3>
+
+<p>These member functions have the same behavior as the non-member operations 
+functions of the same name, except that they may rely on cached status 
+information. See <a href="#Performance_note">performance note</a>.</p>
+
+<p>All have a precondition that the iterator not be the end iterator.</p>
+
+<h2>Operations n<a name="Non-member_functions">on-member functions</a></h2>
 
 <p>
-The non-member functions provide common operations on files and directories. 
+The operations non-member functions provide common operations on files and directories. 
 They follow traditional practice of the C, and C++ standard libraries, except 
 that 
 they:</p>
@@ -268,9 +264,7 @@ exposition, only the templated version of each non-member function is shown.</p>
 <h3><a name="status">status</a></h3>
 <blockquote>
   <pre>template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( const Path &amp; ph, system_error_type * ec = 0 );
-template&lt;class DirItr&gt; <a href="#status_flag">status_flags</a> status( const DirItr &amp; it, system_error_type * ec = 0 );
-template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( const Path &amp; ph, const <a href="#symlink_t">symlink_t</a> &amp;, system_error_type * ec = 0 );
-template&lt;class DirItr&gt; <a href="#status_flag">status_flags</a> status( const DirItr &amp; it, const <a href="#symlink_t">symlink_t</a> &amp;, system_error_type * ec = 0 );</pre>
+template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( const Path &amp; ph, const <a href="#symlink_t">symlink_t</a> &amp;, system_error_type * ec = 0 );</pre>
     <p><b>Effects:</b></p>
     <ul>
       <li>If <code>ph.empty()</code> or <code>it-&gt;empty()</code>:<br>
@@ -357,30 +351,27 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
 
 <h3><a name="exists">exists</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );<br>
-template&lt;class DirItr&gt; bool exists( const DirItr &amp; ph );</code></p>
-    <p>See <a href="#Performance_note">performance note</a> for subtle 
-    differences between behavior of Path and DirItr template signatures.</p>
+<p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(</code>ph<code>) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>status(ph) != not_found_flag</code></p>
 </blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );<br>
-template&lt;class DirItr&gt; bool is_directory( const DirItr &amp; ph );</code></p>
-    <p>See <a href="#Performance_note">performance note</a> for subtle 
-    differences between behavior of Path and DirItr template signatures.</p>
+<p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; directory_flag) != 0</code></p>
 </blockquote>
 <h3><a name="is_file">is_file</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );<br>
-template&lt;class DirItr&gt; bool is_file( const DirItr &amp; ph );</code></p>
-    <p>See <a href="#Performance_note">performance note</a> for subtle 
-    differences between behavior of Path and DirItr template signatures.</p>
+<p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; file_flag) != 0</code></p>
+</blockquote>
+<h3><a name="is_other">is_other</a></h3>
+<blockquote>
+<p><code>template&lt;class Path&gt; bool is_other( const Path &amp; ph );</code></p>
+<p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
+<p><b>Returns:</b> <code>(status(ph) &amp; other_flag) != 0</code></p>
 </blockquote>
 <h3><a name="is_symlink">is_symlink</a></h3>
 <blockquote>
@@ -447,7 +438,6 @@ function which iterates over a directory returning a count.</p>
 <h3><a name="last_write_time">last_write_time</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; std::time_t last_write_time( const Path &amp; ph );</code></p>
-<blockquote>
 <p><b>Warning:</b> The times associated with files are subject to many 
 vicissitudes. Each type of file system differs slightly in the details and 
 resolution of how times are recorded. The resolution is as low as one hour on 
@@ -462,16 +452,13 @@ operating system. If the time cannot be determined, returns (std::time_t)(-1).</
 <p>To convert the returned value to UTC or local time, use <code>std::gmtime()</code> 
 or <code>std::localtime()</code> respectively.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
-</blockquote>
 <p><code>template&lt;class Path&gt; void last_write_time( const Path &amp; ph, std::time_t new_time );</code></p>
-<blockquote>
 <p><b>Effects:</b> Asks the operating system to set the last write time to <code>
 new_time</code>, or to the current time if <code>new_time==std::time_t()</code>.</p>
 <p><b>Throws:</b> if <code>!exists(ph)</code></p>
 <p><b>Rationale:</b> <code>last_write_time(ph)==new_time</code> is not specified 
 as a postcondition because the times may differ somewhat on some operating 
 systems.</p>
-</blockquote>
 </blockquote>
 <h3><a name="create_directory">create_directory</a></h3>
 <blockquote>
@@ -781,7 +768,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19910" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21129" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

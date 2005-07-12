@@ -9,54 +9,13 @@ Do-list</h1>
 <h2>Defer until after mini-review</h2>
 <ul>
   <li>Should operations.cpp assert or BOOST_ASSERT on more preconditions?</li>
-  <li>Look into the basic_directory_iterator friend problem in more detail.</li>
   <li>Apply PJP's Wide/Narrow conversion proposal to traits, once he stabilizes it.</li>
-  <li>Filtered directory iterator, glob syntax -&gt; regex syntax converter. See 
+  <li>Glob syntax -&gt; regex syntax converter. See 
   Rich Johnson's <a href="http://lists.boost.org/boost-users/2004/01/5770.php">
   lists.boost.org/boost-users/2004/01/5770.php</a>, and John Maddock's
   <a href="http://lists.boost.org/boost-users/2004/01/5770.php">lists.boost.org/boost-users/2004/01/5770.php</a></li>
-  <li>Recursive directory iterator. See thread beginning with Thorsten Ottosen's
-  <a href="http://lists.boost.org/boost/2004/03/2842.php">lists.boost.org/boost/2004/03/2842.php</a><ul>
-    <li>Depth first vs breadth first - Unspecified. Most imps will use depth 
-    first as more efficient.</li>
-    <li>Issue of duplicates (caused by symlinks and hard links) is critical. 
-    Both duplicate detecting and non-detecting are needed; non-detecting is far 
-    more efficient, but some apps will require duplicate detection.<ul>
-      <li>Names are useless for dup detection because of links, other file 
-      system alias mechanisms such as drive mapping, mounts.</li>
-      <li>inodes are unstable if handles are not held open, and it isn't 
-      feasible to hold unlimited number of handles open.</li>
-      <li>Size, dates, etc., are subject to race conditions.</li>
-      <li>No one method is likely to serve all needs, but a starting point might 
-      be to keep a hash-table keyed on a size/dates based signature, then do 
-      equivalent() on all equal keys.</li>
-    </ul>
-    </li>
-  </ul>
-  </li>
-  <li>Note Terence Wilson's efficiency concerns re: filtering; see
-  <a href="http://lists.boost.org/MailArchives/boost/msg79583.php">
-  //lists.boost.org/MailArchives/boost/msg79583.php</a></li>
-  <li>Some or all of the above concerns may be easier to meet if 
-  directory_iterator (or a wrapper) called a function object:<ul>
-    <li>Argument is const char * name or const path &amp; or ?&nbsp; (is there a significant 
-    efficiency difference?)</li>
-    <li>Return is a code:<ul>
-      <li>Continue; that is, return iterator pointing to this entry.</li>
-      <li>Skip; ignore this entry completely.</li>
-      <li>Skip returning this entry, but do iterate into it if directory 
-      (assuming recursive iteration).</li>
-      <li>Do return this entry, but don't iterate into if if a directory (don't 
-      recurse).</li>
-      <li>Skip and stop; return end iterator.</li>
-      <li>Do return this entry, but force end iterator on next increment.</li>
-    </ul>
-    </li>
-  </ul>
-  </li>
   <li>Add a path::swap member function guaranteed not to throw? (Geurt Vos).</li>
   <li>Add an operations function based on statvfs/GetDiskFreeSpaceEx? (Steve Hartmann/Thomas Matelich)</li>
-  <li>Add an is_other() function?</li>
   <li>Add constant basic_path overloads for constructors, operator=, operator/, 
   operator/. (Adrian Martin)<ul>
   <li>const path &amp;</li>
