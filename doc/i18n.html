@@ -240,14 +240,79 @@ inline const path &amp; initial_path()</pre>
 <p>If you do not want  the deprecated functions to be included, define the macro BOOST_FILESYSTEM_NO_DEPRECATED.</p>
 <h2><a name="More_efficient">More efficient</a> operations when iterating over 
 directories</h2>
-<p>Overloads taking <a href="operations.htm#directory_iterator">
-basic_directory_iterator</a> arguments are provided for
-<a href="operations.htm#status">status()</a>, <a href="operations.htm#exists">
-exists()</a>, <a href="operations.htm#is_directory">is_directory()</a>,
-<a href="operations.htm#is_file">is_file()</a>, and
-<a href="operations.htm#is_symlink">is_symlink()</a> functions. These overloads 
-allow caching of status flags, and are three to six times faster than the 
-overloads taking paths.</p>
+<p>Several common real-world operating systems (BSD derivatives, Linux, Windows) 
+provide status information during directory iteration. Caching of this status 
+information results in three to six times faster operation for typical predicate 
+operations. (For a directory containing 15,047 files, iteration in 1 vs 6 
+seconds on a freshly booted system, and 0.3 vs 0.9 seconds after prior use of 
+the directory.</p>
+<p>The efficiency gains from caching such status information were considered too 
+significant to ignore. Because the possibility of race-conditions differs 
+depending on whether the cached information is used or an actual system call is 
+performed, it was considered necessary to provide explicit functions utilizing 
+the cached information, rather than implicitly using the cache behind the 
+scenes.</p>
+<p>Three options were explored for exposing the cached status information, with 
+full implementations of each. After initial implementation of option 1 exposed 
+the problems noted below, option 2 was experimented with as &quot;purer&quot;. Option 3 
+was finally chosen as the best engineering tradeoff.</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+  <tr>
+    <td width="8%" align="center"><b><i>Option</i></b></td>
+    <td width="25%" align="center"><i><b>How cache accessed</b></i></td>
+    <td width="94%" align="center"><i><b>Pros and Cons</b></i></td>
+  </tr>
+  <tr>
+    <td width="8%" valign="top" align="center"><i><b>1</b></i></td>
+    <td width="25%" valign="top">Predicate function overloads<br>
+    (basic_directory_iterator value_type is path)</td>
+    <td width="94%">
+    <ul>
+      <li>Very Questionable design (friendship abuse, overload abuse, etc)</li>
+      <li>User cannot reuse cache</li>
+      <li>Readability problem; easy to miss difference between f(*it) and f(it)</li>
+      <li>Write-ability problem (error prone?)</li>
+      <li>Most common iterator use is brief: *it</li>
+      <li>Introduces one additional concept (status cache)</li>
+      <li>Preserves existing code</li>
+    </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="8%" valign="top" align="center"><i><b>2</b></i></td>
+    <td width="25%" valign="top">Predicate member functions of basic_directory_<span style="background-color: #FFFF00">entry</span><br>
+    (basic_directory_iterator value_type is basic_directory_entry)<br>
+&nbsp;</td>
+    <td width="94%">
+    <ul>
+      <li>Clean design</li>
+      <li>User can reuse cache</li>
+      <li>Readability and write-ability: f(*it) and it-&gt;f() sufficiently 
+      different</li>
+      <li>Most common iterator use is longer: it-&gt;path()</li>
+      <li>Introduces two additional concept (basic_directory_entry, status 
+      cache)</li>
+      <li>Breaks existing code</li>
+    </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="8%" valign="top" align="center"><i><b>3</b></i></td>
+    <td width="25%" valign="top">Predicate member functions of basic_directory_<span style="background-color: #FFFF00">iterator</span><br>
+    (basic_directory_iterator value_type is path)</td>
+    <td width="94%">
+    <ul>
+      <li>Clean design (although a bit unusual)</li>
+      <li>User cannot reuse cache</li>
+      <li>Readability and write-ability: f(*it) and it.f() sufficiently 
+      different</li>
+      <li>Most common iterator use is brief: *it</li>
+      <li>Introduces one additional concept (status cache)</li>
+      <li>Preserves existing code</li>
+    </ul>
+    </td>
+  </tr>
+</table>
 <h2><a name="Rationale">Rationale</a></h2>
 <h3>Elimination of the native versus generic <a name="distinction">distinction</a></h3>
 <p>Elimination of user confusion and general design simplification was the 
@@ -324,7 +389,7 @@ for Russian on Linux (and Russian web sites) is KOI8-R (RFC1489). The ability to
 is also provided, to meet unforeseen needs.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21129" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 

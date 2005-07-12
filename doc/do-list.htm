@@ -57,10 +57,33 @@ Do-list</h1>
   <li>Add a path::swap member function guaranteed not to throw? (Geurt Vos).</li>
   <li>Add an operations function based on statvfs/GetDiskFreeSpaceEx? (Steve Hartmann/Thomas Matelich)</li>
   <li>Add an is_other() function?</li>
+  <li>Add constant basic_path overloads for constructors, operator=, operator/, 
+  operator/. (Adrian Martin)<ul>
+  <li>const path &amp;</li>
+  <li>const string &amp;</li>
+  <li>const char *</li>
+  <li>InputIterator, InputIterator</li>
+</ul>
+  </li>
+  <li>Issue (Adrian Martin): &gt;Comparison between paths doesn't use locale.<br>
+  &gt;<br>
+  &gt;The paths are not treated as plain characters since a lexicographical <br>
+  &gt;compare is made. But the individual elements are treated<br>
+  &gt;as plain characters and the internal string type's operator&lt; is used. This
+  <br>
+  &gt;is a bit contradicting. <br>
+  &gt;<br>
+  &gt;I think the comparison operators should compare the elements in a locale <br>
+  &gt;dependent way.<br>
+  <br>
+  I've opened this as an issue. It needs to be answered in the context of what 
+  comparison is used for. Remember that equivalence should be determined by the 
+  equivalent() function. An important use of operator&lt; is when path is used as a 
+  map or set key. Not sure how locale impacts that.</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19924" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21129" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">

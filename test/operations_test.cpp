@@ -247,10 +247,13 @@ int test_main( int argc, char * argv[] )
 
   {
     fs::directory_iterator dir_itr( dir );
-    std::cout << "*****" << (int)fs::status(dir_itr) << std::endl;
-    BOOST_CHECK( fs::status( dir_itr ) == fs::directory_flag );
-    BOOST_CHECK( fs::status( dir_itr, fs::symlink ) == fs::directory_flag );
-    BOOST_CHECK( dir_itr->leaf() == "d1" );
+    BOOST_CHECK( dir_itr->status() == fs::directory_flag );
+    BOOST_CHECK( dir_itr->status( fs::symlink ) == fs::directory_flag );
+    BOOST_CHECK( dir_itr->path().leaf() == "d1" );
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    BOOST_CHECK( fs::status(*dir_itr) == fs::directory_flag );
+    BOOST_CHECK( fs::status( *dir_itr, fs::symlink ) == fs::directory_flag );
+# endif
   }
 
   // create a second directory named d2
@@ -263,26 +266,28 @@ int test_main( int argc, char * argv[] )
   // stepping one iterator doesn't affect a different iterator.
   {
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( fs::exists( dir_itr ) );
-    BOOST_CHECK( fs::is_directory( dir_itr ) );
-    BOOST_CHECK( !fs::is_file( dir_itr ) );
-    BOOST_CHECK( !fs::is_symlink( dir_itr ) );
+    BOOST_CHECK( dir_itr->exists() );
+    BOOST_CHECK( dir_itr->is_directory() );
+    BOOST_CHECK( !dir_itr->is_file() );
+    BOOST_CHECK( !dir_itr->is_other() );
+    BOOST_CHECK( !dir_itr->is_symlink() );
 
     fs::directory_iterator dir_itr2( dir );
-    BOOST_CHECK( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
-    BOOST_CHECK( dir_itr2->leaf() == "d1" || dir_itr2->leaf() == "d2" );
-    if ( dir_itr->leaf() == "d1" )
+    BOOST_CHECK( dir_itr->path().leaf() == "d1"
+      || dir_itr->path().leaf() == "d2" );
+    BOOST_CHECK( dir_itr2->path().leaf() == "d1" || dir_itr2->path().leaf() == "d2" );
+    if ( dir_itr->path().leaf() == "d1" )
     {
-      BOOST_CHECK( (++dir_itr)->leaf() == "d2" );
-      BOOST_CHECK( dir_itr2->leaf() == "d1" );
-      BOOST_CHECK( (++dir_itr2)->leaf() == "d2" );
+      BOOST_CHECK( (++dir_itr)->path().leaf() == "d2" );
+      BOOST_CHECK( dir_itr2->path().leaf() == "d1" );
+      BOOST_CHECK( (++dir_itr2)->path().leaf() == "d2" );
     }
     else
     {
-      BOOST_CHECK( (dir_itr)->leaf() == "d2" );
-      BOOST_CHECK( (++dir_itr)->leaf() == "d1" );
-      BOOST_CHECK( dir_itr2->leaf() == "d2" );
-      BOOST_CHECK( (++dir_itr2)->leaf() == "d1" );
+      BOOST_CHECK( dir_itr->path().leaf() == "d2" );
+      BOOST_CHECK( (++dir_itr)->path().leaf() == "d1" );
+      BOOST_CHECK( (++dir_itr2)->path().leaf() == "d2" );
+      BOOST_CHECK( (++dir_itr2)->path().leaf() == "d1" );
     }
     BOOST_CHECK( ++dir_itr == fs::directory_iterator() );
     BOOST_CHECK( dir_itr2 != fs::directory_iterator() );
@@ -291,20 +296,21 @@ int test_main( int argc, char * argv[] )
 
   { // *i++ must work to meet the standard's InputIterator requirements
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
-    if ( dir_itr->leaf() == "d1" )
+    BOOST_CHECK( dir_itr->path().leaf() == "d1"
+      || dir_itr->path().leaf() == "d2" );
+    if ( dir_itr->path().leaf() == "d1" )
     {
-      BOOST_CHECK( (*dir_itr++).leaf() == "d1" );
-      BOOST_CHECK( dir_itr->leaf() == "d2" );
+      BOOST_CHECK( (*dir_itr++).path().leaf() == "d1" );
+      BOOST_CHECK( dir_itr->path().leaf() == "d2" );
     }
     else
     {
       // Check C++98 input iterator requirements
-      BOOST_CHECK( (*dir_itr++).leaf() == "d1" );
+      BOOST_CHECK( (*dir_itr++).path().leaf() == "d1" );
       // input iterator requirements in the current WP would require this check:
       // BOOST_CHECK( implicit_cast<std::string const&>(*dir_itr++).leaf() == "d1" );
 
-      BOOST_CHECK( dir_itr->leaf() == "d1" );
+      BOOST_CHECK( dir_itr->path().leaf() == "d1" );
     }
   }
 

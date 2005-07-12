@@ -1,6 +1,6 @@
 //  boost/filesystem/convenience.hpp  ----------------------------------------//
 
-//  © Copyright Beman Dawes, 2002
+//  © Copyright Beman Dawes, 2002-2005
 //  © Copyright Vladimir Prus, 2002
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -14,6 +14,8 @@
 #define BOOST_FILESYSTEM_CONVENIENCE_HPP
 
 #include <boost/filesystem/operations.hpp>
+#include <vector>
+#include <stack>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -101,6 +103,130 @@ namespace boost
       { return change_extension<wpath>( ph, new_ex ); }
 
 # endif
+
+
+    //  basic_recursive_directory_iterator helpers  --------------------------//
+
+    namespace detail
+    {
+      template< class Path >
+      struct recur_dir_itr_imp
+      {
+        typedef basic_directory_iterator< Path > element_type;
+        std::stack< element_type, std::vector< element_type > > m_stack;
+        int  m_level;
+        bool m_no_push;
+
+        recur_dir_itr_imp() : m_level(0), m_no_push(false) {}
+      };
+
+    } // namespace detail
+
+    //  basic_recursive_directory_iterator  ----------------------------------//
+
+    template< class Path >
+    class basic_recursive_directory_iterator
+      : public boost::iterator_facade<
+          basic_recursive_directory_iterator<Path>,
+          basic_directory_entry<Path>,
+          boost::single_pass_traversal_tag >
+    {
+    public:
+      typedef Path path_type;
+
+      basic_recursive_directory_iterator(){}  // creates the "end" iterator
+
+      explicit basic_recursive_directory_iterator( const Path & dir_path );
+
+      int level() const { return m_imp->m_level; }
+
+      void pop();
+      void no_push()
+      {
+        BOOST_ASSERT( m_imp.get() && "no_push on end iterator" );
+        m_imp->m_no_push = true;
+      }
+
+    private:
+
+      // shared_ptr provides shallow-copy semantics required for InputIterators.
+      // m_imp.get()==0 indicates the end iterator.
+      boost::shared_ptr< detail::recur_dir_itr_imp< Path > >  m_imp;
+
+      friend class boost::iterator_core_access;
+
+      typename boost::iterator_facade< 
+        basic_recursive_directory_iterator<Path>,
+        basic_directory_entry<Path>,
+        boost::single_pass_traversal_tag >::reference dereference() const 
+      {
+        BOOST_ASSERT( m_imp.get() && "attempt to dereference end iterator" );
+        return *m_imp->m_stack.top();
+      }
+
+      void increment();
+
+      bool equal( const basic_recursive_directory_iterator & rhs ) const
+        { return m_imp == rhs.m_imp; }
+    };
+
+    typedef basic_recursive_directory_iterator<path> recursive_directory_iterator;
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+    typedef basic_recursive_directory_iterator<wpath> wrecursive_directory_iterator;
+# endif
+
+    //  basic_recursive_directory_iterator implementation  -------------------//
+
+    //  constructor
+    template<class Path>
+    basic_recursive_directory_iterator<Path>::
+      basic_recursive_directory_iterator( const Path & dir_path )
+      : m_imp( new detail::recur_dir_itr_imp<Path> )
+    {
+      m_imp->m_stack.push( basic_directory_iterator<Path>( dir_path ) );
+    }
+
+    //  increment
+    template<class Path>
+    void basic_recursive_directory_iterator<Path>::increment()
+    {
+      BOOST_ASSERT( m_imp.get() && "increment on end iterator" );
+      
+      static const basic_directory_iterator<Path> end_itr;
+
+      if ( m_imp->m_no_push ) m_imp->m_no_push = false;
+      else if ( m_imp->m_stack.top()->is_directory() )
+      {
+        m_imp->m_stack.push(
+          basic_directory_iterator<Path>( m_imp->m_stack.top()->path() ) );
+        if ( m_imp->m_stack.top() != end_itr )
+        {
+          ++m_imp->m_level;
+          return;
+        }
+        m_imp->m_stack.pop();
+      }
+
+      while ( !m_imp->m_stack.empty()
+        && ++m_imp->m_stack.top() == end_itr )
+      {
+        m_imp->m_stack.pop();
+        --m_imp->m_level;
+      }
+
+      if ( m_imp->m_stack.empty() ) m_imp.reset(); // done, so make end iterator
+    }
+
+    //  pop
+    template<class Path>
+    void basic_recursive_directory_iterator<Path>::pop()
+    {
+      BOOST_ASSERT( m_imp.get() && "pop on end iterator" );
+      BOOST_ASSERT( m_imp->m_level > 0 && "pop with level < 1" );
+
+      m_imp->m_stack.pop();
+      --m_imp->m_level;
+    }
 
   } // namespace filesystem
 } // namespace boost

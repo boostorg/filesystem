@@ -72,9 +72,9 @@ int main( int argc, char * argv[] )
   for ( fs::wdirectory_iterator it( L"." );
     it != fs::wdirectory_iterator(); ++it )
   {
-    if ( fs::is_file( it ) )
+    if ( it->is_file() )
     {
-      copy_file( *it, target_dir / it->leaf() );
+      copy_file( it->path(), target_dir / it->path().leaf() );
     }
   }
 
