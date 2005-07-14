@@ -48,7 +48,7 @@ int main( int argc, char* argv[] )
     {
       try
       {
-        fs::status_flags  flags( dir_itr.status() );
+        fs::status_flags  flags( dir_itr->status() );
 
         if ( (flags & fs::directory_flag) == fs::directory_flag )
         {

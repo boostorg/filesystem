@@ -127,7 +127,8 @@ namespace boost
     template< class Path >
     class basic_recursive_directory_iterator
       : public boost::iterator_facade<
-          basic_recursive_directory_iterator<Path>, Path,
+          basic_recursive_directory_iterator<Path>,
+          basic_directory_entry<Path>,
           boost::single_pass_traversal_tag >
     {
     public:
@@ -142,19 +143,9 @@ namespace boost
       void pop();
       void no_push()
       {
-        BOOST_ASSERT( m_imp.get() && "no_push on end iterator" );
+        BOOST_ASSERT( m_imp.get() && "attempt to no_push() on end iterator" );
         m_imp->m_no_push = true;
       }
-
-      status_flags  status( system_error_type * ec=0 ) const
-                                { return  m_imp->m_stack.top().status( ec ); }
-      status_flags  status( const symlink_t &, system_error_type * ec=0 ) const
-                                { return  m_imp->m_stack.top().status( symlink, ec ); }
-      bool exists() const       { return m_imp->m_stack.top().exists(); }
-      bool is_directory() const { return m_imp->m_stack.top().is_directory(); }
-      bool is_file() const      { return m_imp->m_stack.top().is_file(); }
-      bool is_other() const     { return m_imp->m_stack.top().is_other(); }
-      bool is_symlink() const   { return m_imp->m_stack.top().is_symlink(); }
 
     private:
 
@@ -165,7 +156,8 @@ namespace boost
       friend class boost::iterator_core_access;
 
       typename boost::iterator_facade< 
-        basic_recursive_directory_iterator<Path>, Path,
+        basic_recursive_directory_iterator<Path>,
+        basic_directory_entry<Path>,
         boost::single_pass_traversal_tag >::reference
       dereference() const 
       {
@@ -204,7 +196,7 @@ namespace boost
       static const basic_directory_iterator<Path> end_itr;
 
       if ( m_imp->m_no_push ) m_imp->m_no_push = false;
-      else if ( m_imp->m_stack.top().is_directory() )
+      else if ( m_imp->m_stack.top()->is_directory() )
       {
         m_imp->m_stack.push(
           basic_directory_iterator<Path>( *m_imp->m_stack.top() ) );

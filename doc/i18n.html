@@ -17,8 +17,8 @@ for submission to the C++ Standards Committee. Features of this release
 include:</p>
 <ul>
   <li><a href="#Internationalization">Internationalization</a>, provided by 
-  class templates <i>basic_path</i>, <i>basic_filesystem_error</i>, and <i>
-  basic_directory_iterator</i>.<br>
+  class templates <i>basic_path</i>, <i>basic_filesystem_error</i>, <i>
+  basic_directory_iterator</i>, and <i>basic_directory_entry</i>.<br>
 &nbsp;</li>
   <li><a href="#Simplification">Simplification</a> of the path interface, 
   including elimination of distinction between native and generic formats, 
@@ -239,19 +239,34 @@ string_type native_directory_string() const;
 // class basic_path - now defined such that these no longer have any real effect:
 static bool default_name_check_writable() { return false; } 
 static void default_name_check( name_check ) {}
-static name_check default_name_check() { return 0; }</pre>
-  <pre>// non-deducible operations functions assume class path
+static name_check default_name_check() { return 0; }
+
+// non-deducible operations functions assume class path
 inline path current_path()
-inline const path &amp; initial_path()</pre>
+inline const path &amp; initial_path()
+
+// the new basic_directory_entry provides leaf()
+// to cover the common existing use case itr-&gt;leaf()
+typename Path::string_type leaf() const;</pre>
 </blockquote>
 <p>If you do not want  the deprecated functions to be included, define the macro BOOST_FILESYSTEM_NO_DEPRECATED.</p>
+<p>The greatest impact on existing code is the change of directory iterator 
+value type from <code>path</code> to <code>directory_entry</code>. To ease the 
+most common directory iterator use case, <code>basic_directory_entry</code> 
+provides an automatic conversion to <code>basic_path</code>, and this also 
+serves to prevent breakage of a lot of existing code. See the
+<a href="#More_efficient">next section</a> for discussion of rationale.</p>
+<blockquote>
+  <pre>// the new basic_directory_entry provides:
+operator const path_type &amp;() const;</pre>
+  </blockquote>
 <h2><a name="More_efficient">More efficient</a> operations when iterating over 
 directories</h2>
 <p>Several common real-world operating systems (BSD derivatives, Linux, Windows) 
 provide status information during directory iteration. Caching of this status 
 information results in three to six times faster operation for typical predicate 
-operations. (For a directory containing 15,047 files, iteration in 1 vs 6 
-seconds on a freshly booted system, and 0.3 vs 0.9 seconds after prior use of 
+operations. (For a directory containing 15,047 files, iteration in 1 second vs 6 
+seconds on a freshly booted system, and 0.3 seconds vs 0.9 seconds after prior use of 
 the directory.</p>
 <p>The efficiency gains from caching such status information were considered too 
 significant to ignore. Because the possibility of race-conditions differs 
@@ -261,8 +276,9 @@ the cached information, rather than implicitly using the cache behind the
 scenes.</p>
 <p>Three options were explored for exposing the cached status information, with 
 full implementations of each. After initial implementation of option 1 exposed 
-the problems noted below, option 2 was experimented with as &quot;purer&quot;. Option 3 
-was finally chosen as the best engineering tradeoff.</p>
+the problems noted below, option 2 was tested as a possible engineering 
+tradeoff. Option 3 
+was finally chosen as the cleanest design.</p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
   <tr>
     <td width="8%" align="center"><b><i>Option</i></b></td>
@@ -280,46 +296,46 @@ was finally chosen as the best engineering tradeoff.</p>
       <li>Readability problem; easy to miss difference between f(*it) and f(it)</li>
       <li>Write-ability problem (error prone?)</li>
       <li>Most common iterator use is brief: *it</li>
-      <li>Introduces one additional concept (status cache)</li>
       <li>Preserves existing code</li>
     </ul>
     </td>
   </tr>
   <tr>
-    <td width="8%" valign="top" align="center"><i><b>2</b></i></td>
+    <td width="8%" valign="top" align="center"><b><i>2</i></b></td>
+    <td width="25%" valign="top">Predicate member functions of basic_directory_<span style="background-color: #FFFF00">iterator</span><br>
+    (basic_directory_iterator value_type is path)</td>
+    <td width="94%">
+    <ul>
+      <li>Somewhat cleaner design (although added iterator functions is unusual)</li>
+      <li>User cannot reuse cache</li>
+      <li>Readability and write-ability is OK: f(*it) and it.f() sufficiently 
+      different</li>
+      <li>Most common iterator use is brief: *it</li>
+      <li>Preserves existing code</li>
+    </ul>
+    </td>
+  </tr>
+  <tr>
+    <td width="8%" valign="top" align="center"><b><i>3</i></b></td>
     <td width="25%" valign="top">Predicate member functions of basic_directory_<span style="background-color: #FFFF00">entry</span><br>
     (basic_directory_iterator value_type is basic_directory_entry)<br>
 &nbsp;</td>
     <td width="94%">
     <ul>
-      <li>Clean design</li>
-      <li>User can reuse cache</li>
-      <li>Readability and write-ability: f(*it) and it-&gt;f() sufficiently 
-      different</li>
-      <li>Most common iterator use is longer: it-&gt;path()</li>
-      <li>Introduces two additional concept (basic_directory_entry, status 
-      cache)</li>
-      <li>Breaks existing code</li>
+      <li>Cleanest design.</li>
+      <li>User can reuse cache.</li>
+      <li>Readability and write-ability is OK: f(*it) and it-&gt;f() sufficiently 
+      different.</li>
+      <li>Most common iterator use is longer: it-&gt;path(), but by providing 
+      &quot;operator const basic_path &amp;&quot; it is still possible to write a bare *it.</li>
+      <li>Breaks some existing code. The &quot;operator const basic_path &amp;&quot; 
+      conversion eliminates breakage of the most common use case, while 
+      providing a (deprecated) leaf() prevents breakage of the second most 
+      common use case.</li>
     </ul>
     </td>
   </tr>
-  <tr>
-    <td width="8%" valign="top" align="center"><i><b>3</b></i></td>
-    <td width="25%" valign="top">Predicate member functions of basic_directory_<span style="background-color: #FFFF00">iterator</span><br>
-    (basic_directory_iterator value_type is path)</td>
-    <td width="94%">
-    <ul>
-      <li>Clean design (although a bit unusual)</li>
-      <li>User cannot reuse cache</li>
-      <li>Readability and write-ability: f(*it) and it.f() sufficiently 
-      different</li>
-      <li>Most common iterator use is brief: *it</li>
-      <li>Introduces one additional concept (status cache)</li>
-      <li>Preserves existing code</li>
-    </ul>
-    </td>
-  </tr>
-</table>
+  </table>
 <h2><a name="Rationale">Rationale</a></h2>
 <h3>Elimination of the native versus generic <a name="distinction">distinction</a></h3>
 <p>Elimination of user confusion and general design simplification was the 
@@ -396,7 +412,7 @@ for Russian on Linux (and Russian web sites) is KOI8-R (RFC1489). The ability to
 is also provided, to meet unforeseen needs.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21129" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21133" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 

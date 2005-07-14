@@ -247,8 +247,8 @@ int test_main( int argc, char * argv[] )
 
   {
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr.status() == fs::directory_flag );
-    BOOST_CHECK( dir_itr.status( fs::symlink ) == fs::directory_flag );
+    BOOST_CHECK( dir_itr->status() == fs::directory_flag );
+    BOOST_CHECK( dir_itr->status( fs::symlink ) == fs::directory_flag );
     BOOST_CHECK( dir_itr->leaf() == "d1" );
     BOOST_CHECK( fs::status(*dir_itr) == fs::directory_flag );
     BOOST_CHECK( fs::status( *dir_itr, fs::symlink ) == fs::directory_flag );
@@ -264,11 +264,11 @@ int test_main( int argc, char * argv[] )
   // stepping one iterator doesn't affect a different iterator.
   {
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr.exists() );
-    BOOST_CHECK( dir_itr.is_directory() );
-    BOOST_CHECK( !dir_itr.is_file() );
-    BOOST_CHECK( !dir_itr.is_other() );
-    BOOST_CHECK( !dir_itr.is_symlink() );
+    BOOST_CHECK( dir_itr->exists() );
+    BOOST_CHECK( dir_itr->is_directory() );
+    BOOST_CHECK( !dir_itr->is_file() );
+    BOOST_CHECK( !dir_itr->is_other() );
+    BOOST_CHECK( !dir_itr->is_symlink() );
 
     fs::directory_iterator dir_itr2( dir );
     BOOST_CHECK( dir_itr->leaf() == "d1"

@@ -15,9 +15,9 @@
 
 <p><a href="#Introduction">Introduction</a><br>
 <a href="#Synopsis">Header synopsis</a><br>
+<a href="#basic_directory_entry">Class basic_directory_entry</a><br>
 <a href="#directory_iterator">Class basic_directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#constructors">Constructors</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Other-member-functions">Other member functions</a><br>
 <a href="#Non-member_functions">Operations non-member functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Do-the-right-thing">&quot;Do-the-right-thing&quot; rule</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#status">status</a><br>
@@ -75,28 +75,71 @@ header. </p>
     struct <a name="symlink_t">symlink_t</a>{};
     extern symlink_t symlink;
 
+    //  basic_directory_entry
+
+    template&lt;class Path&gt; class basic_directory_entry
+    {
+    public:
+      typedef Path path_type;
+      typedef typename Path::string_type string_type;
+
+      // compiler generated copy-ctor, copy assignment, and destructor apply
+
+      basic_directory_entry() : m_status(0), m_symlink_status(0) {}
+      explicit basic_directory_entry( const path_type &amp; p, status_flags sf=0, status_flags symlink_sf=0 );
+
+      void assign( const path_type &amp; p, status_flags sf=0, status_flags symlink_sf=0 );
+
+      void replace_leaf( const string_type &amp; s, status_flags sf=0, status_flags symlink_sf=0 );
+
+      // conversion simplifies most common use of basic_directory_entry
+      operator const path_type &amp;() const { return m_path; }
+
+#   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+      // deprecated function preserves common use case in legacy code
+      typename Path::string_type leaf() const;
+#   endif
+
+      const Path &amp; path() const;
+
+      status_flags status( system_error_type * ec=0 ) const;
+      status_flags status( const symlink_t &amp;, system_error_type * ec=0 ) const;
+
+      bool exists() const;
+      bool is_directory() const;
+      bool is_file() const;
+      bool is_other() const;
+      bool is_symlink() const;
+
+    // for exposition only:
+    private:
+      path_type m_path;
+      mutable status_flags m_status; // stat()-like
+      mutable status_flags m_symlink_status; // lstat()-like
+    };
+
+    typedef basic_directory_entry&lt;path&gt; directory_entry;
+    typedef basic_directory_entry&lt;wpath&gt; wdirectory_entry;
+
+    //  basic_directory_iterator
+
     template&lt;class Path&gt; class <a href="#directory_iterator">basic_directory_iterator</a> 
       : public boost::iterator_facade&lt;
           basic_directory_iterator&lt;Path&gt;,
-          Path, boost::single_pass_traversal_tag &gt;
+          basic_directory_entry&lt;Path&gt;,
+          boost::single_pass_traversal_tag &gt;
     {
     public:
       typedef Path path_type;
 
       basic_directory_iterator(); // creates the &quot;end&quot; iterator
       explicit basic_directory_iterator( const Path &amp; directory_path );
-
-      status_flags status( system_error_type * ec=0 ) const;
-      status_flags status( const symlink_t &amp;, system_error_type * ec=0 ) const;
-      bool exists() const;
-      bool is_directory() const;
-      bool is_file() const;
-      bool is_other() const;
-      bool is_symlink() const;
     };
 
     typedef basic_directory_iterator&lt;path&gt; directory_iterator;
     typedef basic_directory_iterator&lt;wpath&gt; wdirectory_iterator;
+
+    //  operations functions
 
     template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, system_error_type * ec = 0 );
     template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, const symlink_t &amp;, system_error_type * ec = 0 );
@@ -125,6 +168,31 @@ header. </p>
   } // namespace filesystem
 } // namespace boost
 </pre>
+
+<h2><a name="basic_directory_entry">Class basic_directory_entry</a></h2>
+
+<p><b><a name="Performance_note">Performance note</a>:</b> During directory 
+iteration, implementations are 
+permitted but not required to cache a copy of <a href="#status_flag">status information</a> 
+within a directory entry. This attribute information can later be used by  member query functions, resulting in 
+three 
+to six times faster operation than for the non-member query functions. Note, however, 
+that attributes cached in directory entries are not updated when the contents of the external file system 
+changes, so the directory entry form of query functions should not be used if stale 
+attributes might pose a problem.</p>
+
+<h3>path() function</h3>
+
+<blockquote>
+  <pre>const Path &amp; path() const;</pre>
+  <p><b>Returns:</b> <code>m_path</code>.</p>
+</blockquote>
+
+<h3><a name="Other-member-functions">Other member functions</a></h3>
+
+<p>These member functions have the same behavior as the non-member operations 
+functions of the same name, except that they may rely on cached status 
+information. See <a href="#Performance_note">performance note</a>.</p>
 
 <h2><a name="directory_iterator">Class basic_directory_iterator</a></h2>
 
@@ -165,15 +233,6 @@ directory, it is unspecified whether or not subsequent incrementing of the
 iterator will ever result in an iterator whose value is the removed or added 
 directory entry.</p>
 
-<p><b><a name="Performance_note">Performance note</a>:</b> Implementations are 
-permitted to cache a copy of <a href="#status_flag">status information</a> for a directory entry within 
-a directory iterator. This attribute information can later be used by iterator 
-member query functions, resulting in 3 
-to 6 times faster operation than for the non-member query functions. Note, however, 
-that attributes cached in iterators are not updated when the contents of the external file system 
-changes, so the iterator form of query functions should not be used if stale 
-attributes might pose a problem.</p>
-
 <h3><a name="constructors">Constructors</a></h3>
 <blockquote>
 
@@ -193,14 +252,6 @@ empty(directory_ph)</code>, the <i>past-the-end</i> value.</p>
 <p><b>Note:</b> To iterate over the current directory, write <code>
 directory_iterator(current_path&lt;path&gt;())</code> rather than <code>directory_iterator(&quot;&quot;)</code>.</p>
 </blockquote>
-
-<h3><a name="Other-member-functions">Other member functions</a></h3>
-
-<p>These member functions have the same behavior as the non-member operations 
-functions of the same name, except that they may rely on cached status 
-information. See <a href="#Performance_note">performance note</a>.</p>
-
-<p>All have a precondition that the iterator not be the end iterator.</p>
 
 <h2>Operations n<a name="Non-member_functions">on-member functions</a></h2>
 
@@ -768,7 +819,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21129" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21133" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
