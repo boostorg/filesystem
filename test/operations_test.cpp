@@ -255,7 +255,7 @@ int test_main( int argc, char * argv[] )
     else
     {
       // Check C++98 input iterator requirements
-      BOOST_CHECK( (*dir_itr++).leaf() == "d1" );
+      BOOST_CHECK( (*dir_itr++).leaf() == "d2" );
       // input iterator requirements in the current WP would require this check:
       // BOOST_CHECK( implicit_cast<std::string const&>(*dir_itr++).leaf() == "d1" );
 
