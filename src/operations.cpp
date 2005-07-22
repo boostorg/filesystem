@@ -471,7 +471,7 @@ namespace boost
 {
   namespace filesystem
   {
-    symlink_t symlink; 
+    BOOST_FILESYSTEM_DECL symlink_t symlink; 
 
     namespace detail
     {
