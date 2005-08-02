@@ -106,7 +106,7 @@ separator ::= &quot;/&quot;  // an implementation may define additional separato
 <p><i>root-name</i> grammar is implementation-defined. <i>
 root-name</i> must not be present in generic input. It may be part of the strings returned by <i>path</i> 
 member functions, and may be present in the <i>src</i> argument to <i>path</i> constructors 
-when the <i><a href="#native">native</a></i> name check is in effect.</p>
+when the <i><a href="portability_guide.htm#native">native</a></i> name check is in effect.</p>
 <p><i>char</i> may not be slash ('/') or '\0'. In additional, many operating and 
 file systems may place additional restrictions on the characters which may 
 appear in names. See <a href="portability_guide.htm#recommendations">File and 
@@ -457,7 +457,7 @@ above.</p>
 <blockquote>
   <pre>std::string native_file_string() const;</pre>
 <p><b>Returns:</b> The contents of <code>m_name</code>, formatted in the
-<a href="#System-specific_Representation">system-specific representation</a> of 
+<a href="#Native_path_representation">native representation</a> of 
 a file path.</p>
 <p><b>See:</b> <a href="#Representation_example">Representation example</a> 
 above.</p>
@@ -468,7 +468,7 @@ this function yields non-portable results.</p>
 <blockquote>
   <pre>const std::string native_directory_string() const;</pre>
 <p><b>Returns:</b> The contents of <code>m_name</code>, formatted in the
-<a href="#System-specific_Representation">system-specific representation</a> of 
+<a href="#Native_path_representation">native representation</a> of 
 a directory path.</p>
 <p><b>See:</b> <a href="#Representation_example">Representation example</a> 
 above.</p>
@@ -981,7 +981,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 January, 2005<!--webbot bot="Timestamp" endspan i-checksum="38839" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 August, 2005<!--webbot bot="Timestamp" endspan i-checksum="34600" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
