@@ -29,7 +29,7 @@ namespace boost
     {
     public:
       virtual ~basic_filebuf() {}
-#if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
+#if !BOOST_WORKAROUND( BOOST_MSVC, < 1300 )
       std::basic_filebuf<charT,traits> * open( const path & file_ph,
         std::ios_base::openmode mode )
       {
@@ -54,7 +54,7 @@ namespace boost
         std::ios_base::openmode mode = std::ios_base::in )
         : std::basic_ifstream<charT,traits>(
         file_ph.native_file_string().c_str(), mode ) {}
-#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
+#  if !BOOST_WORKAROUND( BOOST_MSVC, < 1300 ) // VC++ 6.0 can't handle this
       void open( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::in )
       {
@@ -100,7 +100,7 @@ namespace boost
         std::ios_base::openmode mode = std::ios_base::out )
         : std::basic_ofstream<charT,traits>(
         file_ph.native_file_string().c_str(), mode ) {}
-#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
+#  if !BOOST_WORKAROUND( BOOST_MSVC, < 1300 )
       void open( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::out )
       {
@@ -146,7 +146,7 @@ namespace boost
         std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
         : std::basic_fstream<charT,traits>(
         file_ph.native_file_string().c_str(), mode ) {}
-#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle this
+#  if !BOOST_WORKAROUND( BOOST_MSVC, < 1300 )
       void open( const path & file_ph,
         std::ios_base::openmode mode = std::ios_base::in|std::ios_base::out )
       {
