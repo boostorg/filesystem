@@ -17,7 +17,7 @@
 #endif
 
 #define EBADHANDLE   9998  // bad handle
-#define EOTHERERR    9999  // Other operating system error not translatable
+#define EOTHER       9999  // Other error not translatable
                            // to a POSIX errno value
 
 #endif // include guard

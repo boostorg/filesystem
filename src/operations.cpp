@@ -872,8 +872,8 @@ namespace boost
         struct stat path_stat;
         if ( ::stat( ph.c_str(), &path_stat ) != 0 )
           return std::make_pair( errno, 0 );
-        if ( S_ISDIR( path_stat.st_mode ) )
-          return std::make_pair( EISDIR, 0 ); 
+        if ( !S_IFREG( path_stat.st_mode ) )
+          return std::make_pair( EPERM, 0 ); 
         return std::make_pair( 0,
           static_cast<boost::intmax_t>(path_stat.st_size) );
       }
@@ -939,8 +939,8 @@ namespace boost
           const std::string & new_ph )
       {
         // we don't allow hard links to directories; too non-portable
-        if ( (status_api( existing_ph ) & fs::directory_flag) != 0 )
-          return EISDIR;
+        if ( (status_api( existing_ph ) & fs::file_flag) == 0 )
+          return EPERM;
         return ::link( existing_ph.c_str(), new_ph.c_str() ) == 0
           ? 0 : errno;
       }

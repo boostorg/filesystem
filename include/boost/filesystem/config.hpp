@@ -14,6 +14,11 @@
 
 #define BOOST_FILESYSTEM_I18N  // aid users wishing to compile several versions
 
+//  ability to change namespace aids path_table.cpp  ------------------------// 
+#ifndef BOOST_FILESYSTEM_NAMESPACE
+# define BOOST_FILESYSTEM_NAMESPACE filesystem
+#endif
+
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
 
@@ -35,7 +40,7 @@
 
 //  BOOST_WINDOWS_PATH enables Windows path syntax recognition
 
-# if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+# if !defined(BOOST_POSIX_PATH) && (defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__))
 #   define BOOST_WINDOWS_PATH
 # endif
 

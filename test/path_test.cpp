@@ -215,11 +215,22 @@ int test_main( int, char*[] )
   BOOST_CHECK( p4.string() == "foobar" );
 
   // These verify various overloads don't cause compiler errors
+
+  fs::exists( p1 );
   fs::exists( "foo" );
   fs::exists( std::string( "foo" ) );
-  fs::exists( p1 );
+
+  fs::exists( p1 / path( "foo" ) );
+  fs::exists( p1 / "foo" );
+  fs::exists( p1 / std::string( "foo" ) );
+
   fs::exists( "foo" / p1 );
   fs::exists( std::string( "foo" ) / p1 );
+
+  p4 /= path( "foo" );
+  p4 /= "foo";
+  p4 /= std::string( "foo" );
+  
 
   try { fs::is_directory("should-throw-exception"); }
   catch ( const fs::filesystem_error & ex )
@@ -657,6 +668,24 @@ int test_main( int, char*[] )
   CHECK_EQUAL( p.relative_path().string(), "foo" );
   CHECK_EQUAL( p.branch_path().string(), "/" );
   CHECK_EQUAL( p.leaf(), "foo" );
+  CHECK_EQUAL( p.root_name(), "" );
+  CHECK_EQUAL( p.root_directory(), "/" );
+  CHECK_EQUAL( p.root_path().string(), "/" );
+  BOOST_CHECK( p.has_root_path() );
+  BOOST_CHECK( !p.has_root_name() );
+  BOOST_CHECK( p.has_root_directory() );
+  BOOST_CHECK( p.has_relative_path() );
+  BOOST_CHECK( p.has_leaf() );
+  BOOST_CHECK( p.has_branch_path() );
+  if ( platform == "POSIX" )
+    BOOST_CHECK( p.is_complete() );
+  else
+    BOOST_CHECK( !p.is_complete() );
+
+  p = "/foo/";
+  CHECK_EQUAL( p.relative_path().string(), "foo/" );
+  CHECK_EQUAL( p.branch_path().string(), "/foo" );
+  CHECK_EQUAL( p.leaf(), "." );
   CHECK_EQUAL( p.root_name(), "" );
   CHECK_EQUAL( p.root_directory(), "/" );
   CHECK_EQUAL( p.root_path().string(), "/" );

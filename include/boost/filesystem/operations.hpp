@@ -70,7 +70,7 @@ namespace boost
     static const status_flags  symlink_flag = 32;
 
     struct symlink_t{};
-    extern symlink_t symlink;
+    BOOST_FILESYSTEM_DECL extern symlink_t symlink;
 
     template<class Path> class basic_directory_entry;
 
