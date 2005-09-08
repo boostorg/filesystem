@@ -84,6 +84,7 @@ namespace
     }
   }
 
+  /*
   void check_normalize()
   {
     PATH_CHECK( path("").normalize(), "" );
@@ -189,6 +190,7 @@ namespace
       PATH_CHECK( path( "c:/..foo" ).normalize(), "c:/..foo" );
     }
   }
+  */
 
 } // unnamed namespace
 
@@ -231,13 +233,8 @@ int test_main( int, char*[] )
   p4 /= "foo";
   p4 /= std::string( "foo" );
   
-
-  try { fs::is_directory("should-throw-exception"); }
-  catch ( const fs::filesystem_error & ex )
-  {
-    std::cout << ex.what() << "\n";
-  }
-
+  BOOST_CHECK( p4.string() == path( p4.string().begin(), p4.string().end() ).string() );
+  BOOST_CHECK( p1 != p4 );
   BOOST_CHECK( p1.string() == p2.string() );
   BOOST_CHECK( p1.string() == p3.string() );
   BOOST_CHECK( path( "foo" ).leaf() == "foo" );
@@ -269,7 +266,7 @@ int test_main( int, char*[] )
   PATH_CHECK( path("") / "/foo", "/foo" );
   PATH_CHECK( path("/foo") / "", "/foo" );
 
-  check_normalize();
+  //check_normalize();
 
   PATH_CHECK( "foo/bar", "foo/bar" );
   PATH_CHECK( path("foo") / path("bar"), "foo/bar" ); // path arg

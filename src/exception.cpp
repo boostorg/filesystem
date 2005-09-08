@@ -87,7 +87,7 @@ namespace
     { ERROR_TOO_MANY_OPEN_FILES, ENFILE },
     { ERROR_WRITE_FAULT, EIO },
     { ERROR_WRITE_PROTECT, EROFS },
-    { 0,EOTHERERR }
+    { 0,EOTHER }
   };
 #endif
 
@@ -108,7 +108,7 @@ namespace boost
       {
         if ( sys_err_code == cur->sys_ec ) return cur->ec;
       }
-      return EOTHERERR;
+      return EOTHER;
     }
 
     BOOST_FILESYSTEM_DECL void

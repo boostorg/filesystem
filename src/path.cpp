@@ -35,6 +35,9 @@ namespace boost
 {
   namespace filesystem
   {
+    BOOST_FILESYSTEM_DECL path_format_t portable; 
+    BOOST_FILESYSTEM_DECL path_format_t native; 
+
     BOOST_FILESYSTEM_DECL bool
     wpath_traits::imbue( const std::locale & new_loc, const std::nothrow_t & )
     {

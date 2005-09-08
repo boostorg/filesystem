@@ -49,7 +49,7 @@ namespace boost
   {
 
     //  name_check functions  ----------------------------------------------//
-
+/*
 #   ifdef BOOST_WINDOWS
     BOOST_FILESYSTEM_DECL bool native( const std::string & name )
     {
@@ -61,7 +61,7 @@ namespace boost
       return true;
     }
 #   endif
-
+*/
     BOOST_FILESYSTEM_DECL bool portable_posix_name( const std::string & name )
     {
       return name.size() != 0

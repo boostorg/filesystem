@@ -35,9 +35,13 @@ namespace boost
 {
   namespace BOOST_FILESYSTEM_NAMESPACE
   {
-    struct path_traits;
-
     template<class String, class Traits> class basic_path;
+
+    struct path_format_t{};
+    BOOST_FILESYSTEM_DECL extern path_format_t portable;
+    BOOST_FILESYSTEM_DECL extern path_format_t native;
+
+    struct path_traits;
     typedef basic_path< std::string, path_traits >    path;
 
     struct path_traits
@@ -223,52 +227,51 @@ namespace boost
       typedef Traits traits_type;
       typedef typename Traits::external_string_type external_string_type; 
 
-      basic_path(){}
+      // constructors/destructor
+      basic_path() {}
+      basic_path( const string_type & s, path_format_t = portable ) { operator/=( s ); }
+      basic_path( const value_type * s, path_format_t = portable )  { operator/=( s ); }
+      template <class InputIterator>
+        basic_path( InputIterator first, InputIterator last,
+          path_format_t fmt=portable ) { append( first, last, fmt ); } 
+     ~basic_path() {}
 
-      basic_path( const string_type & str )
-        { operator/=( str ); }
-      basic_path( const value_type * s )
-        { operator/=( s ); }
+      // assignments
+     basic_path & operator=( const string_type & s ) { m_path.clear(); operator/=( s ); return *this; }
+      basic_path & operator=( const value_type * s ) { m_path.clear(); operator/=( s ); return *this; }
+      template <class InputIterator>
+        basic_path & assign( InputIterator first, InputIterator last,
+          path_format_t fmt = portable )             { m_path.clear(); append( first, last, fmt ); return *this; }
 
-      ~basic_path() {}
+      // comparisons
+      //   overloads for string_type and value_type* are not provided because
+      //   they are not needed to compile use cases (automatic conversions
+      //   take care of that), and there is no efficiency gain (lexicographical
+      //   comparison requires basic_paths).
+      bool operator<( const basic_path & that ) const  { return std::lexicographical_compare( begin(), end(), that.begin(), that.end() ); }
+      bool operator==( const basic_path & that ) const { return !(*this < that) && !(that < *this); }
+      bool operator!=( const basic_path & that ) const { return !(*this == that); }
+      bool operator>( const basic_path & that ) const  { return that < *this; }
+      bool operator<=( const basic_path & that ) const { return !(that < *this); }
+      bool operator>=( const basic_path & that ) const { return !(*this < that); }
 
-      // append operations:
-      //  overloads are not required to support use cases (automatic conversions
-      //  take care of that), but are provided because they allow implementations
-      //  to avoid construction of otherwise unneeded temporaries.
-      basic_path & operator /=( const value_type * rhs );
-      basic_path & operator /=( const basic_path & rhs )
-        { return operator /=( rhs.string().c_str() ); }
-      basic_path & operator /=( const string_type & rhs )
-        { return operator /=( rhs.c_str() ); }
+      // modifiers
+      basic_path & operator/=( const basic_path & rhs )  { return operator /=( rhs.string().c_str() ); }
+      basic_path & operator/=( const string_type & rhs ) { return operator /=( rhs.c_str() ); }
+      basic_path & operator/=( const value_type * s );
+      template <class InputIterator>
+        basic_path & append( InputIterator first, InputIterator last, path_format_t fmt=portable );
 
-      basic_path operator /( const basic_path & rhs ) const
-        { return basic_path<String, Traits>( *this ) /= rhs; }
-      basic_path operator /( const string_type & rhs ) const
-        { return basic_path<String, Traits>( *this ) /= rhs; }
-      basic_path operator /( const value_type * rhs ) const
-        { return basic_path<String, Traits>( *this ) /= rhs; }
+      basic_path & remove_leaf();
 
-      // modification functions:
-      basic_path & canonize();
-      basic_path & normalize();
-      basic_path & remove_leaf();   // no effect if !branch_path()
-
-      // conversion functions:
-      // const returns (see Effective C++, item 21) allow implementations to
-      // return const & if they so desire, since const returns prevent user code
-      // from chaining to non-const functions.
-      const string_type & string() const { return m_path; }
-
+      // observers
+      const string_type & string() const         { return m_path; }
       const string_type file_string() const;
       const string_type directory_string() const { return file_string(); }
 
-      const external_string_type external_file_string() const
-        { return Traits::to_external( *this, file_string() ); }
-      const external_string_type external_directory_string() const
-        { return Traits::to_external( *this, directory_string() ); }
+      const external_string_type external_file_string() const { return Traits::to_external( *this, file_string() ); }
+      const external_string_type external_directory_string() const { return Traits::to_external( *this, directory_string() ); }
 
-      // decomposition functions:
       basic_path   root_path() const;
       string_type  root_name() const;
       string_type  root_directory() const;
@@ -276,19 +279,24 @@ namespace boost
       string_type  leaf() const;
       basic_path   branch_path() const;
 
-      // query functions:
-      bool empty() const { return m_path.empty(); } // name consistent with std containers
-
+      bool empty() const               { return m_path.empty(); } // name consistent with std containers
       bool is_complete() const;
-
       bool has_root_path() const;
       bool has_root_name() const;
       bool has_root_directory() const;
-      bool has_relative_path() const { return !relative_path().empty(); }
-      bool has_leaf() const { return !m_path.empty(); }
-      bool has_branch_path() const { return !branch_path().empty(); }
+      bool has_relative_path() const   { return !relative_path().empty(); }
+      bool has_leaf() const            { return !m_path.empty(); }
+      bool has_branch_path() const     { return !branch_path().empty(); }
 
-      // iteration over the names in the path:
+      // operators
+      basic_path operator/( const basic_path & rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
+      basic_path operator/( const string_type & rhs ) const { return basic_path<String, Traits>( *this ) /= rhs; }
+      basic_path operator/( const value_type * rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
+      template <class InputIterator>
+        basic_path concat( InputIterator first, InputIterator last,
+        path_format_t fmt=portable)                         { return basic_path<String, Traits>( *this ).append( first, last, fmt ); }
+
+      // iterators
       class iterator : public boost::iterator_facade<
         iterator,
         string_type const,
@@ -329,28 +337,6 @@ namespace boost
       iterator begin() const;
       iterator end() const;
 
-      // relational operators
-      //  overloads for string_type and value_type are not provided because
-      //  they are not needed to compile use cases (automatic conversions
-      //  take care of that), and there is no efficiency gain (lexicographical
-      //  comparison requires basic_paths).
-      bool operator<( const basic_path & that ) const
-      {
-        return std::lexicographical_compare(
-          begin(), end(), that.begin(), that.end() );
-      }
-
-      bool operator==( const basic_path & that ) const
-        { return !(*this < that) && !(that < *this); }
-      bool operator!=( const basic_path & that ) const
-        { return !(*this == that); }
-      bool operator>( const basic_path & that ) const 
-        { return that < *this; }
-      bool operator<=( const basic_path & that ) const
-        { return !(that < *this); }
-      bool operator>=( const basic_path & that ) const
-        { return !(*this < that); }
-
     private:
       // Note: This is an implementation for POSIX and Windows, where there
       // are only minor differences between generic and native path grammars.
@@ -363,6 +349,10 @@ namespace boost
 
       string_type  m_path; // invariant: portable path grammar
                            // on Windows, backslashes converted to slashes
+
+      void m_append_separator(); // conditional
+      void m_append( value_type value );
+
       // Was qualified; como433beta8 reports:
       //    warning #427-D: qualified name is not allowed in member declaration 
       friend class iterator;
@@ -403,7 +393,7 @@ namespace boost
     BOOST_FILESYSTEM_DECL bool portable_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_directory_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_file_name( const std::string & name );
-    BOOST_FILESYSTEM_DECL bool native( const std::string & name );
+      //    BOOST_FILESYSTEM_DECL bool native( const std::string & name );
       // native(name) must return true for any name which MIGHT be valid
       // on the native platform.
     inline bool no_check( const std::string & )
@@ -720,6 +710,32 @@ namespace boost
     }
 
     // append  ---------------------------------------------------------------//
+
+    template<class String, class Traits>
+    void basic_path<String, Traits>::m_append_separator() // requires: !empty()
+    {
+      if (
+#       ifdef BOOST_WINDOWS_PATH
+        *(m_path.end()-1) != path_device_delim<path_type>::value && 
+#       endif
+        *(m_path.end()-1) != path_separator<path_type>::value )
+      {
+        m_path += path_separator<path_type>::value;
+      }
+    }
+      
+    template<class String, class Traits>
+    void basic_path<String, Traits>::m_append( value_type value )
+    {
+#   ifdef BOOST_WINDOWS_PATH
+      // for BOOST_WINDOWS_PATH, convert alt_separator ('\') to separator ('/')
+      m_path += ( value == path_alt_separator<path_type>::value
+        ? path_separator<path_type>::value
+        : value );
+#   else
+      m_path += value;
+#   endif
+    }
       
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::operator /=
@@ -727,30 +743,23 @@ namespace boost
     {
       // append path_separator<path_type>::value if needed
       if ( !empty() && *next_p != 0
-        && !detail::is_separator<path_type>( *next_p )
-#     ifdef BOOST_WINDOWS_PATH
-        && *(m_path.end()-1) != path_device_delim<path_type>::value
-#     endif
-        && *(m_path.end()-1) != path_separator<path_type>::value )
-          { m_path += path_separator<path_type>::value; }
-
-      for ( ; *next_p != 0; ++next_p )
-      {
-#     ifdef BOOST_WINDOWS_PATH
-        // for BOOST_WINDOWS_PATH, convert alt_separator ('\') to separator ('/')
-        if ( *next_p == path_alt_separator<path_type>::value )
-        {
-          m_path += path_separator<path_type>::value;
-        }
-        else m_path += *next_p;
-#     else
-        m_path += *next_p;
-#     endif
-      }
-
-    return *this;
+        && !detail::is_separator<path_type>( *next_p ) ) m_append_separator();
+      for ( ; *next_p != 0; ++next_p ) m_append( *next_p );
+      return *this;
     }
 
+    template<class String, class Traits> template <class InputIterator>
+      basic_path<String, Traits> & basic_path<String, Traits>::append(
+        InputIterator first, InputIterator last, path_format_t )
+    {
+      // append path_separator<path_type>::value if needed
+      if ( !empty() && first != last
+        && !detail::is_separator<path_type>( *first ) ) m_append_separator();
+      for ( ; first != last; ++first ) m_append( *first );
+      return *this;
+    }
+
+/*
     // canonize  ------------------------------------------------------------//
 
     template<class String, class Traits>
@@ -844,7 +853,7 @@ namespace boost
       m_path = temp.m_path;
       return *this;
     }
-
+*/
     // remove_leaf  ----------------------------------------------------------//
 
     template<class String, class Traits>
