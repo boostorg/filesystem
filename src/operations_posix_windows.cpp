@@ -81,7 +81,7 @@ namespace fs = boost::filesystem;
 #include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
-#include <iostream>    // for debugging only; comment out when not in use
+// #include <iostream>    // for debugging only; comment out when not in use
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::strcmp; using ::remove; using ::rename; }
@@ -408,9 +408,6 @@ namespace boost
       return S_ISDIR( path_stat.st_mode );
 #   else
       DWORD attributes = ::GetFileAttributesA( ph.native_directory_string().c_str() );
-std::cout << ph.native_directory_string() << ": " << attributes << std::endl;
-if ( attributes == INVALID_FILE_ATTRIBUTES )
-std::cout << "code: " << ::GetLastError() << std::endl;
       if ( attributes == INVALID_FILE_ATTRIBUTES )
         boost::throw_exception( filesystem_error(
           "boost::filesystem::is_directory", ph,
@@ -627,7 +624,6 @@ std::cout << "code: " << ::GetLastError() << std::endl;
       if ( ::GetLastError() != ERROR_ALREADY_EXISTS )
 #   endif
       {
-std::cout << "CreateDirectory code: " << ::GetLastError() << std::endl;
         boost::throw_exception( filesystem_error(
           "boost::filesystem::create_directory",
           dir_path, fs::detail::system_error_code() ) );
