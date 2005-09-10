@@ -183,4 +183,4 @@ namespace boost
   } // namespace filesystem
 } // namespace boost
  
-#include <boost/config/abi_suffix.hpp>
+#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas

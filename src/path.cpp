@@ -9,6 +9,10 @@
 
 //----------------------------------------------------------------------------// 
 
+// define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
+// the library is being built (possibly exporting rather than importing code)
+#define BOOST_FILESYSTEM_SOURCE 
+
 #include <boost/filesystem/config.hpp>
 
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
@@ -18,6 +22,8 @@
 
 #include <locale>
 #include <cerrno>
+
+#include <boost/config/abi_prefix.hpp> // must be the last #include
 
 namespace
 {
@@ -35,11 +41,7 @@ namespace boost
 {
   namespace filesystem
   {
-    BOOST_FILESYSTEM_DECL path_format_t portable; 
-    BOOST_FILESYSTEM_DECL path_format_t native; 
-
-    BOOST_FILESYSTEM_DECL bool
-    wpath_traits::imbue( const std::locale & new_loc, const std::nothrow_t & )
+    bool wpath_traits::imbue( const std::locale & new_loc, const std::nothrow_t & )
     {
       if ( locked ) return false;
       locked = true;
@@ -49,8 +51,7 @@ namespace boost
       return true;
     }
 
-    BOOST_FILESYSTEM_DECL void
-    wpath_traits::imbue( const std::locale & new_loc )
+    void wpath_traits::imbue( const std::locale & new_loc )
     {
       if ( locked ) boost::throw_exception( wfilesystem_error(
         "boost::filesystem::wpath_traits::imbue() after lockdown" ) );
@@ -103,6 +104,8 @@ namespace boost
 
   } // namespace filesystem
 } // namespace boost
+
+#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 
 #endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 

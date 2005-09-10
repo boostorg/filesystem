@@ -54,10 +54,10 @@ namespace boost
         const external_string_type & src ) { return src; }
     };
 
-
 # ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
     struct wpath_traits;
+    
     typedef basic_path< std::wstring, wpath_traits >  wpath;
 
     struct wpath_traits
@@ -76,10 +76,10 @@ namespace boost
       static internal_string_type to_internal(
         const external_string_type & src );
 # endif
-      BOOST_FILESYSTEM_DECL static void imbue( const std::locale & loc );
-      BOOST_FILESYSTEM_DECL static bool imbue( const std::locale & loc,
-        const std::nothrow_t & );
+      static void imbue( const std::locale & loc );
+      static bool imbue( const std::locale & loc, const std::nothrow_t & );
     };
+
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
 //  error reporting support  -------------------------------------------------//
@@ -631,12 +631,12 @@ namespace boost
     {
       iterator itr( begin() );
       for ( ; itr.m_pos != m_path.size()
-          && itr.m_name[0] == path_separator<path_type>::value
+          && (itr.m_name[0] == path_separator<path_type>::value
 #     ifdef BOOST_WINDOWS_PATH
           || itr.m_name[itr.m_name.size()-1]
             == path_device_delim<path_type>::value
 #     endif
-        ; ++itr ) {}
+             ); ++itr ) {}
 
       return basic_path<String, Traits>( m_path.substr( itr.m_pos ) );
     }

@@ -75,6 +75,8 @@ namespace fs = boost::filesystem;
 namespace std { using ::strcmp; using ::remove; using ::rename; }
 #endif
 
+#include <boost/config/abi_prefix.hpp> // must be the last #include
+
 //  helpers  -----------------------------------------------------------------//
 
 namespace
@@ -472,6 +474,8 @@ namespace boost
   namespace filesystem
   {
     BOOST_FILESYSTEM_DECL symlink_t symlink; 
+    BOOST_FILESYSTEM_DECL path_format_t portable; 
+    BOOST_FILESYSTEM_DECL path_format_t native; 
 
     namespace detail
     {
@@ -1095,3 +1099,5 @@ namespace boost
     } // namespace detail
   } // namespace filesystem
 } // namespace boost
+
+#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas

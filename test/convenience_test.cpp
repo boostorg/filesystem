@@ -89,7 +89,7 @@ int test_main( int, char*[] )
   BOOST_CHECK( fs::extension("a.b.c") == ".c" );
   BOOST_CHECK( fs::extension("a.b.c.") == "." );
   BOOST_CHECK( fs::extension("") == "" );
-  BOOST_CHECK( fs::extension("a/") == "" );
+  BOOST_CHECK( fs::extension("a/") == "." );
   
 // basename() tests ----------------------------------------------------------//
 
