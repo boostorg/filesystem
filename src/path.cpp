@@ -23,8 +23,6 @@
 #include <locale>
 #include <cerrno>
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
-
 namespace
 {
   // ISO C calls this "the locale-specific native environment":
@@ -105,7 +103,4 @@ namespace boost
   } // namespace filesystem
 } // namespace boost
 
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-
 #endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
-
