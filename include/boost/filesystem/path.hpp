@@ -1015,13 +1015,6 @@ namespace boost
         typedef typename Path::string_type string_type;
         typedef typename Path::traits_type traits_type;
 
-        static const typename string_type::value_type separators[] = {
-          path_separator<Path>::value,
-#       ifdef BOOST_WINDOWS_PATH
-          path_alt_separator<Path>::value,
-#       endif
-          0 };
-
         typename string_type::size_type end_pos( itr.m_pos );
 
         typename string_type::size_type root_dir_pos(
