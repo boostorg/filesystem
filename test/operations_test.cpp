@@ -220,6 +220,11 @@ int test_main( int argc, char * argv[] )
 
   BOOST_CHECK( fs::create_directory( dir ) );
 
+  BOOST_CHECK( fs::space( dir ).available > 1000 ); // reasonable assumption
+  BOOST_CHECK( fs::space( dir ).total > 1000000 ); // reasonable assumption
+  std::cout << "space().available = " << fs::space( dir ).available << '\n';
+  std::cout << "space().total = " << fs::space( dir ).total << '\n';
+
   BOOST_CHECK( fs::exists( dir ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
   BOOST_CHECK( fs::is_directory( dir ) );

@@ -74,6 +74,12 @@ namespace boost
 
     template<class Path> class basic_directory_entry;
 
+	  struct space_info
+    {
+      boost::uintmax_t available;  // bytes available
+      boost::uintmax_t total;      // bytes total
+    };
+
     namespace detail
     {
       typedef std::pair< boost::filesystem::system_error_type, bool >
@@ -84,6 +90,9 @@ namespace boost
 
       typedef std::pair< boost::filesystem::system_error_type, std::time_t >
         time_pair;
+
+      typedef std::pair< boost::filesystem::system_error_type, space_info >
+        space_pair;
 
       template< class Path >
       struct directory_pair
@@ -113,6 +122,8 @@ namespace boost
         last_write_time_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         last_write_time_api( const std::string & ph, std::time_t new_value );
+      BOOST_FILESYSTEM_DECL space_pair 
+        space_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         get_current_path_api( std::string & ph );
       BOOST_FILESYSTEM_DECL query_pair
@@ -149,6 +160,8 @@ namespace boost
         last_write_time_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         last_write_time_api( const std::wstring & ph, std::time_t new_value );
+      BOOST_FILESYSTEM_DECL space_pair 
+        space_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type 
         get_current_path_api( std::wstring & ph );
       BOOST_FILESYSTEM_DECL query_pair
@@ -294,6 +307,17 @@ namespace boost
           "boost::filesystem::last_write_time", ph, result.first ) );
       return result.second;
     }
+
+    BOOST_FS_FUNC(space_info) space( const Path & ph )
+    {
+      detail::space_pair result
+        = detail::space_api( ph.external_file_string() );
+      if ( result.first != 0 )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::space", ph, result.first ) );
+      return result.second;
+    }
+
 
 //  operations  --------------------------------------------------------------//
 
@@ -503,6 +527,11 @@ namespace boost
       { return last_write_time<path>( ph ); }
     inline std::time_t last_write_time( const wpath & ph )
       { return last_write_time<wpath>( ph ); }
+
+    inline space_info space( const path & ph )
+      { return space<path>( ph ); }
+    inline space_info space( const wpath & ph )
+      { return space<wpath>( ph ); }
 
     inline bool create_directory( const path & dir_ph )
       { return create_directory<path>( dir_ph ); }

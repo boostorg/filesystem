@@ -50,13 +50,9 @@ namespace fs = boost::filesystem;
 #     include "sys/utime.h"
 #   endif
 
-// For Windows, the xxxA form of various function names is used to avoid
-// inadvertently getting wide forms of the functions. (The undecorated
-// forms are actually macros, so can misfire if the user has various
-// other macros defined. There was a bug report of this happening.)
-
 # else // BOOST_POSIX_API
 #   include <sys/types.h>
+#   include <sys/statvfs.h>
 #   include "dirent.h"
 #   include "unistd.h"
 #   include "fcntl.h"
@@ -87,12 +83,17 @@ namespace
 
 #ifdef BOOST_WINDOWS_API
   
-  DWORD get_file_attributes( const char * ph )
+// For Windows, the xxxA form of various function names is used to avoid
+// inadvertently getting wide forms of the functions. (The undecorated
+// forms are actually macros, so can misfire if the user has various
+// other macros defined. There was a bug report of this happening.)
+
+  inline DWORD get_file_attributes( const char * ph )
     { return ::GetFileAttributesA( ph ); }
 
 # ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-  DWORD get_file_attributes( const wchar_t * ph )
+  inline DWORD get_file_attributes( const wchar_t * ph )
     { return ::GetFileAttributesW( ph ); }
 
   static const fs::wdirectory_iterator wend_itr;
@@ -101,7 +102,7 @@ namespace
     return fs::wdirectory_iterator(fs::wpath(dir_path)) == wend_itr;
   }
 
-  BOOL get_file_attributes_ex( const wchar_t * ph,
+  inline BOOL get_file_attributes_ex( const wchar_t * ph,
     WIN32_FILE_ATTRIBUTE_DATA & fad )
   { return ::GetFileAttributesExW( ph, ::GetFileExInfoStandard, &fad ); }
       
@@ -118,7 +119,11 @@ namespace
   inline DWORD get_current_directory( DWORD sz, wchar_t * buf )
     { return ::GetCurrentDirectoryW( sz, buf ); } 
 
-  std::size_t get_full_path_name(
+  inline bool get_free_disk_space( const std::wstring & ph,
+    PULARGE_INTEGER avail, PULARGE_INTEGER total )
+    { return ::GetDiskFreeSpaceExW( ph.c_str(), avail, total, 0 ) != 0; }
+
+  inline std::size_t get_full_path_name(
     const std::wstring & ph, std::size_t len, wchar_t * buf, wchar_t ** p )
   {
     return static_cast<std::size_t>(
@@ -126,10 +131,10 @@ namespace
         static_cast<DWORD>(len), buf, p ));
   } 
 
-  bool remove_directory( const std::wstring & ph )
+  inline bool remove_directory( const std::wstring & ph )
     { return ::RemoveDirectoryW( ph.c_str() ) != 0; }
 
-    bool delete_file( const std::wstring & ph )
+  inline bool delete_file( const std::wstring & ph )
     { return ::DeleteFileW( ph.c_str() ) != 0; }
 
   inline bool create_directory( const std::wstring & dir )
@@ -278,6 +283,35 @@ namespace
       + fad.nFileSizeLow );
   }
 
+  inline bool get_free_disk_space( const std::string & ph,
+    PULARGE_INTEGER avail, PULARGE_INTEGER total )
+    { return ::GetDiskFreeSpaceExA( ph.c_str(), avail, total, 0 ) != 0; }
+
+  template< class String >
+  boost::filesystem::detail::space_pair
+  space_template( String & ph )
+  {
+    ULARGE_INTEGER avail, total;
+    boost::filesystem::detail::space_pair result;
+    if ( get_free_disk_space( ph, &avail, &total ) )
+    {
+      result.first = 0;
+      result.second.available
+        = (static_cast<boost::uintmax_t>(avail.HighPart) << 32)
+          + avail.LowPart;
+      result.second.total
+        = (static_cast<boost::uintmax_t>(total.HighPart) << 32)
+          + total.LowPart;
+    }
+    else
+    {
+      result.first = ::GetLastError();
+      result.second.available = 0;
+      result.second.total = 0;
+    }
+    return result;
+  }
+
   inline DWORD get_current_directory( DWORD sz, char * buf )
     { return ::GetCurrentDirectoryA( sz, buf ); } 
 
@@ -297,7 +331,7 @@ namespace
     return 0;
   }
 
-  std::size_t get_full_path_name(
+  inline std::size_t get_full_path_name(
     const std::string & ph, std::size_t len, char * buf, char ** p )
   {
     return static_cast<std::size_t>(
@@ -537,6 +571,10 @@ namespace boost
         last_write_time_api( const std::wstring & ph, std::time_t new_value )
           { return last_write_time_template( ph, new_value ); }
 
+      BOOST_FILESYSTEM_DECL fs::detail::space_pair
+      space_api( const std::wstring & ph )
+        { return space_template( ph ); }
+
       BOOST_FILESYSTEM_DECL fs::detail::query_pair
       create_directory_api( const std::wstring & ph )
         { return create_directory_template( ph ); }
@@ -703,6 +741,10 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         last_write_time_api( const std::string & ph, std::time_t new_value )
           { return last_write_time_template( ph, new_value ); }
+
+      BOOST_FILESYSTEM_DECL fs::detail::space_pair
+      space_api( const std::string & ph )
+        { return space_template( ph ); }
 
       BOOST_FILESYSTEM_DECL fs::detail::query_pair
       create_directory_api( const std::string & ph )
@@ -898,6 +940,26 @@ namespace boost
         buf.actime = path_stat.st_atime; // utime() updates access time too:-(
         buf.modtime = new_value;
         return ::utime( ph.c_str(), &buf ) != 0 ? errno : 0;
+      }
+
+      BOOST_FILESYSTEM_DECL space_pair 
+      space_api( const std::string & ph )
+      {
+        struct statvfs vfs;
+        space_info result;
+        if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
+        {
+          result.first = errno;
+          result.second.available = 0;
+          result.second.total = 0;
+        }
+        else
+        {
+          result.first = 0;
+          result.second.available = vfs.f_bfree * vfs.f_frsize;
+          result.second.total = vfs.f_blocks * vfs.f_frsize;
+        }
+      return result;
       }
 
       BOOST_FILESYSTEM_DECL fs::system_error_type 
