@@ -916,7 +916,7 @@ namespace boost
         struct stat path_stat;
         if ( ::stat( ph.c_str(), &path_stat ) != 0 )
           return std::make_pair( errno, 0 );
-        if ( !S_IFREG( path_stat.st_mode ) )
+        if ( !S_ISREG( path_stat.st_mode ) )
           return std::make_pair( EPERM, 0 ); 
         return std::make_pair( 0,
           static_cast<boost::intmax_t>(path_stat.st_size) );
@@ -946,7 +946,7 @@ namespace boost
       space_api( const std::string & ph )
       {
         struct statvfs vfs;
-        space_info result;
+        space_pair result;
         if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
         {
           result.first = errno;
@@ -956,8 +956,8 @@ namespace boost
         else
         {
           result.first = 0;
-          result.second.available = vfs.f_bfree * vfs.f_frsize;
-          result.second.total = vfs.f_blocks * vfs.f_frsize;
+          result.second.available = static_cast<boost::uintmax_t>(vfs.f_bfree) * vfs.f_frsize;
+          result.second.total = static_cast<boost::uintmax_t>(vfs.f_blocks) * vfs.f_frsize;
         }
       return result;
       }

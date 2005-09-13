@@ -219,7 +219,8 @@ int test_main( int argc, char * argv[] )
   }
 
   BOOST_CHECK( fs::create_directory( dir ) );
-
+  std::cout << "sizeof(boost::uintmax_t) = " << sizeof(boost::uintmax_t) << '\n';
+  BOOST_CHECK( sizeof( boost::uintmax_t ) >= 8 );
   BOOST_CHECK( fs::space( dir ).available > 1000 ); // reasonable assumption
   BOOST_CHECK( fs::space( dir ).total > 1000000 ); // reasonable assumption
   std::cout << "space().available = " << fs::space( dir ).available << '\n';
@@ -232,8 +233,7 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 
       ENOENT ) );
   else
-    BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 
-      EISDIR ) );
+    BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 0 ) );
   BOOST_CHECK( !fs::create_directory( dir ) );
 
   BOOST_CHECK( !fs::is_symlink( dir ) );
