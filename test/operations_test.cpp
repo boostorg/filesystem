@@ -223,9 +223,10 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( sizeof( boost::uintmax_t ) >= 8 );
   BOOST_CHECK( fs::space( dir ).available > 1000 ); // reasonable assumption
   BOOST_CHECK( fs::space( dir ).total > 1000000 ); // reasonable assumption
-  std::cout << "space().available = " << fs::space( dir ).available << '\n';
-  std::cout << "space().total = " << fs::space( dir ).total << '\n';
-
+# if !defined(BOOST_MSVC) || _MSC_VER >= 1300  // 1300 == VC++ 7.0
+    std::cout << "space().available = " << fs::space( dir ).available << '\n';
+    std::cout << "space().total = " << fs::space( dir ).total << '\n';
+# endif
   BOOST_CHECK( fs::exists( dir ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
   BOOST_CHECK( fs::is_directory( dir ) );

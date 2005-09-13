@@ -231,17 +231,21 @@ namespace boost
       basic_path() {}
       basic_path( const string_type & s, path_format_t = portable ) { operator/=( s ); }
       basic_path( const value_type * s, path_format_t = portable )  { operator/=( s ); }
-      template <class InputIterator>
-        basic_path( InputIterator first, InputIterator last,
-          path_format_t fmt=portable ) { append( first, last, fmt ); } 
+#     ifndef BOOST_NO_MEMBER_TEMPLATES
+        template <class InputIterator>
+          basic_path( InputIterator first, InputIterator last,
+            path_format_t fmt=portable ) { append( first, last, fmt ); }
+#     endif
      ~basic_path() {}
 
       // assignments
-     basic_path & operator=( const string_type & s ) { m_path.clear(); operator/=( s ); return *this; }
-      basic_path & operator=( const value_type * s ) { m_path.clear(); operator/=( s ); return *this; }
-      template <class InputIterator>
-        basic_path & assign( InputIterator first, InputIterator last,
-          path_format_t fmt = portable )             { m_path.clear(); append( first, last, fmt ); return *this; }
+      basic_path & operator=( const string_type & s ) { m_path=""; operator/=( s ); return *this; }
+      basic_path & operator=( const value_type * s ) { m_path=""; operator/=( s ); return *this; }
+#     ifndef BOOST_NO_MEMBER_TEMPLATES
+        template <class InputIterator>
+          basic_path & assign( InputIterator first, InputIterator last,
+            path_format_t fmt = portable ) { m_path.clear(); append( first, last, fmt ); return *this; }
+#     endif
 
       // comparisons
       //   overloads for string_type and value_type* are not provided because
@@ -259,8 +263,10 @@ namespace boost
       basic_path & operator/=( const basic_path & rhs )  { return operator /=( rhs.string().c_str() ); }
       basic_path & operator/=( const string_type & rhs ) { return operator /=( rhs.c_str() ); }
       basic_path & operator/=( const value_type * s );
-      template <class InputIterator>
-        basic_path & append( InputIterator first, InputIterator last, path_format_t fmt=portable );
+#     ifndef BOOST_NO_MEMBER_TEMPLATES
+        template <class InputIterator>
+          basic_path & append( InputIterator first, InputIterator last, path_format_t fmt=portable );
+#     endif
 
       basic_path & remove_leaf();
 
@@ -292,9 +298,11 @@ namespace boost
       basic_path operator/( const basic_path & rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
       basic_path operator/( const string_type & rhs ) const { return basic_path<String, Traits>( *this ) /= rhs; }
       basic_path operator/( const value_type * rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
-      template <class InputIterator>
-        basic_path concat( InputIterator first, InputIterator last,
-        path_format_t fmt=portable)                         { return basic_path<String, Traits>( *this ).append( first, last, fmt ); }
+#     ifndef BOOST_NO_MEMBER_TEMPLATES
+        template <class InputIterator>
+          basic_path concat( InputIterator first, InputIterator last,
+          path_format_t fmt=portable) { return basic_path<String, Traits>( *this ).append( first, last, fmt ); }
+#     endif
 
       // iterators
       class iterator : public boost::iterator_facade<
@@ -748,6 +756,7 @@ namespace boost
       return *this;
     }
 
+# ifndef BOOST_NO_MEMBER_TEMPLATES
     template<class String, class Traits> template <class InputIterator>
       basic_path<String, Traits> & basic_path<String, Traits>::append(
         InputIterator first, InputIterator last, path_format_t )
@@ -758,7 +767,7 @@ namespace boost
       for ( ; first != last; ++first ) m_append( *first );
       return *this;
     }
-
+# endif
 /*
     // canonize  ------------------------------------------------------------//
 

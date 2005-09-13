@@ -232,8 +232,10 @@ int test_main( int, char*[] )
   p4 /= path( "foo" );
   p4 /= "foo";
   p4 /= std::string( "foo" );
-  
+
+# ifndef BOOST_NO_MEMBER_TEMPLATES
   BOOST_CHECK( p4.string() == path( p4.string().begin(), p4.string().end() ).string() );
+# endif
   BOOST_CHECK( p1 != p4 );
   BOOST_CHECK( p1.string() == p2.string() );
   BOOST_CHECK( p1.string() == p3.string() );
