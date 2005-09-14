@@ -4,5 +4,5 @@ project
       <hardcode-dll-paths>true
     ;
     
+exe file_size : file_size.cpp ;
 exe simple_ls : simple_ls.cpp ;    
-exe dir_it : dir_it.cpp ;
