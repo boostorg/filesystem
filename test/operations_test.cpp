@@ -226,14 +226,24 @@ int test_main( int argc, char * argv[] )
   }
 
   BOOST_CHECK( fs::create_directory( dir ) );
+
+  // several functions give unreasonable results if uintmax_t isn't 64-bits
   std::cout << "sizeof(boost::uintmax_t) = " << sizeof(boost::uintmax_t) << '\n';
   BOOST_CHECK( sizeof( boost::uintmax_t ) >= 8 );
-  BOOST_CHECK( fs::space( dir ).available > 1000 ); // reasonable assumption
-  BOOST_CHECK( fs::space( dir ).total > 1000000 ); // reasonable assumption
+
+  // make some reasonable assuptions for testing purposes
+  BOOST_CHECK( fs::capacity( dir ) > fs::total_free_space( dir ) );
+  BOOST_CHECK( fs::capacity( dir ) > 1000000 );
+  BOOST_CHECK( fs::total_free_space( dir ) > 1000 );
+  BOOST_CHECK( fs::available_free_space( dir ) <= fs::total_free_space( dir ) );
+
+  // it is convenient to display space, but older VC++ version choke 
 # if !defined(BOOST_MSVC) || _MSC_VER >= 1300  // 1300 == VC++ 7.0
-    std::cout << "space().available = " << fs::space( dir ).available << '\n';
-    std::cout << "space().total = " << fs::space( dir ).total << '\n';
+    std::cout << "capacity() = " << fs::capacity( dir ) << '\n';
+    std::cout << "total_free_space() = " << fs::total_free_space( dir ) << '\n';
+    std::cout << "available_free_space() = " << fs::available_free_space( dir ) << '\n';
 # endif
+
   BOOST_CHECK( fs::exists( dir ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
   BOOST_CHECK( fs::is_directory( dir ) );

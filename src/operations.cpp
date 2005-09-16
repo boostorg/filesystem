@@ -120,8 +120,8 @@ namespace
     { return ::GetCurrentDirectoryW( sz, buf ); } 
 
   inline bool get_free_disk_space( const std::wstring & ph,
-    PULARGE_INTEGER avail, PULARGE_INTEGER total )
-    { return ::GetDiskFreeSpaceExW( ph.c_str(), avail, total, 0 ) != 0; }
+    PULARGE_INTEGER avail, PULARGE_INTEGER total, PULARGE_INTEGER free )
+    { return ::GetDiskFreeSpaceExW( ph.c_str(), avail, total, free ) != 0; }
 
   inline std::size_t get_full_path_name(
     const std::wstring & ph, std::size_t len, wchar_t * buf, wchar_t ** p )
@@ -268,7 +268,7 @@ namespace
   }
 
   template< class String >
-  boost::filesystem::detail::intmax_pair
+  boost::filesystem::detail::uintmax_pair
   file_size_template( const String & ph )
   {
     WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -278,36 +278,74 @@ namespace
     if ( (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) !=0 )
       return std::make_pair( ERROR_FILE_NOT_FOUND, 0 );
     return std::make_pair( 0,
-      (static_cast<boost::intmax_t>(fad.nFileSizeHigh)
+      (static_cast<boost::uintmax_t>(fad.nFileSizeHigh)
         << (sizeof(fad.nFileSizeLow)*8))
       + fad.nFileSizeLow );
   }
 
   inline bool get_free_disk_space( const std::string & ph,
-    PULARGE_INTEGER avail, PULARGE_INTEGER total )
-    { return ::GetDiskFreeSpaceExA( ph.c_str(), avail, total, 0 ) != 0; }
+    PULARGE_INTEGER avail, PULARGE_INTEGER total, PULARGE_INTEGER free )
+    { return ::GetDiskFreeSpaceExA( ph.c_str(), avail, total, free ) != 0; }
 
   template< class String >
-  boost::filesystem::detail::space_pair
-  space_template( String & ph )
+  boost::filesystem::detail::uintmax_pair
+  capacity_template( String & ph )
   {
-    ULARGE_INTEGER avail, total;
-    boost::filesystem::detail::space_pair result;
-    if ( get_free_disk_space( ph, &avail, &total ) )
+    ULARGE_INTEGER total;
+    boost::filesystem::detail::uintmax_pair result;
+    if ( get_free_disk_space( ph, 0, &total, 0 ) )
     {
       result.first = 0;
-      result.second.available
-        = (static_cast<boost::uintmax_t>(avail.HighPart) << 32)
-          + avail.LowPart;
-      result.second.total
+      result.second
         = (static_cast<boost::uintmax_t>(total.HighPart) << 32)
           + total.LowPart;
     }
     else
     {
       result.first = ::GetLastError();
-      result.second.available = 0;
-      result.second.total = 0;
+      result.second = 0;
+    }
+    return result;
+  }
+
+  template< class String >
+  boost::filesystem::detail::uintmax_pair
+  total_free_space_template( String & ph )
+  {
+    ULARGE_INTEGER free;
+    boost::filesystem::detail::uintmax_pair result;
+    if ( get_free_disk_space( ph, 0, 0, &free ) )
+    {
+      result.first = 0;
+      result.second
+        = (static_cast<boost::uintmax_t>(free.HighPart) << 32)
+          + free.LowPart;
+    }
+    else
+    {
+      result.first = ::GetLastError();
+      result.second = 0;
+    }
+    return result;
+  }
+
+  template< class String >
+  boost::filesystem::detail::uintmax_pair
+  available_free_space_template( String & ph )
+  {
+    ULARGE_INTEGER avail;
+    boost::filesystem::detail::uintmax_pair result;
+    if ( get_free_disk_space( ph, &avail, 0, 0 ) )
+    {
+      result.first = 0;
+      result.second
+        = (static_cast<boost::uintmax_t>(avail.HighPart) << 32)
+          + avail.LowPart;
+    }
+    else
+    {
+      result.first = ::GetLastError();
+      result.second = 0;
     }
     return result;
   }
@@ -551,8 +589,20 @@ namespace boost
         { return equivalent_template( ph1, ph2 ); }
 
       BOOST_FILESYSTEM_DECL
-      fs::detail::intmax_pair file_size_api( const std::wstring & ph )
+      fs::detail::uintmax_pair file_size_api( const std::wstring & ph )
         { return file_size_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL
+      fs::detail::uintmax_pair capacity_api( const std::wstring & ph )
+        { return capacity_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL
+      fs::detail::uintmax_pair total_free_space_api( const std::wstring & ph )
+        { return total_free_space_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL
+      fs::detail::uintmax_pair available_free_space_api( const std::wstring & ph )
+        { return available_free_space_template( ph ); }
 
       BOOST_FILESYSTEM_DECL
       boost::filesystem::system_error_type 
@@ -570,10 +620,6 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         last_write_time_api( const std::wstring & ph, std::time_t new_value )
           { return last_write_time_template( ph, new_value ); }
-
-      BOOST_FILESYSTEM_DECL fs::detail::space_pair
-      space_api( const std::wstring & ph )
-        { return space_template( ph ); }
 
       BOOST_FILESYSTEM_DECL fs::detail::query_pair
       create_directory_api( const std::wstring & ph )
@@ -722,8 +768,20 @@ namespace boost
         { return equivalent_template( ph1, ph2 ); }
 
       BOOST_FILESYSTEM_DECL
-      fs::detail::intmax_pair file_size_api( const std::string & ph )
+      fs::detail::uintmax_pair file_size_api( const std::string & ph )
         { return file_size_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL
+      fs::detail::uintmax_pair capacity_api( const std::string & ph )
+        { return capacity_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL
+      fs::detail::uintmax_pair total_free_space_api( const std::string & ph )
+        { return total_free_space_template( ph ); }
+
+      BOOST_FILESYSTEM_DECL
+      fs::detail::uintmax_pair available_free_space_api( const std::string & ph )
+        { return available_free_space_template( ph ); }
 
       BOOST_FILESYSTEM_DECL
       boost::filesystem::system_error_type 
@@ -741,10 +799,6 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         last_write_time_api( const std::string & ph, std::time_t new_value )
           { return last_write_time_template( ph, new_value ); }
-
-      BOOST_FILESYSTEM_DECL fs::detail::space_pair
-      space_api( const std::string & ph )
-        { return space_template( ph ); }
 
       BOOST_FILESYSTEM_DECL fs::detail::query_pair
       create_directory_api( const std::string & ph )
@@ -910,7 +964,7 @@ namespace boost
             && s1.st_mtime == s2.st_mtime );
       }
  
-      BOOST_FILESYSTEM_DECL intmax_pair
+      BOOST_FILESYSTEM_DECL uintmax_pair
       file_size_api( const std::string & ph )
       {
         struct stat path_stat;
@@ -919,7 +973,64 @@ namespace boost
         if ( !S_ISREG( path_stat.st_mode ) )
           return std::make_pair( EPERM, 0 ); 
         return std::make_pair( 0,
-          static_cast<boost::intmax_t>(path_stat.st_size) );
+          static_cast<boost::uintmax_t>(path_stat.st_size) );
+      }
+
+      BOOST_FILESYSTEM_DECL uintmax_pair 
+      capacity_api( const std::string & ph )
+      {
+        struct statvfs vfs;
+        uintmax_pair result;
+        if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
+        {
+          result.first = errno;
+          result.second = 0;
+        }
+        else
+        {
+          result.first = 0;
+          result.second
+            = static_cast<boost::uintmax_t>(vfs.f_blocks) * vfs.f_frsize;
+        }
+      return result;
+      }
+
+      BOOST_FILESYSTEM_DECL uintmax_pair 
+      total_free_space_api( const std::string & ph )
+      {
+        struct statvfs vfs;
+        uintmax_pair result;
+        if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
+        {
+          result.first = errno;
+          result.second = 0;
+        }
+        else
+        {
+          result.first = 0;
+          result.second
+            = static_cast<boost::uintmax_t>(vfs.f_bfree) * vfs.f_frsize;
+        }
+      return result;
+      }
+
+      BOOST_FILESYSTEM_DECL uintmax_pair 
+      available_free_space_api( const std::string & ph )
+      {
+        struct statvfs vfs;
+        uintmax_pair result;
+        if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
+        {
+          result.first = errno;
+          result.second = 0;
+        }
+        else
+        {
+          result.first = 0;
+          result.second
+            = static_cast<boost::uintmax_t>(vfs.f_bavail) * vfs.f_frsize;
+        }
+      return result;
       }
 
       BOOST_FILESYSTEM_DECL time_pair 
@@ -940,26 +1051,6 @@ namespace boost
         buf.actime = path_stat.st_atime; // utime() updates access time too:-(
         buf.modtime = new_value;
         return ::utime( ph.c_str(), &buf ) != 0 ? errno : 0;
-      }
-
-      BOOST_FILESYSTEM_DECL space_pair 
-      space_api( const std::string & ph )
-      {
-        struct statvfs vfs;
-        space_pair result;
-        if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
-        {
-          result.first = errno;
-          result.second.available = 0;
-          result.second.total = 0;
-        }
-        else
-        {
-          result.first = 0;
-          result.second.available = static_cast<boost::uintmax_t>(vfs.f_bfree) * vfs.f_frsize;
-          result.second.total = static_cast<boost::uintmax_t>(vfs.f_blocks) * vfs.f_frsize;
-        }
-      return result;
       }
 
       BOOST_FILESYSTEM_DECL fs::system_error_type 
