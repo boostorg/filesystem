@@ -408,7 +408,7 @@ namespace boost
       return S_ISDIR( path_stat.st_mode );
 #   else
       DWORD attributes = ::GetFileAttributesA( ph.native_directory_string().c_str() );
-      if ( attributes == INVALID_FILE_ATTRIBUTES )
+      if ( attributes == 0xFFFFFFFF )
         boost::throw_exception( filesystem_error(
           "boost::filesystem::is_directory", ph,
 //           fs::detail::system_error_code()
