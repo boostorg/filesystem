@@ -834,10 +834,14 @@ namespace boost
       operator const path_type &() const { return m_path; }
 
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-      // deprecated function preserves common use case in legacy code
+      // deprecated functions preserve common use cases in legacy code
       typename Path::string_type leaf() const
       {
         return path().leaf();
+      }
+      typename Path::string_type string() const
+      {
+        return path().string();
       }
 #   endif
 
