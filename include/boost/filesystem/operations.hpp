@@ -74,6 +74,14 @@ namespace boost
 
     template<class Path> class basic_directory_entry;
 
+    struct space_info
+    {
+      // all values are byte counts
+      boost::uintmax_t capacity;
+      boost::uintmax_t free;      // <= capacity
+      boost::uintmax_t available; // <= free
+    };
+
     namespace detail
     {
       typedef std::pair< boost::filesystem::system_error_type, bool >
@@ -84,6 +92,9 @@ namespace boost
 
       typedef std::pair< boost::filesystem::system_error_type, std::time_t >
         time_pair;
+
+      typedef std::pair< boost::filesystem::system_error_type, space_info >
+        space_pair;
 
       template< class Path >
       struct directory_pair
@@ -109,12 +120,8 @@ namespace boost
         equivalent_api( const std::string & ph1, const std::string & ph2 );
       BOOST_FILESYSTEM_DECL uintmax_pair
         file_size_api( const std::string & ph );
-      BOOST_FILESYSTEM_DECL uintmax_pair
-        capacity_api( const std::string & ph );
-      BOOST_FILESYSTEM_DECL uintmax_pair
-        total_free_space_api( const std::string & ph );
-      BOOST_FILESYSTEM_DECL uintmax_pair
-        available_free_space_api( const std::string & ph );
+      BOOST_FILESYSTEM_DECL space_pair
+        space_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL time_pair 
         last_write_time_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -149,12 +156,8 @@ namespace boost
         equivalent_api( const std::wstring & ph1, const std::wstring & ph2 );
       BOOST_FILESYSTEM_DECL uintmax_pair 
         file_size_api( const std::wstring & ph );
-      BOOST_FILESYSTEM_DECL uintmax_pair
-        capacity_api( const std::wstring & ph );
-      BOOST_FILESYSTEM_DECL uintmax_pair
-        total_free_space_api( const std::wstring & ph );
-      BOOST_FILESYSTEM_DECL uintmax_pair
-        available_free_space_api( const std::wstring & ph );
+      BOOST_FILESYSTEM_DECL space_pair 
+        space_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         get_full_path_name_api( const std::wstring & ph, std::wstring & target );
       BOOST_FILESYSTEM_DECL time_pair 
@@ -297,36 +300,13 @@ namespace boost
       return result.second;
     }
 
-    // interface suggested by Rob Stewart
-    BOOST_FS_FUNC(boost::uintmax_t) capacity( const Path & ph )
+    BOOST_FS_FUNC(space_info) space( const Path & ph )
     {
-      detail::uintmax_pair result
-        = detail::capacity_api( ph.external_file_string() );
+      detail::space_pair result
+        = detail::space_api( ph.external_file_string() );
       if ( result.first != 0 )
         boost::throw_exception( basic_filesystem_error<Path>(
-          "boost::filesystem::capacity", ph, result.first ) );
-      return result.second;
-    }
-
-    // interface suggested by Rob Stewart
-    BOOST_FS_FUNC(boost::uintmax_t) total_free_space( const Path & ph )
-    {
-      detail::uintmax_pair result
-        = detail::total_free_space_api( ph.external_file_string() );
-      if ( result.first != 0 )
-        boost::throw_exception( basic_filesystem_error<Path>(
-          "boost::filesystem::total_free_space", ph, result.first ) );
-      return result.second;
-    }
-
-    // interface suggested by Rob Stewart
-    BOOST_FS_FUNC(boost::uintmax_t) available_free_space( const Path & ph )
-    {
-      detail::uintmax_pair result
-        = detail::available_free_space_api( ph.external_file_string() );
-      if ( result.first != 0 )
-        boost::throw_exception( basic_filesystem_error<Path>(
-          "boost::filesystem::available_free_space", ph, result.first ) );
+          "boost::filesystem::space", ph, result.first ) );
       return result.second;
     }
 
@@ -545,20 +525,10 @@ namespace boost
     inline boost::uintmax_t file_size( const wpath & ph )
       { return file_size<wpath>( ph ); }
 
-    inline boost::uintmax_t capacity( const path & ph )
-      { return capacity<path>( ph ); }
-    inline boost::uintmax_t capacity( const wpath & ph )
-      { return capacity<wpath>( ph ); }
-
-    inline boost::uintmax_t total_free_space( const path & ph )
-      { return total_free_space<path>( ph ); }
-    inline boost::uintmax_t total_free_space( const wpath & ph )
-      { return total_free_space<wpath>( ph ); }
-
-    inline boost::uintmax_t available_free_space( const path & ph )
-      { return available_free_space<path>( ph ); }
-    inline boost::uintmax_t available_free_space( const wpath & ph )
-      { return available_free_space<wpath>( ph ); }
+    inline space_info space( const path & ph )
+      { return space<path>( ph ); }
+    inline space_info space( const wpath & ph )
+      { return space<wpath>( ph ); }
 
     inline std::time_t last_write_time( const path & ph )
       { return last_write_time<path>( ph ); }
