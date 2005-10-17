@@ -37,12 +37,8 @@ namespace boost
   {
     template<class String, class Traits> class basic_path;
 
-    struct path_format_t{};
-    BOOST_FILESYSTEM_DECL extern path_format_t portable;
-    BOOST_FILESYSTEM_DECL extern path_format_t native;
-
     struct path_traits;
-    typedef basic_path< std::string, path_traits >    path;
+    typedef basic_path< std::string, path_traits > path;
 
     struct path_traits
     {
@@ -58,7 +54,7 @@ namespace boost
 
     struct wpath_traits;
     
-    typedef basic_path< std::wstring, wpath_traits >  wpath;
+    typedef basic_path< std::wstring, wpath_traits > wpath;
 
     struct wpath_traits
     {
@@ -179,18 +175,18 @@ namespace boost
 
     // these only have to be specialized if Path::string_type::value_type
     // is not convertible from char
-    template<class Path> struct path_separator
+    template<class Path> struct slash
       { BOOST_STATIC_CONSTANT( char, value = '/' ); };
 
-    template<class Path> struct path_relative
+    template<class Path> struct dot
       { BOOST_STATIC_CONSTANT( char, value = '.' ); };
+
+    template<class Path> struct colon
+    { BOOST_STATIC_CONSTANT( char, value = ':' ); };
 
 # ifdef BOOST_WINDOWS_PATH
     template<class Path> struct path_alt_separator
       { BOOST_STATIC_CONSTANT( char, value = '\\' ); };
-
-    template<class Path> struct path_device_delim
-      { BOOST_STATIC_CONSTANT( char, value = ':' ); };
 # endif
 
     //  workaround for VC++ 7.0 and earlier issues with nested classes
@@ -229,12 +225,12 @@ namespace boost
 
       // constructors/destructor
       basic_path() {}
-      basic_path( const string_type & s, path_format_t = portable ) { operator/=( s ); }
-      basic_path( const value_type * s, path_format_t = portable )  { operator/=( s ); }
+      basic_path( const string_type & s ) { operator/=( s ); }
+      basic_path( const value_type * s )  { operator/=( s ); }
 #     ifndef BOOST_NO_MEMBER_TEMPLATES
         template <class InputIterator>
-          basic_path( InputIterator first, InputIterator last,
-            path_format_t fmt=portable ) { append( first, last, fmt ); }
+          basic_path( InputIterator first, InputIterator last )
+            { append( first, last ); }
 #     endif
      ~basic_path() {}
 
@@ -243,8 +239,8 @@ namespace boost
       basic_path & operator=( const value_type * s ) { m_path=""; operator/=( s ); return *this; }
 #     ifndef BOOST_NO_MEMBER_TEMPLATES
         template <class InputIterator>
-          basic_path & assign( InputIterator first, InputIterator last,
-            path_format_t fmt = portable ) { m_path.clear(); append( first, last, fmt ); return *this; }
+          basic_path & assign( InputIterator first, InputIterator last )
+            { m_path.clear(); append( first, last ); return *this; }
 #     endif
 
       // comparisons
@@ -252,10 +248,10 @@ namespace boost
       //   they are not needed to compile use cases (automatic conversions
       //   take care of that), and there is no efficiency gain (lexicographical
       //   comparison requires basic_paths).
-      bool operator<( const basic_path & that ) const  { return std::lexicographical_compare( begin(), end(), that.begin(), that.end() ); }
+      bool operator< ( const basic_path & that ) const { return std::lexicographical_compare( begin(), end(), that.begin(), that.end() ); }
       bool operator==( const basic_path & that ) const { return !(*this < that) && !(that < *this); }
       bool operator!=( const basic_path & that ) const { return !(*this == that); }
-      bool operator>( const basic_path & that ) const  { return that < *this; }
+      bool operator> ( const basic_path & that ) const { return that < *this; }
       bool operator<=( const basic_path & that ) const { return !(that < *this); }
       bool operator>=( const basic_path & that ) const { return !(*this < that); }
 
@@ -265,7 +261,7 @@ namespace boost
       basic_path & operator/=( const value_type * s );
 #     ifndef BOOST_NO_MEMBER_TEMPLATES
         template <class InputIterator>
-          basic_path & append( InputIterator first, InputIterator last, path_format_t fmt=portable );
+          basic_path & append( InputIterator first, InputIterator last );
 #     endif
 
       basic_path & remove_leaf();
@@ -300,8 +296,8 @@ namespace boost
       basic_path operator/( const value_type * rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
 #     ifndef BOOST_NO_MEMBER_TEMPLATES
         template <class InputIterator>
-          basic_path concat( InputIterator first, InputIterator last,
-          path_format_t fmt=portable) { return basic_path<String, Traits>( *this ).append( first, last, fmt ); }
+          basic_path concat( InputIterator first, InputIterator last )
+            { return basic_path<String, Traits>( *this ).append( first, last ); }
 #     endif
 
       // iterators
@@ -358,8 +354,8 @@ namespace boost
       string_type  m_path; // invariant: portable path grammar
                            // on Windows, backslashes converted to slashes
 
-      void m_append_separator(); // conditional
-      void m_append( value_type value );
+      void m_append_separator_if_needed();
+      void m_append( value_type value ); // converts Windows alt_separator
 
       // Was qualified; como433beta8 reports:
       //    warning #427-D: qualified name is not allowed in member declaration 
@@ -401,9 +397,7 @@ namespace boost
     BOOST_FILESYSTEM_DECL bool portable_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_directory_name( const std::string & name );
     BOOST_FILESYSTEM_DECL bool portable_file_name( const std::string & name );
-      //    BOOST_FILESYSTEM_DECL bool native( const std::string & name );
-      // native(name) must return true for any name which MIGHT be valid
-      // on the native platform.
+    BOOST_FILESYSTEM_DECL bool native( const std::string & name );
     inline bool no_check( const std::string & )
       { return true; }
 
@@ -417,7 +411,7 @@ namespace boost
       template<class Path>
       inline  bool is_separator( typename Path::string_type::value_type c )
       {
-        return c == path_separator<Path>::value
+        return c == slash<Path>::value
 #     ifdef BOOST_WINDOWS_PATH
           || c == path_alt_separator<Path>::value
 #     endif
@@ -437,25 +431,25 @@ namespace boost
 
         // case: "//"
         if ( end_pos == 2 
-          && str[0] == path_separator<path_type>::value
-          && str[1] == path_separator<path_type>::value ) return 0;
+          && str[0] == slash<path_type>::value
+          && str[1] == slash<path_type>::value ) return 0;
 
         // case: ends in "/"
-        if ( end_pos && str[end_pos-1] == path_separator<path_type>::value )
+        if ( end_pos && str[end_pos-1] == slash<path_type>::value )
           return end_pos-1;
         
         // set pos to start of last element
         typename String::size_type pos(
-          str.find_last_of( path_separator<path_type>::value, end_pos-1 ) );
+          str.find_last_of( slash<path_type>::value, end_pos-1 ) );
 #       ifdef BOOST_WINDOWS_PATH
         if ( pos == String::npos )
           pos = str.find_last_of( path_alt_separator<path_type>::value, end_pos-1 );
         if ( pos == String::npos )
-          pos = str.find_last_of( path_device_delim<path_type>::value, end_pos-2 );
+          pos = str.find_last_of( colon<path_type>::value, end_pos-2 );
 #       endif
 
         return ( pos == String::npos // path itself must be a leaf (or empty)
-          || (pos == 1 && str[0] == path_separator<path_type>::value) ) // or net
+          || (pos == 1 && str[0] == slash<path_type>::value) ) // or net
             ? 0 // so leaf is entire string
             : pos + 1; // or starts after delimiter
       }
@@ -482,22 +476,22 @@ namespace boost
         typename String::size_type cur(0);
         
         // deal with // [network]
-        if ( size >= 2 && src[0] == path_separator<path_type>::value
-          && src[1] == path_separator<path_type>::value
+        if ( size >= 2 && src[0] == slash<path_type>::value
+          && src[1] == slash<path_type>::value
           && (size == 2
-            || src[2] != path_separator<path_type>::value) )
+            || src[2] != slash<path_type>::value) )
         { 
           cur += 2;
           element_size += 2;
         }
 
         // leading (not non-network) separator
-        else if ( src[0] == path_separator<path_type>::value )
+        else if ( src[0] == slash<path_type>::value )
         {
           ++element_size;
           // bypass extra leading separators
           while ( cur+1 < size
-            && src[cur+1] == path_separator<path_type>::value )
+            && src[cur+1] == slash<path_type>::value )
           {
             ++cur;
             ++element_pos;
@@ -511,9 +505,9 @@ namespace boost
         // find the end
         while ( cur < size
 #         ifdef BOOST_WINDOWS_PATH
-          && src[cur] != path_device_delim<path_type>::value
+          && src[cur] != colon<path_type>::value
 #         endif
-          && src[cur] != path_separator<path_type>::value )
+          && src[cur] != slash<path_type>::value )
         {
           ++cur;
           ++element_size;
@@ -522,7 +516,7 @@ namespace boost
 #       ifdef BOOST_WINDOWS_PATH
         if ( cur == size ) return;
         // include device delimiter
-        if ( src[cur] == path_device_delim<path_type>::value )
+        if ( src[cur] == colon<path_type>::value )
           { ++element_size; }
 #       endif
 
@@ -542,28 +536,28 @@ namespace boost
 #     ifdef BOOST_WINDOWS_PATH
         // case "c:/"
         if ( size > 2
-          && s[1] == path_device_delim<path_type>::value
-          && s[2] == path_separator<path_type>::value ) return 2;
+          && s[1] == colon<path_type>::value
+          && s[2] == slash<path_type>::value ) return 2;
 #     endif
 
         // case "//"
         if ( size == 2
-          && s[0] == path_separator<path_type>::value
-          && s[1] == path_separator<path_type>::value ) return String::npos;
+          && s[0] == slash<path_type>::value
+          && s[1] == slash<path_type>::value ) return String::npos;
 
         // case "//net {/}"
         if ( size > 3
-          && s[0] == path_separator<path_type>::value
-          && s[1] == path_separator<path_type>::value
-          && s[2] != path_separator<path_type>::value )
+          && s[0] == slash<path_type>::value
+          && s[1] == slash<path_type>::value
+          && s[2] != slash<path_type>::value )
         {
           typename String::size_type pos(
-            s.find( path_separator<path_type>::value, 2 ) );
+            s.find( slash<path_type>::value, 2 ) );
           return pos < size ? pos : String::npos;
         }
         
         // case "/"
-        if ( size > 0 && s[0] == path_separator<path_type>::value ) return 0;
+        if ( size > 0 && s[0] == slash<path_type>::value ) return 0;
 
         return String::npos;
       }
@@ -578,18 +572,18 @@ namespace boost
           boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits>
             path_type;
 
-        assert( !str.empty() && str[pos] == path_separator<path_type>::value
+        assert( !str.empty() && str[pos] == slash<path_type>::value
           && "precondition violation" );
 
         // subsequent logic expects pos to be for leftmost slash of a set
-        while ( pos > 0 && str[pos-1] == path_separator<path_type>::value )
+        while ( pos > 0 && str[pos-1] == slash<path_type>::value )
           --pos;
 
         return  pos != 0
-          && (pos <= 2 || str[1] != path_separator<path_type>::value
-            || str.find( path_separator<path_type>::value, 2 ) != pos)
+          && (pos <= 2 || str[1] != slash<path_type>::value
+            || str.find( slash<path_type>::value, 2 ) != pos)
 #       ifdef BOOST_WINDOWS_PATH
-          && (pos !=2 || str[1] != path_device_delim<path_type>::value)
+          && (pos !=2 || str[1] != colon<path_type>::value)
 #       endif
             ;
       }
@@ -604,9 +598,9 @@ namespace boost
         detail::leaf_pos<String, Traits>( m_path, m_path.size() ) );
       return (m_path.size()
                 && end_pos
-                && m_path[end_pos] == path_separator<path_type>::value
+                && m_path[end_pos] == slash<path_type>::value
                 && detail::is_non_root_slash< String, Traits >(m_path, end_pos))
-        ? String( 1, path_relative<path_type>::value )
+        ? String( 1, dot<path_type>::value )
         : m_path.substr( end_pos );
     }
 
@@ -617,7 +611,7 @@ namespace boost
         detail::leaf_pos<String, Traits>( m_path, m_path.size() ) );
 
       bool leaf_was_separator( m_path.size()
-        && m_path[end_pos] == path_separator<path_type>::value );
+        && m_path[end_pos] == slash<path_type>::value );
 
       // skip separators unless root directory
       typename string_type::size_type root_dir_pos( detail::root_directory_start
@@ -625,7 +619,7 @@ namespace boost
       for ( ; 
         end_pos > 0
         && (end_pos-1) != root_dir_pos
-        && m_path[end_pos-1] == path_separator<path_type>::value
+        && m_path[end_pos-1] == slash<path_type>::value
         ;
         --end_pos ) {}
 
@@ -639,10 +633,10 @@ namespace boost
     {
       iterator itr( begin() );
       for ( ; itr.m_pos != m_path.size()
-          && (itr.m_name[0] == path_separator<path_type>::value
+          && (itr.m_name[0] == slash<path_type>::value
 #     ifdef BOOST_WINDOWS_PATH
           || itr.m_name[itr.m_name.size()-1]
-            == path_device_delim<path_type>::value
+            == colon<path_type>::value
 #     endif
              ); ++itr ) {}
 
@@ -657,12 +651,12 @@ namespace boost
       return ( itr.m_pos != m_path.size()
         && (
             ( itr.m_name.size() > 1
-              && itr.m_name[0] == path_separator<path_type>::value
-              && itr.m_name[1] == path_separator<path_type>::value
+              && itr.m_name[0] == slash<path_type>::value
+              && itr.m_name[1] == slash<path_type>::value
             )
 #     ifdef BOOST_WINDOWS_PATH
           || itr.m_name[itr.m_name.size()-1]
-            == path_device_delim<path_type>::value
+            == colon<path_type>::value
 #     endif
            ) )
         ? *itr
@@ -720,15 +714,16 @@ namespace boost
     // append  ---------------------------------------------------------------//
 
     template<class String, class Traits>
-    void basic_path<String, Traits>::m_append_separator() // requires: !empty()
+    void basic_path<String, Traits>::m_append_separator_if_needed()
+    // requires: !empty()
     {
       if (
 #       ifdef BOOST_WINDOWS_PATH
-        *(m_path.end()-1) != path_device_delim<path_type>::value && 
+        *(m_path.end()-1) != colon<path_type>::value && 
 #       endif
-        *(m_path.end()-1) != path_separator<path_type>::value )
+        *(m_path.end()-1) != slash<path_type>::value )
       {
-        m_path += path_separator<path_type>::value;
+        m_path += slash<path_type>::value;
       }
     }
       
@@ -738,20 +733,30 @@ namespace boost
 #   ifdef BOOST_WINDOWS_PATH
       // for BOOST_WINDOWS_PATH, convert alt_separator ('\') to separator ('/')
       m_path += ( value == path_alt_separator<path_type>::value
-        ? path_separator<path_type>::value
+        ? slash<path_type>::value
         : value );
 #   else
       m_path += value;
 #   endif
     }
-      
+    
+    // except that it wouldn't work for BOOST_NO_MEMBER_TEMPLATES compilers,
+    // the append() member template called with a second argument of 0 could
+    // replace this code.
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::operator /=
       ( const value_type * next_p )
     {
-      // append path_separator<path_type>::value if needed
+      // bypass native path escape sequence as meaningless for POSIX or Windows
+      if ( detail::is_separator<path_type>( *next_p )
+        && detail::is_separator<path_type>( *(next_p+1) )
+        && *(next_p+2) == colon<path_type>::value ) next_p += 3;
+      
+      // append slash<path_type>::value if needed
       if ( !empty() && *next_p != 0
-        && !detail::is_separator<path_type>( *next_p ) ) m_append_separator();
+        && !detail::is_separator<path_type>( *next_p ) )
+      { m_append_separator_if_needed(); }
+
       for ( ; *next_p != 0; ++next_p ) m_append( *next_p );
       return *this;
     }
@@ -759,12 +764,19 @@ namespace boost
 # ifndef BOOST_NO_MEMBER_TEMPLATES
     template<class String, class Traits> template <class InputIterator>
       basic_path<String, Traits> & basic_path<String, Traits>::append(
-        InputIterator first, InputIterator last, path_format_t )
+        InputIterator first, InputIterator last )
     {
-      // append path_separator<path_type>::value if needed
+      // bypass native path escape sequence as meaningless for POSIX or Windows
+      if ( detail::is_separator<path_type>( *first )
+        && detail::is_separator<path_type>( *(first+1) )
+        && *(first+2) == colon<path_type>::value ) first += 3;
+      
+      // append slash<path_type>::value if needed
       if ( !empty() && first != last
-        && !detail::is_separator<path_type>( *first ) ) m_append_separator();
-      for ( ; first != last; ++first ) m_append( *first );
+        && !detail::is_separator<path_type>( *first ) )
+      { m_append_separator_if_needed(); }
+
+      for ( ; first != last && *first; ++first ) m_append( *first );
       return *this;
     }
 # endif
@@ -775,7 +787,7 @@ namespace boost
     basic_path<String, Traits> & basic_path<String, Traits>::canonize()
     {
       static const typename string_type::value_type dot[]
-        = { path_relative<path_type>::value, 0 };
+        = { dot<path_type>::value, 0 };
 
       if ( m_path.empty() ) return *this;
         
@@ -797,7 +809,7 @@ namespace boost
     basic_path<String, Traits> & basic_path<String, Traits>::normalize()
     {
       static const typename string_type::value_type dot[]
-        = { path_relative<path_type>::value, 0 };
+        = { dot<path_type>::value, 0 };
 
       if ( m_path.empty() ) return *this;
         
@@ -809,26 +821,26 @@ namespace boost
       {
         // ignore "." except at start and last
         if ( itr->size() == 1
-          && (*itr)[0] == path_relative<path_type>::value
+          && (*itr)[0] == dot<path_type>::value
           && itr != start
           && itr != last ) continue;
 
         // ignore a name and following ".."
         if ( !temp.empty()
           && itr->size() == 2
-          && (*itr)[0] == path_relative<path_type>::value
-          && (*itr)[1] == path_relative<path_type>::value ) // dot dot
+          && (*itr)[0] == dot<path_type>::value
+          && (*itr)[1] == dot<path_type>::value ) // dot dot
         {
           string_type lf( temp.leaf() );  
           if ( lf.size() > 0  
             && (lf.size() != 1
-              || (lf[0] != path_relative<path_type>::value
-                && lf[0] != path_separator<path_type>::value))
+              || (lf[0] != dot<path_type>::value
+                && lf[0] != slash<path_type>::value))
             && (lf.size() != 2 
-              || (lf[0] != path_relative<path_type>::value
-                && lf[1] != path_relative<path_type>::value
+              || (lf[0] != dot<path_type>::value
+                && lf[1] != dot<path_type>::value
 #             ifdef BOOST_WINDOWS_PATH
-                && lf[1] != path_device_delim<path_type>::value
+                && lf[1] != colon<path_type>::value
 #             endif
                  )
                )
@@ -838,7 +850,7 @@ namespace boost
             // if not root directory, must also remove "/" if any
             if ( temp.m_path.size() > 0
               && temp.m_path[temp.m_path.size()-1]
-                == path_separator<path_type>::value )
+                == slash<path_type>::value )
             {
               typename string_type::size_type rds(
                 detail::root_directory_start<String,Traits>( temp.m_path,
@@ -892,8 +904,8 @@ namespace boost
       {
         // special case // [net]
         if ( pos == 0 && m_path.size() > 1
-          && m_path[0] == path_separator<path_type>::value
-          && m_path[1] == path_separator<path_type>::value
+          && m_path[0] == slash<path_type>::value
+          && m_path[1] == slash<path_type>::value
           && ( m_path.size() == 2 
             || !detail::is_separator<path_type>( m_path[2] )
              ) )
@@ -909,17 +921,17 @@ namespace boost
         { 
           if ( s.size() > 0
             && s[s.size()-1] == path_alt_separator<path_type>::value
-            && m_path[pos] == path_separator<path_type>::value
+            && m_path[pos] == slash<path_type>::value
             ) continue;
         }
 
-        if ( m_path[pos] == path_separator<path_type>::value )
+        if ( m_path[pos] == slash<path_type>::value )
           s += path_alt_separator<path_type>::value;
         else
           s += m_path[pos];
 
         if ( pos > root_dir_start
-          && m_path[pos] == path_separator<path_type>::value )
+          && m_path[pos] == slash<path_type>::value )
           { in_root = false; }
       }
       return s;
@@ -963,9 +975,9 @@ namespace boost
         assert( itr.m_pos < itr.m_path_ptr->m_path.size() && "basic_path::iterator increment past end()" );
 
         bool was_net( itr.m_name.size() > 2
-          && itr.m_name[0] == path_separator<Path>::value
-          && itr.m_name[1] == path_separator<Path>::value
-          && itr.m_name[2] != path_separator<Path>::value );
+          && itr.m_name[0] == slash<Path>::value
+          && itr.m_name[1] == slash<Path>::value
+          && itr.m_name[2] != slash<Path>::value );
 
         // increment to position past current element
         itr.m_pos += itr.m_name.size();
@@ -978,23 +990,23 @@ namespace boost
         }
 
         // process separator (Windows drive spec is only case not a separator)
-        if ( itr.m_path_ptr->m_path[itr.m_pos] == path_separator<Path>::value )
+        if ( itr.m_path_ptr->m_path[itr.m_pos] == slash<Path>::value )
         {
           // detect root directory
           if ( was_net
   #       ifdef BOOST_WINDOWS_PATH
             // case "c:/"
-            || itr.m_name[itr.m_name.size()-1] == path_device_delim<Path>::value
+            || itr.m_name[itr.m_name.size()-1] == colon<Path>::value
   #       endif
              )
           {
-            itr.m_name = path_separator<Path>::value;
+            itr.m_name = slash<Path>::value;
             return;
           }
 
           // bypass separators
           while ( itr.m_pos != itr.m_path_ptr->m_path.size()
-            && itr.m_path_ptr->m_path[itr.m_pos] == path_separator<Path>::value )
+            && itr.m_path_ptr->m_path[itr.m_pos] == slash<Path>::value )
             { ++itr.m_pos; }
 
           // detect trailing separator, and treat it as ".", per POSIX spec
@@ -1003,14 +1015,14 @@ namespace boost
                 itr.m_path_ptr->m_path, itr.m_pos-1 ) ) 
           {
             --itr.m_pos;
-            itr.m_name = path_relative<Path>::value;
+            itr.m_name = dot<Path>::value;
             return;
           }
         }
 
         // get next element
         typename string_type::size_type end_pos(
-          itr.m_path_ptr->m_path.find( path_separator<Path>::value, itr.m_pos ) );
+          itr.m_path_ptr->m_path.find( slash<Path>::value, itr.m_pos ) );
         itr.m_name = itr.m_path_ptr->m_path.substr( itr.m_pos, end_pos - itr.m_pos );
       } 
 
@@ -1033,13 +1045,13 @@ namespace boost
         // if at end and there was a trailing non-root '/', return "."
         if ( itr.m_pos == itr.m_path_ptr->m_path.size()
           && itr.m_path_ptr->m_path.size() > 1
-          && itr.m_path_ptr->m_path[itr.m_pos-1] == path_separator<Path>::value
+          && itr.m_path_ptr->m_path[itr.m_pos-1] == slash<Path>::value
           && detail::is_non_root_slash< string_type, traits_type >(
                itr.m_path_ptr->m_path, itr.m_pos-1 ) 
            )
         {
           --itr.m_pos;
-            itr.m_name = path_relative<Path>::value;
+            itr.m_name = dot<Path>::value;
             return;
         }
 
@@ -1048,7 +1060,7 @@ namespace boost
           ; 
           end_pos > 0
           && (end_pos-1) != root_dir_pos
-          && itr.m_path_ptr->m_path[end_pos-1] == path_separator<Path>::value
+          && itr.m_path_ptr->m_path[end_pos-1] == slash<Path>::value
           ;
           --end_pos ) {}
 
