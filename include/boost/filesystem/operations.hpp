@@ -730,9 +730,9 @@ namespace boost
       {
         m_imp->m_directory_entry.assign( dir_path
           / Path::traits_type::to_internal( name ), sf, symlink_sf );
-        if ( name[0] == path_relative<Path>::value // dot or dot-dot
+        if ( name[0] == dot<Path>::value // dot or dot-dot
           && (name.size() == 1
-            || (name[1] == path_relative<Path>::value
+            || (name[1] == dot<Path>::value
               && name.size() == 2)) )
           {  increment(); }
       }
@@ -758,9 +758,9 @@ namespace boost
             m_imp->m_directory_entry.path().branch_path(), sys_err ) );
         }
         if ( m_imp->m_handle == 0 ) { m_imp.reset(); return; } // eof, make end
-        if ( !(name[0] == path_relative<Path>::value // !(dot or dot-dot)
+        if ( !(name[0] == dot<Path>::value // !(dot or dot-dot)
           && (name.size() == 1
-            || (name[1] == path_relative<Path>::value
+            || (name[1] == dot<Path>::value
               && name.size() == 2))) )
         {
           m_imp->m_directory_entry.replace_leaf(
