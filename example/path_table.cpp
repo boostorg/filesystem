@@ -17,9 +17,6 @@
 #define BOOST_WINDOWS_PATH
 #include "boost/filesystem/path.hpp"
 
-namespace boost { namespace windows { path_format_t portable; } }
-namespace boost { namespace posix { path_format_t portable; } }
-
 namespace pos = boost::posix;
 namespace win = boost::windows;
 

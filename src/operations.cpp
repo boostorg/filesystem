@@ -509,8 +509,6 @@ namespace boost
   namespace filesystem
   {
     BOOST_FILESYSTEM_DECL symlink_t symlink; 
-    BOOST_FILESYSTEM_DECL path_format_t portable; 
-    BOOST_FILESYSTEM_DECL path_format_t native; 
 
     namespace detail
     {

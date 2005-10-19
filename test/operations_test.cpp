@@ -61,7 +61,7 @@ namespace
   {
     std::ofstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test create_file",
+      throw fs::filesystem_path_error( "operations_test create_file",
         ph, errno );
     if ( !contents.empty() ) f << contents;
   }
@@ -70,12 +70,12 @@ namespace
   {
     std::ifstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test verify_file",
+      throw fs::filesystem_path_error( "operations_test verify_file",
         ph, errno );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_error( "operations_test verify_file contents \""
+      throw fs::filesystem_path_error( "operations_test verify_file contents \""
         + contents  + "\" != \"" + expected + "\"", ph, 0 );
   }
 
@@ -220,7 +220,7 @@ int test_main( int argc, char * argv[] )
   // test path::exception members
   try { fs::file_size( ng ); } // will throw
 
-  catch ( const fs::filesystem_error & ex )
+  catch ( const fs::filesystem_path_error & ex )
   {
     BOOST_CHECK( ex.path1().string() == " no-way, Jose" );
   }

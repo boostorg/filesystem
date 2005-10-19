@@ -51,8 +51,8 @@ namespace boost
 
     void wpath_traits::imbue( const std::locale & new_loc )
     {
-      if ( locked ) boost::throw_exception( wfilesystem_error(
-        "boost::filesystem::wpath_traits::imbue() after lockdown" ) );
+      if ( locked ) boost::throw_exception( filesystem_wpath_error(
+        "boost::filesystem::wpath_traits::imbue() after lockdown", 0 ) );
       imbue( new_loc, std::nothrow );
     }
     

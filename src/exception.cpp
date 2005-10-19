@@ -130,6 +130,30 @@ namespace boost
         && (target[target.size()-1] == '\n' || target[target.size()-1] == '\r') )
           target.erase( target.size()-1 );
     }
+
+#  ifndef BOOST_FILESYSTEM_NARROW_ONLY
+    BOOST_FILESYSTEM_DECL void
+    system_message( system_error_type sys_err_code, std::wstring & target )
+    {
+      LPVOID lpMsgBuf;
+      ::FormatMessageW( 
+          FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+          FORMAT_MESSAGE_FROM_SYSTEM | 
+          FORMAT_MESSAGE_IGNORE_INSERTS,
+          NULL,
+          sys_err_code,
+          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+          (LPWSTR) &lpMsgBuf,
+          0,
+          NULL 
+      );
+      target += static_cast<LPCWSTR>(lpMsgBuf);
+      ::LocalFree( lpMsgBuf ); // free the buffer
+      while ( target.size()
+        && (target[target.size()-1] == L'\n' || target[target.size()-1] == L'\r') )
+          target.erase( target.size()-1 );
+    }
+#  endif
 # else
     void
     system_message( system_error_type sys_err_code, std::string & target )
@@ -137,46 +161,6 @@ namespace boost
       target += std::strerror( sys_err_code );
     }
 # endif
-
-    namespace detail
-    {
-      BOOST_FILESYSTEM_DECL void
-      what_formatter( system_error_type sys_err_code,
-        const std::string & p1, const std::string & p2, std::string & target )
-      {
-        if ( !p1.empty() )
-        {
-          target += ": \"";
-          target += p1;
-          target += "\"";
-        }
-        if ( !p2.empty() )
-        {
-          target += ", \"";
-          target += p2;
-          target += "\"";
-        }
-        if ( sys_err_code )
-        {
-          target += " ";
-          fs::system_message( sys_err_code, target );
-        }
-      }
-
-#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-      BOOST_FILESYSTEM_DECL void
-      what_formatter( system_error_type sys_err_code,
-        const std::wstring &, const std::wstring &, std::string & target )
-      {
-        if ( sys_err_code )
-        {
-          target += ": ";
-          fs::system_message( sys_err_code, target );
-        }
-      }
-
-#   endif
-    } // namespace detail
 
   } // namespace filesystem
 } // namespace boost

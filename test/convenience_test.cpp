@@ -116,5 +116,16 @@ int test_main( int, char*[] )
   // see the rationale in html docs for explanation why this works
   BOOST_CHECK( fs::change_extension("", ".png").string() == ".png" );
 
+// what() tests --------------------------------------------------------------//
+
+    try { throw fs::filesystem_path_error( "abc", "p1", "p2", 0 ); }
+    catch ( const fs::filesystem_path_error & ex )
+    {
+#   if !defined( BOOST_MSVC ) || BOOST_MSVC >= 1300 // > VC++ 7.0
+      BOOST_CHECK( fs::what(ex) == std::string( "abc: \"p1\", \"p2\"" ) );
+#   endif
+    }
+
+
   return 0;
 }

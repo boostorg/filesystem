@@ -69,21 +69,6 @@ namespace
               << "\"" << std::endl;
   }
 
-  void check_throw( const std::string & arg )
-  {
-    try
-    {
-      fs::path arg_path( arg );
-      ++errors;
-      std::cout << "failed to throw with argument \"" << arg
-                << "\"" << std::endl;
-    }
-    catch ( const fs::filesystem_error & /*ex*/ )
-    {
-//      std::cout << ex.what() << "\n";
-    }
-  }
-
   /*
   void check_normalize()
   {
@@ -192,6 +177,26 @@ namespace
   }
   */
 
+  void exception_tests()
+  {
+    const std::string str_1("string-1");
+    try { throw fs::filesystem_error( str_1, 12345 ); }
+    catch ( const fs::filesystem_error & ex )
+    {
+      BOOST_CHECK( ex.what() == str_1 );
+      BOOST_CHECK( ex.system_error() == 12345 );
+    }
+
+    try { throw fs::filesystem_path_error( str_1, "p1", "p2", 12345 ); }
+    catch ( const fs::filesystem_path_error & ex )
+    {
+      BOOST_CHECK( ex.what() == str_1 );
+      BOOST_CHECK( ex.system_error() == 12345 );
+      BOOST_CHECK( ex.path1().string() == "p1" );
+      BOOST_CHECK( ex.path2().string() == "p2" );
+    }
+  }
+
 } // unnamed namespace
 
 int test_main( int, char*[] )
@@ -215,6 +220,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( p4.string() == "foobar" );
   p4 = p4; // self-assignment
   BOOST_CHECK( p4.string() == "foobar" );
+
+  exception_tests();
 
   // These verify various overloads don't cause compiler errors
 
