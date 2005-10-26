@@ -637,10 +637,11 @@ namespace boost
 #   ifdef BOOST_POSIX
         || symbolic_link_exists( ph ) ) // handle dangling symbolic links
       {
-#     if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+#     if defined(__QNXNTO__) || (defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)))
         // Some Metrowerks C library versions fail on directories because of a
         // known Metrowerks coding error in ::remove. Workaround is to call
         // rmdir() or unlink() as indicated.
+        // Same bug reported for QNX; same fix.
         if ( (is_directory( ph )
           ? ::rmdir( ph.string().c_str() )
           : ::unlink( ph.string().c_str() )) != 0 )
