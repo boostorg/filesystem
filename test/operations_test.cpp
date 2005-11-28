@@ -261,6 +261,14 @@ int test_main( int argc, char * argv[] )
 
       BOOST_CHECK( dir_itr->leaf() == "d1" );
     }
+
+    // test case reported in comment to SourceForge bug tracker [937606]
+    fs::directory_iterator it( dir );
+    const fs::path p1 = *it++;
+    BOOST_CHECK( it != fs::directory_iterator() );
+    const fs::path p2 = *it++;
+    BOOST_CHECK( p1 != p2 );
+    BOOST_CHECK( it == fs::directory_iterator() );
   }
 
   // create an empty file named "f0"
