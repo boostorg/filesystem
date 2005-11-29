@@ -783,7 +783,8 @@ namespace boost
         // use a form of search Sebastian Martel reports will work with Win98
         std::string dirpath( dir );
         dirpath += (dirpath.empty()
-          || dirpath[dirpath.size()-1] != '\\') ? "\\*" : "*";
+          || (dirpath[dirpath.size()-1] != '\\'
+            && dirpath[dirpath.size()-1] != ':')) ? "\\*" : "*";
 
         WIN32_FIND_DATAA data;
         if ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
@@ -943,6 +944,7 @@ namespace boost
             = static_cast<boost::uintmax_t>(vfs.f_bfree) * vfs.f_frsize;
           result.second.available
             = static_cast<boost::uintmax_t>(vfs.f_bavail) * vfs.f_frsize;
+        }
       }
 
       BOOST_FILESYSTEM_DECL time_pair 
@@ -1116,7 +1118,8 @@ namespace boost
       inline int readdir_r_simulator( DIR * dirp, struct dirent * entry,
         struct dirent ** result ) // *result set to 0 on end of directory
         {
-    #     if defined(_POSIX_THREAD_SAFE_FUNCTIONS) \
+    #     if !defined(__CYGWIN__)
+          && defined(_POSIX_THREAD_SAFE_FUNCTIONS) \
           && defined(_SC_THREAD_SAFE_FUNCTIONS) \
           && (_POSIX_THREAD_SAFE_FUNCTIONS+0 >= 0) \
           && (!defined(__HP_aCC) || (defined(__HP_aCC) && defined(_REENTRANT)))
