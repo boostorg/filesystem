@@ -113,8 +113,8 @@ namespace boost
       filesystem_error()
         : std::runtime_error("filesystem error"), m_sys_err(0) {}
       explicit filesystem_error(
-        const std::string & what, system_error_type sys_ec = 0 )
-        : std::runtime_error(what), m_sys_err(sys_ec) {}
+        const std::string & what_arg, system_error_type sys_ec = 0 )
+        : std::runtime_error(what_arg), m_sys_err(sys_ec) {}
 
       system_error_type  system_error() const { return m_sys_err; }
       // Note: system_error() == 0 implies a library (rather than system) error
