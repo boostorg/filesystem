@@ -49,7 +49,7 @@
 
 // TODO: "|| defined(__APPLE__)" compiles, but at runtime d_type is alwasy 0. Why?
 // TODO: find out what macros enable dirent::d_type on various operating systems.
-# if defined(BOOST_WINDOWS_API) || defined(__USE_BSD)
+# if !defined(__CYGWIN__) && (defined(BOOST_WINDOWS_API) || defined(__USE_BSD))
 #   define BOOST_FILESYSTEM_STATUS_CACHE
 # endif
 
