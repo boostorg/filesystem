@@ -170,7 +170,8 @@ namespace
     std::string dirpath( dir );
     dirpath += (dirpath.empty()
       || (dirpath[dirpath.size()-1] != '\\'
-      && dirpath[dirpath.size()-1] != '/')) ? "\\*" : "*";
+      && dirpath[dirpath.size()-1] != '/'
+      && dirpath[dirpath.size()-1] != ':')) ? "\\*" : "*";
 
     return ( (handle = ::FindFirstFileA( dirpath.c_str(), &data ))
       == BOOST_INVALID_HANDLE_VALUE

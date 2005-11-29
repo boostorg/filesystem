@@ -33,6 +33,8 @@ namespace
   bool report_throws;
   fs::directory_iterator end_itr;
 
+  const char * temp_dir_name = "temp_fs_test_dir";
+
   void create_file( const fs::path & ph, const std::string & contents )
   {
     std::ofstream f( ph.native_file_string().c_str() );
@@ -117,7 +119,7 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::complete( "/foo" ).string()
     == fs::initial_path().root_path().string()+"foo" );
 
-  fs::path dir(  fs::initial_path() / "temp_fs_test_directory" );
+  fs::path dir(  fs::initial_path() / temp_dir_name );
   
   // Windows only tests
   if ( platform == "Windows" )
@@ -269,6 +271,24 @@ int test_main( int argc, char * argv[] )
     const fs::path p2 = *it++;
     BOOST_CHECK( p1 != p2 );
     BOOST_CHECK( it == fs::directory_iterator() );
+  }
+
+  //  Windows has a tricky special case when just the root-name is given,
+  //  causing the rest of the path to default to the current directory.
+  //  Reported as S/F bug [ 1259176 ]
+  if ( platform == "Windows" )
+  {
+    fs::path root_name_path( fs::current_path().root_name(), fs::native );
+    fs::directory_iterator it( root_name_path );
+    BOOST_CHECK( it != fs::directory_iterator() );
+    BOOST_CHECK( fs::exists( *it ) );
+    BOOST_CHECK( it->branch_path() == root_name_path );
+    bool found(false);
+    do
+    {
+      if ( it->leaf() == temp_dir_name ) found = true;
+    } while ( ++it != fs::directory_iterator() );
+    BOOST_CHECK( found );
   }
 
   // create an empty file named "f0"
