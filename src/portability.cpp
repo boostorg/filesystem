@@ -54,9 +54,9 @@ namespace boost
       return windows_name( name );
     }
 #   else
-    BOOST_FILESYSTEM_DECL bool native( const std::string & )
+    BOOST_FILESYSTEM_DECL bool native( const std::string & name )
     {
-      return true;
+      return name.find('/') == std::string::npos;
     }
 #   endif
 
