@@ -275,6 +275,12 @@ int test_main( int, char*[] )
   PATH_CHECK( path("") / "/foo", "/foo" );
   PATH_CHECK( path("/foo") / "", "/foo" );
 
+  if ( platform == "Windows" )
+  {
+    PATH_CHECK( path("c:") / "foo", "c:foo" );
+    PATH_CHECK( path("c:") / "/foo", "c:/foo" );
+  }
+
   //check_normalize();
 
   PATH_CHECK( "foo/bar", "foo/bar" );
