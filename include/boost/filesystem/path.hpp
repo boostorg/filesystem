@@ -363,6 +363,11 @@ namespace boost
       string_type  m_path; // invariant: portable path grammar
                            // on Windows, backslashes converted to slashes
 
+#   ifdef BOOST_CYGWIN_PATH
+      bool m_cygwin_root; // if present, m_path[0] was slash. note: initialization
+                          // done by append
+#   endif  
+
       void m_append_separator_if_needed();
       void m_append( value_type value ); // converts Windows alt_separator
 
@@ -739,6 +744,10 @@ namespace boost
     template<class String, class Traits>
     void basic_path<String, Traits>::m_append( value_type value )
     {
+#   ifdef BOOST_CYGWIN_PATH
+      if ( m_path.empty() ) m_cygwin_root = (value == slash<path_type>::value);
+#   endif
+
 #   ifdef BOOST_WINDOWS_PATH
       // for BOOST_WINDOWS_PATH, convert alt_separator ('\') to separator ('/')
       m_path += ( value == path_alt_separator<path_type>::value
@@ -943,6 +952,9 @@ namespace boost
           && m_path[pos] == slash<path_type>::value )
           { in_root = false; }
       }
+#   ifdef BOOST_CYGWIN_PATH
+      if ( m_cygwin_root ) s[0] = slash<path_type>::value;
+#   endif
       return s;
 #   else
       return m_path;

@@ -26,6 +26,19 @@
 
 //  determine platform  ------------------------------------------------------//
 
+//  BOOST_CYGWIN_PATH implies BOOST_WINDOWS_PATH and BOOST_POSIX_API
+
+# if defined(BOOST_CYGWIN_PATH)
+#   if defined(BOOST_POSIX_PATH)
+#     error BOOST_POSIX_PATH is invalid when BOOST_CYGWIN_PATH is defined
+#   endif
+#   if defined(BOOST_WINDOWS_API)
+#     error BOOST_WINDOWS_API is invalid when BOOST_CYGWIN_PATH is defined
+#   endif
+#   define BOOST_WINDOWS_PATH
+#   define BOOST_POSIX_API
+# endif
+
 //  BOOST_POSIX_API or BOOST_WINDOWS_API specify which API to use
 
 # if defined( BOOST_WINDOWS_API ) && defined( BOOST_POSIX_API )
