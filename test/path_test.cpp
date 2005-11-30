@@ -134,8 +134,8 @@ int test_main( int, char*[] )
 
   if ( platform == "Windows" )
   {
-    PATH_CHECK( path("c:") / "foo", "c:foo" );
-    PATH_CHECK( path("c:") / "/foo", "c:/foo" );
+    PATH_CHECK( path("c:", fs::native ) / "foo", "c:foo" );
+    PATH_CHECK( path("c:", fs::native) / "/foo", "c:/foo" );
   }
 
   PATH_CHECK( "foo/bar", "foo/bar" );
