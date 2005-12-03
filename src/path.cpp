@@ -74,7 +74,7 @@ namespace boost
       if ( converter->out( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
-        boost::throw_exception( boost::filesystem::wfilesystem_error(
+        boost::throw_exception( boost::filesystem::filesystem_wpath_error(
           "boost::filesystem::wpath::to_external conversion error",
           ph, EINVAL ) );
       *to_next = '\0';
@@ -93,7 +93,7 @@ namespace boost
       if ( converter->in( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
-        boost::throw_exception( boost::filesystem::wfilesystem_error(
+        boost::throw_exception( boost::filesystem::filesystem_wpath_error(
           "boost::filesystem::wpath::to_internal conversion error", EINVAL ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );

@@ -140,9 +140,9 @@ namespace
   inline bool create_directory( const std::wstring & dir )
     {  return ::CreateDirectoryW( dir.c_str(), 0 ) != 0; }
 
-  inline bool create_hard_link( const std::wstring & existing_ph,
-    const std::wstring & new_ph )
-    {  return ::CreateHardLinkW( new_ph.c_str(), existing_ph.c_str(), 0 ) != 0; }
+  inline bool create_hard_link( const std::wstring & to_ph,
+    const std::wstring & from_ph )
+    {  return ::CreateHardLinkW( from_ph.c_str(), to_ph.c_str(), 0 ) != 0; }
 
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
@@ -484,20 +484,16 @@ namespace
     return std::make_pair( error, false );
   }
 
-  inline bool create_hard_link( const std::string & existing_ph,
-    const std::string & new_ph )
-    {  return ::CreateHardLinkA( new_ph.c_str(), existing_ph.c_str(), 0 ) != 0; }
+  inline bool create_hard_link( const std::string & to_ph,
+    const std::string & from_ph )
+    {  return ::CreateHardLinkA( from_ph.c_str(), to_ph.c_str(), 0 ) != 0; }
          
   template<class String>
   boost::filesystem::system_error_type
-  create_hard_link_template( const String & existing_ph,
-    const String & new_ph )
+  create_hard_link_template( const String & to_ph,
+    const String & from_ph )
   {
-    // we don't allow hard links to directories; too non-portable.
-    // check in case future Windows allows hard links to directories
-    if ( (fs::detail::status_api( existing_ph ) & fs::directory_flag) != 0 )
-      return ERROR_ACCESS_DENIED;
-    return create_hard_link( existing_ph.c_str(), new_ph.c_str() )
+    return create_hard_link( to_ph.c_str(), from_ph.c_str() )
       ? 0 : ::GetLastError();
   }
 
@@ -581,9 +577,14 @@ namespace boost
         { return create_directory_template( ph ); }
 
       BOOST_FILESYSTEM_DECL fs::system_error_type
-      create_hard_link_api( const std::wstring & existing_ph,
-        const std::wstring & new_ph )
-        { return create_hard_link_template( existing_ph, new_ph ); }
+      create_hard_link_api( const std::wstring & to_ph,
+        const std::wstring & from_ph )
+        { return create_hard_link_template( to_ph, from_ph ); }
+
+      BOOST_FILESYSTEM_DECL fs::system_error_type
+      create_symlink_api( const std::wstring & to_ph,
+        const std::wstring & from_ph )
+        { return ERROR_NOT_SUPPORTED; }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       remove_api( const std::wstring & ph ) { return remove_template( ph ); }
@@ -752,9 +753,14 @@ namespace boost
         { return create_directory_template( ph ); }
 
       BOOST_FILESYSTEM_DECL fs::system_error_type
-      create_hard_link_api( const std::string & existing_ph,
-        const std::string & new_ph )
-        { return create_hard_link_template( existing_ph, new_ph ); }
+      create_hard_link_api( const std::string & to_ph,
+        const std::string & from_ph )
+        { return create_hard_link_template( to_ph, from_ph ); }
+
+      BOOST_FILESYSTEM_DECL fs::system_error_type
+      create_symlink_api( const std::string & to_ph,
+        const std::string & from_ph )
+        { return ERROR_NOT_SUPPORTED; }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       remove_api( const std::string & ph ) { return remove_template( ph ); }
@@ -945,6 +951,7 @@ namespace boost
           result.second.available
             = static_cast<boost::uintmax_t>(vfs.f_bavail) * vfs.f_frsize;
         }
+        return result;
       }
 
       BOOST_FILESYSTEM_DECL time_pair 
@@ -1004,13 +1011,18 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      create_hard_link_api( const std::string & existing_ph,
-          const std::string & new_ph )
+      create_hard_link_api( const std::string & to_ph,
+          const std::string & from_ph )
       {
-        // we don't allow hard links to directories; too non-portable
-        if ( (status_api( existing_ph ) & fs::file_flag) == 0 )
-          return EPERM;
-        return ::link( existing_ph.c_str(), new_ph.c_str() ) == 0
+        return ::link( to_ph.c_str(), from_ph.c_str() ) == 0
+          ? 0 : errno;
+      }
+
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+      create_symlink_api( const std::string & to_ph,
+          const std::string & from_ph )
+      {
+        return ::symlink( to_ph.c_str(), from_ph.c_str() ) == 0
           ? 0 : errno;
       }
 
@@ -1118,7 +1130,7 @@ namespace boost
       inline int readdir_r_simulator( DIR * dirp, struct dirent * entry,
         struct dirent ** result ) // *result set to 0 on end of directory
         {
-    #     if !defined(__CYGWIN__)
+    #     if !defined(__CYGWIN__) \
           && defined(_POSIX_THREAD_SAFE_FUNCTIONS) \
           && defined(_SC_THREAD_SAFE_FUNCTIONS) \
           && (_POSIX_THREAD_SAFE_FUNCTIONS+0 >= 0) \

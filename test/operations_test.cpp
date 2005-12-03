@@ -351,7 +351,7 @@ int test_main( int argc, char * argv[] )
   //  Reported as S/F bug [ 1259176 ]
   if ( platform == "Windows" )
   {
-    fs::path root_name_path( fs::current_path().root_name() );
+    fs::path root_name_path( fs::current_path<fs::path>().root_name() );
     fs::directory_iterator it( root_name_path );
     BOOST_CHECK( it != fs::directory_iterator() );
     BOOST_CHECK( fs::exists( *it ) );
@@ -399,11 +399,11 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::equivalent( ng, file_ph ) );
   
   // hard link tests
-  fs::path link_ph( dir / "f3" );
-  BOOST_CHECK( !fs::exists( link_ph ) );
+  fs::path from_ph( dir / "f3" );
+  BOOST_CHECK( !fs::exists( from_ph ) );
   BOOST_CHECK( fs::exists( file_ph ) );
   bool create_hard_link_ok(true);
-  try { fs::create_hard_link( file_ph, link_ph ); }
+  try { fs::create_hard_link( file_ph, from_ph ); }
   catch ( const fs::filesystem_error & ex )
   {
     create_hard_link_ok = false;
@@ -416,13 +416,41 @@ int test_main( int argc, char * argv[] )
   if ( create_hard_link_ok )
   {
     std::cout << "create_hard_link() succeeded\n";
-    BOOST_CHECK( fs::exists( link_ph ) );
+    BOOST_CHECK( fs::exists( from_ph ) );
     BOOST_CHECK( fs::exists( file_ph ) );
-    BOOST_CHECK( fs::equivalent( link_ph, file_ph ) );
-    BOOST_CHECK( CHECK_EXCEPTION(
-      bind( BOOST_BND(fs::create_hard_link), dir, dir/"shouldnotwork" ),
-        0 ) );
+    BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
   }
+
+  BOOST_CHECK( fs::create_hard_link( fs::path("doesnotexist"), fs::path("shouldnotwork"),
+    std::nothrow ) != 0 );
+
+  // symbolic link tests
+  from_ph = dir / "f4";
+  BOOST_CHECK( !fs::exists( from_ph ) );
+  BOOST_CHECK( fs::exists( file_ph ) );
+  bool create_symlink_ok(true);
+  try { fs::create_symlink( file_ph, from_ph ); }
+  catch ( const fs::filesystem_error & ex )
+  {
+    create_symlink_ok = false;
+    std::cout
+      << "create_symlink() attempt failed\n"
+      << "filesystem_error.what() reports: " << ex.what() << '\n'
+      << "create_symlink() may not be supported on this file system\n";
+  }
+
+  if ( create_symlink_ok )
+  {
+    std::cout << "create_symlink() succeeded\n";
+    BOOST_CHECK( fs::exists( from_ph ) );
+    BOOST_CHECK( fs::is_symlink( from_ph ) );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
+  }
+
+  BOOST_CHECK( fs::create_symlink( "doesnotexist", "",
+    std::nothrow ) != 0 );
+
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.
   {

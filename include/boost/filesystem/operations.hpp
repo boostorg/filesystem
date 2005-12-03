@@ -131,8 +131,11 @@ namespace boost
       BOOST_FILESYSTEM_DECL query_pair
         create_directory_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        create_hard_link_api( const std::string & existing_ph,
-          const std::string & new_ph );
+        create_hard_link_api( const std::string & to_ph,
+          const std::string & from_ph );
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+        create_symlink_api( const std::string & to_ph,
+          const std::string & from_ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         remove_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -171,6 +174,9 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         create_hard_link_api( const std::wstring & existing_ph,
           const std::wstring & new_ph );
+      BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
+        create_symlink_api( const std::wstring & to_ph,
+          const std::wstring & from_ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         remove_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
@@ -335,16 +341,47 @@ namespace boost
     }
 
     BOOST_FS_FUNC(void)
-    create_hard_link( const Path & existing_file_ph, const Path & new_link_ph )
+    create_hard_link( const Path & to_ph, const Path & from_ph )
     {
       system_error_type result( 
         detail::create_hard_link_api(
-          existing_file_ph.external_file_string(),
-          new_link_ph.external_file_string() ) );
+          to_ph.external_file_string(),
+          from_ph.external_file_string() ) );
       if ( result != 0 )
         boost::throw_exception( basic_filesystem_error<Path>(
           "boost::filesystem::create_hard_link",
-          existing_file_ph, new_link_ph, result ) );
+          to_ph, from_ph, result ) );
+    }
+
+    BOOST_FS_FUNC(system_error_type)
+    create_hard_link( const Path & to_ph, const Path & from_ph,
+      const std::nothrow_t & )
+    {
+      return detail::create_hard_link_api(
+          to_ph.external_file_string(),
+          from_ph.external_file_string() );
+    }
+
+    BOOST_FS_FUNC(void)
+    create_symlink( const Path & to_ph, const Path & from_ph )
+    {
+      system_error_type result( 
+        detail::create_symlink_api(
+          to_ph.external_file_string(),
+          from_ph.external_file_string() ) );
+      if ( result != 0 )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::create_symlink",
+          to_ph, from_ph, result ) );
+    }
+
+    BOOST_FS_FUNC(system_error_type)
+    create_symlink( const Path & to_ph, const Path & from_ph,
+      const std::nothrow_t & )
+    {
+      return detail::create_symlink_api(
+          to_ph.external_file_string(),
+          from_ph.external_file_string() );
     }
 
     BOOST_FS_FUNC(bool) remove( const Path & ph )
@@ -540,12 +577,33 @@ namespace boost
     inline bool create_directory( const wpath & dir_ph )
       { return create_directory<wpath>( dir_ph ); }
 
-    inline void create_hard_link( const path & existing_file_ph,
-      const path & new_link_ph )
-      { return create_hard_link<path>( existing_file_ph, new_link_ph ); }
-    inline void create_hard_link( const wpath & existing_file_ph,
-      const wpath & new_link_ph )
-      { return create_hard_link<wpath>( existing_file_ph, new_link_ph ); }
+    inline void create_hard_link( const path & to_ph,
+      const path & from_ph )
+      { return create_hard_link<path>( to_ph, from_ph ); }
+    inline void create_hard_link( const wpath & to_ph,
+      const wpath & from_ph )
+      { return create_hard_link<wpath>( to_ph, from_ph ); }
+
+    inline system_error_type create_hard_link( const path & to_ph,
+      const path & from_ph, std::nothrow_t & )
+    { return create_hard_link<path>( to_ph, from_ph, std::nothrow ); }
+    inline system_error_type create_hard_link( const wpath & to_ph,
+      const wpath & from_ph, std::nothrow_t  & )
+      { return create_hard_link<wpath>( to_ph, from_ph, std::nothrow ); }
+
+    inline void create_symlink( const path & to_ph,
+      const path & from_ph )
+      { return create_symlink<path>( to_ph, from_ph ); }
+    inline void create_symlink( const wpath & to_ph,
+      const wpath & from_ph )
+      { return create_symlink<wpath>( to_ph, from_ph ); }
+
+    inline system_error_type create_symlink( const path & to_ph,
+      const path & from_ph, const std::nothrow_t & )
+    { return create_symlink<path>( to_ph, from_ph, std::nothrow ); }
+    inline system_error_type create_symlink( const wpath & to_ph,
+      const wpath & from_ph, const std::nothrow_t & )
+      { return create_symlink<wpath>( to_ph, from_ph, std::nothrow ); }
 
     inline bool remove( const path & ph )
       { return remove<path>( ph ); }
