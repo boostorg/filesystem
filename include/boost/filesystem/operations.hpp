@@ -2,7 +2,7 @@
 
 //  Copyright © 2002-2005 Beman Dawes
 //  Copyright © 2002 Jan Langer
-//  Copyright © 2001 Dietmar Kühl                                        
+//  Copyright © 2001 Dietmar Kuehl                                        
 //  
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy
