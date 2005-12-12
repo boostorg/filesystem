@@ -18,8 +18,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/static_assert.hpp>
+
 #include <string>
 #include <algorithm> // for lexicographical_compare
+#include <iosfwd>    // needed by basic_path inserter and extractor
 #include <stdexcept>
 #include <cassert>
 
@@ -404,6 +406,35 @@ namespace boost
       const String & lhs, const basic_path<String, Traits> & rhs )
       { return basic_path<String, Traits>( lhs ) /= rhs; }
    
+    //  inserters and extractors  --------------------------------------------//
+
+# if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300  // bypass VC++ 7.0 and earlier 
+
+    template< class Path >
+    std::basic_ostream< typename Path::string_type::value_type,
+      typename Path::string_type::traits_type > &
+      operator<<
+      ( std::basic_ostream< typename Path::string_type::value_type,
+      typename Path::string_type::traits_type >& os, const Path & ph )
+    {
+      os << ph.string();
+      return os;
+    }
+
+    template< class Path >
+    std::basic_istream< typename Path::string_type::value_type,
+      typename Path::string_type::traits_type > &
+      operator>>
+      ( std::basic_istream< typename Path::string_type::value_type,
+      typename Path::string_type::traits_type >& is, Path & ph )
+    {
+      typename Path::string_type str;
+      is >> str;
+      ph = str;
+      return is;
+    }
+# endif
+
   //  path::name_checks  -----------------------------------------------------//
 
     BOOST_FILESYSTEM_DECL bool portable_posix_name( const std::string & name );

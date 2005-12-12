@@ -10,6 +10,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/utility.hpp>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <cstring>
 #include <cassert>
@@ -1110,6 +1111,18 @@ int test_main( int, char*[] )
   BOOST_CHECK( a <= a2 );
   BOOST_CHECK( b >= a );
   BOOST_CHECK( a2 >= a );
+
+  // inserter and extractor tests
+# if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300 // bypass VC++ 7.0 and earlier
+  std::cout << "\nInserter and extractor test...";
+  std::stringstream ss;
+  ss << fs::path( "foo/bar" ) << std::endl;
+  fs::path round_trip;
+  ss >> round_trip;
+  BOOST_CHECK( round_trip.string() == "foo/bar" );
+  std::cout << round_trip.string() << "..." << round_trip << " complete\n";
+# endif
+
 
   std::cout << errors << " errors detected\n";
   
