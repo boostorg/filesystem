@@ -1086,18 +1086,70 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.file_string() == "/usr/local/bin:/usr/bin:/bin" );
   } // POSIX
 
-  // test relational operators
+  // test non-member functions, particularly operator overloads
                                                              
   path e, e2;
-  path a( "a" );
-  path a2( "a" );
-  path b( "b" );
+  std::string es, es2;
+  char ecs[] = "";
+  char ecs2[] = "";
+
+  char acs[] = "a";
+  std::string as(acs);
+  path a( as );
+
+  char acs2[] = "a";
+  std::string as2(acs2);
+  path a2( as2 );
+
+  char bcs[] = "b";
+  std::string bs(bcs);
+  path b( bs );
+
+  // swap
+  a.swap( b );
+  BOOST_CHECK( a.string() == "b" );
+  BOOST_CHECK( b.string() == "a" );
+  fs::swap( a, b );
+  BOOST_CHECK( a.string() == "a" );
+  BOOST_CHECK( b.string() == "b" );
+
+  // probe operator /
+  BOOST_CHECK( (b / a).string() == "b/a" );
+  BOOST_CHECK( (bs / a).string() == "b/a" );
+  BOOST_CHECK( (bcs / a).string() == "b/a" );
+  BOOST_CHECK( (b / as).string() == "b/a" );
+  BOOST_CHECK( (b / acs).string() == "b/a" );
 
   // probe operator <
   BOOST_CHECK( !(e < e2) );
+  BOOST_CHECK( !(es < e2) );
+  BOOST_CHECK( !(ecs < e2) );
+  BOOST_CHECK( !(e < es2) );
+  BOOST_CHECK( !(e < ecs2) );
+
   BOOST_CHECK( e < a );
+  BOOST_CHECK( es < a );
+  BOOST_CHECK( ecs < a );
+  BOOST_CHECK( e < as );
+  BOOST_CHECK( e < acs );
+
   BOOST_CHECK( a < b );
+  BOOST_CHECK( as < b );
+  BOOST_CHECK( acs < b );
+  BOOST_CHECK( a < bs );
+  BOOST_CHECK( a < bcs );
+
   BOOST_CHECK( !(a < a2) );
+  BOOST_CHECK( !(as < a2) );
+  BOOST_CHECK( !(acs < a2) );
+  BOOST_CHECK( !(a < as2) );
+  BOOST_CHECK( !(a < acs2) );
+
+  // make sure basic_path overloads don't conflict with std::string overloads
+
+  BOOST_CHECK( !(as < as) );
+  BOOST_CHECK( !(as < acs) );
+  BOOST_CHECK( !(acs < as) );
 
   // reality check character set is as expected
   BOOST_CHECK( std::string("a.b") < std::string("a/b") );
@@ -1106,11 +1158,52 @@ int test_main( int, char*[] )
 
   // make sure the derivative operators also work
   BOOST_CHECK( a == a2 );
+  BOOST_CHECK( as == a2 );
+  BOOST_CHECK( acs == a2 );
+  BOOST_CHECK( a == as2 );
+  BOOST_CHECK( a == acs2 );
+
   BOOST_CHECK( a != b );
+  BOOST_CHECK( as != b );
+  BOOST_CHECK( acs != b );
+  BOOST_CHECK( a != bs );
+  BOOST_CHECK( a != bcs );
+
+  BOOST_CHECK( b > a );
+  BOOST_CHECK( b > as );
+  BOOST_CHECK( b > acs );
+  BOOST_CHECK( bs > a);
+  BOOST_CHECK( bcs > a);
+
+  BOOST_CHECK( !(a2 > a) );
+  BOOST_CHECK( !(a2 > as) );
+  BOOST_CHECK( !(a2 > acs) );
+  BOOST_CHECK( !(as2 > a) );
+  BOOST_CHECK( !(acs2 > a) );
+
   BOOST_CHECK( a <= b );
+  BOOST_CHECK( as <= b );
+  BOOST_CHECK( acs <= b );
+  BOOST_CHECK( a <= bs );
+  BOOST_CHECK( a <= bcs );
+
   BOOST_CHECK( a <= a2 );
+  BOOST_CHECK( as <= a2 );
+  BOOST_CHECK( acs <= a2 );
+  BOOST_CHECK( a <= as2 );
+  BOOST_CHECK( a <= acs2 );
+
   BOOST_CHECK( b >= a );
+  BOOST_CHECK( bs >= a );
+  BOOST_CHECK( bcs >= a );
+  BOOST_CHECK( b >= as );
+  BOOST_CHECK( b >= acs );
+
   BOOST_CHECK( a2 >= a );
+  BOOST_CHECK( as2 >= a );
+  BOOST_CHECK( acs2 >= a );
+  BOOST_CHECK( a2 >= as );
+  BOOST_CHECK( a2 >= acs );
 
   // inserter and extractor tests
 # if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300 // bypass VC++ 7.0 and earlier

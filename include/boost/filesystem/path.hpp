@@ -254,18 +254,6 @@ namespace boost
             { m_path.clear(); append( first, last ); return *this; }
 #     endif
 
-      // comparisons
-      //   overloads for string_type and value_type* are not provided because
-      //   they are not needed to compile use cases (automatic conversions
-      //   take care of that), and there is no efficiency gain (lexicographical
-      //   comparison requires basic_paths).
-      bool operator< ( const basic_path & that ) const { return std::lexicographical_compare( begin(), end(), that.begin(), that.end() ); }
-      bool operator==( const basic_path & that ) const { return !(*this < that) && !(that < *this); }
-      bool operator!=( const basic_path & that ) const { return !(*this == that); }
-      bool operator> ( const basic_path & that ) const { return that < *this; }
-      bool operator<=( const basic_path & that ) const { return !(that < *this); }
-      bool operator>=( const basic_path & that ) const { return !(*this < that); }
-
       // modifiers
       basic_path & operator/=( const basic_path & rhs )  { return operator /=( rhs.string().c_str() ); }
       basic_path & operator/=( const string_type & rhs ) { return operator /=( rhs.c_str() ); }
@@ -274,6 +262,14 @@ namespace boost
         template <class InputIterator>
           basic_path & append( InputIterator first, InputIterator last );
 #     endif
+      
+      void swap( basic_path & rhs )
+      {
+        m_path.swap( rhs.m_path );
+#       ifdef BOOST_CYGWIN_PATH
+          std::swap( m_cygwin_root, rhs.m_cygwin_root );
+#       endif
+      }
 
       basic_path & remove_leaf();
 
@@ -300,16 +296,6 @@ namespace boost
       bool has_relative_path() const   { return !relative_path().empty(); }
       bool has_leaf() const            { return !m_path.empty(); }
       bool has_branch_path() const     { return !branch_path().empty(); }
-
-      // operators
-      basic_path operator/( const basic_path & rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
-      basic_path operator/( const string_type & rhs ) const { return basic_path<String, Traits>( *this ) /= rhs; }
-      basic_path operator/( const value_type * rhs ) const  { return basic_path<String, Traits>( *this ) /= rhs; }
-#     ifndef BOOST_NO_MEMBER_TEMPLATES
-        template <class InputIterator>
-          basic_path concat( InputIterator first, InputIterator last )
-            { return basic_path<String, Traits>( *this ).append( first, last ); }
-#     endif
 
       // iterators
       class iterator : public boost::iterator_facade<
@@ -396,13 +382,204 @@ namespace boost
 
   //  basic_path non-member functions  ---------------------------------------//
 
-    template<class String, class Traits>
-    inline basic_path<String, Traits> operator / ( 
-    const typename String::value_type * lhs, const basic_path<String, Traits> & rhs )
+    template< class String, class Traits >
+    inline void swap( basic_path<String, Traits> & lhs,
+               basic_path<String, Traits> & rhs ) { lhs.swap( rhs ); }
+
+    template< class String, class Traits >
+    bool operator<( const basic_path<String, Traits> & lhs, const basic_path<String, Traits> & rhs )
+    {
+      return std::lexicographical_compare(
+        lhs.begin(), lhs.end(), rhs.begin(), rhs.end() );
+    }
+
+    template< class String, class Traits >
+    bool operator<( const typename basic_path<String, Traits>::string_type::value_type * lhs,
+                    const basic_path<String, Traits> & rhs )
+    {
+      basic_path<String, Traits> tmp( lhs );
+      return std::lexicographical_compare(
+        tmp.begin(), tmp.end(), rhs.begin(), rhs.end() );
+    }
+
+    template< class String, class Traits >
+    bool operator<( const typename basic_path<String, Traits>::string_type & lhs,
+                    const basic_path<String, Traits> & rhs )
+    {
+      basic_path<String, Traits> tmp( lhs );
+      return std::lexicographical_compare(
+        tmp.begin(), tmp.end(), rhs.begin(), rhs.end() );
+    }
+
+    template< class String, class Traits >
+    bool operator<( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type::value_type * rhs )
+    {
+      basic_path<String, Traits> tmp( rhs );
+      return std::lexicographical_compare(
+        lhs.begin(), lhs.end(), tmp.begin(), tmp.end() );
+    }
+
+    template< class String, class Traits >
+    bool operator<( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type & rhs )
+    {
+      basic_path<String, Traits> tmp( rhs );
+      return std::lexicographical_compare(
+        lhs.begin(), lhs.end(), tmp.begin(), tmp.end() );
+    }
+
+    template< class String, class Traits >
+    inline bool operator==( const basic_path<String, Traits> & lhs, const basic_path<String, Traits> & rhs )
+    { 
+      return !(lhs < rhs) && !(rhs < lhs);
+    }
+
+    template< class String, class Traits >
+    inline bool operator==( const typename basic_path<String, Traits>::string_type::value_type * lhs,
+                    const basic_path<String, Traits> & rhs )
+    {
+      basic_path<String, Traits> tmp( lhs );
+      return !(tmp < rhs) && !(rhs < tmp);
+    }
+
+    template< class String, class Traits >
+    inline bool operator==( const typename basic_path<String, Traits>::string_type & lhs,
+                    const basic_path<String, Traits> & rhs )
+    {
+      basic_path<String, Traits> tmp( lhs );
+      return !(tmp < rhs) && !(rhs < tmp);
+    }
+
+    template< class String, class Traits >
+    inline bool operator==( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type::value_type * rhs )
+    {
+      basic_path<String, Traits> tmp( rhs );
+      return !(lhs < tmp) && !(tmp < lhs);
+    }
+
+    template< class String, class Traits >
+    inline bool operator==( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type & rhs )
+    {
+      basic_path<String, Traits> tmp( rhs );
+      return !(lhs < tmp) && !(tmp < lhs);
+    }
+
+    template< class String, class Traits >
+    inline bool operator!=( const basic_path<String, Traits> & lhs, const basic_path<String, Traits> & rhs ) { return !(lhs == rhs); }
+    
+    template< class String, class Traits >
+    inline bool operator!=( const typename basic_path<String, Traits>::string_type::value_type * lhs,
+                    const basic_path<String, Traits> & rhs ) { return !(basic_path<String, Traits>(lhs) == rhs); }
+
+    template< class String, class Traits >
+    inline bool operator!=( const typename basic_path<String, Traits>::string_type & lhs,
+                    const basic_path<String, Traits> & rhs ) { return !(basic_path<String, Traits>(lhs) == rhs); }
+
+    template< class String, class Traits >
+    inline bool operator!=( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type::value_type * rhs )
+                    { return !(lhs == basic_path<String, Traits>(rhs)); }
+
+    template< class String, class Traits >
+    inline bool operator!=( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type & rhs )
+                    { return !(lhs == basic_path<String, Traits>(rhs)); }
+
+    template< class String, class Traits >
+    inline bool operator>( const basic_path<String, Traits> & lhs, const basic_path<String, Traits> & rhs ) { return rhs < lhs; }
+    
+    template< class String, class Traits >
+    inline bool operator>( const typename basic_path<String, Traits>::string_type::value_type * lhs,
+                    const basic_path<String, Traits> & rhs ) { return rhs < basic_path<String, Traits>(lhs); }
+
+    template< class String, class Traits >
+    inline bool operator>( const typename basic_path<String, Traits>::string_type & lhs,
+                    const basic_path<String, Traits> & rhs ) { return rhs < basic_path<String, Traits>(lhs); }
+
+    template< class String, class Traits >
+    inline bool operator>( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type::value_type * rhs )
+                    { return basic_path<String, Traits>(rhs) < lhs; }
+
+    template< class String, class Traits >
+    inline bool operator>( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type & rhs )
+                    { return basic_path<String, Traits>(rhs) < lhs; }
+
+    template< class String, class Traits >
+    inline bool operator<=( const basic_path<String, Traits> & lhs, const basic_path<String, Traits> & rhs ) { return !(rhs < lhs); }
+    
+    template< class String, class Traits >
+    inline bool operator<=( const typename basic_path<String, Traits>::string_type::value_type * lhs,
+                    const basic_path<String, Traits> & rhs ) { return !(rhs < basic_path<String, Traits>(lhs)); }
+
+    template< class String, class Traits >
+    inline bool operator<=( const typename basic_path<String, Traits>::string_type & lhs,
+                    const basic_path<String, Traits> & rhs ) { return !(rhs < basic_path<String, Traits>(lhs)); }
+
+    template< class String, class Traits >
+    inline bool operator<=( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type::value_type * rhs )
+                    { return !(basic_path<String, Traits>(rhs) < lhs); }
+
+    template< class String, class Traits >
+    inline bool operator<=( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type & rhs )
+                    { return !(basic_path<String, Traits>(rhs) < lhs); }
+
+    template< class String, class Traits >
+    inline bool operator>=( const basic_path<String, Traits> & lhs, const basic_path<String, Traits> & rhs ) { return !(lhs < rhs); }
+    
+    template< class String, class Traits >
+    inline bool operator>=( const typename basic_path<String, Traits>::string_type::value_type * lhs,
+                    const basic_path<String, Traits> & rhs ) { return !(lhs < basic_path<String, Traits>(rhs)); }
+
+    template< class String, class Traits >
+    inline bool operator>=( const typename basic_path<String, Traits>::string_type & lhs,
+                    const basic_path<String, Traits> & rhs ) { return !(lhs < basic_path<String, Traits>(rhs)); }
+
+    template< class String, class Traits >
+    inline bool operator>=( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type::value_type * rhs )
+                    { return !(basic_path<String, Traits>(lhs) < rhs); }
+
+    template< class String, class Traits >
+    inline bool operator>=( const basic_path<String, Traits> & lhs,
+                    const typename basic_path<String, Traits>::string_type & rhs )
+                    { return !(basic_path<String, Traits>(lhs) < rhs); }
+
+    // operator /
+
+    template< class String, class Traits >
+    inline basic_path<String, Traits> operator/( 
+      const basic_path<String, Traits> & lhs,
+      const basic_path<String, Traits> & rhs )
       { return basic_path<String, Traits>( lhs ) /= rhs; }
 
-    template<class String, class Traits>
-    inline basic_path<String, Traits> operator / (
+    template< class String, class Traits >
+    inline basic_path<String, Traits> operator/( 
+      const basic_path<String, Traits> & lhs,
+      const typename String::value_type * rhs )
+      { return basic_path<String, Traits>( lhs ) /=
+          basic_path<String, Traits>( rhs ); }
+
+    template< class String, class Traits >
+    inline basic_path<String, Traits> operator/( 
+      const basic_path<String, Traits> & lhs, const String & rhs )
+      { return basic_path<String, Traits>( lhs ) /=
+          basic_path<String, Traits>( rhs ); }
+
+    template< class String, class Traits >
+    inline basic_path<String, Traits> operator/( 
+      const typename String::value_type * lhs,
+      const basic_path<String, Traits> & rhs )
+      { return basic_path<String, Traits>( lhs ) /= rhs; }
+
+    template< class String, class Traits >
+    inline basic_path<String, Traits> operator/(
       const String & lhs, const basic_path<String, Traits> & rhs )
       { return basic_path<String, Traits>( lhs ) /= rhs; }
    
