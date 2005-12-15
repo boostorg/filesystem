@@ -70,7 +70,6 @@ namespace
               << "\"" << std::endl;
   }
 
-  /*
   void check_normalize()
   {
     PATH_CHECK( path("").normalize(), "" );
@@ -176,7 +175,6 @@ namespace
       PATH_CHECK( path( "c:/..foo" ).normalize(), "c:/..foo" );
     }
   }
-  */
 
   void exception_tests()
   {
@@ -276,13 +274,22 @@ int test_main( int, char*[] )
   PATH_CHECK( path("") / "/foo", "/foo" );
   PATH_CHECK( path("/foo") / "", "/foo" );
 
+  path p5;
+  p5 /= "foo/bar";
+  PATH_CHECK( p5, "foo/bar" );
+  char bf[]= "bar/foo";
+  p5.assign( bf, bf + sizeof(bf) ); 
+  PATH_CHECK( p5, bf );
+  p5.append( bf, bf + sizeof(bf) ); 
+  PATH_CHECK( p5, "bar/foo/bar/foo" );
+
   if ( platform == "Windows" )
   {
     PATH_CHECK( path("c:") / "foo", "c:foo" );
     PATH_CHECK( path("c:") / "/foo", "c:/foo" );
   }
 
-  //check_normalize();
+  check_normalize();
 
   PATH_CHECK( "foo/bar", "foo/bar" );
   PATH_CHECK( path("foo") / path("bar"), "foo/bar" ); // path arg

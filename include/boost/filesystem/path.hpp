@@ -193,7 +193,7 @@ namespace boost
       { BOOST_STATIC_CONSTANT( char, value = '.' ); };
 
     template<class Path> struct colon
-    { BOOST_STATIC_CONSTANT( char, value = ':' ); };
+      { BOOST_STATIC_CONSTANT( char, value = ':' ); };
 
 # ifdef BOOST_WINDOWS_PATH
     template<class Path> struct path_alt_separator
@@ -377,6 +377,8 @@ namespace boost
       static bool default_name_check_writable() { return false; } 
       static void default_name_check( name_check ) {}
       static name_check default_name_check() { return 0; }
+      basic_path & canonize();
+      basic_path & normalize();
 # endif
     };
 
@@ -1006,13 +1008,15 @@ namespace boost
       return *this;
     }
 # endif
-/*
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+
     // canonize  ------------------------------------------------------------//
 
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::canonize()
     {
-      static const typename string_type::value_type dot[]
+      static const typename string_type::value_type dot_str[]
         = { dot<path_type>::value, 0 };
 
       if ( m_path.empty() ) return *this;
@@ -1024,7 +1028,7 @@ namespace boost
         temp /= *itr;
       };
 
-      if ( temp.empty() ) temp /= dot;
+      if ( temp.empty() ) temp /= dot_str;
       m_path = temp.m_path;
       return *this;
     }
@@ -1034,7 +1038,7 @@ namespace boost
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::normalize()
     {
-      static const typename string_type::value_type dot[]
+      static const typename string_type::value_type dot_str[]
         = { dot<path_type>::value, 0 };
 
       if ( m_path.empty() ) return *this;
@@ -1088,7 +1092,7 @@ namespace boost
 
             iterator next( itr );
             if ( temp.empty() && ++next != stop
-              && next == last && *last == dot ) temp /= dot;
+              && next == last && *last == dot_str ) temp /= dot_str;
             continue;
           }
         }
@@ -1096,11 +1100,13 @@ namespace boost
         temp /= *itr;
       };
 
-      if ( temp.empty() ) temp /= dot;
+      if ( temp.empty() ) temp /= dot_str;
       m_path = temp.m_path;
       return *this;
     }
-*/
+
+# endif
+
     // remove_leaf  ----------------------------------------------------------//
 
     template<class String, class Traits>
