@@ -20,6 +20,8 @@
 #include <iostream>
 #include <cstdio> // for std::remove
 
+#include "../src/utf8_codecvt_facet.hpp"
+
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
 #  include "lpath.hpp"
 #endif
@@ -139,13 +141,25 @@ namespace
 
 int test_main( int, char*[] )
 {
+ 
+  // test fs::path
   std::cout << "path tests:\n";
   test( fs::path( "fstream_test_foo" ) );
 
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
+  // So that tests are run with known encoding, use Boost UTF-8 codecvt
+  std::locale global_loc = std::locale();
+  std::locale loc( global_loc, new fs::detail::utf8_codecvt_facet );
+  fs::wpath_traits::imbue( loc );
+
+  // test fs::wpath
+  //  x2780 is circled 1 against white background == e2 9e 80 in UTF-8
+  //  x2781 is circled 2 against white background == e2 9e 81 in UTF-8
   std::cout << "\nwpath tests:\n";
   test( fs::wpath( L"fstream_test_\x2780" ) );
+
+  // test user supplied basic_path
   const long lname[] = { 'f', 's', 'r', 'e', 'a', 'm', '_', 't', 'e', 's',
     't', '_', 'l', 'p', 'a', 't', 'h', 0 };
   std::cout << "\nlpath tests:\n";
