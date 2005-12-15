@@ -238,7 +238,7 @@ namespace boost
         system_message( ec, target );
       }
 
-#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
       void decode_system_message( system_error_type ec, std::wstring & target )
       {
         system_message( ec, target );
