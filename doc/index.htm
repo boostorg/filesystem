@@ -27,10 +27,10 @@ Filesystem Library</h1>
 &nbsp;&nbsp;&nbsp; <a href="#narrow-only">Restricting library to narrow 
     character paths</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Building">Building the object-library</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Cgywin">Notes for Cygwin users</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Cgywin">Notes for Cygwin users</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Acknowledgements">Acknowledgements</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Change-history">Change history</a></td>
-    <td width="50%"><font size="4">Other Documents</font><br>
+    <td width="50%" valign="top"><font size="4">Other Documents</font><br>
 &nbsp;&nbsp;&nbsp; <a href="design.htm">Library Design</a><br>
 &nbsp;&nbsp;&nbsp; <a href="faq.htm">FAQ</a><br>
 &nbsp;&nbsp;&nbsp; <a href="portability_guide.htm">Portability Guide</a><br>
@@ -42,7 +42,10 @@ Filesystem Library</h1>
 &nbsp;&nbsp;&nbsp; <a href="convenience.htm"><b><i>convenience.hpp</i></b> 
     documentation</a><br>
 &nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; <a href="do-list.htm">Do-list</a></td>
+&nbsp;&nbsp;&nbsp; <a href="do-list.htm">Do-list</a><br>
+    <br>
+&nbsp;&nbsp;&nbsp; <a href="http://www.esva.net/~beman/n1923.html">C++ Standards 
+    Committee proposal for TR2</a></td>
   </tr>
 </table>
 <h2><a name="Introduction">Introduction</a></h2>
@@ -59,48 +62,70 @@ the syntax of program code is portable, and the sense that the semantics or
 behavior of code is portable. The <a href="path.htm#Grammar">generic path 
 grammar</a> is another important aid to portability.</p>
 
-<p>Usage is <i><b>safe</b></i> in the sense that most functions throw C++ 
-exceptions when errors are detected, avoiding the need to explicitly check error 
+<p>Usage is <i><b>safe</b></i> in the sense that errors cannot be ignored since most functions throw C++ 
+exceptions when errors are detected. This is also convenient for users because 
+it alleviates the&nbsp; need to explicitly check error 
 return codes.</p>
 
-<p>The Filesystem Library supplies several&nbsp; headers, all in 
-directory boost/filesystem:</p>
+<p>A <a href="http://www.esva.net/~beman/n1923.html">proposal</a> has been 
+submitted to the C++ Standards Committee for inclusion of the library in the 
+Standard Library Technical Report 2 (TR2). The Boost.Filesystem library will 
+stay in alignment with the TR2 Filesystem proposal as it works its way through 
+the committee process. Note, however, that namespaces and header granularity 
+differs between Boost.Filesystem and the TR2 proposal. </p>
+
+<p>The Filesystem Library supplies several&nbsp; headers:</p>
 
 <ul>
-  <li>Header <i><a href="../../../boost/filesystem/path.hpp">path.hpp</a></i> provides class <i>
+  <li>Header<a href="../../../boost/filesystem.hpp"> boost/filesystem.hpp</a> in 
+  turn includes the Boost.Filesystem path.hpp, operations.hpp, and 
+  convenience.hpp headers.<br>
+&nbsp;<ul>
+  <li>Header <a href="../../../boost/filesystem/path.hpp">boost/filesystem<i>/</i>path.hpp</a> provides class <i>
   basic_path, </i>a portable mechanism for representing
       <a href="#path">paths</a> in C++ programs. Typedefs <i>path</i> and <i>
   wpath</i> ease the most common usages of <i>basic_path</i>. Supporting classes 
   and validity checking 
       functions are also provided. See <a href="path.htm">path.hpp documentation</a>.<br>
 &nbsp;</li>
-  <li>Header <i><a href="../../../boost/filesystem/operations.hpp">operations.hpp</a></i> provides functions operating on files and directories, 
+  <li>Header <a href="../../../boost/filesystem/operations.hpp">boost/filesystem<i>/</i>operations.hpp</a> provides functions operating on files and directories, 
   and includes class <i>basic_directory_iterator</i> with typdefs <i>
   directory_iterator</i> and <i>wdirectory_iterator</i>. See <a href="operations.htm">
   operations.hpp documentation</a>.<br>
 &nbsp;</li>
-  <li>Header <i><a href="../../../boost/filesystem/fstream.hpp">fstream.hpp</a></i> provides the same components as the C++ Standard 
+  <li>Header <a href="../../../boost/filesystem/convenience.hpp">
+  boost/filesystem/convenience.hpp</a> 
+  provides convenience functions that combine lower-level functions in useful 
+  ways. See <a href="convenience.htm">convenience.hpp documentation</a>.<br>
+&nbsp;</li>
+</ul>
+  </li>
+  <li>Header <a href="../../../boost/filesystem/fstream.hpp">boost/filesystem<i>/</i>fstream.hpp</a> provides the same components as the C++ Standard 
   Library's <i>fstream</i> header, except 
       that files are identified by <i>basic_path</i> objects rather that <i>char *</i>'s. 
   See <a href="fstream.htm">fstream.hpp documentation</a>.<br>
 &nbsp;</li>
-  <li>Header <a href="../../../boost/filesystem/convenience.hpp">convenience.hpp</a> 
-  provides convenience functions that combine lower-level functions in useful 
-  ways. See <a href="convenience.htm">convenience.hpp documentation</a>.</li>
+  <li>Header <a href="../../../boost/filesystem/cerrno.hpp">
+  boost/filesystem/cerrno.hpp</a> provides POSIX errno macros used by 
+  Boost.Filesystem, and two new macros (EBADHANDLE, EOTHER) not defined by 
+  POSIX.</li>
 </ul>
 <p>The organizing principle is that purely lexical operations on<i> </i>
       <a href="#path">paths</a> are supplied as class<i> basic_path</i> member 
 functions in <i>path.hpp</i>, while operations performed by the operating system 
 on the actual external filesystem directories and files are provided in <i>
 operations.hpp,</i> primarily as free functions.</p>
+<p><i><b>Heads up!</b></i> There are effectively two sets of documentation - the 
+traditional Boost documentation and the newer TR2 proposal. Although lots of 
+effort has gone into keeping them in sync, be warned that there are inadvertent 
+errors, omissions, and divergences.</p>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
 <p>First some preliminaries:</p>
 <blockquote>
-  <pre>#include &quot;boost/filesystem/operations.hpp&quot; // includes boost/filesystem/path.hpp
-#include &quot;boost/filesystem/fstream.hpp&quot;    // ditto
-#include &lt;iostream&gt;                        // for std::cout
-using boost::filesystem;                   // for ease of tutorial presentation;
-                                           // a namespace alias is preferred in real code</pre>
+  <pre>#include &quot;boost/filesystem.hpp&quot;   // includes all needed Boost.Filesystem declarations
+#include &lt;iostream&gt;               // for std::cout
+using boost::filesystem;          // for ease of tutorial presentation;
+                                  //  a namespace alias is preferred practice in real code</pre>
 </blockquote>
 <p>A <a href="path.htm#synopsis">class <i>path</i></a> object can be created:</p>
 <blockquote>
@@ -113,11 +138,13 @@ make <i>my_path</i> contents available to the underlying operating system API in
 such as <code>&quot;some_dir:file.txt&quot;</code>, <code>&quot;[some_dir]file.txt&quot;</code>,
 <code>&quot;some_dir/file.txt&quot;</code>, or whatever is appropriate for the  
 operating system. If class <i>wpath</i> is used instead of class <i>path</i>, 
-translation between wide and narrow character paths is performed automatically.</p>
+translation between wide and narrow character paths is performed automatically 
+if necessary for the operating system.</p>
 <p>Class <i>path</i> has conversion constructors from <i>const char*</i> and <i>
-const std:: string&amp;</i>, so that even though the Filesystem Library functions in 
-the following code snippet take <i>const path&amp;</i> arguments, the user can just 
-code C-style strings:</p>
+const std:: string&amp;</i>, so that even though the Filesystem Library 
+functions used in the following code snippet have <i>const path&amp;</i> formal 
+parameters, the user can just 
+code C-style strings as actual arguments:</p>
 <blockquote>
   <pre>remove_all( &quot;foobar&quot; );
 create_directory( &quot;foobar&quot; );
@@ -135,19 +162,22 @@ ifstream file2( arg_path / &quot;foo&quot; / &quot;bar&quot; );</pre>
 </blockquote>
 <p>The expressions <i>arg_path / &quot;foo/bar&quot;</i> and <i>arg_path / &quot;foo&quot; 
 / &quot;bar&quot;</i> yield identical results.</p>
-<p>Paths can include references to the parent directory, using the &quot;<code>..</code>&quot; 
+<p>Paths can include references to the current directory, using &quot;<code>.</code>&quot; 
+notation, and the parent directory, using &quot;<code>..</code>&quot; 
 notation.</p>
 <p><a href="operations.htm#directory_iterator">Class <i>basic_directory_iterator</i></a> 
 is an important component of the library. It provides an input iterator over the 
-contents of a directory, with the value type being class <i>basic_path</i>. </p>
+contents of a directory, with the value type being class <i>basic_path</i>. 
+Typedefs <i>directory_iterator</i> and <i>wdirectory_iterator</i> are provided 
+to cover the most common use cases.</p>
 <p>The following function, given a directory path and a file name, recursively 
 searches the directory and its sub-directories for the file name, returning a 
 bool, and if successful, the path to the file that was found.&nbsp; The code 
 below is extracted from a real program, slightly modified for clarity:</p>
 <blockquote>
-  <pre>bool find_file( const path &amp; dir_path,     // in this directory,
+  <pre>bool find_file( const path &amp; dir_path,         // in this directory,
                 const std::string &amp; file_name, // search for this name,
-                path &amp; path_found )        // placing path here if found
+                path &amp; path_found )            // placing path here if found
 {
   if ( !exists( dir_path ) ) return false;
   directory_iterator end_itr; // default construction yields past-the-end
@@ -155,13 +185,13 @@ below is extracted from a real program, slightly modified for clarity:</p>
         itr != end_itr;
         ++itr )
   {
-    if ( is_directory( *itr ) )
+    if ( itr-&gt;is_directory() )
     {
-      if ( find_file( *itr, file_name, path_found ) ) return true;
+      if ( find_file( itr-&gt;path(), file_name, path_found ) ) return true;
     }
     else if ( itr-&gt;leaf() == file_name ) // see below
     {
-      path_found = *itr;
+      path_found = itr-&gt;path();
       return true;
     }
   }
@@ -177,10 +207,16 @@ last (closest to the leaf, farthest from the root) file or directory name in the
 tree/root/branch/leaf metaphor.</p>
 <p>Notice that <i>find_file()</i> does not do explicit error checking, such as 
 verifying that the <i>dir_path</i> argument really represents a directory.  
-Filesystem Library functions throw 
+Boost.Filesystem  functions throw 
 exceptions if they do not complete successfully, so there is enough implicit 
 error checking that this application doesn't need to supply additional error 
-checking code.</p>
+checking code unless desired. Several operations functions have <i>nothrow</i> 
+versions, to ease use cases where exceptions would not be appropriate.</p>
+<blockquote>
+<p><i>Note: </i>Sometime after the above tutorial code was added, recursive 
+directory iterations was provided as a convenience function. So nowadays you 
+don't have to actually code the recursion yourself.</p>
+</blockquote>
 <p>The tutorial is now over; hopefully you now are ready to write simple, 
 script-like programs using the Filesystem Library!</p>
 <h2><a name="Examples">Examples</a></h2>
@@ -557,7 +593,8 @@ version 1.31.0.</p>
 
 <p>So many people have contributed comments and bug reports that it isn't any 
 longer possible to acknowledge them individually. That said, Peter Dimov and Rob 
-Stewart need to thanked for their long-time constructive criticisms. Terence 
+Stewart need to be specially thanked for their many constructive criticisms and 
+suggestions. Terence 
 Wilson and Chris Frey contributed timing programs which helped illuminate 
 performance issues.</p>
 
@@ -584,7 +621,10 @@ performance issues.</p>
   <a href="operations.htm#status">status</a>,
   <a href="operations.htm#symlink_status">symlink_status</a>,
   <a href="operations.htm#is_file">is_file</a>,
-  <a href="operations.htm#is_symlink">is_symlink</a>, <a href="operations.htm#create_hard_link">create_hard_link</a>.</li>
+  <a href="operations.htm#is_symlink">is_symlink</a>, <a href="operations.htm#create_hard_link">create_hard_link</a>, 
+  create_symlink, path member and non-member swap, path inserter, path 
+  extractor, additional path relational and &quot;/&quot; operator overloads, additional 
+  path member template functions taking iterator arguments.</li>
   <li><a href="i18n.html#More_efficient">More efficient operations</a> when iterating over directories.</li>
   <li>Separation within the implementation of the distinction between the native 
   operating system path syntax and API. This is important for CYGWIN users 
@@ -637,7 +677,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 August, 2005<!--webbot bot="Timestamp" endspan i-checksum="34600" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2005<!--webbot bot="Timestamp" endspan i-checksum="38518" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

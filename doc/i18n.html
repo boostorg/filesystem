@@ -93,6 +93,9 @@ on a diet and generally simplified.</p>
 <p>Error codes have been simplified and aligned with [POSIX-01]. A supporting 
 header <a href="../../../boost/filesystem/cerrno.hpp">
 &lt;boost/filesystem/cerrno.hpp&gt;</a> is also provided.</p>
+<p><code>&quot;//:&quot;</code> has been introduced as a path escape prefix to identify 
+native paths. Rationale: simplifies basic_path constructor interfaces, easier 
+use for platforms needing explicit native format identification.</p>
 <h2><a name="Rationalization">Rationalization</a> of predicate functions</h2>
 <p>In discussions and bug reports on the Boost developers mailing list, it 
 became obvious that Boost.Filesystem's exists(), symbolic_link_exists(), and 
@@ -412,7 +415,7 @@ for Russian on Linux (and Russian web sites) is KOI8-R (RFC1489). The ability to
 is also provided, to meet unforeseen needs.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->14 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21133" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2005<!--webbot bot="Timestamp" endspan i-checksum="38518" --></p>
 <p>© Copyright Beman Dawes, 2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file 
