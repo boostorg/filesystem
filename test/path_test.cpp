@@ -240,8 +240,19 @@ int test_main( int, char*[] )
   p4 /= std::string( "foo" );
 
 # ifndef BOOST_NO_MEMBER_TEMPLATES
+  // check the path member templates
   BOOST_CHECK( p4.string() == path( p4.string().begin(), p4.string().end() ).string() );
+
+  path p5;
+  p5 /= "foo/bar";
+  PATH_CHECK( p5, "foo/bar" );
+  char bf[]= "bar/foo";
+  p5.assign( bf, bf + sizeof(bf) ); 
+  PATH_CHECK( p5, bf );
+  p5.append( bf, bf + sizeof(bf) ); 
+  PATH_CHECK( p5, "bar/foo/bar/foo" );
 # endif
+
   BOOST_CHECK( p1 != p4 );
   BOOST_CHECK( p1.string() == p2.string() );
   BOOST_CHECK( p1.string() == p3.string() );
@@ -273,15 +284,6 @@ int test_main( int, char*[] )
   PATH_CHECK( "/foo", "/foo" );
   PATH_CHECK( path("") / "/foo", "/foo" );
   PATH_CHECK( path("/foo") / "", "/foo" );
-
-  path p5;
-  p5 /= "foo/bar";
-  PATH_CHECK( p5, "foo/bar" );
-  char bf[]= "bar/foo";
-  p5.assign( bf, bf + sizeof(bf) ); 
-  PATH_CHECK( p5, bf );
-  p5.append( bf, bf + sizeof(bf) ); 
-  PATH_CHECK( p5, "bar/foo/bar/foo" );
 
   if ( platform == "Windows" )
   {
