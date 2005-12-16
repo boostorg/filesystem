@@ -4,10 +4,6 @@
 Do-list</h1>
 <h2>Current</h2>
 <ul>
-  <li>Mini-review</li>
-</ul>
-<h2>Defer until after mini-review</h2>
-<ul>
   <li>Add test cases and docs for Windows <a href="file://?/">\\?\</a> and
   <a href="file://?/UNC/">\\?\UNC\</a> naming conventions.</li>
   <li>Should operations.cpp assert or BOOST_ASSERT on more preconditions?</li>
@@ -16,11 +12,6 @@ Do-list</h1>
   Rich Johnson's <a href="http://lists.boost.org/boost-users/2004/01/5770.php">
   lists.boost.org/boost-users/2004/01/5770.php</a>, and John Maddock's
   <a href="http://lists.boost.org/boost-users/2004/01/5770.php">lists.boost.org/boost-users/2004/01/5770.php</a></li>
-  <li>Add a path::swap member function guaranteed not to throw? (Geurt Vos).</li>
-  <li>Add an operations function based on statvfs/GetDiskFreeSpaceEx? (Steve Hartmann/Thomas Matelich)</li>
-  <li>Add  basic_path  constructor from InputIterator (Adrian Martin). Note 
-  requirement that InputIterator value type be convertible to 
-  basic_path::value_type.</li>
   <li>Issue (Adrian Martin): &gt;Comparison between paths doesn't use locale.<br>
   &gt;<br>
   &gt;The paths are not treated as plain characters since a lexicographical <br>
@@ -36,28 +27,15 @@ Do-list</h1>
   comparison is used for. Remember that equivalence should be determined by the 
   equivalent() function. An important use of operator&lt; is when path is used as a 
   map or set key. Not sure how locale impacts that.</li>
-  <li>Move canonize() and normalize() to convenience.hpp</li>
+  <li>Move canonize() and normalize() to convenience.hpp?</li>
   <li>Need wording to the effect that basic_path::iterators are invalidated in 
   the basic_path object's lifetime ends.</li>
-  <li>Move name checks to convenience.hpp.</li>
-  <li>Move rename_all to convenience.hpp.</li>
-  <li>Templatize name checks.</li>
-  <li>Provide path_checks (which in turn use name checks)?</li>
-  <li>It should be possible with two argument operational functions for each 
-  argument type to be a different basic_path type. Is that the real need? The 
-  real need might be just to be able to rename.<ul>
-  <li>Work out use cases. Windows. POSIX. On POSIX does renaming from one 
-  multi-byte encoding to another work?</li>
-  <li>Implement</li>
-  <li>Test</li>
-  <li>Document</li>
-  <li>Change proposal accordingly </li>
-</ul>
-  </li>
+  <li>Move name checks to convenience.hpp?</li>
+  <li>Move rename_all to convenience.hpp?</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21142" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2005<!--webbot bot="Timestamp" endspan i-checksum="38518" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
