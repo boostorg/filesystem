@@ -5,7 +5,7 @@
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 FAQ</h1>
 <p><b>Why base the generic-path string format on POSIX?</b></p>
-<p><a href="design.htm#POSIX-01">POSIX</a> is the basis for the most familiar path-string formats, including the 
+<p><a href="design.htm#POSIX-01">[POSIX-01]</a> is the basis for the most familiar path-string formats, including the 
 URL portion of URI's and the native Windows format. It is ubiquitous and 
 familiar.&nbsp; On many systems, it is very easy to implement because it is 
 either the native operating system format (Unix and Windows) or via a 
@@ -28,19 +28,16 @@ readability. There was no apparent upside benefit.</p>
 absolute on some systems?) by programmers used to single-rooted filesystems. 
 Using an unfamiliar name for the concept and related functions causes 
 programmers to read the specs rather than just assuming the meaning is known.</p>
-<p><b>Why do some function names have a &quot;native_&quot; prefix?</b></p>
-<p>To alert users that the results are inherently non-portable. The names are 
-deliberately ugly to discourage use except where really necessary.</p>
-<p><b>Why not support a concept of specific kinds of file systems, such as 
-posix_file_system or windows_file_system?</b></p>
+<p><b>Why not support a  concept of specific kinds of file systems, such as posix_file_system or windows_file_system.</b></p>
 <p>Portability is one of the one or two most important requirements for the 
 library.&nbsp;Gaining some advantage by using features specific to particular 
 operating systems is not a requirement. There doesn't appear to be much need for 
 the ability to manipulate, say, a classic Mac OS path while running on an 
 OpenVMS machine.</p>
-<p>Furthermore, concepts like &quot;posix_file_system&quot; 
-are very slippery. What happens when a NTFS or ISO 9660 file system is mounted 
-in directory on a machine running a POSIX-like operating system, for example?</p>
+<p>Furthermore, concepts like &quot;file system&quot; 
+are very slippery. What happens when a NTFS or FAT file system is mounted 
+in directory on a machine running a POSIX-like operating system, for example? 
+Some of the POSIX API's may return very un-POSIX like results.</p>
 <p><b>Why not supply a 'handle' type, and let the file and directory operations 
 traffic in it?</b></p>
 <p>It isn't clear there is any feasible way to meet the &quot;portable script-style 
@@ -101,19 +98,29 @@ acceptable and less likely to be used incorrectly. </p>
 extended attempt to add convenience functions on top of, or as a replacement 
 for, the low-level functionality failed because there is no widely acceptable 
 set of simple semantics for most convenience functions considered.&nbsp; 
-Attempts to provide alternate semantics, via either run-time options or 
-compile-time polices, became overly complicated in relation to the value 
+Attempts to provide alternate semantics via either run-time options or 
+compile-time polices became overly complicated in relation to the value 
 delivered, or became contentious.&nbsp; OTOH, the specific functionality needed for several trial 
 applications was very easy for the user to construct from the lower-level 
-toolkit functions.&nbsp; See <a href="design.htm#Abandoned_Designs">Failed Attempts</a>.</p>
+toolkit functions.&nbsp; See <a href="design.htm#Abandoned_Designs">Failed 
+Attempts</a>.</p>
 <p><b>Isn't it inconsistent then to provide a few convenience functions?</b></p>
 <p>Yes, but experience with both this library, POSIX, and Windows indicates 
 the utility of certain convenience functions, and that it is possible to provide 
 simple, yet widely acceptable, semantics for them. For example, remove_all.</p>
+<p><b>Why are there basic_directory_iterator&lt;&gt; overloads for operations.hpp 
+predicate functions? Isn't two ways to do the same thing poor design?</b></p>
+<p>Yes, two ways to do the same thing is often a poor design practice. But the 
+iterator versions are often much more efficient. Calling status() during 
+iteration over a directory containing 15,000 files took 6 seconds for the path 
+overload, and 1 second for the iterator overload, for tests on a freshly booted 
+machine. Times were .90 seconds and .30 seconds, for tests after prior use of 
+the directory. This performance gain is large enough to justify deviating from 
+preferred design practices. Neither overload alone meets all needs.</p>
 <p><b>Why are library functions so picky about errors?</b></p>
 <p>Safety. The default is to be safe rather than sorry. This is particularly 
 important given the reality that on many computer systems files and directories 
-are <a href="index.htm#Race-condition">globally shared</a> resources, and thus subject to 
+are <a href="#global">globally shared</a> resources, and thus subject to 
 unexpected errors.</p>
 <p><b>Why are errors reported by exception rather than return code or error 
 notification variable?</b></p>
@@ -122,9 +129,9 @@ by programmers.&nbsp; Exceptions are much harder to ignore, provided desired
 default behavior (program termination) if not caught, yet allow error recovery 
 if desired.</p>
 <p><b>Why are attributes accessed via named functions rather than property maps?</b></p>
-<p>For a few commonly used attributes (existence, directory or file, emptiness), 
+<p>For  commonly used attributes (existence, directory or file, emptiness), 
 simple syntax and guaranteed presence outweigh other considerations. Because 
-access to virtually all other attributes is inherently system dependent, 
+access to many other attributes is inherently system dependent, 
 property maps are viewed as the best hope for access and modification, but it is 
 better design to provide such functionality in a separate library. (Historical 
 note: even the apparently simple attribute &quot;read-only&quot; turned out to be so 
@@ -133,39 +140,10 @@ system depend as to be disqualified as a &quot;guaranteed presence&quot; operati
 <p>Global variables are considered harmful [<a href="design.htm#Wulf-Shaw-73">wulf-shaw-73</a>]. 
 While we can't prevent people from shooting themselves in the foot, we aren't 
 about to hand them a loaded gun pointed right at their big toe.</p>
-<p><b>Why aren't there query functions for compound conditions like existing_directory?</b></p>
-<p>After several attempts, named queries for multi-attribute proved a 
-slippery-slope; where do you stop?</p>
 <p><b>Why aren't <a name="wide-character_names">wide-character names</a> supported? Why not std::wstring or even 
 a templated type?</b></p>
-<p>Wide-character names would provide an illusion of portability where 
-portability does not in fact exist. Behavior would be completely different on 
-operating systems (Windows, for example) that support wide-character names, than 
-on systems which don't (POSIX). Providing functionality that appears to provide 
-portability but in fact delivers only implementation-defined behavior is highly 
-undesirable. Programs would not even be portable between library implementations 
-on the same operating system, let alone portable to different operating systems.</p>
-<p>The C++ standards committee Library Working Group discussed this in some 
-detail both on the committee's library reflector and at the Spring, 2002, <font face="Times New Roman">&nbsp;meeting</font>, and feels that (1) names based on types other than char are 
-extremely non-portable, (2) there are no agreed upon semantics for conversion 
-between wide-character and narrow-character names for file systems which do not support 
-wide-character name, and 
-(3) even the committee members most interested in wide-character names are 
-unsure that they are a good idea in the context of a portable library.</p>
-<p>[October, 2002 - PJ Plauger has suggested a&nbsp; locale based conversion 
-scheme. Others have indicated support for such an experiment.]</p>
-<p><b>Why are file and directory name portability errors detected automatically 
-when these aren't actually errors in some applications?</b></p>
-<p>For many uses, automatic portability error detection based on the generic 
-path grammar is a sensible default. For cases where some other error check 
-(including no check at all) is preferred&nbsp; for the entire application, 
-functionality is provided to change the default. For cases where some other 
-error check (including no check at all) is preferred&nbsp; for a particular 
-path, the error check can be specified in the path constructor.</p>
-<p>The error checking functions call also be explicitly called. That provides 
-yet another way to check for errors.</p>
-<p>The design makes error checking easy and automatic for common cases, yet 
-provides explicit control when that is required.</p>
+<p>They <u>are</u> supported, starting with version 1.33. See
+<a href="i18n.html">Internationalization</a>.</p>
 <p><b>Why isn't more powerful name portability error detection provided, such as 
 deferring checking until a path is actually used?</b></p>
 <p>A number (at least six) of designs for  name validity error 
@@ -177,7 +155,7 @@ isn't important enough to justify added a lot of additional complexity.</p>
 <p><b>Why are paths sometimes manipulated by member functions and sometimes by 
 non-member functions?</b></p>
 <p>The design rule is that purely lexical operations are supplied as <i>class 
-path</i> member 
+basic_path</i> member 
 functions, while operations performed by the operating system are provided as 
 free functions.</p>
 <p><b>Why is path <a href="path.htm#Normalized">normalized form</a> different 

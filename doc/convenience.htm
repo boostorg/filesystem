@@ -6,8 +6,6 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 
-<link rel="stylesheet" type="text/css" href="../../../boost.css">
-
 <title>Boost Filesystem convenience.hpp Header</title>
 </head>
 
@@ -16,24 +14,29 @@
 <h1>
 <img border="0" src="../../../boost.png" align="center" width="277" height="86"><a href="../../../boost/filesystem/convenience.hpp">boost/filesystem/convenience.hpp</a></h1>
 
+<h2>Contents</h2>
+
+<dl class="index">
+<dt><a href="#Introduction">Introduction</a><dt><a href="#create_directories">create_directories</a>
+<dt><a href="#extension">extension</a>
+<dt><a href="#basename">basename</a>
+<dt><a href="#change_extension">change_extension</a><br>
+<a href="#basic_recursive_directory_iterator">basic_recursive_directory_iterator</a></dl>
+
+<h2><a name="Introduction">Introduction</a></h2>
+
 <p>Header <a href="../../../boost/filesystem/convenience.hpp">convenience.hpp</a> 
 provides convenience functions that combine lower-level functions in useful 
 ways.</p>
 
-<h2>Contents</h2>
+<p>The entire contents of the header is in namespace boost::filesystem.</p>
 
-<dl class="index">
-<dt><a href="#create_directories">create_directories</a>
-<dt><a href="#extension">extension</a>
-<dt><a href="#basename">basename</a>
-<dt><a href="#change_extension">change_extension</a>
-</dl>
-
-<h2 id="create_directories">create_directories</h2>
+<h2 id="create_directoies"><a name="create_directories">create_directories</a></h2>
 
 <blockquote>
 
-<p><code>bool create_directories( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+bool create_directories( const Path &amp; ph );</code></p>
 
 <p><b>Precondition:</b> <code>ph.empty() || <br>
 forall p: p == ph || is_parent(p, ph): is_directory(p) || !exists( p )</code>
@@ -41,7 +44,7 @@ forall p: p == ph || is_parent(p, ph): is_directory(p) || !exists( p )</code>
 <p><b>Returns:</b> The value of <code>!exists(ph)</code> prior to the 
 establishment of the postcondition.</p>
 
-<p><b>Postcondition:</b> <code>exists(ph) &amp;&amp; is_directory(ph)</code></p>
+<p><b>Postcondition:</b> <code>is_directory(ph)</code></p>
 
 <p><b>Throws:</b> <code>exists(ph) &amp;&amp; !is_directory(ph)</code></p>
 
@@ -49,20 +52,21 @@ establishment of the postcondition.</p>
 
 </blockquote>
 
-<h2 id="extension">extension</h2>
+<h2 id="extension"><a name="extension">extension</a></h2>
 
 <blockquote>
 
-<p><code>std::string extension( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+typename Path::string_type extension( const Path &amp; ph );</code></p>
 
 <p><b>Returns:</b> if <code>ph.leaf()</code> contains a dot ('.'),
 returns the substring of <code>ph.leaf()</code> starting from the last dot and
-ending at the string's end. Otherwise, returns empty string.
+ending at the string's end. Otherwise, returns an empty string.
 <p><b>Rationale:</b> <ul>
 <li>The dot is included in the return value so that it's
 possible to tell if extension is empty or absent.
 <li>It was noted that this definition of extension is probably not sufficient
-when using <a href="http://support.microsoft.com/kb/105763">Alternate Data Streams</a> &mdash;
+when using <a href="http://tinyurl.com/9tih">Alternate Data Streams</a> &mdash;
 a filesystem feature specific to NTFS. However, semantics in this case were not
 clear, and the current behavior is still quite useful.
 </ul>
@@ -73,11 +77,12 @@ discussed the ADS issue.
 
 </blockquote>
 
-<h2 id="basename">basename</h2>
+<h2 id="basename"><a name="basename">basename</a></h2>
 
 <blockquote>
 
-<p><code>std::string basename( const path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+typename Path::string_type basename( const Path &amp; ph );</code></p>
 
 <p><b>Returns:</b> if <code>ph.leaf()</code> contains a dot ('.'),
 returns the substring of <code>ph.leaf()</code> starting from beginning and
@@ -90,11 +95,12 @@ ending at the last dot (the dot is not included). Otherwise, returns
 
 </blockquote>
 
-<h2 id="change_extension">change_extension</h2>
+<h2 id="change_extension"><a name="change_extension">change_extension</a></h2>
 
 <blockquote>
 
-<p><code>path change_extension( const path &amp; ph, const std::string &amp; new_extension );</code></p>
+<p><code>template&lt;class Path&gt;<br>
+Path change_extension( const Path &amp; ph, const typename Path::string_type &amp; new_extension );</code></p>
 
 <p><b>Postcondition:</b> <code>basename(return_value) == basename(ph)
 &amp;&amp; extension(return_value) == new_extension</code>
@@ -114,10 +120,85 @@ is to drop the precondition.</p>
 
 
 
+<h2><a name="basic_recursive_directory_iterator">basic_recursive_directory_iterator</a></h2>
+
+<pre>template&lt; class Path &gt;
+class basic_recursive_directory_iterator
+  : public boost::iterator_facade&lt;
+      basic_recursive_directory_iterator&lt;Path&gt;, Path,
+      boost::single_pass_traversal_tag &gt;
+{
+public:
+  typedef Path path_type;
+
+  basic_recursive_directory_iterator(){} // creates the &quot;end&quot; iterator
+
+  explicit basic_recursive_directory_iterator( const Path &amp; dir_path );
+
+  int level() const;
+
+  void pop();
+  void no_push();
+
+  status_flags status( system_error_type * ec=0 ) const;
+  status_flags status( const symlink_t &amp;, system_error_type * ec=0 ) const;
+
+  bool exists() const;
+  bool is_directory() const;
+  bool is_file() const;
+  bool is_other() const;
+  bool is_symlink() const;
+
+private:
+  int m_level; // for exposition only
+};
+
+typedef basic_recursive_directory_iterator&lt;path&gt; recursive_directory_iterator;
+typedef basic_recursive_directory_iterator&lt;wpath&gt; wrecursive_directory_iterator;</pre>
+
+<p>The behavior of <i>basic_recursive_directory_iterator</i> member functions is 
+the same as <a href="operations.htm#directory_iterator">basic_directory_iterator</a> 
+functions of the same name, except:</p>
+<ul>
+  <li>When an iterator is constructed, <code>m_level</code> is set to 0;</li>
+  <li>When an iterator <code>it</code> for which <code>it.is_directory()</code> 
+  is true is incremented, <code>++m_level</code>, the directory is visited, and 
+  its contents recursively iterated over, unless <code>no_push()</code> was 
+  called prior to incrementing.</li>
+  <li>When an iterator reaches the end of the directory currently being iterated 
+  over, or when <code>pop()</code> is called, <code>--m_level</code>, and 
+  iteration continues with the parent directory, until the <code>dir_path</code> 
+  directory is reached.</li>
+  <li><code>level()</code> returns <code>m_level</code>.</li>
+  <li><code>level()</code>, <code>pop()</code>, and <code>no_push()</code> all 
+  have the precondition that the iterator not be the end iterator.</li>
+</ul>
+<p>The issue of duplicates (caused by symlinks and hard links) should be 
+consider when using <i>basic_recursive_directory_iterator</i>. 
+    Both duplicate detecting and non-detecting are needed, depending on the 
+application. Non-detecting is far 
+    more efficient, but some apps will require duplicate detection.</p>
+<p>When duplicate prevention is required, consider simply not following symlinks. 
+Use the <code>no_push()</code> function to avoid recursion into directories 
+reached by symlinks. If a more comprehensive solution is required, consider 
+these factors:</p>
+<ul>
+      <li>Names are useless for duplicate detection because of links and other file 
+      system alias mechanisms such as drive mapping, mounts.</li>
+      <li>inodes are unstable if handles are not held open, and it isn't 
+      feasible to hold unlimited number of handles open.</li>
+      <li>Size, dates, etc., are subject to race conditions.</li>
+      <li>No one method is likely to serve all needs, but a starting point might 
+      be to keep a hash-table keyed on a size/date based signature, then do 
+      equivalent() on all equal keys.</li>
+    </ul>
+
+<p>Contributed by Beman Dawes</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 March, 2004<!--webbot bot="Timestamp" endspan i-checksum="28863" --></p>
-<p>© Copyright Vladimir Prus, 2003</p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2005<!--webbot bot="Timestamp" endspan i-checksum="21129" --></p>
+<p>© Copyright Beman Dawes, 2005<br>
+© Copyright Vladimir Prus, 2003</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
 LICENSE_1_0.txt</a> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt">

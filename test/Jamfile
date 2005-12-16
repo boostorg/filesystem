@@ -30,10 +30,6 @@ DEPENDS all : test ;
                :  :  : <define>BOOST_ALL_NO_LIB <define>BOOST_FILESYSTEM_DYN_LINK <runtime-link>dynamic
                : path_test_dll
          ]
-         [ run libs/filesystem/test/default_name_check_test.cpp
-               <lib>../build/boost_filesystem
-               :  :  : <define>BOOST_ALL_NO_LIB <define>BOOST_FILESYSTEM_STATIC_LINK
-         ]
          [ run libs/filesystem/test/operations_test.cpp
                <lib>../build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB <define>BOOST_FILESYSTEM_STATIC_LINK
@@ -46,7 +42,6 @@ DEPENDS all : test ;
          [ run libs/filesystem/test/fstream_test.cpp
                <lib>../build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB <define>BOOST_FILESYSTEM_STATIC_LINK
-
          ]
          [ run libs/filesystem/test/convenience_test.cpp
                <lib>../build/boost_filesystem
@@ -56,5 +51,12 @@ DEPENDS all : test ;
                <lib>../build/boost_filesystem
                :  :  : <define>BOOST_ALL_NO_LIB <define>BOOST_FILESYSTEM_STATIC_LINK
          ]
+         [ run libs/filesystem/test/wide_test.cpp
+               <lib>../build/boost_filesystem
+               :  :  : <define>BOOST_ALL_NO_LIB <define>BOOST_FILESYSTEM_STATIC_LINK
+         ]
+         [ compile libs/filesystem/example/mbcopy.cpp ]
+         [ compile libs/filesystem/example/mbpath.cpp ]
+         [ compile libs/filesystem/example/simple_ls.cpp ]
        ;
 }

@@ -84,7 +84,8 @@ of choice..</p>
 </ul>
 <ul>
   <li>Interface smoothly with current C++ Standard Library input/output 
-  facilities.&nbsp; For example, paths should work in std::basic_fstream constructors.<br>
+  facilities.&nbsp; For example, paths should be 
+  easy to use in std::basic_fstream constructors.<br>
   <br>
   Rationale: One of the most common uses of file system functionality is to 
   manipulate paths for eventual use in input/output operations.&nbsp; 
@@ -259,6 +260,9 @@ operation specific runtime policies, they were all considered, often
 implemented, and ultimately abandoned as far too complicated for any small 
 benefits observed.</p>
 
+<p>Additional design considerations apply to <a href="i18n.html">
+Internationalization</a>. </p>
+
 <h3>error checking</h3>
 
 <p>A number of designs for the error checking machinery were abandoned, some 
@@ -279,30 +283,60 @@ work correctly on their choice of target systems.</p>
 
 <h2><a name="References">References</a></h2>
 
-<p>[<a name="IBM-01">IBM-01</a>] IBM Corporation, <i>z/OS V1R3.0 C/C++ Run-Time 
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
+  <tr>
+    <td width="13%" valign="top">[<a name="IBM-01">IBM-01</a>]</td>
+    <td width="87%">IBM Corporation, <i>z/OS V1R3.0 C/C++ Run-Time 
 Library Reference</i>, SA22-7821-02, 2001,
 <a href="http://www-1.ibm.com/servers/eserver/zseries/zos/bkserv/">
-http://www-1.ibm.com/servers/eserver/zseries/zos/bkserv/</a></p>
-
-<p>[<a name="ISO-9660">ISO-9660</a>] International Standards Organization, 1988.</p>
-
-<p>[<a name="MSDN">MSDN</a>] Microsoft Platform SDK for Windows, Storage Start 
+    www-1.ibm.com/servers/eserver/zseries/zos/bkserv/</a></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="ISO-9660">ISO-9660</a>]</td>
+    <td width="87%">International Standards Organization, 1988</td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="Kuhn">Kuhn</a>]</td>
+    <td width="87%">UTF-8 and Unicode FAQ for Unix/Linux,
+<a href="http://www.cl.cam.ac.uk/~mgk25/unicode.html">
+    www.cl.cam.ac.uk/~mgk25/unicode.html</a></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="MSDN">MSDN</a>] </td>
+    <td width="87%">Microsoft Platform SDK for Windows, Storage Start 
 Page,
 <a href="http://msdn.microsoft.com/library/en-us/fileio/base/storage_start_page.asp">
-http://msdn.microsoft.com/library/en-us/fileio/base/storage_start_page.asp</a></p>
-
-<p>[<a name="POSIX-01">POSIX-01</a>] IEEE Std 1003.1-2001/ISO/IEC 9945:2002 ,
-<a href="http://www.unix-systems.org/version3/">
-http://www.unix-systems.org/version3/</a>. The ISO JTC1/SC22/WG15 - POSIX 
-homepage is <a href="http://std.dkuug.dk/JTC1/SC22/WG15/">
-http://std.dkuug.dk/JTC1/SC22/WG15/</a>.</p>
-
-<p>[<a name="URI">URI</a>] RFC-2396, Uniform Resource Identifiers (URI): Generic 
+    msdn.microsoft.com/library/en-us/fileio/base/storage_start_page.asp</a></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="POSIX-01">POSIX-01</a>]</td>
+    <td width="87%">IEEE&nbsp;Std&nbsp;1003.1-2001, ISO/IEC 9945:2002, and The Open Group Base Specifications, Issue 6. Also known as The 
+    Single Unix<font face="Times New Roman">® Specification, Version 3. 
+    Available from each of the organizations involved in its creation. For 
+    example, read online or download from
+    <a href="http://www.unix.org/single_unix_specification/">
+    www.unix.org/single_unix_specification/</a>.</font> The ISO JTC1/SC22/WG15 - POSIX 
+homepage is <a href="http://www.open-std.org/jtc1/sc22/WG15/">
+    www.open-std.org/jtc1/sc22/WG15/</a></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="URI">URI</a>]</td>
+    <td width="87%">RFC-2396, Uniform Resource Identifiers (URI): Generic 
 Syntax, <a href="http://www.ietf.org/rfc/rfc2396.txt">
-http://www.ietf.org/rfc/rfc2396.txt</a></p>
-
-<p>[<a name="Wulf-Shaw-73">Wulf-Shaw-73</a>] William Wulf, Mary Shaw, <i>Global 
-Variable Considered Harmful</i>, ACM SIGPLAN Notices, 8, 2, 1973, pp. 23-34</p>
+    www.ietf.org/rfc/rfc2396.txt</a></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="UTF-16">UTF-16</a>]</td>
+    <td width="87%">Wikipedia, UTF-16,
+<a href="http://en.wikipedia.org/wiki/UTF-16">
+    en.wikipedia.org/wiki/UTF-16</a></td>
+  </tr>
+  <tr>
+    <td width="13%" valign="top">[<a name="Wulf-Shaw-73">Wulf-Shaw-73</a>]</td>
+    <td width="87%">William Wulf, Mary Shaw, <i>Global 
+Variable Considered Harmful</i>, ACM SIGPLAN Notices, 8, 2, 1973, pp. 23-34</td>
+  </tr>
+</table>
 
 <hr>
 <p>Revised

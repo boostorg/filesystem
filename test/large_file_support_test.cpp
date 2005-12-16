@@ -15,7 +15,7 @@ namespace fs = boost::filesystem;
 
 int main()
 {
-  if ( fs::possible_large_file_size_support() )
+  if ( fs::detail::possible_large_file_size_support() )
   {
     std::cout << "It appears that file sizes greater that 2 gigabytes are possible\n"
                  "for this configuration on this platform since the operating system\n"

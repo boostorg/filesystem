@@ -11,9 +11,10 @@
 {
 
  exe file_size : file_size.cpp
-                 ../src/operations_posix_windows.cpp
+                 ../src/operations.cpp
                  ../src/exception.cpp
-                 ../src/path_posix_windows.cpp
+                 ../src/path.cpp
+                 ../src/portability.cpp
                : <define>BOOST_ALL_NO_LIB
                  <include>$(BOOST_ROOT) <sysinclude>$(BOOST_ROOT)
                ;

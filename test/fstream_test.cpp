@@ -7,9 +7,24 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+//  VC++ 8.0 warns on various less-than-safe practices.
+//  See http://msdn.microsoft.com/msdnmag/issues/05/05/SafeCandC/default.aspx
+//  But at least in VC++ 8.0 betas, their own libraries use the problem
+//  practices. So turn off the warnings.
+#define _CRT_SECURE_NO_DEPRECATE
+#define _SCL_SECURE_NO_DEPRECATE
+
 #include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <string>
+#include <iostream>
 #include <cstdio> // for std::remove
+
+#include "../src/utf8_codecvt_facet.hpp"
+
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#  include "lpath.hpp"
+#endif
 
 namespace fs = boost::filesystem;
 
@@ -20,113 +35,137 @@ namespace fs = boost::filesystem;
 
 #include <boost/test/minimal.hpp>
 
+namespace
+{
+  template< class Path >
+  void test( const Path & p )
+  {
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
+    { 
+      std::cout << " in test 1\n";
+      fs::filebuf fb;
+      fb.open( p, std::ios_base::in );
+      BOOST_CHECK( fb.is_open() == fs::exists( p ) );
+    }
+    {
+      std::cout << " in test 2\n";
+      fs::filebuf fb1;
+      fb1.open( p, std::ios_base::out );
+      BOOST_CHECK( fb1.is_open() );
+    }
+    {
+      std::cout << " in test 3\n";
+      fs::filebuf fb2;
+      fb2.open( p, std::ios_base::in );
+      BOOST_CHECK( fb2.is_open() );
+    }
+#  else
+    std::cout << "<note>\n";
+    std::cout <<
+      "VC++6.0 does not support boost::filesystem open()\n";
+#  endif
+    {
+      std::cout << " in test 4\n";
+      fs::ifstream tfs( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 5\n";
+      fs::ifstream tfs( p, std::ios_base::in );
+      BOOST_CHECK( tfs.is_open() );
+    }
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
+    {
+      std::cout << " in test 6\n";
+      fs::ifstream tfs;
+      tfs.open( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 7\n";
+      fs::ifstream tfs;
+      tfs.open( p, std::ios_base::in );
+      BOOST_CHECK( tfs.is_open() );
+    }
+#  endif
+    {
+      std::cout << " in test 8\n";
+      fs::ofstream tfs( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 9\n";
+      fs::ofstream tfs( p, std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
+    {
+      std::cout << " in test 10\n";
+      fs::ofstream tfs;
+      tfs.open( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 11\n";
+      fs::ofstream tfs;
+      tfs.open( p, std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+# endif
+    {
+      std::cout << " in test 12\n";
+      fs::fstream tfs( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 13\n";
+      fs::fstream tfs( p, std::ios_base::in|std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+#  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
+    {
+      std::cout << " in test 14\n";
+      fs::fstream tfs;
+      tfs.open( p );
+      BOOST_CHECK( tfs.is_open() );
+    }
+    {
+      std::cout << " in test 15\n";
+      fs::fstream tfs;
+      tfs.open( p, std::ios_base::in|std::ios_base::out );
+      BOOST_CHECK( tfs.is_open() );
+    }
+#  endif
+  } // test
+} // unnamed namespace
+
 int test_main( int, char*[] )
 {
-  { // basic_filebuf runtime results are ignored; as long as they don't crash
-    // or throw we are satisfied
-    fs::basic_filebuf<char> bfb;
-    fs::filebuf cfb;
+ 
+  // test fs::path
+  std::cout << "path tests:\n";
+  test( fs::path( "fstream_test_foo" ) );
 
-    bfb.open( "fstream_test_bffoo", std::ios_base::in );
-    cfb.open( "fstream_test_bffoo", std::ios_base::in );
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wfilebuf wfb;
-    wfb.open( "fstream_test_bffoo", std::ios_base::in );
-#   endif
-  }
+  // So that tests are run with known encoding, use Boost UTF-8 codecvt
+  std::locale global_loc = std::locale();
+  std::locale loc( global_loc, new fs::detail::utf8_codecvt_facet );
+  fs::wpath_traits::imbue( loc );
 
-  std::remove( "fstream_test_bfoo" );
-  std::remove( "fstream_test_cfoo" );
-# ifndef BOOST_NO_STD_WSTRING
-  std::remove( "fstream_test_wfoo" );
-# endif
-  {
-    fs::basic_ofstream<char> bofs( "fstream_test_bfoo" );
-    fs::ofstream cofs( "fstream_test_cfoo" );
+  // test fs::wpath
+  //  x2780 is circled 1 against white background == e2 9e 80 in UTF-8
+  //  x2781 is circled 2 against white background == e2 9e 81 in UTF-8
+  std::cout << "\nwpath tests:\n";
+  test( fs::wpath( L"fstream_test_\x2780" ) );
 
-    BOOST_CHECK( bofs.is_open() );
-    BOOST_CHECK( cofs.is_open() );
+  // test user supplied basic_path
+  const long lname[] = { 'f', 's', 'r', 'e', 'a', 'm', '_', 't', 'e', 's',
+    't', '_', 'l', 'p', 'a', 't', 'h', 0 };
+  std::cout << "\nlpath tests:\n";
+  test( user::lpath( lname ) );
 
-    bofs << "fstream_test_bfoo";
-    cofs << "fstream_test_cfoo";
+#endif
 
-    // these will fail, but they still test the interface
-    bofs.open( "fstream_test_bfoo" );
-    cofs.open( "fstream_test_cfoo" );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wofstream wofs( "fstream_test_wfoo" );
-    BOOST_CHECK( wofs.is_open() );
-    wofs << L"fstream_test_wfoo";
-    wofs.open( "fstream_test_wfoo" ); // expected to fail
-#   endif
-  }
-
-  {
-    fs::basic_ifstream<char> bifs( "fstream_test_bfoo" );
-    fs::ifstream cifs( "fstream_test_cfoo" );
-
-    BOOST_CHECK( bifs.is_open() );
-    BOOST_CHECK( cifs.is_open() );
-
-    std::string b;
-    std::string c;
-
-    bifs >> b;
-    cifs >> c;
-
-    BOOST_CHECK( b == "fstream_test_bfoo" );
-    BOOST_CHECK( c == "fstream_test_cfoo" );
-
-    // these will fail, but they still test the interface
-    bifs.open( "fstream_test_bfoo" );
-    cifs.open( "fstream_test_cfoo" );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wifstream wifs( "fstream_test_wfoo" );
-    BOOST_CHECK( wifs.is_open() );
-    std::wstring w;
-    wifs >> w;
-    BOOST_CHECK( w == L"fstream_test_wfoo" );
-    wifs.open( "fstream_test_wfoo" ); // expected to fail
-#   endif
-  }
-
-  {
-    fs::basic_fstream<char> bfs( "fstream_test_bfoo" );
-    fs::fstream cfs( "fstream_test_cfoo" );
-
-    BOOST_CHECK( bfs.is_open() );
-    BOOST_CHECK( cfs.is_open() );
-
-    std::string b;
-    std::string c;
-
-    bfs >> b;
-    cfs >> c;
-
-    BOOST_CHECK( b == "fstream_test_bfoo" );
-    BOOST_CHECK( c == "fstream_test_cfoo" );
-
-    // these will fail, but they still test the interface
-    bfs.open( "fstream_test_bfoo" );
-    cfs.open( "fstream_test_cfoo" );
-
-#   ifndef BOOST_NO_STD_WSTRING
-    fs::wfstream wfs( "fstream_test_wfoo" );
-    BOOST_CHECK( wfs.is_open() );
-    std::wstring w;
-    wfs >> w;
-    BOOST_CHECK( w == L"fstream_test_wfoo" );
-    wfs.open( "fstream_test_wfoo" ); // expected to fail
-#   endif
-  }
-
-//  std::remove( "fstream_test_bfoo" );
-//  std::remove( "fstream_test_cfoo" );
-//  #   ifndef BOOST_NO_STD_WSTRING
-//  std::remove( "fstream_test_wfoo" );
-//  #   endif
   return 0;
 }

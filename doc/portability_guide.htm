@@ -21,7 +21,7 @@ Guide</h1>
 <a href="#recommendations">File and directory name recommendations</a></p>
 <h2><a name="Introduction">Introduction</a></h2>
 <p>Like any other C++ program which performs I/O operations, there is no 
-guarantee that a program using the Filesystem Library will be portable between 
+guarantee that a program using Boost.Filesystem will be portable between 
 operating systems. Critical aspects of I/O, such as how the operating system 
 interprets paths, are unspecified by the C and C++ Standards.</p>
 <p>It is not possible to know  if a file or directory name will be 
@@ -44,8 +44,8 @@ for some of those file systems differ a great deal. Each file system may have
 differing rules for overall path validity, such as a maximum length or number of 
 sub-directories.</p>
 
-<p>As a result, the Boost Filesystem Library's <i>name_check</i> mechanism 
-cannot guarantee directory and file name portability. Rather, it is intended to 
+<p>As a result, Boost.Filesystem's <i>name_check</i> functions 
+cannot guarantee directory and file name portability. Rather, they are intended to 
 give the programmer a &quot;fighting chance&quot; to achieve portability by early 
 detection of common naming problems.</p>
 
@@ -57,13 +57,9 @@ system. A number of these functions are supplied, and user-supplied <i>
 name_check</i> functions are also allowed.</p>
 
 <p>The <a href="#portable_name">portable_name</a> function is of particular 
-interest because it is the initial <a href="path.htm#name_check­_mechanism">
-default name_check function</a> and is carefully chosen to provide wide 
-portability yet without severe restrictions on expressiveness.</p>
+interest because it has been carefully designed to provide wide 
+portability yet not overly restrict expressiveness.</p>
 
-<p>The <a href="#native">native</a> function is of particular interest because 
-it is often used when the source of the path is operator input or other sources 
-which are formatted according to operating system rules.</p>
 <table border="1" cellpadding="5" cellspacing="0">
   <tr>
     <td align="center" colspan="2"><b>Library Supplied name_check Functions</b></td>
@@ -95,9 +91,7 @@ which are formatted according to operating system rules.</p>
   <tr>
     <td align="left" valign="top"><code><a name="portable_name">portable_name</a></code></td>
     <td><code>windows_name(name) &amp;&amp; portable_posix_name(name)</code>, 
-    and first character not period or hyphen.<p>
-    <b>Note:</b> This is the initial default name_check.</p>
-    <p><b>Use:</b> applications which must be portable to a wide variety of 
+    and the first character not a period or hyphen.<p><b>Use:</b> applications which must be portable to a wide variety of 
     modern operating systems, large and small, and to some legacy O/S's.</td>
   </tr>
   <tr>
@@ -116,27 +110,9 @@ which are formatted according to operating system rules.</p>
     but limit its length.</td>
   </tr>
   <tr>
-    <td align="left" valign="top"><code><a name="no_check">no_check</a></code></td>
-    <td>Returns <i>true</i>.<p><b>Use: </b>When the generic grammar 
-    is desired, but name checking is not desired. For example, a program which 
-    traffics in names created elsewhere may have no choice but to accept those 
-    names. Another example is a application which prefers to use the Filesystem 
-    Library and its generic grammar, but is uninterested in portability. An 
-    alternative to <code>no_check</code> might be <code>native</code>, but <code>native</code> 
-    has the side effect of altering the grammar accepted.</td>
-  </tr>
-  <tr>
     <td align="left" valign="top"><code><a name="native">native</a></code></td>
-    <td>Implementation defined name_check. Guaranteed to return <i>
-    true</i> for all names considered valid by the operating system.<p><b>Side 
-    effect:</b> Syntax for path constructor <i>src</i> string is implementation 
-    defined according to the path syntax rules for the operating system.</p>
-    <p><b>Use:</b> In path constructors, when the source is operator input or 
-    other sources which are formatted according to operating system rules. Note 
-    that&nbsp; <code>default_name_check( native )</code> causes all path src 
-    strings to be treated according to the path syntax rules for the operating 
-    system, which may or may not be desirable.</p>
-    <p><b>Note:</b> May return <i>true</i> for some names not considered valid 
+    <td>Implementation defined name_check. Returns <i>
+    true</i> for all names considered valid by the operating system.<p><b>Note:</b> May return <i>true</i> for some names not considered valid 
     by the operating system under all conditions (particularly on operating systems which support 
     multiple file systems.)</td>
   </tr>
@@ -155,7 +131,7 @@ which are formatted according to operating system rules.</p>
     underscore.<p>Use any of the &quot;portable_&quot; <a href="#name_check­_functions">
     name check functions</a> to enforce this recommendation.</td>
     <td valign="top">These are the characters specified by the POSIX standard for portable directory and
-    file names, and are also valid for Windows, Mac, and many other modern filesystems.</td>
+    file names, and are also valid for Windows, Mac, and many other modern file systems.</td>
   </tr>
   <tr>
     <td valign="top">Do not use a period or hyphen as the first 
@@ -172,20 +148,20 @@ which are formatted according to operating system rules.</p>
     <td valign="top">Do not use periods in directory names.<p>Use
     <a href="#portable_directory_name">portable_directory_name</a> to enforce 
     this recommendation.</td>
-    <td valign="top">Requirement for ISO-9660 without Juliet extensions, OpenVMS native filesystem, and other legacy systems.</td>
+    <td valign="top">Requirement for ISO-9660 without Juliet extensions, OpenVMS filesystem, and other legacy systems.</td>
   </tr>
   <tr>
     <td valign="top">Do not use more that one period in a file name, and limit 
     the portion after the period to three characters.<p>Use
     <a href="#portable_file_name">portable_file_name</a> to enforce this 
     recommendation.</td>
-    <td valign="top">Requirement for ISO-9660 level 1, OpenVMS native filesystem, and 
+    <td valign="top">Requirement for ISO-9660 level 1, OpenVMS filesystem, and 
     other legacy systems. </td>
   </tr>
   <tr>
     <td valign="top">Do not assume names are case sensitive. For example, do not expected a directory to be
     able to hold separate elements named &quot;Foo&quot; and &quot;foo&quot;. </td>
-    <td valign="top">Some filesystems are case insensitive.&nbsp; For example, Windows 
+    <td valign="top">Some file systems are case insensitive.&nbsp; For example, Windows 
     NTFS is case preserving in the way it stores names, but case insensitive in 
     searching for names (unless running under the POSIX sub-system, it which 
     case it does case sensitive searches). </td>
@@ -193,7 +169,7 @@ which are formatted according to operating system rules.</p>
   <tr>
     <td valign="top">Do not assume names are case insensitive.&nbsp; For example, do not expect a file
     created with the name of &quot;Foo&quot; to be opened successfully with the name of &quot;foo&quot;.</td>
-    <td valign="top">Some filesystems are case sensitive.&nbsp; For example, POSIX.</td>
+    <td valign="top">Some file systems are case sensitive.&nbsp; For example, POSIX.</td>
   </tr>
   <tr>
     <td valign="top">Don't use hyphens in names.</td>
@@ -215,7 +191,7 @@ which are formatted according to operating system rules.</p>
     &nbsp;&nbsp; 31 characters: Classic Mac OS<br>
 &nbsp;&nbsp; 8 characters + period + 3 characters: ISO 9660 level 1<br>
 &nbsp;&nbsp; 32 characters: ISO 9660 level 2 and 3<br>
-&nbsp;&nbsp; 128 characters (64 if unicode): ISO 9660 with Juliet extensions</td>
+&nbsp;&nbsp; 128 characters (64 if Unicode): ISO 9660 with Juliet extensions</td>
     <td valign="top">Limiting name length can markedly reduce the expressiveness of file names, yet placing
     only very high limits on lengths inhibits widest portability.</td>
   </tr>
@@ -223,7 +199,7 @@ which are formatted according to operating system rules.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 December, 2003<!--webbot bot="Timestamp" endspan i-checksum="38505" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 March, 2005<!--webbot bot="Timestamp" endspan i-checksum="28898" --></p>
 
 <p>© Copyright Beman Dawes, 2002, 2003</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

@@ -7,8 +7,15 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+//  VC++ 8.0 warns on various less-than-safe practices.
+//  See http://msdn.microsoft.com/msdnmag/issues/05/05/SafeCandC/default.aspx
+//  But at least in VC++ 8.0 betas, their own libraries use the problem
+//  practices. So turn off the warnings.
+#define _CRT_SECURE_NO_DEPRECATE
+#define _SCL_SECURE_NO_DEPRECATE
+
 #include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/exception.hpp>
+#include <boost/filesystem/cerrno.hpp>
 namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
@@ -20,13 +27,30 @@ using boost::bind;
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <cerrno>
 #include <ctime>
+#include <cstdlib> // for system()
+
+#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# define BOOST_BND(BOOST_FUNC_TO_DO) BOOST_FUNC_TO_DO<fs::path>
+#else
+# define BOOST_BND(BOOST_FUNC_TO_DO) BOOST_FUNC_TO_DO
+#endif
+
+// VC++ 7.0 and earlier has a serious namespace bug that causes a clash
+// between boost::filesystem::is_empty and the unrelated type trait
+// boost::is_empty.
+#if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300
+# define BOOST_FS_IS_EMPTY fs::is_empty
+#else
+# define BOOST_FS_IS_EMPTY fs::_is_empty
+#endif
 
 # ifdef BOOST_NO_STDC_NAMESPACE
     namespace std { using ::asctime; using ::gmtime; using ::localtime;
-    using ::difftime; using ::time; using ::tm; using ::mktime; }
+    using ::difftime; using ::time; using ::tm; using ::mktime; using ::system; }
 # endif
+
+#define CHECK_EXCEPTION(b,e) throws_fs_error(b,e,__LINE__)
 
 namespace
 {
@@ -37,43 +61,62 @@ namespace
 
   void create_file( const fs::path & ph, const std::string & contents )
   {
-    std::ofstream f( ph.native_file_string().c_str() );
+    std::ofstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test create_file",
+      throw fs::filesystem_path_error( "operations_test create_file",
         ph, errno );
     if ( !contents.empty() ) f << contents;
   }
 
   void verify_file( const fs::path & ph, const std::string & expected )
   {
-    std::ifstream f( ph.native_file_string().c_str() );
+    std::ifstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test verify_file",
+      throw fs::filesystem_path_error( "operations_test verify_file",
         ph, errno );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_error( "operations_test verify_file",
-        ph, " contents \"" + contents
-        + "\" != \"" + expected + "\"" );
+      throw fs::filesystem_path_error( "operations_test verify_file contents \""
+        + contents  + "\" != \"" + expected + "\"", ph, 0 );
   }
 
   template< typename F >
-    bool throws_fs_error( F func, fs::error_code ec =
-      ::boost::filesystem::no_error ) // VC++ 7.1 build 2292 won't accept fs::
+    bool throws_fs_error( F func, fs::errno_type ec, int line )
   {
     try { func(); }
 
     catch ( const fs::filesystem_error & ex )
     {
       if ( report_throws ) std::cout << ex.what() << "\n";
-      if ( ec == fs::no_error || ec == ex.error() ) return true;
-      std::cout << "filesystem_error::error() reports " << ex.error()
+      if ( ec == 0
+        || ec == fs::lookup_error_code(ex.system_error()) ) return true;
+      std::cout
+        << "\nline " << line
+        << " exception reports " << fs::lookup_error_code(ex.system_error())
         << ", should be " << ec
-        << "\n native_error() is " << ex.native_error()
+        << "\n system_error() is " << ex.system_error()
         << std::endl;
     }
     return false;
+  }
+
+  // compile-only two argument "do-the-right-thing" tests
+  //   verifies that all overload combinations compile without error
+  void do_not_call()
+  {
+    fs::path p;
+    std::string s;
+    const char * a = 0;
+    fs::copy_file( p, p );
+    fs::copy_file( s, p );
+    fs::copy_file( a, p );
+    fs::copy_file( p, s );
+    fs::copy_file( p, a );
+    fs::copy_file( s, s );
+    fs::copy_file( a, s );
+    fs::copy_file( s, a );
+    fs::copy_file( a, a );
   }
 
 } // unnamed namespace
@@ -89,115 +132,133 @@ int test_main( int argc, char * argv[] )
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
   // only the current platform is runtime tested.
-# if defined( BOOST_POSIX )
+# if defined( BOOST_POSIX_API )
     platform = "POSIX";
-# elif defined( BOOST_WINDOWS )
+# elif defined( BOOST_WINDOWS_API )
     platform = "Windows";
 # else
     platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
                ? "Windows"
                : "POSIX";
 # endif
-  std::cout << "Platform is " << platform << '\n';
+  std::cout << "API is " << platform << '\n';
 
-  std::cout << "initial_path().string() is\n  \""
-            << fs::initial_path().string()
+  std::cout << "\ninitial_path<path>().string() is\n  \""
+    << fs::initial_path<fs::path>().string()
             << "\"\n";
-  std::cout << "initial_path().native_file_string() is\n  \""
-            << fs::initial_path().native_file_string()
-            << "\"\n";
-
-  BOOST_CHECK( fs::initial_path().is_complete() );
-  BOOST_CHECK( fs::current_path().is_complete() );
-  BOOST_CHECK( fs::initial_path().string() == fs::current_path().string() );
+  std::cout << "\ninitial_path<fs::path>().file_string() is\n  \""
+            << fs::initial_path<fs::path>().file_string()
+            << "\"\n\n";
+  BOOST_CHECK( fs::initial_path<fs::path>().is_complete() );
+  BOOST_CHECK( fs::current_path<fs::path>().is_complete() );
+  BOOST_CHECK( fs::initial_path<fs::path>().string()
+    == fs::current_path<fs::path>().string() );
 
   BOOST_CHECK( fs::complete( "" ).empty() );
-  BOOST_CHECK( fs::complete( "/" ).string()
-    == fs::initial_path().root_path().string() );
-  BOOST_CHECK( fs::complete( "foo" ).string()
-    == fs::initial_path().string()+"/foo" );
-  BOOST_CHECK( fs::complete( "/foo" ).string()
-    == fs::initial_path().root_path().string()+"foo" );
+  BOOST_CHECK( fs::complete( "/" ).string() == fs::initial_path<fs::path>().root_path().string() );
+  BOOST_CHECK( fs::complete( "foo" ).string() == fs::initial_path<fs::path>().string()+"/foo" );
+  BOOST_CHECK( fs::complete( "/foo" ).string() == fs::initial_path<fs::path>().root_path().string()+"foo" );
+  BOOST_CHECK( fs::complete( "foo", fs::path( "//net/bar" ) ).string()
+      ==  "//net/bar/foo" );
 
-  fs::path dir(  fs::initial_path() / temp_dir_name );
+  // predicate and status tests
+  fs::path ng( " no-way, Jose" );
+  BOOST_CHECK( !fs::exists( ng ) );
+  BOOST_CHECK( !fs::is_directory( ng ) );
+  BOOST_CHECK( !fs::is_file( ng ) );
+  BOOST_CHECK( !fs::is_symlink( ng ) );
+  BOOST_CHECK( (fs::status( ng ) & fs::not_found_flag) != 0 );
+  BOOST_CHECK( (fs::status( "" ) & fs::not_found_flag) != 0 );
+
+  fs::path dir(  fs::initial_path<fs::path>() / temp_dir_name );
   
   // Windows only tests
   if ( platform == "Windows" )
   {
-    BOOST_CHECK( !fs::exists( fs::path( "//share-not/foo", fs::native ) ) );
+    BOOST_CHECK( !fs::exists( fs::path( "//share-not/foo" ) ) );
     BOOST_CHECK( dir.string().size() > 1
       && dir.string()[1] == ':' ); // verify path includes drive
 
     BOOST_CHECK( fs::system_complete( "" ).empty() );
     BOOST_CHECK( fs::system_complete( "/" ).string()
-      == fs::initial_path().root_path().string() );
+      == fs::initial_path<fs::path>().root_path().string() );
     BOOST_CHECK( fs::system_complete( "foo" ).string()
-      == fs::initial_path().string()+"/foo" );
+      == fs::initial_path<fs::path>().string()+"/foo" );
     BOOST_CHECK( fs::system_complete( "/foo" ).string()
-      == fs::initial_path().root_path().string()+"foo" );
-
-//    BOOST_CHECK( fs::complete( fs::path( "c:", fs::native ) ).string()
-//      == fs::initial_path().string() );
-//    BOOST_CHECK( fs::complete( fs::path( "c:foo", fs::native ) ).string()
-//      == fs::initial_path().string()+"/foo" );
-    BOOST_CHECK( fs::complete( fs::path( "c:/", fs::native ) ).string()
+      == fs::initial_path<fs::path>().root_path().string()+"foo" );
+    BOOST_CHECK( fs::complete( fs::path( "c:/" ) ).string()
       == "c:/" );
-    BOOST_CHECK( fs::complete( fs::path( "c:/foo", fs::native ) ).string()
+    BOOST_CHECK( fs::complete( fs::path( "c:/foo" ) ).string()
       ==  "c:/foo" );
-    BOOST_CHECK( fs::complete( fs::path( "//share", fs::native ) ).string()
-      ==  "//share" );
 
-    BOOST_CHECK( fs::system_complete( fs::path( fs::initial_path().root_name(),
-      fs::native ) ).string() == fs::initial_path().string() );
-    BOOST_CHECK( fs::system_complete( fs::path( fs::initial_path().root_name()
-      + "foo", fs::native ) ).string() == fs::initial_path().string()+"/foo" );
-    BOOST_CHECK( fs::system_complete( fs::path( "c:/", fs::native ) ).string()
+    BOOST_CHECK( fs::system_complete( fs::path( fs::initial_path<fs::path>().root_name() ) ).string() == fs::initial_path<fs::path>().string() );
+    BOOST_CHECK( fs::system_complete( fs::path( fs::initial_path<fs::path>().root_name()
+      + "foo" ) ).string() == fs::initial_path<fs::path>().string()+"/foo" );
+    BOOST_CHECK( fs::system_complete( fs::path( "c:/" ) ).string()
       == "c:/" );
-    BOOST_CHECK( fs::system_complete( fs::path( "c:/foo", fs::native ) ).string()
+    BOOST_CHECK( fs::system_complete( fs::path( "c:/foo" ) ).string()
       ==  "c:/foo" );
-    BOOST_CHECK( fs::system_complete( fs::path( "//share", fs::native ) ).string()
+    BOOST_CHECK( fs::system_complete( fs::path( "//share" ) ).string()
       ==  "//share" );
-  }
+  } // Windows
 
   else if ( platform == "POSIX" )
   {
     BOOST_CHECK( fs::system_complete( "" ).empty() );
-    BOOST_CHECK( fs::initial_path().root_path().string() == "/" );
+    BOOST_CHECK( fs::initial_path<fs::path>().root_path().string() == "/" );
     BOOST_CHECK( fs::system_complete( "/" ).string() == "/" );
     BOOST_CHECK( fs::system_complete( "foo" ).string()
-      == fs::initial_path().string()+"/foo" );
+      == fs::initial_path<fs::path>().string()+"/foo" );
     BOOST_CHECK( fs::system_complete( "/foo" ).string()
-      == fs::initial_path().root_path().string()+"foo" );
-  }
-
-  fs::path ng( " no-way, Jose", fs::native );
+      == fs::initial_path<fs::path>().root_path().string()+"foo" );
+  } // POSIX
 
   fs::remove_all( dir );  // in case residue from prior failed tests
   BOOST_CHECK( !fs::exists( dir ) );
 
-  // the bound functions should throw, so throws_fs_error() should return true
-  BOOST_CHECK( throws_fs_error( bind( fs::is_directory, ng ), fs::not_found_error ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::file_size, ng ), fs::not_found_error ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::is_directory, dir ) ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::_is_empty, dir ) ) );
+  // the bound functions should throw, so CHECK_EXCEPTION() should return true
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), ng ), ENOENT ) );
 
   // test path::exception members
-  try { fs::is_directory( ng ); } // will throw
+  try { fs::file_size( ng ); } // will throw
 
-  catch ( const fs::filesystem_error & ex )
+  catch ( const fs::filesystem_path_error & ex )
   {
-    BOOST_CHECK( ex.who() == "boost::filesystem::is_directory" );
     BOOST_CHECK( ex.path1().string() == " no-way, Jose" );
   }
 
   BOOST_CHECK( fs::create_directory( dir ) );
 
+  // several functions give unreasonable results if uintmax_t isn't 64-bits
+  std::cout << "sizeof(boost::uintmax_t) = " << sizeof(boost::uintmax_t) << '\n';
+  BOOST_CHECK( sizeof( boost::uintmax_t ) >= 8 );
+
+  // make some reasonable assuptions for testing purposes
+  fs::space_info spi( fs::space( dir ) );
+  BOOST_CHECK( spi.capacity > 1000000 );
+  BOOST_CHECK( spi.free > 1000 );
+  BOOST_CHECK( spi.capacity > spi.free );
+  BOOST_CHECK( spi.free >= spi.available );
+
+  // it is convenient to display space, but older VC++ versions choke 
+# if !defined(BOOST_MSVC) || _MSC_VER >= 1300  // 1300 == VC++ 7.0
+    std::cout << " capacity = " << spi.capacity << '\n';
+    std::cout << "     free = " << spi.free << '\n';
+    std::cout << "available = " << spi.available << '\n';
+# endif
+
   BOOST_CHECK( fs::exists( dir ) );
-  BOOST_CHECK( fs::_is_empty( dir ) );
+  BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
   BOOST_CHECK( fs::is_directory( dir ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::file_size, dir ),
-    fs::is_directory_error ) );
+  if ( platform == "Windows" )
+    BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 
+      ENOENT ) );
+  else
+    BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 0 ) );
   BOOST_CHECK( !fs::create_directory( dir ) );
+
+  BOOST_CHECK( !fs::is_symlink( dir ) );
+  BOOST_CHECK( !fs::is_symlink( "nosuchfileordirectory" ) );
 
   BOOST_CHECK( !fs::symbolic_link_exists( dir ) );
   BOOST_CHECK( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
@@ -206,13 +267,17 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::create_directory( d1 ) );
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( fs::is_directory( d1 ) );
-  BOOST_CHECK( fs::_is_empty( d1 ) );
+  BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
 
   boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
 
   {
     fs::directory_iterator dir_itr( dir );
+    BOOST_CHECK( dir_itr->status() == fs::directory_flag );
+    BOOST_CHECK( dir_itr->status( fs::symlink ) == fs::directory_flag );
     BOOST_CHECK( dir_itr->leaf() == "d1" );
+    BOOST_CHECK( fs::status(*dir_itr) == fs::directory_flag );
+    BOOST_CHECK( fs::status( *dir_itr, fs::symlink ) == fs::directory_flag );
   }
 
   // create a second directory named d2
@@ -225,8 +290,15 @@ int test_main( int argc, char * argv[] )
   // stepping one iterator doesn't affect a different iterator.
   {
     fs::directory_iterator dir_itr( dir );
+    BOOST_CHECK( dir_itr->exists() );
+    BOOST_CHECK( dir_itr->is_directory() );
+    BOOST_CHECK( !dir_itr->is_file() );
+    BOOST_CHECK( !dir_itr->is_other() );
+    BOOST_CHECK( !dir_itr->is_symlink() );
+
     fs::directory_iterator dir_itr2( dir );
-    BOOST_CHECK( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
+    BOOST_CHECK( dir_itr->leaf() == "d1"
+      || dir_itr->leaf() == "d2" );
     BOOST_CHECK( dir_itr2->leaf() == "d1" || dir_itr2->leaf() == "d2" );
     if ( dir_itr->leaf() == "d1" )
     {
@@ -236,9 +308,9 @@ int test_main( int argc, char * argv[] )
     }
     else
     {
-      BOOST_CHECK( (dir_itr)->leaf() == "d2" );
+      BOOST_CHECK( dir_itr->leaf() == "d2" );
       BOOST_CHECK( (++dir_itr)->leaf() == "d1" );
-      BOOST_CHECK( dir_itr2->leaf() == "d2" );
+      BOOST_CHECK( (++dir_itr2)->leaf() == "d2" );
       BOOST_CHECK( (++dir_itr2)->leaf() == "d1" );
     }
     BOOST_CHECK( ++dir_itr == fs::directory_iterator() );
@@ -248,7 +320,8 @@ int test_main( int argc, char * argv[] )
 
   { // *i++ must work to meet the standard's InputIterator requirements
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr->leaf() == "d1" || dir_itr->leaf() == "d2" );
+    BOOST_CHECK( dir_itr->leaf() == "d1"
+      || dir_itr->leaf() == "d2" );
     if ( dir_itr->leaf() == "d1" )
     {
       BOOST_CHECK( (*dir_itr++).leaf() == "d1" );
@@ -278,11 +351,11 @@ int test_main( int argc, char * argv[] )
   //  Reported as S/F bug [ 1259176 ]
   if ( platform == "Windows" )
   {
-    fs::path root_name_path( fs::current_path().root_name(), fs::native );
+    fs::path root_name_path( fs::current_path<fs::path>().root_name() );
     fs::directory_iterator it( root_name_path );
     BOOST_CHECK( it != fs::directory_iterator() );
     BOOST_CHECK( fs::exists( *it ) );
-    BOOST_CHECK( it->branch_path() == root_name_path );
+    BOOST_CHECK( it->path().branch_path() == root_name_path );
     bool found(false);
     do
     {
@@ -296,18 +369,25 @@ int test_main( int argc, char * argv[] )
   create_file( file_ph, "" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::_is_empty( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
+  BOOST_CHECK( BOOST_FS_IS_EMPTY( file_ph ) );
   BOOST_CHECK( fs::file_size( file_ph ) == 0 );
-  BOOST_CHECK( throws_fs_error( bind( fs::create_directory, file_ph ),
-    fs::not_directory_error ) );
-
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::create_directory),
+    file_ph ), EEXIST ) );
   // create a file named "f1"
   file_ph = dir / "f1";
   create_file( file_ph, "foobar1" );
 
+  BOOST_CHECK( fs::exists( file_ph ) );
+  BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
+  BOOST_CHECK( fs::file_size( file_ph ) == 7 );
+  verify_file( file_ph, "foobar1" );
+
   // equivalence tests
   fs::path ng2("does_not_exist2");
-  BOOST_CHECK( throws_fs_error( bind( fs::equivalent, ng, ng2 ) ) );
+  BOOST_CHECK( CHECK_EXCEPTION(
+    bind( BOOST_BND(fs::equivalent), ng, ng2 ), ENOENT ) );
   BOOST_CHECK( fs::equivalent( file_ph, dir / "f1" ) );
   BOOST_CHECK( fs::equivalent( dir, d1 / ".." ) );
   BOOST_CHECK( !fs::equivalent( file_ph, dir ) );
@@ -317,41 +397,59 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::equivalent( ng, dir ) );
   BOOST_CHECK( !fs::equivalent( file_ph, ng ) );
   BOOST_CHECK( !fs::equivalent( ng, file_ph ) );
-
-  std::time_t ft = fs::last_write_time( file_ph );
-  std::cout << "UTC should currently be about " << std::asctime(std::gmtime(&ft)) << "\n";
-  std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << std::endl;
-
-  // hard to test time exactly, but except under the most unusual circumstances,
-  // time since file creation should be no more than one minute, I'm hoping.
-  double time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_CHECK( time_diff > -60.0 && time_diff < 60.0 );
-
+  
+  // hard link tests
+  fs::path from_ph( dir / "f3" );
+  BOOST_CHECK( !fs::exists( from_ph ) );
   BOOST_CHECK( fs::exists( file_ph ) );
-  BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::file_size( file_ph ) == 7 );
-  verify_file( file_ph, "foobar1" );
+  bool create_hard_link_ok(true);
+  try { fs::create_hard_link( file_ph, from_ph ); }
+  catch ( const fs::filesystem_error & ex )
+  {
+    create_hard_link_ok = false;
+    std::cout
+      << "create_hard_link() attempt failed\n"
+      << "filesystem_error.what() reports: " << ex.what() << '\n'
+      << "create_hard_link() may not be supported on this file system\n";
+  }
 
-  std::tm * tmp = std::localtime( &ft );
-  std::cout << "Year is " << tmp->tm_year << std::endl;
-  --tmp->tm_year;
-  std::cout << "Change year to " << tmp->tm_year << std::endl;
-  fs::last_write_time( file_ph, std::mktime( tmp ) );
-  std::cout << "Get new value" << std::endl;
-  ft = fs::last_write_time( file_ph );
-  std::cout << "Local time one year ago should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
-  std::cout << "Now get time difference" << std::endl;
-  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  time_diff -= 365*24*3600.0;
-  std::cout << "Time difference is : " << time_diff << std::endl;
-  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
-  std::cout << "Reset to current time" << std::endl;
-  fs::last_write_time( file_ph, std::time(0) );
-  std::cout << "And check that" << std::endl;
-  time_diff = std::difftime( std::time(0), fs::last_write_time( file_ph ) );
-  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
-  ft = fs::last_write_time( file_ph );
-  std::cout << "Local time should currently be about " << std::asctime(std::localtime(&ft)) << "\n";
+  if ( create_hard_link_ok )
+  {
+    std::cout << "create_hard_link() succeeded\n";
+    BOOST_CHECK( fs::exists( from_ph ) );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
+  }
+
+  BOOST_CHECK( fs::create_hard_link( fs::path("doesnotexist"), fs::path("shouldnotwork"),
+    std::nothrow ) != 0 );
+
+  // symbolic link tests
+  from_ph = dir / "f4";
+  BOOST_CHECK( !fs::exists( from_ph ) );
+  BOOST_CHECK( fs::exists( file_ph ) );
+  bool create_symlink_ok(true);
+  try { fs::create_symlink( file_ph, from_ph ); }
+  catch ( const fs::filesystem_error & ex )
+  {
+    create_symlink_ok = false;
+    std::cout
+      << "create_symlink() attempt failed\n"
+      << "filesystem_error.what() reports: " << ex.what() << '\n'
+      << "create_symlink() may not be supported on this file system\n";
+  }
+
+  if ( create_symlink_ok )
+  {
+    std::cout << "create_symlink() succeeded\n";
+    BOOST_CHECK( fs::exists( from_ph ) );
+    BOOST_CHECK( fs::is_symlink( from_ph ) );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
+  }
+
+  BOOST_CHECK( fs::create_symlink( "doesnotexist", "",
+    std::nothrow ) != 0 );
 
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.
@@ -376,28 +474,29 @@ int test_main( int argc, char * argv[] )
   // [case 1] make sure can't rename() a non-existent file
   BOOST_CHECK( !fs::exists( d1 / "f99" ) );
   BOOST_CHECK( !fs::exists( d1 / "f98" ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, d1 / "f99", d1 / "f98" ),
-    fs::not_found_error ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, fs::path(""), d1 / "f98" ),
-    fs::not_found_error ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), d1 / "f99", d1 / "f98" ),
+    ENOENT ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), fs::path(""), d1 / "f98" ),
+    ENOENT ) );
 
   // [case 2] rename() target.empty()
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, file_ph, "" ),
-    fs::not_found_error ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), file_ph, "" ),
+    ENOENT ) );
 
   // [case 3] make sure can't rename() to an existent file or directory
   BOOST_CHECK( fs::exists( dir / "f1" ) );
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, dir / "f1", d1 / "f2" ) ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename),
+    dir / "f1", d1 / "f2" ), EEXIST ) );
   // several POSIX implementations (cygwin, openBSD) report ENOENT instead of EEXIST,
   // so we don't verify error type on the above test.
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, dir, d1 ) ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), dir, d1 ), 0 ) );
 
   // [case 4A] can't rename() file to a nonexistent parent directory
   BOOST_CHECK( !fs::is_directory( dir / "f1" ) );
   BOOST_CHECK( !fs::exists( dir / "d3/f3" ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, dir / "f1", dir / "d3/f3" ),
-    fs::not_found_error ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), dir / "f1", dir / "d3/f3" ),
+    ENOENT ) );
 
   // [case 4B] rename() file in same directory
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
@@ -423,8 +522,8 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( !fs::exists( dir / "d3/d5" ) );
   BOOST_CHECK( !fs::exists( dir / "d3" ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::rename, d1, dir / "d3/d5" ),
-    fs::not_found_error ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), d1, dir / "d3/d5" ),
+    ENOENT ) );
 
   // [case 5B] rename() on directory
   fs::path d3( dir / "d3" );
@@ -472,23 +571,24 @@ int test_main( int argc, char * argv[] )
   fs::create_directory( d1 );
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( fs::is_directory( d1 ) );
-  BOOST_CHECK( fs::_is_empty( d1 ) );
-  BOOST_CHECK( throws_fs_error( bind( fs::remove, dir ), fs::not_empty_error ) );
+  BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::remove), dir ), ENOTEMPTY ) );
   BOOST_CHECK( fs::remove( d1 ) );
   BOOST_CHECK( !fs::exists( d1 ) );
 
-// STLPort is allergic to std::system, so don't use runtime platform test
+// STLport is allergic to std::system, so don't use runtime platform test
 # ifdef BOOST_POSIX
+
   // remove() test on dangling symbolic link
   fs::path link( "dangling_link" );
   fs::remove( link );
-  BOOST_CHECK( !fs::symbolic_link_exists( link ) );
+  BOOST_CHECK( !fs::is_symlink( link ) );
   BOOST_CHECK( !fs::exists( link ) );
   std::system("ln -s nowhere dangling_link");
   BOOST_CHECK( !fs::exists( link ) );
-  BOOST_CHECK( fs::symbolic_link_exists( link ) );
+  BOOST_CHECK( fs::is_symlink( link ) );
   BOOST_CHECK( fs::remove( link ) );
-  BOOST_CHECK( !fs::symbolic_link_exists( link ) );
+  BOOST_CHECK( !fs::is_symlink( link ) );
 
   // remove() test on symbolic link to a file
   file_ph = "link_target";
@@ -497,19 +597,57 @@ int test_main( int argc, char * argv[] )
   create_file( file_ph, "" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
   std::system("ln -s link_target non_dangling_link");
   link = "non_dangling_link";
   BOOST_CHECK( fs::exists( link ) );
   BOOST_CHECK( !fs::is_directory( link ) );
-  BOOST_CHECK( fs::symbolic_link_exists( link ) );
+  BOOST_CHECK( fs::is_file( link ) );
+  BOOST_CHECK( fs::is_symlink( link ) );
   BOOST_CHECK( fs::remove( link ) );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::exists( link ) );
-  BOOST_CHECK( !fs::symbolic_link_exists( link ) );
+  BOOST_CHECK( !fs::is_symlink( link ) );
   BOOST_CHECK( fs::remove( file_ph ) );
   BOOST_CHECK( !fs::exists( file_ph ) );
-  }
 # endif
+
+  // write time tests
+
+  file_ph = dir / "foobar2";
+  create_file( file_ph, "foobar2" );
+  BOOST_CHECK( fs::exists( file_ph ) );
+  BOOST_CHECK( !fs::is_directory( file_ph ) );
+  BOOST_CHECK( fs::is_file( file_ph ) );
+  BOOST_CHECK( fs::file_size( file_ph ) == 7 );
+  verify_file( file_ph, "foobar2" );
+
+  // Some file system report last write time as local (FAT), while
+  // others (NTFS) report it as UTC. The C standard does not specify
+  // if time_t is local or UTC. 
+
+  std::time_t ft = fs::last_write_time( file_ph );
+  std::cout << "\nUTC last_write_time() for a file just created is "
+    << std::asctime(std::gmtime(&ft)) << std::endl;
+
+  std::tm * tmp = std::localtime( &ft );
+  std::cout << "\nYear is " << tmp->tm_year << std::endl;
+  --tmp->tm_year;
+  std::cout << "Change year to " << tmp->tm_year << std::endl;
+  fs::last_write_time( file_ph, std::mktime( tmp ) );
+  std::time_t ft2 = fs::last_write_time( file_ph );
+  std::cout << "last_write_time() for the file is now "
+    << std::asctime(std::gmtime(&ft2)) << std::endl;
+  BOOST_CHECK( ft != fs::last_write_time( file_ph ) );
+
+
+  std::cout << "\nReset to current time" << std::endl;
+  fs::last_write_time( file_ph, ft );
+  double time_diff = std::difftime( ft, fs::last_write_time( file_ph ) );
+  std::cout 
+    << "original last_write_time() - current last_write_time() is "
+    << time_diff << " seconds" << std::endl;
+  BOOST_CHECK( time_diff >= -60.0 && time_diff <= 60.0 );
 
   // post-test cleanup
   BOOST_CHECK( fs::remove_all( dir ) != 0 );
@@ -517,7 +655,6 @@ int test_main( int argc, char * argv[] )
   // a bug (failure to close an internal search handle). 
   BOOST_CHECK( !fs::exists( dir ) );
   BOOST_CHECK( fs::remove_all( dir ) == 0 );
-
   return 0;
 } // main
 
