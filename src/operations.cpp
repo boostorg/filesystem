@@ -59,6 +59,19 @@ namespace fs = boost::filesystem;
 #   include "utime.h"
 # endif
 
+//  BOOST_FILESYSTEM_STATUS_CACHE enables status_flags cache in
+//  dir_itr_increment. The config tests are placed here because some of the
+//  macros being tested come from dirent.h.
+//
+// TODO: "|| defined(__APPLE__)" compiles, but at runtime d_type is alwasy 0. Why?
+// TODO: find out what macros enable dirent::d_type on various operating systems.
+# if !defined(__CYGWIN__) && !defined(__osf__) \
+     && (defined(BOOST_WINDOWS_API) \
+        || defined(__USE_BSD) || defined(_DIRENT_HAVE_D_TYPE) \
+       )
+#   define BOOST_FILESYSTEM_STATUS_CACHE
+# endif
+
 #include <sys/stat.h>  // even on Windows some functions use stat()
 #include <string>
 #include <cstring>

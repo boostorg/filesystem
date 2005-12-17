@@ -57,15 +57,6 @@
 #   define BOOST_WINDOWS_PATH
 # endif
 
-//  BOOST_FILESYSTEM_STATUS_CACHE enables status_flags cache in
-//   basic_directory_iterator  -----------------------------------------------//
-
-// TODO: "|| defined(__APPLE__)" compiles, but at runtime d_type is alwasy 0. Why?
-// TODO: find out what macros enable dirent::d_type on various operating systems.
-# if !defined(__CYGWIN__) && (defined(BOOST_WINDOWS_API) || defined(__USE_BSD))
-#   define BOOST_FILESYSTEM_STATUS_CACHE
-# endif
-
 //  narrow support only for badly broken compilers or libraries  -------------//
 
 # if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE)
