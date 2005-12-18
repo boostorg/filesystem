@@ -5,7 +5,7 @@ project boost/filesystem
     ;
 
 SOURCES =
-    exception operations_posix_windows path_posix_windows convenience ;
+    exception operations path portability utf8_codecvt_facet ;
 
 lib boost_filesystem
     :
