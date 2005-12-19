@@ -65,8 +65,7 @@ namespace fs = boost::filesystem;
 //
 // TODO: "|| defined(__APPLE__)" compiles, but at runtime d_type is alwasy 0. Why?
 // TODO: find out what macros enable dirent::d_type on various operating systems.
-# if !defined(__CYGWIN__) && !defined(__osf__) \
-     && !(defined(__sun) && defined(__GLIBCXX__)) \
+# if !defined(__CYGWIN__) && !defined(__osf__) && !defined(__sun) \
      && (defined(BOOST_WINDOWS_API) \
         || defined(__USE_BSD) || defined(_DIRENT_HAVE_D_TYPE) \
        )
