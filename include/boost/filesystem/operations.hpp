@@ -683,17 +683,28 @@ namespace boost
 //    problems. They also overload to the proper external path character type.
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_first( void *& handle, const std::string & dir_path,
+        dir_itr_first( void *& handle,
+#if       defined(BOOST_POSIX_API)
+            void *& buffer,
+#endif
+          const std::string & dir_path,
           std::string & target, status_flags & sf, status_flags & symlink_sf );
       // eof: return==0 && handle==0
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_increment( void *& handle, std::string & target,
-          status_flags & sf, status_flags & symlink_sf );
+        dir_itr_increment( void *& handle,
+#if       defined(BOOST_POSIX_API)
+            void *& buffer,
+#endif
+          std::string & target, status_flags & sf, status_flags & symlink_sf );
       // eof: return==0 && handle==0
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-        dir_itr_close( void *& handle );
+        dir_itr_close( void *& handle
+#if       defined(BOOST_POSIX_API)
+            , void *& buffer
+#endif
+          );
       // Effects: none if handle==0, otherwise close handle, set handle=0
 
 #     if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
@@ -711,10 +722,20 @@ namespace boost
       public:  
         basic_directory_entry<Path> m_directory_entry;
         void * m_handle;
+#       ifdef BOOST_POSIX_API
+          void * m_buffer;  // see dir_itr_increment implementation
+#       endif
+        dir_itr_imp() : m_handle(0)
+#       ifdef BOOST_POSIX_API
+          , m_buffer(0)
+#       endif
+        {}
 
-        dir_itr_imp() : m_handle(0) {}
-
-        ~dir_itr_imp() { dir_itr_close( m_handle ); }
+        ~dir_itr_imp() { dir_itr_close( m_handle
+#if       defined(BOOST_POSIX_API)
+            , m_buffer
+#endif
+          ); }
       };
 
     } // namespace detail
@@ -775,6 +796,9 @@ namespace boost
 
       if ( dir_path.empty()
         || (sys_err = detail::dir_itr_first( m_imp->m_handle,
+#if   defined(BOOST_POSIX_API)
+        m_imp->m_buffer,
+#endif
         dir_path.external_directory_string(),
         name, sf, symlink_sf )) != 0 )
       {
@@ -808,8 +832,11 @@ namespace boost
 
       for (;;)
       {
-        if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle, name,
-          sf, symlink_sf )) != 0 )
+        if ( (sys_err = detail::dir_itr_increment( m_imp->m_handle,
+#if     defined(BOOST_POSIX_API)
+          m_imp->m_buffer,
+#endif
+          name, sf, symlink_sf )) != 0 )
         {
           boost::throw_exception( basic_filesystem_error<Path>(  
             "boost::filesystem::basic_directory_iterator increment",

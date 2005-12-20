@@ -1121,18 +1121,26 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_first( void *& handle, const std::string & dir,
-        std::string & target, status_flags &, status_flags & )
+      dir_itr_first( void *& handle, void *& buffer,
+        const std::string & dir, std::string & target,
+        status_flags &, status_flags & )
       {
         static const std::string dummy_first_name( "." );
         if ( (handle = ::opendir( dir.c_str() )) == 0 ) return errno;
         target = dummy_first_name;
+        long pc_name_max( ::pathconf( dir.c_str(), _PC_NAME_MAX ) );
+        if ( pc_name_max == -1L ) return errno;
+        dirent de;
+        buffer = std::malloc( (sizeof(dirent) - sizeof(de.d_name))
+          + static_cast<std::size_t>( pc_name_max ) + 1 );
         return 0;
       }  
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_close( void *& handle )
+      dir_itr_close( void *& handle, void*& buffer )
       {
+        std::free( buffer );
+        buffer = 0;
         if ( handle == 0 ) return 0;
         DIR * h( static_cast<DIR*>(handle) );
         handle = 0;
@@ -1157,28 +1165,27 @@ namespace boost
           *result = 0;
           if ( (p = ::readdir( dirp )) == 0 )
             return errno;
-          // POSIX specs require entry->d_name be large enough:
           std::strcpy( entry->d_name, p->d_name );
           *result = entry;
           return 0;
         }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
-      dir_itr_increment( void *& handle, std::string & target,
-        status_flags & sf, status_flags & symlink_sf )
+      dir_itr_increment( void *& handle, void *& buffer,
+        std::string & target, status_flags & sf, status_flags & symlink_sf )
       {
-        struct dirent entry, * result;
+        BOOST_ASSERT( buffer != 0 );
+        dirent * entry( static_cast<dirent *>(buffer) );
+        dirent * result;
         int return_code;
         if ( (return_code = readdir_r_simulator( static_cast<DIR*>(handle),
-          &entry, &result )) != 0 ) return errno;
-        if ( result == 0 ) return dir_itr_close( handle );
-        target = entry.d_name;
+          entry, &result )) != 0 ) return errno;
+        if ( result == 0 ) return dir_itr_close( handle, buffer );
+        target = entry->d_name;
 #     ifdef BOOST_FILESYSTEM_STATUS_CACHE
-//        std::cout << "entry.d_type is " << (int)entry.d_type << std::endl;
-//        std::cout << "DT_DIR is " << (int)DT_DIR << std::endl;
-        if ( entry.d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
-        else if ( entry.d_type == DT_REG ) sf = symlink_sf = fs::file_flag;
-        else if ( entry.d_type == DT_LNK )
+        if ( entry->d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
+        else if ( entry->d_type == DT_REG ) sf = symlink_sf = fs::file_flag;
+        else if ( entry->d_type == DT_LNK )
           { sf = 0; symlink_sf = fs::symlink_flag; }
         else sf = symlink_sf = fs::other_flag;
 #     else
