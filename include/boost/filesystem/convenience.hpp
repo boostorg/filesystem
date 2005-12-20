@@ -233,13 +233,13 @@ namespace boost
 
     namespace detail
     {
-      void decode_system_message( system_error_type ec, std::string & target )
+      inline void decode_system_message( system_error_type ec, std::string & target )
       {
         system_message( ec, target );
       }
 
 #   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-      void decode_system_message( system_error_type ec, std::wstring & target )
+      inline void decode_system_message( system_error_type ec, std::wstring & target )
       {
         system_message( ec, target );
       }
