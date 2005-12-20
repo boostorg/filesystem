@@ -687,7 +687,11 @@ namespace boost
           const String & src, // precondition: portable generic path grammar
           typename String::size_type & element_pos,
           typename String::size_type & element_size,
+#       if !BOOST_WORKAROUND( BOOST_MSVC, <= 1310 ) // VC++ 7.1
+          typename String::size_type size = String::npos
+#       else
           typename String::size_type size = -1
+#       endif
           )
       {
         if ( size == String::npos ) size = src.size();
