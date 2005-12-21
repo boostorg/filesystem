@@ -66,6 +66,7 @@ namespace fs = boost::filesystem;
 // TODO: "|| defined(__APPLE__)" compiles, but at runtime d_type is alwasy 0. Why?
 // TODO: find out what macros enable dirent::d_type on various operating systems.
 # if !defined(__CYGWIN__) && !defined(__osf__) && !defined(__sun) \
+     && !defined(__QNXNTO__) \
      && (defined(BOOST_WINDOWS_API) \
         || defined(__USE_BSD) || defined(_DIRENT_HAVE_D_TYPE) \
        )
@@ -1048,8 +1049,8 @@ namespace boost
         // rmdir() or unlink() as indicated.
         // Same bug also reported for QNX, with the same fix.
         if ( (is_directory( ph )
-          ? ::rmdir( ph.string().c_str() )
-          : ::unlink( ph.string().c_str() )) != 0 )
+          ? ::rmdir( ph.c_str() )
+          : ::unlink( ph.c_str() )) != 0 )
 #     else
         // note that the POSIX behavior for symbolic links is what we want;
         // the link rather than what it points to is deleted
