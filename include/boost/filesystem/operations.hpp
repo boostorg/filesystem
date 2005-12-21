@@ -255,11 +255,14 @@ namespace boost
       return (sf & other_flag) != 0;
     }
 
-    BOOST_FS_FUNC(bool) is_symlink( const Path & ph )
-    { 
+    BOOST_FS_FUNC(bool) is_symlink(
 #   ifdef BOOST_WINDOWS_API
+      const Path & )
+    {
       return false;
 #   else
+      const Path & ph)
+    {
       system_error_type ec;
       status_flags sf( detail::symlink_status_api( ph.external_file_string(), &ec ) );
       if ( sf == error_flag )
