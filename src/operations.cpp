@@ -52,7 +52,15 @@ namespace fs = boost::filesystem;
 
 # else // BOOST_POSIX_API
 #   include <sys/types.h>
-#   include <sys/statvfs.h>
+#   ifndef __APPLE__
+#     include <sys/statvfs.h>
+#     define BOOST_STATVFS statvfs
+#     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
+#   else
+#     include <sys/mount.h>
+#     define BOOST_STATVFS statfs
+#     define BOOST_STATVFS_F_FRSIZE static_cast<boost::uintmax_t>( vfs.f_bsize )
+#   endif
 #   include "dirent.h"
 #   include "unistd.h"
 #   include "fcntl.h"
@@ -947,9 +955,9 @@ namespace boost
       BOOST_FILESYSTEM_DECL space_pair
       space_api( const std::string & ph )
       {
-        struct statvfs vfs;
+        struct BOOST_STATVFS vfs;
         space_pair result;
-        if ( ::statvfs( ph.c_str(), &vfs ) != 0 )
+        if ( ::BOOST_STATVFS( ph.c_str(), &vfs ) != 0 )
         {
           result.first = errno;
           result.second.capacity = result.second.free
@@ -959,11 +967,11 @@ namespace boost
         {
           result.first = 0;
           result.second.capacity 
-            = static_cast<boost::uintmax_t>(vfs.f_blocks) * vfs.f_frsize;
+            = static_cast<boost::uintmax_t>(vfs.f_blocks) * BOOST_STATVFS_F_FRSIZE;
           result.second.free 
-            = static_cast<boost::uintmax_t>(vfs.f_bfree) * vfs.f_frsize;
+            = static_cast<boost::uintmax_t>(vfs.f_bfree) * BOOST_STATVFS_F_FRSIZE;
           result.second.available
-            = static_cast<boost::uintmax_t>(vfs.f_bavail) * vfs.f_frsize;
+            = static_cast<boost::uintmax_t>(vfs.f_bavail) * BOOST_STATVFS_F_FRSIZE;
         }
         return result;
       }
