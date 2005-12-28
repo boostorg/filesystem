@@ -16,6 +16,8 @@
 
 #define __USE_BSD // needed to get struct dirent d_type defines on Linux
 
+#define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
+
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
       // 64-bit systems or on 32-bit systems which don't have files larger 
