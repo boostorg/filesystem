@@ -14,8 +14,6 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#define __USE_BSD // needed to get struct dirent d_type defines on Linux
-
 #define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
@@ -73,14 +71,9 @@ namespace fs = boost::filesystem;
 //  dir_itr_increment. The config tests are placed here because some of the
 //  macros being tested come from dirent.h.
 //
-// TODO: "|| defined(__APPLE__)" compiles, but at runtime d_type is alwasy 0. Why?
-// TODO: find out what macros enable dirent::d_type on various operating systems.
-# if !defined(__CYGWIN__) && !defined(__osf__) && !defined(__sun) \
-     && !defined(__APPLE__) \
-     && !defined(__QNXNTO__) \
-     && (defined(BOOST_WINDOWS_API) \
-        || defined(__USE_BSD) || defined(_DIRENT_HAVE_D_TYPE) \
-       )
+// TODO: find out what macros indicate dirent::d_type present in more libraries
+# if defined(BOOST_WINDOWS_API) \
+  || defined(_DIRENT_HAVE_D_TYPE) // defined by GNU C library if d_type present
 #   define BOOST_FILESYSTEM_STATUS_CACHE
 # endif
 
