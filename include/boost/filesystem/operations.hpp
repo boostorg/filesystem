@@ -272,6 +272,13 @@ namespace boost
 #   endif
     }
 
+    inline bool exists( status_flags f )       { return f != 0 && ((f & not_found_flag) == 0); }
+    inline bool is_error( status_flags f )     { return (f & error_flag) != 0; }
+    inline bool is_directory( status_flags f ) { return (f & directory_flag) != 0; }
+    inline bool is_file( status_flags f )      { return (f & file_flag ) != 0; }
+    inline bool is_other( status_flags f )     { return (f & other_flag ) != 0; }
+    inline bool is_symlink( status_flags f )   { return (f & symlink_flag ) != 0; }
+
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
     // between boost::filesystem::is_empty and the unrelated type trait
     // boost::is_empty.

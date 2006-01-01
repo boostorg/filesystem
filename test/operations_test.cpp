@@ -169,6 +169,20 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::is_symlink( ng ) );
   BOOST_CHECK( (fs::status( ng ) & fs::not_found_flag) != 0 );
   BOOST_CHECK( (fs::status( "" ) & fs::not_found_flag) != 0 );
+  fs::status_flags flags( fs::status( ng ) );
+  BOOST_CHECK( !fs::exists( flags ) );
+  BOOST_CHECK( !fs::is_error( flags ) );
+  BOOST_CHECK( !fs::is_directory( flags ) );
+  BOOST_CHECK( !fs::is_file( flags ) );
+  BOOST_CHECK( !fs::is_other( flags ) );
+  BOOST_CHECK( !fs::is_symlink( flags ) );
+  flags = fs::status( "" );
+  BOOST_CHECK( !fs::exists( flags ) );
+  BOOST_CHECK( !fs::is_error( flags ) );
+  BOOST_CHECK( !fs::is_directory( flags ) );
+  BOOST_CHECK( !fs::is_file( flags ) );
+  BOOST_CHECK( !fs::is_other( flags ) );
+  BOOST_CHECK( !fs::is_symlink( flags ) );
 
   fs::path dir(  fs::initial_path<fs::path>() / temp_dir_name );
   
@@ -250,6 +264,17 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( dir ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
   BOOST_CHECK( fs::is_directory( dir ) );
+  BOOST_CHECK( !fs::is_file( dir ) );
+  BOOST_CHECK( !fs::is_other( dir ) );
+  BOOST_CHECK( !fs::is_symlink( dir ) );
+  flags = fs::status( dir );
+  BOOST_CHECK( fs::exists( flags ) );
+  BOOST_CHECK( !fs::is_error( flags ) );
+  BOOST_CHECK( fs::is_directory( flags ) );
+  BOOST_CHECK( !fs::is_file( flags ) );
+  BOOST_CHECK( !fs::is_other( flags ) );
+  BOOST_CHECK( !fs::is_symlink( flags ) );
+
   if ( platform == "Windows" )
     BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 
       ENOENT ) );
@@ -374,6 +399,14 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::file_size( file_ph ) == 0 );
   BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::create_directory),
     file_ph ), EEXIST ) );
+  flags = fs::status( file_ph );
+  BOOST_CHECK( fs::exists( flags ) );
+  BOOST_CHECK( !fs::is_error( flags ) );
+  BOOST_CHECK( !fs::is_directory( flags ) );
+  BOOST_CHECK( fs::is_file( flags ) );
+  BOOST_CHECK( !fs::is_other( flags ) );
+  BOOST_CHECK( !fs::is_symlink( flags ) );
+
   // create a file named "f1"
   file_ph = dir / "f1";
   create_file( file_ph, "foobar1" );
@@ -446,6 +479,13 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::is_symlink( from_ph ) );
     BOOST_CHECK( fs::exists( file_ph ) );
     BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
+    flags = fs::status( from_ph );
+    BOOST_CHECK( fs::exists( flags ) );
+    BOOST_CHECK( !fs::is_error( flags ) );
+    BOOST_CHECK( !fs::is_directory( flags ) );
+    BOOST_CHECK( fs::is_file( flags ) );
+    BOOST_CHECK( !fs::is_other( flags ) );
+    BOOST_CHECK( fs::is_symlink( flags ) );
   }
 
   BOOST_CHECK( fs::create_symlink( "doesnotexist", "",
