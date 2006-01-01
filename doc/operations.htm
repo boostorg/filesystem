@@ -22,7 +22,8 @@
 &nbsp;&nbsp;&nbsp; <a href="#Do-the-right-thing">&quot;Do-the-right-thing&quot; rule</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#status">status</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#is_file">is_directory</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_error">is_error</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_file">is_file</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
@@ -145,10 +146,16 @@ header. </p>
     template&lt;class Path&gt; status_flags <a href="#status">status</a>( const Path &amp; ph, const symlink_t &amp;, system_error_type * ec = 0 );
 
     template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
+                         bool exists( status_flags f );
+                         bool is_error( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
+                         bool is_directory( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
+                         bool is_file( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_other">is_other</a>( const <code>Path</code> &amp; ph );
+                         bool is_other( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
+                         bool is_symlink( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_empty">is_empty</a>( const <code>Path</code> &amp; ph );
     template&lt;class Path&gt; bool <a href="#equivalent">equivalent</a>( const <code>Path</code> &amp; ph1, const <code>Path</code> &amp; ph2 );
     template&lt;class Path&gt; boost::intmax_t <a href="#file_size">file_size</a>( const <code>Path</code> &amp; ph );
@@ -405,24 +412,44 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
 <p><code>template&lt;class Path&gt; bool exists( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(</code>ph<code>) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>status(ph) != not_found_flag</code></p>
+<p><code>bool is_exists( status_flags f );</code></p>
+<p><b><span style="background-color: #FFFFFF">Returns:</span></b><span style="background-color: #FFFFFF"><b>
+</b>
+  </span><code><span style="background-color: #FFFFFF">f != 0 &amp;&amp; ((f &amp; 
+  not_found_flag) == 0)</span></code></p>
+</blockquote>
+<h3><a name="is_error">is_error</a></h3>
+<blockquote>
+<pre><span style="background-color: #FFFFFF">bool is_<a name="exists">error</a>( status_flags f );</span></pre>
+  <p><b><span style="background-color: #FFFFFF">Returns:</span></b><span style="background-color: #FFFFFF"><b>
+  </b><code>(f &amp; error_flag) != 0</code></span></p>
 </blockquote>
 <h3><a name="is_directory">is_directory</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool is_directory( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; directory_flag) != 0</code></p>
+<pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_directory</span></code><span style="background-color: #FFFFFF">( status_flags f );</span></pre>
+  <p><span style="background-color: #FFFFFF"><b>Returns: </b><code>(f &amp; 
+  directory_flag) != 0</code></span></p>
 </blockquote>
 <h3><a name="is_file">is_file</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; file_flag) != 0</code></p>
+<pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_file</span></code><span style="background-color: #FFFFFF">( status_flags f );</span></pre>
+  <p><span style="background-color: #FFFFFF"><b>Returns: </b><code>(f &amp; 
+  file_flag) != 0</code></span></p>
 </blockquote>
 <h3><a name="is_other">is_other</a></h3>
 <blockquote>
 <p><code>template&lt;class Path&gt; bool is_other( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>(status(ph) &amp; other_flag) != 0</code></p>
+<pre><span style="background-color: #FFFFFF">bool <a name="exists">is_other</a>( status_flags f );</span></pre>
+  <p><span style="background-color: #FFFFFF"><b>Returns:</b> <code>(f &amp; 
+  other_flag) != 0</code></span></p>
 </blockquote>
 <h3><a name="is_symlink">is_symlink</a></h3>
 <blockquote>
@@ -432,6 +459,9 @@ template&lt;class DirItr&gt; bool is_symlink( const DirItr &amp; ph );</code></p
     differences between behavior of Path and DirItr template signatures.</p>
 <p><b>Throws:</b> If <code>symlink_status(ph) == error_flag</code>.</p>
 <p><b>Returns:</b> <code>symlink_status(ph) == symlink_flag)</code></p>
+<pre><span style="background-color: #FFFFFF">bool <a name="exists">is_symlink</a>( status_flags f );</span></pre>
+  <p><span style="background-color: #FFFFFF"><b>Returns: </b><code>(f &amp; 
+  symlink_flag) != 0</code></span></p>
 </blockquote>
 <h3><a name="is_empty">is_empty</a></h3>
 <blockquote>
@@ -819,7 +849,7 @@ by a prior program run by the command processor.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 December, 2005<!--webbot bot="Timestamp" endspan i-checksum="38523" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 January, 2006<!--webbot bot="Timestamp" endspan i-checksum="38950" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
