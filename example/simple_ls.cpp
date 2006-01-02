@@ -55,7 +55,7 @@ int main( int argc, char* argv[] )
           ++dir_count;
           std::cout << dir_itr->leaf() << " [directory]\n";
         }
-        else if ( (flags & fs::file_flag) == fs::file_flag )
+        else if ( (flags & fs::regular_flag) == fs::regular_flag )
         {
           ++file_count;
           std::cout << dir_itr->leaf() << "\n";

@@ -65,7 +65,7 @@ namespace boost
     static const status_flags  error_flag = 1;
     static const status_flags  not_found_flag = 2;
     static const status_flags  directory_flag = 4;
-    static const status_flags  file_flag = 8;
+    static const status_flags  regular_flag = 8;
     static const status_flags  other_flag = 16;
     static const status_flags  symlink_flag = 32;
 
@@ -235,14 +235,14 @@ namespace boost
       return (sf & directory_flag) != 0;
     }
 
-    BOOST_FS_FUNC(bool) is_file( const Path & ph )
+    BOOST_FS_FUNC(bool) is_regular( const Path & ph )
     { 
       system_error_type ec;
       status_flags sf( detail::status_api( ph.external_file_string(), &ec ) );
       if ( sf == error_flag )
         boost::throw_exception( basic_filesystem_error<Path>(
-          "boost::filesystem::is_file", ph, ec ) );
-      return (sf & file_flag) != 0;
+          "boost::filesystem::is_regular", ph, ec ) );
+      return (sf & regular_flag) != 0;
     }
 
     BOOST_FS_FUNC(bool) is_other( const Path & ph )
@@ -275,7 +275,7 @@ namespace boost
     inline bool exists( status_flags f )       { return f != 0 && ((f & not_found_flag) == 0); }
     inline bool is_error( status_flags f )     { return (f & error_flag) != 0; }
     inline bool is_directory( status_flags f ) { return (f & directory_flag) != 0; }
-    inline bool is_file( status_flags f )      { return (f & file_flag ) != 0; }
+    inline bool is_regular( status_flags f )   { return (f & regular_flag ) != 0; }
     inline bool is_other( status_flags f )     { return (f & other_flag ) != 0; }
     inline bool is_symlink( status_flags f )   { return (f & symlink_flag ) != 0; }
 
@@ -542,10 +542,10 @@ namespace boost
     inline bool is_directory( const wpath & ph )
       { return is_directory<wpath>( ph ); }
  
-    inline bool is_file( const path & ph )
-      { return is_file<path>( ph ); }
-    inline bool is_file( const wpath & ph )
-      { return is_file<wpath>( ph ); }
+    inline bool is_regular( const path & ph )
+      { return is_regular<path>( ph ); }
+    inline bool is_regular( const wpath & ph )
+      { return is_regular<wpath>( ph ); }
 
     inline bool is_other( const path & ph )
       { return is_other<path>( ph ); }
@@ -916,7 +916,7 @@ namespace boost
 
       bool exists() const;
       bool is_directory() const;
-      bool is_file() const;
+      bool is_regular() const;
       bool is_other() const;
       bool is_symlink() const;
 
@@ -995,10 +995,10 @@ namespace boost
     }
 
     template<class Path>
-    bool basic_directory_entry<Path>::is_file() const
+    bool basic_directory_entry<Path>::is_regular() const
     {
       m_get_status_if_needed();
-      return (m_status & file_flag) != 0;
+      return (m_status & regular_flag) != 0;
     }
 
     template<class Path>

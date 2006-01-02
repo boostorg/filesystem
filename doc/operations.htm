@@ -24,7 +24,7 @@
 &nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_error">is_error</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#is_file">is_file</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#is_regular">is_regular</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br>
@@ -69,7 +69,7 @@ header. </p>
     static const status_flags  error_flag;
     static const status_flags  not_found_flag;
     static const status_flags  directory_flag;
-    static const status_flags  file_flag;
+    static const status_flags  regular_flag;
     static const status_flags  other_flag;
     static const status_flags  symlink_flag;
 
@@ -108,7 +108,7 @@ header. </p>
 
       bool exists() const;
       bool is_directory() const;
-      bool is_file() const;
+      bool is_regular() const;
       bool is_other() const;
       bool is_symlink() const;
 
@@ -148,10 +148,10 @@ header. </p>
     template&lt;class Path&gt; bool <a href="#exists">exists</a>( const Path &amp; ph );
                          bool exists( status_flags f );
                          bool is_error( status_flags f );
-    template&lt;class Path&gt; bool <a href="#is_file">is_directory</a>( const <code>Path</code> &amp; ph );
+    template&lt;class Path&gt; bool <a href="#is_directory">is_directory</a>( const <code>Path</code> &amp; ph );
                          bool is_directory( status_flags f );
-    template&lt;class Path&gt; bool <a href="#is_file">is_file</a>( const <code>Path</code> &amp; ph );
-                         bool is_file( status_flags f );
+    template&lt;class Path&gt; bool <a href="#is_regular">is_regular</a>( const <code>Path</code> &amp; ph );
+                         bool is_regular( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_other">is_other</a>( const <code>Path</code> &amp; ph );
                          bool is_other( status_flags f );
     template&lt;class Path&gt; bool <a href="#is_symlink">is_symlink</a>( const <code>Path</code> &amp; ph );
@@ -364,7 +364,7 @@ template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( con
         <li>If the attributes indicate a file, as if by
         <a href="design.htm#POSIX-01">[POSIX-01]</a>&nbsp;S_ISREG() (also see
         <a href="i18n.html#Expectations">expectations</a>), <code>result |=
-        file_flag</code>.</li>
+        regular_flag</code>.</li>
         <li>If result is 0, set result to <code>other_flag</code>.</li>
         <li>Return result.</li>
       </ul>
@@ -390,7 +390,7 @@ template&lt;class Path&gt;   <a href="#status_flag">status_flags</a> status( con
       is a possibility only when the <code>symlink_t</code> argument is present.</li>
       <li>Otherwise, one or more of the following, or'ed together: <code>
       directory_flag</code>,&nbsp;
-    <code>file_flag</code>. <i>[More status bits may be added in the future.]</i></li>
+    <code>regular_flag</code>. <i>[More status bits may be added in the future.]</i></li>
   </ul>
     <p>See <a href="#Performance_note">performance note</a> for subtle 
     differences between behavior of Path and DirItr template signatures.</p>
@@ -433,14 +433,14 @@ will be portable to systems like POSIX, where symbolic links may be present.</p>
   <p><span style="background-color: #FFFFFF"><b>Returns: </b><code>(f &amp; 
   directory_flag) != 0</code></span></p>
 </blockquote>
-<h3><a name="is_file">is_file</a></h3>
+<h3><a name="is_regular">is_regular</a></h3>
 <blockquote>
-<p><code>template&lt;class Path&gt; bool is_file( const Path &amp; ph );</code></p>
+<p><code>template&lt;class Path&gt; bool is_regular( const Path &amp; ph );</code></p>
 <p><b>Throws:</b> If <code>status(ph) == error_flag</code>.</p>
-<p><b>Returns:</b> <code>(status(ph) &amp; file_flag) != 0</code></p>
-<pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_file</span></code><span style="background-color: #FFFFFF">( status_flags f );</span></pre>
+<p><b>Returns:</b> <code>(status(ph) &amp; regular_flag) != 0</code></p>
+<pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_regular</span></code><span style="background-color: #FFFFFF">( status_flags f );</span></pre>
   <p><span style="background-color: #FFFFFF"><b>Returns: </b><code>(f &amp; 
-  file_flag) != 0</code></span></p>
+  regular_flag) != 0</code></span></p>
 </blockquote>
 <h3><a name="is_other">is_other</a></h3>
 <blockquote>
@@ -502,7 +502,7 @@ template&lt;class DirItr&gt; bool is_symlink( const DirItr &amp; ph );</code></p
   <p><code>template&lt;class Path&gt; boost::intmax_t file_size( const Path &amp; ph );</code></p>
   <p><b>Returns:</b> The size of the file in bytes as reported by the operating 
   system.</p>
-  <p><b>Throws:</b> if <code>!is_file(ph)</code></p>
+  <p><b>Throws:</b> if <code>!is_regular(ph)</code></p>
 <p><b>Warming:</b> If a compiler does not support <code>maxint_t</code> large 
 enough to represent the operating system's maximum file size, or if the 
 implementation does not know how to query the operating system for large file 

@@ -179,7 +179,7 @@ namespace
         ? fs::not_found_flag : fs::error_flag;
     }
     return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0
-      ? fs::directory_flag : fs::file_flag;
+      ? fs::directory_flag : fs::regular_flag;
   }
 
   BOOL get_file_attributes_ex( const char * ph,
@@ -703,7 +703,7 @@ namespace boost
         symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
           == FILE_ATTRIBUTE_DIRECTORY)
           ? fs::directory_flag
-          : fs::file_flag;
+          : fs::regular_flag;
         return 0;
       }  
 
@@ -722,7 +722,7 @@ namespace boost
         symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
           == FILE_ATTRIBUTE_DIRECTORY)
           ? fs::directory_flag
-          : fs::file_flag;
+          : fs::regular_flag;
         return 0;
       }
 
@@ -822,7 +822,7 @@ namespace boost
         symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
           == FILE_ATTRIBUTE_DIRECTORY)
           ? fs::directory_flag
-          : fs::file_flag;
+          : fs::regular_flag;
         return 0;
       }
 
@@ -853,7 +853,7 @@ namespace boost
         symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
           == FILE_ATTRIBUTE_DIRECTORY)
           ? fs::directory_flag
-          : fs::file_flag;
+          : fs::regular_flag;
         return 0;
       }
 
@@ -872,7 +872,7 @@ namespace boost
         }
         fs::status_flags result(0);
         if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
-        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
+        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::regular_flag;
         if ( result == 0 ) result = fs::other_flag;
         return result;
       }
@@ -891,7 +891,7 @@ namespace boost
         fs::status_flags result(0);
         if ( S_ISLNK( path_stat.st_mode ) ) result |= fs::symlink_flag;
         if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
-        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::file_flag;
+        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::regular_flag;
         if ( result == 0 ) result = fs::other_flag;
         return result;
       }
@@ -1189,7 +1189,7 @@ namespace boost
         target = entry->d_name;
 #     ifdef BOOST_FILESYSTEM_STATUS_CACHE
         if ( entry->d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
-        else if ( entry->d_type == DT_REG ) sf = symlink_sf = fs::file_flag;
+        else if ( entry->d_type == DT_REG ) sf = symlink_sf = fs::regular_flag;
         else if ( entry->d_type == DT_LNK )
           { sf = 0; symlink_sf = fs::symlink_flag; }
         else sf = symlink_sf = fs::other_flag;
