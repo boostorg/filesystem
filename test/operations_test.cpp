@@ -479,11 +479,11 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::is_symlink( from_ph ) );
     BOOST_CHECK( fs::exists( file_ph ) );
     BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
-    flags = fs::status( from_ph );
+    flags = fs::status( from_ph, fs::symlink );
     BOOST_CHECK( fs::exists( flags ) );
     BOOST_CHECK( !fs::is_error( flags ) );
     BOOST_CHECK( !fs::is_directory( flags ) );
-    BOOST_CHECK( fs::is_regular( flags ) );
+    BOOST_CHECK( !fs::is_regular( flags ) );
     BOOST_CHECK( !fs::is_other( flags ) );
     BOOST_CHECK( fs::is_symlink( flags ) );
   }
