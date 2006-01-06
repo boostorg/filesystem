@@ -1188,11 +1188,18 @@ namespace boost
         if ( result == 0 ) return dir_itr_close( handle, buffer );
         target = entry->d_name;
 #     ifdef BOOST_FILESYSTEM_STATUS_CACHE
-        if ( entry->d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
-        else if ( entry->d_type == DT_REG ) sf = symlink_sf = fs::regular_flag;
-        else if ( entry->d_type == DT_LNK )
-          { sf = 0; symlink_sf = fs::symlink_flag; }
-        else sf = symlink_sf = fs::other_flag;
+		    if ( entry->d_type == DT_UNKNOWN )  // filesystem does not supply d_type value
+        {
+          sf = symlink_sf = 0;
+        }
+	  	  else  // filesystem supplies d_type value
+		    {
+          if ( entry->d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
+          else if ( entry->d_type == DT_REG ) sf = symlink_sf = fs::regular_flag;
+          else if ( entry->d_type == DT_LNK )
+            { sf = 0; symlink_sf = fs::symlink_flag; }
+          else sf = symlink_sf = fs::other_flag;
+		    }
 #     else
         sf = symlink_sf = 0;
 #     endif
