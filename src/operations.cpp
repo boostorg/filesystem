@@ -83,7 +83,7 @@ namespace fs = boost::filesystem;
 #include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
-//#include <iostream>    // for debugging only; comment out when not in use
+#include <iostream>    // for debugging only; comment out when not in use
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::strcmp; using ::remove; using ::rename; }
@@ -175,6 +175,8 @@ namespace
       if ( ec != 0 ) *ec = err;
       return ((err == ERROR_FILE_NOT_FOUND)
         || (err == ERROR_PATH_NOT_FOUND)
+        || (err == ERROR_INVALID_NAME) // for example, "tools/build/jam_src/:sys:stat.h"
+        || (err == ERROR_INVALID_PARAMETER) // for example, ":sys:stat.h"
         || (err == ERROR_BAD_NETPATH ))
         ? fs::not_found_flag : fs::error_flag;
     }
