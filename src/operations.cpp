@@ -67,7 +67,7 @@ namespace fs = boost::filesystem;
 #   include "utime.h"
 # endif
 
-//  BOOST_FILESYSTEM_STATUS_CACHE enables status_flags cache in
+//  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
 //  dir_itr_increment. The config tests are placed here because some of the
 //  macros being tested come from dirent.h.
 //
@@ -165,23 +165,27 @@ namespace
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
   template< class String >
-  fs::status_flags status_template( const String & ph,
-    boost::filesystem::system_error_type * ec )
+  fs::file_status status_template( const String & ph, fs::system_error_type & ec )
   {
     DWORD attr( get_file_attributes( ph.c_str() ) );
     if ( attr == 0xFFFFFFFF )
     {
-      UINT err = ::GetLastError();
-      if ( ec != 0 ) *ec = err;
-      return ((err == ERROR_FILE_NOT_FOUND)
-        || (err == ERROR_PATH_NOT_FOUND)
-        || (err == ERROR_INVALID_NAME) // for example, "tools/build/jam_src/:sys:stat.h"
-        || (err == ERROR_INVALID_PARAMETER) // for example, ":sys:stat.h"
-        || (err == ERROR_BAD_NETPATH ))
-        ? fs::not_found_flag : fs::error_flag;
+      ec = ::GetLastError();
+      if ((ec == ERROR_FILE_NOT_FOUND)
+        || (ec == ERROR_PATH_NOT_FOUND)
+        || (ec == ERROR_INVALID_NAME) // "tools/build/jam_src/:sys:stat.h"
+        || (ec == ERROR_INVALID_PARAMETER) // ":sys:stat.h"
+        || (ec == ERROR_BAD_NETPATH))
+      {
+        ec = 0; // these are not considered errors
+        return fs::file_status( fs::file_not_found );
+      }
+      return fs::file_status( fs::status_unknown );
     }
-    return (attr & FILE_ATTRIBUTE_DIRECTORY) != 0
-      ? fs::directory_flag : fs::regular_flag;
+    ec = 0;
+    return (attr & FILE_ATTRIBUTE_DIRECTORY)
+      ? fs::file_status( fs::directory_file )
+      : fs::file_status( fs::regular_file );
   }
 
   BOOL get_file_attributes_ex( const char * ph,
@@ -473,9 +477,9 @@ namespace
   remove_template( const String & ph )
   {
     fs::system_error_type ec;
-    fs::status_flags sf( fs::detail::status_api( ph, &ec ) );
-    if ( sf == fs::error_flag ) return ec;
-    if ( (sf & fs::directory_flag) != 0 )
+    fs::file_status sf( fs::detail::status_api( ph, ec ) );
+    if ( ec ) return ec;
+    if ( fs::is_directory( sf ) )
     {
       if ( !remove_directory( ph ) )
         return ::GetLastError();
@@ -494,12 +498,12 @@ namespace
   boost::filesystem::detail::query_pair
   create_directory_template( const String & dir_ph )
   {
-    boost::filesystem::system_error_type error(0);
+    boost::filesystem::system_error_type error(0), dummy;
     if ( create_directory( dir_ph ) ) return std::make_pair( error, true );
     error = ::GetLastError();
     // an error here may simply mean the postcondition is already met
     if ( error == ERROR_ALREADY_EXISTS
-      && (fs::detail::status_api( dir_ph ) & fs::directory_flag) != 0 )
+      && fs::is_directory( fs::detail::status_api( dir_ph, dummy ) ) )
       return std::make_pair( 0, false );
     return std::make_pair( error, false );
   }
@@ -513,8 +517,8 @@ namespace
   create_hard_link_template( const String & to_ph,
     const String & from_ph )
   {
-    return create_hard_link( to_ph.c_str(), from_ph.c_str() )
-      ? 0 : ::GetLastError();
+    return fs::system_error_type( create_hard_link( to_ph.c_str(), from_ph.c_str() )
+      ? 0 : ::GetLastError() );
   }
 
 #endif
@@ -524,10 +528,14 @@ namespace boost
 {
   namespace filesystem
   {
-    BOOST_FILESYSTEM_DECL symlink_t symlink; 
-
     namespace detail
     {
+
+#if   defined(BOOST_WINDOWS_API)
+        BOOST_FILESYSTEM_DECL system_error_type not_found_error = ERROR_PATH_NOT_FOUND;
+#else
+        BOOST_FILESYSTEM_DECL system_error_type not_found_error = ENOENT;
+#endif
 
 //  free functions  ----------------------------------------------------------//
 
@@ -543,16 +551,14 @@ namespace boost
 
 #   ifdef BOOST_WINDOWS_API
 
-      BOOST_FILESYSTEM_DECL fs::status_flags
-      status_api( const std::string & ph,
-        boost::filesystem::system_error_type * ec )
+      BOOST_FILESYSTEM_DECL fs::file_status
+        status_api( const std::string & ph, fs::system_error_type & ec )
         { return status_template( ph, ec ); }
 
 #     ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-      BOOST_FILESYSTEM_DECL fs::status_flags
-      status_api( const std::wstring & ph,
-        boost::filesystem::system_error_type * ec )
+      BOOST_FILESYSTEM_DECL fs::file_status
+      status_api( const std::wstring & ph, fs::system_error_type & ec )
         { return status_template( ph, ec ); }
 
       BOOST_FILESYSTEM_DECL bool symbolic_link_exists_api( const std::wstring & )
@@ -686,7 +692,7 @@ namespace boost
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_first( void *& handle, const std::wstring & dir,
-        std::wstring & target, status_flags & sf, status_flags & symlink_sf )
+        std::wstring & target, file_status & sf, file_status & symlink_sf )
       {
         // use a form of search Sebastian Martel reports will work with Win98
         std::wstring dirpath( dir );
@@ -702,16 +708,15 @@ namespace boost
             ? 0 : ::GetLastError();
         }
         target = data.cFileName;
-        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-          == FILE_ATTRIBUTE_DIRECTORY)
-          ? fs::directory_flag
-          : fs::regular_flag;
+        if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+          { sf.type( directory_file ); symlink_sf.type( directory_file ); }
+        else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
         return 0;
       }  
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_increment( void *& handle, std::wstring & target,
-        status_flags & sf, status_flags & symlink_sf )
+        file_status & sf, file_status & symlink_sf )
       {
         WIN32_FIND_DATAW data;
         if ( ::FindNextFileW( handle, &data ) == 0 ) // fails
@@ -721,10 +726,9 @@ namespace boost
           return error == ERROR_NO_MORE_FILES ? 0 : error;
         }
         target = data.cFileName;
-        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-          == FILE_ATTRIBUTE_DIRECTORY)
-          ? fs::directory_flag
-          : fs::regular_flag;
+        if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+          { sf.type( directory_file ); symlink_sf.type( directory_file ); }
+        else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
         return 0;
       }
 
@@ -775,7 +779,7 @@ namespace boost
       BOOST_FILESYSTEM_DECL fs::system_error_type
       create_hard_link_api( const std::string & to_ph,
         const std::string & from_ph )
-        { return create_hard_link_template( to_ph, from_ph ); }
+        { return system_error_type( create_hard_link_template( to_ph, from_ph ) ); }
 
       BOOST_FILESYSTEM_DECL fs::system_error_type
       create_symlink_api( const std::string & to_ph,
@@ -801,7 +805,7 @@ namespace boost
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_first( void *& handle, const std::string & dir,
-        std::string & target, status_flags & sf, status_flags & symlink_sf )
+        std::string & target, file_status & sf, file_status & symlink_sf )
       // Note: an empty root directory has no "." or ".." entries, so this
       // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
       // error. It is treated as eof instead.
@@ -821,10 +825,9 @@ namespace boost
             ? 0 : ::GetLastError();
         }
         target = data.cFileName;
-        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-          == FILE_ATTRIBUTE_DIRECTORY)
-          ? fs::directory_flag
-          : fs::regular_flag;
+        if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+          { sf.type( directory_file ); symlink_sf.type( directory_file ); }
+        else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
         return 0;
       }
 
@@ -842,7 +845,7 @@ namespace boost
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_increment( void *& handle, std::string & target,
-        status_flags & sf, status_flags & symlink_sf )
+        file_status & sf, file_status & symlink_sf )
       {
         WIN32_FIND_DATAA data;
         if ( ::FindNextFileA( handle, &data ) == 0 ) // fails
@@ -852,50 +855,74 @@ namespace boost
           return error == ERROR_NO_MORE_FILES ? 0 : error;
         }
         target = data.cFileName;
-        symlink_sf = sf = ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-          == FILE_ATTRIBUTE_DIRECTORY)
-          ? fs::directory_flag
-          : fs::regular_flag;
+        if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
+          { sf.type( directory_file ); symlink_sf.type( directory_file ); }
+        else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
         return 0;
       }
 
 #   else // BOOST_POSIX_API
 
-      BOOST_FILESYSTEM_DECL boost::filesystem::status_flags
-      status_api( const std::string & ph,
-                  boost::filesystem::system_error_type * ec )
+      BOOST_FILESYSTEM_DECL fs::file_status
+      status_api( const std::string & ph, system_error_type & ec )
       {
         struct stat path_stat;
         if ( ::stat( ph.c_str(), &path_stat ) != 0 )
         {
-          if ( ec != 0 ) *ec = errno;
-          return ( (errno == ENOENT) || (errno == ENOTDIR) )
-            ? fs::not_found_flag : fs::error_flag;
+          if ( errno == ENOENT || errno == ENOTDIR )
+          {
+            ec = 0;
+            return fs::file_status( fs::file_not_found );
+          }
+          ec = errno;
+          return fs::file_status( fs::status_unknown );
         }
-        fs::status_flags result(0);
-        if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
-        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::regular_flag;
-        if ( result == 0 ) result = fs::other_flag;
-        return result;
+        ec = 0;
+        if ( S_ISDIR( path_stat.st_mode ) )
+          return fs::file_status( fs::directory_file );
+        if ( S_ISREG( path_stat.st_mode ) )
+          return fs::file_status( fs::regular_file );
+        if ( S_ISBLK( path_stat.st_mode ) )
+          return fs::file_status( fs::block_file );
+        if ( S_ISCHR( path_stat.st_mode ) )
+          return fs::file_status( fs::character_file );
+        if ( S_ISFIFO( path_stat.st_mode ) )
+          return fs::file_status( fs::fifo_file );
+        if ( S_ISSOCK( path_stat.st_mode ) )
+          return fs::file_status( fs::socket_file );
+        return fs::file_status( fs::type_unknown );
       }
 
-      BOOST_FILESYSTEM_DECL boost::filesystem::status_flags
-      symlink_status_api( const std::string & ph,
-                          boost::filesystem::system_error_type * ec )
+      BOOST_FILESYSTEM_DECL fs::file_status
+      symlink_status_api( const std::string & ph, system_error_type & ec )
       {
         struct stat path_stat;
         if ( ::lstat( ph.c_str(), &path_stat ) != 0 )
         {
-          if ( ec != 0 ) *ec = errno;
-          return ( (errno == ENOENT) || (errno == ENOTDIR) )
-            ? fs::not_found_flag : fs::error_flag;
+          if ( errno == ENOENT || errno == ENOTDIR )
+          {
+            ec = 0;
+            return fs::file_status( fs::file_not_found );
+          }
+          ec = errno;
+          return fs::file_status( fs::status_unknown );
         }
-        fs::status_flags result(0);
-        if ( S_ISLNK( path_stat.st_mode ) ) result |= fs::symlink_flag;
-        if ( S_ISDIR( path_stat.st_mode ) ) result |= fs::directory_flag;
-        if ( S_ISREG( path_stat.st_mode ) ) result |= fs::regular_flag;
-        if ( result == 0 ) result = fs::other_flag;
-        return result;
+        ec = 0;
+        if ( S_ISREG( path_stat.st_mode ) )
+          return fs::file_status( fs::regular_file );
+        if ( S_ISDIR( path_stat.st_mode ) )
+          return fs::file_status( fs::directory_file );
+        if ( S_ISLNK( path_stat.st_mode ) )
+          return fs::file_status( fs::symlink_file );
+        if ( S_ISBLK( path_stat.st_mode ) )
+          return fs::file_status( fs::block_file );
+        if ( S_ISCHR( path_stat.st_mode ) )
+          return fs::file_status( fs::character_file );
+        if ( S_ISFIFO( path_stat.st_mode ) )
+          return fs::file_status( fs::fifo_file );
+        if ( S_ISSOCK( path_stat.st_mode ) )
+          return fs::file_status( fs::socket_file );
+        return fs::file_status( fs::type_unknown );
       }
 
       // suggested by Walter Landry
@@ -1024,9 +1051,10 @@ namespace boost
       {
         if ( ::mkdir( ph.c_str(), S_IRWXU|S_IRWXG|S_IRWXO ) == 0 )
           { return std::make_pair( 0, true ); }
-        if ( errno != EEXIST 
-          || (status_api( ph ) & fs::directory_flag) == 0 )
-          { return std::make_pair( errno, false ); }
+        system_error_type ec=errno, dummy;
+        if ( ec != EEXIST 
+          || !fs::is_directory( status_api( ph, dummy ) ) )
+          { return std::make_pair( ec, false ); }
         return std::make_pair( 0, false );
       }
 
@@ -1077,7 +1105,8 @@ namespace boost
       rename_api( const std::string & from, const std::string & to )
       {
         // POSIX is too permissive so must check
-        if ( status_api( to ) != fs::not_found_flag ) 
+        fs::system_error_type dummy;
+        if ( fs::exists( status_api( to, dummy ) ) ) 
           return EEXIST;
         return std::rename( from.c_str(), to.c_str() ) != 0 
           ? errno : 0;
@@ -1130,7 +1159,7 @@ namespace boost
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_first( void *& handle, void *& buffer,
         const std::string & dir, std::string & target,
-        status_flags &, status_flags & )
+        file_status &, file_status & )
       {
         static const std::string dummy_first_name( "." );
         if ( (handle = ::opendir( dir.c_str() )) == 0 ) return errno;
@@ -1179,7 +1208,7 @@ namespace boost
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_increment( void *& handle, void *& buffer,
-        std::string & target, status_flags & sf, status_flags & symlink_sf )
+        std::string & target, file_status & sf, file_status & symlink_sf )
       {
         BOOST_ASSERT( buffer != 0 );
         dirent * entry( static_cast<dirent *>(buffer) );
@@ -1192,18 +1221,23 @@ namespace boost
 #     ifdef BOOST_FILESYSTEM_STATUS_CACHE
 		    if ( entry->d_type == DT_UNKNOWN )  // filesystem does not supply d_type value
         {
-          sf = symlink_sf = 0;
+          sf = symlink_sf = fs::file_status(fs::status_unknown);
         }
 	  	  else  // filesystem supplies d_type value
 		    {
-          if ( entry->d_type == DT_DIR ) sf = symlink_sf = fs::directory_flag;
-          else if ( entry->d_type == DT_REG ) sf = symlink_sf = fs::regular_flag;
+          if ( entry->d_type == DT_DIR )
+            sf = symlink_sf = fs::file_status( fs::directory_file );
+          else if ( entry->d_type == DT_REG )
+            sf = symlink_sf = fs::file_status( fs::regular_file );
           else if ( entry->d_type == DT_LNK )
-            { sf = 0; symlink_sf = fs::symlink_flag; }
-          else sf = symlink_sf = fs::other_flag;
+          {
+            sf = fs::file_status( fs::status_unknown );
+            symlink_sf = fs::file_status( fs::symlink_file );
+          }
+          else sf = symlink_sf = fs::file_status( fs::status_unknown );
 		    }
 #     else
-        sf = symlink_sf = 0;
+        sf = symlink_sf = fs::file_status( fs::status_unknown );
 #     endif
         return 0;
       }

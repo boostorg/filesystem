@@ -83,12 +83,15 @@ namespace boost
 //  error reporting support  -------------------------------------------------//
 
     typedef int errno_type;  // determined by C standard
-    typedef int system_error_type; // both POSIX and Windows use int
-
+    
 # ifdef BOOST_WINDOWS_API
+    typedef unsigned system_error_type;
+
     BOOST_FILESYSTEM_DECL
     errno_type lookup_errno( system_error_type sys_err_code );
 # else
+    typedef int system_error_type;
+
     inline errno_type lookup_errno( system_error_type sys_err_code )
       { return sys_err_code; }
 # endif
@@ -587,7 +590,8 @@ namespace boost
    
     //  inserters and extractors  --------------------------------------------//
 
-# if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300  // bypass VC++ 7.0 and earlier 
+# if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564)) \
+    && (!defined( BOOST_MSVC ) || BOOST_MSVC > 1300)  // bypass VC++ 7.0 and earlier 
 
     template< class Path >
     std::basic_ostream< typename Path::string_type::value_type,
@@ -973,15 +977,14 @@ namespace boost
     }
     
     // except that it wouldn't work for BOOST_NO_MEMBER_TEMPLATES compilers,
-    // the append() member template called with a second argument of 0 could
-    // replace this code.
+    // the append() member template could replace this code.
     template<class String, class Traits>
     basic_path<String, Traits> & basic_path<String, Traits>::operator /=
       ( const value_type * next_p )
     {
-      // bypass native path escape sequence as meaningless for POSIX or Windows
-      if ( detail::is_separator<path_type>( *next_p )
-        && detail::is_separator<path_type>( *(next_p+1) )
+      // ignore escape sequence on POSIX or Windows
+      if ( *next_p == slash<path_type>::value
+        && *(next_p+1) == slash<path_type>::value
         && *(next_p+2) == colon<path_type>::value ) next_p += 3;
       
       // append slash<path_type>::value if needed
@@ -998,17 +1001,34 @@ namespace boost
       basic_path<String, Traits> & basic_path<String, Traits>::append(
         InputIterator first, InputIterator last )
     {
-      // bypass native path escape sequence as meaningless for POSIX or Windows
-      if ( detail::is_separator<path_type>( *first )
-        && detail::is_separator<path_type>( *(first+1) )
-        && *(first+2) == colon<path_type>::value ) first += 3;
-      
       // append slash<path_type>::value if needed
       if ( !empty() && first != last
         && !detail::is_separator<path_type>( *first ) )
       { m_append_separator_if_needed(); }
 
-      for ( ; first != last && *first; ++first ) m_append( *first );
+      // song-and-dance to avoid violating InputIterator requirements
+      // (which prohibit lookahead) in detecting a possible escape sequence
+      // (escape sequences are simply ignored on POSIX and Windows)
+      bool was_escape_sequence(true);
+      std::size_t append_count(0);
+      typename String::size_type initial_pos( m_path.size() );
+
+      for ( ; first != last && *first; ++first )
+      {
+        if ( append_count == 0 && *first != slash<path_type>::value )
+          was_escape_sequence = false;
+        if ( append_count == 1 && *first != slash<path_type>::value )
+          was_escape_sequence = false;
+        if ( append_count == 2 && *first != colon<path_type>::value )
+          was_escape_sequence = false;
+        m_append( *first );
+        ++append_count;
+      }
+
+      // erase escape sequence if any
+      if ( was_escape_sequence && append_count >= 3 )
+        m_path.erase( initial_pos, 3 );
+
       return *this;
     }
 # endif

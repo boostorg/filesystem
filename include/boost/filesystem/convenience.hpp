@@ -116,8 +116,9 @@ namespace boost
         std::stack< element_type, std::vector< element_type > > m_stack;
         int  m_level;
         bool m_no_push;
+        bool m_no_throw;
 
-        recur_dir_itr_imp() : m_level(0), m_no_push(false) {}
+        recur_dir_itr_imp() : m_level(0), m_no_push(false), m_no_throw(false) {}
       };
 
     } // namespace detail
@@ -137,6 +138,7 @@ namespace boost
       basic_recursive_directory_iterator(){}  // creates the "end" iterator
 
       explicit basic_recursive_directory_iterator( const Path & dir_path );
+      basic_recursive_directory_iterator( const Path & dir_path, system_error_type & ec );
 
       int level() const { return m_imp->m_level; }
 
@@ -145,6 +147,20 @@ namespace boost
       {
         BOOST_ASSERT( m_imp.get() && "attempt to no_push() on end iterator" );
         m_imp->m_no_push = true;
+      }
+
+      file_status status() const
+      {
+        BOOST_ASSERT( m_imp.get()
+          && "attempt to call status() on end recursive_iterator" );
+        return m_imp->m_stack.top()->status();
+      }
+
+      file_status symlink_status() const
+      {
+        BOOST_ASSERT( m_imp.get()
+          && "attempt to call symlink_status() on end recursive_iterator" );
+        return m_imp->m_stack.top()->symlink_status();
       }
 
     private:
@@ -178,13 +194,22 @@ namespace boost
 
     //  basic_recursive_directory_iterator implementation  -------------------//
 
-    //  constructor
+    //  constructors
     template<class Path>
     basic_recursive_directory_iterator<Path>::
       basic_recursive_directory_iterator( const Path & dir_path )
       : m_imp( new detail::recur_dir_itr_imp<Path> )
     {
       m_imp->m_stack.push( basic_directory_iterator<Path>( dir_path ) );
+    }
+
+    template<class Path>
+    basic_recursive_directory_iterator<Path>::
+      basic_recursive_directory_iterator( const Path & dir_path, system_error_type & ec )
+      : m_imp( new detail::recur_dir_itr_imp<Path> )
+    {
+      m_imp->m_stack.push( basic_directory_iterator<Path>( dir_path, std::nothrow ) );
+      m_imp->m_no_throw = true;
     }
 
     //  increment
@@ -196,10 +221,14 @@ namespace boost
       static const basic_directory_iterator<Path> end_itr;
 
       if ( m_imp->m_no_push ) m_imp->m_no_push = false;
-      else if ( m_imp->m_stack.top()->is_directory() )
+      else if ( is_directory( m_imp->m_stack.top()->status() ) )
       {
+        system_error_type ec;
         m_imp->m_stack.push(
-          basic_directory_iterator<Path>( *m_imp->m_stack.top() ) );
+          m_imp->m_no_throw
+            ? basic_directory_iterator<Path>( *m_imp->m_stack.top(), ec )
+            : basic_directory_iterator<Path>( *m_imp->m_stack.top() )
+          );
         if ( m_imp->m_stack.top() != end_itr )
         {
           ++m_imp->m_level;

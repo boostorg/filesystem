@@ -48,7 +48,7 @@ namespace boost
       {
         std::string narrow_ph;
         bool created_file( false );
-        if ( status_api( file_ph, 0 ) == boost::filesystem::not_found_flag )
+        if ( !exists( file_ph ) )
         {
           if ( (mode & std::ios_base::out) == 0 
             || !create_file_api( file_ph, mode ) ) return narrow_ph;

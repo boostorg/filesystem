@@ -167,22 +167,20 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::is_directory( ng ) );
   BOOST_CHECK( !fs::is_regular( ng ) );
   BOOST_CHECK( !fs::is_symlink( ng ) );
-  BOOST_CHECK( (fs::status( ng ) & fs::not_found_flag) != 0 );
-  BOOST_CHECK( (fs::status( "" ) & fs::not_found_flag) != 0 );
-  fs::status_flags flags( fs::status( ng ) );
-  BOOST_CHECK( !fs::exists( flags ) );
-  BOOST_CHECK( !fs::is_error( flags ) );
-  BOOST_CHECK( !fs::is_directory( flags ) );
-  BOOST_CHECK( !fs::is_regular( flags ) );
-  BOOST_CHECK( !fs::is_other( flags ) );
-  BOOST_CHECK( !fs::is_symlink( flags ) );
-  flags = fs::status( "" );
-  BOOST_CHECK( !fs::exists( flags ) );
-  BOOST_CHECK( !fs::is_error( flags ) );
-  BOOST_CHECK( !fs::is_directory( flags ) );
-  BOOST_CHECK( !fs::is_regular( flags ) );
-  BOOST_CHECK( !fs::is_other( flags ) );
-  BOOST_CHECK( !fs::is_symlink( flags ) );
+  fs::file_status stat( fs::status( ng ) );
+  BOOST_CHECK( fs::status_known( stat ) );
+  BOOST_CHECK( !fs::exists( stat ) );
+  BOOST_CHECK( !fs::is_directory( stat ) );
+  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_other( stat ) );
+  BOOST_CHECK( !fs::is_symlink( stat ) );
+  stat = fs::status( "" );
+  BOOST_CHECK( fs::status_known( stat ) );
+  BOOST_CHECK( !fs::exists( stat ) );
+  BOOST_CHECK( !fs::is_directory( stat ) );
+  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_other( stat ) );
+  BOOST_CHECK( !fs::is_symlink( stat ) );
 
   fs::path dir(  fs::initial_path<fs::path>() / temp_dir_name );
   
@@ -269,13 +267,12 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::is_regular( dir ) );
   BOOST_CHECK( !fs::is_other( dir ) );
   BOOST_CHECK( !fs::is_symlink( dir ) );
-  flags = fs::status( dir );
-  BOOST_CHECK( fs::exists( flags ) );
-  BOOST_CHECK( !fs::is_error( flags ) );
-  BOOST_CHECK( fs::is_directory( flags ) );
-  BOOST_CHECK( !fs::is_regular( flags ) );
-  BOOST_CHECK( !fs::is_other( flags ) );
-  BOOST_CHECK( !fs::is_symlink( flags ) );
+  stat = fs::status( dir );
+  BOOST_CHECK( fs::exists( stat ) );
+  BOOST_CHECK( fs::is_directory( stat ) );
+  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_other( stat ) );
+  BOOST_CHECK( !fs::is_symlink( stat ) );
 
   if ( platform == "Windows" )
     BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 
@@ -298,13 +295,35 @@ int test_main( int argc, char * argv[] )
 
   boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
 
+  bool dir_itr_exception(false);
+  try { fs::directory_iterator it( "" ); }
+  catch ( const fs::filesystem_error & ) { dir_itr_exception = true; }
+  BOOST_CHECK( dir_itr_exception );
+
+  dir_itr_exception = false;
+  try { fs::directory_iterator it( "nosuchdirectory" ); }
+  catch ( const fs::filesystem_error & ) { dir_itr_exception = true; }
+  BOOST_CHECK( dir_itr_exception );
+
+  dir_itr_exception = false;
+  try
   {
+    fs::system_error_type ec(0);
+    fs::directory_iterator it( "nosuchdirectory", ec );
+    BOOST_CHECK( ec != 0 );
+    BOOST_CHECK( ec == fs::detail::not_found_error );
+  }
+  catch ( const fs::filesystem_error & ) { dir_itr_exception = true; }
+  BOOST_CHECK( !dir_itr_exception );
+  
+  {
+    // probe query function overloads
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr->status() == fs::directory_flag );
-    BOOST_CHECK( dir_itr->status( fs::symlink ) == fs::directory_flag );
+    BOOST_CHECK( fs::is_directory( *dir_itr ) );
+    BOOST_CHECK( fs::is_directory( dir_itr->status() ) );
+    BOOST_CHECK( fs::is_directory( fs::symlink_status(*dir_itr) ) );
+    BOOST_CHECK( fs::is_directory( dir_itr->symlink_status() ) );
     BOOST_CHECK( dir_itr->leaf() == "d1" );
-    BOOST_CHECK( fs::status(*dir_itr) == fs::directory_flag );
-    BOOST_CHECK( fs::status( *dir_itr, fs::symlink ) == fs::directory_flag );
   }
 
   // create a second directory named d2
@@ -317,11 +336,11 @@ int test_main( int argc, char * argv[] )
   // stepping one iterator doesn't affect a different iterator.
   {
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr->exists() );
-    BOOST_CHECK( dir_itr->is_directory() );
-    BOOST_CHECK( !dir_itr->is_regular() );
-    BOOST_CHECK( !dir_itr->is_other() );
-    BOOST_CHECK( !dir_itr->is_symlink() );
+    BOOST_CHECK( fs::exists(dir_itr->status()) );
+    BOOST_CHECK( fs::is_directory(dir_itr->status()) );
+    BOOST_CHECK( !fs::is_regular(dir_itr->status()) );
+    BOOST_CHECK( !fs::is_other(dir_itr->status()) );
+    BOOST_CHECK( !fs::is_symlink(dir_itr->status()) );
 
     fs::directory_iterator dir_itr2( dir );
     BOOST_CHECK( dir_itr->leaf() == "d1"
@@ -401,13 +420,13 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::file_size( file_ph ) == 0 );
   BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::create_directory),
     file_ph ), EEXIST ) );
-  flags = fs::status( file_ph );
-  BOOST_CHECK( fs::exists( flags ) );
-  BOOST_CHECK( !fs::is_error( flags ) );
-  BOOST_CHECK( !fs::is_directory( flags ) );
-  BOOST_CHECK( fs::is_regular( flags ) );
-  BOOST_CHECK( !fs::is_other( flags ) );
-  BOOST_CHECK( !fs::is_symlink( flags ) );
+  stat = fs::status( file_ph );
+  BOOST_CHECK( fs::status_known( stat ) );
+  BOOST_CHECK( fs::exists( stat ) );
+  BOOST_CHECK( !fs::is_directory( stat ) );
+  BOOST_CHECK( fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_other( stat ) );
+  BOOST_CHECK( !fs::is_symlink( stat ) );
 
   // create a file named "f1"
   file_ph = dir / "f1";
@@ -456,8 +475,10 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
   }
 
-  BOOST_CHECK( fs::create_hard_link( fs::path("doesnotexist"), fs::path("shouldnotwork"),
-    std::nothrow ) != 0 );
+  fs::system_error_type ec(0);
+  BOOST_CHECK( fs::create_hard_link( fs::path("doesnotexist"),
+    fs::path("shouldnotwork"), ec ) != 0 );
+  BOOST_CHECK( ec != 0 );
 
   // symbolic link tests
   from_ph = dir / "f4";
@@ -481,17 +502,17 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::is_symlink( from_ph ) );
     BOOST_CHECK( fs::exists( file_ph ) );
     BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
-    flags = fs::status( from_ph, fs::symlink );
-    BOOST_CHECK( fs::exists( flags ) );
-    BOOST_CHECK( !fs::is_error( flags ) );
-    BOOST_CHECK( !fs::is_directory( flags ) );
-    BOOST_CHECK( !fs::is_regular( flags ) );
-    BOOST_CHECK( !fs::is_other( flags ) );
-    BOOST_CHECK( fs::is_symlink( flags ) );
+    stat = fs::symlink_status( from_ph );
+    BOOST_CHECK( fs::exists( stat ) );
+    BOOST_CHECK( !fs::is_directory( stat ) );
+    BOOST_CHECK( !fs::is_regular( stat ) );
+    BOOST_CHECK( !fs::is_other( stat ) );
+    BOOST_CHECK( fs::is_symlink( stat ) );
   }
 
-  BOOST_CHECK( fs::create_symlink( "doesnotexist", "",
-    std::nothrow ) != 0 );
+  ec = 0;
+  BOOST_CHECK( fs::create_symlink( "doesnotexist", "", ec ) != 0 );
+  BOOST_CHECK( ec != 0 );
 
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.

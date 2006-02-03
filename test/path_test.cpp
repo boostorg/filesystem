@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <cassert>
 
@@ -239,18 +240,46 @@ int test_main( int, char*[] )
   p4 /= "foo";
   p4 /= std::string( "foo" );
 
+  path p5;
+  std::string s1( "//:somestring" );
+
 # ifndef BOOST_NO_MEMBER_TEMPLATES
+
   // check the path member templates
+  p5.assign( s1.begin(), s1.end() );
+
+  PATH_CHECK( p5, "somestring" );
+  p5 = s1;
+  PATH_CHECK( p5, "somestring" );
+
   BOOST_CHECK( p4.string() == path( p4.string().begin(), p4.string().end() ).string() );
 
-  path p5;
+  char c0 = 'a';
+  p5.assign( &c0, &c0 );
+  PATH_CHECK( p5, "" );
+  p5 /= "";
+  PATH_CHECK( p5, "" );
   p5 /= "foo/bar";
+  PATH_CHECK( p5, "foo/bar" );
+  p5.append( &c0, &c0 );
+  PATH_CHECK( p5, "foo/bar" );
+  p5 /= "";
   PATH_CHECK( p5, "foo/bar" );
   char bf[]= "bar/foo";
   p5.assign( bf, bf + sizeof(bf) ); 
   PATH_CHECK( p5, bf );
   p5.append( bf, bf + sizeof(bf) ); 
   PATH_CHECK( p5, "bar/foo/bar/foo" );
+
+  // this code, courtesy of David Whetstone, detected a now fixed bug that
+  // derefereced the end iterator (assuming debug build with checked itors)
+  std::vector<char> v1;
+  p5.assign( v1.begin(), v1.end() );
+  std::string s2( v1.begin(), v1.end() );
+  PATH_CHECK( p5, s2 );
+  p5.assign( s1.begin(), s1.begin() + 1 );
+  PATH_CHECK( p5, "/" );
+
 # endif
 
   BOOST_CHECK( p1 != p4 );

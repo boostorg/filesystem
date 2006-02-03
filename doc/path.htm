@@ -187,6 +187,7 @@ dealing with exceptions and error reporting.</p>
     public:
       typedef basic_path&lt;String, Traits&gt; path_type;
       typedef String string_type;
+      typedef typename String::value_type value_type;
       typedef Traits traits_type;
       typedef typename Traits::external_string_type external_string_type; 
 
@@ -195,14 +196,26 @@ dealing with exceptions and error reporting.</p>
       // constructors:
       <a href="#Class_path">basic_path</a>();
       <a href="#Class_path">basic_path</a>( const string_type &amp; src );
-      <a href="#Class_path">basic_path</a>( const char * src );
+      <a href="#Class_path">basic_path</a>( const value_type * src );
+      template &lt;class InputIterator&gt;
+        <a href="#constructors">basic_path</a>(InputIterator first, InputIterator last);
 
       ~basic_path();
+
+      // assignments
+      basic_path &amp; operator=(const basic_path&amp; p);
+      basic_path &amp; operator=(const string_type&amp; s);
+      basic_path &amp; operator=(const value_type* s);
+      template &lt;class InputIterator&gt;
+        basic_path &amp; assign(InputIterator first, InputIterator last);
 
       // append operations:
       basic_path &amp; <a href="#operator_slash_equal">operator /=</a> ( const basic_path &amp; rhs );
       basic_path &amp; <a href="#operator_slash_equal">operator /=</a> ( const string_type &amp; rhs );
-      basic_path &amp; <a href="#operator_slash_equal">operator /=</a> ( const typename string_type::value_type * rhs );
+      basic_path &amp; <a href="#operator_slash_equal">operator /=</a> ( const value_type * rhs );
+      template &lt;class InputIterator&gt;
+        basic_path&amp; append(InputIterator first, InputIterator last);
+
       basic_path   <a href="#operator_slash">operator /</a>  ( const basic_path &amp; rhs ) const;
       basic_path   <a href="#operator_slash">operator /</a>  ( const string_type &amp; rhs ) const;
       basic_path   <a href="#operator_slash">operator /</a>  ( const typename string_type::value_type * rhs ) const;
@@ -1164,7 +1177,7 @@ various expressions.</p>
 </table>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2005<!--webbot bot="Timestamp" endspan i-checksum="19912" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 January, 2006<!--webbot bot="Timestamp" endspan i-checksum="38953" --></p>
 
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
