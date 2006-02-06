@@ -18,11 +18,10 @@ Filesystem Library</h1>
     <td width="50%" valign="top"><font size="4">This Document</font><br>
 &nbsp;&nbsp;&nbsp; <a href="#Introduction">Introduction</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#tutorial">Two-minute tutorial</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Examples">Examples</a><br>
-&nbsp;&nbsp;&nbsp;
-<a href="#Definitions">Definitions</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Common_Specifications">Common Specifications</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Race-condition">Race-condition danger</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Cautions">Cautions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Using_reference_doc">Using the Reference 
+    Documentation</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#Examples">Examples</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Implementation">Implementation</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#narrow-only">Restricting library to narrow 
     character paths</a><br>
@@ -31,21 +30,25 @@ Filesystem Library</h1>
 &nbsp;&nbsp;&nbsp; <a href="#Acknowledgements">Acknowledgements</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Change-history">Change history</a></td>
     <td width="50%" valign="top"><font size="4">Other Documents</font><br>
+&nbsp;&nbsp;&nbsp; <a href="tr2_proposal.html">Reference</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="tr2_proposal.html#TOC">Table of Contents</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <a href="tr2_proposal.html#Introduction">TR2 Introduction</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="tr2_proposal.html#Text">Formal reference text</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <a href="tr2_proposal.html#frontmatter">Introductory 
+    chapter</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <a href="tr2_proposal.html#Filesystem-library">Filesystem 
+    library chapter</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+    <a href="tr2_proposal.html#Header-filesystem-synopsis">Header 
+    &lt;boost/filesystem.hpp&gt; synopsis</a><br>
 &nbsp;&nbsp;&nbsp; <a href="design.htm">Library Design</a><br>
 &nbsp;&nbsp;&nbsp; <a href="faq.htm">FAQ</a><br>
 &nbsp;&nbsp;&nbsp; <a href="portability_guide.htm">Portability Guide</a><br>
-&nbsp;&nbsp;&nbsp; <a href="path.htm"><b><i>path.hpp</i></b> documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="exception.htm"><b><i>path.hpp</i></b> Error 
-    Reporting documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="operations.htm"><b><i>operations.hpp</i></b> documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="fstream.htm"><b><i>fstream.hpp</i></b> documentation</a><br>
-&nbsp;&nbsp;&nbsp; <a href="convenience.htm"><b><i>convenience.hpp</i></b> 
-    documentation</a><br>
-&nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; <a href="do-list.htm">Do-list</a><br>
-    <br>
-&nbsp;&nbsp;&nbsp; <a href="http://www.esva.net/~beman/n1923.html">C++ Standards 
-    Committee proposal for TR2</a></td>
+    &nbsp;&nbsp;&nbsp; <a href="do-list.htm">Do-list</a><br>
+    &nbsp;</td>
   </tr>
 </table>
 <h2><a name="Introduction">Introduction</a></h2>
@@ -59,47 +62,35 @@ design</a> encourages, but does not require, safe and portable  usage.</p>
 
 <p>Programs using the library are <b><i>portable</i></b>, both in the sense that 
 the syntax of program code is portable, and the sense that the semantics or 
-behavior of code is portable. The <a href="path.htm#Grammar">generic path 
+behavior of code is portable. The <a href="tr2_proposal.html#Pathname-grammar">generic path 
 grammar</a> is another important aid to portability.</p>
 
 <p>Usage is <i><b>safe</b></i> in the sense that errors cannot be ignored since most functions throw C++ 
 exceptions when errors are detected. This is also convenient for users because 
-it alleviates the&nbsp; need to explicitly check error 
+it alleviates the&nbsp;need to explicitly check error 
 return codes.</p>
 
-<p>A <a href="http://www.esva.net/~beman/n1923.html">proposal</a> has been 
+<p>A <a href="tr2_proposal.html">proposal</a> has been 
 submitted to the C++ Standards Committee for inclusion of the library in the 
 Standard Library Technical Report 2 (TR2). The Boost.Filesystem library will 
 stay in alignment with the TR2 Filesystem proposal as it works its way through 
 the committee process. Note, however, that namespaces and header granularity 
-differs between Boost.Filesystem and the TR2 proposal. </p>
+differs between Boost.Filesystem and the TR2 proposal. See
+<a href="#Using_reference_doc">Using the Reference Documentation</a>.</p>
 
 <p>The Filesystem Library supplies several&nbsp; headers:</p>
 
 <ul>
-  <li>Header<a href="../../../boost/filesystem.hpp"> boost/filesystem.hpp</a> in 
-  turn includes the Boost.Filesystem path.hpp, operations.hpp, and 
-  convenience.hpp headers.<br>
-&nbsp;<ul>
-  <li>Header <a href="../../../boost/filesystem/path.hpp">boost/filesystem<i>/</i>path.hpp</a> provides class <i>
+  <li>Header<a href="../../../boost/filesystem.hpp"> boost/filesystem.hpp</a> provides class <i>
   basic_path, </i>a portable mechanism for representing
       <a href="#path">paths</a> in C++ programs. Typedefs <i>path</i> and <i>
-  wpath</i> ease the most common usages of <i>basic_path</i>. Supporting classes 
-  and validity checking 
-      functions are also provided. See <a href="path.htm">path.hpp documentation</a>.<br>
+  wpath</i> ease the most common usages of <i>basic_path</i>. Operational 
+  functions provide useful query and maintenance operations on files and directories. 
+  Class <i>basic_directory_iterator</i> with typdefs <i>
+  directory_iterator</i> and <i>wdirectory_iterator</i> provide iteration over 
+  the contents of directories. Convenience functions and classes combine lower-level functionality 
+  in useful ways.<br>
 &nbsp;</li>
-  <li>Header <a href="../../../boost/filesystem/operations.hpp">boost/filesystem<i>/</i>operations.hpp</a> provides functions operating on files and directories, 
-  and includes class <i>basic_directory_iterator</i> with typdefs <i>
-  directory_iterator</i> and <i>wdirectory_iterator</i>. See <a href="operations.htm">
-  operations.hpp documentation</a>.<br>
-&nbsp;</li>
-  <li>Header <a href="../../../boost/filesystem/convenience.hpp">
-  boost/filesystem/convenience.hpp</a> 
-  provides convenience functions that combine lower-level functions in useful 
-  ways. See <a href="convenience.htm">convenience.hpp documentation</a>.<br>
-&nbsp;</li>
-</ul>
-  </li>
   <li>Header <a href="../../../boost/filesystem/fstream.hpp">boost/filesystem<i>/</i>fstream.hpp</a> provides the same components as the C++ Standard 
   Library's <i>fstream</i> header, except 
       that files are identified by <i>basic_path</i> objects rather that <i>char *</i>'s. 
@@ -110,15 +101,6 @@ differs between Boost.Filesystem and the TR2 proposal. </p>
   Boost.Filesystem, and two new macros (EBADHANDLE, EOTHER) not defined by 
   POSIX.</li>
 </ul>
-<p>The organizing principle is that purely lexical operations on<i> </i>
-      <a href="#path">paths</a> are supplied as class<i> basic_path</i> member 
-functions in <i>path.hpp</i>, while operations performed by the operating system 
-on the actual external filesystem directories and files are provided in <i>
-operations.hpp,</i> primarily as free functions.</p>
-<p><i><b>Heads up!</b></i> There are effectively two sets of documentation - the 
-traditional Boost documentation and the newer TR2 proposal. Although lots of 
-effort has gone into keeping them in sync, be warned that there are inadvertent 
-errors, omissions, and divergences.</p>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
 <p>First some preliminaries:</p>
 <blockquote>
@@ -185,11 +167,11 @@ below is extracted from a real program, slightly modified for clarity:</p>
         itr != end_itr;
         ++itr )
   {
-    if ( itr-&gt;is_directory() )
+    if ( is_directory(itr-&gt;status()) )
     {
       if ( find_file( itr-&gt;path(), file_name, path_found ) ) return true;
     }
-    else if ( itr-&gt;leaf() == file_name ) // see below
+    else if ( itr-&gt;path().leaf() == file_name ) // see below
     {
       path_found = itr-&gt;path();
       return true;
@@ -198,9 +180,10 @@ below is extracted from a real program, slightly modified for clarity:</p>
   return false;
 }</pre>
 </blockquote>
-<p>The expression <i>itr-&gt;leaf() == file_name</i>, in the line commented <i>// 
-see below</i>, calls the <i>leaf()</i> function on the <i>path</i> object 
-returned by the iterator. <i>leaf()</i> returns a string which is a copy of the 
+<p>The expression <i>itr-&gt;path().leaf() == file_name</i>, in the line commented <i>// 
+see below</i>, calls the <i>leaf()</i> function on the <i>path</i> returned by 
+calling the <i>path()</i> function of the <i>directory_entry </i>object pointed 
+to by the iterator. <i>leaf()</i> returns a string which is a copy of the 
 last (closest to the leaf, farthest from the root) file or directory name in the
 <i>path</i> object.</p>
 <p>In addition to <i>leaf()</i>, several other function names use the 
@@ -210,15 +193,79 @@ verifying that the <i>dir_path</i> argument really represents a directory.
 Boost.Filesystem  functions throw 
 exceptions if they do not complete successfully, so there is enough implicit 
 error checking that this application doesn't need to supply additional error 
-checking code unless desired. Several operations functions have <i>nothrow</i> 
+checking code unless desired. Several Boost.Filesystem functions have non-throwing 
 versions, to ease use cases where exceptions would not be appropriate.</p>
 <blockquote>
-<p><i>Note: </i>Sometime after the above tutorial code was added, recursive 
-directory iterations was provided as a convenience function. So nowadays you 
+<p><i>Note: </i>Recursive 
+directory iteration was added  as a convenience function after the above tutorial code 
+was written, so nowadays you 
 don't have to actually code the recursion yourself.</p>
 </blockquote>
-<p>The tutorial is now over; hopefully you now are ready to write simple, 
-script-like programs using the Filesystem Library!</p>
+<h2><a name="Cautions">Cautions</a></h2>
+<p>After reading the tutorial you can dive right into  simple, 
+script-like programs using the Filesystem Library! Before doing any serious 
+work, however, there a few cautions to be aware of:</p>
+<h4><b>Effects and Postconditions not guaranteed in the presence of race-conditions</b></h4>
+<p>Filesystem function specifications follow the C++ Standard Library form, specifying behavior in terms of 
+effects and postconditions. If 
+a <a href="tr2_proposal.html#Race-condition">race-condition</a> exists, a function's 
+postconditions may no longer be true by the time the function returns to the 
+caller.</p>
+<blockquote>
+<p><b><i>Explanation: </i></b>The state of files and directories is often
+globally shared, and thus may be changed unexpectedly by other threads, 
+processes, or even other computers having network access to the filesystem. As an 
+example of the difficulties this can cause, note that the following asserts 
+may fail:</p>
+<blockquote>
+<p><code>assert( exists( &quot;foo&quot; ) == exists( &quot;foo&quot; ) );&nbsp; // 
+(1)<br>
+<br>
+remove_all( &quot;foo&quot; );<br>
+assert( !exists( &quot;foo&quot; ) );&nbsp; // (2)<br>
+<br>
+assert( is_directory( &quot;foo&quot; ) == is_directory( &quot;foo&quot; ) ); // 
+(3)</code></p>
+</blockquote>
+<p>(1) will fail if a non-existent &quot;foo&quot; comes into existence, or an 
+existent &quot;foo&quot; is removed, between the first and second call to <i>exists()</i>. 
+This could happen if, during the execution of the example code, another thread, 
+process, or computer is also performing operations in the same directory.</p>
+<p>(2) will fail if between the call to <i>remove_all()</i> and the call to
+<i>exists()</i> a new file or directory named &quot;foo&quot; is created by another 
+thread, process, or computer.</p>
+<p>(3) will fail if another thread, process, or computer removes an 
+existing file &quot;foo&quot; and then creates a directory named &quot;foo&quot;, between the 
+example code's two calls to <i>is_directory()</i>.</p>
+</blockquote>
+<h4><b>May throw exceptions</b></h4>
+<p>Unless otherwise specified, Boost.Filesystem functions throw <i>
+<a href="tr2_proposal.html#basic_filesystem_error-constructors">basic_filesystem_error</a></i> 
+exceptions if they cannot successfully complete their operational 
+specifications. Also, implementations may use C++ Standard Library functions, 
+which may throw <i>std::bad_alloc</i>. These exceptions may be thrown even 
+though the error condition leading to the exception is not explicitly specified 
+in the function's &quot;Throws&quot; paragraph.</p>
+<p>All exceptions thrown by the Filesystem 
+Library are implemented by calling <a href="../../utility/throw_exception.html">
+boost::throw_exception()</a>. Thus exact behavior may differ depending on 
+BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
+<p>Non-throwing versions are provided of several functions that are often used 
+in contexts where error codes may be the preferred way to report an error.</p>
+<h2><a name="Using_reference_doc">Using the Reference Documentation</a></h2>
+<p>The proposal for adding Boost.Filesystem to the C++ Standard Library's 
+Technical Report 2 is used as the <a href="tr2_proposal.html">Reference 
+Documentation</a>. This eliminates the need to maintain two sets of 
+documentation, but means that the actual Boost.Filesystem library differs from 
+this reference documentation in several ways.</p>
+<ul>
+  <li>The Boost.Filesystem header is <a href="../../../boost/filesystem.hpp">
+  <code>&lt;boost/filesystem.hpp&gt;</code></a> rather than <code>&lt;filesystem&gt;</code>.</li>
+  <li>The namespace is <code>boost::filesystem</code> rather than <code>
+  std::tr2::sys</code>.</li>
+  <li>Several legacy interfaces are provided by Boost.Filesystem that are not 
+  part of the TR2 proposal.</li>
+</ul>
 <h2><a name="Examples">Examples</a></h2>
 <h3>simple_ls.cpp</h3>
 <p>The example program <a href="../example/simple_ls.cpp">simple_ls.cpp</a> is 
@@ -251,193 +298,9 @@ illustrate what the developer expected to work and not work. See:</p>
   <li><a href="../test/operations_test.cpp">operations_test.cpp</a></li>
   <li><a href="../test/fstream_test.cpp">fstream_test.cpp</a></li>
 </ul>
-<h2><a name="Definitions">Definitions</a></h2>
-<p><b><a name="directory">directory</a> </b>- A container provided by the operating system, 
-containing the names of files, other directories, or both. Directories are identified 
-by <a href="#directory_path">directory path</a>.</p>
-<p><b><a name="directory_tree">directory tree</a></b> - A directory and file 
-hierarchy viewed as an acyclic graph. The tree metaphor is reflected in the 
-root/branch/leaf naming convention for many <a href="#path">path</a> related 
-functions.</p>
-<p><b><a name="path">path</a> </b>- A possibly empty sequence of <a href="#name">names</a>. Each 
-element in the sequence, except the last, names a <a href="#directory">directory</a> 
-which contains the 
-next element. The last element may name either a directory or file. The first 
-element is closest to the <a href="#root">root</a> of the directory tree, the last element is 
-farthest from the root.</p>
-<p>It is traditional to represent a path as a string, where each element in the 
-path is represented by a <a href="#name">name</a>, and some operating system 
-defined syntax distinguishes between the name elements. Other representations of 
-a path are possible, such as each name being an element in a <code>std::vector&lt;std::string&gt;</code>.</p>
-<p><b><a name="file path">file path</a></b> - A <a href="#path">path</a> whose 
-last element is a file.</p>
-<p><b><a name="directory_path">directory path</a></b> - A <a href="#path">path</a> 
-whose last element is a directory.</p>
-<p><b><a name="complete_path">complete path</a></b> - A <a href="#path">path</a> 
-which contains all the elements required by the operating system to uniquely 
-identify a file or directory. (There is an odd
-<a href="path.htm#is_complete_note">corner case</a> where a complete path can 
-still be ambiguous on a few operating systems.)</p>
-<p><b><a name="relative_path">relative path</a></b> - A <a href="#root">path</a> 
-which is not <a href="#complete_path">complete</a>. Before actual use, relative 
-paths are turned into <a href="#complete_path">complete paths</a> either 
-implicitly by the filesystem adding default elements, or explicitly by the 
-program adding the missing elements via function call. Use of relative paths 
-often makes a program much more flexible.</p>
-<p><b><a name="name">name</a></b> - A file or directory name, without any
-<a href="#directory_path">directory path</a> information to indicate the file or 
-directory's actual location within a directory tree. For some 
-operating systems, files and directories may have more than one valid name, such 
-as a short-form name and a long-form name.</p>
-<p><b><a name="root">root</a></b> - The initial node in the acyclic graph which 
-represents the <a href="#directory_path">directory tree</a> for a filesystem.</p>
-<p><b><a name="multi-root_filesystem">multi-root operating system</a></b> - An 
-operating system which has multiple <a href="#root">roots</a>. Some operating systems 
-have different <a href="#directory_tree">directory trees</a> for each different 
-disk, drive, device, volume, network share, or other entity managed the system, with each having its 
-own root-name.</p>
-<p><b><a name="link">link</a></b> - A&nbsp;name in a <a href="#directory">
-directory</a> can be viewed as a pointer to some underlying directory or file 
-content. Modern operating systems permit multiple directory elements to point to 
-the same underlying directory or file content. Such a pointer is often called a 
-link. Not all operating systems support the 
-concept of links. Links may be reference-counted (<a href="#hard-link">hard link</a>) 
-or non-reference-counted (<a href="#symbolic-link">symbolic link</a>).</p>
-<p><b><a name="hard-link">hard link</a></b> - A reference-counted
-<a href="#link">link</a>. Because the operating system manages the underlying 
-file or directory, hard links are transparent to programs. They &quot;just work&quot; 
-without the programmer needing to be aware of their existence.</p>
-<p><b><a name="symbolic-link">symbolic link</a></b> - A non-reference-counted
-<a href="#hard-link">link</a>. The operating system manages some aspects of 
-symbolic links. Most uses, such as opening or querying files, automatically 
-resolve to the file or directory being pointed to rather than to the symbolic 
-link itself. A few uses, such as remove() and rename(), modify the symbolic link 
-rather than it's target. See an important
-<a href="operations.htm#symbolic-link-warning">symbolic links warning</a>.</p>
-<h2><a name="Common_Specifications">Common Specifications</a></h2>
-<p>Portions of the Boost.Filesystem specifications are defined by reference to 
-the <a href="design.htm#POSIX-01">[POSIX-01]</a> standard. How such 
-functionality is actually implemented is unspecified. In other words, an &quot;as if&quot; 
-rule applies to the actual implementation.</p>
-<p><b>Rationale:</b> Reference to <a href="design.htm#POSIX-01">[POSIX-01]</a> 
-allows precise semantics based on a joint ISO and IEEE standard that is widely 
-implemented and has been proven and refined during many years of existing 
-practice. Operating-system wars neutrality is preserved by allowing implementers 
-freedom to use native operating system API's for actual implementations.</p>
-<h3>Requirements on implementations</h3>
-<p>Unless otherwise specified, all Filesystem Library member and non-member 
-functions meet the following common requirements.</p>
-<h4>Portable Behavior</h4>
-<p>Implementations are encouraged, but not required, to provide behavior as 
-specified for each Boost.Filesystem function. If the specified behavior is not 
-provided, an implementation shall document the actual behavior provided.</p>
-<p><b>Rationale:</b> Portable behavior is strongly encouraged, since this is a 
-key objective of the library.&nbsp; It is not required because in some environments 
-portable behavior is impossible or unreasonably difficult to implement. The 
-documentation requirement allows users to be aware of potential portability 
-problems.</p>
-<h4>Graceful degradation</h4>
-<p>Filesystem Library functions which cannot 
-be fully supported on a particular operating system will be partially supported 
-if possible. Implementations must document such partial support. Functions which 
-are requested to provide some operation which they cannot support should report 
-an error at compile time (preferred) or throw an exception at runtime.</p>
-<p>For environments not supporting file systems with hierarchical directory 
-structures Boost.Filesystem headers shall fail to compile.</p>
-<p>If no file systems with hierarchical directory structures are available at 
-runtime, all Boost.Filesystem functions shall throw a basic_filesystem_error&lt;path&gt; 
-exception.</p>
-<p>If a Boost.Filesystem component depends on file system functionality not 
-available in the current environment:</p>
-<ul>
-  <li>Safe fallback behavior must be provided if possible.</li>
-  <li>Otherwise a basic_filesystem_error exception is thrown.</li>
-</ul>
-<p><b>Rationale:</b> Although the Boost.Filesystem implement runs on POSIX or 
-Windows, the above guidance is provided for implementations on operating systems 
-which can be supported only partially or not at all. Implementations on 
-less-powerful operating systems should provide useful functionality if possible, 
-but are not be required to simulate features not present in the underlying 
-operating system.</p>
-<h4><b>Postconditions not guaranteed in the presence of race-conditions</b></h4>
-<p>Filesystem function specifications follow the form of C++ Standard Library 
-specifications, and so sometimes specify behavior in terms of postconditions. If 
-a <a href="#Race-condition">race-condition</a> exists, a function's 
-postconditions may no longer be true by the time the function returns to the 
-caller.</p>
-<h4><b>May throw exceptions</b></h4>
-<p>Filesystem Library functions throw <i>
-<a href="exception.htm">basic_filesystem_error</a></i> 
-exceptions if they cannot successfully complete their operational 
-specifications. Also, implementations may use C++ Standard Library functions, 
-which may throw <i>std::bad_alloc</i>. These exceptions may be thrown even 
-though the error condition leading to the exception is not explicitly specified 
-in the function's &quot;Throws&quot; paragraph.</p>
-<p>All exceptions thrown by the Filesystem 
-Library are implemented by calling <a href="../../utility/throw_exception.html">
-boost::throw_exception()</a>. Thus exact behavior may differ depending on 
-BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
-<h4>Symbolic and hard links</h4>
-<p><a name="link_rules">Links follow operating system rules</a>- <a href="#link">Links</a> are 
-transparent in that Filesystem Library functions simply follow operating system 
-rules. That implies that some functions may throw <i><a href="exception.htm">
-basic_filesystem_error</a></i> 
-exceptions if a link is cyclic or has other problems. Also, see an important
-<a href="operations.htm#symbolic-link-warning">symbolic links warning</a>.</p>
-<p>Typical operating systems rules call for deep operations on all links except 
-that destructive operations on non-reference counted links are either shallow, 
-or fail altogether in the case of trying to remove a non-reference counted link 
-to a directory.</p>
-<p><b>Rationale:</b> Follows existing practice (POSIX, Windows, etc.).</p>
-<h4><b>No atomic-operation or rollback guarantee</b></h4>
-<p>Filesystem Library 
-functions which throw exceptions may leave the external file system in an 
-altered state. It is suggested that implementations provide stronger guarantees 
-when reasonable.</p>
-<p><b>Rationale:</b> Implementers shouldn't be required to provide guarantees which are 
-impossible to meet on some operating systems. Implementers are given 
-normative encouragement to provide those guarantees when reasonable.</p>
-<h2><a name="Race-condition">Race-condition</a> d<a name="Dangers">anger</a></h2>
-<p>The state of files and directories is often
-globally shared, and thus may be changed unexpectedly by other threads, 
-processes, or even other computers having network access to the filesystem. As an 
-example of the difficulties this can cause, note that the following asserts 
-may fail:</p>
-<blockquote>
-<p><code>assert( exists( &quot;foo&quot; ) == exists( &quot;foo&quot; ) );&nbsp; // 
-(1)<br>
-<br>
-remove_all( &quot;foo&quot; );<br>
-assert( !exists( &quot;foo&quot; ) );&nbsp; // (2)<br>
-<br>
-assert( is_directory( &quot;foo&quot; ) == is_directory( &quot;foo&quot; ) ); // 
-(3)</code></p>
-</blockquote>
-<p>(1) will fail if a non-existent &quot;foo&quot; comes into existence, or an 
-existent &quot;foo&quot; is removed, between the first and second call to <i>exists()</i>. 
-This could happen if, during the execution of the example code, another thread, 
-process, or computer is also performing operations in the same directory.</p>
-<p>(2) will fail if between the call to <i>remove_all()</i> and the call to
-<i>exists()</i> a new file or directory named &quot;foo&quot; is created by another 
-thread, process, or computer.</p>
-<p>(3) will fail if another thread, process, or computer removes an 
-existing file &quot;foo&quot; and then creates a directory named &quot;foo&quot;, between the 
-example code's two calls to <i>is_directory()</i>.</p>
-<p>A program which needs to be robust when operating on potentially-shared file 
-or directory resources should be prepared for <i>filesystem_error</i> exceptions 
-to be thrown from any filesystem function except those explicitly specified as 
-not throwing exceptions.</p>
 <h2><a name="Implementation">Implementation</a></h2>
 <p>The current implementation supports operating systems which provide 
 either the POSIX or Windows API.</p>
-<p>The following tests are provided:</p>
-<ul>
-  <li><a href="../test/wide_test.cpp">wide_test.cpp</a></li>
-  <li><a href="../test/path_test.cpp">path_test.cpp</a></li>
-  <li><a href="../test/operations_test.cpp">operations_test.cpp</a></li>
-  <li><a href="../test/fstream_test.cpp">fstream_test.cpp</a></li>
-  <li><a href="../test/convenience_test.cpp">convenience_test.cpp</a></li>
-</ul>
 <p>The library is in regular use on Apple  OS X, HP-UX, IBM AIX, Linux, 
 Microsoft Windows, SGI IRIX, and Sun Solaris operating systems using a variety 
 of compilers.</p>
@@ -677,7 +540,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 December, 2005<!--webbot bot="Timestamp" endspan i-checksum="38518" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 February, 2006<!--webbot bot="Timestamp" endspan i-checksum="40411" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

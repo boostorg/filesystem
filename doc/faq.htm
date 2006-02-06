@@ -5,7 +5,7 @@
 <img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
 FAQ</h1>
 <p><b>Why base the generic-path string format on POSIX?</b></p>
-<p><a href="design.htm#POSIX-01">[POSIX-01]</a> is the basis for the most familiar path-string formats, including the 
+<p><a href="design.htm#POSIX-01">[POSIX-01]</a> is an ISO Standard. It is the basis for the most familiar path-string formats, including the 
 URL portion of URI's and the native Windows format. It is ubiquitous and 
 familiar.&nbsp; On many systems, it is very easy to implement because it is 
 either the native operating system format (Unix and Windows) or via a 
@@ -29,7 +29,7 @@ absolute on some systems?) by programmers used to single-rooted filesystems.
 Using an unfamiliar name for the concept and related functions causes 
 programmers to read the specs rather than just assuming the meaning is known.</p>
 <p><b>Why not support a  concept of specific kinds of file systems, such as posix_file_system or windows_file_system.</b></p>
-<p>Portability is one of the one or two most important requirements for the 
+<p>Portability is one of the most important requirements for the 
 library.&nbsp;Gaining some advantage by using features specific to particular 
 operating systems is not a requirement. There doesn't appear to be much need for 
 the ability to manipulate, say, a classic Mac OS path while running on an 
@@ -48,50 +48,6 @@ trafficking in paths isn't always natural.&nbsp;&nbsp;&nbsp; </p>
 style may be strongest for directory iterator value type.&nbsp; (See Jesse Jones' Jan 28, 
 2002, Boost postings). However, as class path has evolved, it seems sufficient 
 even as the directory iterator value type.</p>
-<p><b>Why aren't directories considered to be files?</b></p>
-<p>Because 
-directories cannot portably and usefully be opened as files using the C++ Standard Library stdio or fstream 
-I/O facilities. An important additional rationale is that separating the concept 
-of directories and files makes exposition and specification clearer. A 
-particular problem is the naming and description of function arguments.</p>
-<div align="center">
-  <center>
-  <table border="1" cellpadding="5" cellspacing="0">
-    <tr>
-      <td colspan="3">
-      <p align="center"><b>Meaningful Names for Arguments</b></td>
-    </tr>
-    <tr>
-      <td><b>Argument Intent</b></td>
-      <td><b>Meaningful name if<br>
-      directories are files</b></td>
-      <td><b>Meaningful name if<br>
-      directories aren't files</b></td>
-    </tr>
-    <tr>
-      <td>A path to either a directory or a non-directory</td>
-      <td align="center"><i>path</i></td>
-      <td align="center"><i>path</i></td>
-    </tr>
-    <tr>
-      <td>A path to a directory, but not to a non-directory</td>
-      <td align="center"><i>directory_path</i></td>
-      <td align="center"><i>directory_path</i></td>
-    </tr>
-    <tr>
-      <td>A path to a non-directory, but not a directory</td>
-      <td align="center"><i>non_directory_path</i></td>
-      <td align="center"><i>file_path</i></td>
-    </tr>
-  </table>
-  </center>
-</div>
-<p>The problem is that when directories are considered files, <i>
-non_directory_path</i> as an argument name, and the corresponding &quot;non-directory 
-path&quot; in documentation, is ugly and lengthy, and so is shortened to just <i>path</i>, 
-causing the code and documentation to be confusing if not downright wrong. The 
-names which result from the &quot;directories aren't files&quot; approach are more 
-acceptable and less likely to be used incorrectly. </p>
 <p><b>Why are the operations.hpp non-member functions so low-level?</b></p>
 <p>To provide a toolkit from which higher-level functionality can be created.</p>
 <p>An 
@@ -127,7 +83,8 @@ notification variable?</b></p>
 <p>Safety.&nbsp;Return codes or error notification variables are often ignored 
 by programmers.&nbsp; Exceptions are much harder to ignore, provided desired 
 default behavior (program termination) if not caught, yet allow error recovery 
-if desired.</p>
+if desired. Non-throwing versions of functions are provided where experience 
+indicates the need.</p>
 <p><b>Why are attributes accessed via named functions rather than property maps?</b></p>
 <p>For  commonly used attributes (existence, directory or file, emptiness), 
 simple syntax and guaranteed presence outweigh other considerations. Because 
@@ -144,13 +101,13 @@ about to hand them a loaded gun pointed right at their big toe.</p>
 a templated type?</b></p>
 <p>They <u>are</u> supported, starting with version 1.33. See
 <a href="i18n.html">Internationalization</a>.</p>
-<p><b>Why isn't more powerful name portability error detection provided, such as 
-deferring checking until a path is actually used?</b></p>
+<p><b>Why isn't automatic name portability error detection provided?</b></p>
 <p>A number (at least six) of designs for  name validity error 
 detection were evaluated, including at least four complete implementations.&nbsp; 
 While the details for rejection differed, all of the more powerful name validity checking 
 designs distorted other 
-otherwise simple aspects of the library. While name checking can be helpful, it 
+otherwise simple aspects of the library. Even the simple name checking provided 
+in prior library versions was a constant source of user complaints. While name checking can be helpful, it 
 isn't important enough to justify added a lot of additional complexity.</p>
 <p><b>Why are paths sometimes manipulated by member functions and sometimes by 
 non-member functions?</b></p>
@@ -166,7 +123,7 @@ canonical form. See <a href="design.htm#symbolic-link-use-case">use case</a>
 from Walter Landry.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 August, 2005<!--webbot bot="Timestamp" endspan i-checksum="34600" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 February, 2006<!--webbot bot="Timestamp" endspan i-checksum="40411" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
