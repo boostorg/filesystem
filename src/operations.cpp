@@ -173,7 +173,7 @@ namespace
       ec = ::GetLastError();
       if ((ec == ERROR_FILE_NOT_FOUND)
         || (ec == ERROR_PATH_NOT_FOUND)
-        || (ec == ERROR_INVALID_NAME) // "tools/build/jam_src/:sys:stat.h", "//foo"
+        || (ec == ERROR_INVALID_NAME) // "tools/jam/src/:sys:stat.h", "//foo"
         || (ec == ERROR_INVALID_PARAMETER) // ":sys:stat.h"
         || (ec == ERROR_BAD_NETPATH))
       {
