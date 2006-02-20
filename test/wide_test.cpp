@@ -66,7 +66,7 @@ namespace
     BOOST_CHECK( fs::exists( dir ) );
     BOOST_CHECK( fs::is_directory( dir ) );
     BOOST_CHECK( fs::is_empty( dir ) );
-    create_file( dir / file, "wide_test file contests" );
+    create_file( dir / file, "wide_test file contents" );
     BOOST_CHECK( fs::exists( dir / file ) );
     BOOST_CHECK( !fs::is_directory( dir / file ) );
     BOOST_CHECK( !fs::is_empty( dir / file ) );
