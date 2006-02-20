@@ -92,11 +92,12 @@ namespace
       if ( ec == 0
         || ec == fs::lookup_error_code(ex.system_error()) ) return true;
       std::cout
-        << "\nline " << line
+        << "\nWarning: line " << line
         << " exception reports " << fs::lookup_error_code(ex.system_error())
         << ", should be " << ec
         << "\n system_error() is " << ex.system_error()
         << std::endl;
+      return true;
     }
     return false;
   }
