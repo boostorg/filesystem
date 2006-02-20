@@ -70,6 +70,11 @@ namespace
       BOOST_CHECK( tfs.is_open() );
     }
     {
+      std::cout << " in test 4.1\n";
+      fs::ifstream tfs( p / p.leaf() ); // should fail
+      BOOST_CHECK( !tfs.is_open() );
+    }
+    {
       std::cout << " in test 5\n";
       fs::ifstream tfs( p, std::ios_base::in );
       BOOST_CHECK( tfs.is_open() );
