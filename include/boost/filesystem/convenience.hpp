@@ -262,6 +262,11 @@ namespace boost
 
     namespace detail
     {
+
+#   if BOOST_WORKAROUND(__BORLANDC__,BOOST_TESTED_AT(0x581))
+      using boost::filesystem::system_message;
+#   endif
+
       inline void decode_system_message( system_error_type ec, std::string & target )
       {
         system_message( ec, target );

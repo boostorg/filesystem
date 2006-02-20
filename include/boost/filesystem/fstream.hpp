@@ -263,7 +263,7 @@ namespace boost
     basic_filebuf<charT, traits>::open( const wpath & file_ph,
       std::ios_base::openmode mode )
     {
-      return open<wpath>( file_ph, mode );
+      return this->BOOST_NESTED_TEMPLATE open<wpath>( file_ph, mode );
     }
 
 //  basic_ifstream definitions  ----------------------------------------------//

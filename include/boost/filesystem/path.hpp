@@ -591,7 +591,7 @@ namespace boost
     //  inserters and extractors  --------------------------------------------//
 
 // bypass VC++ 7.0 and earlier, and broken Borland compilers
-# if !BOOST_WORKAROUND(BOOST_MSVC, <= 1300) && !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x581))
+# if !BOOST_WORKAROUND(BOOST_MSVC, <= 1300) && !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
     template< class Path >
     std::basic_ostream< typename Path::string_type::value_type,
       typename Path::string_type::traits_type > &
@@ -611,6 +611,32 @@ namespace boost
       typename Path::string_type::traits_type >& is, Path & ph )
     {
       typename Path::string_type str;
+      is >> str;
+      ph = str;
+      return is;
+    }
+# elif BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
+    template< class String, class Traits >
+    std::basic_ostream< BOOST_DEDUCED_TYPENAME String::value_type,
+      BOOST_DEDUCED_TYPENAME String::traits_type > &
+      operator<<
+      ( std::basic_ostream< BOOST_DEDUCED_TYPENAME String::value_type,
+          BOOST_DEDUCED_TYPENAME String::traits_type >& os, 
+        const basic_path< String, Traits > & ph )
+    {
+      os << ph.string();
+      return os;
+    }
+
+    template< class String, class Traits >
+    std::basic_istream< BOOST_DEDUCED_TYPENAME String::value_type, 
+      BOOST_DEDUCED_TYPENAME String::traits_type > &
+      operator>>
+      ( std::basic_istream< BOOST_DEDUCED_TYPENAME String::value_type,
+          BOOST_DEDUCED_TYPENAME String::traits_type> & is,
+        basic_path< String, Traits > & ph )
+    {
+      String str;
       is >> str;
       ph = str;
       return is;
