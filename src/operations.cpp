@@ -1141,7 +1141,8 @@ namespace boost
           sz_write = 0;
           do
           {
-            if ( (sz = ::write( outfile, buf.get(), sz_read - sz_write )) < 0 )
+            if ( (sz = ::write( outfile, buf.get() + sz_write,
+              sz_read - sz_write )) < 0 )
             { 
               sz_read = sz; // cause read loop termination
               break;        //  and error to be thrown after closes
