@@ -1027,6 +1027,36 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_branch_path() );
     BOOST_CHECK( p.is_complete() );
 
+    p = path( "c://foo" );
+    CHECK_EQUAL( p.relative_path().string(), "foo" );
+    CHECK_EQUAL( p.branch_path().string(), "c:/" );
+    CHECK_EQUAL( p.leaf(), "foo" );
+    CHECK_EQUAL( p.root_name(), "c:" );
+    CHECK_EQUAL( p.root_directory(), "/" );
+    CHECK_EQUAL( p.root_path().string(), "c:/" );
+    BOOST_CHECK( p.has_root_path() );
+    BOOST_CHECK( p.has_root_name() );
+    BOOST_CHECK( p.has_root_directory() );
+    BOOST_CHECK( p.has_relative_path() );
+    BOOST_CHECK( p.has_leaf() );
+    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.is_complete() );
+
+    p = path( "c:\\foo\\bar" );
+    CHECK_EQUAL( p.relative_path().string(), "foo/bar" );
+    CHECK_EQUAL( p.branch_path().string(), "c:/foo" );
+    CHECK_EQUAL( p.leaf(), "bar" );
+    CHECK_EQUAL( p.root_name(), "c:" );
+    CHECK_EQUAL( p.root_directory(), "/" );
+    CHECK_EQUAL( p.root_path().string(), "c:/" );
+    BOOST_CHECK( p.has_root_path() );
+    BOOST_CHECK( p.has_root_name() );
+    BOOST_CHECK( p.has_root_directory() );
+    BOOST_CHECK( p.has_relative_path() );
+    BOOST_CHECK( p.has_leaf() );
+    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.is_complete() );
+
     p = path( "prn:" );
     BOOST_CHECK( p.relative_path().string() == "" );
     BOOST_CHECK( p.branch_path().string() == "" );
