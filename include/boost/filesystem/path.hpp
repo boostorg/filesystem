@@ -249,8 +249,10 @@ namespace boost
      ~basic_path() {}
 
       // assignments
-      basic_path & operator=( const string_type & s ) { m_path=""; operator/=( s ); return *this; }
-      basic_path & operator=( const value_type * s ) { m_path=""; operator/=( s ); return *this; }
+      basic_path & operator=( const string_type & s )
+        { m_path.clear(); operator/=( s ); return *this; }
+      basic_path & operator=( const value_type * s )
+        { m_path.clear(); operator/=( s ); return *this; }
 #     ifndef BOOST_NO_MEMBER_TEMPLATES
         template <class InputIterator>
           basic_path & assign( InputIterator first, InputIterator last )
