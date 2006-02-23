@@ -29,7 +29,10 @@
 #include <ctime>
 
 #ifdef BOOST_WINDOWS_API
-#include <fstream>
+#  include <fstream>
+#  if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0500
+#    define BOOST_FS_HARD_LINK // Default for Windows 2K or later 
+#  endif
 #endif
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
@@ -200,9 +203,11 @@ namespace boost
         get_current_path_api( std::wstring & ph );
       BOOST_FILESYSTEM_DECL query_pair
         create_directory_api( const std::wstring & ph );
+# ifdef BOOST_FS_HARD_LINK
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         create_hard_link_api( const std::wstring & existing_ph,
           const std::wstring & new_ph );
+# endif
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
         create_symlink_api( const std::wstring & to_ph,
           const std::wstring & from_ph );
@@ -396,6 +401,7 @@ namespace boost
       return result.second;
     }
 
+#if !defined(BOOST_WINDOWS_API) || defined(BOOST_FS_HARD_LINK)
     BOOST_FS_FUNC(void)
     create_hard_link( const Path & to_ph, const Path & from_ph )
     {
@@ -418,6 +424,7 @@ namespace boost
             from_ph.external_file_string() );
       return ec;
     }
+#endif
 
     BOOST_FS_FUNC(void)
     create_symlink( const Path & to_ph, const Path & from_ph )
@@ -643,6 +650,7 @@ namespace boost
     inline bool create_directory( const wpath & dir_ph )
       { return create_directory<wpath>( dir_ph ); }
 
+#if !defined(BOOST_WINDOWS_API) || defined(BOOST_FS_HARD_LINK)
     inline void create_hard_link( const path & to_ph,
       const path & from_ph )
       { return create_hard_link<path>( to_ph, from_ph ); }
@@ -656,7 +664,8 @@ namespace boost
     inline system_error_type create_hard_link( const wpath & to_ph,
       const wpath & from_ph, system_error_type & ec )
       { return create_hard_link<wpath>( to_ph, from_ph, ec ); }
-
+#endif
+    
     inline void create_symlink( const path & to_ph,
       const path & from_ph )
       { return create_symlink<path>( to_ph, from_ph ); }

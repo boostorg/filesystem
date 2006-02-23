@@ -30,7 +30,10 @@
 
 // for some compilers (CodeWarrior, for example), windows.h
 // is getting included by some other boost header, so do this early:
-#define _WIN32_WINNT 0x0500 // Windows 2K or later
+#if !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0500 // Default to Windows 2K or later
+#endif
+
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
@@ -158,10 +161,12 @@ namespace
   inline bool create_directory( const std::wstring & dir )
     {  return ::CreateDirectoryW( dir.c_str(), 0 ) != 0; }
 
+#if _WIN32_WINNT >= 0x500
   inline bool create_hard_link( const std::wstring & to_ph,
     const std::wstring & from_ph )
     {  return ::CreateHardLinkW( from_ph.c_str(), to_ph.c_str(), 0 ) != 0; }
-
+#endif
+  
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
   template< class String >
@@ -508,10 +513,13 @@ namespace
     return std::make_pair( error, false );
   }
 
+#if _WIN32_WINNT >= 0x500
   inline bool create_hard_link( const std::string & to_ph,
     const std::string & from_ph )
     {  return ::CreateHardLinkA( from_ph.c_str(), to_ph.c_str(), 0 ) != 0; }
-         
+#endif
+  
+#if _WIN32_WINNT >= 0x500
   template<class String>
   boost::filesystem::system_error_type
   create_hard_link_template( const String & to_ph,
@@ -520,6 +528,7 @@ namespace
     return fs::system_error_type( create_hard_link( to_ph.c_str(), from_ph.c_str() )
       ? 0 : ::GetLastError() );
   }
+#endif
 
 #endif
 } // unnamed namespace
@@ -602,11 +611,13 @@ namespace boost
       create_directory_api( const std::wstring & ph )
         { return create_directory_template( ph ); }
 
+#if _WIN32_WINNT >= 0x500
       BOOST_FILESYSTEM_DECL fs::system_error_type
       create_hard_link_api( const std::wstring & to_ph,
         const std::wstring & from_ph )
         { return create_hard_link_template( to_ph, from_ph ); }
-
+#endif
+      
       BOOST_FILESYSTEM_DECL fs::system_error_type
       create_symlink_api( const std::wstring & to_ph,
         const std::wstring & from_ph )
@@ -776,10 +787,12 @@ namespace boost
       create_directory_api( const std::string & ph )
         { return create_directory_template( ph ); }
 
+#if _WIN32_WINNT >= 0x500
       BOOST_FILESYSTEM_DECL fs::system_error_type
       create_hard_link_api( const std::string & to_ph,
         const std::string & from_ph )
         { return system_error_type( create_hard_link_template( to_ph, from_ph ) ); }
+#endif
 
       BOOST_FILESYSTEM_DECL fs::system_error_type
       create_symlink_api( const std::string & to_ph,
