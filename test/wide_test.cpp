@@ -56,6 +56,13 @@ namespace
   template< class Path >
   void test( const Path & dir, const Path & file, const Path & dot )
   {
+    Path tmp;
+    tmp = file;
+    BOOST_CHECK( tmp == file );
+    tmp = file.string();
+    BOOST_CHECK( tmp == file );
+    tmp = file.string().c_str();
+    BOOST_CHECK( tmp == file );
     fs::initial_path<Path>();
     fs::current_path<Path>();
     fs::remove( dir / file );
