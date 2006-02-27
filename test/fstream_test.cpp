@@ -69,11 +69,13 @@ namespace
       fs::ifstream tfs( p );
       BOOST_CHECK( tfs.is_open() );
     }
+#   if !BOOST_WORKAROUND( _CPPLIB_VER, < 405 ) // old Dinkumware asserts on empty path
     {
       std::cout << " in test 4.1\n";
       fs::ifstream tfs( p / p.leaf() ); // should fail
       BOOST_CHECK( !tfs.is_open() );
     }
+#   endif
     {
       std::cout << " in test 5\n";
       fs::ifstream tfs( p, std::ios_base::in );
