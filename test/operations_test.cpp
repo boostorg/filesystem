@@ -359,7 +359,7 @@ int test_main( int argc, char * argv[] )
     {
       BOOST_CHECK( dir_itr->leaf() == "d2" );
       BOOST_CHECK( (++dir_itr)->leaf() == "d1" );
-      BOOST_CHECK( (++dir_itr2)->leaf() == "d2" );
+      BOOST_CHECK( (dir_itr2)->leaf() == "d2" );
       BOOST_CHECK( (++dir_itr2)->leaf() == "d1" );
     }
     BOOST_CHECK( ++dir_itr == fs::directory_iterator() );
