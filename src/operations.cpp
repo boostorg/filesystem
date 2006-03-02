@@ -86,7 +86,7 @@ namespace fs = boost::filesystem;
 #include <cstdio>      // for remove, rename
 #include <cerrno>
 #include <cassert>
-#include <iostream>    // for debugging only; comment out when not in use
+// #include <iostream>    // for debugging only; comment out when not in use
 
 #ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::strcmp; using ::remove; using ::rename; }
@@ -380,7 +380,7 @@ namespace
     typename String::value_type buf[buf_size];
     typename String::value_type * pfn;
     std::size_t len = get_full_path_name( ph,
-      sizeof(buf) , buf, &pfn );
+      buf_size , buf, &pfn );
     if ( len == 0 ) return ::GetLastError();
     if ( len > buf_size )
     {
