@@ -44,18 +44,24 @@ namespace boost
 
       inline std::string narrow_path( const std::wstring & file_ph,
         std::ios_base::openmode mode )
-      //   return will be empty() if cannot supply narrow short path
+      // Return a non-existant path if cannot supply narrow short path.
+      // An empty path doesn't work because some Dinkumware versions
+      // assert the path is non-empty.  
       {
         std::string narrow_ph;
         bool created_file( false );
-        if ( !exists( file_ph ) )
+        if ( !exists( file_ph )
+          && (mode & std::ios_base::out) != 0
+          && create_file_api( file_ph, mode ) )
         {
-          if ( (mode & std::ios_base::out) == 0 
-            || !create_file_api( file_ph, mode ) ) return narrow_ph;
           created_file = true;
         }
         narrow_ph = narrow_path_api( file_ph );
-        if ( narrow_ph.empty()&& created_file ) remove_api( file_ph );
+        if ( narrow_ph.empty() )
+        {
+          if ( created_file ) remove_api( file_ph );
+          narrow_ph = "\x01";
+        }
         return narrow_ph;
       }
 #   endif 
