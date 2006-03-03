@@ -686,18 +686,15 @@ namespace boost
           }
           buf_sz = sz + 1;
         }
-        for ( std::wstring::iterator it( short_form.begin() );
-          it != short_form.end(); ++it )
-        {
-          // my expectation is that Unicode characters in long names will be
-          // converted to 8-bit characters in the short 8.3 form names; this
-          // expectation is based on observation rather than Windows API
-          // documentation.
-          assert( (*it & 0xFF) == *it || "program logic error; see program comments" );
-          if ( (*it & 0xFF) != *it )
-            boost::throw_exception( "program logic error" );
-          narrow_short_form += static_cast<char>( *it );
-        }
+        // contributed by Takeshi Mouri:
+        int narrow_sz( ::WideCharToMultiByte( CP_ACP, 0,
+          short_form.c_str(), static_cast<int>(short_form.size()), 0, 0, 0, 0 ) );
+        boost::scoped_array<char> narrow_buf( new char[narrow_sz] );
+        ::WideCharToMultiByte( CP_ACP, 0,
+          short_form.c_str(), static_cast<int>(short_form.size()),
+          narrow_buf.get(), narrow_sz, 0, 0 );
+        narrow_short_form.assign(narrow_buf.get(), narrow_sz);
+
         return narrow_short_form;
       }
 
