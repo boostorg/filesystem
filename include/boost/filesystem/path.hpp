@@ -250,9 +250,25 @@ namespace boost
 
       // assignments
       basic_path & operator=( const string_type & s )
-        { m_path.clear(); operator/=( s ); return *this; }
+      {
+#     if BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, >= 310)
+        m_path.clear();
+#     else
+        m_path.erase( m_path.begin(), m_path.end() );
+#     endif
+        operator/=( s ); 
+        return *this;
+      }
       basic_path & operator=( const value_type * s )
-        { m_path.clear(); operator/=( s ); return *this; }
+      { 
+#     if BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, >= 310)
+        m_path.clear();
+#     else
+        m_path.erase( m_path.begin(), m_path.end() );
+#     endif
+        operator/=( s ); 
+        return *this;
+      }
 #     ifndef BOOST_NO_MEMBER_TEMPLATES
         template <class InputIterator>
           basic_path & assign( InputIterator first, InputIterator last )
