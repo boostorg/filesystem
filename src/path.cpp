@@ -25,13 +25,21 @@
 
 namespace
 {
-  // ISO C calls this "the locale-specific native environment":
-  std::locale loc("");
+  // std::locale construction can throw (if LC_MESSAGES is wrong, for example),
+  // so a static at function scope is used to ensure that exceptions can be
+  // caught. (A previous version was at namespace scope, so initialization
+  // occurred before main(), preventing exceptions from being caught.)
+  std::locale & loc()
+  {
+    // ISO C calls this "the locale-specific native environment":
+    static std::locale lc("");
+    return lc;
+  }
 
   const std::codecvt<wchar_t, char, std::mbstate_t> *
     converter(
        &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
-        ( loc ) );
+        ( loc() ) );
   bool locked(false);
 } // unnamed namespace
 
@@ -43,9 +51,9 @@ namespace boost
     {
       if ( locked ) return false;
       locked = true;
-      loc = new_loc;
+      loc() = new_loc;
       converter = &std::use_facet
-        <std::codecvt<wchar_t, char, std::mbstate_t> >( loc );
+        <std::codecvt<wchar_t, char, std::mbstate_t> >( loc() );
       return true;
     }
 
