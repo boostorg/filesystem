@@ -29,6 +29,7 @@ namespace
   // so a static at function scope is used to ensure that exceptions can be
   // caught. (A previous version was at namespace scope, so initialization
   // occurred before main(), preventing exceptions from being caught.)
+
   std::locale & loc()
   {
     // ISO C calls this "the locale-specific native environment":
@@ -36,10 +37,16 @@ namespace
     return lc;
   }
 
-  const std::codecvt<wchar_t, char, std::mbstate_t> *
-    converter(
+  const std::codecvt<wchar_t, char, std::mbstate_t> *&
+  converter()
+  {
+   static const std::codecvt<wchar_t, char, std::mbstate_t> *
+     cvtr(
        &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
         ( loc() ) );
+   return cvtr;
+  }
+
   bool locked(false);
 } // unnamed namespace
 
@@ -52,7 +59,7 @@ namespace boost
       if ( locked ) return false;
       locked = true;
       loc() = new_loc;
-      converter = &std::use_facet
+      converter() = &std::use_facet
         <std::codecvt<wchar_t, char, std::mbstate_t> >( loc() );
       return true;
     }
@@ -74,12 +81,12 @@ namespace boost
       const internal_string_type & src )
     {
       locked = true;
-      std::size_t work_size( converter->max_length() * (src.size()+1) );
+      std::size_t work_size( converter()->max_length() * (src.size()+1) );
       boost::scoped_array<char> work( new char[ work_size ] );
       std::mbstate_t state;
       const internal_string_type::value_type * from_next;
       external_string_type::value_type * to_next;
-      if ( converter->out( 
+      if ( converter()->out( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::filesystem_wpath_error(
@@ -98,7 +105,7 @@ namespace boost
       std::mbstate_t state;
       const external_string_type::value_type * from_next;
       internal_string_type::value_type * to_next;
-      if ( converter->in( 
+      if ( converter()->in( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::filesystem_wpath_error(
