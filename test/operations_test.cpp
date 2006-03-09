@@ -15,6 +15,7 @@
 #define _SCL_SECURE_NO_DEPRECATE
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/cerrno.hpp>
 namespace fs = boost::filesystem;
 
@@ -86,9 +87,13 @@ namespace
   {
     try { func(); }
 
-    catch ( const fs::filesystem_error & ex )
+    catch ( const fs::filesystem_path_error & ex )
     {
-      if ( report_throws ) std::cout << ex.what() << "\n";
+      if ( report_throws )
+      {
+        // use the what() convenience function to display exceptions
+        std::cout << fs::what(ex) << "\n";
+      }
       if ( ec == 0
         || ec == fs::lookup_error_code(ex.system_error()) ) return true;
       std::cout
