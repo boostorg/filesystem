@@ -34,15 +34,17 @@ namespace boost
     namespace detail
     {
 #   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+#     if !defined(BOOST_DINKUMWARE_STDLIB) || BOOST_DINKUMWARE_STDLIB < 405
       // The 8.3 hack:
       // C++98 does not supply a wchar_t open, so try to get an equivalent
       // narrow char name based on the short, so-called 8.3, name.
+      // Not needed for Dinkumware 405 and later as they do supply wchar_t open.
       BOOST_FILESYSTEM_DECL bool create_file_api( const std::wstring & ph,
         std::ios_base::openmode mode ); // true if succeeds
       BOOST_FILESYSTEM_DECL std::string narrow_path_api(
         const std::wstring & ph ); // return is empty if fails
 
-      inline std::string narrow_path( const std::wstring & file_ph,
+      inline std::string path_proxy( const std::wstring & file_ph,
         std::ios_base::openmode mode )
       // Return a non-existant path if cannot supply narrow short path.
       // An empty path doesn't work because some Dinkumware versions
@@ -64,9 +66,15 @@ namespace boost
         }
         return narrow_ph;
       }
+#     else
+      // Dinkumware 405 and later does supply wchar_t functions
+      inline const std::wstring & path_proxy( const std::wstring & file_ph,
+        std::ios_base::openmode )
+        { return file_ph; }
+#     endif
 #   endif 
 
-      inline const std::string & narrow_path( const std::string & file_ph,
+      inline const std::string & path_proxy( const std::string & file_ph,
         std::ios_base::openmode )
         { return file_ph; }
 
@@ -256,11 +264,8 @@ namespace boost
     basic_filebuf<charT,traits>::open( const Path & file_ph,
       std::ios_base::openmode mode )
     {
-      
-      std::string narrow_ph( detail::narrow_path(
-        file_ph.external_file_string(), mode ) );
-      return narrow_ph.empty() 
-        || (std::basic_filebuf<charT,traits>::open( narrow_ph.c_str(), mode )
+      return (std::basic_filebuf<charT,traits>::open( detail::path_proxy(
+        file_ph.external_file_string(), mode ).c_str(), mode )
           == 0) ? 0 : this;
     }
 
@@ -278,13 +283,13 @@ namespace boost
     basic_ifstream<charT,traits>::basic_ifstream(const Path & file_ph,
       typename boost::enable_if<is_basic_path<Path> >::type* )
       : std::basic_ifstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in ) {}
 
     template <class charT, class traits>
     basic_ifstream<charT,traits>::basic_ifstream( const wpath & file_ph )
       : std::basic_ifstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in ) {}
     
     template <class charT, class traits> template<class Path>
@@ -292,14 +297,14 @@ namespace boost
       std::ios_base::openmode mode,
       typename boost::enable_if<is_basic_path<Path> >::type* )
       : std::basic_ifstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in ) {}
 
     template <class charT, class traits>
     basic_ifstream<charT,traits>::basic_ifstream( const wpath & file_ph,
       std::ios_base::openmode mode )
       : std::basic_ifstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in ) {}
 
     template <class charT, class traits> template<class Path>
@@ -307,7 +312,7 @@ namespace boost
     basic_ifstream<charT,traits>::open( const Path & file_ph )
     {
       std::basic_ifstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in );
     }
 
@@ -315,7 +320,7 @@ namespace boost
     void basic_ifstream<charT,traits>::open( const wpath & file_ph )
     {
       std::basic_ifstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in ).c_str(), std::ios_base::in );
     }
     
@@ -325,7 +330,7 @@ namespace boost
       std::ios_base::openmode mode )
     {
       std::basic_ifstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in );
     }
     
@@ -334,7 +339,7 @@ namespace boost
       std::ios_base::openmode mode )
     {
       std::basic_ifstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in );
     }
 
@@ -344,13 +349,13 @@ namespace boost
     basic_ofstream<charT,traits>::basic_ofstream(const Path & file_ph,
       typename boost::enable_if<is_basic_path<Path> >::type* )
       : std::basic_ofstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::out ).c_str(), std::ios_base::out ) {}
 
     template <class charT, class traits>
     basic_ofstream<charT,traits>::basic_ofstream( const wpath & file_ph )
       : std::basic_ofstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::out ).c_str(), std::ios_base::out ) {}
 
     template <class charT, class traits> template<class Path>
@@ -358,14 +363,14 @@ namespace boost
       std::ios_base::openmode mode,
       typename boost::enable_if<is_basic_path<Path> >::type* )
       : std::basic_ofstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::out ) {}
 
     template <class charT, class traits>
     basic_ofstream<charT,traits>::basic_ofstream( const wpath & file_ph,
       std::ios_base::openmode mode )
       : std::basic_ofstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::out ) {}
     
     template <class charT, class traits> template<class Path>
@@ -373,7 +378,7 @@ namespace boost
     basic_ofstream<charT,traits>::open( const Path & file_ph )
     {
       std::basic_ofstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::out ).c_str(), std::ios_base::out );
     }
     
@@ -381,7 +386,7 @@ namespace boost
     void basic_ofstream<charT,traits>::open( const wpath & file_ph )
     {
       std::basic_ofstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::out ).c_str(), std::ios_base::out );
     }
     
@@ -391,7 +396,7 @@ namespace boost
       std::ios_base::openmode mode )
     {
       std::basic_ofstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::out );
     }
 
@@ -400,7 +405,7 @@ namespace boost
       std::ios_base::openmode mode )
     {
       std::basic_ofstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::out );
     }
 
@@ -410,14 +415,14 @@ namespace boost
     basic_fstream<charT,traits>::basic_fstream(const Path & file_ph,
       typename boost::enable_if<is_basic_path<Path> >::type* )
       : std::basic_fstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in|std::ios_base::out ).c_str(),
           std::ios_base::in|std::ios_base::out ) {}
 
     template <class charT, class traits>
     basic_fstream<charT,traits>::basic_fstream( const wpath & file_ph )
       : std::basic_fstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in|std::ios_base::out ).c_str(),
           std::ios_base::in|std::ios_base::out ) {}
 
@@ -426,14 +431,14 @@ namespace boost
       std::ios_base::openmode mode,
       typename boost::enable_if<is_basic_path<Path> >::type* )
       : std::basic_fstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in | std::ios_base::out ) {}
     
     template <class charT, class traits>
     basic_fstream<charT,traits>::basic_fstream( const wpath & file_ph,
       std::ios_base::openmode mode )
       : std::basic_fstream<charT,traits>(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in | std::ios_base::out ) {}
       
     template <class charT, class traits> template<class Path>
@@ -441,7 +446,7 @@ namespace boost
     basic_fstream<charT,traits>::open( const Path & file_ph )
     {
       std::basic_fstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in|std::ios_base::out ).c_str(),
           std::ios_base::in|std::ios_base::out );
     }
@@ -450,7 +455,7 @@ namespace boost
     void basic_fstream<charT,traits>::open( const wpath & file_ph )
     {
       std::basic_fstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           std::ios_base::in|std::ios_base::out ).c_str(),
           std::ios_base::in|std::ios_base::out );
     }
@@ -461,7 +466,7 @@ namespace boost
       std::ios_base::openmode mode )
     {
       std::basic_fstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in | std::ios_base::out );
     }
 
@@ -470,7 +475,7 @@ namespace boost
       std::ios_base::openmode mode )
     {
       std::basic_fstream<charT,traits>::open(
-        detail::narrow_path( file_ph.external_file_string(),
+        detail::path_proxy( file_ph.external_file_string(),
           mode ).c_str(), mode | std::ios_base::in | std::ios_base::out );
     }
 
