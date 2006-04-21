@@ -68,6 +68,7 @@ namespace fs = boost::filesystem;
 #   include "unistd.h"
 #   include "fcntl.h"
 #   include "utime.h"
+#   include "limits.h"
 # endif
 
 //  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
@@ -1166,6 +1167,32 @@ namespace boost
 
         return sz_read < 0 ? errno : 0;
       }
+  
+      // this code is based on Stevens and Rago, Advanced Programming in the
+      // UNIX envirnment, 2nd Ed., ISBN 0-201-43307-9, page 49
+      fs::system_error_type
+      path_max( std::size_t & result )
+      {
+#     ifdef PATH_MAX
+        static std::size_t max = PATH_MAX;
+#     else
+        static std::size_t max = 0;
+#     endif
+        if ( max == 0 )
+        {
+          errno = 0;
+          long tmp = ::pathconf( "/", _PC_NAME_MAX );
+          if ( tmp < 0 )
+          {
+            if ( errno == 0 ) // indeterminate
+              max = 4096; // guess
+            else return errno;
+          }
+          else max = static_cast<std::size_t>( tmp + 1 ); // relative root
+        }
+        result = max;
+        return 0;
+      }
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
       dir_itr_first( void *& handle, void *& buffer,
@@ -1175,12 +1202,13 @@ namespace boost
         static const std::string dummy_first_name( "." );
         if ( (handle = ::opendir( dir.c_str() )) == 0 ) return errno;
         target = dummy_first_name;
-        long pc_name_max( ::pathconf( dir.c_str(), _PC_NAME_MAX ) );
-        if ( pc_name_max == -1L ) return errno;
+        std::size_t path_size;
+        fs::system_error_type ec = path_max( path_size );
+        if ( ec ) return ec;
         dirent de;
         buffer = std::malloc( (sizeof(dirent) - sizeof(de.d_name))
-          + static_cast<std::size_t>( pc_name_max ) + 1 );
-        return 0;
+          +  path_size + 1 ); // + 1 for "/0"
+        return buffer == 0 ? ENOMEM : 0;
       }  
 
       BOOST_FILESYSTEM_DECL boost::filesystem::system_error_type
