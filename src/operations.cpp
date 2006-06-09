@@ -16,7 +16,11 @@
 
 #define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 
-#define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
+#if !(defined(__HP_aCC) && defined(_ILP32) && \
+      !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
+# define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
+#endif
+
 #define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
       // 64-bit systems or on 32-bit systems which don't have files larger 
       // than can be represented by a traditional POSIX/UNIX off_t type. 
