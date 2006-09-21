@@ -59,11 +59,14 @@ namespace fs = boost::filesystem;
 
 # else // BOOST_POSIX_API
 #   include <sys/types.h>
-#   ifndef __APPLE__
+#   if !defined(__APPLE__) && !defined(__OpenBSD__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
 #   else
+#ifdef __OpenBSD__
+#     include <sys/param.h>
+#endif
 #     include <sys/mount.h>
 #     define BOOST_STATVFS statfs
 #     define BOOST_STATVFS_F_FRSIZE static_cast<boost::uintmax_t>( vfs.f_bsize )
