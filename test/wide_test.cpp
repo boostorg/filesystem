@@ -49,7 +49,8 @@ namespace
 # endif    
     if ( !f )
       throw fs::basic_filesystem_error<Path>( "wide_test create_file",
-        ph, errno );
+        ph,
+        boost::system::error_code( errno, boost::system::errno_ecat ) );
     if ( !contents.empty() ) f << contents;
   }
 

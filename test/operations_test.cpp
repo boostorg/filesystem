@@ -1,9 +1,9 @@
 //  Boost operations_test.cpp  -----------------------------------------------//
 
 //  Copyright Beman Dawes 2002.
-//  Use, modification, and distribution is subject to the Boost Software
-//  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-//  http://www.boost.org/LICENSE_1_0.txt)
+
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
@@ -23,7 +23,11 @@ namespace fs = boost::filesystem;
 #include <boost/test/minimal.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/bind.hpp>
+
 using boost::bind;
+using boost::system::error_code;
+using boost::system::errno_ecat;
+using boost::system::system_error;
 
 #include <fstream>
 #include <iostream>
@@ -55,6 +59,8 @@ using boost::bind;
 
 namespace
 {
+  typedef int errno_t;
+  std::string platform( BOOST_PLATFORM );
   bool report_throws;
   fs::directory_iterator end_itr;
 
@@ -64,8 +70,8 @@ namespace
   {
     std::ofstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_path_error( "operations_test create_file",
-        ph, errno );
+      throw fs::filesystem_error( "operations_test create_file",
+      ph, error_code(errno, errno_ecat) );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -73,34 +79,34 @@ namespace
   {
     std::ifstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_path_error( "operations_test verify_file",
-        ph, errno );
+      throw fs::filesystem_error( "operations_test verify_file",
+        ph, error_code(errno, errno_ecat) );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_path_error( "operations_test verify_file contents \""
-        + contents  + "\" != \"" + expected + "\"", ph, 0 );
+      throw fs::filesystem_error( "operations_test verify_file contents \""
+        + contents  + "\" != \"" + expected + "\"", ph, error_code() );
   }
 
   template< typename F >
-    bool throws_fs_error( F func, fs::errno_type ec, int line )
+    bool throws_fs_error( F func, errno_t en, int line )
   {
     try { func(); }
 
-    catch ( const fs::filesystem_path_error & ex )
+    catch ( const fs::filesystem_error & ex )
     {
       if ( report_throws )
       {
         // use the what() convenience function to display exceptions
-        std::cout << fs::what(ex) << "\n";
+        std::cout << "\n" << ex.what() << "\n";
       }
-      if ( ec == 0
-        || ec == fs::lookup_error_code(ex.system_error()) ) return true;
+      if ( en == 0
+        || en == ex.code().to_errno() ) return true;
       std::cout
         << "\nWarning: line " << line
-        << " exception reports " << fs::lookup_error_code(ex.system_error())
-        << ", should be " << ec
-        << "\n system_error() is " << ex.system_error()
+        << " exception reports iso() " << ex.code().to_errno()
+        << ", should be " << en
+        << "\n value() is " << ex.code().value()
         << std::endl;
       return true;
     }
@@ -125,6 +131,77 @@ namespace
     fs::copy_file( a, a );
   }
 
+  void exception_tests()
+  {
+    bool exception_thrown;
+    exception_thrown = false;
+    try
+    {
+      fs::create_directory( "no-such-dir/foo/bar" );
+    }
+    catch ( std::runtime_error x )
+    {
+      exception_thrown = true;
+      if ( report_throws ) std::cout << x.what() << std::endl;
+      if ( platform == "Windows" )
+        BOOST_CHECK( std::strcmp( x.what(),
+          "boost::filesystem::create_directory" ) == 0 );
+    }
+    BOOST_CHECK( exception_thrown );
+
+    exception_thrown = false;
+    try
+    {
+      fs::create_directory( "no-such-dir/foo/bar" );
+    }
+    catch ( system_error x )
+    {
+      exception_thrown = true;
+      if ( report_throws ) std::cout << x.what() << std::endl;
+      if ( platform == "Windows" )
+        BOOST_CHECK( std::strcmp( x.what(),
+          "boost::filesystem::create_directory: The system cannot find the path specified." ) == 0 );
+    }
+    BOOST_CHECK( exception_thrown );
+
+    exception_thrown = false;
+    try
+    {
+      fs::create_directory( "no-such-dir/foo/bar" );
+    }
+    catch ( fs::filesystem_error x )
+    {
+      exception_thrown = true;
+      if ( report_throws ) std::cout << x.what() << std::endl;
+      if ( platform == "Windows" )
+      {
+        bool ok ( std::strcmp( x.what(),
+          "boost::filesystem::create_directory: The system cannot find the path specified.: \"no-such-dir\\foo\\bar\"" ) == 0 );
+        BOOST_CHECK( ok );
+      }
+    }
+    BOOST_CHECK( exception_thrown );
+
+    exception_thrown = false;
+    try
+    {
+      fs::create_directory( "no-such-dir/foo/bar" );
+    }
+    catch ( const fs::filesystem_error & x )
+    {
+      exception_thrown = true;
+      if ( report_throws ) std::cout << x.what() << std::endl;
+      if ( platform == "Windows" )
+      {
+        bool ok ( std::strcmp( x.what(),
+          "boost::filesystem::create_directory: The system cannot find the path specified.: \"no-such-dir\\foo\\bar\"" ) == 0 );
+        BOOST_CHECK( ok );
+      }
+    }
+    BOOST_CHECK( exception_thrown );
+  }
+
+
 } // unnamed namespace
 
 //  test_main  ---------------------------------------------------------------//
@@ -132,8 +209,6 @@ namespace
 int test_main( int argc, char * argv[] )
 {
   if ( argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t' ) report_throws = true;
-
-  std::string platform( BOOST_PLATFORM );
 
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
@@ -148,6 +223,8 @@ int test_main( int argc, char * argv[] )
                : "POSIX";
 # endif
   std::cout << "API is " << platform << '\n';
+
+  exception_tests();
 
   std::cout << "\ninitial_path<path>().string() is\n  \""
     << fs::initial_path<fs::path>().string()
@@ -244,7 +321,7 @@ int test_main( int argc, char * argv[] )
   // test path::exception members
   try { fs::file_size( ng ); } // will throw
 
-  catch ( const fs::filesystem_path_error & ex )
+  catch ( const fs::filesystem_error & ex )
   {
     BOOST_CHECK( ex.path1().string() == " no-way, Jose" );
   }
@@ -316,10 +393,10 @@ int test_main( int argc, char * argv[] )
   dir_itr_exception = false;
   try
   {
-    fs::system_error_type ec(0);
+    error_code ec;
     fs::directory_iterator it( "nosuchdirectory", ec );
-    BOOST_CHECK( ec != 0 );
-    BOOST_CHECK( ec == fs::detail::not_found_error );
+    BOOST_CHECK( ec );
+    BOOST_CHECK( ec == fs::detail::not_found_error() );
   }
   catch ( const fs::filesystem_error & ) { dir_itr_exception = true; }
   BOOST_CHECK( !dir_itr_exception );
@@ -483,10 +560,10 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
   }
 
-  fs::system_error_type ec(0);
+  error_code ec;
   BOOST_CHECK( fs::create_hard_link( fs::path("doesnotexist"),
-    fs::path("shouldnotwork"), ec ) != 0 );
-  BOOST_CHECK( ec != 0 );
+    fs::path("shouldnotwork"), ec ) );
+  BOOST_CHECK( ec );
 
   // symbolic link tests
   from_ph = dir / "f4";
@@ -518,9 +595,9 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::is_symlink( stat ) );
   }
 
-  ec = 0;
-  BOOST_CHECK( fs::create_symlink( "doesnotexist", "", ec ) != 0 );
-  BOOST_CHECK( ec != 0 );
+  ec = error_code();
+  BOOST_CHECK( fs::create_symlink( "doesnotexist", "", ec ) );
+  BOOST_CHECK( ec );
 
   // there was an inital bug in directory_iterator that caused premature
   // close of an OS handle. This block will detect regression.

@@ -1,9 +1,9 @@
 //  boost/filesystem/path.hpp  -----------------------------------------------//
 
-//  Copyright Beman Dawes 2002-2005
-//  Use, modification, and distribution is subject to the Boost Software
-//  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-//  http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Beman Dawes 2002-2005
+
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
@@ -13,6 +13,7 @@
 #define BOOST_FILESYSTEM_PATH_HPP
 
 #include <boost/filesystem/config.hpp>
+#include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/shared_ptr.hpp>
@@ -54,11 +55,11 @@ namespace boost
 
 # ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-    struct wpath_traits;
+    struct BOOST_FILESYSTEM_DECL wpath_traits;
     
     typedef basic_path< std::wstring, wpath_traits > wpath;
 
-    struct wpath_traits
+    struct BOOST_FILESYSTEM_DECL wpath_traits
     {
       typedef std::wstring internal_string_type;
 # ifdef BOOST_WINDOWS_API
@@ -79,102 +80,6 @@ namespace boost
     };
 
 # endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
-
-//  error reporting support  -------------------------------------------------//
-
-    typedef int errno_type;  // determined by C standard
-    
-# ifdef BOOST_WINDOWS_API
-    typedef unsigned system_error_type;
-
-    BOOST_FILESYSTEM_DECL
-    errno_type lookup_errno( system_error_type sys_err_code );
-# else
-    typedef int system_error_type;
-
-    inline errno_type lookup_errno( system_error_type sys_err_code )
-      { return sys_err_code; }
-# endif
-
-    // deprecated support for legacy function name
-    inline errno_type lookup_error_code( system_error_type sys_err_code )
-      { return lookup_errno( sys_err_code ); }
-
-    BOOST_FILESYSTEM_DECL
-    void system_message( system_error_type sys_err_code, std::string & target );
-    // Effects: appends error message to target
-
-# if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-    BOOST_FILESYSTEM_DECL void
-    system_message( system_error_type sys_err_code, std::wstring & target );
-# endif
-
-    //  filesystem_error  ----------------------------------------------------//
-
-    class filesystem_error : public std::runtime_error
-    // see http://www.boost.org/more/error_handling.html for design rationale
-    {
-    public:
-      filesystem_error()
-        : std::runtime_error("filesystem error"), m_sys_err(0) {}
-      explicit filesystem_error(
-        const std::string & what_arg, system_error_type sys_ec = 0 )
-        : std::runtime_error(what_arg), m_sys_err(sys_ec) {}
-
-      system_error_type  system_error() const { return m_sys_err; }
-      // Note: system_error() == 0 implies a library (rather than system) error
-
-    private:
-      system_error_type m_sys_err;
-    };
-
-    //  basic_filesystem_error  ----------------------------------------------//
-
-    template<class Path>
-    class basic_filesystem_error : public filesystem_error
-    {
-    // see http://www.boost.org/more/error_handling.html for design rationale
-    public:
-      // compiler generates copy constructor and copy assignment
-
-      typedef Path path_type;
-
-      basic_filesystem_error( const std::string & what,
-        system_error_type sys_err_code );
-
-      basic_filesystem_error( const std::string & what,
-        const path_type & path1, system_error_type sys_err_code );
-
-      basic_filesystem_error( const std::string & what, const path_type & path1,
-        const path_type & path2, system_error_type sys_err_code );
-
-      ~basic_filesystem_error() throw() {}
-
-      const path_type & path1() const
-      {
-        static const path_type empty_path;
-        return m_imp_ptr.get() ? m_imp_ptr->m_path1 : empty_path ;
-      }
-      const path_type & path2() const
-      {
-        static const path_type empty_path;
-        return m_imp_ptr.get() ? m_imp_ptr->m_path2 : empty_path ;
-      }
-
-    private:
-      struct m_imp
-      {
-        path_type       m_path1; // may be empty()
-        path_type       m_path2; // may be empty()
-      };
-      boost::shared_ptr<m_imp> m_imp_ptr;
-    };
-
-    typedef basic_filesystem_error<path> filesystem_path_error;
-
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
-    typedef basic_filesystem_error<wpath> filesystem_wpath_error;
-# endif
 
     //  path traits  ---------------------------------------------------------//
 
@@ -659,6 +564,82 @@ namespace boost
       ph = str;
       return is;
     }
+# endif
+
+    //  basic_filesystem_error  ----------------------------------------------//
+
+    template<class Path>
+    class basic_filesystem_error : public system::system_error
+    {
+    // see http://www.boost.org/more/error_handling.html for design rationale
+    public:
+      // compiler generates copy constructor and copy assignment
+
+      typedef Path path_type;
+
+      basic_filesystem_error( const std::string & what,
+        system::error_code ec );
+
+      basic_filesystem_error( const std::string & what,
+        const path_type & path1, system::error_code ec );
+
+      basic_filesystem_error( const std::string & what, const path_type & path1,
+        const path_type & path2, system::error_code ec );
+
+      ~basic_filesystem_error() throw() {}
+
+      const path_type & path1() const
+      {
+        static const path_type empty_path;
+        return m_imp_ptr.get() ? m_imp_ptr->m_path1 : empty_path ;
+      }
+      const path_type & path2() const
+      {
+        static const path_type empty_path;
+        return m_imp_ptr.get() ? m_imp_ptr->m_path2 : empty_path ;
+      }
+
+      const char * what() const throw() { return system_error::what(); }
+
+    private:
+      struct m_imp
+      {
+        path_type                 m_path1; // may be empty()
+        path_type                 m_path2; // may be empty()
+        std::string               m_what;  // not built until needed
+      };
+      boost::shared_ptr<m_imp> m_imp_ptr;
+    };
+
+// TODO: Figure out why this specialization is causing problems with GCC
+#ifndef __GNUC__
+    template<> const char * basic_filesystem_error<path>::what() const throw()
+    {
+      if ( !m_imp_ptr.get() ) return system_error::what();
+      if ( m_imp_ptr->m_what.empty() )
+      {
+        m_imp_ptr->m_what = system_error::what();
+        if ( !path1().empty() )
+        {
+          m_imp_ptr->m_what += ": \"";
+          m_imp_ptr->m_what += path1().file_string();
+          m_imp_ptr->m_what += "\"";
+        }
+        if ( !path2().empty() )
+        {
+          m_imp_ptr->m_what += ", \"";
+          m_imp_ptr->m_what += path2().file_string();
+          m_imp_ptr->m_what += "\"";
+        }
+      }
+      return m_imp_ptr->m_what.c_str();
+    }
+#endif
+
+    typedef basic_filesystem_error<path> filesystem_error;
+
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+    typedef basic_filesystem_error<wpath> wfilesystem_error;
 # endif
 
   //  path::name_checks  -----------------------------------------------------//
@@ -1376,8 +1357,8 @@ namespace boost
 
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
-      const std::string & what, system_error_type sys_err_code )
-      : filesystem_error(what, sys_err_code)
+      const std::string & what, system::error_code ec )
+      : system_error(ec, what)
     {
       try
       {
@@ -1389,8 +1370,8 @@ namespace boost
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, const path_type & path1,
-      system_error_type sys_err_code )
-      : filesystem_error(what, sys_err_code)
+      system::error_code ec )
+      : system_error(ec, what)
     {
       try
       {
@@ -1403,8 +1384,8 @@ namespace boost
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, const path_type & path1,
-      const path_type & path2, system_error_type sys_err_code )
-      : filesystem_error(what, sys_err_code)
+      const path_type & path2, system::error_code ec )
+      : system_error(ec, what)
     {
       try
       {

@@ -9,7 +9,7 @@
 
 subproject libs/filesystem/build ;
 
-SOURCES = exception operations path portability utf8_codecvt_facet ;
+SOURCES = operations path portability utf8_codecvt_facet ;
 
 lib boost_filesystem
      : ../src/$(SOURCES).cpp
@@ -25,6 +25,7 @@ lib boost_filesystem
 
 dll boost_filesystem
      : ../src/$(SOURCES).cpp
+       <lib>../../system/build/boost_system
      : # build requirements
        <define>BOOST_FILESYSTEM_DYN_LINK=1  # tell source we're building dll's
        <runtime-link>dynamic  # build only for dynamic runtimes
