@@ -611,8 +611,10 @@ namespace boost
       boost::shared_ptr<m_imp> m_imp_ptr;
     };
 
-// TODO: Figure out why this specialization is causing problems with GCC
-#ifndef __GNUC__
+// This specialization is causing problems with GCC, aCC (HP-UX)
+// and cxx on Alpha platforms.
+#if !(defined(__GNUC__) || defined(__HP_aCC) || \
+      (defined(__DECCXX) && defined(__alpha)))
     template<> const char * basic_filesystem_error<path>::what() const throw()
     {
       if ( !m_imp_ptr.get() ) return system_error::what();
