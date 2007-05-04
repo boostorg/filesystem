@@ -93,8 +93,7 @@ differs between Boost.Filesystem and the TR2 proposal. See
 &nbsp;</li>
   <li>Header <a href="../../../boost/filesystem/fstream.hpp">boost/filesystem<i>/</i>fstream.hpp</a> provides the same components as the C++ Standard 
   Library's <i>fstream</i> header, except 
-      that files are identified by <i>basic_path</i> objects rather that <i>char *</i>'s. 
-  See <a href="fstream.htm">fstream.hpp documentation</a>.<br>
+      that files are identified by <i>basic_path</i> objects rather that <i>char *</i>'s.<br>
 &nbsp;</li>
   <li>Header <a href="../../../boost/filesystem/cerrno.hpp">
   boost/filesystem/cerrno.hpp</a> provides POSIX errno macros used by 
@@ -109,12 +108,12 @@ differs between Boost.Filesystem and the TR2 proposal. See
 using boost::filesystem;          // for ease of tutorial presentation;
                                   //  a namespace alias is preferred practice in real code</pre>
 </blockquote>
-<p>A <a href="path.htm#synopsis">class <i>path</i></a> object can be created:</p>
+<p>A <a href="tr2_proposal.html#Class-template-basic_path">class <i>path</i></a> object can be created:</p>
 <blockquote>
   <pre>path my_path( &quot;some_dir/file.txt&quot; );</pre>
 </blockquote>
 <p>The string passed to the <i>path</i> constructor may be in a
-<a href="path.htm#Grammar">portable generic path format</a> or an 
+<a href="tr2_proposal.html#Pathname-formats">portable generic path format</a> or an 
 implementation-defined native operating system format. Access functions 
 make <i>my_path</i> contents available to the underlying operating system API in an operating system dependent format, 
 such as <code>&quot;some_dir:file.txt&quot;</code>, <code>&quot;[some_dir]file.txt&quot;</code>,
@@ -147,7 +146,7 @@ ifstream file2( arg_path / &quot;foo&quot; / &quot;bar&quot; );</pre>
 <p>Paths can include references to the current directory, using &quot;<code>.</code>&quot; 
 notation, and the parent directory, using &quot;<code>..</code>&quot; 
 notation.</p>
-<p><a href="operations.htm#directory_iterator">Class <i>basic_directory_iterator</i></a> 
+<p><a href="tr2_proposal.html#Class-template-basic_directory_iterator">Class <i>basic_directory_iterator</i></a> 
 is an important component of the library. It provides an input iterator over the 
 contents of a directory, with the value type being class <i>basic_path</i>. 
 Typedefs <i>directory_iterator</i> and <i>wdirectory_iterator</i> are provided 
@@ -540,7 +539,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 February, 2006<!--webbot bot="Timestamp" endspan i-checksum="40411" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 May, 2007<!--webbot bot="Timestamp" endspan i-checksum="14010" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
