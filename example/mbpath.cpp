@@ -1,6 +1,6 @@
 //  Boost.Filesystem mbpath.hpp  ---------------------------------------------//
 
-//  © Copyright Beman Dawes 2005
+//  Copyright Beman Dawes 2005
 
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -46,7 +46,7 @@ namespace user
       boost::throw_exception<fs::basic_filesystem_error<mbpath> >(
         fs::basic_filesystem_error<mbpath>(
           "user::mbpath::to_external conversion error",
-          ph, boost::system::error_code( EINVAL, boost::system::errno_ecat ) ) );
+          ph, EINVAL ) );
     *to_next = '\0';
     return external_string_type( work.get() );
   }
@@ -64,8 +64,7 @@ namespace user
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception<fs::basic_filesystem_error<mbpath> >(
           fs::basic_filesystem_error<mbpath>(
-            "user::mbpath::to_internal conversion error",
-            boost::system::error_code( EINVAL, boost::system::errno_ecat ) ) );
+            "user::mbpath::to_internal conversion error", EINVAL ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );
   }
