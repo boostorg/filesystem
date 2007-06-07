@@ -313,7 +313,7 @@ compilers or operating systems.</p>
 <h2><a name="Building">Building</a> the object-library</h2>
 <p>The object-library will normally be built automatically. See
 <a href="../../../more/getting_started.html">Getting Started</a>. It can also be 
-built manually using a <a href="../build/Jamfile">Jamfile</a> 
+built manually using a <a href="../build/Jamfile.v2">Jamfile</a> 
 supplied in directory libs/filesystem/build, or the user can construct an IDE 
 project or make file which includes the object-library source files.</p>
 <p>The object-library source files are 
@@ -479,12 +479,12 @@ performance issues.</p>
   <li>Clearer specification, by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
   the ISO/IEEE Single Unix Standard, with provisions for Windows and other 
   operating systems.</li>
-  <li>New functions
-  <a href="operations.htm#status">status</a>,
-  <a href="operations.htm#symlink_status">symlink_status</a>,
-  <a href="operations.htm#is_file">is_file</a>,
-  <a href="operations.htm#is_symlink">is_symlink</a>, <a href="operations.htm#create_hard_link">create_hard_link</a>, 
-  create_symlink, path member and non-member swap, path inserter, path 
+  <li>New functions <a href="tr2_proposal.html#Status-functions">status</a>,
+  <a href="tr2_proposal.html#Status-functions">symlink_status</a>,
+  <a href="tr2_proposal.html#Predicate-functions">is_file</a>,
+  <a href="tr2_proposal.html#Predicate-functions">is_symlink</a>,
+  <a href="tr2_proposal.html#Operations-functions">create_hard_link</a>, 
+  <a href="tr2_proposal.html#Operations-functions">create_symlink</a>, path member and non-member swap, path inserter, path 
   extractor, additional path relational and &quot;/&quot; operator overloads, additional 
   path member template functions taking iterator arguments.</li>
   <li><a href="i18n.html#More_efficient">More efficient operations</a> when iterating over directories.</li>
@@ -503,19 +503,19 @@ performance issues.</p>
 <h3>Version 1.32.0</h3>
 
 <ul>
-  <li><a href="operations.htm#file_size">file_size()</a> function added.</li>
-  <li>Class path <a href="path.htm#operator_eq">relational operators</a> added.</li>
-  <li><a href="operations.htm#equivalent">equivalent()</a> function added.</li>
-  <li><a href="operations.htm#create_directory">create_directory()</a> no longer 
+  <li><a href="tr2_proposal.html#Attribute-functions">file_size()</a> function added.</li>
+  <li>Class path <a href="tr2_proposal.html#basic_path-non-member-functions">relational operators</a> added.</li>
+  <li><a href="tr2_proposal.html#Predicate-functions">equivalent()</a> function added.</li>
+  <li><a href="tr2_proposal.html#Operations-functions">create_directory()</a> no longer 
   throws if the directory already exists. A bool is returned, indicating that 
   the directory did not preexist. Similar changes made to
-  <a href="convenience.htm">create_directories()</a>.</li>
+  <a href="tr2_proposal.html#Convenience-functions">create_directories()</a>.</li>
   <li><a href="#Cgywin">Docs added</a> for users wishing Cygwin/POSIX behavior 
   on Windows.</li>
   <li>For POSIX, Large File Support (LSF) is enabled if available, such as on 
   Linux.</li>
-  <li><a href="operations.htm#current_path">current_path()</a> and
-  <a href="operations.htm#initial_path">initial_path()</a> on POSIX now handle 
+  <li><a href="tr2_proposal.html#initial_path">current_path()</a> and
+  <a href="tr2_proposal.html#initial_path">initial_path()</a> on POSIX now handle 
   very long paths correctly.</li>
 </ul>
 
@@ -525,13 +525,10 @@ performance issues.</p>
   <li>The object library can now be <a href="#Building">built</a> for either 
   static or dynamic (shared/dll) linking. </li>
   <li>Several added functions, including improved checking for directory and 
-  file name portability. See <a href="path.htm#default_name_check">Default name 
-  check functions</a>, <a href="path.htm#name_check­_mechanism">Default name 
-  check mechanism</a>, and <a href="portability_guide.htm#name_check­_functions">
+  file name portability. See <a href="portability_guide.htm#name_check­_functions">
   Name check functions</a>.</li>
-  <li>Separation of <a href="path.htm#Canonical">Canonical form</a> and
-  <a href="path.htm#Normalized">Normalized form</a> and a new path member 
-  function <a href="path.htm#normalize">normalize()</a>. This changes behavior, 
+  <li>Separation of canonical form and normalized form and a new path member 
+  function normalize(). This changes behavior, 
   in that canonical form is now different, but eliminates a subtle
   <a href="design.htm#symbolic-link-use-case">bug</a> when symbolic links to 
   directories are present. </li>
@@ -539,7 +536,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 May, 2007<!--webbot bot="Timestamp" endspan i-checksum="14010" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 June, 2007<!--webbot bot="Timestamp" endspan i-checksum="19946" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
