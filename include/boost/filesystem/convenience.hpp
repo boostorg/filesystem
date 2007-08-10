@@ -29,7 +29,7 @@
 # else
 #   define BOOST_FS_FUNC(BOOST_FS_TYPE) inline BOOST_FS_TYPE 
     typedef boost::filesystem::path Path;
-#   define BOOST_FS_FUNC_STRING std::string
+#   define BOOST_FS_FUNC_STRING inline std::string
 #   define BOOST_FS_TYPENAME
 # endif
 
