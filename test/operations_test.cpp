@@ -26,7 +26,7 @@ namespace fs = boost::filesystem;
 
 using boost::bind;
 using boost::system::error_code;
-using boost::system::errno_ecat;
+using boost::system::system_category;
 using boost::system::system_error;
 
 #include <fstream>
@@ -71,7 +71,7 @@ namespace
     std::ofstream f( ph.file_string().c_str() );
     if ( !f )
       throw fs::filesystem_error( "operations_test create_file",
-      ph, error_code(errno, errno_ecat) );
+      ph, error_code(errno, system_category) );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -80,7 +80,7 @@ namespace
     std::ifstream f( ph.file_string().c_str() );
     if ( !f )
       throw fs::filesystem_error( "operations_test verify_file",
-        ph, error_code(errno, errno_ecat) );
+        ph, error_code(errno, system_category) );
     std::string contents;
     f >> contents;
     if ( contents != expected )
@@ -101,10 +101,10 @@ namespace
         std::cout << "\n" << ex.what() << "\n";
       }
       if ( en == 0
-        || en == ex.code().to_errno() ) return true;
+        || en == ex.code().default_error_condition().value() ) return true;
       std::cout
         << "\nWarning: line " << line
-        << " exception reports iso() " << ex.code().to_errno()
+        << " exception reports default_error_condition().value() " << ex.code().default_error_condition().value()
         << ", should be " << en
         << "\n value() is " << ex.code().value()
         << std::endl;
@@ -160,7 +160,7 @@ namespace
       if ( report_throws ) std::cout << x.what() << std::endl;
       if ( platform == "Windows" )
         BOOST_CHECK( std::strcmp( x.what(),
-          "boost::filesystem::create_directory: The system cannot find the path specified." ) == 0 );
+          "boost::filesystem::create_directory: The system cannot find the path specified" ) == 0 );
     }
     BOOST_CHECK( exception_thrown );
 
@@ -176,7 +176,7 @@ namespace
       if ( platform == "Windows" )
       {
         bool ok ( std::strcmp( x.what(),
-          "boost::filesystem::create_directory: The system cannot find the path specified.: \"no-such-dir\\foo\\bar\"" ) == 0 );
+          "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir\\foo\\bar\"" ) == 0 );
         BOOST_CHECK( ok );
       }
     }
@@ -194,7 +194,7 @@ namespace
       if ( platform == "Windows" )
       {
         bool ok ( std::strcmp( x.what(),
-          "boost::filesystem::create_directory: The system cannot find the path specified.: \"no-such-dir\\foo\\bar\"" ) == 0 );
+          "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir\\foo\\bar\"" ) == 0 );
         BOOST_CHECK( ok );
       }
     }
@@ -325,12 +325,35 @@ int test_main( int argc, char * argv[] )
   {
     BOOST_CHECK( ex.path1().string() == " no-way, Jose" );
   }
-
-  BOOST_CHECK( fs::create_directory( dir ) );
-
   // several functions give unreasonable results if uintmax_t isn't 64-bits
   std::cout << "sizeof(boost::uintmax_t) = " << sizeof(boost::uintmax_t) << '\n';
   BOOST_CHECK( sizeof( boost::uintmax_t ) >= 8 );
+
+  // create a directory, then check it for consistency
+  BOOST_CHECK( fs::create_directory( dir ) );
+
+  BOOST_CHECK( fs::exists( dir ) );
+  BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
+  BOOST_CHECK( fs::is_directory( dir ) );
+  BOOST_CHECK( !fs::is_regular( dir ) );
+  BOOST_CHECK( !fs::is_other( dir ) );
+  BOOST_CHECK( !fs::is_symlink( dir ) );
+  stat = fs::status( dir );
+  BOOST_CHECK( fs::exists( stat ) );
+  BOOST_CHECK( fs::is_directory( stat ) );
+  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_other( stat ) );
+  BOOST_CHECK( !fs::is_symlink( stat ) );
+
+  // set the current directory, then check it for consistency
+  fs::path original_dir = fs::current_path<fs::path>();
+  BOOST_CHECK( dir != original_dir );
+  fs::current_path( dir );
+  BOOST_CHECK( fs::current_path<fs::path>() == dir );
+  BOOST_CHECK( fs::current_path<fs::path>() != original_dir );
+  fs::current_path( original_dir );
+  BOOST_CHECK( fs::current_path<fs::path>() == original_dir );
+  BOOST_CHECK( fs::current_path<fs::path>() != dir );
 
   // make some reasonable assuptions for testing purposes
   fs::space_info spi( fs::space( dir ) );
@@ -345,19 +368,6 @@ int test_main( int argc, char * argv[] )
     std::cout << "     free = " << spi.free << '\n';
     std::cout << "available = " << spi.available << '\n';
 # endif
-
-  BOOST_CHECK( fs::exists( dir ) );
-  BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
-  BOOST_CHECK( fs::is_directory( dir ) );
-  BOOST_CHECK( !fs::is_regular( dir ) );
-  BOOST_CHECK( !fs::is_other( dir ) );
-  BOOST_CHECK( !fs::is_symlink( dir ) );
-  stat = fs::status( dir );
-  BOOST_CHECK( fs::exists( stat ) );
-  BOOST_CHECK( fs::is_directory( stat ) );
-  BOOST_CHECK( !fs::is_regular( stat ) );
-  BOOST_CHECK( !fs::is_other( stat ) );
-  BOOST_CHECK( !fs::is_symlink( stat ) );
 
   if ( platform == "Windows" )
     BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 

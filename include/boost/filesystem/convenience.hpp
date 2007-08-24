@@ -1,7 +1,7 @@
 //  boost/filesystem/convenience.hpp  ----------------------------------------//
 
-//  © Copyright Beman Dawes, 2002-2005
-//  © Copyright Vladimir Prus, 2002
+//  Copyright Beman Dawes, 2002-2005
+//  Copyright Vladimir Prus, 2002
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,7 @@
 #define BOOST_FILESYSTEM_CONVENIENCE_HPP
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/cerrno.hpp>
+#include <boost/system/error_code.hpp>
 #include <vector>
 #include <stack>
 
@@ -45,7 +45,8 @@ namespace boost
            if ( !ph.empty() && !is_directory(ph) )
                boost::throw_exception( basic_filesystem_error<Path>(
                  "boost::filesystem::create_directories", ph,
-                 boost::system::error_code(EEXIST, boost::system::errno_ecat) ) );
+                 boost::system::make_error_code(
+                   boost::system::posix::file_exists ) ) );
            return false;
          }
 

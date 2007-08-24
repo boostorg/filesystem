@@ -62,7 +62,7 @@ namespace boost
       if ( locked ) boost::throw_exception(
         wfilesystem_error(
           "boost::filesystem::wpath_traits::imbue() after lockdown",
-          system::error_code(EOTHER, system::errno_ecat) ) );
+          system::make_error_code( system::posix::not_supported ) ) );
       imbue( new_loc, std::nothrow );
     }
     
@@ -86,7 +86,7 @@ namespace boost
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_external conversion error",
-          ph, system::error_code( EINVAL, system::errno_ecat ) ) );
+          ph, system::posix::invalid_argument ) );
       *to_next = '\0';
       return external_string_type( work.get() );
     }
@@ -105,7 +105,7 @@ namespace boost
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_internal conversion error",
-          system::error_code( EINVAL, system::errno_ecat ) ) );
+          system::posix::invalid_argument ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );
     }

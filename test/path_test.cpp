@@ -180,7 +180,7 @@ namespace
   void exception_tests()
   {
     const std::string str_1("string-1");
-    boost::system::error_code ec( 12345, boost::system::errno_ecat);
+    boost::system::error_code ec( 12345, boost::system::system_category);
     try { throw fs::filesystem_error( str_1, ec ); }
     catch ( const fs::filesystem_error & ex )
     {
