@@ -1,0 +1,8 @@
+
+project
+    : requirements <library>../build//boost_filesystem
+      <hardcode-dll-paths>true
+    ;
+    
+exe file_size : file_size.cpp ;
+exe simple_ls : simple_ls.cpp ;    
