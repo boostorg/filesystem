@@ -1004,7 +1004,7 @@ namespace boost
        m_symlink_status = symlink_st;
      }
 
-      const Path &   path() const { return m_path; }
+      const Path &  path() const { return m_path; }
       file_status   status() const;
       file_status   status( system::error_code & ec ) const;
       file_status   symlink_status() const;
