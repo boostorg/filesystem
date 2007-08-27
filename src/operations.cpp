@@ -16,7 +16,10 @@
 
 #define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 
+#if !(defined(__HP_aCC) && defined(_ILP32) && \
+      !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
+#endif
 #define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
       // 64-bit systems or on 32-bit systems which don't have files larger 
       // than can be represented by a traditional POSIX/UNIX off_t type. 
@@ -57,11 +60,14 @@ using boost::system::system_category;
 
 # else // BOOST_POSIX_API
 #   include <sys/types.h>
-#   ifndef __APPLE__
+#   if !defined(__APPLE__) && !defined(__OpenBSD__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
 #   else
+#ifdef __OpenBSD__
+#     include <sys/param.h>
+#endif
 #     include <sys/mount.h>
 #     define BOOST_STATVFS statfs
 #     define BOOST_STATVFS_F_FRSIZE static_cast<boost::uintmax_t>( vfs.f_bsize )
@@ -70,6 +76,7 @@ using boost::system::system_category;
 #   include <unistd.h>
 #   include <fcntl.h>
 #   include <utime.h>
+#   include "limits.h"
 # endif
 
 //  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
@@ -98,7 +105,7 @@ namespace std { using ::strcmp; using ::remove; using ::rename; }
 
 namespace
 {
-  static const fs::directory_iterator end_itr;
+  const fs::directory_iterator end_itr;
   bool is_empty_directory( const std::string & dir_path )
   {
     return fs::directory_iterator(fs::path(dir_path)) == end_itr;
@@ -119,7 +126,7 @@ namespace
   inline DWORD get_file_attributes( const wchar_t * ph )
     { return ::GetFileAttributesW( ph ); }
 
-  static const fs::wdirectory_iterator wend_itr;
+  const fs::wdirectory_iterator wend_itr;
   bool is_empty_directory( const std::wstring & dir_path )
   {
     return fs::wdirectory_iterator(fs::wpath(dir_path)) == wend_itr;
@@ -1091,7 +1098,7 @@ namespace boost
       BOOST_FILESYSTEM_DECL error_code
       set_current_path_api( std::string & ph )
       {
-        return error_code( ::chdir( ph.string().c_str()
+        return error_code( ::chdir( ph.c_str() )
           ? errno : 0, system_category );
       }
 
@@ -1207,20 +1214,47 @@ namespace boost
         return error_code( sz_read < 0 ? errno : 0, system_category );
       }
 
+      // this code is based on Stevens and Rago, Advanced Programming in the
+      // UNIX envirnment, 2nd Ed., ISBN 0-201-43307-9, page 49
+      error_code path_max( std::size_t & result )
+      {
+#     ifdef PATH_MAX
+        static std::size_t max = PATH_MAX;
+#     else
+        static std::size_t max = 0;
+#     endif
+        if ( max == 0 )
+        {
+          errno = 0;
+          long tmp = ::pathconf( "/", _PC_NAME_MAX );
+          if ( tmp < 0 )
+          {
+            if ( errno == 0 ) // indeterminate
+              max = 4096; // guess
+            else return error_code( errno, system_category );
+          }
+          else max = static_cast<std::size_t>( tmp + 1 ); // relative root
+        }
+        result = max;
+        return error_code();
+      }
+
       BOOST_FILESYSTEM_DECL error_code
       dir_itr_first( void *& handle, void *& buffer,
         const std::string & dir, std::string & target,
         file_status &, file_status & )
       {
-        static const std::string dummy_first_name( "." );
         if ( (handle = ::opendir( dir.c_str() )) == 0 )
           return error_code( errno, system_category );
-        target = dummy_first_name;
-        long pc_name_max( ::pathconf( dir.c_str(), _PC_NAME_MAX ) );
-        if ( pc_name_max == -1L ) return error_code( errno, system_category );
+        target = std::string( "." ); // string was static but caused trouble
+                                     // when iteration called from dtor, after
+                                     // static had already been destroyed
+        std::size_t path_size;
+        error_code ec = path_max( path_size );
+        if ( ec ) return ec;
         dirent de;
         buffer = std::malloc( (sizeof(dirent) - sizeof(de.d_name))
-          + static_cast<std::size_t>( pc_name_max ) + 1 );
+          +  path_size + 1 ); // + 1 for "/0"
         return error_code();
       }  
 
