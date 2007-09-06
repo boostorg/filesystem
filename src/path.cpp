@@ -71,6 +71,39 @@ namespace boost
           system::make_error_code( system::posix::not_supported ) ) );
       imbue( new_loc, std::nothrow );
     }
+
+    //namespace detail
+    //{
+    //  BOOST_FILESYSTEM_DECL
+    //  const char * what( const char * sys_err_what,
+    //    const path & path1, const path & path2, std::string & target)
+    //  {
+    //    try
+    //    {
+    //      if ( target.empty() )
+    //      {
+    //        target = sys_err_what;
+    //        if ( !path1.empty() )
+    //        {
+    //          target += ": \"";
+    //          target += path1.file_string();
+    //          target += "\"";
+    //        }
+    //        if ( !path2.empty() )
+    //        {
+    //          target += ", \"";
+    //          target += path2.file_string();
+    //          target += "\"";
+    //        }
+    //      }
+    //      return target.c_str();
+    //    }
+    //    catch (...)
+    //    {
+    //      return sys_err_what;
+    //    }
+    //  }
+    //}
     
 # ifdef BOOST_POSIX_API
 

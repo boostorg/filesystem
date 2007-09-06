@@ -566,6 +566,53 @@ namespace boost
     }
 # endif
 
+    //  basic_filesystem_error helpers  --------------------------------------//
+
+    //  Originally choice of implementation was done via specialization of
+    //  basic_filesystem_error::what(). Several compilers (GCC, aCC, etc.)
+    //  couldn't handle that, so the choice is now accomplished by overloading.
+
+    namespace detail
+    {
+      // BOOST_FILESYSTEM_DECL version works for VC++ but not GCC. Go figure!
+      inline
+      const char * what( const char * sys_err_what,
+        const path & path1, const path & path2, std::string & target )
+      {
+        try
+        {
+          if ( target.empty() )
+          {
+            target = sys_err_what;
+            if ( !path1.empty() )
+            {
+              target += ": \"";
+              target += path1.file_string();
+              target += "\"";
+            }
+            if ( !path2.empty() )
+            {
+              target += ", \"";
+              target += path2.file_string();
+              target += "\"";
+            }
+          }
+          return target.c_str();
+        }
+        catch (...)
+        {
+          return sys_err_what;
+        }
+      }
+
+      template<class Path>
+      const char * what( const char * sys_err_what,
+        const Path & path1, const Path & path2, std::string & target )
+      {
+        return sys_err_what;
+      }
+    }
+
     //  basic_filesystem_error  ----------------------------------------------//
 
     template<class Path>
@@ -599,7 +646,13 @@ namespace boost
         return m_imp_ptr.get() ? m_imp_ptr->m_path2 : empty_path ;
       }
 
-      const char * what() const throw() { return system_error::what(); }
+      const char * what() const throw()
+      { 
+        if ( !m_imp_ptr.get() )
+          return system_error::what();
+        return detail::what( system_error::what(), m_imp_ptr->m_path1,
+          m_imp_ptr->m_path2, m_imp_ptr->m_what );  
+      }
 
     private:
       struct m_imp
@@ -610,33 +663,6 @@ namespace boost
       };
       boost::shared_ptr<m_imp> m_imp_ptr;
     };
-
-// This specialization is causing problems with GCC, aCC (HP-UX)
-// and cxx on Alpha platforms.
-#if !(defined(__GNUC__) || defined(__HP_aCC) || \
-      (defined(__DECCXX) && defined(__alpha)))
-    template<> const char * basic_filesystem_error<path>::what() const throw()
-    {
-      if ( !m_imp_ptr.get() ) return system_error::what();
-      if ( m_imp_ptr->m_what.empty() )
-      {
-        m_imp_ptr->m_what = system_error::what();
-        if ( !path1().empty() )
-        {
-          m_imp_ptr->m_what += ": \"";
-          m_imp_ptr->m_what += path1().file_string();
-          m_imp_ptr->m_what += "\"";
-        }
-        if ( !path2().empty() )
-        {
-          m_imp_ptr->m_what += ", \"";
-          m_imp_ptr->m_what += path2().file_string();
-          m_imp_ptr->m_what += "\"";
-        }
-      }
-      return m_imp_ptr->m_what.c_str();
-    }
-#endif
 
     typedef basic_filesystem_error<path> filesystem_error;
 

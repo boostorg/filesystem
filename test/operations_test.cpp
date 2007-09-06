@@ -16,7 +16,7 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/cerrno.hpp>
+#include <boost/cerrno.hpp>
 namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
@@ -178,6 +178,10 @@ namespace
         bool ok ( std::strcmp( x.what(),
           "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir\\foo\\bar\"" ) == 0 );
         BOOST_CHECK( ok );
+        if ( !ok )
+        {
+          std::cout << "what returns \"" << x.what() << "\"" << std::endl;
+        }
       }
     }
     BOOST_CHECK( exception_thrown );
@@ -196,6 +200,10 @@ namespace
         bool ok ( std::strcmp( x.what(),
           "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir\\foo\\bar\"" ) == 0 );
         BOOST_CHECK( ok );
+        if ( !ok )
+        {
+          std::cout << "what returns \"" << x.what() << "\"" << std::endl;
+        }
       }
     }
     BOOST_CHECK( exception_thrown );
@@ -222,7 +230,7 @@ int test_main( int argc, char * argv[] )
                ? "Windows"
                : "POSIX";
 # endif
-  std::cout << "API is " << platform << '\n';
+  std::cout << "API is " << platform << std::endl;
 
   exception_tests();
 
