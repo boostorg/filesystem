@@ -1096,7 +1096,7 @@ namespace boost
       }
 
       BOOST_FILESYSTEM_DECL error_code
-      set_current_path_api( std::string & ph )
+      set_current_path_api( const std::string & ph )
       {
         return error_code( ::chdir( ph.c_str() )
           ? errno : 0, system_category );

@@ -115,7 +115,7 @@ namespace boost
       const internal_string_type & src )
     {
       locked = true;
-      std::size_t work_size( converter->max_length() * (src.size()+1) );
+      std::size_t work_size( converter()->max_length() * (src.size()+1) );
       boost::scoped_array<char> work( new char[ work_size ] );
       std::mbstate_t state;
       const internal_string_type::value_type * from_next;
@@ -125,7 +125,7 @@ namespace boost
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_external conversion error",
-          ph, system::posix::invalid_argument ) );
+          ph, system::error_code( system::posix::invalid_argument, system_category ) ) );
       *to_next = '\0';
       return external_string_type( work.get() );
     }
@@ -144,7 +144,7 @@ namespace boost
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_internal conversion error",
-          system::posix::invalid_argument ) );
+          system::error_code( system::posix::invalid_argument, system_category ) ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );
     }
