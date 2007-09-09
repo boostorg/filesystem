@@ -16,7 +16,7 @@ project
                  <runtime-link>static <link>static
        ]                  
        [ run path_test.cpp ../../system/build
-         :  :  : <define>BOOST_FILESYSTEM_DYN_LINK 
+         :  :  : <define>BOOST_FILESYSTEM_DYN_LINK <define>BOOST_SYSTEM_DYN_LINK
                : path_test_dll
        ]
        [ run operations_test.cpp
@@ -24,7 +24,7 @@ project
                   <runtime-link>static <link>static
        ]
        [ run operations_test.cpp ../../system/build
-         :  :  : <define>BOOST_FILESYSTEM_DYN_LINK
+         :  :  : <define>BOOST_FILESYSTEM_DYN_LINK <define>BOOST_SYSTEM_DYN_LINK
          : operations_test_dll
        ]
        [ run fstream_test.cpp

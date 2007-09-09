@@ -21,8 +21,8 @@ lib boost_filesystem
     $(SOURCES).cpp
     ../../system/build//boost_system
     :
-    <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1 # tell source we're building dll's
-    <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1 # tell source we're building static lib's
+    <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
+    <link>static:<define>BOOST_All_STATIC_LINK=1 # tell source we're building static lib's
     ;
 
 install dist-lib
