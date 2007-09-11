@@ -8,6 +8,7 @@ project
     : requirements
       <library>/boost/filesystem//boost_filesystem
       <define>BOOST_ALL_NO_LIB
+      <toolset>msvc:<asynch-exceptions>on
     ;
 
    test-suite "filesystem" :
