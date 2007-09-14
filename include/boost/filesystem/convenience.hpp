@@ -1,7 +1,7 @@
 //  boost/filesystem/convenience.hpp  ----------------------------------------//
 
-//  © Copyright Beman Dawes, 2002-2005
-//  © Copyright Vladimir Prus, 2002
+//  Copyright Beman Dawes, 2002-2005
+//  Copyright Vladimir Prus, 2002
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,7 @@
 #define BOOST_FILESYSTEM_CONVENIENCE_HPP
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/cerrno.hpp>
+#include <boost/system/error_code.hpp>
 #include <vector>
 #include <stack>
 
@@ -45,7 +45,8 @@ namespace boost
            if ( !ph.empty() && !is_directory(ph) )
                boost::throw_exception( basic_filesystem_error<Path>(
                  "boost::filesystem::create_directories", ph,
-                 boost::system::error_code(EEXIST, boost::system::errno_ecat) ) );
+                 boost::system::make_error_code(
+                   boost::system::posix::file_exists ) ) );
            return false;
          }
 
@@ -188,6 +189,7 @@ namespace boost
 
       bool equal( const basic_recursive_directory_iterator & rhs ) const
         { return m_imp == rhs.m_imp; }
+
     };
 
     typedef basic_recursive_directory_iterator<path> recursive_directory_iterator;
@@ -204,6 +206,8 @@ namespace boost
       : m_imp( new detail::recur_dir_itr_imp<Path> )
     {
       m_imp->m_stack.push( basic_directory_iterator<Path>( dir_path ) );
+      if ( m_imp->m_stack.top () == basic_directory_iterator<Path>() )
+        { m_imp.reset (); }
     }
 
     template<class Path>
@@ -212,8 +216,10 @@ namespace boost
         system::error_code & ec )
       : m_imp( new detail::recur_dir_itr_imp<Path> )
     {
-      m_imp->m_stack.push( basic_directory_iterator<Path>( dir_path, std::nothrow ) );
       m_imp->m_no_throw = true;
+      m_imp->m_stack.push( basic_directory_iterator<Path>( dir_path, ec ) );
+      if ( m_imp->m_stack.top () == basic_directory_iterator<Path>() )
+        { m_imp.reset (); }
     }
 
     //  increment
@@ -224,15 +230,15 @@ namespace boost
       
       static const basic_directory_iterator<Path> end_itr;
 
-      if ( m_imp->m_no_push ) m_imp->m_no_push = false;
+      if ( m_imp->m_no_push )
+        { m_imp->m_no_push = false; }
       else if ( is_directory( m_imp->m_stack.top()->status() ) )
       {
         system::error_code ec;
         m_imp->m_stack.push(
           m_imp->m_no_throw
             ? basic_directory_iterator<Path>( *m_imp->m_stack.top(), ec )
-            : basic_directory_iterator<Path>( *m_imp->m_stack.top() )
-          );
+            : basic_directory_iterator<Path>( *m_imp->m_stack.top() ) );
         if ( m_imp->m_stack.top() != end_itr )
         {
           ++m_imp->m_level;
@@ -258,8 +264,17 @@ namespace boost
       BOOST_ASSERT( m_imp.get() && "pop on end iterator" );
       BOOST_ASSERT( m_imp->m_level > 0 && "pop with level < 1" );
 
-      m_imp->m_stack.pop();
-      --m_imp->m_level;
+      static const basic_directory_iterator<Path> end_itr;
+
+      do
+      {
+        m_imp->m_stack.pop();
+        --m_imp->m_level;
+      }
+      while ( !m_imp->m_stack.empty()
+        && ++m_imp->m_stack.top() == end_itr );
+
+      if ( m_imp->m_stack.empty() ) m_imp.reset(); // done, so make end iterator
     }
 
   } // namespace filesystem

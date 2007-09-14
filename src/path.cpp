@@ -22,6 +22,7 @@
 
 #include <locale>
 #include <boost/cerrno.hpp>
+#include <boost/system/error_code.hpp>
 
 namespace
 {
@@ -36,10 +37,16 @@ namespace
     return lc;
   }
 
-  const std::codecvt<wchar_t, char, std::mbstate_t> *
-    converter(
+  const std::codecvt<wchar_t, char, std::mbstate_t> *&
+  converter()
+  {
+   static const std::codecvt<wchar_t, char, std::mbstate_t> *
+     cvtr(
        &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
         ( loc() ) );
+   return cvtr;
+  }
+
   bool locked(false);
 } // unnamed namespace
 
@@ -52,7 +59,7 @@ namespace boost
       if ( locked ) return false;
       locked = true;
       loc() = new_loc;
-      converter = &std::use_facet
+      converter() = &std::use_facet
         <std::codecvt<wchar_t, char, std::mbstate_t> >( loc() );
       return true;
     }
@@ -62,9 +69,42 @@ namespace boost
       if ( locked ) boost::throw_exception(
         wfilesystem_error(
           "boost::filesystem::wpath_traits::imbue() after lockdown",
-          system::error_code(EOTHER, system::errno_ecat) ) );
+          system::make_error_code( system::posix::not_supported ) ) );
       imbue( new_loc, std::nothrow );
     }
+
+    //namespace detail
+    //{
+    //  BOOST_FILESYSTEM_DECL
+    //  const char * what( const char * sys_err_what,
+    //    const path & path1, const path & path2, std::string & target)
+    //  {
+    //    try
+    //    {
+    //      if ( target.empty() )
+    //      {
+    //        target = sys_err_what;
+    //        if ( !path1.empty() )
+    //        {
+    //          target += ": \"";
+    //          target += path1.file_string();
+    //          target += "\"";
+    //        }
+    //        if ( !path2.empty() )
+    //        {
+    //          target += ", \"";
+    //          target += path2.file_string();
+    //          target += "\"";
+    //        }
+    //      }
+    //      return target.c_str();
+    //    }
+    //    catch (...)
+    //    {
+    //      return sys_err_what;
+    //    }
+    //  }
+    //}
     
 # ifdef BOOST_POSIX_API
 
@@ -76,17 +116,17 @@ namespace boost
       const internal_string_type & src )
     {
       locked = true;
-      std::size_t work_size( converter->max_length() * (src.size()+1) );
+      std::size_t work_size( converter()->max_length() * (src.size()+1) );
       boost::scoped_array<char> work( new char[ work_size ] );
       std::mbstate_t state;
       const internal_string_type::value_type * from_next;
       external_string_type::value_type * to_next;
-      if ( converter->out( 
+      if ( converter()->out( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_external conversion error",
-          ph, system::error_code( EINVAL, system::errno_ecat ) ) );
+          ph, system::error_code( system::posix::invalid_argument, system::system_category ) ) );
       *to_next = '\0';
       return external_string_type( work.get() );
     }
@@ -100,12 +140,12 @@ namespace boost
       std::mbstate_t state;
       const external_string_type::value_type * from_next;
       internal_string_type::value_type * to_next;
-      if ( converter->in( 
+      if ( converter()->in( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_internal conversion error",
-          system::error_code( EINVAL, system::errno_ecat ) ) );
+          system::error_code( system::posix::invalid_argument, system::system_category ) ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );
     }
