@@ -38,6 +38,8 @@ namespace fs = boost::filesystem;
 
 namespace
 {
+  bool cleanup = true;
+
   template< class Path >
   void create_file( const Path & ph, const std::string & contents )
   {
@@ -90,6 +92,11 @@ namespace
       ++count;
     }
     BOOST_CHECK( count == 1 );
+    if ( cleanup )
+    {
+      fs::remove( dir / file );
+      fs::remove( dir );
+    }
   }
 
   // test boost::detail::utf8_codecvt_facet - even though it is not used by
@@ -116,6 +123,8 @@ namespace
 
 int test_main( int argc, char * argv[] )
 {
+
+  if ( argc > 1 ) cleanup = false;
 
   // So that tests are run with known encoding, use Boost UTF-8 codecvt
   std::locale global_loc = std::locale();
