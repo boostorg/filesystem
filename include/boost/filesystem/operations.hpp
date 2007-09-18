@@ -225,7 +225,7 @@ namespace boost
 #   endif
 
       template<class Path>
-      unsigned long remove_all_aux( const Path & ph );
+      unsigned long remove_all_aux( Path & ph );
 
     } // namespace detail
 
@@ -739,7 +739,7 @@ namespace boost
     namespace detail
     {
       template<class Path>
-      unsigned long remove_all_aux( const Path & ph )
+      unsigned long remove_all_aux( Path & ph )
       {
         static const boost::filesystem::basic_directory_iterator<Path> end_itr;
         unsigned long count = 1;
