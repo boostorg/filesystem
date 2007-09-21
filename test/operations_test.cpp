@@ -21,7 +21,7 @@ namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
 #include <boost/test/minimal.hpp>
-#include <boost/concept_check.hpp>
+//#include <boost/concept_check.hpp>
 #include <boost/bind.hpp>
 
 using boost::bind;
@@ -396,7 +396,7 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::is_directory( d1 ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
 
-  boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
+//  boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
 
   bool dir_itr_exception(false);
   try { fs::directory_iterator it( "" ); }
