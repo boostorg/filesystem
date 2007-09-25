@@ -121,7 +121,7 @@ namespace
 
 //  test_main  ---------------------------------------------------------------//
 
-int test_main( int argc, char * argv[] )
+int test_main( int argc, char * /*argv*/[] )
 {
 
   if ( argc > 1 ) cleanup = false;

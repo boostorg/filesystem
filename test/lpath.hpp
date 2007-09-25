@@ -34,7 +34,7 @@ namespace std
     static size_t length(const char_type* s)
     { const char_type* b=s; for(;*s!=0L;++s){} return s-b; } 
  
-    static const char_type* find(const char_type* s, size_t n, const char_type& a)
+    static const char_type* find(const char_type* /*s*/, size_t /*n*/, const char_type& /*a*/)
     {   return 0; }
 
     // copy semantics will do for wide_test
