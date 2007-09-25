@@ -650,8 +650,8 @@ namespace boost
 #endif
       
       BOOST_FILESYSTEM_DECL error_code
-      create_symlink_api( const std::wstring & to_ph,
-        const std::wstring & from_ph )
+      create_symlink_api( const std::wstring & /*to_ph*/,
+        const std::wstring & /*from_ph*/ )
         { return error_code( ERROR_NOT_SUPPORTED, system_category ); }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -830,8 +830,8 @@ namespace boost
 #endif
 
       BOOST_FILESYSTEM_DECL error_code
-      create_symlink_api( const std::string & to_ph,
-        const std::string & from_ph )
+      create_symlink_api( const std::string & /*to_ph*/,
+        const std::string & /*from_ph*/ )
         { return error_code( ERROR_NOT_SUPPORTED, system_category ); }
 
       BOOST_FILESYSTEM_DECL error_code

@@ -607,7 +607,7 @@ namespace boost
 
       template<class Path>
       const char * what( const char * sys_err_what,
-        const Path & path1, const Path & path2, std::string & target )
+        const Path & /*path1*/, const Path & /*path2*/, std::string & /*target*/ )
       {
         return sys_err_what;
       }
