@@ -45,8 +45,7 @@ namespace boost
            if ( !ph.empty() && !is_directory(ph) )
                boost::throw_exception( basic_filesystem_error<Path>(
                  "boost::filesystem::create_directories", ph,
-                 boost::system::make_error_code(
-                   boost::system::posix::file_exists ) ) );
+                 make_error_code( boost::system::posix::file_exists ) ) );
            return false;
          }
 
