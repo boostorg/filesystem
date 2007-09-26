@@ -192,7 +192,8 @@ namespace
         || (ec.value() == ERROR_PATH_NOT_FOUND)
         || (ec.value() == ERROR_INVALID_NAME) // "tools/jam/src/:sys:stat.h", "//foo"
         || (ec.value() == ERROR_INVALID_PARAMETER) // ":sys:stat.h"
-        || (ec.value() == ERROR_BAD_NETPATH))
+        || (ec.value() == ERROR_BAD_PATHNAME) // "//nosuch" on Win64
+        || (ec.value() == ERROR_BAD_NETPATH)) // "//nosuch" on Win32
       {
         ec = error_code(); // these are not considered errors
         return fs::file_status( fs::file_not_found );

@@ -69,7 +69,7 @@ namespace boost
       if ( locked ) boost::throw_exception(
         wfilesystem_error(
           "boost::filesystem::wpath_traits::imbue() after lockdown",
-          system::make_error_code( system::posix::not_supported ) ) );
+          make_error_code( system::posix::not_supported ) ) );
       imbue( new_loc, std::nothrow );
     }
 
