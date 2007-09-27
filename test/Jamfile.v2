@@ -14,7 +14,7 @@ project
    test-suite "filesystem" :
        [ run path_test.cpp
          :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK 
-                 <runtime-link>static <link>static
+                 <link>static
        ]                  
        [ run path_test.cpp ../../system/build
          :  :  : <define>BOOST_FILESYSTEM_DYN_LINK <define>BOOST_SYSTEM_DYN_LINK
@@ -22,27 +22,27 @@ project
        ]
        [ run operations_test.cpp
          :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK 
-                  <runtime-link>static <link>static
+                 <link>static
        ]
        [ run operations_test.cpp ../../system/build
          :  :  : <define>BOOST_FILESYSTEM_DYN_LINK <define>BOOST_SYSTEM_DYN_LINK
-         : operations_test_dll
+               : operations_test_dll
        ]
        [ run fstream_test.cpp
          :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK 
-                  <runtime-link>static <link>static
+                 <link>static
        ]
        [ run convenience_test.cpp
          :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK
-                  <runtime-link>static <link>static                   
+                 <link>static                   
        ]
        [ run large_file_support_test.cpp
          :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK
-                  <runtime-link>static <link>static
+                 <link>static
        ]
        [ run wide_test.cpp
           :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK
-                  <runtime-link>static <link>static
+                  <link>static
        ]
 
        [ compile ../example/mbcopy.cpp ]
