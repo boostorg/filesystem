@@ -23,7 +23,7 @@
 // http://www.boost.org/more/separate_compilation.html
 
 #include <boost/config.hpp>
-#include <boost/detail/workaround.hpp>
+#include <boost/detail/workaround.hpp> 
 
 //  determine platform  ------------------------------------------------------//
 
@@ -60,7 +60,7 @@
 
 //  narrow support only for badly broken compilers or libraries  -------------//
 
-# if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE) || BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x591))
+# if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE) || BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x592))
 #   define BOOST_FILESYSTEM_NARROW_ONLY
 # endif
 
