@@ -607,7 +607,7 @@ namespace boost
 
       template<class Path>
       const char * what( const char * sys_err_what,
-        const Path & path1, const Path & path2, std::string & target )
+        const Path & /*path1*/, const Path & /*path2*/, std::string & /*target*/ )
       {
         return sys_err_what;
       }
@@ -649,8 +649,8 @@ namespace boost
       const char * what() const throw()
       { 
         if ( !m_imp_ptr.get() )
-          return system_error::what();
-        return detail::what( system_error::what(), m_imp_ptr->m_path1,
+          return system::system_error::what();
+        return detail::what( system::system_error::what(), m_imp_ptr->m_path1,
           m_imp_ptr->m_path2, m_imp_ptr->m_what );  
       }
 
@@ -1386,7 +1386,7 @@ namespace boost
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, system::error_code ec )
-      : system_error(ec, what)
+      : system::system_error(ec, what)
     {
       try
       {
@@ -1399,7 +1399,7 @@ namespace boost
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, const path_type & path1,
       system::error_code ec )
-      : system_error(ec, what)
+      : system::system_error(ec, what)
     {
       try
       {
@@ -1413,7 +1413,7 @@ namespace boost
     basic_filesystem_error<Path>::basic_filesystem_error(
       const std::string & what, const path_type & path1,
       const path_type & path2, system::error_code ec )
-      : system_error(ec, what)
+      : system::system_error(ec, what)
     {
       try
       {

@@ -21,10 +21,8 @@ namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
 #include <boost/test/minimal.hpp>
-#include <boost/concept_check.hpp>
-#include <boost/bind.hpp>
+//#include <boost/concept_check.hpp>
 
-using boost::bind;
 using boost::system::error_code;
 using boost::system::system_category;
 using boost::system::system_error;
@@ -55,7 +53,7 @@ using boost::system::system_error;
     using ::difftime; using ::time; using ::tm; using ::mktime; using ::system; }
 # endif
 
-#define CHECK_EXCEPTION(b,e) throws_fs_error(b,e,__LINE__)
+#define CHECK_EXCEPTION(Functor,Expect) throws_fs_error(Functor,Expect,__LINE__)
 
 namespace
 {
@@ -209,7 +207,47 @@ namespace
     BOOST_CHECK( exception_thrown );
   }
 
+  void bad_file_size()
+  {
+    fs::file_size( " No way, Jose" );
+  }
+  
+  void bad_directory_size()
+  {
+    fs::file_size( fs::current_path() );
+  }
+  
+  fs::path bad_create_directory_path;
+  void bad_create_directory()
+  {
+    fs::create_directory( bad_create_directory_path );
+  }
+  
+  void bad_equivalent()
+  {
+    fs::equivalent( "no-such-path", "another-not-present-path" );
+  }
 
+  fs::path bad_remove_dir;
+  void bad_remove()
+  {
+    fs::remove( bad_remove_dir );
+  }
+
+  class renamer
+  {
+  public:
+    renamer( const fs::path & p1, const fs::path & p2 )
+      : from(p1), to(p2) {}
+    void operator()()
+    {
+      fs::rename( from, to );
+    }
+  private:
+    fs::path from;
+    fs::path to;
+  };
+  
 } // unnamed namespace
 
 //  test_main  ---------------------------------------------------------------//
@@ -324,7 +362,7 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::exists( dir ) );
 
   // the bound functions should throw, so CHECK_EXCEPTION() should return true
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), ng ), ENOENT ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bad_file_size, ENOENT ) );
 
   // test path::exception members
   try { fs::file_size( ng ); } // will throw
@@ -378,10 +416,9 @@ int test_main( int argc, char * argv[] )
 # endif
 
   if ( platform == "Windows" )
-    BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 
-      ENOENT ) );
+    BOOST_CHECK( CHECK_EXCEPTION( bad_directory_size, ENOENT ) );
   else
-    BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::file_size), dir ), 0 ) );
+    BOOST_CHECK( CHECK_EXCEPTION( bad_directory_size, 0 ) );
   BOOST_CHECK( !fs::create_directory( dir ) );
 
   BOOST_CHECK( !fs::is_symlink( dir ) );
@@ -396,7 +433,7 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::is_directory( d1 ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
 
-  boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
+//  boost::function_requires< boost::InputIteratorConcept< fs::directory_iterator > >();
 
   bool dir_itr_exception(false);
   try { fs::directory_iterator it( "" ); }
@@ -521,8 +558,8 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::is_regular( file_ph ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( file_ph ) );
   BOOST_CHECK( fs::file_size( file_ph ) == 0 );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::create_directory),
-    file_ph ), EEXIST ) );
+  bad_create_directory_path = file_ph;
+  BOOST_CHECK( CHECK_EXCEPTION( bad_create_directory, EEXIST ) );
   stat = fs::status( file_ph );
   BOOST_CHECK( fs::status_known( stat ) );
   BOOST_CHECK( fs::exists( stat ) );
@@ -542,9 +579,7 @@ int test_main( int argc, char * argv[] )
   verify_file( file_ph, "foobar1" );
 
   // equivalence tests
-  fs::path ng2("does_not_exist2");
-  BOOST_CHECK( CHECK_EXCEPTION(
-    bind( BOOST_BND(fs::equivalent), ng, ng2 ), ENOENT ) );
+  BOOST_CHECK( CHECK_EXCEPTION( bad_equivalent, ENOENT ) );
   BOOST_CHECK( fs::equivalent( file_ph, dir / "f1" ) );
   BOOST_CHECK( fs::equivalent( dir, d1 / ".." ) );
   BOOST_CHECK( !fs::equivalent( file_ph, dir ) );
@@ -640,29 +675,30 @@ int test_main( int argc, char * argv[] )
   // [case 1] make sure can't rename() a non-existent file
   BOOST_CHECK( !fs::exists( d1 / "f99" ) );
   BOOST_CHECK( !fs::exists( d1 / "f98" ) );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), d1 / "f99", d1 / "f98" ),
-    ENOENT ) );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), fs::path(""), d1 / "f98" ),
-    ENOENT ) );
+  renamer n1a( d1 / "f99", d1 / "f98" );
+  BOOST_CHECK( CHECK_EXCEPTION( n1a, ENOENT ) );
+  renamer n1b( fs::path(""), d1 / "f98" );
+  BOOST_CHECK( CHECK_EXCEPTION( n1b, ENOENT ) );
 
   // [case 2] rename() target.empty()
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), file_ph, "" ),
-    ENOENT ) );
+  renamer n2( file_ph, "" );
+  BOOST_CHECK( CHECK_EXCEPTION( n2, ENOENT ) );
 
   // [case 3] make sure can't rename() to an existent file or directory
   BOOST_CHECK( fs::exists( dir / "f1" ) );
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename),
-    dir / "f1", d1 / "f2" ), EEXIST ) );
+  renamer n3a( dir / "f1", d1 / "f2" );
+  BOOST_CHECK( CHECK_EXCEPTION( n3a, EEXIST ) );
   // several POSIX implementations (cygwin, openBSD) report ENOENT instead of EEXIST,
   // so we don't verify error type on the above test.
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), dir, d1 ), 0 ) );
+  renamer n3b( dir, d1 );
+  BOOST_CHECK( CHECK_EXCEPTION( n3b, 0 ) );
 
   // [case 4A] can't rename() file to a nonexistent parent directory
   BOOST_CHECK( !fs::is_directory( dir / "f1" ) );
   BOOST_CHECK( !fs::exists( dir / "d3/f3" ) );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), dir / "f1", dir / "d3/f3" ),
-    ENOENT ) );
+  renamer n4a( dir / "f1", dir / "d3/f3" );
+  BOOST_CHECK( CHECK_EXCEPTION( n4a, ENOENT ) );
 
   // [case 4B] rename() file in same directory
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
@@ -688,8 +724,8 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( !fs::exists( dir / "d3/d5" ) );
   BOOST_CHECK( !fs::exists( dir / "d3" ) );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::rename), d1, dir / "d3/d5" ),
-    ENOENT ) );
+  renamer n5a( d1, dir / "d3/d5" );
+  BOOST_CHECK( CHECK_EXCEPTION( n5a, ENOENT ) );
 
   // [case 5B] rename() on directory
   fs::path d3( dir / "d3" );
@@ -738,7 +774,8 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( d1 ) );
   BOOST_CHECK( fs::is_directory( d1 ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
-  BOOST_CHECK( CHECK_EXCEPTION( bind( BOOST_BND(fs::remove), dir ), ENOTEMPTY ) );
+  bad_remove_dir = dir;
+  BOOST_CHECK( CHECK_EXCEPTION( bad_remove, ENOTEMPTY ) );
   BOOST_CHECK( fs::remove( d1 ) );
   BOOST_CHECK( !fs::exists( d1 ) );
 

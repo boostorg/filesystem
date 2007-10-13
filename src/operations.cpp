@@ -192,7 +192,8 @@ namespace
         || (ec.value() == ERROR_PATH_NOT_FOUND)
         || (ec.value() == ERROR_INVALID_NAME) // "tools/jam/src/:sys:stat.h", "//foo"
         || (ec.value() == ERROR_INVALID_PARAMETER) // ":sys:stat.h"
-        || (ec.value() == ERROR_BAD_NETPATH))
+        || (ec.value() == ERROR_BAD_PATHNAME) // "//nosuch" on Win64
+        || (ec.value() == ERROR_BAD_NETPATH)) // "//nosuch" on Win32
       {
         ec = error_code(); // these are not considered errors
         return fs::file_status( fs::file_not_found );
@@ -650,8 +651,8 @@ namespace boost
 #endif
       
       BOOST_FILESYSTEM_DECL error_code
-      create_symlink_api( const std::wstring & to_ph,
-        const std::wstring & from_ph )
+      create_symlink_api( const std::wstring & /*to_ph*/,
+        const std::wstring & /*from_ph*/ )
         { return error_code( ERROR_NOT_SUPPORTED, system_category ); }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -830,8 +831,8 @@ namespace boost
 #endif
 
       BOOST_FILESYSTEM_DECL error_code
-      create_symlink_api( const std::string & to_ph,
-        const std::string & from_ph )
+      create_symlink_api( const std::string & /*to_ph*/,
+        const std::string & /*from_ph*/ )
         { return error_code( ERROR_NOT_SUPPORTED, system_category ); }
 
       BOOST_FILESYSTEM_DECL error_code
