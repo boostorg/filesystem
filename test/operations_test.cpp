@@ -53,6 +53,10 @@ using boost::system::system_error;
     using ::difftime; using ::time; using ::tm; using ::mktime; using ::system; }
 # endif
 
+#ifdef BOOST_WINDOWS_API
+# include <windows.h>
+#endif
+
 #define CHECK_EXCEPTION(Functor,Expect) throws_fs_error(Functor,Expect,__LINE__)
 
 namespace
@@ -61,6 +65,8 @@ namespace
   std::string platform( BOOST_PLATFORM );
   bool report_throws;
   fs::directory_iterator end_itr;
+
+  unsigned short language_id;  // 0 except for Windows
 
   const char * temp_dir_name = "temp_fs_test_dir";
 
@@ -141,7 +147,7 @@ namespace
     {
       exception_thrown = true;
       if ( report_throws ) std::cout << x.what() << std::endl;
-      if ( platform == "Windows" )
+      if ( platform == "Windows" && language_id == 0x0409 ) // English (United States)
         BOOST_CHECK( std::strcmp( x.what(),
           "boost::filesystem::create_directory" ) == 0 );
     }
@@ -156,7 +162,7 @@ namespace
     {
       exception_thrown = true;
       if ( report_throws ) std::cout << x.what() << std::endl;
-      if ( platform == "Windows" )
+      if ( platform == "Windows" && language_id == 0x0409 ) // English (United States)
         BOOST_CHECK( std::strcmp( x.what(),
           "boost::filesystem::create_directory: The system cannot find the path specified" ) == 0 );
     }
@@ -171,7 +177,7 @@ namespace
     {
       exception_thrown = true;
       if ( report_throws ) std::cout << x.what() << std::endl;
-      if ( platform == "Windows" )
+      if ( platform == "Windows" && language_id == 0x0409 ) // English (United States)
       {
         bool ok ( std::strcmp( x.what(),
           "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir\\foo\\bar\"" ) == 0 );
@@ -193,7 +199,7 @@ namespace
     {
       exception_thrown = true;
       if ( report_throws ) std::cout << x.what() << std::endl;
-      if ( platform == "Windows" )
+      if ( platform == "Windows" && language_id == 0x0409 ) // English (United States)
       {
         bool ok ( std::strcmp( x.what(),
           "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir\\foo\\bar\"" ) == 0 );
@@ -263,6 +269,7 @@ int test_main( int argc, char * argv[] )
     platform = "POSIX";
 # elif defined( BOOST_WINDOWS_API )
     platform = "Windows";
+    language_id = ::GetUserDefaultUILanguage();
 # else
     platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
                ? "Windows"
