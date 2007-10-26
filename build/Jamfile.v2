@@ -30,12 +30,4 @@ lib boost_filesystem
     <library>../../system/build//boost_system
     ;
 
-install dist-lib
-    :
-    boost_filesystem
-    :
-    <install-type>LIB
-    <location>../../../dist/lib
-    ;
-
-explicit dist-lib ;
+boost-install boost_filesystem ;
