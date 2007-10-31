@@ -195,8 +195,15 @@ namespace
         || (ec.value() == ERROR_BAD_PATHNAME) // "//nosuch" on Win64
         || (ec.value() == ERROR_BAD_NETPATH)) // "//nosuch" on Win32
       {
-        ec = error_code(); // these are not considered errors
+        ec = error_code(); // these are not considered errors;
+                           // the status is considered not found
         return fs::file_status( fs::file_not_found );
+      }
+      else if ((ec.value() == ERROR_SHARING_VIOLATION))
+      {
+        ec = error_code(); // these are not considered errors;
+                           // the file exists but the type is not known 
+        return fs::file_status( fs::type_unknown );
       }
       return fs::file_status( fs::status_unknown );
     }
