@@ -16,6 +16,11 @@
 
 #define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 
+// enable the XPG-compliant version of readdir_r() on AIX
+#if defined(_AIX)
+# define _LINUX_SOURCE_COMPAT
+#endif
+
 #if !(defined(__HP_aCC) && defined(_ILP32) && \
       !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
