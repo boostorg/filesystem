@@ -269,7 +269,11 @@ int test_main( int argc, char * argv[] )
     platform = "POSIX";
 # elif defined( BOOST_WINDOWS_API )
     platform = "Windows";
-    language_id = ::GetUserDefaultUILanguage();
+#   ifndef __MINGW32__
+      language_id = ::GetUserDefaultUILanguage();
+#   else
+      language_id = 0x0409; // Assume US English
+#   endif
 # else
     platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
                ? "Windows"
