@@ -160,6 +160,8 @@ namespace boost
         last_write_time_api( const std::string & ph, std::time_t new_value );
       BOOST_FILESYSTEM_DECL system::error_code
         get_current_path_api( std::string & ph );
+      BOOST_FILESYSTEM_DECL system::error_code
+        set_current_path_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL query_pair
         create_directory_api( const std::string & ph );
       BOOST_FILESYSTEM_DECL system::error_code
@@ -200,6 +202,8 @@ namespace boost
         last_write_time_api( const std::wstring & ph, std::time_t new_value );
       BOOST_FILESYSTEM_DECL system::error_code 
         get_current_path_api( std::wstring & ph );
+      BOOST_FILESYSTEM_DECL system::error_code 
+        set_current_path_api( const std::wstring & ph );
       BOOST_FILESYSTEM_DECL query_pair
         create_directory_api( const std::wstring & ph );
 # ifdef BOOST_FS_HARD_LINK
@@ -503,6 +507,15 @@ namespace boost
           boost::throw_exception( basic_filesystem_error<Path>(
             "boost::filesystem::current_path", ec ) );
       return Path( Path::traits_type::to_internal( ph ) );
+    }
+
+    template< class Path >
+    void current_path( const Path & ph )
+    {
+      system::error_code ec( detail::set_current_path_api( ph.string() ) );
+      if ( ec )
+          boost::throw_exception( basic_filesystem_error<Path>(
+            "boost::filesystem::current_path", ph, ec ) );
     }
 
     template< class Path >
@@ -991,7 +1004,7 @@ namespace boost
        m_symlink_status = symlink_st;
      }
 
-      const Path &   path() const { return m_path; }
+      const Path &  path() const { return m_path; }
       file_status   status() const;
       file_status   status( system::error_code & ec ) const;
       file_status   symlink_status() const;
