@@ -411,6 +411,13 @@ int test_main( int argc, char * argv[] )
   fs::current_path( original_dir );
   BOOST_CHECK( fs::current_path<fs::path>() == original_dir );
   BOOST_CHECK( fs::current_path<fs::path>() != dir );
+  // make sure the overloads work
+  fs::current_path( dir.string().c_str() );
+  BOOST_CHECK( fs::current_path<fs::path>() == dir );
+  BOOST_CHECK( fs::current_path<fs::path>() != original_dir );
+  fs::current_path( original_dir.string() );
+  BOOST_CHECK( fs::current_path<fs::path>() == original_dir );
+  BOOST_CHECK( fs::current_path<fs::path>() != dir );
 
   // make some reasonable assuptions for testing purposes
   fs::space_info spi( fs::space( dir ) );
