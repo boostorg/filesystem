@@ -510,10 +510,10 @@ namespace boost
       return Path( Path::traits_type::to_internal( ph ) );
     }
 
-    template< class Path >
-    void current_path( const Path & ph )
+    BOOST_FS_FUNC(void) current_path( const Path & ph )
     {
-      system::error_code ec( detail::set_current_path_api( ph.string() ) );
+      system::error_code ec( detail::set_current_path_api(
+        ph.external_directory_string() ) );
       if ( ec )
           boost::throw_exception( basic_filesystem_error<Path>(
             "boost::filesystem::current_path", ph, ec ) );
@@ -735,7 +735,12 @@ namespace boost
     inline void last_write_time( const wpath & ph, const std::time_t new_time )
       { last_write_time<wpath>( ph, new_time ); }
 
-# endif // BOOST_FILESYSTEM_NARROW_ONLY
+    inline void current_path( const path & ph )
+      { current_path<path>( ph ); }
+    inline void current_path( const wpath & ph )
+      { current_path<wpath>( ph ); }
+
+# endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
     namespace detail
     {
