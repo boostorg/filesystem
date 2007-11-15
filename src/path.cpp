@@ -1,9 +1,9 @@
 //  path.cpp  ----------------------------------------------------------------//
 
 //  Copyright 2005 Beman Dawes
-//  Use, modification, and distribution is subject to the Boost Software
-//  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy
-//  at http://www.boost.org/LICENSE_1_0.txt)
+
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
+//  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
@@ -21,7 +21,8 @@
 #include <boost/scoped_array.hpp>
 
 #include <locale>
-#include <cerrno>
+#include <boost/cerrno.hpp>
+#include <boost/system/error_code.hpp>
 
 namespace
 {
@@ -29,7 +30,6 @@ namespace
   // so a static at function scope is used to ensure that exceptions can be
   // caught. (A previous version was at namespace scope, so initialization
   // occurred before main(), preventing exceptions from being caught.)
-
   std::locale & loc()
   {
     // ISO C calls this "the locale-specific native environment":
@@ -66,10 +66,45 @@ namespace boost
 
     void wpath_traits::imbue( const std::locale & new_loc )
     {
-      if ( locked ) boost::throw_exception( filesystem_wpath_error(
-        "boost::filesystem::wpath_traits::imbue() after lockdown", 0 ) );
+      if ( locked ) boost::throw_exception(
+        wfilesystem_error(
+          "boost::filesystem::wpath_traits::imbue() after lockdown",
+          make_error_code( system::posix::not_supported ) ) );
       imbue( new_loc, std::nothrow );
     }
+
+    //namespace detail
+    //{
+    //  BOOST_FILESYSTEM_DECL
+    //  const char * what( const char * sys_err_what,
+    //    const path & path1, const path & path2, std::string & target)
+    //  {
+    //    try
+    //    {
+    //      if ( target.empty() )
+    //      {
+    //        target = sys_err_what;
+    //        if ( !path1.empty() )
+    //        {
+    //          target += ": \"";
+    //          target += path1.file_string();
+    //          target += "\"";
+    //        }
+    //        if ( !path2.empty() )
+    //        {
+    //          target += ", \"";
+    //          target += path2.file_string();
+    //          target += "\"";
+    //        }
+    //      }
+    //      return target.c_str();
+    //    }
+    //    catch (...)
+    //    {
+    //      return sys_err_what;
+    //    }
+    //  }
+    //}
     
 # ifdef BOOST_POSIX_API
 
@@ -89,9 +124,9 @@ namespace boost
       if ( converter()->out( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
-        boost::throw_exception( boost::filesystem::filesystem_wpath_error(
+        boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_external conversion error",
-          ph, EINVAL ) );
+          ph, system::error_code( system::posix::invalid_argument, system::system_category ) ) );
       *to_next = '\0';
       return external_string_type( work.get() );
     }
@@ -108,8 +143,9 @@ namespace boost
       if ( converter()->in( 
         state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
-        boost::throw_exception( boost::filesystem::filesystem_wpath_error(
-          "boost::filesystem::wpath::to_internal conversion error", EINVAL ) );
+        boost::throw_exception( boost::filesystem::wfilesystem_error(
+          "boost::filesystem::wpath::to_internal conversion error",
+          system::error_code( system::posix::invalid_argument, system::system_category ) ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );
     }
