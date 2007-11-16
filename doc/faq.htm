@@ -1,12 +1,42 @@
-<title>Boost Filesystem FAQ</title>
-<body bgcolor="#FFFFFF">
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Filesystem FAQ</title>
+<link rel="stylesheet" type="text/css" href="../../../doc/html/minimal.css">
+</head>
+
+<body>
+
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="710">
+  <tr>
+    <td width="277">
+<a href="../../../index.htm">
+<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="277" height="86" border="0"></a></td>
+    <td width="410" align="middle">
+    <font size="7">Filesystem Library</font>
+    </td>
+  </tr>
+</table>
+
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
+  <tr>
+    <td><a href="../../../index.htm">Boost Home</a>&nbsp;&nbsp;&nbsp;
+    <a href="index.htm">Library Home</a>&nbsp; &nbsp;
+    <a href="index.htm#tutorial">Tutorial</a>&nbsp; &nbsp; <a href="reference.html">
+    Reference</a>&nbsp;&nbsp; <a href="faq.htm">FAQ</a></td>
+  </tr>
+</table>
 
 <h1>
-<img border="0" src="../../../boost.png" align="center" width="277" height="86">Filesystem 
-FAQ</h1>
+Frequently Asked Questions</h1>
 <p><b>Why base the generic-path string format on POSIX?</b></p>
-<p><a href="design.htm#POSIX-01">[POSIX-01]</a> is an ISO Standard. It is the basis for the most familiar path-string formats, including the 
-URL portion of URI's and the native Windows format. It is ubiquitous and 
+<p><a href="design.htm#POSIX-01">[POSIX-01]</a> is an ISO Standard. It is the basis for the most familiar path-string formats, 
+not just for POSIX systems but also for the native Windows format and the 
+URL portion of URI's. It is ubiquitous and 
 familiar.&nbsp; On many systems, it is very easy to implement because it is 
 either the native operating system format (Unix and Windows) or via a 
 operating system supplied 
@@ -93,10 +123,6 @@ property maps are viewed as the best hope for access and modification, but it is
 better design to provide such functionality in a separate library. (Historical 
 note: even the apparently simple attribute &quot;read-only&quot; turned out to be so 
 system depend as to be disqualified as a &quot;guaranteed presence&quot; operation.)</p>
-<p><b>Why isn't there a set_current_directory function?</b></p>
-<p>Global variables are considered harmful [<a href="design.htm#Wulf-Shaw-73">wulf-shaw-73</a>]. 
-While we can't prevent people from shooting themselves in the foot, we aren't 
-about to hand them a loaded gun pointed right at their big toe.</p>
 <p><b>Why aren't <a name="wide-character_names">wide-character names</a> supported? Why not std::wstring or even 
 a templated type?</b></p>
 <p>They <u>are</u> supported, starting with version 1.33. See
@@ -123,9 +149,8 @@ canonical form. See <a href="design.htm#symbolic-link-use-case">use case</a>
 from Walter Landry.</p>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 February, 2006<!--webbot bot="Timestamp" endspan i-checksum="40411" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 November, 2007<!--webbot bot="Timestamp" endspan i-checksum="39371" --></p>
 <p>© Copyright Beman Dawes, 2002</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
-License, Version 1.0. (See accompanying file <a href="../../../LICENSE_1_0.txt">
-LICENSE_1_0.txt</a> or copy at <a href="http://www.boost.org/LICENSE_1_0.txt">
-www.boost.org/LICENSE_1_0.txt</a>)</p>
+License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
+www.boost.org/LICENSE_1_0.txt</a></p>

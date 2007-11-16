@@ -5,52 +5,57 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Filesystem Library Proposal
+<title>Filesystem Reference
 </title>
+<link rel="stylesheet" type="text/css" href="../../../doc/html/minimal.css">
 </head>
 
-<body bgcolor="#FFFFFF">
+<body>
 
-<p>Doc. no.&nbsp;&nbsp; WG21/N1975=06-0045<br>
-Date:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2006-04-04<!--webbot bot="Timestamp" endspan i-checksum="12266" --><br>
-Project:&nbsp;&nbsp;&nbsp;&nbsp; Programming Language C++<br>
-Reply to:&nbsp;&nbsp; Beman Dawes &lt;<a href="mailto:bdawes@acm.org">bdawes@acm.org</a>&gt;</p>
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="710">
+  <tr>
+    <td width="277">
+<a href="../../../index.htm">
+<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="277" height="86" border="0"></a></td>
+    <td width="410" align="middle">
+    <font size="7">Filesystem Library</font>
+    </td>
+  </tr>
+</table>
 
-<h1>Filesystem Library Proposal for TR2 (Revision 3)</h1>
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
+  <tr>
+    <td><a href="../../../index.htm">Boost Home</a>&nbsp;&nbsp;&nbsp;
+    <a href="index.htm">Library Home</a>&nbsp; &nbsp;
+    <a href="index.htm#tutorial">Tutorial</a>&nbsp; &nbsp; <a href="reference.html">
+    Reference</a>&nbsp;&nbsp; <a href="faq.htm">FAQ</a></td>
+  </tr>
+</table>
+
+<h1>Reference Documentation</h1>
 
 <h2><a name="TOC">Table of Contents</a></h2>
 
 <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
   <tr>
     <td width="26%" valign="top"><a href="#Introduction">Introduction</a><br>
-<a href="#Motivation">Motivation and Scope</a><br>
-<a href="#Impact">Impact on the Standard</a><br>
-<a href="#Design">Important Design Decisions</a><br>
-<a href="#Text">Proposed Text for TR2</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Text">Introductory chapter</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Diagnostics-library">Diagnostics library chapter</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Diagnostics-library">Filesystem library chapter</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Definitions">Definitions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Requirements">Requirements</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="#Definitions">Definitions</a><br>
+    <a href="#Requirements">Requirements</a><br>
+&nbsp;&nbsp;&nbsp;
 <a href="#Requirements-on-programs">Requirements on programs</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="#Requirements-on-implementations">Requirements</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="#Requirements-on-implementations">on implementations</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Header-filesystem-synopsis">
+&nbsp; &nbsp;&nbsp;<a href="#Requirements-on-implementations">Requirementson implementations</a><br>
+    <a href="#Header-filesystem-synopsis">
     Header &lt;filesystem&gt; synopsis</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Path-traits">Path traits</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Class-template-basic_path">
+    <a href="#Path-traits">Path traits</a><br>
+    <a href="#Class-template-basic_path">
     Class template basic_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Pathname-formats">Pathname formats</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Pathname-grammar">Pathname grammar</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Filename-conversion">Filename conversion</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#basic_path-requirements">Requirements</a> </td>
     <td width="35%" valign="top">&nbsp;Class template basic_path (continued)<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -100,21 +105,19 @@ Reply to:&nbsp;&nbsp; Beman Dawes &lt;<a href="mailto:bdawes@acm.org">bdawes@acm
     basic_recursive_directory_iterator</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#file_status">Class 
     file_status</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#Non-member-functions">
+    <a href="#Non-member-functions">
     Non-member operational functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Status-functions">Status functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Predicate-functions">Predicate functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Attribute-functions">Attribute functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Operations-functions">Other operations functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &nbsp;&nbsp;&nbsp;
 <a href="#Convenience-functions">Convenience functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#header-cerrno">Additions to 
-    header &lt;cerrno&gt;</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#header-fstream">Additions 
+    <a href="#header-fstream">Additions 
     to header &lt;fstream&gt;</a><br>
 <a href="#Suggestions-for-fstream">Suggestions for <code>&lt;fstream&gt;</code></a><code><br>
 &nbsp; </code>
@@ -123,203 +126,13 @@ Reply to:&nbsp;&nbsp; Beman Dawes &lt;<a href="mailto:bdawes@acm.org">bdawes@acm
 <a href="#Issues">Issues</a><br>
 <a href="#Acknowledgements">Acknowledgements</a><br>
 <a href="#References">References</a><br>
-<a href="#Revision-History"><span style="background-color: #FFFFFF">Revision 
-History</span></a></td>
+&nbsp;</td>
   </tr>
 </table>
 
 <h2><a name="Introduction">Introduction</a></h2>
-<p>This paper proposes addition of a&nbsp;filesystem library component 
-to the C++ Standard Library Technical Report 2. The proposal is based on the Boost Filesystem Library (see <a href="http://www.boost.org/libs/filesystem">www.boost.org/libs/filesystem</a>).</p>
-<p>The library provides portable facilities to query and 
-manipulate paths, files, and directories. The Boost version of the library is widely used. It would 
-be a pure addition to the C++ standard, leaving in place existing 
-standard library functionality in the relatively few areas where there is overlap.</p>
-<p>Users say they prefer the Boost Filesystem Library  interface to native 
-operating system or 
-<i>POSIX</i> API's, even in code without portability requirements, because the design 
-follows modern C++ practice.</p>
-<p>The proposed text includes an <a href="#Example-program">example</a> of a 
-program using the library.</p>
-<h2><a name="Motivation">Motivation</a> and Scope</h2>
-<p><b><i>Why is this important? </i></b></p>
-<p>The motivation for the library is the desire to perform <i><b>safe, portable,  script-like filesystem operations</b></i> from within C++ programs. Because the 
-C++ Standard Library currently contains no facilities for such filesystem tasks 
-as directory iteration or directory creation, programmers currently must rely on 
-operating system specific  interfaces, making it difficult to write 
-portable programs.</p>
-<p>The intent is not to compete 
-with Python, Perl, or shell scripting languages, but rather to provide 
-file system operations where C++ is already the language of choice. The design 
-encourages, but does not require, safe and portable usage.</p>
-<p><b><i>What kinds of problems does it address, and what kinds of programmers is 
-it intended to support?</i></b></p>
-<p>The library addresses everyday needs, for both application programs and 
-libraries. It is useful across every application domain that uses files. It is 
-intended to be useful to all levels of programmers, from rank beginners to 
-seasoned experts.</p>
-<p><b><i>Is it based on existing practice?</i></b></p>
-<p>Yes, very much so. The proposal is based on the Boost Filesystem Library, 
-which has been in use since 2002 and by now is in very wide use.</p>
-<p>Note, however, that until recently all the Boost experience was with a 
-narrow-character only version of the library. The internationalized version as 
-described in this proposal is just starting to be used, and will not be fully 
-released until Boost release 1.34.</p>
-<p>The underlying mechanisms have been in use for decades on the world's most 
-wide-spread operating systems, such as <i>POSIX</i>, <i>Windows</i>, and various 
-mainframe operating systems. What this proposal brings to the table is an 
-approach that is C++ 
-Standard Library friendly and fully internationalized.</p>
-<p><b><i>Is there a reference implementation?</i></b></p>
-<p>Yes. The Boost Filesystem Library is freely and publicly available.  The Boost library will track the TR2 proposed 
-library as the proposal evolves.</p>
-<h2><a name="Impact">Impact</a> on the Standard</h2>
-<p><b><i>What does it depend on, and what depends on it?</i></b></p>
-<p>It depends on 
-some standard library components, such as basic_string. No other proposals 
-depend on it.</p>
-<p>If a revision to the Code Conversion Proposal (See
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1683.html">
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2004/n1683.html</a>) is 
-accepted, it may be advantageous for the Filesystem Library 
-to use that library rather than the current code conversion facilities proposed 
-below.</p>
-<p><b><i>Is it a pure extension, or does it require changes to standard 
-components?</i></b></p>
-<p>Most of the proposed library is a pure extension.</p>
-<p>There are <a href="#header-cerrno">additions to header &lt;cerrno&gt;</a>. Since 
-the critical portions that might require change to C headers (always a sore 
-point) are already mandated for <i>POSIX</i> compliance, and represent 
-existing practice for many non-<i>POSIX</i> operating systems such as for <i>Windows</i>, it is not expected that they will cause any problems.</p>
-<p>There are <a href="#header-fstream">additions to header &lt;fstream&gt;</a>.&nbsp; 
-These have been carefully specified to avoid breaking existing code in common operating environments such as <i>POSIX</i>, <i>
-Windows</i>, and <i>OpenVMS</i>. See <a href="#Suggestions-for-fstream">
-Suggestions for <code>&lt;fstream&gt;</code> implementations</a> for techniques to 
-avoid breaking existing code in other environments, particularly on operating 
-systems allowing slashes in filenames.</p>
-<p><b><i>Can it be implemented using today's compilers, or does it require 
-language features that will only be available as part of C++0x?</i></b></p>
-<p>It can 
-be (and has been) implemented with today's compilers.</p>
-<p>There is one minor function that can best be implemented by an addition to 
-current C++ runtime libraries, although an acceptable workaround is documented.</p>
-<p>On operating systems with built-in support for wide-character file names, 
-such as <i>Windows</i>, high-quality implementation of the header &lt;fstream&gt; 
-additions require an addition to the C++ Standard Library implementation. The 
-addition is relatively small and localized, and is already supplied by the most 
-recent Dinkumware implementation of the Standard Library. There is a workaround that avoids 
-modifying the standard library, but it is very much a hack and depends on a <i>
-Windows</i> feature (8.3 filename support) which some users disable, thereby 
-disabling the workaround. The issue doesn't affect implementations on operating 
-systems which only support narrow character file names.</p>
-<h2>Important <a name="Design">Design</a> Decisions</h2>
-<h4><i>Why did you choose the specific design that you did?</i></h4>
-<p>Many of the specific design decisions were driven by the desire to provide a modern C++ interface 
-that works 
-well with the C++ Standard Library. The intent is that Standard Library users 
-can become comfortable with the Filesystem Library in very short order.</p>
-<p>The proposed library encourages both syntactic and semantic portability, yet 
-does not force implementors into heroic efforts on hopeless systems. This 
-balances the benefits to users of both code and knowledge portability with the 
-realities faced by implementors on some operating systems.</p>
-
-<p><span style="background-color: #FFFFFF">In some 
-cases users always need portable semantics. In some cases users always need 
-platform specific semantics. In some cases users need to be able to choose 
-between portable and platform specific semantics. The design evolved over a 
-period of years to identify and meet each of those needs. </span></p>
-
-<p>Because of the desire to support simple &quot;script-like&quot; usage, use cases often 
-drove design choices. For example, users can write <code>if (exists(&quot;foo&quot;))</code> rather than 
-the lengthier <code>if (exists(path(&quot;foo&quot;)))</code>.</p>
-
-<p>Because filesystem operations often encounter unexpected runtime errors, the library 
-by default reports runtime errors via C++ exceptions, 
-and ensures enough information is provided for meaningful error messages, 
-including internationalized error messages.</p>
-
-<p><b><i>What alternatives did you consider, and what are the tradeoffs?</i></b></p>
-<p><i>Additional observers and modifiers for file system attributes.</i> 
-Attribute functions which cannot supply portable semantics are not provided, 
-avoiding the illusion of portability in cases where it cannot in fact exist.</p>
-<p><i>A larger number of operational convenience functions.</i> 
-Convenience functions (functions which can be portably created by composition 
-from basic functions) were not provided unless there was widespread agreement on 
-usefulness and need.</p>
-<p><i>Compile-time or run-time options for  operational functions.</i> 
-Numerous trial implementations were abandoned because the added complexity 
-out-weighed the benefits, and because consensus could not be reached on the 
-feature set.</p>
-<p><i>Automatic path name checking.</i> This feature, supplied by the Boost 
-library for several years, allowed users to specify both default and per 
-constructor path name checking, and thus allowed the desired degree of portability to be 
-automatically enforced. This implicit name checking was abandoned because of user 
-confusion and complaints of excessive nannyism..</p>
-<p><i>Separate path types for regular file and directory pathnames.</i> Pathname 
-formats that use different syntax for regular pathnames versus directory 
-pathnames are passing into extinction. Why prolong the agony at the cost of 
-torturing those using modern systems? It is perhaps significant that one of the few web 
-sites dedicated to preserving a dual pathname format operating system is named
-<i>Deathrow</i> (<a href="http://deathrow.vistech.net/">http://deathrow.vistech.net/</a>).</p>
-<p><i>Single path type which can at runtime accept narrow or wide character 
-pathnames.</i> Although certainly interesting, and possibly superior, such a 
-design would not interoperate well with the current Standard Library's compile-time 
-typed <code>basic_string</code>. A new runtime polymorphic string class would be 
-the best place to experiment with this concept, not a path class.</p>
-<p><b><i>What are the consequences of your choices, for users and implementors?</i></b></p>
-<p>The design has evolved over a period of four years of actual experience by 
-Boost users, and the most frequent causes of user complaints (such as enforced 
-name-checking and several over-strict preconditions) were eliminated. The TR 
-process will allow further refinement. The intent is to ensure user needs are 
-met.</p>
-<p>Because the Boost implementation is tested and 
-used in a wide range of <i>POSIX</i> and <i>Windows</i> environments, many implementation 
-concerns have already been addressed.</p>
-<p><b><i>What decisions are left up to implementors?</i></b></p>
-<p>Because implementations of the library are dependent on facilities of the 
-underlying operating system, implementors are given unusual freedom to redefine 
-semantics of the library. That being said, implementors are given strong 
-normative encouragement to provide the TR described semantics whenever feasible.</p>
-<p><b><i>If there are any similar libraries in use, how do their design 
-decisions compare to yours?</i></b></p>
-<p>There are a number of libraries which address the problem domain. Most of the 
-C/C++ libraries have C, rather than C++ interfaces. For example, see the Apache Portable Runtime 
-Project (<a href="http://apr.apache.org">http://apr.apache.org</a>). The ACE 
-toolkit (<a href="http://www.cs.wustl.edu/~schmidt/ACE.html">http://www.cs.wustl.edu/~schmidt/ACE.html</a>) 
-uses a C++ approach, but doesn't mesh well with the C++ Standard Library. For 
-example, the ACE directory iterator differs greatly from Standard Library 
-iterator requirements.</p>
-<h2>Proposed <a name="Text">Text</a> for Technical Report 2</h2>
-<p><span style="font-style: italic; background-color: #E0E0E0">Gray-shaded 
-italic text is commentary on the proposal. It is not to be added to the TR.</span></p>
-<p><span style="background-color: #FFFFFF"><i>Italic text is editorial guidance. 
-It is not to be added to the TR.</i></span></p>
-<p><span style="font-style: italic; background-color: #FFFFFF">
-<a name="frontmatter">Add</a> to the 
-introductory section of the TR:</span></p>
-<p>The following standard contains provisions which, through reference in this 
-text, constitute provisions of this Technical Report. At the time of 
-publication, the editions indicated were valid. All standards are subject to 
-revision, and parties to agreements based on this Technical Report are 
-encouraged to investigate the possibility of applying the most recent editions 
-of the standard indicated below. Members of IEC and ISO maintain registers of 
-currently valid International Standards.</p>
-  <ul>
-    <li>ISO/IEC 9945:2003, <i>Portable Operating System Interface (POSIX<a href="#Footnote-1"><sup>1</sup></a>), 
-    part 1 (Base Definitions) and part 2 (System Interfaces)</i>, both as corrected by their 
-    respective 2004 Correction 1 documents.<p>[<i>Note:</i> ISO/IEC 9945:2003 is 
-    also IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group Base Specifications, Issue 6, 
-    and is also known as The Single Unix<font face="Times New Roman"><sup><a href="#Footnote-2">2</a></sup><i><b>
-    </b></i>Specification, Version 3. It is available from each of those organizations, 
-    and may be read online or downloaded from
-    <a href="http://www.unix.org/single_unix_specification/">
-    www.unix.org/single_unix_specification/</a> <i>-- end note</i>]</font></p>
-    </li>
-  </ul>
-<p>ISO/IEC 9945:2003, with the indicated corrections, is hereinafter called <i>
-POSIX</i>.</p>
-<p>Some library behavior in this Technical Report is defined by reference to <i>
-POSIX</i>. How such behavior is actually implemented is unspecified.</p>
+<p>Some library behavior is specified by reference to ISO/IEC 9945:2003, <i>
+<a href="http://www.unix.org/single_unix_specification/">POSIX</a></i>. How such behavior is actually implemented is unspecified.</p>
 <blockquote>
 <p>[<i>Note:</i> This constitutes an &quot;as if&quot; rule for implementation of 
 operating system dependent behavior. Presumably implementations will usually call native 
@@ -330,7 +143,7 @@ operating system API's. <i>--end note</i>]</p>
 as it is defined by <i>POSIX</i>. Implementations shall document any 
 behavior that differs from the <i>POSIX</i> defined behavior. Implementations that do not support exact <i>POSIX</i> behavior are 
 encouraged to provide behavior as close to <i>POSIX</i> behavior as is reasonable given the 
-limitations of actual operating systems. If an implementation cannot provide any 
+limitations of actual operating systems and file systems. If an implementation cannot provide any 
 reasonable behavior, the implementation shall report an error in an 
 implementation-defined manner.</p>
 <blockquote>
@@ -338,208 +151,12 @@ implementation-defined manner.</p>
 static_assert</code>, a <code>basic_filesystem_error</code> exception, a special 
 return value, or some other manner. <i>--end note</i>]</p>
 </blockquote>
-<p><a name="Footnote-1">Footnote 1</a>: <i>POSIX</i>® is a registered trademark of The 
-IEEE.</p>
-<p><a name="Footnote-2">Footnote 2</a>: <i>UNIX</i>® is a registered trademark of The 
-Open Group.</p>
-<p><span style="background-color: #FFFFFF"><i>Add a new clause to the TR:</i></span></p>
-<hr>
-<h2>Chapter <span style="font-weight: 400"><i>(tbs)</i></span> -
-<a name="Diagnostics-library">Diagnostics library</a></h2>
-<hr>
-<p>This clause describes components that C++ programs may use to detect and 
-report error conditions.</p>
-<h3>Header <code>&lt;system_error&gt;</code></h3>
-<pre>namespace std
-{
-  namespace tr2
-  {
-    namespace sys
-    {
-      typedef <i>implementation-defined</i> system_error_type;
-      typedef int errno_type; // determined by C standard
-
-      system_error_type system_code(errno_type err);
-
-      errno_type iso_code(system_error_type err);
-
-      std::string&amp; system_message(error_code err, std::string&amp; target);
-      std::wstring&amp; system_message(error_code err, std::wstring&amp; target);
-
-      enum iso_t { iso };
-
-      class error_code;
-      class system_error;
-
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
-<p>Type <code>system_error_type</code> is the implementation-defined type used 
-by the operating system to report error codes.</p>
-<blockquote>
-<p>[<i>Note:</i> On POSIX, <code>system_error_type</code> is normally <code>int</code>. 
-On Windows it is normally <code>unsigned int</code>. This type might differ if 
-the implementation is built on an emulation<i> </i>layer such as Cygwin. <i>-- 
-end note</i>]</p>
-</blockquote>
-<pre>system_error_type system_code(errno_type err);</pre>
-<blockquote>
-<p><i>Returns:</i> An <code>system_error_type</code> value corresponding to
-<code>err</code>.</p>
-<p>[<i>Note:</i> There is no guarantee that for a value <code>err</code> of type
-<code>errno_type</code>, <code>err == iso_code( system_code(err) )</code>. <i>-- 
-end note</i>]</p>
-</blockquote>
-<pre>errno_type iso_code(system_error_type err);</pre>
-<blockquote>
-  <p><i>Returns:</i> An <code>errno_type</code> value corresponding to <code>err</code>.</p>
-<p>[<i>Note:</i> There is no guarantee that for a value <code>err</code> of type
-<code>system_error_type</code>, <code>err == system_code( iso_code(err) )</code>.
-<i>-- end note</i>]</p>
-</blockquote>
-<pre>std::string&amp; system_message(error_code err, std::string&amp; target);
-std::wstring&amp; system_message(error_code err, std::wstring&amp; target);</pre>
-<blockquote>
-  <p><i>Effects: </i>Appends to <code>target</code> an operating system specific 
-  and locale specific message corresponding to <code>err.system()</code>.</p>
-  <p><i>Returns:</i> <code>target</code>.</p>
-  <p><i>Remarks:</i> Implementors and users are permitted to supply additional 
-  overloads in namespace <code>std::tr2::sys</code>.</p>
-</blockquote>
-<h3>Class <code>error_code</code></h3>
-<pre>namespace std
-{
-  namespace tr2
-  {
-    namespace sys
-    {
-      class error_code
-      {
-      public:
-        error_code();
-        error_code(system_error_type err);
-        error_code(errno_type err, iso_t);
-
-        system_error_type system() const;
-        void system(system_error_type err);
-
-        errno_type iso() const; 
-        void iso(errno_type err);
-
-        bool error() const;
-
-        bool operator==(error_code rhs) const;
-      };
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
-<p>The class <code>error_code</code> defines the type of objects used to 
-identify specific errors originating from the operating system.</p>
-<pre>error_code();</pre>
-<blockquote>
-  <p><i>Postcondition:</i> <code>!error()&amp;&amp; iso()==0</code>, and <code>system()</code> 
-  returns the value used by the operating system to represent not an error. </p>
-</blockquote>
-<pre>error_code(system_error_type err);</pre>
-<blockquote>
-  <p><i>Postcondition:</i> <code>system()==err</code>.</p>
-</blockquote>
-<pre>error_code(errno_type err, iso_t);</pre>
-<blockquote>
-  <p><i>Postcondition:</i> <code>iso()==err</code>.</p>
-</blockquote>
-<pre>system_error_type system() const;</pre>
-<blockquote>
-  <p><i>Returns:</i> If the most recent non-const function called, or the 
-  constructor if no non-const function has been called, had an <code>err</code> 
-  argument of type <code>system_error_type</code>, then return that argument. 
-  Otherwise, return <code>system_code(iso())</code>.</p>
-</blockquote>
-<pre>void system(system_error_type err);</pre>
-<blockquote>
-  <p><i>Postcondition:</i> <code>system()==err</code>.</p>
-</blockquote>
-<pre>errno_type iso() const;</pre>
-<blockquote>
-  <p><i>Returns:</i> If the most recent non-const function called, or the 
-  constructor if no non-const function has been called, had an <code>err</code> 
-  argument of type <code>errno_type</code>, then return that argument. 
-  Otherwise, return <code>iso_code(system())</code>.</p>
-</blockquote>
-<pre>void iso(errno_type err);</pre>
-<blockquote>
-  <p><i>Postcondition:</i> <code>iso()==err</code>.</p>
-</blockquote>
-<pre>bool error() const;</pre>
-<blockquote>
-  <p><i>Returns:</i> <code>system()==error_code(x),</code> where <code>x</code> 
-  is the value used by the operating system to represent not an error.</p>
-</blockquote>
-<pre>bool operator==(error_code rhs) const;</pre>
-<blockquote>
-  <p><i>Returns:</i> <code>system()==rhs.system()</code>.</p>
-</blockquote>
-<h3>Class <code>system_error</code></h3>
-<pre>namespace std
-{
-  namespace tr2
-  {
-    namespace sys
-    {
-      class system_error : public std::runtime_error
-      {
-      public:
-        system_error(const std::string &amp; what_arg, error_code ec);
-
-        error_code code() const;</pre>
-<pre>        const char * what() const;
-      };
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
-<p>The class <code>system_error</code> defines the type of objects thrown as 
-exceptions to report errors originating from the operating system.</p>
-<pre>system_error(const std::string &amp; what_arg, error_code ec);</pre>
-<blockquote>
-  <p><i>Effects:</i> Constructs an object of class <code>system_error</code>.</p>
-  <p><i>Postcondition:</i> <code>strcmp(runtime_error::what(), what_arg .c_str()) == 0 &amp;&amp; 
-  code() == ec</code>.</p>
-</blockquote>
-<pre>error_code code() const;</pre>
-<blockquote>
-  <p><i>Returns:</i> the <code>ec</code> constructor argument.</p>
-</blockquote>
-<pre>const char * what() const;</pre>
-<blockquote>
-  <p><i>Returns: </i>A string containing <code>runtime_error::what()</code> and 
-  the result of calling <code>system_message()</code> with a first argument of
-  <code>code()</code>. The exact format is unspecified.</p>
-</blockquote>
-<p><span style="background-color: #FFFFFF"><i>Add a new clause to the TR:</i></span></p>
-<hr>
-<h2>Chapter <span style="font-weight: 400"><i>(tbs)</i></span> - <a name="Filesystem-library">Filesystem library</a></h2>
-<hr>
-<p>This clause describes components that C++ programs may use to interrogate and 
-manipulate  files (including directories), and certain of their 
-attributes.</p>
-<p>This clause applies only to hosted implementations (C++ Std, 1.4, 
-Implementation compliance [intro.compliance]).</p>
-<blockquote>
-<p>[<i>Note:</i> This clause  applies to any hosted implementation. 
-Specific operating systems such as <i>OpenMVS</i><sup><a href="#Footnote-3">3</a></sup>,
-<i>UNIX</i>, and <i>Windows</i><sup><a href="#Footnote-4">4</a></sup> are mentioned only for purposes of illustration or to 
+<p>Specific operating systems such as <i>OpenMVS</i>,
+<i>UNIX</i>, and <i>Windows</i> are mentioned only for purposes of illustration or to 
 give guidance to implementors. No slight to other operating systems is implied 
-or intended. <i>--end note</i>.]</p>
-</blockquote>
-<p>Unless otherwise specified, all components described in this clause are 
-declared in namespace <code>std::tr2::sys</code>.</p>
-<blockquote>
-<p>[<i>Note:</i> The <code>sys</code> sub-namespace prevents collisions with 
-names already in the standard library and emphasizes reliance on the 
-operating system dependent behavior inherent in file system operations. <i>-- end 
-note</i>]</p>
-</blockquote>
-<p>The <i>Effects</i> and <i>Postconditions</i> of functions described in this clause 
+or intended.</p>
+<p>The <i>Effects</i> and <i>Postconditions</i> of functions described in this 
+reference 
 may not be achieved in 
 the presence of <a href="#Race-condition">race conditions</a>. No diagnostic is required.</p>
 <p>If the possibility of race conditions makes it unreliable for a program to 
@@ -551,12 +168,8 @@ specified as a <i>Throws</i> condition.</p>
 is unreasonable for a program to detect them prior to calling the function. <i>
 -- end note</i>]</p>
 </blockquote>
-<p><a name="Footnote-3">Footnote 3</a>: <i>OpenMVS</i>® is a registered 
-trademark of Hewlett-Packard Development Company.</p>
-<p><a name="Footnote-4">Footnote 4</a>: <i>Windows</i>® is a registered 
-trademark of Microsoft Corporation.</p>
 <h3><a name="Definitions">Definitions</a></h3>
-<p>The following definitions shall apply to this clause:</p>
+<p>The following definitions  apply throughout this reference documentation:</p>
 <p><i><a name="File">File</a>: </i>An object that can be written to, or read from, or both. A file 
 has certain attributes, including type. File types include regular file, 
 symbolic link, and directory. Other types of files may be supported by the 
@@ -673,12 +286,10 @@ an overload without an argument of type </span><code>
 <span style="background-color: #FFFFFF">error_code&amp; ec</span></code><span style="background-color: #FFFFFF"> returns void, the other overload (with an argument of type </span><code>
 <span style="background-color: #FFFFFF">error_code&amp; ec</span></code><span style="background-color: #FFFFFF">) returns an <code>
 error_code</code> with the value of ec.</span></p>
-<h3><a name="Header-filesystem-synopsis">Header <code>&lt;filesystem&gt;</code> synopsis</a></h3>
-<pre>namespace std
-{
-  namespace tr2
+<h3><a name="Header-filesystem-synopsis">Header <code>&lt;boost/filesystem&gt;</code> synopsis</a></h3>
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       template &lt;class String, class Traits&gt; class <a href="#Class-template-basic_path">basic_path</a>;
 
@@ -775,6 +386,7 @@ error_code</code> with the value of ec.</span></p>
 
       //  <a href="#Attribute-functions">attribute functions</a>
       template &lt;class Path&gt; Path current_path();
+      template &lt;class Path&gt; void current_path(const Path&amp; p);
       template &lt;class Path&gt; const Path&amp; initial_path();
       template &lt;class Path&gt; <span style="background-color: #FFFFFF; ">uintmax_t</span> file_size(const Path&amp; p);
 <span style="background-color: #FFFFFF">      template &lt;class Path&gt; space_info space(const Path&amp; p);</span><span style="background-color: #FFFF00">
@@ -807,9 +419,8 @@ error_code</code> with the value of ec.</span></p>
       template &lt;class Path&gt;
         Path replace_extension(const Path&amp; p, const typename Path::string_type&amp; new_extension);
 
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <h3><a name="Path-traits">Path traits</a></h3>
 <p>This subclause defines requirements on classes representing path behavior 
 traits, and defines two classes that satisfy those requirements for paths based 
@@ -897,11 +508,9 @@ system. </p>
   while the syntax of function calls would be portable, the semantics of the 
   strings they operate on would not be portable. <i>-- end note</i>]</p>
 </blockquote>
-<pre>namespace std
-{
-  namespace tr2
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       template &lt;class String, class Traits&gt; class basic_path
       {
@@ -973,9 +582,8 @@ system. </p>
 
       };
 
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <p>A <code>basic_path</code> object stores a possibly empty <a href="#Path">path</a>. 
 The internal form of the stored path is unspecified.</p>
 <p><a name="pathname-resolution">Functions</a> described in this clause which access files or their attributes do so by 
@@ -1601,11 +1209,9 @@ void swap( basic_path&lt;String, Traits&gt; &amp; lhs, basic_path&lt;String, Tra
   </span> <code><span style="background-color: #FFFFFF">os</span></code></p>
 </blockquote>
 <h3><a name="Class-template-basic_filesystem_error">Class template <code>basic_filesystem_error</code></a></h3>
-<pre>namespace std
-{
-  namespace tr2
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       template &lt;class Path&gt; class basic_filesystem_error : public <span style="background-color: #FFFFFF">system</span>_error
       {
@@ -1621,9 +1227,8 @@ void swap( basic_path&lt;String, Traits&gt; &amp; lhs, basic_path&lt;String, Tra
 
         const char * what() const;
       };
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <p>The class template <code>basic_filesystem_error</code> defines the type of 
 objects thrown as exceptions to report file system errors from functions described in this 
 clause.</p>
@@ -1742,11 +1347,9 @@ The exact format is unspecified.</p>
 the <code>what</code> member function.</p>
 </blockquote>
 <h3><a name="Class-template-basic_directory_entry">Class template <code>basic_directory_entry</code></a></h3>
-<pre>namespace std
-{
-  namespace tr2
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       template &lt;class Path&gt; class basic_directory_entry
       {
@@ -1786,9 +1389,8 @@ the <code>what</code> member function.</p>
         mutable <span style="background-color: #FFFFFF">file_status</span>  m_symlink_status; // for exposition only; lstat()-like
       };
 
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <p>A <code>basic_directory_entry</code> object stores a <code>basic_path object</code>, 
 a <code>file_status</code> object for non-symbolic link status, and a <code>
 file_status</code> object for symbolic link status. The <code>file_status</code> 
@@ -1960,11 +1562,9 @@ else ec = 0;</span></pre>
   <p><span style="background-color: #FFFFFF"><i>Returns:</i> <code>m_symlink_status</code></span></p>
 </blockquote>
 <h3><a name="Class-template-basic_directory_iterator">Class template <code>basic_directory_iterator</code></a></h3>
-<pre>namespace std
-{
-  namespace tr2
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       template &lt;class Path&gt;
       class basic_directory_iterator :
@@ -1985,9 +1585,8 @@ else ec = 0;</span></pre>
         //  C++ Std, 24.1.1 Input iterators [lib.input.iterators]
       };
 
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <p> <code>basic_directory_iterator</code> satisfies the requirements of an 
 input iterator (C++ Std, 24.1.1, Input iterators [lib.input.iterators]).</p>
 <p>A <code>basic_directory_iterator</code> reads successive elements from the directory for 
@@ -2110,11 +1709,9 @@ reported by the operating system, otherwise to 0.</p>
 
 </blockquote>
 <h3><a name="Class-template-basic_recursive_directory_iterator">Class template <code>basic_recursive_directory_iterator</code></a></h3>
-<pre>namespace std
-{
-  namespace tr2
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       template &lt;class Path&gt;
       class basic_recursive_directory_iterator :
@@ -2144,9 +1741,8 @@ reported by the operating system, otherwise to 0.</p>
         int m_level; // for exposition only
       };
 
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <p>The behavior of a <code>basic_recursive_directory_iterator</code> is the same 
 as a <code>basic_directory_iterator</code> unless otherwise specified.</p>
 <ul>
@@ -2170,11 +1766,9 @@ as a <code>basic_directory_iterator</code> unless otherwise specified.</p>
   prevent loops on some operating systems. <i>--end note</i>]</p>
 </blockquote>
 <h3><a name="file_status">Class file_status</a></h3>
-<pre>namespace std
-{
-  namespace tr2
+<pre>  namespace boost
   {
-    namespace sys
+    namespace filesystem
     {
       class file_status
       {
@@ -2184,9 +1778,8 @@ as a <code>basic_directory_iterator</code> unless otherwise specified.</p>
         file_type type() const;
         void type( file_type v );
       };
-    } // namespace sys
-  } // namespace tr2
-} // namespace std</pre>
+    } // namespace filesystem
+  } // namespace boost</pre>
 <p>A <code>file_status</code> object stores information about the status of a 
 file. The internal form of the stored information is unspecified.</p>
 <blockquote>
@@ -2210,7 +1803,7 @@ file. The internal form of the stored information is unspecified.</p>
 <h3><a name="Non-member-functions">Non-member operational functions</a></h3>
 <h4><a name="Status-functions">Status functions</a></h4>
 <pre>template &lt;class Path&gt; file_status status(const Path&amp; p, error_code&amp; ec);
-template &lt;class Path&gt; file_status symlink_status(const Path&amp; p, error_code&amp; ec);</pre>
+template &lt;class Path&gt; file_status <a name="symlink_status">symlink_status</a>(const Path&amp; p, error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Returns:</i></p>
   <blockquote>
@@ -2292,7 +1885,7 @@ fail on a directory.
   <p><i>Returns: </i><code>stat</code></p>
 </blockquote>
 <h4><a name="Predicate-functions">Predicate functions</a></h4>
-<pre><span style="background-color: #FFFFFF">bool status_known(file_status s);</span></pre>
+<pre><span style="background-color: #FFFFFF">bool <a name="status_known">status_known</a>(file_status s);</span></pre>
 <blockquote>
   <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
   <code>s.type() != status_unknown</code></span></p>
@@ -2417,6 +2010,10 @@ systems. <i>--end note</i>.]</p>
   see <code><a href="#initial_path">initial_path()</a></code>. The <code>
   current_path()</code> name was chosen to emphasize that the return is a 
   complete path, not just a single directory name. <i>-- </i><i>end note</i>]</p>
+</blockquote>
+<pre>template &lt;class Path&gt; void current_path(const Path&amp; p);</pre>
+<blockquote>
+<p><i>Postcondition:</i> equivalent( p, current_path() );</p>
 </blockquote>
 <pre>template &lt;class Path&gt; <span style="background-color: #FFFFFF; ">uintmax_t</span> file_size(const Path&amp; p);</pre>
 <blockquote>
@@ -3392,7 +2989,7 @@ use of the <code>&lt;fstream&gt;</code> additions, affected implementations are
 encouraged to allow disabling the <code>&lt;fstream&gt;</code> additions separately 
 from other TR features.</span></p>
 <p><span style="background-color: #FFFFFF">An rejected alternative was to supply 
-new fstream classes in namespace <code>sys</code>, inheriting from the current 
+new fstream classes in namespace <code>filesystem</code>, inheriting from the current 
 classes, overriding the constructors and opens taking pathname arguments, and 
 providing the additional overloads. In Lillehammer LWG members indicated lack of 
 support for this alternative, feeling that costs outweigh benefits.</span></p>
@@ -3419,26 +3016,6 @@ rather see either the return type specified as
 <p>Beman Dawes comments: I can't make up my mind. Removing the const will bite 
 users, but not very often. OTOH, excessive copying is a real concern, and if 
 move semantics can alleviate that, I'm all for it. What does the LWG think?</p>
-<h3>2. Basic_path canonize() and normalize() removed. [Beman Dawes]</h3>
-<p>The Boost implementation has basic_path functions canonize() and normalize() 
-which return cleaned up string representations of a pathname. They have been 
-removed from the proposal as messy to specify and implement, not hugely useful, 
-and possible to implement by users as non-member functions without any loss of 
-functionality or efficiency. There was also a concern the proposal was getting a 
-bit large.</p>
-<p>These functions can be added later as convenience functions if the LWG so 
-desires..</p>
-<h3>3. Filename checking functions. [Beman Dawes]</h3>
-<p>Boost has a set of predicate functions that determine if a filename is valid 
-for a particular operating or system. These can be used as building blocks for 
-functions that determine if an entire pathname is valid for a particular 
-operating or file system.</p>
-<p>Users can use these functions to ensure that pathnames are in fact portable 
-to target operating or file systems, without having to actually test on the 
-target systems.</p>
-<p>These functions are not included in the proposal because of lack of time, and 
-uncertainty as to their fit with the Standard Library. They can be added later 
-if the LWG so desires.</p>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>This Filesystem Library is dedicated to my wife, Sonda, who provided the 
 support necessary to see both a trial implementation and the proposal itself 
@@ -3476,112 +3053,12 @@ final document.</p>
     www.boost.org/more/error_handling.html</a></td>
   </tr>
 </table>
-<h2><a name="Revision-History">Revision History</a></h2>
-<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
-  <tr>
-    <td width="11%" valign="top">
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1841.html">
-    N1841</a></td>
-    <td width="89%">
-    <ul>
-      <li>Initial version, August, 2005, pre-Tremblant mailing</li>
-    </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="11%" valign="top" bgcolor="#FFFFFF">
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1889.html">
-    N1889</a><br>
-    Revision 1</td>
-    <td width="89%" bgcolor="#FFFFFF">
-    <ul>
-      <li>Missing argument name <code>fmt</code> added to several <code>
-      basic_path</code> members.</li>
-      <li> <code>is_empty()</code> name discrepancy between synopsis and 
-      description corrected.</li>
-      <li><code>file_size()</code> return type changed from <code>intmax_t</code> 
-      to <code>uintmax_t</code>.&nbsp; Wording slightly clarified.</li>
-      <li><code>struct space_info</code> and non-member function <code>space()</code> 
-      added.</li>
-      <li>A paragraph was added to <b><i>Important design decisions</i></b> 
-      mentioning the need for both portable and platform specific semantics.</li>
-    </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="11%" valign="top" bgcolor="#FFFFFF">
-    <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1934.html">
-    N1934</a><br>
-    Revision 2</td>
-    <td width="89%" bgcolor="#FFFFFF">
-    <ul>
-      <li>Changed native path identification from constructor argument to
-      <code>&quot;//:&quot;</code> escape prefix. Rationale: simplifies basic_path 
-      constructor interfaces, easier use for platforms needing explicit native 
-      format identification.</li>
-      <li>Introduced a new base class, filesystem_error, to<span style="background-color: #FFFFFF"> 
-      allow users to catch a single exception type if desired, or to deal with 
-      the case where the templated type is unknown. Rename filesystem_error and 
-      wfilesystem_error accordingly.</span></li>
-      <li><span style="background-color: #FFFFFF">Rewording 
-      basic_filesystem_error text to more closely follow the form of clause 19 
-      of the standard.</span></li>
-      <li><span style="background-color: #FFFFFF">Removed dual specification of 
-      certain errors in both &quot;Reguires&quot; and &quot;Throws&quot; paragraphs. Since throwing 
-      an exception is well-defined behavior, the error condition does not result 
-      in undefined behavior as implied by &quot;Requires&quot;. (Suggested by Dave 
-      Abrahams)</span></li>
-      <li><span style="background-color: #FFFFFF">Added a non-throwing version 
-      of create_hard_link().</span></li>
-      <li><span style="background-color: #FFFFFF">Added two create_symlink() 
-      functions.</span></li>
-      <li><span style="background-color: #FFFFFF">Added basic_path inserter and 
-      extractor. (Suggested by Vladimir Prus)</span></li>
-      <li><span style="background-color: #FFFFFF">Added basic_path member and 
-      non-member swap() functions.</span></li>
-      <li><span style="background-color: #FFFFFF">Aligned basic_path operator 
-      functions with std::basic_string practice. </span></li>
-      <li><span style="background-color: #FFFFFF">Replaced status_flags with 
-      file_type enum and file_status class to improve encapsulation and allow 
-      for future expansion of file_status.</span></li>
-      <li><span style="background-color: #FFFFFF">Added predicate functions 
-      overloaded on file_status (Suggested by Martin Adrian). This change, 
-      coupled with the introduction of file_status, clarifies the meaning of 
-      file types and related predicate operations, and eliminates the need for 
-      user bit manipulation, which was a source of user error.</span></li>
-      <li><span style="background-color: #FFFFFF">Predicate function 
-      specification clarified accordingly.</span></li>
-      <li><span style="background-color: #FFFFFF">Revised and explicitly 
-      documented policy for non-throwing versions of functions to increase 
-      consistency.</span></li>
-      <li><span style="background-color: #FFFFFF">Added basic_directory_iterator 
-      constructor non-throwing overload (Suggested by Martin Adrian).</span></li>
-      <li><span style="background-color: #FFFFFF">Changed symlink awareness to 
-      separately name functions to cut clutter caused by addition of 
-      non-throwing overloads.</span></li>
-    </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="11%" valign="top" bgcolor="#FFFFFF">
-    N1975<br>
-    Revision 3</td>
-    <td width="89%" bgcolor="#FFFFFF">
-    <ul>
-      <li><span style="background-color: #FFFFFF">Factored non-filesystem 
-      related error handling into separate &lt;system_error&gt; header. This 
-      change grew out of a Boost developer's list discussion of error handling 
-      guidelines for functions likely to use operating system API calls.</span></li>
-      <li><span style="background-color: #FFFFFF">Added <code>basic_path::clear()</code> 
-      in response to user request.</span></li>
-    </ul>
-    </td>
-  </tr>
-  </table>
 <hr>
-<p>© Copyright Beman Dawes, 2002-2006</p>
+<p>© Copyright Beman Dawes, 2002, 2006, 2007</p>
+<p>Distributed under the Boost Software License, Version 1.0. See
+<a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2006-04-04<!--webbot bot="Timestamp" endspan i-checksum="12266" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->14 November 2007<!--webbot bot="Timestamp" endspan i-checksum="40333" --></p>
 
 </body>
 
