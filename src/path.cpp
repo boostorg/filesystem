@@ -118,7 +118,7 @@ namespace boost
       locked = true;
       std::size_t work_size( converter()->max_length() * (src.size()+1) );
       boost::scoped_array<char> work( new char[ work_size ] );
-      std::mbstate_t state;
+      std::mbstate_t state = std::mbstate_t();  // perhaps unneeded, but cuts bug reports
       const internal_string_type::value_type * from_next;
       external_string_type::value_type * to_next;
       if ( converter()->out( 
@@ -137,7 +137,7 @@ namespace boost
       locked = true;
       std::size_t work_size( src.size()+1 );
       boost::scoped_array<wchar_t> work( new wchar_t[ work_size ] );
-      std::mbstate_t state;
+      std::mbstate_t state  = std::mbstate_t();  // perhaps unneeded, but cuts bug reports
       const external_string_type::value_type * from_next;
       internal_string_type::value_type * to_next;
       if ( converter()->in( 
