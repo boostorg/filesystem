@@ -38,10 +38,11 @@
   <tr>
     <td width="100%" bgcolor="#E8F5FF">
     <a href="#Introduction">Introduction</a><br>
+    <a href="#Using">Using the library</a><br>
     <a href="#tutorial">Two-minute tutorial</a><br>
     <a href="#Cautions">Cautions</a><br>
     <a href="#Using_reference_doc">Using the Reference Documentation</a><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Examples">Examples</a><br>
+    <a href="#Examples">Example programs</a><br>
     <a href="#Implementation">Implementation</a><br>
     <a href="#narrow-only">Using only narrow character paths</a><br>
     <a href="#Building">Building the object-library</a><br>
@@ -108,7 +109,18 @@ Boost.Filesystem and the TR2 proposal.</p>
   Library's <i>fstream</i> header, except 
       that files are identified by <i>basic_path</i> objects rather that <i>char *</i>'s.</li>
 </ul>
+<h2><a name="Using">Using</a> the library</h2>
+<p>Boost.Filesystem is implemented as a separately compiled library, so before 
+using it you must install it in a location that can be found by your linker. See
+<a href="#Building">Building the object-library</a>. </p>
+<p>The library's <a href="../example">example directory</a> contains very simple 
+scripts for building the <a href="#Examples">example programs</a> on various 
+platforms. You can use these scripts to see what's needed to compile and link 
+your own programs.</p>
 <h2>Two-minute <a name="tutorial">tutorial</a></h2>
+<p>(A
+<a href="http://beans.seartipy.com/2006/05/10/boost-filesystem-library-writing-portable-c-programs-to-acess-the-filesystem/">
+more elaborate tutorial</a> is also available from Tabrez Iqbal.)</p>
 <p>First some preliminaries:</p>
 <blockquote>
   <pre>#include &quot;boost/filesystem.hpp&quot;   // includes all needed Boost.Filesystem declarations
@@ -178,7 +190,7 @@ below is extracted from a real program, slightly modified for clarity:</p>
     {
       if ( find_file( itr-&gt;path(), file_name, path_found ) ) return true;
     }
-    else if ( itr-&gt;path().leaf() == file_name ) // see below
+    else if ( itr-&gt;leaf() == file_name ) // see below
     {
       path_found = itr-&gt;path();
       return true;
@@ -259,8 +271,8 @@ boost::throw_exception()</a>. Thus exact behavior may differ depending on
 BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
 <p>Non-throwing versions are provided of several functions that are often used 
 in contexts where error codes may be the preferred way to report an error.</p>
-<h2><a name="Examples">Examples</a></h2>
-<h3>simple_ls.cpp</h3>
+<h2><a name="Examples">Example programs</a></h2>
+<h3><a href="../example/simple_ls.cpp">simple_ls.cpp</a></h3>
 <p>The example program <a href="../example/simple_ls.cpp">simple_ls.cpp</a> is 
 given a path as a command line argument. Since the command line argument may be 
 a relative path, the complete path is determined so that messages displayed 
@@ -274,6 +286,8 @@ the iteration is complete.</p>
 <p>Try compiling and executing <a href="../example/simple_ls.cpp">simple_ls.cpp</a> 
 to see how it works on your system. Try various path arguments to see what 
 happens.</p>
+<h3><a href="../example/file_size.cpp">file_size.cpp</a></h3>
+<p>This example program prints the file's size if it is a regular file.</p>
 <h3>Other examples</h3>
 <p>The programs used to generate the Boost regression test status tables use the 
 Filesystem Library extensively.&nbsp; See:</p>
@@ -305,7 +319,8 @@ the library to compile code that is restricted to narrow character paths
 macro BOOST_FILESYSTEM_NARROW_ONLY. That may be useful for dealing with legacy 
 compilers or operating systems.</p>
 <h2><a name="Building">Building</a> the object-library</h2>
-<p>The object-library will normally be built automatically. See
+<p>The object-library will  be built automatically if you are using the Boost 
+build system. See
 <a href="../../../more/getting_started.html">Getting Started</a>. It can also be 
 built manually using a <a href="../build/Jamfile.v2">Jamfile</a> 
 supplied in directory libs/filesystem/build, or the user can construct an IDE 
@@ -341,7 +356,7 @@ Boost.Filesystem's object-library.</p>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>The Filesystem Library was designed and implemented by Beman Dawes. The 
 original <i>directory_iterator</i> and <i>filesystem_error</i> classes were 
-based on prior work from Dietmar KÃ¼hl, as modified by Jan Langer. Thomas Witt 
+based on prior work from Dietmar Kuehl, as modified by Jan Langer. Thomas Witt 
 was a particular help in later stages of initial development. Peter Dimov and 
 Rob Stewart made many useful suggestions and comments over a long period of 
 time. Howard Hinnant helped with internationalization issues.</p>
@@ -540,7 +555,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 November, 2007<!--webbot bot="Timestamp" endspan i-checksum="39371" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 November, 2007<!--webbot bot="Timestamp" endspan i-checksum="39358" --></p>
 
 <p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
