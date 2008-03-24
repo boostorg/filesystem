@@ -128,12 +128,12 @@ more elaborate tutorial</a> is also available from Tabrez Iqbal.)</p>
 using boost::filesystem;          // for ease of tutorial presentation;
                                   //  a namespace alias is preferred practice in real code</pre>
 </blockquote>
-<p>A <a href="tr2_proposal.html#Class-template-basic_path">class <i>path</i></a> object can be created:</p>
+<p>A <a href="reference.html#Class-template-basic_path">class <i>path</i></a> object can be created:</p>
 <blockquote>
   <pre>path my_path( &quot;some_dir/file.txt&quot; );</pre>
 </blockquote>
 <p>The string passed to the <i>path</i> constructor may be in a
-<a href="tr2_proposal.html#Pathname-formats">portable generic path format</a> or an 
+<a href="reference.html#Pathname-formats">portable generic path format</a> or an 
 implementation-defined native operating system format. Access functions 
 make <i>my_path</i> contents available to the underlying operating system API in an operating system dependent format, 
 such as <code>&quot;some_dir:file.txt&quot;</code>, <code>&quot;[some_dir]file.txt&quot;</code>,
@@ -166,7 +166,7 @@ ifstream file2( arg_path / &quot;foo&quot; / &quot;bar&quot; );</pre>
 <p>Paths can include references to the current directory, using &quot;<code>.</code>&quot; 
 notation, and the parent directory, using &quot;<code>..</code>&quot; 
 notation.</p>
-<p><a href="tr2_proposal.html#Class-template-basic_directory_iterator">Class <i>basic_directory_iterator</i></a> 
+<p><a href="reference.html#Class-template-basic_directory_iterator">Class <i>basic_directory_iterator</i></a> 
 is an important component of the library. It provides an input iterator over the 
 contents of a directory, with the value type being class <i>basic_path</i>. 
 Typedefs <i>directory_iterator</i> and <i>wdirectory_iterator</i> are provided 
@@ -227,7 +227,7 @@ work, however, there a few cautions to be aware of:</p>
 <h4><b>Effects and Postconditions not guaranteed in the presence of race-conditions</b></h4>
 <p>Filesystem function specifications follow the C++ Standard Library form, specifying behavior in terms of 
 effects and postconditions. If 
-a <a href="tr2_proposal.html#Race-condition">race-condition</a> exists, a function's 
+a <a href="reference.html#Race-condition">race-condition</a> exists, a function's 
 postconditions may no longer be true by the time the function returns to the 
 caller.</p>
 <blockquote>
@@ -259,7 +259,7 @@ example code's two calls to <i>is_directory()</i>.</p>
 </blockquote>
 <h4><b>May throw exceptions</b></h4>
 <p>Unless otherwise specified, Boost.Filesystem functions throw <i>
-<a href="tr2_proposal.html#basic_filesystem_error-constructors">basic_filesystem_error</a></i> 
+<a href="reference.html#basic_filesystem_error-constructors">basic_filesystem_error</a></i> 
 exceptions if they cannot successfully complete their operational 
 specifications. Also, implementations may use C++ Standard Library functions, 
 which may throw <i>std::bad_alloc</i>. These exceptions may be thrown even 
@@ -292,10 +292,8 @@ happens.</p>
 <p>The programs used to generate the Boost regression test status tables use the 
 Filesystem Library extensively.&nbsp; See:</p>
 <ul>
-  <li><a href="../../../tools/regression/process_jam_log.cpp">
-  process_jam_log.cpp</a></li>
-  <li><a href="../../../tools/regression/compiler_status.cpp">
-  compiler_status.cpp</a></li>
+  <li><a href="../../../tools/regression/src/process_jam_log.cpp">process_jam_log.cpp</a></li>
+  <li><a href="../../../tools/regression/src/compiler_status.cpp">compiler_status.cpp</a></li>
 </ul>
 <p>Test programs are sometimes useful in understanding a library, as they 
 illustrate what the developer expected to work and not work. See:</p>
@@ -498,12 +496,12 @@ performance issues.</p>
   <li>Clearer specification, by reference to [<a href="design.htm#POSIX-01">POSIX-01</a>], 
   the ISO/IEEE Single Unix Standard, with provisions for Windows and other 
   operating systems.</li>
-  <li>New functions <a href="tr2_proposal.html#Status-functions">status</a>,
-  <a href="tr2_proposal.html#Status-functions">symlink_status</a>,
-  <a href="tr2_proposal.html#Predicate-functions">is_file</a>,
-  <a href="tr2_proposal.html#Predicate-functions">is_symlink</a>,
-  <a href="tr2_proposal.html#Operations-functions">create_hard_link</a>, 
-  <a href="tr2_proposal.html#Operations-functions">create_symlink</a>, path member and non-member swap, path inserter, path 
+  <li>New functions <a href="reference.html#Status-functions">status</a>,
+  <a href="reference.html#Status-functions">symlink_status</a>,
+  <a href="reference.html#Predicate-functions">is_file</a>,
+  <a href="reference.html#Predicate-functions">is_symlink</a>,
+  <a href="reference.html#Operations-functions">create_hard_link</a>, 
+  <a href="reference.html#Operations-functions">create_symlink</a>, path member and non-member swap, path inserter, path 
   extractor, additional path relational and &quot;/&quot; operator overloads, additional 
   path member template functions taking iterator arguments.</li>
   <li><a href="i18n.html#More_efficient">More efficient operations</a> when iterating over directories.</li>
@@ -522,19 +520,19 @@ performance issues.</p>
 <h3>Version 1.32.0</h3>
 
 <ul>
-  <li><a href="tr2_proposal.html#Attribute-functions">file_size()</a> function added.</li>
-  <li>Class path <a href="tr2_proposal.html#basic_path-non-member-functions">relational operators</a> added.</li>
-  <li><a href="tr2_proposal.html#Predicate-functions">equivalent()</a> function added.</li>
-  <li><a href="tr2_proposal.html#Operations-functions">create_directory()</a> no longer 
+  <li><a href="reference.html#Attribute-functions">file_size()</a> function added.</li>
+  <li>Class path <a href="reference.html#basic_path-non-member-functions">relational operators</a> added.</li>
+  <li><a href="reference.html#Predicate-functions">equivalent()</a> function added.</li>
+  <li><a href="reference.html#Operations-functions">create_directory()</a> no longer 
   throws if the directory already exists. A bool is returned, indicating that 
   the directory did not preexist. Similar changes made to
-  <a href="tr2_proposal.html#Convenience-functions">create_directories()</a>.</li>
+  <a href="reference.html#Convenience-functions">create_directories()</a>.</li>
   <li><a href="#Cgywin">Docs added</a> for users wishing Cygwin/POSIX behavior 
   on Windows.</li>
   <li>For POSIX, Large File Support (LSF) is enabled if available, such as on 
   Linux.</li>
-  <li><a href="tr2_proposal.html#initial_path">current_path()</a> and
-  <a href="tr2_proposal.html#initial_path">initial_path()</a> on POSIX now handle 
+  <li><a href="reference.html#initial_path">current_path()</a> and
+  <a href="reference.html#initial_path">initial_path()</a> on POSIX now handle 
   very long paths correctly.</li>
 </ul>
 
@@ -544,7 +542,7 @@ performance issues.</p>
   <li>The object library can now be <a href="#Building">built</a> for either 
   static or dynamic (shared/dll) linking. </li>
   <li>Several added functions, including improved checking for directory and 
-  file name portability. See <a href="portability_guide.htm#name_check­_functions">
+  file name portability. See <a href="portability_guide.htm#name_checkÂ­_functions">
   Name check functions</a>.</li>
   <li>Separation of canonical form and normalized form and a new path member 
   function normalize(). This changes behavior, 
@@ -555,9 +553,9 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 November, 2007<!--webbot bot="Timestamp" endspan i-checksum="39358" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 March, 2008<!--webbot bot="Timestamp" endspan i-checksum="29005" --></p>
 
-<p>� Copyright Beman Dawes, 2002-2005</p>
+<p>© Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
 www.boost.org/LICENSE_1_0.txt</a></p>
