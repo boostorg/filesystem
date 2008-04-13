@@ -16,7 +16,7 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/filesystem/cerrno.hpp>
+#include <boost/cerrno.hpp>
 
 namespace fs = boost::filesystem;
 
