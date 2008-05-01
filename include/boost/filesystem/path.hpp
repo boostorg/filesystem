@@ -618,7 +618,7 @@ namespace boost
     template<class Path>
     class basic_filesystem_error : public system::system_error
     {
-    // see http://www.boost.org/more/error_handling.html for design rationale
+    // see http://www.boost.org/community/error_handling.html for design rationale
     public:
       // compiler generates copy constructor and copy assignment
 

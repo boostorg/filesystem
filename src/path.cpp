@@ -109,7 +109,7 @@ namespace boost
 # ifdef BOOST_POSIX_API
 
 //  Because this is POSIX only code, we don't have to worry about ABI issues
-//  described in http://www.boost.org/more/separate_compilation.html
+//  described in http://www.boost.org/development/separate_compilation.html
 
     wpath_traits::external_string_type
     wpath_traits::to_external( const wpath & ph, 
