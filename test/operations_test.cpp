@@ -7,11 +7,8 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-//  VC++ 8.0 warns on various less-than-safe practices.
-//  See http://msdn.microsoft.com/msdnmag/issues/05/05/SafeCandC/default.aspx
-//  But at least in VC++ 8.0 betas, their own libraries use the problem
-//  practices. So turn off the warnings.
 #include <boost/config/warning_disable.hpp>
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/cerrno.hpp>
