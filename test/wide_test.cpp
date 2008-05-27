@@ -107,7 +107,7 @@ namespace
     if ( convertor.out( 
       state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
       work.get()+work_size, to_next ) != std::codecvt_base::ok )
-      boost::throw_exception( "to_external conversion error" );
+      boost::throw_exception( std::runtime_error("to_external conversion error") );
     *to_next = '\0';
     return std::string( work.get() );
   }
