@@ -10,6 +10,7 @@
 
 #include <boost/filesystem/path.hpp>
 #include <string>
+#include <ios>         // for std::streamoff
 
 namespace std
 {
