@@ -624,14 +624,14 @@ namespace boost
 
       typedef Path path_type;
 
-      basic_filesystem_error( const std::string & what,
+      basic_filesystem_error( const std::string & what_arg,
         system::error_code ec );
 
-      basic_filesystem_error( const std::string & what,
-        const path_type & path1, system::error_code ec );
+      basic_filesystem_error( const std::string & what_arg,
+        const path_type & path1_arg, system::error_code ec );
 
-      basic_filesystem_error( const std::string & what, const path_type & path1,
-        const path_type & path2, system::error_code ec );
+      basic_filesystem_error( const std::string & what_arg, const path_type & path1_arg,
+        const path_type & path2_arg, system::error_code ec );
 
       ~basic_filesystem_error() throw() {}
 
@@ -1385,8 +1385,8 @@ namespace boost
 
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
-      const std::string & what, system::error_code ec )
-      : system::system_error(ec, what)
+      const std::string & what_arg, system::error_code ec )
+      : system::system_error(ec, what_arg)
     {
       try
       {
@@ -1397,29 +1397,29 @@ namespace boost
 
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
-      const std::string & what, const path_type & path1,
+      const std::string & what_arg, const path_type & path1_arg,
       system::error_code ec )
-      : system::system_error(ec, what)
+      : system::system_error(ec, what_arg)
     {
       try
       {
         m_imp_ptr.reset( new m_imp );
-        m_imp_ptr->m_path1 = path1;
+        m_imp_ptr->m_path1 = path1_arg;
       }
       catch (...) { m_imp_ptr.reset(); }
     }
 
     template<class Path>
     basic_filesystem_error<Path>::basic_filesystem_error(
-      const std::string & what, const path_type & path1,
-      const path_type & path2, system::error_code ec )
-      : system::system_error(ec, what)
+      const std::string & what_arg, const path_type & path1_arg,
+      const path_type & path2_arg, system::error_code ec )
+      : system::system_error(ec, what_arg)
     {
       try
       {
         m_imp_ptr.reset( new m_imp );
-        m_imp_ptr->m_path1 = path1;
-        m_imp_ptr->m_path2 = path2;
+        m_imp_ptr->m_path1 = path1_arg;
+        m_imp_ptr->m_path2 = path2_arg;
       }
       catch (...) { m_imp_ptr.reset(); }
     }
