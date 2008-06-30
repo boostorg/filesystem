@@ -2156,9 +2156,8 @@ systems. <i>--end note</i>.]</p>
   </blockquote>
 <pre>template &lt;class Path&gt; bool remove(const Path&amp; p);</pre>
 <blockquote>
-  <p><i>Precondition:</i> <code>!p.empty()</code></p>
-  <p><i>Effects:</i>&nbsp; Attempts to delete the file <code>p</code> resolves 
-  to, 
+  <p><i>Effects:</i>&nbsp; Deletes the file <code>p</code> resolves 
+  to if it exists, 
   as if by<i> POSIX </i><code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/link.html">
   remove()</a></code>.</p>
@@ -2167,11 +2166,23 @@ systems. <i>--end note</i>.]</p>
   <p><i>Postcondition:</i> <code>!exists(p)</code></p>
   <p><i>Throws:</i> <code>basic_filesystem_error&lt;Path&gt;</code> if:</p>
   <ul>
-    <li><code>p.empty() || (exists(p) &amp;&amp; is_directory(p) &amp;&amp; !empty(p))</code>.</li>
+    <li><code>exists(p) &amp;&amp; is_directory(p) &amp;&amp; !empty(p)</code>.</li>
     <li><i>Effects</i> fails for any reason other than because <code>p</code> 
     does not resolve to an existing file.</li>
   </ul>
-  <p>[<i>Note:</i> A symbolic link is itself removed, rather than what it 
+  <p>[<i>Note:</i> A symbolic link is itself removed, rather than the file it 
+  resolves to being removed. <i>-- end note</i>]</p>
+</blockquote>
+<pre>template &lt;class Path&gt; unsigned long remove_all(const Path&amp; p);</pre>
+<blockquote>
+  <p><i>Effects:</i>&nbsp; Recursively deletes the contents of p if it exists, 
+  then deletes file <code>p</code> itself, 
+  as if by<i> POSIX </i><code>
+  <a href="http://www.opengroup.org/onlinepubs/000095399/functions/link.html">
+  remove()</a></code>.</p>
+  <p><i>Returns:</i> The number of files removed.</p>
+  <p><i>Postcondition:</i> <code>!exists(p)</code></p>
+  <p>[<i>Note:</i> A symbolic link is itself removed, rather than the file it 
   resolves to being removed. <i>-- end note</i>]</p>
 </blockquote>
 <pre>template &lt;class Path1, class Path2&gt; void rename(const Path1&amp; from_p, const Path2&amp; to_p);</pre>
@@ -3057,7 +3068,7 @@ final document.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 April 2008<!--webbot bot="Timestamp" endspan i-checksum="28390" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->29 June 2008<!--webbot bot="Timestamp" endspan i-checksum="17622" --></p>
 
 </body>
 
