@@ -117,6 +117,10 @@ namespace boost
 
     namespace detail
     {
+      // singular object used only as a tag; thus initialization and
+      // thread-safety are not issues
+      BOOST_FILESYSTEM_DECL extern system::error_code throws;  
+
       typedef std::pair< system::error_code, bool >
         query_pair;
 
@@ -454,21 +458,13 @@ namespace boost
       return ec;
     }
 
-    BOOST_FS_FUNC(bool) remove( const Path & ph )
+    BOOST_FS_FUNC(void) remove( const Path & ph, system::error_code & ec = detail::throws )
     {
-      if ( exists( ph )
-        || is_symlink( ph ) ) // handle dangling symbolic links
-        // note that the POSIX behavior for symbolic links is what we want;
-        // the link rather than what it points to is deleted. Windows behavior
-        // doesn't matter; is_symlink() is always false on Windows.
-      {
-        system::error_code ec( detail::remove_api( ph.external_file_string() ) );
-        if ( ec )
-          boost::throw_exception( basic_filesystem_error<Path>(
-            "boost::filesystem::remove", ph, ec ) );
-        return true;
-      }
-      return false;
+      system::error_code error( detail::remove_api(ph.external_file_string()) );
+      if ( error && &ec == &detail::throws )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::remove", ph, error ) );
+      ec = error;
     }
 
     BOOST_FS_FUNC(unsigned long) remove_all( const Path & ph )
@@ -693,10 +689,8 @@ namespace boost
       const wpath & from_ph, system::error_code & ec )
       { return create_symlink<wpath>( to_ph, from_ph, ec ); }
 
-    inline bool remove( const path & ph )
-      { return remove<path>( ph ); }
-    inline bool remove( const wpath & ph )
-      { return remove<wpath>( ph ); }
+    inline void remove( const path & ph )  { remove<path>( ph ); }
+    inline void remove( const wpath & ph ) { remove<wpath>( ph ); }
 
     inline unsigned long remove_all( const path & ph )
       { return remove_all<path>( ph ); }

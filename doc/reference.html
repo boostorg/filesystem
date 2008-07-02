@@ -1807,11 +1807,11 @@ template &lt;class Path&gt; file_status <a name="symlink_status">symlink_status<
 <blockquote>
   <p><i>Returns:</i></p>
   <blockquote>
-    For <code>status,</code> determine the attributes 
+    For <code>status</code>, determine the attributes 
     of
     <code>p</code> as if by<i> POSIX </i> <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code>, 
-    for <code>symlink_status</code> determine the attributes as if by <i>POSIX </i> <code>
+    for <code>symlink_status</code>, determine the attributes as if by <i>POSIX </i> <code>
     <a href="http://www.opengroup.org/onlinepubs/000095399/functions/lstat.html">
     lstat()</a></code>.<blockquote>
       <p>[<i>Note:</i> For symbolic links, <code>stat()</code> continues 
@@ -1819,14 +1819,23 @@ template &lt;class Path&gt; file_status <a name="symlink_status">symlink_status<
       does not. <i>-- 
     end note</i>]</p>
     </blockquote>
-    <p>If the operating system reports an error during attribute determination:</p>
+    <p>If the underlying file system reports an error during attribute determination:</p>
     <ul>
-      <li>If the error indicating that <code>p</code> could not 
-      be resolved, as if by POSIX error codes ENOENT or ENOTDIR, set ec to 0 and return <code>
+      <li>If the error indicating that <code>p</code> could not be resolved, as 
+      if by POSIX errors ENOENT or ENOTDIR, call <code>ec.clear()</code> and return <code>
       file_status(not_found_flag)</code>.</li>
     </ul>
+    <blockquote>
+      <blockquote>
+        <p>[<i>Note:</i> The effect of this behavior is to distinguish between 
+        knowing that p 
+        does not exist, and not being able to determine the status of p. This 
+        distinction is important to users.&nbsp; <i>--end note</i>]</p>
+      </blockquote>
+    </blockquote>
     <ul>
-      <li>Otherwise, set ec to the error code reported by the operating system 
+      <li>Otherwise, set ec to the error number reported by the underlying 
+      implementation API 
       and return <code>
       file_status(status_unknown)</code>.</li>
     </ul>
@@ -2154,22 +2163,26 @@ systems. <i>--end note</i>.]</p>
   </span> <code>basic_filesystem_error&lt;Path1, Path2&gt;</code><span style="background-color: #FFFFFF"> 
   if <code>ec</code> is not zero.</span></p>
   </blockquote>
-<pre>template &lt;class Path&gt; bool remove(const Path&amp; p);</pre>
+<pre>template &lt;class Path&gt; void remove(const Path&amp; p, system::error_code &amp; ec = <i>singular</i> );</pre>
 <blockquote>
-  <p><i>Effects:</i>&nbsp; Deletes the file <code>p</code> resolves 
-  to if it exists, 
+  <p><i>Effects:</i>&nbsp; Removes the file <code>p</code>, 
   as if by<i> POSIX </i><code>
-  <a href="http://www.opengroup.org/onlinepubs/000095399/functions/link.html">
-  remove()</a></code>.</p>
-  <p><i>Returns:</i> The value of <code>exists(p)</code> prior to the 
-  establishment of the postcondition.</p>
-  <p><i>Postcondition:</i> <code>!exists(p)</code></p>
-  <p><i>Throws:</i> <code>basic_filesystem_error&lt;Path&gt;</code> if:</p>
+  <a href="http://www.opengroup.org/onlinepubs/000095399/functions/remove.html">remove()</a></code>. 
+  If no error is reported by the underlying removal implementation or if <code>
+  status(p).type() == file_not_found</code>, then:</p>
   <ul>
-    <li><code>exists(p) &amp;&amp; is_directory(p) &amp;&amp; !empty(p)</code>.</li>
-    <li><i>Effects</i> fails for any reason other than because <code>p</code> 
-    does not resolve to an existing file.</li>
+    <li>if <code>ec != </code><i><code>singular</code></i>, then <code>ec.clear()</code>.</li>
   </ul>
+  <p>Otherwise,</p>
+  <ul>
+    <li>if <code>ec != </code><i><code>singular</code></i>, then set <code>ec</code> 
+    to represent the error.</li>
+    <li>otherwise, throw <code>basic_filesystem_error&lt;Path&gt;</code> to represent 
+    the error.if <code>ec != </code><i><code>singular</code></i>, then <code>
+    ec.clear()</code></li>
+  </ul>
+  <p><i>Postcondition:</i> <code>!exists(p)</code></p>
+  <p><i>Throws:</i> See <i>Effects</i>.</p>
   <p>[<i>Note:</i> A symbolic link is itself removed, rather than the file it 
   resolves to being removed. <i>-- end note</i>]</p>
 </blockquote>
@@ -2178,8 +2191,7 @@ systems. <i>--end note</i>.]</p>
   <p><i>Effects:</i>&nbsp; Recursively deletes the contents of p if it exists, 
   then deletes file <code>p</code> itself, 
   as if by<i> POSIX </i><code>
-  <a href="http://www.opengroup.org/onlinepubs/000095399/functions/link.html">
-  remove()</a></code>.</p>
+  <a href="http://www.opengroup.org/onlinepubs/000095399/functions/remove.html">remove()</a></code>.</p>
   <p><i>Returns:</i> The number of files removed.</p>
   <p><i>Postcondition:</i> <code>!exists(p)</code></p>
   <p>[<i>Note:</i> A symbolic link is itself removed, rather than the file it 
@@ -3068,7 +3080,7 @@ final document.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->29 June 2008<!--webbot bot="Timestamp" endspan i-checksum="17622" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 July 2008<!--webbot bot="Timestamp" endspan i-checksum="18822" --></p>
 
 </body>
 

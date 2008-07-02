@@ -769,18 +769,18 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::exists( d2 / "d20" ) );
   BOOST_CHECK( fs::exists( d1 / "f2" ) );
 
-  // remove() tests on file
+  // remove() file
   file_ph = dir / "shortlife";
   BOOST_CHECK( !fs::exists( file_ph ) );
   create_file( file_ph, "" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::remove( file_ph ) );
+  fs::remove( file_ph );
   BOOST_CHECK( !fs::exists( file_ph ) );
-  BOOST_CHECK( !fs::remove( "no-such-file" ) );
-  BOOST_CHECK( !fs::remove( "no-such-directory/no-such-file" ) );
+  fs::remove( "no-such-file" );
+  fs::remove( "no-such-directory/no-such-file" );
 
-  // remove() test on directory
+  // remove() directory
   d1 = dir / "shortlife_dir";
   BOOST_CHECK( !fs::exists( d1 ) );
   fs::create_directory( d1 );
@@ -789,44 +789,68 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
   bad_remove_dir = dir;
   BOOST_CHECK( CHECK_EXCEPTION( bad_remove, ENOTEMPTY ) );
-  BOOST_CHECK( fs::remove( d1 ) );
+  fs::remove( d1 );
   BOOST_CHECK( !fs::exists( d1 ) );
 
-// STLport is allergic to std::system, so don't use runtime platform test
-# ifdef BOOST_POSIX
+  if ( create_symlink_ok )  // only if symlinks supported
+  {
+    // remove() dangling symbolic link
+    fs::path link( "dangling_link" );
+    fs::remove( link );
+    BOOST_CHECK( !fs::is_symlink( link ) );
+    BOOST_CHECK( !fs::exists( link ) );
+    fs::create_symlink( "nowhere", link );
+    BOOST_CHECK( !fs::exists( link ) );
+    BOOST_CHECK( fs::is_symlink( link ) );
+    fs::remove( link );
+    BOOST_CHECK( !fs::is_symlink( link ) );
 
-  // remove() test on dangling symbolic link
-  fs::path link( "dangling_link" );
-  fs::remove( link );
-  BOOST_CHECK( !fs::is_symlink( link ) );
-  BOOST_CHECK( !fs::exists( link ) );
-  std::system("ln -s nowhere dangling_link");
-  BOOST_CHECK( !fs::exists( link ) );
-  BOOST_CHECK( fs::is_symlink( link ) );
-  BOOST_CHECK( fs::remove( link ) );
-  BOOST_CHECK( !fs::is_symlink( link ) );
+    // remove() self-refering symbolic link
+    link = "link_to_self";
+    fs::remove( link );
+    BOOST_CHECK( !fs::is_symlink( link ) );
+    BOOST_CHECK( !fs::exists( link ) );
+    fs::create_symlink( link, link );
+    fs::remove( link );
+    BOOST_CHECK( !fs::exists( link ) );
+    BOOST_CHECK( !fs::is_symlink( link ) );
 
-  // remove() test on symbolic link to a file
-  file_ph = "link_target";
-  fs::remove( file_ph );
-  BOOST_CHECK( !fs::exists( file_ph ) );
-  create_file( file_ph, "" );
-  BOOST_CHECK( fs::exists( file_ph ) );
-  BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::is_regular( file_ph ) );
-  std::system("ln -s link_target non_dangling_link");
-  link = "non_dangling_link";
-  BOOST_CHECK( fs::exists( link ) );
-  BOOST_CHECK( !fs::is_directory( link ) );
-  BOOST_CHECK( fs::is_regular( link ) );
-  BOOST_CHECK( fs::is_symlink( link ) );
-  BOOST_CHECK( fs::remove( link ) );
-  BOOST_CHECK( fs::exists( file_ph ) );
-  BOOST_CHECK( !fs::exists( link ) );
-  BOOST_CHECK( !fs::is_symlink( link ) );
-  BOOST_CHECK( fs::remove( file_ph ) );
-  BOOST_CHECK( !fs::exists( file_ph ) );
-# endif
+    // remove() cyclic symbolic link
+    link = "link_to_a";
+    fs::path link2( "link_to_b" );
+    fs::remove( link );
+    fs::remove( link2 );
+    BOOST_CHECK( !fs::is_symlink( link ) );
+    BOOST_CHECK( !fs::exists( link ) );
+    fs::create_symlink( link, link2 );
+    fs::create_symlink( link2, link );
+    fs::remove( link );
+    fs::remove( link2 );
+    BOOST_CHECK( !fs::exists( link ) );
+    BOOST_CHECK( !fs::exists( link2 ) );
+    BOOST_CHECK( !fs::is_symlink( link ) );
+
+    // remove() symbolic link to file
+    file_ph = "link_target";
+    fs::remove( file_ph );
+    BOOST_CHECK( !fs::exists( file_ph ) );
+    create_file( file_ph, "" );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( !fs::is_directory( file_ph ) );
+    BOOST_CHECK( fs::is_regular( file_ph ) );
+    link = "non_dangling_link";
+    fs::create_symlink( file_ph, link );
+    BOOST_CHECK( fs::exists( link ) );
+    BOOST_CHECK( !fs::is_directory( link ) );
+    BOOST_CHECK( fs::is_regular( link ) );
+    BOOST_CHECK( fs::is_symlink( link ) );
+    fs::remove( link );
+    BOOST_CHECK( fs::exists( file_ph ) );
+    BOOST_CHECK( !fs::exists( link ) );
+    BOOST_CHECK( !fs::is_symlink( link ) );
+    fs::remove( file_ph );
+    BOOST_CHECK( !fs::exists( file_ph ) );
+  }
 
   // write time tests
 
