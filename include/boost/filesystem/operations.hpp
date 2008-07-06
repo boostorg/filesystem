@@ -102,10 +102,14 @@ namespace boost
 
     inline bool status_known( file_status f ) { return f.type() != status_unknown; }
     inline bool exists( file_status f )       { return f.type() != status_unknown && f.type() != file_not_found; }
-    inline bool is_regular( file_status f )   { return f.type() == regular_file; }
+    inline bool is_regular_file(file_status f){ return f.type() == regular_file; }
     inline bool is_directory( file_status f ) { return f.type() == directory_file; }
     inline bool is_symlink( file_status f )   { return f.type() == symlink_file; }
-    inline bool is_other( file_status f )     { return exists(f) && !is_regular(f) && !is_directory(f) && !is_symlink(f); }
+    inline bool is_other( file_status f )     { return exists(f) && !is_regular_file(f) && !is_directory(f) && !is_symlink(f); }
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    inline bool is_regular( file_status f )   { return f.type() == regular_file; }
+# endif
 
     struct space_info
     {
@@ -279,7 +283,7 @@ namespace boost
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline bool symbolic_link_exists( const path & ph )
       { return is_symlink( symlink_status(ph) ); }
-#endif
+# endif
 
     BOOST_FS_FUNC(bool) exists( const Path & ph )
     { 
@@ -301,6 +305,17 @@ namespace boost
       return is_directory( result );
     }
 
+    BOOST_FS_FUNC(bool) is_regular_file( const Path & ph )
+    { 
+      system::error_code ec;
+      file_status result( detail::status_api( ph.external_file_string(), ec ) );
+      if ( ec )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::is_regular_file", ph, ec ) );
+      return is_regular_file( result );
+    }
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     BOOST_FS_FUNC(bool) is_regular( const Path & ph )
     { 
       system::error_code ec;
@@ -310,6 +325,7 @@ namespace boost
           "boost::filesystem::is_regular", ph, ec ) );
       return is_regular( result );
     }
+# endif
 
     BOOST_FS_FUNC(bool) is_other( const Path & ph )
     { 
@@ -614,10 +630,17 @@ namespace boost
     inline bool is_directory( const wpath & ph )
       { return is_directory<wpath>( ph ); }
  
+    inline bool is_regular_file( const path & ph )
+      { return is_regular_file<path>( ph ); }
+    inline bool is_regular_file( const wpath & ph )
+      { return is_regular_file<wpath>( ph ); }
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline bool is_regular( const path & ph )
       { return is_regular<path>( ph ); }
     inline bool is_regular( const wpath & ph )
       { return is_regular<wpath>( ph ); }
+# endif
 
     inline bool is_other( const path & ph )
       { return is_other<path>( ph ); }

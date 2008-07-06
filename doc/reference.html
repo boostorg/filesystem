@@ -369,14 +369,14 @@ error_code</code> with the value of ec.</span></p>
       //  <a href="#Predicate-functions">predicate functions</a>
       bool status_known( file_status s ); 
       bool exists( file_status s );
-      bool is_regular( file_status s ); 
+      bool is_regular_file( file_status s ); 
       bool is_directory( file_status s );
       bool is_symlink( file_status s );
       bool is_other( file_status s );
 
       template &lt;class Path&gt; bool exists(const Path&amp; p);
       template &lt;class Path&gt; bool is_directory(const Path&amp; p);
-      template &lt;class Path&gt; bool is_regular(const Path&amp; p);
+      template &lt;class Path&gt; bool is_regular_file(const Path&amp; p);
       template &lt;class Path&gt; bool is_other(const Path&amp; p);
       template &lt;class Path&gt; bool is_symlink(const Path&amp; p);
       template &lt;class Path&gt; bool is_empty(const Path&amp; p);
@@ -1646,7 +1646,7 @@ int main(int argc, char* argv[])
     for (directory_iterator itr(p); itr!=directory_iterator(); ++itr)
     {
       cout &lt;&lt; itr-&gt;path().leaf() &lt;&lt; ' '; // display filename only
-      if (is_regular(itr-&gt;status())) cout &lt;&lt; &quot; [&quot; &lt;&lt; file_size(itr-&gt;path()) &lt;&lt; ']';
+      if (is_regular_file(itr-&gt;status())) cout &lt;&lt; &quot; [&quot; &lt;&lt; file_size(itr-&gt;path()) &lt;&lt; ']';
       cout &lt;&lt; '\n';
     }
   }
@@ -1908,14 +1908,14 @@ fail on a directory.
 <blockquote>
   <p><i>Returns:</i> <code>exists( status(p) )</code></p>
 </blockquote>
-<pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_regular</span></code><span style="background-color: #FFFFFF">(file_status</span><span style="background-color: #FFFFFF"> s);</span></pre>
+<pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_regular_file</span></code><span style="background-color: #FFFFFF">(file_status</span><span style="background-color: #FFFFFF"> s);</span></pre>
 <blockquote>
   <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
   <code>s.type() == regular_file</code></span></p>
 </blockquote>
-<pre><code>template &lt;class Path&gt; bool is_regular(const Path&amp; p);</code></pre>
+<pre><code>template &lt;class Path&gt; bool is_regular_file(const Path&amp; p);</code></pre>
 <blockquote>
-  <p><i>Returns:</i> <code>is_regular( status(p) )</code></p>
+  <p><i>Returns:</i> <code>is_regular_file( status(p) )</code></p>
 </blockquote>
 <pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF">is_directory</span></code><span style="background-color: #FFFFFF">(file_status</span><span style="background-color: #FFFFFF"> s);</span></pre>
 <blockquote>
@@ -1938,7 +1938,7 @@ fail on a directory.
 <pre><span style="background-color: #FFFFFF">bool <a name="exists">is_other</a>(file_status s);</span></pre>
 <blockquote>
   <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
-  <code>return exists(s) &amp;&amp; !is_regular(s) &amp;&amp; !is_directory(s) &amp;&amp; !is_symlink(s)</code></span></p>
+  <code>return exists(s) &amp;&amp; !is_regular_file(s) &amp;&amp; !is_directory(s) &amp;&amp; !is_symlink(s)</code></span></p>
   <p><span style="background-color: #FFFFFF">[<i>Note: </i>The specification of
   <code>is_other()</code> will remain unchanged even if additional <code>is_xxx()</code> 
   functions are added in the future. <i>-- end note</i>]</span></p>
@@ -2220,7 +2220,7 @@ systems. <i>--end note</i>.]</p>
   <p><i>Effects:</i> The contents and attributes of the file <code>from_fp</code> 
   resolves to are copied to the file <code>to_fp</code> resolves to.</p>
   <p><i>Throws:</i> <code>basic_filesystem_error&lt;Path&gt;</code> if <code>
-  from_fp.empty() || to_fp.empty() ||!exists(from_fp) || !is_regular(from_fp) 
+  from_fp.empty() || to_fp.empty() ||!exists(from_fp) || !is_regular_file(from_fp) 
   || exists(to_fp)</code></p>
 </blockquote>
 <pre>template &lt;class Path&gt; Path complete(const Path&amp; p, const Path&amp; base=initial_path&lt;Path&gt;());</pre>
@@ -3080,7 +3080,7 @@ final document.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 July 2008<!--webbot bot="Timestamp" endspan i-checksum="18822" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 July 2008<!--webbot bot="Timestamp" endspan i-checksum="18826" --></p>
 
 </body>
 

@@ -300,20 +300,21 @@ int test_main( int argc, char * argv[] )
   fs::path ng( " no-way, Jose" );
   BOOST_CHECK( !fs::exists( ng ) );
   BOOST_CHECK( !fs::is_directory( ng ) );
-  BOOST_CHECK( !fs::is_regular( ng ) );
+  BOOST_CHECK( !fs::is_regular_file( ng ) );
+  BOOST_CHECK( !fs::is_regular( ng ) );  // verify deprecated name still works
   BOOST_CHECK( !fs::is_symlink( ng ) );
   fs::file_status stat( fs::status( ng ) );
   BOOST_CHECK( fs::status_known( stat ) );
   BOOST_CHECK( !fs::exists( stat ) );
   BOOST_CHECK( !fs::is_directory( stat ) );
-  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_regular_file( stat ) );
   BOOST_CHECK( !fs::is_other( stat ) );
   BOOST_CHECK( !fs::is_symlink( stat ) );
   stat = fs::status( "" );
   BOOST_CHECK( fs::status_known( stat ) );
   BOOST_CHECK( !fs::exists( stat ) );
   BOOST_CHECK( !fs::is_directory( stat ) );
-  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_regular_file( stat ) );
   BOOST_CHECK( !fs::is_other( stat ) );
   BOOST_CHECK( !fs::is_symlink( stat ) );
 
@@ -387,13 +388,13 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::exists( dir ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
   BOOST_CHECK( fs::is_directory( dir ) );
-  BOOST_CHECK( !fs::is_regular( dir ) );
+  BOOST_CHECK( !fs::is_regular_file( dir ) );
   BOOST_CHECK( !fs::is_other( dir ) );
   BOOST_CHECK( !fs::is_symlink( dir ) );
   stat = fs::status( dir );
   BOOST_CHECK( fs::exists( stat ) );
   BOOST_CHECK( fs::is_directory( stat ) );
-  BOOST_CHECK( !fs::is_regular( stat ) );
+  BOOST_CHECK( !fs::is_regular_file( stat ) );
   BOOST_CHECK( !fs::is_other( stat ) );
   BOOST_CHECK( !fs::is_symlink( stat ) );
 
@@ -491,7 +492,7 @@ int test_main( int argc, char * argv[] )
     fs::directory_iterator dir_itr( dir );
     BOOST_CHECK( fs::exists(dir_itr->status()) );
     BOOST_CHECK( fs::is_directory(dir_itr->status()) );
-    BOOST_CHECK( !fs::is_regular(dir_itr->status()) );
+    BOOST_CHECK( !fs::is_regular_file(dir_itr->status()) );
     BOOST_CHECK( !fs::is_other(dir_itr->status()) );
     BOOST_CHECK( !fs::is_symlink(dir_itr->status()) );
 
@@ -568,7 +569,7 @@ int test_main( int argc, char * argv[] )
   create_file( file_ph, "" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::is_regular( file_ph ) );
+  BOOST_CHECK( fs::is_regular_file( file_ph ) );
   BOOST_CHECK( BOOST_FS_IS_EMPTY( file_ph ) );
   BOOST_CHECK( fs::file_size( file_ph ) == 0 );
   bad_create_directory_path = file_ph;
@@ -577,7 +578,7 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( fs::status_known( stat ) );
   BOOST_CHECK( fs::exists( stat ) );
   BOOST_CHECK( !fs::is_directory( stat ) );
-  BOOST_CHECK( fs::is_regular( stat ) );
+  BOOST_CHECK( fs::is_regular_file( stat ) );
   BOOST_CHECK( !fs::is_other( stat ) );
   BOOST_CHECK( !fs::is_symlink( stat ) );
 
@@ -587,7 +588,7 @@ int test_main( int argc, char * argv[] )
 
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::is_regular( file_ph ) );
+  BOOST_CHECK( fs::is_regular_file( file_ph ) );
   BOOST_CHECK( fs::file_size( file_ph ) == 7 );
   verify_file( file_ph, "foobar1" );
 
@@ -656,7 +657,7 @@ int test_main( int argc, char * argv[] )
     stat = fs::symlink_status( from_ph );
     BOOST_CHECK( fs::exists( stat ) );
     BOOST_CHECK( !fs::is_directory( stat ) );
-    BOOST_CHECK( !fs::is_regular( stat ) );
+    BOOST_CHECK( !fs::is_regular_file( stat ) );
     BOOST_CHECK( !fs::is_other( stat ) );
     BOOST_CHECK( fs::is_symlink( stat ) );
   }
@@ -837,12 +838,12 @@ int test_main( int argc, char * argv[] )
     create_file( file_ph, "" );
     BOOST_CHECK( fs::exists( file_ph ) );
     BOOST_CHECK( !fs::is_directory( file_ph ) );
-    BOOST_CHECK( fs::is_regular( file_ph ) );
+    BOOST_CHECK( fs::is_regular_file( file_ph ) );
     link = "non_dangling_link";
     fs::create_symlink( file_ph, link );
     BOOST_CHECK( fs::exists( link ) );
     BOOST_CHECK( !fs::is_directory( link ) );
-    BOOST_CHECK( fs::is_regular( link ) );
+    BOOST_CHECK( fs::is_regular_file( link ) );
     BOOST_CHECK( fs::is_symlink( link ) );
     fs::remove( link );
     BOOST_CHECK( fs::exists( file_ph ) );
@@ -858,7 +859,7 @@ int test_main( int argc, char * argv[] )
   create_file( file_ph, "foobar2" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
-  BOOST_CHECK( fs::is_regular( file_ph ) );
+  BOOST_CHECK( fs::is_regular_file( file_ph ) );
   BOOST_CHECK( fs::file_size( file_ph ) == 7 );
   verify_file( file_ph, "foobar2" );
 

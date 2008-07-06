@@ -53,7 +53,7 @@ int main( int argc, char* argv[] )
           ++dir_count;
           std::cout << dir_itr->leaf() << " [directory]\n";
         }
-        else if ( fs::is_regular( dir_itr->status() ) )
+        else if ( fs::is_regular_file( dir_itr->status() ) )
         {
           ++file_count;
           std::cout << dir_itr->leaf() << "\n";
