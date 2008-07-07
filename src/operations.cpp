@@ -587,7 +587,7 @@ namespace
           return err;
         return ::rmdir( p )
 #     else
-        std::remove( p );
+        return std::remove( p );
 #     endif
   }
 
