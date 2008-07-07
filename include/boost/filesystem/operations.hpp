@@ -982,7 +982,7 @@ namespace boost
         {
           boost::throw_exception( basic_filesystem_error<Path>(  
             "boost::filesystem::basic_directory_iterator increment",
-            m_imp->m_directory_entry.path().branch_path(), ec ) );
+            m_imp->m_directory_entry.path().parent_path(), ec ) );
         }
         if ( m_imp->m_handle == 0 ) { m_imp.reset(); return; } // eof, make end
         if ( !(name[0] == dot<Path>::value // !(dot or dot-dot)
@@ -990,7 +990,7 @@ namespace boost
             || (name[1] == dot<Path>::value
               && name.size() == 2))) )
         {
-          m_imp->m_directory_entry.replace_leaf(
+          m_imp->m_directory_entry.replace_filename(
             Path::traits_type::to_internal( name ), fs, symlink_fs );
           return;
         }
@@ -1018,10 +1018,10 @@ namespace boost
         file_status st, file_status symlink_st )
         { m_path = p; m_status = st; m_symlink_status = symlink_st; }
 
-      void replace_leaf( const string_type & s,
+      void replace_filename( const string_type & s,
         file_status st, file_status symlink_st )
      {
-       m_path.remove_leaf();
+       m_path.remove_filename();
        m_path /= s;
        m_status = st;
        m_symlink_status = symlink_st;
@@ -1038,9 +1038,9 @@ namespace boost
 
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
       // deprecated functions preserve common use cases in legacy code
-      typename Path::string_type leaf() const
+      typename Path::string_type filename() const
       {
-        return path().leaf();
+        return path().filename();
       }
       typename Path::string_type string() const
       {

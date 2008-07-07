@@ -74,7 +74,7 @@ int main( int argc, char * argv[] )
   {
     if ( fs::is_regular_file(it->status()) )
     {
-      copy_file( *it, target_dir / it->leaf() );
+      copy_file( *it, target_dir / it->filename() );
     }
   }
 

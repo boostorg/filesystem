@@ -123,7 +123,6 @@
 &nbsp; </code>
 <a href="#Suggestions-for-fstream">&nbsp;implementations</a><br>
 <a href="#Path-decomposition-table">Path decomposition table</a><br>
-<a href="#Issues">Issues</a><br>
 <a href="#Acknowledgements">Acknowledgements</a><br>
 <a href="#References">References</a><br>
 &nbsp;</td>
@@ -417,7 +416,7 @@ error_code</code> with the value of ec.</span></p>
       template &lt;class Path&gt; typename Path::string_type extension(const Path&amp; p);
       template &lt;class Path&gt; typename Path::string_type basename(const Path&amp; p);
       template &lt;class Path&gt;
-        Path replace_extension(const Path&amp; p, const typename Path::string_type&amp; new_extension);
+        Path change_extension(const Path&amp; p, const typename Path::string_type&amp; new_extension);
 
     } // namespace filesystem
   } // namespace boost</pre>
@@ -547,7 +546,8 @@ system. </p>
 
         <span style="background-color: #FFFFFF">void clear();
         void swap( basic_path &amp; rhs );</span>
-        basic_path&amp; remove_leaf();
+        basic_path&amp; remove_filename();
+        basic_path&amp; replace_extension(const string_type &amp; new_extension = &quot;&quot;);
 
         // <a href="#basic_path-observers">observers</a>
         const string_type string() const;
@@ -561,8 +561,12 @@ system. </p>
         string_type  root_directory() const;
         basic_path   root_path() const;
         basic_path   relative_path() const;
-        string_type  leaf() const;
-        basic_path   branch_path() const;
+
+        basic_path   parent_path() const;
+        string_type  filename() const;
+
+        string_type  stem() const;
+        string_type  extension() const;
 
         bool empty() const;
         bool is_complete() const;
@@ -570,8 +574,8 @@ system. </p>
         bool has_root_directory() const;
         bool has_root_path() const;
         bool has_relative_path() const;
-        bool has_leaf() const;
-        bool has_branch_path() const;
+        bool has_filename() const;
+        bool has_parent_path() const;
 
         // <a href="#basic_path-iterators">iterators</a>
         class iterator;
@@ -856,15 +860,24 @@ basic_path&amp; append(InputIterator first, InputIterator last);</pre>
   <p><i><span style="background-color: #FFFFFF">Complexity: </span></i>
   <span style="background-color: #FFFFFF">constant time.</span></p>
 </blockquote>
-<pre>basic_path&amp; remove_leaf();</pre>
+<pre>basic_path&amp; remove_filename();</pre>
 <blockquote>
-  <p><i>Effects:</i> If <code>has_branch_path()</code> then remove the last <i>filename</i> from the stored path. If that leaves 
+  <p><i>Effects:</i> If <code>has_parent_path()</code> then remove the last <i>filename</i> from the stored path. If that leaves 
   the stored path with one or more trailing <i>slash</i> elements not 
   representing&nbsp; <i>root-directory</i>, remove them.</p>
   <p><i>Returns:</i> <code>*this</code></p>
   <p>[<i>Note:</i> This function is needed to efficiently implement <code>
   basic_directory_iterator</code>. It is made public to allow additional uses. <i>-- end 
   note</i>]</p>
+</blockquote>
+<pre>basic_path&amp; replace_extension( const string_type &amp; new_extension = &quot;&quot; );</pre>
+<blockquote>
+  <p><i>Postcondition: </i> <code>extension() == <i>replacement</i></code>, 
+  where <code><i>replacement</i></code> is <code>new_extension</code> if <code>
+  new_extension.empty() || new_extension[0] ==</code> the dot character, 
+  otherwise <code><i>replacement</i></code> is the dot character followed by
+  <code>new_extension</code>.</p>
+  <p><i>Returns:</i> <code>*this</code></p>
 </blockquote>
 <h4> <a name="basic_path-observers"> <code>basic_path</code> observers</a></h4>
 <blockquote>
@@ -931,17 +944,36 @@ excluded from the returned string.</p>
 with the first <i>filename</i> after <i>root-path</i>. 
 Otherwise, an empty <code>basic_path</code>.</p>
 </blockquote>
-<pre>string_type leaf() const;</pre>
+<pre>string_type filename() const;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>empty() ? string_type() : *--end()</code></p>
 </blockquote>
-<pre>basic_path branch_path() const;</pre>
+<pre>basic_path parent_path() const;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>(string().empty() || begin() == --end()) ? path_type(&quot;&quot;) : 
   <i>br</i></code>, where <code><i>br</i></code> is constructed as if by 
   starting with an empty <code>basic_path</code> and successively applying <code>
   operator/=</code> for each element in the range <code>begin()</code>, <code>
   --end()</code>.</p>
+</blockquote>
+<pre>string_type stem(const Path &amp; p) const;</pre>
+<blockquote>
+  <p><i>Returns:</i> if <code>p.filename()</code> contains a <i>dot</i>, returns 
+  the substring of <code>p.filename()</code> starting at its beginning and 
+  ending at the last <i>dot</i> (the <i>dot</i> is not included). Otherwise, 
+  returns <code>
+  p.filename()</code>.</p>
+</blockquote>
+<pre>string_type extension(const Path &amp; p) const;</pre>
+<blockquote>
+  <p><i>Returns:</i> if <code>p.filename()</code> contains a <i>dot</i>, returns 
+  the substring of <code>p.filename()</code> starting at the rightmost <i>dot</i> 
+  and ending at the string's end. Otherwise, returns an empty string. </p>
+  <p>[<i>Note:<b> </b></i>The <i>dot</i> is included in the return value so that 
+  it is possible to distinguish between no extension and an empty extension. </p>
+  <p>Implementations are permitted but not required to define additional 
+  behavior for file systems which append additional elements to extensions, such 
+  as alternate data stream or partitioned dataset names. <i>-- end note</i>]</p>
 </blockquote>
 <pre>bool empty() const;</pre>
 <blockquote>
@@ -968,13 +1000,13 @@ Otherwise, an empty <code>basic_path</code>.</p>
 <blockquote>
   <p><i>Returns:</i> <code>!relative_path().empty()</code></p>
 </blockquote>
-<pre>bool has_leaf() const;</pre>
+<pre>bool has_filename() const;</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>!leaf().empty()</code></p>
+  <p><i>Returns:</i> <code>!filename().empty()</code></p>
 </blockquote>
-<pre>bool has_branch_path() const;</pre>
+<pre>bool has_parent_path() const;</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>!branch_path().empty()</code></p>
+  <p><i>Returns:</i> <code>!parent_path().empty()</code></p>
 </blockquote>
 <h4> <a name="basic_path-iterators"> <code>basic_path</code> iterators</a></h4>
 <p> A <code>basic_path::iterator</code> is a constant iterator satisfying all 
@@ -1364,7 +1396,7 @@ the <code>what</code> member function.</p>
 
         // <a href="#basic_directory_entry-modifiers">modifiers</a>
         void assign(const path_type&amp; p, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());
-        void replace_leaf(const string_type&amp; s, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());
+        void replace_filename(const string_type&amp; s, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());
 
         // <a href="#basic_directory_entry-observers">observers</a>
         const Path&amp; path() const;
@@ -1474,7 +1506,7 @@ Unix variants that provide status during directory iteration.</i></span></p>
     </tr>
   </table>
 </blockquote>
-<pre>void replace_leaf(const string_type&amp; s, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());</pre>
+<pre>void replace_filename(const string_type&amp; s, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());</pre>
 <blockquote>
   <p><i>Postconditions:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="43%">
@@ -1645,7 +1677,7 @@ int main(int argc, char* argv[])
   {
     for (directory_iterator itr(p); itr!=directory_iterator(); ++itr)
     {
-      cout &lt;&lt; itr-&gt;path().leaf() &lt;&lt; ' '; // display filename only
+      cout &lt;&lt; itr-&gt;path().filename() &lt;&lt; ' '; // display filename only
       if (is_regular_file(itr-&gt;status())) cout &lt;&lt; &quot; [&quot; &lt;&lt; file_size(itr-&gt;path()) &lt;&lt; ']';
       cout &lt;&lt; '\n';
     }
@@ -2298,11 +2330,18 @@ systems. <i>--end note</i>.]</p>
   <p><i>Throws:</i>&nbsp; <code>basic_filesystem_error&lt;Path&gt;</code> if<code> 
   exists(p) &amp;&amp; !is_directory(p)</code></p>
 </blockquote>
+<table border="1" cellpadding="5" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td>
+    <h4>Deprecated convenience functions</h4>
+    <p>The following functions have been replaced by <code>basic_path</code> 
+    member functions <code>extension()</code>, <code>stem()</code>, and <code>
+    replace_extension()</code>.</p>
 <pre>template &lt;class Path&gt; typename Path::string_type extension(const Path &amp; p);</pre>
 <blockquote>
-  <p><i>Returns:</i> if <code>p.leaf()</code> contains a <i>dot</i>, returns the 
-  substring of <code>p.leaf()</code> starting at the rightmost <i>dot</i> and 
-  ending at the string's end. Otherwise, returns an empty string. </p>
+  <p><i>Returns:</i> if <code>p.filename()</code> contains a <i>dot</i>, returns 
+  the substring of <code>p.filename()</code> starting at the rightmost <i>dot</i> 
+  and ending at the string's end. Otherwise, returns an empty string. </p>
   <p>[<i>Note:<b> </b></i>The <i>dot</i> is included in the return value so that 
   it is possible to distinguish between no extension and an empty extension. </p>
   <p>Implementations are permitted but not required to define additional 
@@ -2311,10 +2350,11 @@ systems. <i>--end note</i>.]</p>
 </blockquote>
 <pre>template &lt;class Path&gt; typename Path::string_type basename(const Path &amp; p);</pre>
 <blockquote>
-  <p><i>Returns:</i> if <code>p.leaf()</code> contains a <i>dot</i>, returns the 
-  substring of <code>p.leaf()</code> starting at its beginning and ending at the 
-  last <i>dot</i> (the <i>dot</i> is not included). Otherwise, returns <code>
-  p.leaf()</code>.</p>
+  <p><i>Returns:</i> if <code>p.filename()</code> contains a <i>dot</i>, returns 
+  the substring of <code>p.filename()</code> starting at its beginning and 
+  ending at the last <i>dot</i> (the <i>dot</i> is not included). Otherwise, 
+  returns <code>
+  p.filename()</code>.</p>
 </blockquote>
 <pre>template &lt;class Path&gt;
   Path change_extension(const Path &amp; p, const typename Path::string_type &amp; new_extension);</pre>
@@ -2325,33 +2365,9 @@ systems. <i>--end note</i>.]</p>
   that <code>new_extension</code> should include <i>dot</i> to achieve 
   reasonable results. <i>-- end note</i>]</p>
 </blockquote>
-<h3><a name="header-cerrno">Additions</a> to header <code>&lt;cerrno&gt;</code></h3>
-<p>The header &lt;cerrno&gt; shall include an additional symbolic constant macro for 
-each of the values  returned by the <a href="#to_errno">to_errno</a> 
-function. The macro names shall be as defined in <i>POSIX</i>
-<a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/errno.h.html">
-errno.h</a>, with the additions below.</p>
-<blockquote>
-<p><i><span style="background-color: #E0E0E0">This codifies existing practice. 
-The required names are only a sub-set of those defined by POSIX, and are usually already 
-supplied in &lt;errno.h&gt; (as wrapped by &lt;cerrno&gt;) as shipped with POSIX and Windows compilers. 
-These implementations require no changes to their underlying C headers to conform with the above 
-requirement.</span></i></p>
-<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="33%">
-  <tr>
-    <td width="18%" align="center"><i><b>Name</b></i></td>
-    <td width="82%" align="center"><i><b>Meaning</b></i></td>
-  </tr>
-  <tr>
-    <td width="18%"><code>EBADHANDLE</code></td>
-    <td width="82%">Bad operating system handle.</td>
-  </tr>
-  <tr>
-    <td width="18%"><code>EOTHER</code></td>
-    <td width="82%">Other error.</td>
+    </td>
   </tr>
 </table>
-</blockquote>
 <h3><a name="header-fstream">Additions</a> to header <code>&lt;fstream&gt;</code></h3>
 <blockquote>
 <p><span style="background-color: #E0E0E0; font-style:italic">These additions have been carefully 
@@ -2384,14 +2400,14 @@ add the above to the signature preceding paragraph 2, and replace the
 sentence:</i></span></p>
 <blockquote>
 <p><span style="background-color: #FFFFFF">It then opens a file, if possible, 
-whose name is the NTBS s (ìas ifî by calling <code>std::fopen(s ,<i>modstr</i> 
+whose name is the NTBS s (‚Äúas if‚Äù by calling <code>std::fopen(s ,<i>modstr</i> 
 ))</code>.</span></p>
 </blockquote>
 <p><span style="background-color: #FFFFFF"><i>with:</i></span></p>
 <blockquote>
 <p><span style="background-color: #FFFFFF">It then opens, if possible, the file 
 that
-<code>p</code> or <code>path(s)</code> resolves to, ìas ifî by calling <code>std::fopen()</code> with a 
+<code>p</code> or <code>path(s)</code> resolves to, ‚Äúas if‚Äù by calling <code>std::fopen()</code> with a 
 second argument of <i>modstr</i>.</span></p>
 </blockquote>
 <p><span style="background-color: #FFFFFF"><i>In 27.8.1.5 Class template 
@@ -2510,8 +2526,8 @@ implementations yield different results. The top value is the
 <td width="48"><b><code>root_<br>name()</code></b></td>
 <td width="88"><b><code>root_<br>directory()</code></b></td>
 <td width="96"><b><code>relative_<br>path()<br>.string()</code></b></td>
-<td width="72"><b><code>branch_<br>path()<br>.string()</code></b></td>
-<td width="72"><b><code>leaf()</code></b></td>
+<td width="72"><b><code>parent_<br>path()<br>.string()</code></b></td>
+<td width="72"><b><code>filename()</code></b></td>
 </tr>
 <tr>
 <td width="112"><code>&quot;&quot;</code></td>
@@ -3015,29 +3031,6 @@ new fstream classes in namespace <code>filesystem</code>, inheriting from the cu
 classes, overriding the constructors and opens taking pathname arguments, and 
 providing the additional overloads. In Lillehammer LWG members indicated lack of 
 support for this alternative, feeling that costs outweigh benefits.</span></p>
-<h2><a name="Issues">Issues</a></h2>
-<h3>1. Return type of certain basic_path members returning strings. [Howard 
-Hinnant]</h3>
-<p>For member functions described as returning &quot;<code>const string_type</code>&quot; 
-or &quot;<code>const external_string_type</code>&quot;, implementations are permitted to 
-return &quot;<code>const string_type&amp;</code>&quot; or&nbsp; &quot;<code>const 
-external_string_type&amp;</code>&quot; respectively.</p>
-<p>This allows implementations to avoid unnecessary copies. Return-by-value is 
-specified as
-<code>const</code> to ensure programs won't break if moved to a 
-return-by-reference implementation.</p>
-<p>For example, the Boost implementation keeps the internal representation of a 
-pathname in the portable format, so string() returns by reference and is inlined:</p>
-<blockquote>
-  <pre>const string_type &amp; string() const { return m_path; }</pre>
-</blockquote>
-<p>Howard Hinnant comments: This may inhibit optimization if rvalue reference is 
-accepted.&nbsp; Const-qualified return types can't be moved from.&nbsp; I'd 
-rather see either the return type specified as 
-<code>const string_type&amp;</code> or <code>string_type</code>.</p>
-<p>Beman Dawes comments: I can't make up my mind. Removing the const will bite 
-users, but not very often. OTOH, excessive copying is a real concern, and if 
-move semantics can alleviate that, I'm all for it. What does the LWG think?</p>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>This Filesystem Library is dedicated to my wife, Sonda, who provided the 
 support necessary to see both a trial implementation and the proposal itself 
@@ -3047,8 +3040,7 @@ year of cancer treatment in the middle of it all.</p>
 Boost Filesystem Library. See
 <a href="http://www.boost.org/libs/filesystem/doc/index.htm#Acknowledgements">
 http://www.boost.org/libs/filesystem/doc/index.htm#Acknowledgements</a>.</p>
-<p>Dietmar K¸hl contributed the original Boost Filesystem Library 
-directory_iterator design. Peter Dimov, Walter Landry, Rob Stewart, and Thomas 
+<p>Dietmar Kuehl contributed the original Boost Filesystem Library directory_iterator design. Peter Dimov, Walter Landry, Rob Stewart, and Thomas 
 Witt were particularly helpful in refining the library.</p>
 <p>The create_directories, extension, basename, and replace_extension functions 
 were developed by Vladimir Prus.</p>
@@ -3060,7 +3052,7 @@ final document.</p>
   <tr>
     <td width="16%" valign="top">[<a name="ISO_POSIX">ISO-POSIX</a>]</td>
     <td width="84%">ISO/IEC 9945:2003, IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group 
-    Base Specifications, Issue 6. Also known as The Single Unix<font face="Times New Roman">Æ 
+    Base Specifications, Issue 6. Also known as The Single Unix<font face="Times New Roman">¬Æ 
     Specification, Version 3. Available from each of the organizations involved 
     in its creation. For example, read online or download from
     <a href="http://www.unix.org/single_unix_specification/">
@@ -3080,7 +3072,7 @@ final document.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 July 2008<!--webbot bot="Timestamp" endspan i-checksum="18826" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->06 July 2008<!--webbot bot="Timestamp" endspan i-checksum="18830" --></p>
 
 </body>
 
