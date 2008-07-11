@@ -24,6 +24,8 @@
 #include <boost/cerrno.hpp>
 #include <boost/system/error_code.hpp>
 
+#include <cwchar>     // for std::mbstate_t
+
 namespace
 {
   // std::locale construction can throw (if LC_MESSAGES is wrong, for example),

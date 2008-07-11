@@ -8,12 +8,7 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-//  VC++ 8.0 warns on various less-than-safe practices.
-//  See http://msdn.microsoft.com/msdnmag/issues/05/05/SafeCandC/default.aspx
-//  But at least in VC++ 8.0 betas, their own libraries use the problem
-//  practices. So turn off the warnings.
-#define _CRT_SECURE_NO_DEPRECATE
-#define _SCL_SECURE_NO_DEPRECATE
+#include <boost/config/warning_disable.hpp>
 
 #include <boost/filesystem/config.hpp>
 # ifdef BOOST_FILESYSTEM_NARROW_ONLY
@@ -31,6 +26,7 @@ namespace fs = boost::filesystem;
 
 #include <iostream>
 #include <iomanip>
+#include <ios>
 #include <string>
 #include <cerrno>
 
@@ -112,7 +108,7 @@ namespace
     if ( convertor.out( 
       state, src.c_str(), src.c_str()+src.size(), from_next, work.get(),
       work.get()+work_size, to_next ) != std::codecvt_base::ok )
-      boost::throw_exception( "to_external conversion error" );
+      boost::throw_exception( std::runtime_error("to_external conversion error") );
     *to_next = '\0';
     return std::string( work.get() );
   }

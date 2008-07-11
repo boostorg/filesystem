@@ -110,6 +110,8 @@ namespace std { using ::strcmp; using ::remove; using ::rename; }
 
 namespace
 {
+  const error_code ok;
+
   const fs::directory_iterator end_itr;
   bool is_empty_directory( const std::string & dir_path )
   {
@@ -200,19 +202,19 @@ namespace
         || (ec.value() == ERROR_BAD_PATHNAME) // "//nosuch" on Win64
         || (ec.value() == ERROR_BAD_NETPATH)) // "//nosuch" on Win32
       {
-        ec = error_code(); // these are not considered errors;
+        ec = ok; // these are not considered errors;
                            // the status is considered not found
         return fs::file_status( fs::file_not_found );
       }
       else if ((ec.value() == ERROR_SHARING_VIOLATION))
       {
-        ec = error_code(); // these are not considered errors;
+        ec = ok; // these are not considered errors;
                            // the file exists but the type is not known 
         return fs::file_status( fs::type_unknown );
       }
       return fs::file_status( fs::status_unknown );
     }
-    ec = error_code();;
+    ec = ok;;
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
       ? fs::file_status( fs::directory_file )
       : fs::file_status( fs::regular_file );
@@ -229,7 +231,7 @@ namespace
     WIN32_FILE_ATTRIBUTE_DATA fad;
     if ( get_file_attributes_ex( ph.c_str(), fad ) == 0 )
       return std::make_pair( error_code( ::GetLastError(), system_category ), false );    
-    return std::make_pair( error_code(),
+    return std::make_pair( ok,
       ( fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
         ? is_empty_directory( ph )
         :( !fad.nFileSizeHigh && !fad.nFileSizeLow ) );
@@ -295,7 +297,7 @@ namespace
     {
       if ( p1.handle != INVALID_HANDLE_VALUE
         || p2.handle != INVALID_HANDLE_VALUE )
-        { return std::make_pair( error_code(), false ); }
+        { return std::make_pair( ok, false ); }
       assert( p1.handle == INVALID_HANDLE_VALUE
         && p2.handle == INVALID_HANDLE_VALUE );
         { return std::make_pair( error_code( error1, system_category), false ); }
@@ -309,7 +311,7 @@ namespace
     // In theory, volume serial numbers are sufficient to distinguish between
     // devices, but in practice VSN's are sometimes duplicated, so last write
     // time and file size are also checked.
-      return std::make_pair( error_code(),
+      return std::make_pair( ok,
         info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber
         && info1.nFileIndexHigh == info2.nFileIndexHigh
         && info1.nFileIndexLow == info2.nFileIndexLow
@@ -331,7 +333,7 @@ namespace
       return std::make_pair( error_code( ::GetLastError(), system_category ), 0 );    
     if ( (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) !=0 )
       return std::make_pair( error_code( ERROR_FILE_NOT_FOUND, system_category), 0 );
-    return std::make_pair( error_code(),
+    return std::make_pair( ok,
       (static_cast<boost::uintmax_t>(fad.nFileSizeHigh)
         << (sizeof(fad.nFileSizeLow)*8))
       + fad.nFileSizeLow );
@@ -349,7 +351,7 @@ namespace
     boost::filesystem::detail::space_pair result;
     if ( get_free_disk_space( ph, &avail, &total, &free ) )
     {
-      result.first = error_code();
+      result.first = ok;
       result.second.capacity
         = (static_cast<boost::uintmax_t>(total.HighPart) << 32)
           + total.LowPart;
@@ -385,7 +387,7 @@ namespace
     if ( get_current_directory( sz, buf.get() ) == 0 )
       return error_code( ::GetLastError(), system_category );
     ph = buf.get();
-    return error_code();
+    return ok;
   }
 
   inline bool set_current_directory( const char * buf )
@@ -426,11 +428,11 @@ namespace
         == 0 ) return error_code( ::GetLastError(), system_category );
       big_buf[len] = '\0';
       target = big_buf.get();
-      return error_code();
+      return ok;
     }
     buf[len] = '\0';
     target = buf;
-    return error_code();
+    return ok;
   }
 
   template<class String>
@@ -517,9 +519,14 @@ namespace
   error_code
   remove_template( const String & ph )
   {
+    // TODO: test this code in the presence of Vista symlinks,
+    // including dangling, self-referal, and cyclic symlinks
     error_code ec;
     fs::file_status sf( fs::detail::status_api( ph, ec ) );
-    if ( ec ) return ec;
+    if ( ec ) 
+      return ec;
+    if ( sf.type() == fs::file_not_found )
+      return ok;
     if ( fs::is_directory( sf ) )
     {
       if ( !remove_directory( ph ) )
@@ -529,7 +536,7 @@ namespace
     {
       if ( !delete_file( ph ) ) return error_code(::GetLastError(), system_category);
     }
-    return error_code();
+    return ok;
   }
 
   inline bool create_directory( const std::string & dir )
@@ -545,7 +552,7 @@ namespace
     // an error here may simply mean the postcondition is already met
     if ( error.value() == ERROR_ALREADY_EXISTS
       && fs::is_directory( fs::detail::status_api( dir_ph, dummy ) ) )
-      return std::make_pair( error_code(), false );
+      return std::make_pair( ok, false );
     return std::make_pair( error, false );
   }
 
@@ -566,6 +573,24 @@ namespace
   }
 #endif
 
+#else // BOOST_POSIX_API
+
+  int posix_remove( const char * p )
+  {
+#     if defined(__QNXNTO__) || (defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)))
+        // Some Metrowerks C library versions fail on directories because of a
+        // known Metrowerks coding error in ::remove. Workaround is to call
+        // rmdir() or unlink() as indicated.
+        // Same bug also reported for QNX, with the same fix.
+        int err = ::unlink( p );
+        if ( err != EPERM )
+          return err;
+        return ::rmdir( p )
+#     else
+        return std::remove( p );
+#     endif
+  }
+
 #endif
 } // unnamed namespace
 
@@ -575,6 +600,7 @@ namespace boost
   {
     namespace detail
     {
+      BOOST_FILESYSTEM_DECL system::error_code throws;
 
 //  free functions  ----------------------------------------------------------//
 
@@ -763,7 +789,7 @@ namespace boost
         if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
           { sf.type( directory_file ); symlink_sf.type( directory_file ); }
         else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
-        return error_code();
+        return ok;
       }  
 
       BOOST_FILESYSTEM_DECL error_code
@@ -781,7 +807,7 @@ namespace boost
         if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
           { sf.type( directory_file ); symlink_sf.type( directory_file ); }
         else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
-        return error_code();
+        return ok;
       }
 
 #     endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
@@ -889,7 +915,7 @@ namespace boost
         if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
           { sf.type( directory_file ); symlink_sf.type( directory_file ); }
         else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
-        return error_code();
+        return ok;
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -901,7 +927,7 @@ namespace boost
           handle = 0;
           return error_code( ok ? 0 : ::GetLastError(), system_category );
         }
-        return error_code();
+        return ok;
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -919,7 +945,7 @@ namespace boost
         if ( data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
           { sf.type( directory_file ); symlink_sf.type( directory_file ); }
         else { sf.type( regular_file ); symlink_sf.type( regular_file ); }
-        return error_code();
+        return ok;
       }
 
 #   else // BOOST_POSIX_API
@@ -932,13 +958,13 @@ namespace boost
         {
           if ( errno == ENOENT || errno == ENOTDIR )
           {
-            ec = error_code();
+            ec = ok;
             return fs::file_status( fs::file_not_found );
           }
           ec = error_code( errno, system_category );
           return fs::file_status( fs::status_unknown );
         }
-        ec = error_code();
+        ec = ok;
         if ( S_ISDIR( path_stat.st_mode ) )
           return fs::file_status( fs::directory_file );
         if ( S_ISREG( path_stat.st_mode ) )
@@ -962,13 +988,13 @@ namespace boost
         {
           if ( errno == ENOENT || errno == ENOTDIR )
           {
-            ec = error_code();
+            ec = ok;
             return fs::file_status( fs::file_not_found );
           }
           ec = error_code( errno, system_category );
           return fs::file_status( fs::status_unknown );
         }
-        ec = error_code();
+        ec = ok;
         if ( S_ISREG( path_stat.st_mode ) )
           return fs::file_status( fs::regular_file );
         if ( S_ISDIR( path_stat.st_mode ) )
@@ -1001,7 +1027,7 @@ namespace boost
         struct stat path_stat;
         if ( (::stat( ph.c_str(), &path_stat )) != 0 )
           return std::make_pair( error_code( errno, system_category ), false );        
-        return std::make_pair( error_code(), S_ISDIR( path_stat.st_mode )
+        return std::make_pair( ok, S_ISDIR( path_stat.st_mode )
           ? is_empty_directory( ph )
           : path_stat.st_size == 0 );
       }
@@ -1016,7 +1042,7 @@ namespace boost
         if ( e1 != 0 || e2 != 0 )
           return std::make_pair( error_code( e1 != 0 && e2 != 0 ? errno : 0, system_category ), false );
         // at this point, both stats are known to be valid
-        return std::make_pair( error_code(),
+        return std::make_pair( ok,
             s1.st_dev == s2.st_dev
             && s1.st_ino == s2.st_ino
             // According to the POSIX stat specs, "The st_ino and st_dev fields
@@ -1034,7 +1060,7 @@ namespace boost
           return std::make_pair( error_code( errno, system_category ), 0 );
         if ( !S_ISREG( path_stat.st_mode ) )
           return std::make_pair( error_code( EPERM, system_category ), 0 ); 
-        return std::make_pair( error_code(),
+        return std::make_pair( ok,
           static_cast<boost::uintmax_t>(path_stat.st_size) );
       }
 
@@ -1051,7 +1077,7 @@ namespace boost
         }
         else
         {
-          result.first = error_code();
+          result.first = ok;
           result.second.capacity 
             = static_cast<boost::uintmax_t>(vfs.f_blocks) * BOOST_STATVFS_F_FRSIZE;
           result.second.free 
@@ -1068,7 +1094,7 @@ namespace boost
         struct stat path_stat;
         if ( ::stat( ph.c_str(), &path_stat ) != 0 )
           return std::make_pair( error_code( errno, system_category ), 0 );
-        return std::make_pair( error_code(), path_stat.st_mtime );
+        return std::make_pair( ok, path_stat.st_mtime );
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -1105,7 +1131,7 @@ namespace boost
             break;
           }
         }
-        return error_code();
+        return ok;
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -1119,13 +1145,13 @@ namespace boost
       create_directory_api( const std::string & ph )
       {
         if ( ::mkdir( ph.c_str(), S_IRWXU|S_IRWXG|S_IRWXO ) == 0 )
-          { return std::make_pair( error_code(), true ); }
+          { return std::make_pair( ok, true ); }
         int ec=errno;
         error_code dummy;
         if ( ec != EEXIST 
           || !fs::is_directory( status_api( ph, dummy ) ) )
           { return std::make_pair( error_code( ec, system_category ), false ); }
-        return std::make_pair( error_code(), false );
+        return std::make_pair( ok, false );
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -1147,28 +1173,19 @@ namespace boost
       BOOST_FILESYSTEM_DECL error_code
       remove_api( const std::string & ph )
       {
-#     if defined(__QNXNTO__) || (defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)))
-        // Some Metrowerks C library versions fail on directories because of a
-        // known Metrowerks coding error in ::remove. Workaround is to call
-        // rmdir() or unlink() as indicated.
-        // Same bug also reported for QNX, with the same fix.
-        if ( (is_directory( ph )
-          ? ::rmdir( ph.c_str() )
-          : ::unlink( ph.c_str() )) != 0 )
-#     else
-        // note that the POSIX behavior for symbolic links is what we want;
-        // the link rather than what it points to is deleted
-        if ( std::remove( ph.c_str() ) != 0 )
-#     endif
-        {
-          int error = errno;
-          // POSIX says "If the directory is not an empty directory, rmdir()
-          // shall fail and set errno to EEXIST or ENOTEMPTY."
-          // Linux uses ENOTEMPTY, Solaris uses EEXIST.
-          if ( error == EEXIST ) error = ENOTEMPTY;
-          return error_code( error, system_category );
-        }
-        return error_code();
+        if ( posix_remove( ph.c_str() ) == 0 )
+          return ok;
+        int error = errno;
+        // POSIX says "If the directory is not an empty directory, rmdir()
+        // shall fail and set errno to EEXIST or ENOTEMPTY."
+        // Linux uses ENOTEMPTY, Solaris uses EEXIST.
+        if ( error == EEXIST ) error = ENOTEMPTY;
+
+        error_code ec;
+
+        // ignore errors if post-condition satisfied
+        return status_api(ph, ec).type() == file_not_found
+          ? ok : error_code( error, system_category ) ;
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -1249,7 +1266,7 @@ namespace boost
           else max = static_cast<std::size_t>( tmp + 1 ); // relative root
         }
         result = max;
-        return error_code();
+        return ok;
       }
 
       BOOST_FILESYSTEM_DECL error_code
@@ -1268,7 +1285,7 @@ namespace boost
         dirent de;
         buffer = std::malloc( (sizeof(dirent) - sizeof(de.d_name))
           +  path_size + 1 ); // + 1 for "/0"
-        return error_code();
+        return ok;
       }  
 
       BOOST_FILESYSTEM_DECL error_code
@@ -1276,7 +1293,7 @@ namespace boost
       {
         std::free( buffer );
         buffer = 0;
-        if ( handle == 0 ) return error_code();
+        if ( handle == 0 ) return ok;
         DIR * h( static_cast<DIR*>(handle) );
         handle = 0;
         return error_code( ::closedir( h ) == 0 ? 0 : errno, system_category );
@@ -1339,7 +1356,7 @@ namespace boost
 #     else
         sf = symlink_sf = fs::file_status( fs::status_unknown );
 #     endif
-        return error_code();
+        return ok;
       }
 
 #   endif

@@ -1,11 +1,17 @@
 //  path_test program  -------------------------------------------------------//
 
-//  Copyright Beman Dawes 2002.
+//  Copyright Beman Dawes 2002
+//  Copyright Vladimir Prus 2002
+
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
 //  See library home page at http://www.boost.org/libs/filesystem
+
+//  basic_path's stem(), extension(), and replace_extension() tests are based
+//  on basename(), extension(), and change_extension() tests from the original
+//  convenience_test.cpp by Vladimir Prus.
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/utility.hpp>
@@ -248,6 +254,18 @@ int test_main( int, char*[] )
   path p5;
   std::string s1( "//:somestring" );
 
+  // verify deprecated names still available
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+
+  p1.branch_path();
+  p1.leaf();
+  path p_remove_leaf;
+  p_remove_leaf.remove_leaf();
+
+# endif
+
+
 # ifndef BOOST_NO_MEMBER_TEMPLATES
 
   // check the path member templates
@@ -290,10 +308,10 @@ int test_main( int, char*[] )
   BOOST_CHECK( p1 != p4 );
   BOOST_CHECK( p1.string() == p2.string() );
   BOOST_CHECK( p1.string() == p3.string() );
-  BOOST_CHECK( path( "foo" ).leaf() == "foo" );
-  BOOST_CHECK( path( "foo" ).branch_path().string() == "" );
-  BOOST_CHECK( p1.leaf() == "fum" );
-  BOOST_CHECK( p1.branch_path().string() == "fe/fi/fo" );
+  BOOST_CHECK( path( "foo" ).filename() == "foo" );
+  BOOST_CHECK( path( "foo" ).parent_path().string() == "" );
+  BOOST_CHECK( p1.filename() == "fum" );
+  BOOST_CHECK( p1.parent_path().string() == "fe/fi/fo" );
   BOOST_CHECK( path( "" ).empty() == true );
   BOOST_CHECK( path( "foo" ).empty() == false );
 
@@ -336,7 +354,7 @@ int test_main( int, char*[] )
   PATH_CHECK( "foo/bar", "foo/bar" );
   PATH_CHECK( path("foo") / path("bar"), "foo/bar" ); // path arg
   PATH_CHECK( path("foo") / "bar", "foo/bar" );       // const char * arg
-  PATH_CHECK( path("foo") / path("woo/bar").leaf(), "foo/bar" ); // const std::string & arg
+  PATH_CHECK( path("foo") / path("woo/bar").filename(), "foo/bar" ); // const std::string & arg
   PATH_CHECK( "foo" / path("bar"), "foo/bar" );
 
   PATH_CHECK( "a/b", "a/b" );  // probe for length effects
@@ -616,8 +634,8 @@ int test_main( int, char*[] )
 
   p = "";
   BOOST_CHECK( p.relative_path().string() == "" );
-  BOOST_CHECK( p.branch_path().string() == "" );
-  BOOST_CHECK( p.leaf() == "" );
+  BOOST_CHECK( p.parent_path().string() == "" );
+  BOOST_CHECK( p.filename() == "" );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "" );
   BOOST_CHECK( p.root_path().string() == "" );
@@ -625,14 +643,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( !p.has_relative_path() );
-  BOOST_CHECK( !p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( !p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "/";
   BOOST_CHECK( p.relative_path().string() == "" );
-  BOOST_CHECK( p.branch_path().string() == "" );
-  BOOST_CHECK( p.leaf() == "/" );
+  BOOST_CHECK( p.parent_path().string() == "" );
+  BOOST_CHECK( p.filename() == "/" );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "/" );
   BOOST_CHECK( p.root_path().string() == "/" );
@@ -640,8 +658,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( !p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   if ( platform == "POSIX" )
     BOOST_CHECK( p.is_complete() );
   else
@@ -649,8 +667,8 @@ int test_main( int, char*[] )
 
   p = "//";
   CHECK_EQUAL( p.relative_path().string(), "" );
-  CHECK_EQUAL( p.branch_path().string(), "" );
-  CHECK_EQUAL( p.leaf(), "//" );
+  CHECK_EQUAL( p.parent_path().string(), "" );
+  CHECK_EQUAL( p.filename(), "//" );
   CHECK_EQUAL( p.root_name(), "//" );
   CHECK_EQUAL( p.root_directory(), "" );
   CHECK_EQUAL( p.root_path().string(), "//" );
@@ -658,15 +676,15 @@ int test_main( int, char*[] )
   BOOST_CHECK( p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( !p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
 
   p = "///";
   CHECK_EQUAL( p.relative_path().string(), "" );
-  CHECK_EQUAL( p.branch_path().string(), "" );
-  CHECK_EQUAL( p.leaf(), "/" );
+  CHECK_EQUAL( p.parent_path().string(), "" );
+  CHECK_EQUAL( p.filename(), "/" );
   CHECK_EQUAL( p.root_name(), "" );
   CHECK_EQUAL( p.root_directory(), "/" );
   CHECK_EQUAL( p.root_path().string(), "/" );
@@ -674,8 +692,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( !p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   if ( platform == "POSIX" )
     BOOST_CHECK( p.is_complete() );
   else
@@ -683,8 +701,8 @@ int test_main( int, char*[] )
 
   p = ".";
   BOOST_CHECK( p.relative_path().string() == "." );
-  BOOST_CHECK( p.branch_path().string() == "" );
-  BOOST_CHECK( p.leaf() == "." );
+  BOOST_CHECK( p.parent_path().string() == "" );
+  BOOST_CHECK( p.filename() == "." );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "" );
   BOOST_CHECK( p.root_path().string() == "" );
@@ -692,14 +710,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "..";
   BOOST_CHECK( p.relative_path().string() == ".." );
-  BOOST_CHECK( p.branch_path().string() == "" );
-  BOOST_CHECK( p.leaf() == ".." );
+  BOOST_CHECK( p.parent_path().string() == "" );
+  BOOST_CHECK( p.filename() == ".." );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "" );
   BOOST_CHECK( p.root_path().string() == "" );
@@ -707,14 +725,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "foo";
   BOOST_CHECK( p.relative_path().string() == "foo" );
-  BOOST_CHECK( p.branch_path().string() == "" );
-  BOOST_CHECK( p.leaf() == "foo" );
+  BOOST_CHECK( p.parent_path().string() == "" );
+  BOOST_CHECK( p.filename() == "foo" );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "" );
   BOOST_CHECK( p.root_path().string() == "" );
@@ -722,14 +740,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "/foo";
   CHECK_EQUAL( p.relative_path().string(), "foo" );
-  CHECK_EQUAL( p.branch_path().string(), "/" );
-  CHECK_EQUAL( p.leaf(), "foo" );
+  CHECK_EQUAL( p.parent_path().string(), "/" );
+  CHECK_EQUAL( p.filename(), "foo" );
   CHECK_EQUAL( p.root_name(), "" );
   CHECK_EQUAL( p.root_directory(), "/" );
   CHECK_EQUAL( p.root_path().string(), "/" );
@@ -737,8 +755,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   if ( platform == "POSIX" )
     BOOST_CHECK( p.is_complete() );
   else
@@ -746,8 +764,8 @@ int test_main( int, char*[] )
 
   p = "/foo/";
   CHECK_EQUAL( p.relative_path().string(), "foo/" );
-  CHECK_EQUAL( p.branch_path().string(), "/foo" );
-  CHECK_EQUAL( p.leaf(), "." );
+  CHECK_EQUAL( p.parent_path().string(), "/foo" );
+  CHECK_EQUAL( p.filename(), "." );
   CHECK_EQUAL( p.root_name(), "" );
   CHECK_EQUAL( p.root_directory(), "/" );
   CHECK_EQUAL( p.root_path().string(), "/" );
@@ -755,8 +773,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   if ( platform == "POSIX" )
     BOOST_CHECK( p.is_complete() );
   else
@@ -764,8 +782,8 @@ int test_main( int, char*[] )
 
   p = "///foo";
   CHECK_EQUAL( p.relative_path().string(), "foo" );
-  CHECK_EQUAL( p.branch_path().string(), "/" );
-  CHECK_EQUAL( p.leaf(), "foo" );
+  CHECK_EQUAL( p.parent_path().string(), "/" );
+  CHECK_EQUAL( p.filename(), "foo" );
   CHECK_EQUAL( p.root_name(), "" );
   CHECK_EQUAL( p.root_directory(), "/" );
   CHECK_EQUAL( p.root_path().string(), "/" );
@@ -773,8 +791,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   if ( platform == "POSIX" )
     BOOST_CHECK( p.is_complete() );
   else
@@ -782,8 +800,8 @@ int test_main( int, char*[] )
 
   p = "foo/bar";
   BOOST_CHECK( p.relative_path().string() == "foo/bar" );
-  BOOST_CHECK( p.branch_path().string() == "foo" );
-  BOOST_CHECK( p.leaf() == "bar" );
+  BOOST_CHECK( p.parent_path().string() == "foo" );
+  BOOST_CHECK( p.filename() == "bar" );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "" );
   BOOST_CHECK( p.root_path().string() == "" );
@@ -791,14 +809,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "../foo";
   BOOST_CHECK( p.relative_path().string() == "../foo" );
-  BOOST_CHECK( p.branch_path().string() == ".." );
-  BOOST_CHECK( p.leaf() == "foo" );
+  BOOST_CHECK( p.parent_path().string() == ".." );
+  BOOST_CHECK( p.filename() == "foo" );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "" );
   BOOST_CHECK( p.root_path().string() == "" );
@@ -806,14 +824,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "..///foo";
   CHECK_EQUAL( p.relative_path().string(), "..///foo" );
-  CHECK_EQUAL( p.branch_path().string(), ".." );
-  CHECK_EQUAL( p.leaf(), "foo" );
+  CHECK_EQUAL( p.parent_path().string(), ".." );
+  CHECK_EQUAL( p.filename(), "foo" );
   CHECK_EQUAL( p.root_name(), "" );
   CHECK_EQUAL( p.root_directory(), "" );
   CHECK_EQUAL( p.root_path().string(), "" );
@@ -821,14 +839,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = "/foo/bar";
   BOOST_CHECK( p.relative_path().string() == "foo/bar" );
-  BOOST_CHECK( p.branch_path().string() == "/foo" );
-  BOOST_CHECK( p.leaf() == "bar" );
+  BOOST_CHECK( p.parent_path().string() == "/foo" );
+  BOOST_CHECK( p.filename() == "bar" );
   BOOST_CHECK( p.root_name() == "" );
   BOOST_CHECK( p.root_directory() == "/" );
   BOOST_CHECK( p.root_path().string() == "/" );
@@ -836,8 +854,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( !p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   if ( platform == "POSIX" )
     BOOST_CHECK( p.is_complete() );
   else
@@ -852,8 +870,8 @@ int test_main( int, char*[] )
   p = path( "//net" );
   CHECK_EQUAL( p.string(), "//net" );
   CHECK_EQUAL( p.relative_path().string(), "" );
-  CHECK_EQUAL( p.branch_path().string(), "" );
-  CHECK_EQUAL( p.leaf(), "//net" );
+  CHECK_EQUAL( p.parent_path().string(), "" );
+  CHECK_EQUAL( p.filename(), "//net" );
   CHECK_EQUAL( p.root_name(), "//net" );
   CHECK_EQUAL( p.root_directory(), "" );
   CHECK_EQUAL( p.root_path().string(), "//net" );
@@ -861,14 +879,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( p.has_root_name() );
   BOOST_CHECK( !p.has_root_directory() );
   BOOST_CHECK( !p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( !p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( !p.has_parent_path() );
   BOOST_CHECK( !p.is_complete() );
 
   p = path( "//net/" );
   BOOST_CHECK( p.relative_path().string() == "" );
-  BOOST_CHECK( p.branch_path().string() == "//net" );
-  BOOST_CHECK( p.leaf() == "/" );
+  BOOST_CHECK( p.parent_path().string() == "//net" );
+  BOOST_CHECK( p.filename() == "/" );
   BOOST_CHECK( p.root_name() == "//net" );
   BOOST_CHECK( p.root_directory() == "/" );
   BOOST_CHECK( p.root_path().string() == "//net/" );
@@ -876,14 +894,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( !p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   BOOST_CHECK( p.is_complete() );
 
   p = path( "//net/foo" );
   BOOST_CHECK( p.relative_path().string() == "foo" );
-  BOOST_CHECK( p.branch_path().string() == "//net/" );
-  BOOST_CHECK( p.leaf() == "foo" );
+  BOOST_CHECK( p.parent_path().string() == "//net/" );
+  BOOST_CHECK( p.filename() == "foo" );
   BOOST_CHECK( p.root_name() == "//net" );
   BOOST_CHECK( p.root_directory() == "/" );
   BOOST_CHECK( p.root_path().string() == "//net/" );
@@ -891,14 +909,14 @@ int test_main( int, char*[] )
   BOOST_CHECK( p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   BOOST_CHECK( p.is_complete() );
 
   p = path( "//net///foo" );
   CHECK_EQUAL( p.relative_path().string(), "foo" );
-  CHECK_EQUAL( p.branch_path().string(), "//net/" );
-  CHECK_EQUAL( p.leaf(), "foo" );
+  CHECK_EQUAL( p.parent_path().string(), "//net/" );
+  CHECK_EQUAL( p.filename(), "foo" );
   CHECK_EQUAL( p.root_name(), "//net" );
   CHECK_EQUAL( p.root_directory(), "/" );
   CHECK_EQUAL( p.root_path().string(), "//net/" );
@@ -906,8 +924,8 @@ int test_main( int, char*[] )
   BOOST_CHECK( p.has_root_name() );
   BOOST_CHECK( p.has_root_directory() );
   BOOST_CHECK( p.has_relative_path() );
-  BOOST_CHECK( p.has_leaf() );
-  BOOST_CHECK( p.has_branch_path() );
+  BOOST_CHECK( p.has_filename() );
+  BOOST_CHECK( p.has_parent_path() );
   BOOST_CHECK( p.is_complete() );
 
   if ( platform == "Windows" )
@@ -959,8 +977,8 @@ int test_main( int, char*[] )
 
     p = path( "c:" );
     BOOST_CHECK( p.relative_path().string() == "" );
-    BOOST_CHECK( p.branch_path().string() == "" );
-    BOOST_CHECK( p.leaf() == "c:" );
+    BOOST_CHECK( p.parent_path().string() == "" );
+    BOOST_CHECK( p.filename() == "c:" );
     BOOST_CHECK( p.root_name() == "c:" );
     BOOST_CHECK( p.root_directory() == "" );
     BOOST_CHECK( p.root_path().string() == "c:" );
@@ -968,14 +986,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( !p.has_root_directory() );
     BOOST_CHECK( !p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( !p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( !p.has_parent_path() );
     BOOST_CHECK( !p.is_complete() );
 
     p = path( "c:foo" );
     BOOST_CHECK( p.relative_path().string() == "foo" );
-    BOOST_CHECK( p.branch_path().string() == "c:" );
-    BOOST_CHECK( p.leaf() == "foo" );
+    BOOST_CHECK( p.parent_path().string() == "c:" );
+    BOOST_CHECK( p.filename() == "foo" );
     BOOST_CHECK( p.root_name() == "c:" );
     BOOST_CHECK( p.root_directory() == "" );
     BOOST_CHECK( p.root_path().string() == "c:" );
@@ -983,14 +1001,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( !p.has_root_directory() );
     BOOST_CHECK( p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( !p.is_complete() );
  
     p = path( "c:/" );
     BOOST_CHECK( p.relative_path().string() == "" );
-    BOOST_CHECK( p.branch_path().string() == "c:" );
-    BOOST_CHECK( p.leaf() == "/" );
+    BOOST_CHECK( p.parent_path().string() == "c:" );
+    BOOST_CHECK( p.filename() == "/" );
     BOOST_CHECK( p.root_name() == "c:" );
     BOOST_CHECK( p.root_directory() == "/" );
     BOOST_CHECK( p.root_path().string() == "c:/" );
@@ -998,14 +1016,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( p.has_root_directory() );
     BOOST_CHECK( !p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( p.is_complete() );
 
     p = path( "c:.." );
     BOOST_CHECK( p.relative_path().string() == ".." );
-    BOOST_CHECK( p.branch_path().string() == "c:" );
-    BOOST_CHECK( p.leaf() == ".." );
+    BOOST_CHECK( p.parent_path().string() == "c:" );
+    BOOST_CHECK( p.filename() == ".." );
     BOOST_CHECK( p.root_name() == "c:" );
     BOOST_CHECK( p.root_directory() == "" );
     BOOST_CHECK( p.root_path().string() == "c:" );
@@ -1013,14 +1031,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( !p.has_root_directory() );
     BOOST_CHECK( p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( !p.is_complete() );
 
     p = path( "c:/foo" );
     CHECK_EQUAL( p.relative_path().string(), "foo" );
-    CHECK_EQUAL( p.branch_path().string(), "c:/" );
-    CHECK_EQUAL( p.leaf(), "foo" );
+    CHECK_EQUAL( p.parent_path().string(), "c:/" );
+    CHECK_EQUAL( p.filename(), "foo" );
     CHECK_EQUAL( p.root_name(), "c:" );
     CHECK_EQUAL( p.root_directory(), "/" );
     CHECK_EQUAL( p.root_path().string(), "c:/" );
@@ -1028,14 +1046,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( p.has_root_directory() );
     BOOST_CHECK( p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( p.is_complete() );
 
     p = path( "c://foo" );
     CHECK_EQUAL( p.relative_path().string(), "foo" );
-    CHECK_EQUAL( p.branch_path().string(), "c:/" );
-    CHECK_EQUAL( p.leaf(), "foo" );
+    CHECK_EQUAL( p.parent_path().string(), "c:/" );
+    CHECK_EQUAL( p.filename(), "foo" );
     CHECK_EQUAL( p.root_name(), "c:" );
     CHECK_EQUAL( p.root_directory(), "/" );
     CHECK_EQUAL( p.root_path().string(), "c:/" );
@@ -1043,14 +1061,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( p.has_root_directory() );
     BOOST_CHECK( p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( p.is_complete() );
 
     p = path( "c:\\foo\\bar" );
     CHECK_EQUAL( p.relative_path().string(), "foo/bar" );
-    CHECK_EQUAL( p.branch_path().string(), "c:/foo" );
-    CHECK_EQUAL( p.leaf(), "bar" );
+    CHECK_EQUAL( p.parent_path().string(), "c:/foo" );
+    CHECK_EQUAL( p.filename(), "bar" );
     CHECK_EQUAL( p.root_name(), "c:" );
     CHECK_EQUAL( p.root_directory(), "/" );
     CHECK_EQUAL( p.root_path().string(), "c:/" );
@@ -1058,14 +1076,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( p.has_root_directory() );
     BOOST_CHECK( p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( p.is_complete() );
 
     p = path( "prn:" );
     BOOST_CHECK( p.relative_path().string() == "" );
-    BOOST_CHECK( p.branch_path().string() == "" );
-    BOOST_CHECK( p.leaf() == "prn:" );
+    BOOST_CHECK( p.parent_path().string() == "" );
+    BOOST_CHECK( p.filename() == "prn:" );
     BOOST_CHECK( p.root_name() == "prn:" );
     BOOST_CHECK( p.root_directory() == "" );
     BOOST_CHECK( p.root_path().string() == "prn:" );
@@ -1073,14 +1091,14 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( !p.has_root_directory() );
     BOOST_CHECK( !p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( !p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( !p.has_parent_path() );
     BOOST_CHECK( !p.is_complete() );
 
     p = path( "\\\\net\\\\\\foo" );
     CHECK_EQUAL( p.relative_path().string(), "foo" );
-    CHECK_EQUAL( p.branch_path().string(), "//net/" );
-    CHECK_EQUAL( p.leaf(), "foo" );
+    CHECK_EQUAL( p.parent_path().string(), "//net/" );
+    CHECK_EQUAL( p.filename(), "foo" );
     CHECK_EQUAL( p.root_name(), "//net" );
     CHECK_EQUAL( p.root_directory(), "/" );
     CHECK_EQUAL( p.root_path().string(), "//net/" );
@@ -1088,8 +1106,8 @@ int test_main( int, char*[] )
     BOOST_CHECK( p.has_root_name() );
     BOOST_CHECK( p.has_root_directory() );
     BOOST_CHECK( p.has_relative_path() );
-    BOOST_CHECK( p.has_leaf() );
-    BOOST_CHECK( p.has_branch_path() );
+    BOOST_CHECK( p.has_filename() );
+    BOOST_CHECK( p.has_parent_path() );
     BOOST_CHECK( p.is_complete() );
 
     itr_ck = path( "c:" );
@@ -1283,6 +1301,40 @@ int test_main( int, char*[] )
   BOOST_CHECK( acs2 >= a );
   BOOST_CHECK( a2 >= as );
   BOOST_CHECK( a2 >= acs );
+  
+// extension() tests
+
+  BOOST_CHECK( path("a/b").extension() == "" );
+  BOOST_CHECK( path("a/b.txt").extension() == ".txt" );
+  BOOST_CHECK( path("a/b.").extension() == "." );
+  BOOST_CHECK( path("a.b.c").extension() == ".c" );
+  BOOST_CHECK( path("a.b.c.").extension() == "." );
+  BOOST_CHECK( path("").extension() == "" );
+  BOOST_CHECK( path("a/").extension() == "." );
+  
+// stem() tests
+
+  BOOST_CHECK( path("b").stem() == "b" );
+  BOOST_CHECK( path("a/b.txt").stem() == "b" );
+  BOOST_CHECK( path("a/b.").stem() == "b" ); 
+  BOOST_CHECK( path("a.b.c").stem() == "a.b" );
+  BOOST_CHECK( path("a.b.c.").stem() == "a.b.c" );
+  BOOST_CHECK( path("").stem() == "" );
+  
+// replace_extension() tests
+
+  BOOST_CHECK( path("a.txt").replace_extension("").string() == "a" );
+  BOOST_CHECK( path("a.txt").replace_extension(".").string() == "a." );
+  BOOST_CHECK( path("a.txt").replace_extension(".tex").string() == "a.tex" );
+  BOOST_CHECK( path("a.txt").replace_extension("tex").string() == "a.tex" );
+  BOOST_CHECK( path("a.").replace_extension(".tex").string() == "a.tex" );
+  BOOST_CHECK( path("a.").replace_extension("tex").string() == "a.tex" );
+  BOOST_CHECK( path("a").replace_extension(".txt").string() == "a.txt" );
+  BOOST_CHECK( path("a").replace_extension("txt").string() == "a.txt" );
+  BOOST_CHECK( path("a.b.txt" ).replace_extension(".tex").string() == "a.b.tex" );  
+  BOOST_CHECK( path("a.b.txt" ).replace_extension("tex").string() == "a.b.tex" );  
+  // see the rationale in html docs for explanation why this works
+  BOOST_CHECK( path("").replace_extension(".png").string() == ".png" );
 
   // inserter and extractor tests
 # if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300 // bypass VC++ 7.0 and earlier

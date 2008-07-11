@@ -1,6 +1,6 @@
 //  Boost.Filesystem mbpath.hpp  ---------------------------------------------//
 
-//  © Copyright Beman Dawes 2005
+//  (c) Copyright Beman Dawes 2005
 
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -14,7 +14,7 @@
 # endif
 
 #include "mbpath.hpp"
-#include <cerrno>
+#include <boost/system/system_error.hpp>
 #include <boost/scoped_array.hpp>
 
 namespace fs = boost::filesystem;
