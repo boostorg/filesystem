@@ -594,23 +594,23 @@ namespace boost
       // BOOST_FILESYSTEM_DECL version works for VC++ but not GCC. Go figure!
       inline
       const char * what( const char * sys_err_what,
-        const path & path1, const path & path2, std::string & target )
+        const path & path1_arg, const path & path2_arg, std::string & target )
       {
         try
         {
           if ( target.empty() )
           {
             target = sys_err_what;
-            if ( !path1.empty() )
+            if ( !path1_arg.empty() )
             {
               target += ": \"";
-              target += path1.file_string();
+              target += path1_arg.file_string();
               target += "\"";
             }
-            if ( !path2.empty() )
+            if ( !path2_arg.empty() )
             {
               target += ", \"";
-              target += path2.file_string();
+              target += path2_arg.file_string();
               target += "\"";
             }
           }
@@ -624,7 +624,7 @@ namespace boost
 
       template<class Path>
       const char * what( const char * sys_err_what,
-        const Path & /*path1*/, const Path & /*path2*/, std::string & /*target*/ )
+        const Path & /*path1_arg*/, const Path & /*path2_arg*/, std::string & /*target*/ )
       {
         return sys_err_what;
       }
