@@ -14,7 +14,7 @@
 # endif
 
 #include "mbpath.hpp"
-#include <cerrno>
+#include <boost/system/system_error.hpp>
 #include <boost/scoped_array.hpp>
 
 namespace fs = boost::filesystem;

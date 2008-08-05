@@ -26,6 +26,7 @@ namespace fs = boost::filesystem;
 
 #include <iostream>
 #include <iomanip>
+#include <ios>
 #include <string>
 #include <cerrno>
 

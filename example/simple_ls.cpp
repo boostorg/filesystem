@@ -51,24 +51,24 @@ int main( int argc, char* argv[] )
         if ( fs::is_directory( dir_itr->status() ) )
         {
           ++dir_count;
-          std::cout << dir_itr->leaf() << " [directory]\n";
+          std::cout << dir_itr->filename() << " [directory]\n";
         }
-        else if ( fs::is_regular( dir_itr->status() ) )
+        else if ( fs::is_regular_file( dir_itr->status() ) )
         {
           ++file_count;
-          std::cout << dir_itr->leaf() << "\n";
+          std::cout << dir_itr->filename() << "\n";
         }
         else
         {
           ++other_count;
-          std::cout << dir_itr->leaf() << " [other]\n";
+          std::cout << dir_itr->filename() << " [other]\n";
         }
 
       }
       catch ( const std::exception & ex )
       {
         ++err_count;
-        std::cout << dir_itr->leaf() << " " << ex.what() << std::endl;
+        std::cout << dir_itr->filename() << " " << ex.what() << std::endl;
       }
     }
     std::cout << "\n" << file_count << " files\n"

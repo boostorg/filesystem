@@ -68,7 +68,7 @@ namespace
     }
     {
       std::cout << " in test 4.1\n";
-      fs::ifstream tfs( p / p.leaf() ); // should fail
+      fs::ifstream tfs( p / p.filename() ); // should fail
       BOOST_CHECK( !tfs.is_open() );
     }
     {
