@@ -1020,12 +1020,18 @@ namespace boost
 
       void replace_filename( const string_type & s,
         file_status st, file_status symlink_st )
-     {
-       m_path.remove_filename();
-       m_path /= s;
-       m_status = st;
-       m_symlink_status = symlink_st;
-     }
+      {
+        m_path.remove_filename();
+        m_path /= s;
+        m_status = st;
+        m_symlink_status = symlink_st;
+      }
+
+#   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+      void replace_leaf( const string_type & s,
+        file_status st, file_status symlink_st )
+          { replace_filename( s, st, symlink_st ); }
+#   endif
 
       const Path &  path() const { return m_path; }
       file_status   status() const;
@@ -1039,6 +1045,10 @@ namespace boost
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
       // deprecated functions preserve common use cases in legacy code
       typename Path::string_type filename() const
+      {
+        return path().filename();
+      }
+      typename Path::string_type leaf() const
       {
         return path().filename();
       }
