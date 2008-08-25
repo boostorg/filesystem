@@ -121,10 +121,6 @@ namespace boost
 
     namespace detail
     {
-      // singular object used only as a tag; thus initialization and
-      // thread-safety are not issues
-      BOOST_FILESYSTEM_DECL extern system::error_code throws;  
-
       typedef std::pair< system::error_code, bool >
         query_pair;
 
@@ -234,7 +230,10 @@ namespace boost
 #   endif
 
       template<class Path>
-      unsigned long remove_all_aux( const Path & ph );
+      bool remove_aux( const Path & ph, file_status f );
+
+      template<class Path>
+      unsigned long remove_all_aux( const Path & ph, file_status f );
 
     } // namespace detail
 
@@ -474,19 +473,24 @@ namespace boost
       return ec;
     }
 
-    BOOST_FS_FUNC(void) remove( const Path & ph, system::error_code & ec = detail::throws )
+    BOOST_FS_FUNC(bool) remove( const Path & ph )
     {
-      system::error_code error( detail::remove_api(ph.external_file_string()) );
-      if ( error && &ec == &detail::throws )
+      system::error_code ec;
+      file_status f = symlink_status( ph, ec );
+      if ( ec )
         boost::throw_exception( basic_filesystem_error<Path>(
-          "boost::filesystem::remove", ph, error ) );
-      ec = error;
+          "boost::filesystem::remove", ph, ec ) );
+      return detail::remove_aux( ph, f );
     }
 
     BOOST_FS_FUNC(unsigned long) remove_all( const Path & ph )
     {
-      return exists( ph )|| is_symlink( ph )
-        ? detail::remove_all_aux( ph ) : 0;
+      system::error_code ec;
+      file_status f = symlink_status( ph, ec );
+      if ( ec )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::remove_all", ph, ec ) );
+      return exists( f ) ? detail::remove_all_aux( ph, f ) : 0;
     }
 
     BOOST_FS_FUNC(void) rename( const Path & from_path, const Path & to_path )
@@ -712,8 +716,10 @@ namespace boost
       const wpath & from_ph, system::error_code & ec )
       { return create_symlink<wpath>( to_ph, from_ph, ec ); }
 
-    inline void remove( const path & ph )  { remove<path>( ph ); }
-    inline void remove( const wpath & ph ) { remove<wpath>( ph ); }
+    inline bool remove( const path & ph )
+      { return remove<path>( ph ); }
+    inline bool remove( const wpath & ph )
+      { return remove<wpath>( ph ); }
 
     inline unsigned long remove_all( const path & ph )
       { return remove_all<path>( ph ); }
@@ -762,20 +768,39 @@ namespace boost
     namespace detail
     {
       template<class Path>
-      unsigned long remove_all_aux( const Path & ph )
+      bool remove_aux( const Path & ph, file_status f )
+      {
+        if ( exists( f ) )
+        {
+          system::error_code ec = remove_api( ph.external_file_string() );
+          if ( ec )
+            boost::throw_exception( basic_filesystem_error<Path>(
+              "boost::filesystem::remove", ph, ec ) );
+          return true;
+        }
+        return false;
+      }
+
+      template<class Path>
+      unsigned long remove_all_aux( const Path & ph, file_status f )
       {
         static const boost::filesystem::basic_directory_iterator<Path> end_itr;
         unsigned long count = 1;
-        if ( !boost::filesystem::is_symlink( ph ) // don't recurse symbolic links
-          && boost::filesystem::is_directory( ph ) )
+        if ( !boost::filesystem::is_symlink( f ) // don't recurse symbolic links
+          && boost::filesystem::is_directory( f ) )
         {
           for ( boost::filesystem::basic_directory_iterator<Path> itr( ph );
                 itr != end_itr; ++itr )
           {
-            count += remove_all_aux( itr->path() );
+            boost::system::error_code ec;
+            boost::filesystem::file_status fn = boost::filesystem::symlink_status( itr->path(), ec );
+            if ( ec )
+              boost::throw_exception( basic_filesystem_error<Path>( 
+                "boost::filesystem:remove_all", ph, ec ) );
+            count += remove_all_aux( itr->path(), fn );
           }
         }
-        boost::filesystem::remove( ph );
+        remove_aux( ph, f );
         return count;
       }
 

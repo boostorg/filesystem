@@ -776,10 +776,10 @@ int test_main( int argc, char * argv[] )
   create_file( file_ph, "" );
   BOOST_CHECK( fs::exists( file_ph ) );
   BOOST_CHECK( !fs::is_directory( file_ph ) );
-  fs::remove( file_ph );
+  BOOST_CHECK( fs::remove( file_ph ) );
   BOOST_CHECK( !fs::exists( file_ph ) );
-  fs::remove( "no-such-file" );
-  fs::remove( "no-such-directory/no-such-file" );
+  BOOST_CHECK( !fs::remove( "no-such-file" ) );
+  BOOST_CHECK( !fs::remove( "no-such-directory/no-such-file" ) );
 
   // remove() directory
   d1 = dir / "shortlife_dir";
@@ -790,50 +790,50 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( BOOST_FS_IS_EMPTY( d1 ) );
   bad_remove_dir = dir;
   BOOST_CHECK( CHECK_EXCEPTION( bad_remove, ENOTEMPTY ) );
-  fs::remove( d1 );
+  BOOST_CHECK( fs::remove( d1 ) );
   BOOST_CHECK( !fs::exists( d1 ) );
 
   if ( create_symlink_ok )  // only if symlinks supported
   {
     // remove() dangling symbolic link
     fs::path link( "dangling_link" );
-    fs::remove( link );
+    fs::remove( link );  // remove any residue from past tests
     BOOST_CHECK( !fs::is_symlink( link ) );
     BOOST_CHECK( !fs::exists( link ) );
     fs::create_symlink( "nowhere", link );
     BOOST_CHECK( !fs::exists( link ) );
     BOOST_CHECK( fs::is_symlink( link ) );
-    fs::remove( link );
+    BOOST_CHECK( fs::remove( link ) );
     BOOST_CHECK( !fs::is_symlink( link ) );
 
     // remove() self-refering symbolic link
     link = "link_to_self";
-    fs::remove( link );
+    fs::remove( link );  // remove any residue from past tests
     BOOST_CHECK( !fs::is_symlink( link ) );
     BOOST_CHECK( !fs::exists( link ) );
     fs::create_symlink( link, link );
-    fs::remove( link );
+    BOOST_CHECK( fs::remove( link ) );
     BOOST_CHECK( !fs::exists( link ) );
     BOOST_CHECK( !fs::is_symlink( link ) );
 
     // remove() cyclic symbolic link
     link = "link_to_a";
     fs::path link2( "link_to_b" );
-    fs::remove( link );
-    fs::remove( link2 );
+    fs::remove( link );   // remove any residue from past tests
+    fs::remove( link2 );  // remove any residue from past tests
     BOOST_CHECK( !fs::is_symlink( link ) );
     BOOST_CHECK( !fs::exists( link ) );
     fs::create_symlink( link, link2 );
     fs::create_symlink( link2, link );
-    fs::remove( link );
-    fs::remove( link2 );
+    BOOST_CHECK( fs::remove( link ) );
+    BOOST_CHECK( fs::remove( link2 ) );
     BOOST_CHECK( !fs::exists( link ) );
     BOOST_CHECK( !fs::exists( link2 ) );
     BOOST_CHECK( !fs::is_symlink( link ) );
 
     // remove() symbolic link to file
     file_ph = "link_target";
-    fs::remove( file_ph );
+    fs::remove( file_ph );  // remove any residue from past tests
     BOOST_CHECK( !fs::exists( file_ph ) );
     create_file( file_ph, "" );
     BOOST_CHECK( fs::exists( file_ph ) );
@@ -845,11 +845,11 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( !fs::is_directory( link ) );
     BOOST_CHECK( fs::is_regular_file( link ) );
     BOOST_CHECK( fs::is_symlink( link ) );
-    fs::remove( link );
+    BOOST_CHECK( fs::remove( link ) );
     BOOST_CHECK( fs::exists( file_ph ) );
     BOOST_CHECK( !fs::exists( link ) );
     BOOST_CHECK( !fs::is_symlink( link ) );
-    fs::remove( file_ph );
+    BOOST_CHECK( fs::remove( file_ph ) );
     BOOST_CHECK( !fs::exists( file_ph ) );
   }
 
