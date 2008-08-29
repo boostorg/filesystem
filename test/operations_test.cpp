@@ -9,6 +9,9 @@
 
 #include <boost/config/warning_disable.hpp>
 
+//  See deprecated_test for tests of deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/cerrno.hpp>
@@ -215,7 +218,7 @@ namespace
   
   void bad_directory_size()
   {
-    fs::file_size( fs::current_path() );
+    fs::file_size( fs::current_path<fs::path>() );
   }
   
   fs::path bad_create_directory_path;
@@ -301,7 +304,6 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::exists( ng ) );
   BOOST_CHECK( !fs::is_directory( ng ) );
   BOOST_CHECK( !fs::is_regular_file( ng ) );
-  BOOST_CHECK( !fs::is_regular( ng ) );  // verify deprecated name still works
   BOOST_CHECK( !fs::is_symlink( ng ) );
   fs::file_status stat( fs::status( ng ) );
   BOOST_CHECK( fs::status_known( stat ) );
@@ -438,9 +440,6 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::is_symlink( dir ) );
   BOOST_CHECK( !fs::is_symlink( "nosuchfileordirectory" ) );
 
-  BOOST_CHECK( !fs::symbolic_link_exists( dir ) );
-  BOOST_CHECK( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
-
   fs::path d1( dir / "d1" );
   BOOST_CHECK( fs::create_directory( d1 ) );
   BOOST_CHECK( fs::exists( d1 ) );
@@ -477,7 +476,7 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( fs::is_directory( dir_itr->status() ) );
     BOOST_CHECK( fs::is_directory( fs::symlink_status(*dir_itr) ) );
     BOOST_CHECK( fs::is_directory( dir_itr->symlink_status() ) );
-    BOOST_CHECK( dir_itr->filename() == "d1" );
+    BOOST_CHECK( dir_itr->path().filename() == "d1" );
   }
 
   // create a second directory named d2
@@ -497,21 +496,21 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( !fs::is_symlink(dir_itr->status()) );
 
     fs::directory_iterator dir_itr2( dir );
-    BOOST_CHECK( dir_itr->filename() == "d1"
-      || dir_itr->filename() == "d2" );
-    BOOST_CHECK( dir_itr2->filename() == "d1" || dir_itr2->filename() == "d2" );
-    if ( dir_itr->filename() == "d1" )
+    BOOST_CHECK( dir_itr->path().filename() == "d1"
+      || dir_itr->path().filename() == "d2" );
+    BOOST_CHECK( dir_itr2->path().filename() == "d1" || dir_itr2->path().filename() == "d2" );
+    if ( dir_itr->path().filename() == "d1" )
     {
-      BOOST_CHECK( (++dir_itr)->filename() == "d2" );
-      BOOST_CHECK( dir_itr2->filename() == "d1" );
-      BOOST_CHECK( (++dir_itr2)->filename() == "d2" );
+      BOOST_CHECK( (++dir_itr)->path().filename() == "d2" );
+      BOOST_CHECK( dir_itr2->path().filename() == "d1" );
+      BOOST_CHECK( (++dir_itr2)->path().filename() == "d2" );
     }
     else
     {
-      BOOST_CHECK( dir_itr->filename() == "d2" );
-      BOOST_CHECK( (++dir_itr)->filename() == "d1" );
-      BOOST_CHECK( (dir_itr2)->filename() == "d2" );
-      BOOST_CHECK( (++dir_itr2)->filename() == "d1" );
+      BOOST_CHECK( dir_itr->path().filename() == "d2" );
+      BOOST_CHECK( (++dir_itr)->path().filename() == "d1" );
+      BOOST_CHECK( (dir_itr2)->path().filename() == "d2" );
+      BOOST_CHECK( (++dir_itr2)->path().filename() == "d1" );
     }
     BOOST_CHECK( ++dir_itr == fs::directory_iterator() );
     BOOST_CHECK( dir_itr2 != fs::directory_iterator() );
@@ -520,21 +519,21 @@ int test_main( int argc, char * argv[] )
 
   { // *i++ must work to meet the standard's InputIterator requirements
     fs::directory_iterator dir_itr( dir );
-    BOOST_CHECK( dir_itr->filename() == "d1"
-      || dir_itr->filename() == "d2" );
-    if ( dir_itr->filename() == "d1" )
+    BOOST_CHECK( dir_itr->path().filename() == "d1"
+      || dir_itr->path().filename() == "d2" );
+    if ( dir_itr->path().filename() == "d1" )
     {
-      BOOST_CHECK( (*dir_itr++).filename() == "d1" );
-      BOOST_CHECK( dir_itr->filename() == "d2" );
+      BOOST_CHECK( (*dir_itr++).path().filename() == "d1" );
+      BOOST_CHECK( dir_itr->path().filename() == "d2" );
     }
     else
     {
       // Check C++98 input iterator requirements
-      BOOST_CHECK( (*dir_itr++).filename() == "d2" );
+      BOOST_CHECK( (*dir_itr++).path().filename() == "d2" );
       // input iterator requirements in the current WP would require this check:
       // BOOST_CHECK( implicit_cast<std::string const&>(*dir_itr++).filename() == "d1" );
 
-      BOOST_CHECK( dir_itr->filename() == "d1" );
+      BOOST_CHECK( dir_itr->path().filename() == "d1" );
     }
 
     // test case reported in comment to SourceForge bug tracker [937606]
@@ -559,7 +558,7 @@ int test_main( int argc, char * argv[] )
     bool found(false);
     do
     {
-      if ( it->filename() == temp_dir_name ) found = true;
+      if ( it->path().filename() == temp_dir_name ) found = true;
     } while ( ++it != fs::directory_iterator() );
     BOOST_CHECK( found );
   }
