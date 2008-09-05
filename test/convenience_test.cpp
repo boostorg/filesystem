@@ -10,6 +10,9 @@
 
 #include <boost/config/warning_disable.hpp>
 
+//  See deprecated_test for tests of deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem/convenience.hpp>
 namespace fs = boost::filesystem;
 using fs::path;
@@ -52,8 +55,6 @@ namespace
 
 int test_main( int, char*[] )
 {
-  path::default_name_check( fs::no_check ); // names below not valid on all O/S's
-                                            // but they must be tested anyhow
 
 //  create_directories() tests  ----------------------------------------------//
 
@@ -77,41 +78,13 @@ int test_main( int, char*[] )
 
   path is_a_file( "xx/uu" );
   {
-    std::ofstream f( is_a_file.native_file_string().c_str() );
+    std::ofstream f( is_a_file.external_file_string().c_str() );
     BOOST_CHECK( !!f );
   }
   BOOST_CHECK( throws_fs_error(
     boost::bind( BOOST_BND(fs::create_directories), is_a_file ) ) );
   BOOST_CHECK( throws_fs_error(
     boost::bind( BOOST_BND(fs::create_directories), is_a_file / "aa" ) ) );
-  
-// extension() tests ---------------------------------------------------------//
-
-  BOOST_CHECK( fs::extension("a/b") == "" );
-  BOOST_CHECK( fs::extension("a/b.txt") == ".txt" );
-  BOOST_CHECK( fs::extension("a/b.") == "." );
-  BOOST_CHECK( fs::extension("a.b.c") == ".c" );
-  BOOST_CHECK( fs::extension("a.b.c.") == "." );
-  BOOST_CHECK( fs::extension("") == "" );
-  BOOST_CHECK( fs::extension("a/") == "." );
-  
-// basename() tests ----------------------------------------------------------//
-
-  BOOST_CHECK( fs::basename("b") == "b" );
-  BOOST_CHECK( fs::basename("a/b.txt") == "b" );
-  BOOST_CHECK( fs::basename("a/b.") == "b" ); 
-  BOOST_CHECK( fs::basename("a.b.c") == "a.b" );
-  BOOST_CHECK( fs::basename("a.b.c.") == "a.b.c" );
-  BOOST_CHECK( fs::basename("") == "" );
-  
-// change_extension tests ---------------------------------------------------//
-
-  BOOST_CHECK( fs::change_extension("a.txt", ".tex").string() == "a.tex" );
-  BOOST_CHECK( fs::change_extension("a.", ".tex").string() == "a.tex" );
-  BOOST_CHECK( fs::change_extension("a", ".txt").string() == "a.txt" );
-  BOOST_CHECK( fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex" );  
-  // see the rationale in html docs for explanation why this works
-  BOOST_CHECK( fs::change_extension("", ".png").string() == ".png" );
 
 // recursive_directory_iterator tests ----------------------------------------//
 
@@ -133,7 +106,7 @@ int test_main( int, char*[] )
 
   for ( it = fs::recursive_directory_iterator( "xx" );
         it != fs::recursive_directory_iterator(); ++it )
-    { std::cout << *it << '\n'; }
+    { std::cout << it->path() << '\n'; }
 
   it = fs::recursive_directory_iterator( "xx" );
   BOOST_CHECK( it->path() == "xx/yy" );

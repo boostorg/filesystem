@@ -10,6 +10,9 @@
 
 #include <boost/config/warning_disable.hpp>
 
+//  See deprecated_test for tests of deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem/config.hpp>
 # ifdef BOOST_FILESYSTEM_NARROW_ONLY
 #   error This compiler or standard library does not support wide-character strings or paths

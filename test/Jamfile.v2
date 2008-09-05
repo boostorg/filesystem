@@ -45,6 +45,7 @@ project
                   <link>static
        ]
 
+       [ compile deprecated_test.cpp ]                  
        [ compile ../example/mbcopy.cpp ]
        [ compile ../example/mbpath.cpp ]
        [ compile ../example/simple_ls.cpp ]

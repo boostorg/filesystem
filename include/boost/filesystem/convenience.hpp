@@ -94,6 +94,7 @@ namespace boost
     inline bool create_directories(const wpath& ph)
       { return create_directories<wpath>(ph); }
 
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline std::string extension(const path& ph)
       { return extension<path>(ph); }
     inline std::wstring extension(const wpath& ph)
@@ -108,6 +109,7 @@ namespace boost
       { return change_extension<path>( ph, new_ex ); }
     inline wpath change_extension( const wpath & ph, const std::wstring& new_ex )
       { return change_extension<wpath>( ph, new_ex ); }
+# endif
 
 # endif
 
