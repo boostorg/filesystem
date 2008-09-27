@@ -7,12 +7,10 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-//  VC++ 8.0 warns on various less-than-safe practices.
-//  See http://msdn.microsoft.com/msdnmag/issues/05/05/SafeCandC/default.aspx
-//  But at least in VC++ 8.0 betas, their own libraries use the problem
-//  practices. So turn off the warnings.
-#define _CRT_SECURE_NO_DEPRECATE
-#define _SCL_SECURE_NO_DEPRECATE
+#include <boost/config/warning_disable.hpp>
+
+//  See deprecated_test for tests of deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
 
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -73,7 +71,7 @@ namespace
     }
     {
       std::cout << " in test 4.1\n";
-      fs::ifstream tfs( p / p.leaf() ); // should fail
+      fs::ifstream tfs( p / p.filename() ); // should fail
       BOOST_CHECK( !tfs.is_open() );
     }
     {

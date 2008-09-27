@@ -25,14 +25,8 @@ lib boost_filesystem
     :
     <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
     <link>static:<define>BOOST_All_STATIC_LINK=1 # tell source we're building static lib's
+    :
+    :
     ;
 
-install dist-lib
-    :
-    boost_filesystem
-    :
-    <install-type>LIB
-    <location>../../../dist/lib
-    ;
-
-explicit dist-lib ;
+boost-install boost_filesystem ;

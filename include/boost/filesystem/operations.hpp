@@ -80,7 +80,8 @@ namespace boost
       character_file,
       fifo_file,
       socket_file,
-      type_unknown // file does exist, but isn't one of the above types
+      type_unknown // file does exist, but isn't one of the above types or
+                   // we don't have strong enough permission to find its type
     };
 
     class file_status
@@ -101,10 +102,14 @@ namespace boost
 
     inline bool status_known( file_status f ) { return f.type() != status_unknown; }
     inline bool exists( file_status f )       { return f.type() != status_unknown && f.type() != file_not_found; }
-    inline bool is_regular( file_status f )   { return f.type() == regular_file; }
+    inline bool is_regular_file(file_status f){ return f.type() == regular_file; }
     inline bool is_directory( file_status f ) { return f.type() == directory_file; }
     inline bool is_symlink( file_status f )   { return f.type() == symlink_file; }
-    inline bool is_other( file_status f )     { return exists(f) && !is_regular(f) && !is_directory(f) && !is_symlink(f); }
+    inline bool is_other( file_status f )     { return exists(f) && !is_regular_file(f) && !is_directory(f) && !is_symlink(f); }
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    inline bool is_regular( file_status f )   { return f.type() == regular_file; }
+# endif
 
     struct space_info
     {
@@ -225,7 +230,10 @@ namespace boost
 #   endif
 
       template<class Path>
-      unsigned long remove_all_aux( const Path & ph );
+      bool remove_aux( const Path & ph, file_status f );
+
+      template<class Path>
+      unsigned long remove_all_aux( const Path & ph, file_status f );
 
     } // namespace detail
 
@@ -274,7 +282,7 @@ namespace boost
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline bool symbolic_link_exists( const path & ph )
       { return is_symlink( symlink_status(ph) ); }
-#endif
+# endif
 
     BOOST_FS_FUNC(bool) exists( const Path & ph )
     { 
@@ -296,6 +304,17 @@ namespace boost
       return is_directory( result );
     }
 
+    BOOST_FS_FUNC(bool) is_regular_file( const Path & ph )
+    { 
+      system::error_code ec;
+      file_status result( detail::status_api( ph.external_file_string(), ec ) );
+      if ( ec )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::is_regular_file", ph, ec ) );
+      return is_regular_file( result );
+    }
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     BOOST_FS_FUNC(bool) is_regular( const Path & ph )
     { 
       system::error_code ec;
@@ -305,6 +324,7 @@ namespace boost
           "boost::filesystem::is_regular", ph, ec ) );
       return is_regular( result );
     }
+# endif
 
     BOOST_FS_FUNC(bool) is_other( const Path & ph )
     { 
@@ -455,25 +475,22 @@ namespace boost
 
     BOOST_FS_FUNC(bool) remove( const Path & ph )
     {
-      if ( exists( ph )
-        || is_symlink( ph ) ) // handle dangling symbolic links
-        // note that the POSIX behavior for symbolic links is what we want;
-        // the link rather than what it points to is deleted. Windows behavior
-        // doesn't matter; is_symlink() is always false on Windows.
-      {
-        system::error_code ec( detail::remove_api( ph.external_file_string() ) );
-        if ( ec )
-          boost::throw_exception( basic_filesystem_error<Path>(
-            "boost::filesystem::remove", ph, ec ) );
-        return true;
-      }
-      return false;
+      system::error_code ec;
+      file_status f = symlink_status( ph, ec );
+      if ( ec )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::remove", ph, ec ) );
+      return detail::remove_aux( ph, f );
     }
 
     BOOST_FS_FUNC(unsigned long) remove_all( const Path & ph )
     {
-      return exists( ph )|| is_symlink( ph )
-        ? detail::remove_all_aux( ph ) : 0;
+      system::error_code ec;
+      file_status f = symlink_status( ph, ec );
+      if ( ec )
+        boost::throw_exception( basic_filesystem_error<Path>(
+          "boost::filesystem::remove_all", ph, ec ) );
+      return exists( f ) ? detail::remove_all_aux( ph, f ) : 0;
     }
 
     BOOST_FS_FUNC(void) rename( const Path & from_path, const Path & to_path )
@@ -509,10 +526,10 @@ namespace boost
       return Path( Path::traits_type::to_internal( ph ) );
     }
 
-    template< class Path >
-    void current_path( const Path & ph )
+    BOOST_FS_FUNC(void) current_path( const Path & ph )
     {
-      system::error_code ec( detail::set_current_path_api( ph.string() ) );
+      system::error_code ec( detail::set_current_path_api(
+        ph.external_directory_string() ) );
       if ( ec )
           boost::throw_exception( basic_filesystem_error<Path>(
             "boost::filesystem::current_path", ph, ec ) );
@@ -617,10 +634,17 @@ namespace boost
     inline bool is_directory( const wpath & ph )
       { return is_directory<wpath>( ph ); }
  
+    inline bool is_regular_file( const path & ph )
+      { return is_regular_file<path>( ph ); }
+    inline bool is_regular_file( const wpath & ph )
+      { return is_regular_file<wpath>( ph ); }
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline bool is_regular( const path & ph )
       { return is_regular<path>( ph ); }
     inline bool is_regular( const wpath & ph )
       { return is_regular<wpath>( ph ); }
+# endif
 
     inline bool is_other( const path & ph )
       { return is_other<path>( ph ); }
@@ -734,25 +758,49 @@ namespace boost
     inline void last_write_time( const wpath & ph, const std::time_t new_time )
       { last_write_time<wpath>( ph, new_time ); }
 
-# endif // BOOST_FILESYSTEM_NARROW_ONLY
+    inline void current_path( const path & ph )
+      { current_path<path>( ph ); }
+    inline void current_path( const wpath & ph )
+      { current_path<wpath>( ph ); }
+
+# endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
     namespace detail
     {
       template<class Path>
-      unsigned long remove_all_aux( const Path & ph )
+      bool remove_aux( const Path & ph, file_status f )
+      {
+        if ( exists( f ) )
+        {
+          system::error_code ec = remove_api( ph.external_file_string() );
+          if ( ec )
+            boost::throw_exception( basic_filesystem_error<Path>(
+              "boost::filesystem::remove", ph, ec ) );
+          return true;
+        }
+        return false;
+      }
+
+      template<class Path>
+      unsigned long remove_all_aux( const Path & ph, file_status f )
       {
         static const boost::filesystem::basic_directory_iterator<Path> end_itr;
         unsigned long count = 1;
-        if ( !boost::filesystem::is_symlink( ph ) // don't recurse symbolic links
-          && boost::filesystem::is_directory( ph ) )
+        if ( !boost::filesystem::is_symlink( f ) // don't recurse symbolic links
+          && boost::filesystem::is_directory( f ) )
         {
           for ( boost::filesystem::basic_directory_iterator<Path> itr( ph );
                 itr != end_itr; ++itr )
           {
-            count += remove_all_aux( itr->path() );
+            boost::system::error_code ec;
+            boost::filesystem::file_status fn = boost::filesystem::symlink_status( itr->path(), ec );
+            if ( ec )
+              boost::throw_exception( basic_filesystem_error<Path>( 
+                "boost::filesystem:remove_all", ph, ec ) );
+            count += remove_all_aux( itr->path(), fn );
           }
         }
-        boost::filesystem::remove( ph );
+        remove_aux( ph, f );
         return count;
       }
 
@@ -959,7 +1007,7 @@ namespace boost
         {
           boost::throw_exception( basic_filesystem_error<Path>(  
             "boost::filesystem::basic_directory_iterator increment",
-            m_imp->m_directory_entry.path().branch_path(), ec ) );
+            m_imp->m_directory_entry.path().parent_path(), ec ) );
         }
         if ( m_imp->m_handle == 0 ) { m_imp.reset(); return; } // eof, make end
         if ( !(name[0] == dot<Path>::value // !(dot or dot-dot)
@@ -967,7 +1015,7 @@ namespace boost
             || (name[1] == dot<Path>::value
               && name.size() == 2))) )
         {
-          m_imp->m_directory_entry.replace_leaf(
+          m_imp->m_directory_entry.replace_filename(
             Path::traits_type::to_internal( name ), fs, symlink_fs );
           return;
         }
@@ -995,14 +1043,20 @@ namespace boost
         file_status st, file_status symlink_st )
         { m_path = p; m_status = st; m_symlink_status = symlink_st; }
 
+      void replace_filename( const string_type & s,
+        file_status st, file_status symlink_st )
+      {
+        m_path.remove_filename();
+        m_path /= s;
+        m_status = st;
+        m_symlink_status = symlink_st;
+      }
+
+#   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
       void replace_leaf( const string_type & s,
         file_status st, file_status symlink_st )
-     {
-       m_path.remove_leaf();
-       m_path /= s;
-       m_status = st;
-       m_symlink_status = symlink_st;
-     }
+          { replace_filename( s, st, symlink_st ); }
+#   endif
 
       const Path &  path() const { return m_path; }
       file_status   status() const;
@@ -1015,9 +1069,13 @@ namespace boost
 
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
       // deprecated functions preserve common use cases in legacy code
+      typename Path::string_type filename() const
+      {
+        return path().filename();
+      }
       typename Path::string_type leaf() const
       {
-        return path().leaf();
+        return path().filename();
       }
       typename Path::string_type string() const
       {
