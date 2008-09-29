@@ -241,10 +241,23 @@ namespace boost
       else if ( is_directory( m_imp->m_stack.top()->status() ) )
       {
         system::error_code ec;
+#if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x610))
+        if( m_imp->m_no_throw ) {
+            m_imp->m_stack.push(
+                basic_directory_iterator<Path>( *m_imp->m_stack.top(), ec )
+            );
+        }
+        else {
+            m_imp->m_stack.push(
+                basic_directory_iterator<Path>( *m_imp->m_stack.top() )
+            );
+        }
+#else
         m_imp->m_stack.push(
           m_imp->m_no_throw
             ? basic_directory_iterator<Path>( *m_imp->m_stack.top(), ec )
             : basic_directory_iterator<Path>( *m_imp->m_stack.top() ) );
+#endif
         if ( m_imp->m_stack.top() != end_itr )
         {
           ++m_imp->m_level;
