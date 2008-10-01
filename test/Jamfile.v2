@@ -7,42 +7,33 @@
 project 
     : requirements
       <library>/boost/filesystem//boost_filesystem
-      <define>BOOST_ALL_NO_LIB
       <toolset>msvc:<asynch-exceptions>on
     ;
 
    test-suite "filesystem" :
        [ run path_test.cpp
-         :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK 
-                 <link>static
+         :  :  : <link>static
        ]                  
        [ run path_test.cpp ../../system/build
-         :  :  : <define>BOOST_FILESYSTEM_DYN_LINK <define>BOOST_SYSTEM_DYN_LINK
-               : path_test_dll
+         :  :  :  : path_test_dll
        ]
        [ run operations_test.cpp
-         :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK 
-                 <link>static
+         :  :  : <link>static
        ]
        [ run operations_test.cpp ../../system/build
-         :  :  : <define>BOOST_FILESYSTEM_DYN_LINK <define>BOOST_SYSTEM_DYN_LINK
-               : operations_test_dll
+         :  :  :  : operations_test_dll
        ]
        [ run fstream_test.cpp
-         :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK 
-                 <link>static
+         :  :  : <link>static
        ]
        [ run convenience_test.cpp
-         :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK
-                 <link>static                   
+         :  :  : <link>static                   
        ]
        [ run large_file_support_test.cpp
-         :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK
-                 <link>static
+         :  :  : <link>static
        ]
        [ run wide_test.cpp
-          :  :  : <define>BOOST_FILESYSTEM_STATIC_LINK
-                  <link>static
+          :  :  : <link>static
        ]
 
        [ compile deprecated_test.cpp ]                  
