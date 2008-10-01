@@ -60,13 +60,13 @@
 
 //  narrow support only for badly broken compilers or libraries  -------------//
 
-# if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE) || BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x592))
+# if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE) || BOOST_WORKAROUND(__BORLANDC__, <0x610)
 #   define BOOST_FILESYSTEM_NARROW_ONLY
 # endif
 
 //  enable dynamic linking on Windows  ---------------------------------------//
 
-#  if (defined(BOOST_ALL_DYN_LINK) || defined(BOOST_FILESYSTEM_DYN_LINK)) && defined(__BORLANDC__) && defined(__WIN32__)
+#  if (defined(BOOST_ALL_DYN_LINK) || defined(BOOST_FILESYSTEM_DYN_LINK)) &&  BOOST_WORKAROUND(__BORLANDC__, <0x610) && defined(__WIN32__)
 #    error Dynamic linking Boost.Filesystem does not work for Borland; use static linking instead
 #  endif
 
