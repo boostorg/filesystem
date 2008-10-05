@@ -533,7 +533,7 @@ namespace boost
     //  inserters and extractors  --------------------------------------------//
 
 // bypass VC++ 7.0 and earlier, and broken Borland compilers
-# if !BOOST_WORKAROUND(BOOST_MSVC, <= 1300) && !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
+# if !BOOST_WORKAROUND(BOOST_MSVC, <= 1300) && !BOOST_WORKAROUND(__BORLANDC__, < 0x610)
     template< class Path >
     std::basic_ostream< typename Path::string_type::value_type,
       typename Path::string_type::traits_type > &
