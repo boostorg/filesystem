@@ -10,6 +10,7 @@
 //  See http://../doc/path.htm#mbpath for more information
 
 #include <boost/filesystem/path.hpp>
+#include <cwchar>     // for std::mbstate_t
 #include <string>
 #include <locale>
 

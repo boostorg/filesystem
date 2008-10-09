@@ -1,4 +1,4 @@
-//  Boost.Filesystem mbpath.hpp  ---------------------------------------------//
+//  Boost.Filesystem mbpath.cpp  ---------------------------------------------//
 
 //  (c) Copyright Beman Dawes 2005
 
