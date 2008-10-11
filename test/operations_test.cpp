@@ -28,6 +28,7 @@ using boost::system::system_error;
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cstring> // for strncmp, etc.
 #include <ctime>
 #include <cstdlib> // for system()
 
@@ -146,8 +147,11 @@ namespace
       exception_thrown = true;
       if ( report_throws ) std::cout << x.what() << std::endl;
       if ( platform == "Windows" && language_id == 0x0409 ) // English (United States)
-        BOOST_CHECK( std::strcmp( x.what(),
-          "boost::filesystem::create_directory" ) == 0 );
+        // the stdcxx standard library apparently appends additional info
+        // to what(), so check only the initial portion: 
+        BOOST_CHECK( std::strncmp( x.what(),
+          "boost::filesystem::create_directory",
+          sizeof("boost::filesystem::create_directory")-1 ) == 0 );
     }
     BOOST_CHECK( exception_thrown );
 
