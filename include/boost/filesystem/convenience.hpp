@@ -94,6 +94,7 @@ namespace boost
     inline bool create_directories(const wpath& ph)
       { return create_directories<wpath>(ph); }
 
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline std::string extension(const path& ph)
       { return extension<path>(ph); }
     inline std::wstring extension(const wpath& ph)
@@ -108,6 +109,7 @@ namespace boost
       { return change_extension<path>( ph, new_ex ); }
     inline wpath change_extension( const wpath & ph, const std::wstring& new_ex )
       { return change_extension<wpath>( ph, new_ex ); }
+# endif
 
 # endif
 
@@ -239,10 +241,23 @@ namespace boost
       else if ( is_directory( m_imp->m_stack.top()->status() ) )
       {
         system::error_code ec;
+#if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x610))
+        if( m_imp->m_no_throw ) {
+            m_imp->m_stack.push(
+                basic_directory_iterator<Path>( *m_imp->m_stack.top(), ec )
+            );
+        }
+        else {
+            m_imp->m_stack.push(
+                basic_directory_iterator<Path>( *m_imp->m_stack.top() )
+            );
+        }
+#else
         m_imp->m_stack.push(
           m_imp->m_no_throw
             ? basic_directory_iterator<Path>( *m_imp->m_stack.top(), ec )
             : basic_directory_iterator<Path>( *m_imp->m_stack.top() ) );
+#endif
         if ( m_imp->m_stack.top() != end_itr )
         {
           ++m_imp->m_level;

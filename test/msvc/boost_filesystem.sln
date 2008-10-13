@@ -56,6 +56,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "large_file_support_test", "
 		{F31C02C7-63A4-489C-A176-695D68E5BCA4} = {F31C02C7-63A4-489C-A176-695D68E5BCA4}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "deprecated_test", "deprecated_test\deprecated_test.vcproj", "{EA1530CD-7058-4912-8B51-8D55A07F0A1D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{15371D22-F930-4286-9126-C3516E78CB09} = {15371D22-F930-4286-9126-C3516E78CB09}
+		{F31C02C7-63A4-489C-A176-695D68E5BCA4} = {F31C02C7-63A4-489C-A176-695D68E5BCA4}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -102,6 +108,10 @@ Global
 		{49414D8C-BE1D-4C70-8E6B-7F2D3F5B18B0}.Debug|Win32.Build.0 = Debug|Win32
 		{49414D8C-BE1D-4C70-8E6B-7F2D3F5B18B0}.Release|Win32.ActiveCfg = Release|Win32
 		{49414D8C-BE1D-4C70-8E6B-7F2D3F5B18B0}.Release|Win32.Build.0 = Release|Win32
+		{EA1530CD-7058-4912-8B51-8D55A07F0A1D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EA1530CD-7058-4912-8B51-8D55A07F0A1D}.Debug|Win32.Build.0 = Debug|Win32
+		{EA1530CD-7058-4912-8B51-8D55A07F0A1D}.Release|Win32.ActiveCfg = Release|Win32
+		{EA1530CD-7058-4912-8B51-8D55A07F0A1D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

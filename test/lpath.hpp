@@ -9,6 +9,7 @@
 //  See library home page at http://www.boost.org/libs/filesystem
 
 #include <boost/filesystem/path.hpp>
+#include <cwchar>      // for std::mbstate_t
 #include <string>
 #include <ios>         // for std::streamoff
 

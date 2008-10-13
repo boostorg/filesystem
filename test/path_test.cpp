@@ -13,6 +13,9 @@
 //  on basename(), extension(), and change_extension() tests from the original
 //  convenience_test.cpp by Vladimir Prus.
 
+//  See deprecated_test for tests of deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem/operations.hpp>
 #include <boost/utility.hpp>
 #include <iostream>
@@ -36,9 +39,9 @@ using boost::prior;
 
 namespace
 {
-  int errors;
-
   std::string platform( BOOST_PLATFORM );
+
+  int errors;
 
   void check( const fs::path & source,
               const std::string & expected, int line )
@@ -77,111 +80,6 @@ namespace
               << "\"" << std::endl;
   }
 
-  void check_normalize()
-  {
-    PATH_CHECK( path("").normalize(), "" );
-    PATH_CHECK( path("/").normalize(), "/" );
-    PATH_CHECK( path("//").normalize(), "//" );
-    PATH_CHECK( path("///").normalize(), "/" );
-    PATH_CHECK( path("f").normalize(), "f" );
-    PATH_CHECK( path("foo").normalize(), "foo" );
-    PATH_CHECK( path("foo/").normalize(), "foo/." );
-    PATH_CHECK( path("f/").normalize(), "f/." );
-    PATH_CHECK( path( "/foo" ).normalize(), "/foo" );
-    PATH_CHECK( path( "foo/bar" ).normalize(), "foo/bar" );
-    PATH_CHECK( path("..").normalize(), ".." );
-    PATH_CHECK( path("../..").normalize(), "../.." );
-    PATH_CHECK( path("/..").normalize(), "/.." );
-    PATH_CHECK( path("/../..").normalize(), "/../.." );
-    PATH_CHECK( path("../foo").normalize(), "../foo" );
-    PATH_CHECK( path("foo/..").normalize(), "." );
-    PATH_CHECK( path("foo/../").normalize(), "./." );
-    PATH_CHECK( (path("foo") / "..").normalize() , "." );
-    PATH_CHECK( path("foo/...").normalize(), "foo/..." );
-    PATH_CHECK( path("foo/.../").normalize(), "foo/.../." );
-    PATH_CHECK( path("foo/..bar").normalize(), "foo/..bar" );
-    PATH_CHECK( path("../f").normalize(), "../f" );
-    PATH_CHECK( path("/../f").normalize(), "/../f" );
-    PATH_CHECK( path("f/..").normalize(), "." );
-    PATH_CHECK( (path("f") / "..").normalize() , "." );
-    PATH_CHECK( path("foo/../..").normalize(), ".." );
-    PATH_CHECK( path("foo/../../").normalize(), "../." );
-    PATH_CHECK( path("foo/../../..").normalize(), "../.." );
-    PATH_CHECK( path("foo/../../../").normalize(), "../../." );
-    PATH_CHECK( path("foo/../bar").normalize(), "bar" );
-    PATH_CHECK( path("foo/../bar/").normalize(), "bar/." );
-    PATH_CHECK( path("foo/bar/..").normalize(), "foo" );
-    PATH_CHECK( path("foo/bar/../").normalize(), "foo/." );
-    PATH_CHECK( path("foo/bar/../..").normalize(), "." );
-    PATH_CHECK( path("foo/bar/../../").normalize(), "./." );
-    PATH_CHECK( path("foo/bar/../blah").normalize(), "foo/blah" );
-    PATH_CHECK( path("f/../b").normalize(), "b" );
-    PATH_CHECK( path("f/b/..").normalize(), "f" );
-    PATH_CHECK( path("f/b/../").normalize(), "f/." );
-    PATH_CHECK( path("f/b/../a").normalize(), "f/a" );
-    PATH_CHECK( path("foo/bar/blah/../..").normalize(), "foo" );
-    PATH_CHECK( path("foo/bar/blah/../../bletch").normalize(), "foo/bletch" );
-    PATH_CHECK( path( "//net" ).normalize(), "//net" );
-    PATH_CHECK( path( "//net/" ).normalize(), "//net/" );
-    PATH_CHECK( path( "//..net" ).normalize(), "//..net" );
-    PATH_CHECK( path( "//net/.." ).normalize(), "//net/.." );
-    PATH_CHECK( path( "//net/foo" ).normalize(), "//net/foo" );
-    PATH_CHECK( path( "//net/foo/" ).normalize(), "//net/foo/." );
-    PATH_CHECK( path( "//net/foo/.." ).normalize(), "//net/" );
-    PATH_CHECK( path( "//net/foo/../" ).normalize(), "//net/." );
-
-    PATH_CHECK( path( "/net/foo/bar" ).normalize(), "/net/foo/bar" );
-    PATH_CHECK( path( "/net/foo/bar/" ).normalize(), "/net/foo/bar/." );
-    PATH_CHECK( path( "/net/foo/.." ).normalize(), "/net" );
-    PATH_CHECK( path( "/net/foo/../" ).normalize(), "/net/." );
-
-    PATH_CHECK( path( "//net//foo//bar" ).normalize(), "//net/foo/bar" );
-    PATH_CHECK( path( "//net//foo//bar//" ).normalize(), "//net/foo/bar/." );
-    PATH_CHECK( path( "//net//foo//.." ).normalize(), "//net/" );
-    PATH_CHECK( path( "//net//foo//..//" ).normalize(), "//net/." );
-
-    PATH_CHECK( path( "///net///foo///bar" ).normalize(), "/net/foo/bar" );
-    PATH_CHECK( path( "///net///foo///bar///" ).normalize(), "/net/foo/bar/." );
-    PATH_CHECK( path( "///net///foo///.." ).normalize(), "/net" );
-    PATH_CHECK( path( "///net///foo///..///" ).normalize(), "/net/." );
-
-    if ( platform == "Windows" )
-    {
-      PATH_CHECK( path( "c:.." ).normalize(), "c:.." );
-      PATH_CHECK( path( "c:foo/.." ).normalize(), "c:" );
-
-      PATH_CHECK( path( "c:foo/../" ).normalize(), "c:." );
-
-      PATH_CHECK( path( "c:/foo/.." ).normalize(), "c:/" );
-      PATH_CHECK( path( "c:/foo/../" ).normalize(), "c:/." );
-      PATH_CHECK( path( "c:/.." ).normalize(), "c:/.." );
-      PATH_CHECK( path( "c:/../" ).normalize(), "c:/../." );
-      PATH_CHECK( path( "c:/../.." ).normalize(), "c:/../.." );
-      PATH_CHECK( path( "c:/../../" ).normalize(), "c:/../../." );
-      PATH_CHECK( path( "c:/../foo" ).normalize(), "c:/../foo" );
-      PATH_CHECK( path( "c:/../foo/" ).normalize(), "c:/../foo/." );
-      PATH_CHECK( path( "c:/../../foo" ).normalize(), "c:/../../foo" );
-      PATH_CHECK( path( "c:/../../foo/" ).normalize(), "c:/../../foo/." );
-      PATH_CHECK( path( "c:/..foo" ).normalize(), "c:/..foo" );
-    }
-    else // POSIX
-    {
-      PATH_CHECK( path( "c:.." ).normalize(), "c:.." );
-      PATH_CHECK( path( "c:foo/.." ).normalize(), "." );
-      PATH_CHECK( path( "c:foo/../" ).normalize(), "./." );
-      PATH_CHECK( path( "c:/foo/.." ).normalize(), "c:" );
-      PATH_CHECK( path( "c:/foo/../" ).normalize(), "c:/." );
-      PATH_CHECK( path( "c:/.." ).normalize(), "." );
-      PATH_CHECK( path( "c:/../" ).normalize(), "./." );
-      PATH_CHECK( path( "c:/../.." ).normalize(), ".." );
-      PATH_CHECK( path( "c:/../../" ).normalize(), "../." );
-      PATH_CHECK( path( "c:/../foo" ).normalize(), "foo" );
-      PATH_CHECK( path( "c:/../foo/" ).normalize(), "foo/." );
-      PATH_CHECK( path( "c:/../../foo" ).normalize(), "../foo" );
-      PATH_CHECK( path( "c:/../../foo/" ).normalize(), "../foo/." );
-      PATH_CHECK( path( "c:/..foo" ).normalize(), "c:/..foo" );
-    }
-  }
 
   void exception_tests()
   {
@@ -343,12 +241,10 @@ int test_main( int, char*[] )
     PATH_CHECK( path("c:") / "/foo", "c:/foo" );
   }
 
-  check_normalize();
-
   if ( platform == "Windows" )
   {
-    PATH_CHECK( path("c:", fs::native ) / "foo", "c:foo" );
-    PATH_CHECK( path("c:", fs::native) / "/foo", "c:/foo" );
+    PATH_CHECK( path("c:") / "foo", "c:foo" );
+    PATH_CHECK( path("c:") / "/foo", "c:/foo" );
   }
 
   PATH_CHECK( "foo/bar", "foo/bar" );

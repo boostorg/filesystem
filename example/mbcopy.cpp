@@ -9,6 +9,9 @@
 //  Copy the files in a directory, using mbpath to represent the new file names
 //  See http://../doc/path.htm#mbpath for more information
 
+//  See deprecated_test for tests of deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include <boost/filesystem/config.hpp>
 # ifdef BOOST_FILESYSTEM_NARROW_ONLY
 #   error This compiler or standard library does not support wide-character strings or paths
@@ -74,7 +77,7 @@ int main( int argc, char * argv[] )
   {
     if ( fs::is_regular_file(it->status()) )
     {
-      copy_file( *it, target_dir / it->filename() );
+      copy_file( *it, target_dir / it->path().filename() );
     }
   }
 

@@ -112,9 +112,9 @@ namespace
 {
   const error_code ok;
 
-  const fs::directory_iterator end_itr;
   bool is_empty_directory( const std::string & dir_path )
   {
+    static const fs::directory_iterator end_itr;
     return fs::directory_iterator(fs::path(dir_path)) == end_itr;
   }
 
@@ -133,9 +133,9 @@ namespace
   inline DWORD get_file_attributes( const wchar_t * ph )
     { return ::GetFileAttributesW( ph ); }
 
-  const fs::wdirectory_iterator wend_itr;
   bool is_empty_directory( const std::wstring & dir_path )
   {
+    static const fs::wdirectory_iterator wend_itr;
     return fs::wdirectory_iterator(fs::wpath(dir_path)) == wend_itr;
   }
 
@@ -585,7 +585,7 @@ namespace
         int err = ::unlink( p );
         if ( err != EPERM )
           return err;
-        return ::rmdir( p )
+        return ::rmdir( p );
 #     else
         return std::remove( p );
 #     endif

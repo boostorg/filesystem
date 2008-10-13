@@ -8,6 +8,9 @@
 
 //  See http://www.boost.org/libs/filesystem for documentation.
 
+//  As an example program, we don't want to use any deprecated features
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include "boost/progress.hpp"
@@ -22,7 +25,7 @@ int main( int argc, char* argv[] )
   fs::path full_path( fs::initial_path<fs::path>() );
 
   if ( argc > 1 )
-    full_path = fs::system_complete( fs::path( argv[1], fs::native ) );
+    full_path = fs::system_complete( fs::path( argv[1] ) );
   else
     std::cout << "\nusage:   simple_ls [path]" << std::endl;
 
@@ -33,14 +36,14 @@ int main( int argc, char* argv[] )
 
   if ( !fs::exists( full_path ) )
   {
-    std::cout << "\nNot found: " << full_path.native_file_string() << std::endl;
+    std::cout << "\nNot found: " << full_path.file_string() << std::endl;
     return 1;
   }
 
   if ( fs::is_directory( full_path ) )
   {
     std::cout << "\nIn directory: "
-              << full_path.native_directory_string() << "\n\n";
+              << full_path.directory_string() << "\n\n";
     fs::directory_iterator end_iter;
     for ( fs::directory_iterator dir_itr( full_path );
           dir_itr != end_iter;
@@ -51,24 +54,24 @@ int main( int argc, char* argv[] )
         if ( fs::is_directory( dir_itr->status() ) )
         {
           ++dir_count;
-          std::cout << dir_itr->filename() << " [directory]\n";
+          std::cout << dir_itr->path().filename() << " [directory]\n";
         }
         else if ( fs::is_regular_file( dir_itr->status() ) )
         {
           ++file_count;
-          std::cout << dir_itr->filename() << "\n";
+          std::cout << dir_itr->path().filename() << "\n";
         }
         else
         {
           ++other_count;
-          std::cout << dir_itr->filename() << " [other]\n";
+          std::cout << dir_itr->path().filename() << " [other]\n";
         }
 
       }
       catch ( const std::exception & ex )
       {
         ++err_count;
-        std::cout << dir_itr->filename() << " " << ex.what() << std::endl;
+        std::cout << dir_itr->path().filename() << " " << ex.what() << std::endl;
       }
     }
     std::cout << "\n" << file_count << " files\n"
@@ -78,7 +81,7 @@ int main( int argc, char* argv[] )
   }
   else // must be a file
   {
-    std::cout << "\nFound: " << full_path.native_file_string() << "\n";    
+    std::cout << "\nFound: " << full_path.file_string() << "\n";    
   }
   return 0;
 }
