@@ -86,8 +86,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Executing test $(TargetName).exe..."
-				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot; --result_code=no --report_level=no"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -163,8 +163,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Executing test $(TargetName).exe..."
-				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot; --result_code=no --report_level=no"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>

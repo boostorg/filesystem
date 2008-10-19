@@ -44,6 +44,8 @@
     <a href="#Using_reference_doc">Using the Reference Documentation</a><br>
     <a href="#Examples">Example programs</a><br>
     <a href="#Implementation">Implementation</a><br>
+    <a href="#Macros">Macros</a><br>
+    <a href="#Deprecated-names">Deprecated names and features</a><br>
     <a href="#narrow-only">Using only narrow character paths</a><br>
     <a href="#Building">Building the object-library</a><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Cgywin">Notes for Cygwin users</a><br>
@@ -309,6 +311,211 @@ either the POSIX or Windows API.</p>
 <p>The library is in regular use on Apple  OS X, HP-UX, IBM AIX, Linux, 
 Microsoft Windows, SGI IRIX, and Sun Solaris operating systems using a variety 
 of compilers.</p>
+<h2><a name="Macros">Macros</a></h2>
+<p>Users may defined the following macros if desired. Sensible defaults are 
+provided, so users can ignore these macros unless they have special needs.</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td><b><i>Macro Name</i></b></td>
+    <td><b><i>Default</i></b></td>
+    <td><b><i>Effect if defined</i></b></td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_WINDOWS_API</code></td>
+    <td valign="top">Defined if Windows is detected by Boost.System's automatic configuration 
+    code, otherwise not defined.</td>
+    <td valign="top">Implementation uses the Microsoft Windows native 
+    application program interface (API).</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_POSIX_API</code></td>
+    <td valign="top">Defined if Windows is not detected by Boost.System's automatic configuration 
+    code.</td>
+    <td valign="top">Implementation uses the POSIX native 
+    application program interface (API).</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DYN_LINK</code></td>
+    <td valign="top">Defined if <code>BOOST_ALL_DYN_LINK</code> is defined, 
+    otherwise not defined.</td>
+    <td valign="top">Boost.System library is dynamically linked. If not defined, 
+    static linking is assumed.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_NO_LIB</code></td>
+    <td valign="top">Defined if <code>BOOST_ALL_NO_LIB</code> is defined, 
+    otherwise not defined.</td>
+    <td valign="top">Boost.System library does not use the Boost auto-link 
+    facility.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_NARROW_ONLY</code></td>
+    <td valign="top">Not defined.</td>
+    <td valign="top">Removes features that require wchar_t support.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_NO_DEPRECATED</code></td>
+    <td valign="top">Not defined.</td>
+    <td valign="top">Deprecated features are excluded.</td>
+  </tr>
+</table>
+<h2><a name="Deprecated-names">Deprecated names</a> and features</h2>
+<p style="font-size: 10pt">As the library evolves over time, names sometimes 
+change or features are removed. To ease transition, Boost.Filesystem deprecates 
+the old names and features, but continues to provide them unless macro <code>
+BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
+<table border="1" cellpadding="5" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td style="font-size: 10pt">
+    <b><i>Component</i></b></td>
+    <td style="font-size: 10pt">
+    <p style="font-size: 10pt"><b><i>Old name, now deprecated</i></b></td>
+    <td style="font-size: 10pt">
+    <p style="font-size: 10pt"><b><i>New name</i></b></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
+    <td style="font-size: 10pt"><code>leaf()</code></td>
+    <td style="font-size: 10pt"><code>filename()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
+    <td style="font-size: 10pt"><code>branch_path()</code></td>
+    <td style="font-size: 10pt"><code>parent_path()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
+    <td style="font-size: 10pt"><code>has_leaf()</code></td>
+    <td style="font-size: 10pt"><code>has_filename()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
+    <td style="font-size: 10pt"><code>has_branch_path()</code></td>
+    <td style="font-size: 10pt"><code>has_parent_path()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <p style="font-size: 10pt"><code>remove_leaf()</code></td>
+    <td style="font-size: 10pt">
+    <p style="font-size: 10pt"><code>remove_filename()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>basic_path( const string_type &amp; str,<br>
+&nbsp; name_check )</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>basic_path( const string_type::value_type * s,<br>
+&nbsp; name_check )</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>native_file_string()</code></td>
+    <td style="font-size: 10pt">
+    <code>file_string()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>native_directory_string()</code></td>
+    <td style="font-size: 10pt">
+    <code>directory_string()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>default_name_check_writable()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>default_name_check( name_check )</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>default_name_check()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>canonize()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_path</code></td>
+    <td style="font-size: 10pt">
+    <code>normalize()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>operations.hpp</code></td>
+    <td style="font-size: 10pt">
+    <code>is_regular( file_status f )</code></td>
+    <td style="font-size: 10pt">
+    <code>is_regular_file( file_status f )</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>operations.hpp</code></td>
+    <td style="font-size: 10pt">
+    <code>symbolic_link_exists( const path &amp; ph )</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_directory_status</code></td>
+    <td style="font-size: 10pt">
+    <code>filename()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed, use path().filename() instead</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_directory_status</code></td>
+    <td style="font-size: 10pt">
+    <code>leaf()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed, use path().filename() instead</code></i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>basic_directory_status</code></td>
+    <td style="font-size: 10pt">
+    <code>string()</code></td>
+    <td style="font-size: 10pt">
+    <i><code>feature removed, use path().string() instead</code></i></td>
+  </tr>
+</table>
 <h2><a name="narrow-only">Restricting library to narrow character paths</a></h2>
 <p>Compilers or standard libraries which do not support wide characters (wchar_t) 
 or wide character strings (std::wstring) are detected automatically, and cause 
@@ -553,7 +760,7 @@ performance issues.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 March, 2008<!--webbot bot="Timestamp" endspan i-checksum="29005" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 October, 2008<!--webbot bot="Timestamp" endspan i-checksum="39192" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
