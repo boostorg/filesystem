@@ -227,10 +227,10 @@ namespace boost
       string_type  extension() const;
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-      string_type  leaf() const { return filename(); }
-      basic_path   branch_path() const { return parent_path(); }
-      bool has_leaf() const            { return !m_path.empty(); }
-      bool has_branch_path() const     { return !parent_path().empty(); }
+      string_type  leaf() const            { return filename(); }
+      basic_path   branch_path() const     { return parent_path(); }
+      bool         has_leaf() const        { return !m_path.empty(); }
+      bool         has_branch_path() const { return !parent_path().empty(); }
 # endif
 
       bool empty() const               { return m_path.empty(); } // name consistent with std containers

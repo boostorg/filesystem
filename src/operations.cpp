@@ -585,7 +585,7 @@ namespace
         int err = ::unlink( p );
         if ( err != EPERM )
           return err;
-        return ::rmdir( p )
+        return ::rmdir( p );
 #     else
         return std::remove( p );
 #     endif
