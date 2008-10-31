@@ -304,6 +304,7 @@ int test_main( int argc, char * argv[] )
       ==  "//net/bar/foo" );
 
   // predicate and status tests
+  BOOST_CHECK( fs::exists( "/" ) );
   fs::path ng( " no-way, Jose" );
   BOOST_CHECK( !fs::exists( ng ) );
   BOOST_CHECK( !fs::is_directory( ng ) );
@@ -325,6 +326,49 @@ int test_main( int argc, char * argv[] )
   BOOST_CHECK( !fs::is_symlink( stat ) );
 
   fs::path dir(  fs::initial_path<fs::path>() / temp_dir_name );
+
+  if ( fs::exists( dir ) )
+    fs::remove_all( dir );  // remove residue from prior failed tests
+  BOOST_CHECK( !fs::exists( dir ) );
+
+  // create a directory, then check it for consistency
+  //   take extra care to report problems, since if this fails
+  //   many subsequent tests will fail
+  try
+  {
+    fs::create_directory( dir );
+  }
+
+  catch ( const fs::filesystem_error & x )
+  {
+    std::cout << x.what() << "\n\n"
+       "***** Creating directory " << dir.string() << " failed.          *****\n"
+       "***** This is a serious error that will prevent further tests    *****\n"
+       "***** from returning useful results. Further testing is aborted. *****\n\n";
+    return 1;
+  }
+
+  catch ( ... )
+  {
+    std::cout << "\n\n"
+       "***** Creating directory " << dir.string() << " failed.          *****\n"
+       "***** This is a serious error that will prevent further tests    *****\n"
+       "***** from returning useful results. Further testing is aborted. *****\n\n";
+    return 1;
+  }
+
+  BOOST_CHECK( fs::exists( dir ) );
+  BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
+  BOOST_CHECK( fs::is_directory( dir ) );
+  BOOST_CHECK( !fs::is_regular_file( dir ) );
+  BOOST_CHECK( !fs::is_other( dir ) );
+  BOOST_CHECK( !fs::is_symlink( dir ) );
+  stat = fs::status( dir );
+  BOOST_CHECK( fs::exists( stat ) );
+  BOOST_CHECK( fs::is_directory( stat ) );
+  BOOST_CHECK( !fs::is_regular_file( stat ) );
+  BOOST_CHECK( !fs::is_other( stat ) );
+  BOOST_CHECK( !fs::is_symlink( stat ) );
   
   // Windows only tests
   if ( platform == "Windows" )
@@ -371,9 +415,6 @@ int test_main( int argc, char * argv[] )
       == fs::initial_path<fs::path>().root_path().string()+"foo" );
   } // POSIX
 
-  fs::remove_all( dir );  // in case residue from prior failed tests
-  BOOST_CHECK( !fs::exists( dir ) );
-
   // the bound functions should throw, so CHECK_EXCEPTION() should return true
   BOOST_CHECK( CHECK_EXCEPTION( bad_file_size, ENOENT ) );
 
@@ -387,22 +428,6 @@ int test_main( int argc, char * argv[] )
   // several functions give unreasonable results if uintmax_t isn't 64-bits
   std::cout << "sizeof(boost::uintmax_t) = " << sizeof(boost::uintmax_t) << '\n';
   BOOST_CHECK( sizeof( boost::uintmax_t ) >= 8 );
-
-  // create a directory, then check it for consistency
-  BOOST_CHECK( fs::create_directory( dir ) );
-
-  BOOST_CHECK( fs::exists( dir ) );
-  BOOST_CHECK( BOOST_FS_IS_EMPTY( dir ) );
-  BOOST_CHECK( fs::is_directory( dir ) );
-  BOOST_CHECK( !fs::is_regular_file( dir ) );
-  BOOST_CHECK( !fs::is_other( dir ) );
-  BOOST_CHECK( !fs::is_symlink( dir ) );
-  stat = fs::status( dir );
-  BOOST_CHECK( fs::exists( stat ) );
-  BOOST_CHECK( fs::is_directory( stat ) );
-  BOOST_CHECK( !fs::is_regular_file( stat ) );
-  BOOST_CHECK( !fs::is_other( stat ) );
-  BOOST_CHECK( !fs::is_symlink( stat ) );
 
   // set the current directory, then check it for consistency
   fs::path original_dir = fs::current_path<fs::path>();
