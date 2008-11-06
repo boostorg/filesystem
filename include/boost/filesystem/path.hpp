@@ -203,7 +203,7 @@ namespace boost
       }
 
       basic_path & remove_filename();
-      basic_path & replace_extension( const string_type & new_extension = "" );
+      basic_path & replace_extension( const string_type & new_extension = string_type() );
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
       basic_path & remove_leaf() { return remove_filename(); }
