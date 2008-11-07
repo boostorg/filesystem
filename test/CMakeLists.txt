@@ -1,3 +1,6 @@
+boost_additional_test_dependencies(filesystem BOOST_DEPENDS test bind)
+
+
 ADD_DEFINITIONS(-DBOOST_ALL_NO_LIB) # -DBOOST_FILESYSTEM_STATIC_LINK)
 
 SET(TESTS path_test operations_test 
