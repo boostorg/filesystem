@@ -1205,7 +1205,7 @@ namespace boost
       {
         const std::size_t buf_sz = 32768;
         boost::scoped_array<char> buf( new char [buf_sz] );
-        int infile=0, outfile=0;  // init quiets compiler warning
+        int infile=-1, outfile=-1;  // -1 means not open
         struct stat from_stat;
 
         if ( ::stat( from_file_ph.c_str(), &from_stat ) != 0
