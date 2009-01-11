@@ -69,6 +69,7 @@ namespace boost
     BOOST_FILESYSTEM_DECL bool windows_name( const std::string & name )
     {
       return name.size() != 0
+        && name[0] != ' '
         && name.find_first_of( windows_invalid_chars ) == std::string::npos
         && *(name.end()-1) != ' '
         && (*(name.end()-1) != '.'
@@ -78,12 +79,12 @@ namespace boost
     BOOST_FILESYSTEM_DECL bool portable_name( const std::string & name )
     {
       return
-        name.size() == 0
-        || name == "."
-        || name == ".."
-        || (windows_name( name )
-        && portable_posix_name( name )
-        && name[0] != '.' && name[0] != '-');
+        name.size() != 0
+        && ( name == "."
+          || name == ".."
+          || (windows_name( name )
+            && portable_posix_name( name )
+            && name[0] != '.' && name[0] != '-'));
     }
 
     BOOST_FILESYSTEM_DECL bool portable_directory_name( const std::string & name )
@@ -99,12 +100,12 @@ namespace boost
     {
       std::string::size_type pos;
       return
-         name == "."
-        || name == ".."
-        || (portable_name( name )
-          && ( (pos = name.find( '.' )) == std::string::npos
-            || (name.find( '.', pos+1 )== std::string::npos
-              && (pos + 5) > name.length() )))
+         portable_name( name )
+         && name != "."
+         && name != ".."
+         && ( (pos = name.find( '.' )) == std::string::npos
+             || (name.find( '.', pos+1 ) == std::string::npos
+               && (pos + 5) > name.length() ))
         ;
     }
 
