@@ -56,7 +56,9 @@ namespace boost
 #   else
     BOOST_FILESYSTEM_DECL bool native( const std::string & name )
     {
-      return name.find('/') == std::string::npos;
+      return  name.size() != 0
+        && name[0] != ' '
+        && name.find('/') == std::string::npos;
     }
 #   endif
 
