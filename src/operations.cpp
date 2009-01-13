@@ -583,7 +583,7 @@ namespace
         // rmdir() or unlink() as indicated.
         // Same bug also reported for QNX, with the same fix.
         int err = ::unlink( p );
-        if ( err != EPERM )
+        if ( err == 0 || errno != EPERM )
           return err;
         return ::rmdir( p );
 #     else
