@@ -206,8 +206,23 @@ int test_main( int, char*[] )
   path p2( p1 );
   path p3;
   BOOST_CHECK( p1.string() != p3.string() );
+
+  // check each overload
+  BOOST_CHECK( p1 != p3 );
+  BOOST_CHECK( p1 != p3.string() );
+  BOOST_CHECK( p1 != p3.string().c_str() );
+  BOOST_CHECK( p1.string() != p3 );
+  BOOST_CHECK( p1.string().c_str() != p3 );
+
   p3 = p2;
   BOOST_CHECK( p1.string() == p3.string() );
+
+  // check each overload
+  BOOST_CHECK( p1 == p3 );
+  BOOST_CHECK( p1 == p3.string() );
+  BOOST_CHECK( p1 == p3.string().c_str() );
+  BOOST_CHECK( p1.string() == p3 );
+  BOOST_CHECK( p1.string().c_str() == p3 );
 
   path p4( "foobar" );
   BOOST_CHECK( p4.string() == "foobar" );
