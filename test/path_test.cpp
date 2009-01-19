@@ -106,6 +106,90 @@ namespace
     }
   }
 
+
+  //  name_function_tests  ---------------------------------------------------//
+
+  void name_function_tests()
+  {
+    std::cout << "name_function_tests..." << std::endl;
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( "x" ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( "x" ) ) );
+    BOOST_CHECK( fs::portable_name( std::string( "x" ) ) );
+    BOOST_CHECK( fs::portable_directory_name( std::string( "x" ) ) );
+    BOOST_CHECK( fs::portable_file_name( std::string( "x" ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( "." ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( "." ) ) );
+    BOOST_CHECK( fs::portable_name( std::string( "." ) ) );
+    BOOST_CHECK( fs::portable_directory_name( std::string( "." ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( "." ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( ".." ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( ".." ) ) );
+    BOOST_CHECK( fs::portable_name( std::string( ".." ) ) );
+    BOOST_CHECK( fs::portable_directory_name( std::string( ".." ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( ".." ) ) );
+
+    BOOST_CHECK( !fs::native( std::string( "" ) ) );
+    BOOST_CHECK( !fs::portable_posix_name( std::string( "" ) ) );
+    BOOST_CHECK( !fs::windows_name( std::string( "" ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( "" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( "" ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( "" ) ) );
+
+    BOOST_CHECK( !fs::native( std::string( " " ) ) );
+    BOOST_CHECK( !fs::portable_posix_name( std::string( " " ) ) );
+    BOOST_CHECK( !fs::windows_name( std::string( " " ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( " " ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( " " ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( " " ) ) );
+
+    BOOST_CHECK( !fs::portable_posix_name( std::string( ":" ) ) );
+    BOOST_CHECK( !fs::windows_name( std::string( ":" ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( ":" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( ":" ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( ":" ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( "-" ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( "-" ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( "-" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( "-" ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( "-" ) ) );
+
+    BOOST_CHECK( !fs::portable_posix_name( std::string( "foo bar" ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( "foo bar" ) ) );
+    BOOST_CHECK( !fs::windows_name( std::string( " bar" ) ) );
+    BOOST_CHECK( !fs::windows_name( std::string( "foo " ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( "foo bar" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( "foo bar" ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( "foo bar" ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( "foo.bar" ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( "foo.bar" ) ) );
+    BOOST_CHECK( fs::portable_name( std::string( "foo.bar" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( "foo.bar" ) ) );
+    BOOST_CHECK( fs::portable_file_name( std::string( "foo.bar" ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( "foo.barf" ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( "foo.barf" ) ) );
+    BOOST_CHECK( fs::portable_name( std::string( "foo.barf" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( "foo.barf" ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( "foo.barf" ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( ".foo" ) ) );
+    BOOST_CHECK( fs::windows_name( std::string( ".foo" ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( ".foo" ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( ".foo" ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( ".foo" ) ) );
+
+    BOOST_CHECK( fs::portable_posix_name( std::string( "foo." ) ) );
+    BOOST_CHECK( !fs::windows_name( std::string( "foo." ) ) );
+    BOOST_CHECK( !fs::portable_name( std::string( "foo." ) ) );
+    BOOST_CHECK( !fs::portable_directory_name( std::string( "foo." ) ) );
+    BOOST_CHECK( !fs::portable_file_name( std::string( "foo." ) ) );
+  }
+
 } // unnamed namespace
 
 int test_main( int, char*[] )
@@ -131,6 +215,7 @@ int test_main( int, char*[] )
   BOOST_CHECK( p4.string() == "foobar" );
 
   exception_tests();
+  name_function_tests();
 
   // These verify various overloads don't cause compiler errors
 
