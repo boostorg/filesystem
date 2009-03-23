@@ -378,6 +378,7 @@ int test_main( int argc, char * argv[] )
     BOOST_CHECK( !fs::exists( fs::path( "//share-not/foo" ) ) );
     BOOST_CHECK( !fs::exists( "tools/jam/src/:sys:stat.h" ) ); // !exists() if ERROR_INVALID_NAME
     BOOST_CHECK( !fs::exists( ":sys:stat.h" ) ); // !exists() if ERROR_INVALID_PARAMETER
+    BOOST_CHECK( !fs::exists( "1:/" ) );
     BOOST_CHECK( dir.string().size() > 1
       && dir.string()[1] == ':' ); // verify path includes drive
 

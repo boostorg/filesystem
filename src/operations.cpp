@@ -198,6 +198,7 @@ namespace
       if ((ec.value() == ERROR_FILE_NOT_FOUND)
         || (ec.value() == ERROR_PATH_NOT_FOUND)
         || (ec.value() == ERROR_INVALID_NAME) // "tools/jam/src/:sys:stat.h", "//foo"
+        || (ec.value() == ERROR_INVALID_DRIVE) // USB card reader with no card inserted
         || (ec.value() == ERROR_INVALID_PARAMETER) // ":sys:stat.h"
         || (ec.value() == ERROR_BAD_PATHNAME) // "//nosuch" on Win64
         || (ec.value() == ERROR_BAD_NETPATH)) // "//nosuch" on Win32
