@@ -31,7 +31,7 @@ namespace fs = boost::filesystem;
   namespace std { using ::remove; }
 #endif
 
-#include <boost/test/minimal.hpp>
+#include <boost/detail/test_framework.hpp>
 
 namespace
 {
@@ -147,7 +147,7 @@ namespace
   } // test
 } // unnamed namespace
 
-int test_main( int argc, char*[] )
+int main( int argc, char*[] )
 {
   if ( argc > 1 ) cleanup = false;
 
@@ -176,5 +176,5 @@ int test_main( int argc, char*[] )
 
 #endif
 
-  return 0;
+  return boost::test_framework::errors();
 }

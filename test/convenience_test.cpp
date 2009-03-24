@@ -18,7 +18,7 @@ namespace fs = boost::filesystem;
 using fs::path;
 namespace sys = boost::system;
 
-#include <boost/test/minimal.hpp>
+#include <boost/detail/test_framework.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
 #include <iostream>
@@ -53,7 +53,7 @@ namespace
 
 //  --------------------------------------------------------------------------//
 
-int test_main( int, char*[] )
+int main( int, char*[] )
 {
 
 //  create_directories() tests  ----------------------------------------------//
@@ -163,5 +163,5 @@ int test_main( int, char*[] )
 
 
 
-  return 0;
+  return boost::test_framework::errors();
 }

@@ -13,7 +13,7 @@
 //  important to preserve existing code that uses the old names.
 
 #include <boost/filesystem.hpp>
-#include <boost/test/minimal.hpp>
+#include <boost/detail/test_framework.hpp>
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -24,14 +24,12 @@ namespace
 {
   std::string platform( BOOST_PLATFORM );
 
-  int errors;
-
   void check( const fs::path & source,
               const std::string & expected, int line )
   {
     if ( source.string()== expected ) return;
 
-    ++errors;
+    ++boost::test_framework::error_count;
 
     std::cout << '(' << line << ") source.string(): \"" << source.string()
               << "\" != expected: \"" << expected
@@ -147,7 +145,7 @@ namespace
 
 //----------------------------------------------------------------------------//
 
-int test_main( int /*argc*/, char * /*argv*/[] )
+int main( int /*argc*/, char * /*argv*/[] )
 {
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
@@ -200,5 +198,5 @@ int test_main( int /*argc*/, char * /*argv*/[] )
   // see the rationale in html docs for explanation why this works
   BOOST_CHECK( fs::change_extension("", ".png").string() == ".png" );
 
-  return errors;
+  return boost::test_framework::errors();
 }

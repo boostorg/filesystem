@@ -18,8 +18,7 @@
 namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
-#include <boost/test/minimal.hpp>
-//#include <boost/concept_check.hpp>
+#include <boost/detail/test_framework.hpp>
 
 using boost::system::error_code;
 using boost::system::system_category;
@@ -258,9 +257,9 @@ namespace
   
 } // unnamed namespace
 
-//  test_main  ---------------------------------------------------------------//
+//  main  ------------------------------------------------------------------------------//
 
-int test_main( int argc, char * argv[] )
+int main( int argc, char * argv[] )
 {
   if ( argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t' ) report_throws = true;
 
@@ -650,7 +649,8 @@ int test_main( int argc, char * argv[] )
 
   if ( create_hard_link_ok )
   {
-    std::cout << "create_hard_link() succeeded\n";
+    std::cout << "create_hard_link(\"" << file_ph << "\", \""
+      << from_ph << "\") succeeded\n";
     BOOST_CHECK( fs::exists( from_ph ) );
     BOOST_CHECK( fs::exists( file_ph ) );
     BOOST_CHECK( fs::equivalent( from_ph, file_ph ) );
@@ -925,6 +925,7 @@ int test_main( int argc, char * argv[] )
   // a bug (failure to close an internal search handle). 
   BOOST_CHECK( !fs::exists( dir ) );
   BOOST_CHECK( fs::remove_all( dir ) == 0 );
-  return 0;
+
+  return boost::test_framework::errors();
 } // main
 

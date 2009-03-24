@@ -21,7 +21,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/test/minimal.hpp>
+#include <boost/detail/test_framework.hpp>
 
 #include "../src/utf8_codecvt_facet.hpp"
 
@@ -118,9 +118,9 @@ namespace
 
 } // unnamed namespace
 
-//  test_main  ---------------------------------------------------------------//
+//  main  ------------------------------------------------------------------------------//
 
-int test_main( int argc, char * /*argv*/[] )
+int main( int argc, char * /*argv*/[] )
 {
 
   if ( argc > 1 ) cleanup = false;
@@ -157,5 +157,5 @@ int test_main( int argc, char * /*argv*/[] )
   test( ::user::lpath( dir ), ::user::lpath( file ), ::user::lpath( dot ) );
   std::cout << "complete\n\n";
 
-  return 0;
+  return boost::test_framework::errors();
 }

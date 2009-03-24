@@ -30,7 +30,7 @@ using boost::filesystem::path;
 using boost::next;
 using boost::prior;
 
-#include <boost/test/minimal.hpp>
+#include <boost/detail/test_framework.hpp>
 
 #define PATH_CHECK( a, b ) check( a, b, __LINE__ )
 #define DIR_CHECK( a, b ) check_dir( a, b, __LINE__ )
@@ -41,14 +41,12 @@ namespace
 {
   std::string platform( BOOST_PLATFORM );
 
-  int errors;
-
   void check( const fs::path & source,
               const std::string & expected, int line )
   {
     if ( source.string()== expected ) return;
 
-    ++errors;
+    ++boost::test_framework::error_count;
 
     std::cout << '(' << line << ") source.string(): \"" << source.string()
               << "\" != expected: \"" << expected
@@ -60,7 +58,7 @@ namespace
   {
     if ( source.directory_string()== expected ) return;
 
-    ++errors;
+    ++boost::test_framework::error_count;
 
     std::cout << '(' << line << ") source.directory_string(): \""
               << source.directory_string()
@@ -73,7 +71,7 @@ namespace
   {
     if ( value == expected ) return;
 
-    ++errors;
+    ++boost::test_framework::error_count;
 
     std::cout << '(' << line << ") value: \"" << value
               << "\" != expected: \"" << expected
@@ -192,7 +190,7 @@ namespace
 
 } // unnamed namespace
 
-int test_main( int, char*[] )
+int main( int, char*[] )
 {
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
@@ -1343,8 +1341,5 @@ int test_main( int, char*[] )
   std::cout << round_trip.string() << "..." << round_trip << " complete\n";
 # endif
 
-
-  std::cout << errors << " errors detected\n";
-  
-  return errors;
+  return boost::test_framework::errors();
 }
