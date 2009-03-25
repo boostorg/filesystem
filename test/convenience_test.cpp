@@ -18,7 +18,7 @@ namespace fs = boost::filesystem;
 using fs::path;
 namespace sys = boost::system;
 
-#include <boost/detail/test_framework.hpp>
+#include <boost/detail/lightweight_test.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
 #include <iostream>
@@ -58,40 +58,40 @@ int main( int, char*[] )
 
 //  create_directories() tests  ----------------------------------------------//
 
-  BOOST_CHECK( !fs::create_directories( "" ) );  // should be harmless
-  BOOST_CHECK( !fs::create_directories( "/" ) ); // ditto
+  BOOST_TEST( !fs::create_directories( "" ) );  // should be harmless
+  BOOST_TEST( !fs::create_directories( "/" ) ); // ditto
 
   fs::remove_all( "xx" );  // make sure slate is blank
-  BOOST_CHECK( !fs::exists( "xx" ) ); // reality check
+  BOOST_TEST( !fs::exists( "xx" ) ); // reality check
 
-  BOOST_CHECK( fs::create_directories( "xx" ) );
-  BOOST_CHECK( fs::exists( "xx" ) );
-  BOOST_CHECK( fs::is_directory( "xx" ) );
+  BOOST_TEST( fs::create_directories( "xx" ) );
+  BOOST_TEST( fs::exists( "xx" ) );
+  BOOST_TEST( fs::is_directory( "xx" ) );
 
-  BOOST_CHECK( fs::create_directories( "xx/yy/zz" ) );
-  BOOST_CHECK( fs::exists( "xx" ) );
-  BOOST_CHECK( fs::exists( "xx/yy" ) );
-  BOOST_CHECK( fs::exists( "xx/yy/zz" ) );
-  BOOST_CHECK( fs::is_directory( "xx" ) );
-  BOOST_CHECK( fs::is_directory( "xx/yy" ) );
-  BOOST_CHECK( fs::is_directory( "xx/yy/zz" ) );
+  BOOST_TEST( fs::create_directories( "xx/yy/zz" ) );
+  BOOST_TEST( fs::exists( "xx" ) );
+  BOOST_TEST( fs::exists( "xx/yy" ) );
+  BOOST_TEST( fs::exists( "xx/yy/zz" ) );
+  BOOST_TEST( fs::is_directory( "xx" ) );
+  BOOST_TEST( fs::is_directory( "xx/yy" ) );
+  BOOST_TEST( fs::is_directory( "xx/yy/zz" ) );
 
   path is_a_file( "xx/uu" );
   {
     std::ofstream f( is_a_file.external_file_string().c_str() );
-    BOOST_CHECK( !!f );
+    BOOST_TEST( !!f );
   }
-  BOOST_CHECK( throws_fs_error(
+  BOOST_TEST( throws_fs_error(
     boost::bind( BOOST_BND(fs::create_directories), is_a_file ) ) );
-  BOOST_CHECK( throws_fs_error(
+  BOOST_TEST( throws_fs_error(
     boost::bind( BOOST_BND(fs::create_directories), is_a_file / "aa" ) ) );
 
 // recursive_directory_iterator tests ----------------------------------------//
 
   sys::error_code ec;
   fs::recursive_directory_iterator it( "/no-such-path", ec );
-  BOOST_CHECK( ec );
-  BOOST_CHECK( throws_fs_error(
+  BOOST_TEST( ec );
+  BOOST_TEST( throws_fs_error(
     boost::bind( create_recursive_iterator, "/no-such-path" ) ) );
 
   fs::remove( "xx/uu" );
@@ -101,7 +101,7 @@ int main( int, char*[] )
   // on Windows but not necessarily on other operating systems
   {
     std::ofstream f( "xx/yya" );
-    BOOST_CHECK( !!f );
+    BOOST_TEST( !!f );
   }
 
   for ( it = fs::recursive_directory_iterator( "xx" );
@@ -109,51 +109,51 @@ int main( int, char*[] )
     { std::cout << it->path() << '\n'; }
 
   it = fs::recursive_directory_iterator( "xx" );
-  BOOST_CHECK( it->path() == "xx/yy" );
-  BOOST_CHECK( it.level() == 0 );
+  BOOST_TEST( it->path() == "xx/yy" );
+  BOOST_TEST( it.level() == 0 );
   ++it;
-  BOOST_CHECK( it->path() == "xx/yy/zz" );
-  BOOST_CHECK( it.level() == 1 );
+  BOOST_TEST( it->path() == "xx/yy/zz" );
+  BOOST_TEST( it.level() == 1 );
   it.pop();
-  BOOST_CHECK( it->path() == "xx/yya" );
-  BOOST_CHECK( it.level() == 0 );
+  BOOST_TEST( it->path() == "xx/yya" );
+  BOOST_TEST( it.level() == 0 );
   it++;
-  BOOST_CHECK( it == fs::recursive_directory_iterator() );
+  BOOST_TEST( it == fs::recursive_directory_iterator() );
 
   it = fs::recursive_directory_iterator( "xx" );
-  BOOST_CHECK( it->path() == "xx/yy" );
+  BOOST_TEST( it->path() == "xx/yy" );
   it.no_push();
   ++it;
-  BOOST_CHECK( it->path() == "xx/yya" );
+  BOOST_TEST( it->path() == "xx/yya" );
   ++it;
-  BOOST_CHECK( it == fs::recursive_directory_iterator() );
+  BOOST_TEST( it == fs::recursive_directory_iterator() );
 
   fs::remove( "xx/yya" );
 #endif
 
   it = fs::recursive_directory_iterator( "xx/yy/zz" );
-  BOOST_CHECK( it == fs::recursive_directory_iterator() );
+  BOOST_TEST( it == fs::recursive_directory_iterator() );
   
   it = fs::recursive_directory_iterator( "xx" );
-  BOOST_CHECK( it->path() == "xx/yy" );
-  BOOST_CHECK( it.level() == 0 );
+  BOOST_TEST( it->path() == "xx/yy" );
+  BOOST_TEST( it.level() == 0 );
   ++it;
-  BOOST_CHECK( it->path() == "xx/yy/zz" );
-  BOOST_CHECK( it.level() == 1 );
+  BOOST_TEST( it->path() == "xx/yy/zz" );
+  BOOST_TEST( it.level() == 1 );
   it++;
-  BOOST_CHECK( it == fs::recursive_directory_iterator() );
+  BOOST_TEST( it == fs::recursive_directory_iterator() );
 
   it = fs::recursive_directory_iterator( "xx" );
-  BOOST_CHECK( it->path() == "xx/yy" );
+  BOOST_TEST( it->path() == "xx/yy" );
   it.no_push();
   ++it;
-  BOOST_CHECK( it == fs::recursive_directory_iterator() );
+  BOOST_TEST( it == fs::recursive_directory_iterator() );
 
   it = fs::recursive_directory_iterator( "xx" );
-  BOOST_CHECK( it->path() == "xx/yy" );
+  BOOST_TEST( it->path() == "xx/yy" );
   ++it;
   it.pop();
-  BOOST_CHECK( it == fs::recursive_directory_iterator() );
+  BOOST_TEST( it == fs::recursive_directory_iterator() );
 
 
 
@@ -163,5 +163,5 @@ int main( int, char*[] )
 
 
 
-  return boost::test_framework::errors();
+  return ::boost::report_errors();
 }

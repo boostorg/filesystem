@@ -21,7 +21,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/detail/test_framework.hpp>
+#include <boost/detail/lightweight_test.hpp>
 
 #include "../src/utf8_codecvt_facet.hpp"
 
@@ -60,37 +60,37 @@ namespace
   {
     Path tmp;
     tmp = file;
-    BOOST_CHECK( tmp == file );
+    BOOST_TEST( tmp == file );
     tmp = file.string();
-    BOOST_CHECK( tmp == file );
+    BOOST_TEST( tmp == file );
     tmp = file.string().c_str();
-    BOOST_CHECK( tmp == file );
+    BOOST_TEST( tmp == file );
     fs::initial_path<Path>();
     fs::current_path<Path>();
     fs::remove( dir / file );
     fs::remove( dir );
-    BOOST_CHECK( !fs::exists( dir / file ) );
-    BOOST_CHECK( !fs::exists( dir ) );
-    BOOST_CHECK( fs::create_directory( dir ) );
-    BOOST_CHECK( fs::exists( dir ) );
-    BOOST_CHECK( fs::is_directory( dir ) );
-    BOOST_CHECK( fs::is_empty( dir ) );
+    BOOST_TEST( !fs::exists( dir / file ) );
+    BOOST_TEST( !fs::exists( dir ) );
+    BOOST_TEST( fs::create_directory( dir ) );
+    BOOST_TEST( fs::exists( dir ) );
+    BOOST_TEST( fs::is_directory( dir ) );
+    BOOST_TEST( fs::is_empty( dir ) );
     create_file( dir / file, "wide_test file contents" );
-    BOOST_CHECK( fs::exists( dir / file ) );
-    BOOST_CHECK( !fs::is_directory( dir / file ) );
-    BOOST_CHECK( !fs::is_empty( dir / file ) );
-    BOOST_CHECK( fs::file_size( dir / file ) == 23 || fs::file_size( dir / file ) == 24 );
-    BOOST_CHECK( fs::equivalent( dir / file, dot / dir / file ) );
-    BOOST_CHECK( fs::last_write_time( dir / file ) );
+    BOOST_TEST( fs::exists( dir / file ) );
+    BOOST_TEST( !fs::is_directory( dir / file ) );
+    BOOST_TEST( !fs::is_empty( dir / file ) );
+    BOOST_TEST( fs::file_size( dir / file ) == 23 || fs::file_size( dir / file ) == 24 );
+    BOOST_TEST( fs::equivalent( dir / file, dot / dir / file ) );
+    BOOST_TEST( fs::last_write_time( dir / file ) );
     typedef fs::basic_directory_iterator<Path> it_t;
     int count(0);
     for ( it_t it( dir ); it != it_t(); ++it )
     {
-      BOOST_CHECK( it->path() == dir / file );
-      BOOST_CHECK( !fs::is_empty( it->path() ) );
+      BOOST_TEST( it->path() == dir / file );
+      BOOST_TEST( !fs::is_empty( it->path() ) );
       ++count;
     }
-    BOOST_CHECK( count == 1 );
+    BOOST_TEST( count == 1 );
     if ( cleanup )
     {
       fs::remove( dir / file );
@@ -134,8 +134,8 @@ int main( int argc, char * /*argv*/[] )
   for (std::size_t i = 0; i < s.size(); ++i )
     std::cout << std::hex << int( static_cast<unsigned char>(s[i]) ) << " ";
   std::cout << std::dec << std::endl;
-  BOOST_CHECK( to_external( L"\x2780" ).size() == 3 );
-  BOOST_CHECK( to_external( L"\x2780" ) == "\xE2\x9E\x80" );
+  BOOST_TEST( to_external( L"\x2780" ).size() == 3 );
+  BOOST_TEST( to_external( L"\x2780" ) == "\xE2\x9E\x80" );
 
   // test fs::path
   std::cout << "begin path test..." << std::endl;
@@ -157,5 +157,5 @@ int main( int argc, char * /*argv*/[] )
   test( ::user::lpath( dir ), ::user::lpath( file ), ::user::lpath( dot ) );
   std::cout << "complete\n\n";
 
-  return boost::test_framework::errors();
+  return ::boost::report_errors();
 }
