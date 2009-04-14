@@ -34,8 +34,12 @@ namespace
   // occurred before main(), preventing exceptions from being caught.)
   std::locale & loc()
   {
+#if !defined(macintosh) && !defined(__APPLE__) && !defined(__APPLE_CC__) 
     // ISO C calls this "the locale-specific native environment":
     static std::locale lc("");
+#else
+    static std::locale lc = std::locale();  // Mac OS doesn't support locale("")
+#endif
     return lc;
   }
 
