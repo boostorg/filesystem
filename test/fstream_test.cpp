@@ -31,7 +31,7 @@ namespace fs = boost::filesystem;
   namespace std { using ::remove; }
 #endif
 
-#include <boost/test/minimal.hpp>
+#include <boost/detail/lightweight_test.hpp>
 
 namespace
 {
@@ -45,19 +45,19 @@ namespace
       std::cout << " in test 1\n";
       fs::filebuf fb;
       fb.open( p, std::ios_base::in );
-      BOOST_CHECK( fb.is_open() == fs::exists( p ) );
+      BOOST_TEST( fb.is_open() == fs::exists( p ) );
     }
     {
       std::cout << " in test 2\n";
       fs::filebuf fb1;
       fb1.open( p, std::ios_base::out );
-      BOOST_CHECK( fb1.is_open() );
+      BOOST_TEST( fb1.is_open() );
     }
     {
       std::cout << " in test 3\n";
       fs::filebuf fb2;
       fb2.open( p, std::ios_base::in );
-      BOOST_CHECK( fb2.is_open() );
+      BOOST_TEST( fb2.is_open() );
     }
 #  else
     std::cout << "<note>\n";
@@ -67,78 +67,78 @@ namespace
     {
       std::cout << " in test 4\n";
       fs::ifstream tfs( p );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
     {
       std::cout << " in test 4.1\n";
       fs::ifstream tfs( p / p.filename() ); // should fail
-      BOOST_CHECK( !tfs.is_open() );
+      BOOST_TEST( !tfs.is_open() );
     }
     {
       std::cout << " in test 5\n";
       fs::ifstream tfs( p, std::ios_base::in );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
 #  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     {
       std::cout << " in test 6\n";
       fs::ifstream tfs;
       tfs.open( p );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
     {
       std::cout << " in test 7\n";
       fs::ifstream tfs;
       tfs.open( p, std::ios_base::in );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
 #  endif
     {
       std::cout << " in test 8\n";
       fs::ofstream tfs( p );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
     {
       std::cout << " in test 9\n";
       fs::ofstream tfs( p, std::ios_base::out );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
 #  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     {
       std::cout << " in test 10\n";
       fs::ofstream tfs;
       tfs.open( p );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
     {
       std::cout << " in test 11\n";
       fs::ofstream tfs;
       tfs.open( p, std::ios_base::out );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
 # endif
     {
       std::cout << " in test 12\n";
       fs::fstream tfs( p );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
     {
       std::cout << " in test 13\n";
       fs::fstream tfs( p, std::ios_base::in|std::ios_base::out );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
 #  if !BOOST_WORKAROUND( BOOST_MSVC, <= 1200 ) // VC++ 6.0 can't handle open
     {
       std::cout << " in test 14\n";
       fs::fstream tfs;
       tfs.open( p );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
     {
       std::cout << " in test 15\n";
       fs::fstream tfs;
       tfs.open( p, std::ios_base::in|std::ios_base::out );
-      BOOST_CHECK( tfs.is_open() );
+      BOOST_TEST( tfs.is_open() );
     }
 #  endif
 
@@ -147,7 +147,7 @@ namespace
   } // test
 } // unnamed namespace
 
-int test_main( int argc, char*[] )
+int main( int argc, char*[] )
 {
   if ( argc > 1 ) cleanup = false;
 
@@ -176,5 +176,5 @@ int test_main( int argc, char*[] )
 
 #endif
 
-  return 0;
+  return ::boost::report_errors();
 }

@@ -13,7 +13,7 @@
 //  important to preserve existing code that uses the old names.
 
 #include <boost/filesystem.hpp>
-#include <boost/test/minimal.hpp>
+#include <boost/detail/lightweight_test.hpp>
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -24,14 +24,12 @@ namespace
 {
   std::string platform( BOOST_PLATFORM );
 
-  int errors;
-
   void check( const fs::path & source,
               const std::string & expected, int line )
   {
     if ( source.string()== expected ) return;
 
-    ++errors;
+    ++::boost::detail::test_errors();
 
     std::cout << '(' << line << ") source.string(): \"" << source.string()
               << "\" != expected: \"" << expected
@@ -147,7 +145,7 @@ namespace
 
 //----------------------------------------------------------------------------//
 
-int test_main( int /*argc*/, char * /*argv*/[] )
+int main( int /*argc*/, char * /*argv*/[] )
 {
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
@@ -167,38 +165,38 @@ int test_main( int /*argc*/, char * /*argv*/[] )
   de.string();
 
   fs::path ng( " no-way, Jose" );
-  BOOST_CHECK( !fs::is_regular( ng ) );  // verify deprecated name still works
-  BOOST_CHECK( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
+  BOOST_TEST( !fs::is_regular( ng ) );  // verify deprecated name still works
+  BOOST_TEST( !fs::symbolic_link_exists( "nosuchfileordirectory" ) );
 
   check_normalize();
  
 // extension() tests ---------------------------------------------------------//
 
-  BOOST_CHECK( fs::extension("a/b") == "" );
-  BOOST_CHECK( fs::extension("a/b.txt") == ".txt" );
-  BOOST_CHECK( fs::extension("a/b.") == "." );
-  BOOST_CHECK( fs::extension("a.b.c") == ".c" );
-  BOOST_CHECK( fs::extension("a.b.c.") == "." );
-  BOOST_CHECK( fs::extension("") == "" );
-  BOOST_CHECK( fs::extension("a/") == "." );
+  BOOST_TEST( fs::extension("a/b") == "" );
+  BOOST_TEST( fs::extension("a/b.txt") == ".txt" );
+  BOOST_TEST( fs::extension("a/b.") == "." );
+  BOOST_TEST( fs::extension("a.b.c") == ".c" );
+  BOOST_TEST( fs::extension("a.b.c.") == "." );
+  BOOST_TEST( fs::extension("") == "" );
+  BOOST_TEST( fs::extension("a/") == "." );
   
 // basename() tests ----------------------------------------------------------//
 
-  BOOST_CHECK( fs::basename("b") == "b" );
-  BOOST_CHECK( fs::basename("a/b.txt") == "b" );
-  BOOST_CHECK( fs::basename("a/b.") == "b" ); 
-  BOOST_CHECK( fs::basename("a.b.c") == "a.b" );
-  BOOST_CHECK( fs::basename("a.b.c.") == "a.b.c" );
-  BOOST_CHECK( fs::basename("") == "" );
+  BOOST_TEST( fs::basename("b") == "b" );
+  BOOST_TEST( fs::basename("a/b.txt") == "b" );
+  BOOST_TEST( fs::basename("a/b.") == "b" ); 
+  BOOST_TEST( fs::basename("a.b.c") == "a.b" );
+  BOOST_TEST( fs::basename("a.b.c.") == "a.b.c" );
+  BOOST_TEST( fs::basename("") == "" );
   
 // change_extension tests ---------------------------------------------------//
 
-  BOOST_CHECK( fs::change_extension("a.txt", ".tex").string() == "a.tex" );
-  BOOST_CHECK( fs::change_extension("a.", ".tex").string() == "a.tex" );
-  BOOST_CHECK( fs::change_extension("a", ".txt").string() == "a.txt" );
-  BOOST_CHECK( fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex" );  
+  BOOST_TEST( fs::change_extension("a.txt", ".tex").string() == "a.tex" );
+  BOOST_TEST( fs::change_extension("a.", ".tex").string() == "a.tex" );
+  BOOST_TEST( fs::change_extension("a", ".txt").string() == "a.txt" );
+  BOOST_TEST( fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex" );  
   // see the rationale in html docs for explanation why this works
-  BOOST_CHECK( fs::change_extension("", ".png").string() == ".png" );
+  BOOST_TEST( fs::change_extension("", ".png").string() == ".png" );
 
-  return errors;
+  return ::boost::report_errors();
 }
