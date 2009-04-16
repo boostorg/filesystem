@@ -90,7 +90,8 @@ using boost::system::system_category;
 //
 // TODO: find out what macros indicate dirent::d_type present in more libraries
 # if defined(BOOST_WINDOWS_API) \
-  || defined(_DIRENT_HAVE_D_TYPE) // defined by GNU C library if d_type present
+  || (defined(_DIRENT_HAVE_D_TYPE) /* defined by GNU C library if d_type present */ \
+    && !(defined(__SUNPRO_CC) && !defined(__sun)))  // _DIRENT_HAVE_D_TYPE wrong for Sun compiler on Linux
 #   define BOOST_FILESYSTEM_STATUS_CACHE
 # endif
 
