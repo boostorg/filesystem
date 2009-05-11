@@ -659,9 +659,9 @@ namespace boost
       { return is_symlink<wpath>( ph ); }
 
     inline bool is_empty( const path & ph )
-      { return is_empty<path>( ph ); }
+      { return boost::filesystem::is_empty<path>( ph ); }
     inline bool is_empty( const wpath & ph )
-      { return is_empty<wpath>( ph ); }
+      { return boost::filesystem::is_empty<wpath>( ph ); }
 
     inline bool equivalent( const path & ph1, const path & ph2 )
       { return equivalent<path>( ph1, ph2 ); }
