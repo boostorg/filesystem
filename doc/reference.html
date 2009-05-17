@@ -410,8 +410,15 @@ error_code</code> with the value of ec.</span></p>
 </span>      template &lt;class Path&gt; bool remove(const Path&amp; p);
       template &lt;class Path1, class Path2&gt;
         void rename(const Path1&amp; from_p, const Path2&amp; to_p);
+
+      BOOST_SCOPED_ENUM_START(<a name="copy_option">copy_option</a>)
+        { fail_if_exists, overwrite_if_exists };
+      BOOST_SCOPED_ENUM_END
+
       template &lt;class Path1, class Path2&gt;
-        void copy_file(const Path1&amp; from_fp, const Path2&amp; to_fp);
+        void copy_file(const Path1&amp; from_fp, const Path2&amp; to_fp,
+          BOOST_SCOPED_ENUM(copy_option) option=copy_option::fail_if_exists);
+
       template &lt;class Path&gt; Path system_complete(const Path&amp; p);
       template &lt;class Path&gt; Path complete(const Path&amp; p, const Path&amp; base=initial_path&lt;Path&gt;());
 
@@ -2249,7 +2256,9 @@ systems. <i>--end note</i>.]</p>
   existing file, it is removed. A symbolic link is itself renamed, rather than 
   the file it resolves to being renamed. <i>-- end note</i>]</p>
 </blockquote>
-<pre>template &lt;class Path1, class Path2&gt; void copy_file(const Path1&amp; from_fp, const Path2&amp; to_fp);</pre>
+<pre>template &lt;class Path1, class Path2&gt;
+  void copy_file(const Path1&amp; from_fp, const Path2&amp; to_fp,
+                 BOOST_SCOPED_ENUM(copy_option) option=<a href="#copy_option">copy_option</a>::fail_if_exists);</pre>
 <blockquote>
   <p><i>Requires:</i> <code>Path1::external_string_type</code> and <code>
   Path2::external_string_type</code> are the same type. </p>
@@ -2257,7 +2266,7 @@ systems. <i>--end note</i>.]</p>
   resolves to are copied to the file <code>to_fp</code> resolves to.</p>
   <p><i>Throws:</i> <code>basic_filesystem_error&lt;Path&gt;</code> if <code>
   from_fp.empty() || to_fp.empty() ||!exists(from_fp) || !is_regular_file(from_fp) 
-  || exists(to_fp)</code></p>
+  || (option==<a href="#copy_option">copy_option</a>::fail_if_exists &amp;&amp; exists(to_fp))</code></p>
 </blockquote>
 <pre>template &lt;class Path&gt; Path complete(const Path&amp; p, const Path&amp; base=initial_path&lt;Path&gt;());</pre>
 <blockquote>
@@ -3076,7 +3085,7 @@ final document.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->13 October 2008<!--webbot bot="Timestamp" endspan i-checksum="32600" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->17 May 2009<!--webbot bot="Timestamp" endspan i-checksum="15147" --></p>
 
 </body>
 

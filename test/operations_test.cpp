@@ -711,6 +711,22 @@ int main( int argc, char * argv[] )
   BOOST_TEST( fs::exists( d1 / "f2" ) );
   BOOST_TEST( !fs::is_directory( d1 / "f2" ) );
   verify_file( d1 / "f2", "foobar1" );
+
+  bool copy_ex_ok = false;
+  try { fs::copy_file( file_ph, d1 / "f2" ); }
+  catch ( const fs::filesystem_error & ) { copy_ex_ok = true; }
+  BOOST_TEST( copy_ex_ok );
+
+  copy_ex_ok = false;
+  try { fs::copy_file( file_ph, d1 / "f2", fs::copy_option::fail_if_exists ); }
+  catch ( const fs::filesystem_error & ) { copy_ex_ok = true; }
+  BOOST_TEST( copy_ex_ok );
+
+  copy_ex_ok = true;
+  try { fs::copy_file( file_ph, d1 / "f2", fs::copy_option::overwrite_if_exists ); }
+  catch ( const fs::filesystem_error & ) { copy_ex_ok = false; }
+  BOOST_TEST( copy_ex_ok );
+
   std::cout << "copy_file test complete" << std::endl;
 
   // rename() test case numbers refer to operations.htm#rename table
