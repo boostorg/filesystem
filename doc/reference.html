@@ -1693,7 +1693,7 @@ int main(int argc, char* argv[])
       cout &lt;&lt; '\n';
     }
   }
-  else cout &lt;&lt; (exists(p) : &quot;Found: &quot; : &quot;Not found: &quot;) &lt;&lt; p &lt;&lt; '\n';
+  else cout &lt;&lt; (exists(p) ? &quot;Found: &quot; : &quot;Not found: &quot;) &lt;&lt; p &lt;&lt; '\n';
 
   return 0;
 }</pre>
