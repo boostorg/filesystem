@@ -54,14 +54,7 @@ using boost::system::system_category;
 
 # if defined(BOOST_WINDOWS_API)
 #   include <windows.h>
-#   if defined(__BORLANDC__) || defined(__MWERKS__)
-#     if defined(__BORLANDC__)
-        using std::time_t;
-#     endif
-#     include <utime.h>
-#   else
-#     include <sys/utime.h>
-#   endif
+#   include <ctime>  // for time_t
 
 # else // BOOST_POSIX_API
 #   include <sys/types.h>
