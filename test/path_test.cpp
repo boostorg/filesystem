@@ -299,6 +299,11 @@ int main( int, char*[] )
   PATH_CHECK( p5, "/" );
 
 # endif
+  path clear_path( "foo" );
+
+  BOOST_TEST( !clear_path.empty() );
+  clear_path.clear();
+  BOOST_TEST( clear_path.empty() );
 
   BOOST_TEST( p1 != p4 );
   BOOST_TEST( p1.string() == p2.string() );

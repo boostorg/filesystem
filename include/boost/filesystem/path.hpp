@@ -208,6 +208,15 @@ namespace boost
           basic_path & append( InputIterator first, InputIterator last );
 #     endif
       
+      void clear()
+      { 
+#     if BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, >= 310)
+        m_path.clear();
+#     else
+        m_path.erase( m_path.begin(), m_path.end() );
+#     endif
+      }
+
       void swap( basic_path & rhs )
       {
         m_path.swap( rhs.m_path );
