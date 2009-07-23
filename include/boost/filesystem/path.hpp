@@ -208,6 +208,15 @@ namespace boost
           basic_path & append( InputIterator first, InputIterator last );
 #     endif
       
+      void clear()
+      { 
+#     if BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, >= 310)
+        m_path.clear();
+#     else
+        m_path.erase( m_path.begin(), m_path.end() );
+#     endif
+      }
+
       void swap( basic_path & rhs )
       {
         m_path.swap( rhs.m_path );
@@ -930,7 +939,7 @@ namespace boost
     String basic_path<String, Traits>::stem() const
     {
       string_type name = filename();
-      typename string_type::size_type n = name.rfind('.');
+      typename string_type::size_type n = name.rfind(dot<path_type>::value);
       return name.substr(0, n);
     }
 
@@ -938,7 +947,7 @@ namespace boost
     String basic_path<String, Traits>::extension() const
     {
       string_type name = filename();
-      typename string_type::size_type n = name.rfind('.');
+      typename string_type::size_type n = name.rfind(dot<path_type>::value);
       if (n != string_type::npos)
         return name.substr(n);
       else
