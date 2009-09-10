@@ -226,6 +226,27 @@ int main( int, char*[] )
   p4 = p4; // self-assignment
   BOOST_TEST( p4.string() == "foobar" );
 
+  if ( platform == "Windows" )
+  {
+    path p10 ("c:\\file");
+    path p11 ("c:/file");
+    // check each overload
+    BOOST_TEST( p10.string() == p11.string() );
+    BOOST_TEST( p10 == p11 );
+    BOOST_TEST( p10 == p11.string() );
+    BOOST_TEST( p10 == p11.string().c_str() );
+    BOOST_TEST( p10.string() == p11 );
+    BOOST_TEST( p10.string().c_str() == p11 );
+    BOOST_TEST( p10 == "c:\\file" );
+    BOOST_TEST( p10 == "c:/file" );
+    BOOST_TEST( p11 == "c:\\file" );
+    BOOST_TEST( p11 == "c:/file" );
+    BOOST_TEST( "c:\\file" == p10 );
+    BOOST_TEST( "c:/file" == p10 );
+    BOOST_TEST( "c:\\file" == p11 );
+    BOOST_TEST( "c:/file" == p11 );
+  }
+
   exception_tests();
   name_function_tests();
 
