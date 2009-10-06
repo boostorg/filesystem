@@ -1282,7 +1282,7 @@ namespace boost
         target = std::string( "." ); // string was static but caused trouble
                                      // when iteration called from dtor, after
                                      // static had already been destroyed
-        std::size_t path_size;
+        std::size_t path_size (0);  // initialization quiets gcc warning
         error_code ec = path_max( path_size );
         if ( ec ) return ec;
         dirent de;
