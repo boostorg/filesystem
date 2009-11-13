@@ -2206,7 +2206,7 @@ systems. <i>--end note</i>.]</p>
   </span> <code>basic_filesystem_error&lt;Path1, Path2&gt;</code><span style="background-color: #FFFFFF"> 
   if <code>ec</code> is not zero.</span></p>
   </blockquote>
-<pre>template &lt;class Path&gt; void remove(const Path&amp; p, system::error_code &amp; ec = <i>singular</i> );</pre>
+<pre>template &lt;class Path&gt; bool remove(const Path&amp; p, system::error_code &amp; ec = <i>singular</i> );</pre>
 <blockquote>
   <p><i>Effects:</i>&nbsp; Removes the file <code>p</code>, 
   as if by<i> POSIX </i><code>
@@ -2224,6 +2224,8 @@ systems. <i>--end note</i>.]</p>
     the error.if <code>ec != </code><i><code>singular</code></i>, then <code>
     ec.clear()</code></li>
   </ul>
+  <p><i>Returns:</i> <code>true</code> if the file was removed, otherwise <code>
+  false</code>.</p>
   <p><i>Postcondition:</i> <code>!exists(p)</code></p>
   <p><i>Throws:</i> See <i>Effects</i>.</p>
   <p>[<i>Note:</i> A symbolic link is itself removed, rather than the file it 
@@ -3085,7 +3087,7 @@ final document.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->17 May 2009<!--webbot bot="Timestamp" endspan i-checksum="15147" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->10 November 2009<!--webbot bot="Timestamp" endspan i-checksum="40581" --></p>
 
 </body>
 
