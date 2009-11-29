@@ -14,13 +14,13 @@ project
        [ run path_test.cpp
          :  :  : <link>static
        ]                  
-       [ run path_test.cpp ../../system/build
+       [ run path_test.cpp
          :  :  :  : path_test_dll
        ]
        [ run operations_test.cpp
          :  :  : <link>static
        ]
-       [ run operations_test.cpp ../../system/build
+       [ run operations_test.cpp
          :  :  :  : operations_test_dll
        ]
        [ run fstream_test.cpp

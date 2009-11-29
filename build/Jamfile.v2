@@ -19,14 +19,16 @@ SOURCES =
     operations path portability utf8_codecvt_facet ;
 
 lib boost_filesystem
+    : $(SOURCES).cpp ../../system/build//boost_system
+    : <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
+      <link>static:<define>BOOST_All_STATIC_LINK=1 # tell source we're building static lib's
     :
-    $(SOURCES).cpp
-    ../../system/build//boost_system
-    :
-    <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
-    <link>static:<define>BOOST_All_STATIC_LINK=1 # tell source we're building static lib's
-    :
-    :
+    : # Boost.Filesystem uses some of Boost.System function in inlined/templated
+      # function, so clients that use Boost.Filesystem will have 
+      # direct refenreces to Boost.System systems. On Windows, this means those
+      # clients have to be directly linked to Boost.System. For static linking 
+      # this happens anyway, and for shared we need to make it happen.
+      <target-os>windows,<link>shared:<library>../../system/build//boost_system
     ;
 
 boost-install boost_filesystem ;

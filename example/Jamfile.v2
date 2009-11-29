@@ -9,7 +9,6 @@
 
 project
     : requirements <library>../build//boost_filesystem
-      <library>/boost/system//boost_system
       <hardcode-dll-paths>true
     ;
     
