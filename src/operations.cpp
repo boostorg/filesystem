@@ -903,7 +903,9 @@ namespace boost
           == INVALID_HANDLE_VALUE )
         { 
           handle = 0;
-          return error_code( ::GetLastError() == ERROR_FILE_NOT_FOUND
+          return error_code( (::GetLastError() == ERROR_FILE_NOT_FOUND
+                           // Windows Mobile returns ERROR_NO_MORE_FILES; see ticket #3551                                           
+                           || ::GetLastError() == ERROR_NO_MORE_FILES) 
             ? 0 : ::GetLastError(), system_category );
         }
         target = data.cFileName;
