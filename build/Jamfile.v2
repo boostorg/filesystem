@@ -21,7 +21,7 @@ SOURCES =
 lib boost_filesystem
     : $(SOURCES).cpp ../../system/build//boost_system
     : <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
-      <link>static:<define>BOOST_All_STATIC_LINK=1 # tell source we're building static lib's
+      <link>static:<define>BOOST_ALL_STATIC_LINK=1 # tell source we're building static lib's
     :
     : # Boost.Filesystem uses some of Boost.System function in inlined/templated
       # function, so clients that use Boost.Filesystem will have 
