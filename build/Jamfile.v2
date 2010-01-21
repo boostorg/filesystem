@@ -12,7 +12,6 @@ project boost/filesystem
     : source-location ../src
     : usage-requirements # pass these requirement to dependents (i.e. users)
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
-      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
     ;
 
 SOURCES =
@@ -21,7 +20,6 @@ SOURCES =
 lib boost_filesystem
     : $(SOURCES).cpp ../../system/build//boost_system
     : <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
-      <link>static:<define>BOOST_ALL_STATIC_LINK=1 # tell source we're building static lib's
     :
     : # Boost.Filesystem uses some of Boost.System function in inlined/templated
       # function, so clients that use Boost.Filesystem will have 
