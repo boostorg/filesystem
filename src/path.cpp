@@ -26,6 +26,11 @@
 
 #include <cwchar>     // for std::mbstate_t
 
+#if defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) 
+# include "utf8_codecvt_facet.hpp"
+#endif
+
+
 namespace
 {
   // std::locale construction can throw (if LC_MESSAGES is wrong, for example),
@@ -37,8 +42,12 @@ namespace
 #if !defined(macintosh) && !defined(__APPLE__) && !defined(__APPLE_CC__) 
     // ISO C calls this "the locale-specific native environment":
     static std::locale lc("");
-#else
-    static std::locale lc = std::locale();  // Mac OS doesn't support locale("")
+#else  // Mac OS
+    // "All BSD system functions expect their string parameters to be in UTF-8 encoding
+    // and nothing else."
+    // See http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
+    std::locale global_loc = std::locale();  // Mac OS doesn't support locale("")
+    static std::locale lc(global_loc, new fs::detail::utf8_codecvt_facet);  
 #endif
     return lc;
   }
