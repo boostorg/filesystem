@@ -47,7 +47,8 @@ namespace
     // and nothing else."
     // See http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
     std::locale global_loc = std::locale();  // Mac OS doesn't support locale("")
-    static std::locale lc(global_loc, new fs::detail::utf8_codecvt_facet);  
+    static std::locale lc(global_loc,
+        new boost::filesystem::detail::utf8_codecvt_facet);  
 #endif
     return lc;
   }
