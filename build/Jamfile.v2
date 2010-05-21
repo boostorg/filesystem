@@ -23,10 +23,11 @@ lib boost_filesystem
     :
     : # Boost.Filesystem uses some of Boost.System function in inlined/templated
       # function, so clients that use Boost.Filesystem will have 
-      # direct refenreces to Boost.System systems. On Windows, this means those
-      # clients have to be directly linked to Boost.System. For static linking 
-      # this happens anyway, and for shared we need to make it happen.
+      # direct refenreces to Boost.System systems. On Windows and darwin, this
+      # means those clients have to be directly linked to Boost.System. For static
+      # linking this happens anyway, and for shared we need to make it happen.
       <target-os>windows,<link>shared:<library>../../system/build//boost_system
+      <target-os>darwin,<link>shared:<library>../../system/build//boost_system
     ;
 
 boost-install boost_filesystem ;
