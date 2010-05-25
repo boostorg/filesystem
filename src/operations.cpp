@@ -42,6 +42,7 @@
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/detail/workaround.hpp>
+#include <cstdlib>  // for malloc, free
 
 namespace fs = boost::filesystem;
 using boost::system::error_code;
