@@ -73,7 +73,7 @@ namespace
     std::ofstream f( ph.file_string().c_str() );
     if ( !f )
       throw fs::filesystem_error( "operations_test create_file",
-      ph, error_code(errno, system_category) );
+      ph, error_code(errno, system_category()) );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -82,7 +82,7 @@ namespace
     std::ifstream f( ph.file_string().c_str() );
     if ( !f )
       throw fs::filesystem_error( "operations_test verify_file",
-        ph, error_code(errno, system_category) );
+        ph, error_code(errno, system_category()) );
     std::string contents;
     f >> contents;
     if ( contents != expected )
@@ -276,9 +276,7 @@ int main( int argc, char * argv[] )
       language_id = 0x0409; // Assume US English
 #   endif
 # else
-    platform = ( platform == "Win32" || platform == "Win64" || platform == "Cygwin" )
-               ? "Windows"
-               : "POSIX";
+#   error API should always be defined. Something is wrong with boost/system/api_config.hpp
 # endif
   std::cout << "API is " << platform << std::endl;
 

@@ -19,43 +19,28 @@
 # define BOOST_FILESYSTEM_NAMESPACE filesystem
 #endif
 
-// This header implements separate compilation features as described in
-// http://www.boost.org/more/separate_compilation.html
-
 #include <boost/config.hpp>
+#include <boost/system/api_config.hpp>  // for BOOST_POSIX_API or BOOST_WINDOWS_API
 #include <boost/detail/workaround.hpp> 
 
-//  determine platform  ------------------------------------------------------//
+//  BOOST_POSIX_PATH or BOOST_WINDOWS_PATH specify which path syntax to recognise
 
-//  BOOST_CYGWIN_PATH implies BOOST_WINDOWS_PATH and BOOST_POSIX_API
-
-# if defined(BOOST_CYGWIN_PATH)
-#   if defined(BOOST_POSIX_PATH)
-#     error BOOST_POSIX_PATH is invalid when BOOST_CYGWIN_PATH is defined
-#   endif
-#   if defined(BOOST_WINDOWS_API)
-#     error BOOST_WINDOWS_API is invalid when BOOST_CYGWIN_PATH is defined
-#   endif
-#   define BOOST_WINDOWS_PATH
-#   define BOOST_POSIX_API
+# if defined(BOOST_WINDOWS_API) && defined(BOOST_POSIX_PATH)
+#   error builds with Windows API do not support BOOST_POSIX_PATH
 # endif
 
-//  BOOST_POSIX_API or BOOST_WINDOWS_API specify which API to use
+# if !defined(_WIN32) && !defined(__CYGWIN__) && defined(BOOST_WINDOWS_PATH)
+#   error builds on non-Windows platforms do not support BOOST_WINDOWS_PATH
+# endif
 
-# if defined( BOOST_WINDOWS_API ) && defined( BOOST_POSIX_API )
-#   error both BOOST_WINDOWS_API and BOOST_POSIX_API are defined
-# elif !defined( BOOST_WINDOWS_API ) && !defined( BOOST_POSIX_API )
-#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
-#     define BOOST_WINDOWS_API
+# if defined(BOOST_WINDOWS_PATH) && defined(BOOST_POSIX_PATH)
+#   error both BOOST_WINDOWS_PATH and BOOST_POSIX_PATH are defined
+# elif !defined(BOOST_WINDOWS_PATH) && !defined(BOOST_POSIX_PATH)
+#   if !defined(BOOST_POSIX_PATH) && (defined(_WIN32) || defined(__CYGWIN__))
+#     define BOOST_WINDOWS_PATH
 #   else
-#     define BOOST_POSIX_API 
+#     define BOOST_POSIX_PATH
 #   endif
-# endif
-
-//  BOOST_WINDOWS_PATH enables Windows path syntax recognition
-
-# if !defined(BOOST_POSIX_PATH) && (defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__))
-#   define BOOST_WINDOWS_PATH
 # endif
 
 //  narrow support only for badly broken compilers or libraries  -------------//
@@ -63,6 +48,9 @@
 # if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE) || BOOST_WORKAROUND(__BORLANDC__, <0x610)
 #   define BOOST_FILESYSTEM_NARROW_ONLY
 # endif
+
+// This header implements separate compilation features as described in
+// http://www.boost.org/more/separate_compilation.html
 
 //  enable dynamic linking ---------------------------------------------------//
 

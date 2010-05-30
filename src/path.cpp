@@ -142,7 +142,7 @@ namespace boost
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_external conversion error",
-          ph, system::error_code( system::posix::invalid_argument, system::system_category ) ) );
+          ph, system::error_code( system::posix::invalid_argument, system::system_category() ) ) );
       *to_next = '\0';
       return external_string_type( work.get() );
     }
@@ -161,7 +161,7 @@ namespace boost
         work.get()+work_size, to_next ) != std::codecvt_base::ok )
         boost::throw_exception( boost::filesystem::wfilesystem_error(
           "boost::filesystem::wpath::to_internal conversion error",
-          system::error_code( system::posix::invalid_argument, system::system_category ) ) );
+          system::error_code( system::posix::invalid_argument, system::system_category() ) ) );
       *to_next = L'\0';
       return internal_string_type( work.get() );
     }
