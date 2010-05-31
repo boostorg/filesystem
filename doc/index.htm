@@ -320,20 +320,6 @@ provided, so users can ignore these macros unless they have special needs.</p>
     <td><b><i>Effect if defined</i></b></td>
   </tr>
   <tr>
-    <td valign="top"><code>BOOST_WINDOWS_API</code></td>
-    <td valign="top">Defined if Windows is detected by Boost.System's automatic configuration 
-    code, otherwise not defined.</td>
-    <td valign="top">Implementation uses the Microsoft Windows native 
-    application program interface (API).</td>
-  </tr>
-  <tr>
-    <td valign="top"><code>BOOST_POSIX_API</code></td>
-    <td valign="top">Defined if Windows is not detected by Boost.System's automatic configuration 
-    code.</td>
-    <td valign="top">Implementation uses the POSIX native 
-    application program interface (API).</td>
-  </tr>
-  <tr>
     <td valign="top"><code>BOOST_FILESYSTEM_DYN_LINK</code></td>
     <td valign="top">Defined if <code>BOOST_ALL_DYN_LINK</code> is defined, 
     otherwise not defined.</td>
@@ -359,6 +345,8 @@ provided, so users can ignore these macros unless they have special needs.</p>
   </tr>
 </table>
 <h2><a name="Deprecated-names">Deprecated names</a> and features</h2>
+<p style="font-size: 10pt">User-defined BOOST_POSIX_API and BOOST_WINDOWS_API 
+macros are no longer supported.</p>
 <p style="font-size: 10pt">As the library evolves over time, names sometimes 
 change or features are removed. To ease transition, Boost.Filesystem deprecates 
 the old names and features, but continues to provide them unless macro <code>
@@ -541,22 +529,8 @@ This is controlled by the BOOST_ALL_DYN_LINK or BOOST_FILESYSTEM_DYN_LINK
 macros. See the <a href="http://www.boost.org/development/separate_compilation.html">Separate 
 Compilation</a> page for a description of the techniques used.</p>
 <h3>Note for <a name="Cgywin">Cygwin</a> users</h3>
-<p>The library's implementation code automatically detects the current platform, 
-and compiles the POSIX or Windows implementation code accordingly. Automatic 
-platform detection during object library compilation can be overridden by 
-defining either BOOST_POSIX_API or BOOST_WINDOWS_API macros. With the exception of the Cygwin 
-environment, there is usually no reason to define these macros, as the 
-software development kits supplied with most compilers only support a single 
-platform.</p>
-<p>The <a href="http://www.cygwin.com/">Cygwin</a> package of tools supports 
-traditional Windows usage, but also provides an emulation layer and other tools 
-which can be used to make Windows act as Linux (and thus POSIX), and provide the 
-Linux look-and-feel. GCC is usually the compiler of choice in this environment, 
-as it can be installed via the Cygwin install process. Other compilers can also 
-use the Cygwin emulation of POSIX, at least in theory.</p>
-<p>Those wishing to use the Cygwin POSIX emulation layer should define the 
-BOOST_POSIX_API macro when compiling bother user programs and the 
-Boost.Filesystem's object-library.</p>
+<p>The library's implementation code treats <a href="http://www.cygwin.com/">Cygwin</a> 
+as a Windows platform, and thus uses the Windows API.</p>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>The Filesystem Library was designed and implemented by Beman Dawes. The 
 original <i>directory_iterator</i> and <i>filesystem_error</i> classes were 
@@ -804,7 +778,7 @@ Version 1.30.0 - March 19th, 2003</h3>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 October, 2008<!--webbot bot="Timestamp" endspan i-checksum="39203" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 May, 2010<!--webbot bot="Timestamp" endspan i-checksum="13955" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
