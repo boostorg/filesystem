@@ -309,15 +309,17 @@ macros. See the <a href="http://www.boost.org/development/separate_compilation.h
 Compilation</a> page for a description of the techniques used.</p>
 <h3>Note for <a name="Cgywin">Cygwin</a> users</h3>
 <p> <a href="http://www.cygwin.com/">Cygwin</a> version 1.7 or later is 
-required. Only later versions of GCC with wide character strings are supported. 
-The library's implementation code treats Cygwin as a Windows platform, and thus 
-uses the Windows API.</p>
+required because only versions of GCC with wide character strings are supported.</p>
+
+<p> The library's implementation code treats Cygwin as a Windows platform, and 
+thus uses the Windows API and uses Windows path syntax as the native path 
+syntax.</p>
 
 <h2><a name="Change-history">Version history</a></h2>
 
 <h3>Version 3</h3>
 
-<p>Boost 1.??.0 - ???, 2010 - Internationalization via single class <code>path</code>. 
+<p>Boost <span style="background-color: #FFFF00">1.??.0 - ???, 2010</span> - Internationalization via single class <code>path</code>. 
 More uniform error handling.</p>
 
 <p>Peter Dimov suggested use of a single path class rather than a <code>basic_path</code> 
@@ -450,7 +452,7 @@ version 1.31.0.&nbsp;</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19838" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19844" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

@@ -82,9 +82,13 @@ changes include:</p>
 &nbsp;</li>
   <li>A new <a href="tutorial.html">Tutorial</a> provides a hopefully much 
   gentler and more complete introduction for new users. Current users might want 
-  to review the <a href="tutorial.html">three sections related to class path</a>.<br>
-&nbsp;</li>
+  to review the <a href="tutorial.html">three sections related to class path</a>.</li>
 </ul>
+
+<h2>Deprecated names and other features</h2>
+
+<p>See the <a href="deprecated.html">Deprecated Features page</a> for transition 
+aids that allow much existing code to compile without change using Version 3.</p>
 
 <h2>Breaking changes</h2>
 
@@ -93,14 +97,16 @@ several Boost releases. Version 2 will be the default version for one release
 cycle, and then Version 3 will become the default version.</p>
 <h3>Class <code>path</code></h3>
 <ul>
-  <li>Class template <code>basic_path</code> and its specializations are gone.</li>
+  <li>Class template <code>basic_path</code> and its specializations are gone.<br>
+&nbsp;</li>
   <li>Certain functions now return <code>path</code> objects rather than <code>
   basic_string</code> objects:<ul>
     <li><code>root_name()</code></li>
     <li><code>root_directory()</code></li>
     <li><code>filename()</code></li>
     <li><code>stem()</code></li>
-    <li><code>extension()</code></li>
+    <li><code>extension()<br>
+&nbsp;</code></li>
   </ul>
   </li>
   <li>&nbsp;<code>path::iterator::value_type</code> and&nbsp; <code>
@@ -110,9 +116,14 @@ cycle, and then Version 3 will become the default version.</p>
 <h3>Compiler support</h3>
 <ul>
   <li>Compilers and standard libraries that do not fully support wide characters 
-  and wide character strings (<code>wstring</code>) are no longer supported. 
-  This impacts primarily Cygwin users; versions prior to 1.7 are no longer 
+  and wide character strings (<code>std::wstring</code>) are no longer 
   supported.<br>
+&nbsp;</li>
+  <li>Cygwin versions prior to 1.7 are no longer supported because they lack 
+  wide string support. Cygwin now compiles only for the Windows API and path 
+  syntax.<br>
+&nbsp;</li>
+  <li>MinGW versions not supporting wide strings are no longer supported.<br>
 &nbsp;</li>
   <li>Microsoft VC++ 7.1 and earlier are no longer supported.</li>
 </ul>
@@ -122,7 +133,7 @@ cycle, and then Version 3 will become the default version.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->22 February 2010<!--webbot bot="Timestamp" endspan i-checksum="40543" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17550" --></p>
 
 </body>
 

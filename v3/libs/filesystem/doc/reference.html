@@ -156,9 +156,10 @@ A <a href="#Pathname">pathname</a> is the concrete representation of a path. <i>
 identifies a file. The format is implementation defined. </p>
 <blockquote>
   <p><i>[Note:</i> For POSIX-like implementations, including<b> </b>Unix 
-  variants, Linux, and <a href="http://www.cygwin.com/">Cygwin</a>, only paths 
+  variants, Linux, and Mac OS X, only paths 
   that begin with a slash are absolute paths.</p>
-  <p>For Windows-like implementations, including Windows and
+  <p>For Windows-like implementations, including <a href="http://www.cygwin.com/">
+  Cygwin</a> and
   <a href="http://www.mingw.org/">MinGW</a>, only paths that begin with a drive 
   specifier followed by a slash, or begin with two slashes, are absolute paths.&nbsp;<i>--end 
   note]</i></p>
@@ -593,10 +594,10 @@ system. </p>
 character type used by the implementation to represent pathnames.</p>
 <blockquote>
 <p><i>[Note:</i> For POSIX-like implementations, including<b> </b>Unixes, Linux, 
-and
-  <a href="http://www.cygwin.com/">Cygwin</a>, <code>path::value_type</code> 
+and Mac OS X, <code>path::value_type</code> 
 is <code>char</code> .</p>
-<p>For Windows-like implementations, including Windows and
+<p>For Windows-like implementations, including 
+  <a href="http://www.cygwin.com/">Cygwin</a> and
 <a href="http://www.mingw.org/">MinGW</a>, <code>path::value_type</code> is <code>
 wchar_t</code>.&nbsp;<i>--end note]</i></p>
 </blockquote>
@@ -717,10 +718,10 @@ letters to uppercase.<i> -- end note.</i>]</p>
   directory separator is implementation-defined.</p>
 <blockquote>
     <p align="left">[<i>Note: </i>For POSIX-like implementations, including<b> </b>
-    Unix variants, Linux, and
-  <a href="http://www.cygwin.com/">Cygwin</a>, the preferred directory separator is a 
+    Unix variants, Linux, and Mac OS X, the preferred directory separator is a 
     single forward slash.</p>
-    <p align="left">For Windows-like implementations, including Windows and
+    <p align="left">For Windows-like implementations, including 
+  <a href="http://www.cygwin.com/">Cygwin</a> and
     <a href="http://www.mingw.org/">MinGW</a>, the preferred directory 
     separator is a single backslash.<i>--end note</i>]</p>
       </blockquote>
@@ -3073,7 +3074,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->05 March 2010<!--webbot bot="Timestamp" endspan i-checksum="27230" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17550" --></p>
 
 </body>
 

@@ -810,49 +810,21 @@ separator character is always one or more slash characters.</p>
 
 <p dir="ltr">The <b>native format</b> is the format as defined by the particular 
 operating system. For Windows, either the slash or the backslash can be used as 
-the directory separator character. If a drive specifier or a backslash appears 
+the directory separator character, so <code>/my_directory\my_file.txt</code> 
+would work fine. Of course, if you write that in a C++ string literal, it 
+becomes <code>&quot;/my_directory\\my_file.txt&quot;</code>.</p>
+
+<p dir="ltr">If a drive specifier or a backslash appears 
 in a pathname on a Windows system, it is always treated as the native format.</p>
 
-<p dir="ltr">We can use <code>tut4</code> to explore the two formats:</p>
-
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
-    <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
-    </tr>
-    <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
-      <pre>$ ./tut4 tut4.cpp
-tut4.cpp: 1920
-
-$ ./tut4 ./tut4.cpp
-./tut4.cpp: 1920
-
-$ ./tut4 .\tut4.cpp
-.tut4.cpp: does not exist
-
-$ ./tut4 .\\tut4.cpp
-.\tut4.cpp: does not exist</pre>
-      </td>
-      <td style="font-size: 10pt" valign="top">
-      <pre>&gt;tut4 tut4.cpp
-tut4.cpp: 1984
-
-&gt;tut4 ./tut4.cpp
-./tut4.cpp: 1984
-
-&gt;tut4 .\tut4.cpp
-.\tut4.cpp: 1984
-
-&gt;tut4 .\\tut4.cpp
-.\\tut4.cpp: 1984</pre>
-      </td>
-    </tr>
-  </table>
+<p dir="ltr">Class <code>path</code> has observer functions that allow you to 
+obtain the string representation of a path object in either the native format 
+or the generic format. See the <a href="#Class path-iterators-etc">next section</a> 
+for how that plays out.</p>
 
   <p>The distinction between generic format and native format is important when 
   communicating with native C-style API's and with users. Both tend to expect 
-  paths in the native format and are confused by the generic format. The generic 
+  paths in the native format and may be confused by the generic format. The generic 
   format is great, however, for writing portable programs that work regardless 
   of operating system.</p>
 
@@ -1149,7 +1121,7 @@ It has a
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 March 2010<!--webbot bot="Timestamp" endspan i-checksum="27224" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17550" --></p>
 
 </body>
 

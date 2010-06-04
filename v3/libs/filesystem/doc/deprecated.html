@@ -38,165 +38,309 @@
 
 <h2><a name="Deprecated-names">Deprecated names</a> and features</h2>
 <p style="font-size: 10pt">As the library evolves over time, names sometimes 
-change or features are removed. To ease transition, Boost.Filesystem deprecates 
-the old names and features, but continues to provide them unless macro <code>
+change or old features are removed to make way for new features. To ease transition, Boost.Filesystem deprecates 
+the old names and features, but by default continues to provide many of them. 
+The deprecated names and other workarounds can be suppressed by defining macro <code>
+BOOST_FILESYSTEM_NO_DEPRECATED</code>, and this is recommended for all new code.</p>
+<p style="font-size: 10pt">In the table, &#10004; indicates a synonym or other 
+workaround is provide unless <code>
 BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
 <table border="1" cellpadding="5" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
-    <td style="font-size: 10pt">
-    <b><i>Component</i></b></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
+    <b><i>Component or location</i></b></td>
+    <td style="font-size: 10pt" valign="top">
     <p style="font-size: 10pt"><b><i>Old name, now deprecated</i></b></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
     <p style="font-size: 10pt"><b><i>New name</i></b></td>
   </tr>
   <tr>
-    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
-    <td style="font-size: 10pt"><code>leaf()</code></td>
-    <td style="font-size: 10pt"><code>filename()</code></td>
-  </tr>
-  <tr>
-    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
-    <td style="font-size: 10pt"><code>branch_path()</code></td>
-    <td style="font-size: 10pt"><code>parent_path()</code></td>
-  </tr>
-  <tr>
-    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
-    <td style="font-size: 10pt"><code>has_leaf()</code></td>
-    <td style="font-size: 10pt"><code>has_filename()</code></td>
-  </tr>
-  <tr>
-    <td style="font-size: 10pt" valign="top"><code>basic_path</code></td>
-    <td style="font-size: 10pt"><code>has_branch_path()</code></td>
-    <td style="font-size: 10pt"><code>has_parent_path()</code></td>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>branch_path()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>parent_path()</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>canonize()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>default_name_check()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>default_name_check(name_check)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>default_name_check_writable()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>directory_string()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>string</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>external_directory_string()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>native()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>external_file_string()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>native()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>file_string()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>string()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>has_branch_path()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>has_parent_path()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>has_leaf()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>has_filename()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>is_complere()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>is_absolute()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top"><code>class path</code></td>
+    <td style="font-size: 10pt" valign="top"><code>leaf()</code></td>
+    <td style="font-size: 10pt" valign="top">&#10004;</td>
+    <td style="font-size: 10pt" valign="top"><code>filename()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>native_directory_string()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>string()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>native_file_string()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>string()</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>normalize()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>path(const string_type&amp; str, name_check)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed. Workaround ignores </i><code>name_check</code><i> 
+    argument.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>path(const string_type::value_type* s,&nbsp; name_check)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed. Workaround ignores </i><code>name_check</code><i> 
+    argument.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
+    <td style="font-size: 10pt" valign="top">
     <p style="font-size: 10pt"><code>remove_leaf()</code></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
     <p style="font-size: 10pt"><code>remove_filename()</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>basic_path( const string_type &amp; str,<br>
-&nbsp; name_check )</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
+    <code>path.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>template&lt;class String, class Traits&gt;<br>
+&nbsp; class basic_path;</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    Class template <code>basic_path</code> is replaced by <code>class path</code>. 
+    No workaround for an explicitly coded <code>basic_path</code> is provided, 
+    but see the next row - <code>path</code>.</td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>basic_path( const string_type::value_type * s,<br>
-&nbsp; name_check )</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
+    <code>path.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>typedef basic_path&lt;std::string, path_traits&gt; path;</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>class path</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>native_file_string()</code></td>
-    <td style="font-size: 10pt">
-    <code>file_string()</code></td>
-  </tr>
-  <tr>
+    <code>path.hpp</code></td>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>native_directory_string()</code></td>
-    <td style="font-size: 10pt">
-    <code>directory_string()</code></td>
-  </tr>
-  <tr>
+    <code>typedef basic_path&lt;std::wstring, wpath_traits&gt; wpath;</code></td>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>default_name_check_writable()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
-  </tr>
-  <tr>
+    &#10004;</td>
     <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>default_name_check( name_check )</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
-  </tr>
-  <tr>
-    <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>default_name_check()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
-  </tr>
-  <tr>
-    <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>canonize()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
-  </tr>
-  <tr>
-    <td style="font-size: 10pt" valign="top">
-    <code>basic_path</code></td>
-    <td style="font-size: 10pt">
-    <code>normalize()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
+    <i>Removed; use </i><code>class path</code><i> instead. Workaround provides
+    </i><code>typedef path wpath;</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
     <code>operations.hpp</code></td>
-    <td style="font-size: 10pt">
-    <code>is_regular( file_status f )</code></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
+    <code>is_regular(file_status f)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
     <code>is_regular_file( file_status f )</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
     <code>operations.hpp</code></td>
-    <td style="font-size: 10pt">
-    <code>symbolic_link_exists( const path &amp; ph )</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed</code></i></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>symbolic_link_exists(const path&amp; ph)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
     <code>basic_directory_status</code></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
     <code>filename()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed, use path().filename() instead</code></i></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed, use </i><code>path().filename()</code><i> instead.</i></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
     <code>basic_directory_status</code></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
     <code>leaf()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed, use path().filename() instead</code></i></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed, use </i><code>path().filename()</code><i> instead.</i></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
     <code>basic_directory_status</code></td>
-    <td style="font-size: 10pt">
+    <td style="font-size: 10pt" valign="top">
     <code>string()</code></td>
-    <td style="font-size: 10pt">
-    <i><code>feature removed, use path().string() instead</code></i></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed, use </i><code>path().filename()</code><i> instead.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    Macro definitions</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>BOOST_WINDOW_API</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>No longer supported; API selection is always automatic.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    Macro definitions</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>BOOST_POSIX_API</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>No longer supported; API selection is always automatic.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    Macro definitions</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>BOOST_WINDOW_PATH</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>No longer supported; native path format selection is always automatic.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    Macro definitions</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>BOOST_POSIX_PATH</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>No longer supported; native path format selection is always automatic.</i></td>
   </tr>
 </table>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->17 February, 2010<!--webbot bot="Timestamp" endspan i-checksum="40536" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19844" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005, 2010</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
