@@ -472,6 +472,9 @@ public:
   void replace_leaf(const boost::filesystem::path& p,
     file_status st, file_status symlink_st)
       { replace_filename(p, st, symlink_st); }
+  std::string filename() const { return path().filename().string(); } 
+  std::string leaf() const { return path().filename().string(); } 
+  std::string string() const { return path().string(); } 
 # endif
 
   const boost::filesystem::path&  path() const               {return m_path;}

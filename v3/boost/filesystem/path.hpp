@@ -350,10 +350,12 @@ namespace filesystem
     const std::string directory_string() const          { return string(); }
     const std::string native_file_string() const        { return string(); }
     const std::string native_directory_string() const   { return string(); }
-    const string_type external_file_string() const      { return native(); }
-    const string_type external_directory_string() const { return native(); }
+    // for functions that returned string_type, return std::string since we are 
+    // emulating the old path rather than the old wpath.
+    const std::string external_file_string() const      { return string(); }
+    const std::string external_directory_string() const { return string(); }
 
-    path   leaf() const             { return filename(); }
+    std::string leaf() const        { return filename().string(); }
     path   branch_path() const      { return parent_path(); }
     bool   has_leaf() const         { return !m_pathname.empty(); }
     bool   has_branch_path() const  { return !parent_path().empty(); }

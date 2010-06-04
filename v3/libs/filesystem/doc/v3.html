@@ -97,18 +97,27 @@ several Boost releases. Version 2 will be the default version for one release
 cycle, and then Version 3 will become the default version.</p>
 <h3>Class <code>path</code></h3>
 <ul>
-  <li>Class template <code>basic_path</code> and its specializations are gone.<br>
+  <li>Class template <code>basic_path</code> and its specializations are 
+  replaced by a single <code>class path</code>. Thus any code, such as 
+  overloaded functions, that depends on <code>path</code> and <code>wpath</code> 
+  being two distinct types will fail to compile and must be restructured. 
+  Restructuring may be as simple as removing one of the overloads, but also 
+  might require more complex redesign.<br>
 &nbsp;</li>
   <li>Certain functions now return <code>path</code> objects rather than <code>
-  basic_string</code> objects:<ul>
+  string or wstring</code> objects:<ul>
     <li><code>root_name()</code></li>
     <li><code>root_directory()</code></li>
     <li><code>filename()</code></li>
     <li><code>stem()</code></li>
-    <li><code>extension()<br>
-&nbsp;</code></li>
+    <li><code>extension()</code></li>
   </ul>
-  </li>
+  <p>Not all uses will fail; if the function is being called in a context that 
+  accepts a <code>path</code>, all is well. If the result is being used in a 
+  context requiring a <code>std::string</code> or <code>std::wstring</code>, 
+  then <code>.string()</code> or <code>.wstring()</code> respectively must be 
+  appended to the function call.<br>
+&nbsp;</li>
   <li>&nbsp;<code>path::iterator::value_type</code> and&nbsp; <code>
   path::const_iterator::value_type</code> is <code>path</code> rather than <code>
   basic_string</code>.</li>
