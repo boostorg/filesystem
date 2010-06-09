@@ -920,7 +920,8 @@ namespace boost
 {
   namespace filesystem
   {
-    using filesystem3::resize_file;
+    using filesystem3::block_file;
+    using filesystem3::character_file;
     using filesystem3::copy_file;
     using filesystem3::copy_option;
     using filesystem3::copy_symlink;
@@ -930,9 +931,11 @@ namespace boost
     using filesystem3::create_symlink;
     using filesystem3::current_path;
     using filesystem3::directory_entry;
+    using filesystem3::directory_file;
     using filesystem3::directory_iterator;
     using filesystem3::equivalent;
     using filesystem3::exists;
+    using filesystem3::fifo_file;
     using filesystem3::file_not_found;
     using filesystem3::file_size;
     using filesystem3::file_status;
@@ -948,17 +951,25 @@ namespace boost
     using filesystem3::is_symlink;
     using filesystem3::last_write_time;
     using filesystem3::read_symlink;
+    using filesystem3::regular_file;
     using filesystem3::remove;
     using filesystem3::remove_all;
     using filesystem3::rename;
+    using filesystem3::resize_file;
+    using filesystem3::socket_file;
     using filesystem3::space;
     using filesystem3::space_info;
     using filesystem3::status;
+    using filesystem3::status_error;
     using filesystem3::status_known;
+    using filesystem3::symlink_file;
     using filesystem3::symlink_status;
     using filesystem3::system_complete;
+    using filesystem3::type_unknown;
+    using filesystem3::unique_path;
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     using filesystem3::is_regular;
+    using filesystem3::status_unknown;
     using filesystem3::symbolic_link_exists;
     //using filesystem3::wdirectory_iterator;
     //using filesystem3::wdirectory_entry;

@@ -8,6 +8,8 @@
 //  See library home page at http://www.boost.org/libs/filesystem
 
 
+#define BOOST_FILESYSTEM_VERSION 3
+
 //  See deprecated_test for tests of deprecated features
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 

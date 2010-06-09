@@ -11,6 +11,8 @@
 //  This test verifies that various deprecated names still work. This is
 //  important to preserve existing code that uses the old names.
 
+#define BOOST_FILESYSTEM_VERSION 3
+
 #define BOOST_FILESYSTEM_DEPRECATED
 
 #include <boost/filesystem.hpp>

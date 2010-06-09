@@ -199,6 +199,18 @@ namespace path_traits {
 
 }}} // namespace boost::filesystem::path_traits
 
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem3::codecvt_error_category;
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+# endif
+  }
+}
+
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 
 #endif  // BOOST_FILESYSTEM_PATH_TRAITS_HPP

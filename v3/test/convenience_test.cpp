@@ -8,6 +8,8 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+#define BOOST_FILESYSTEM_VERSION 3
+
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features

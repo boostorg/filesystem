@@ -13,14 +13,14 @@ project boost/filesystem
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
     ;
     
-SOURCES2 =
-    v2/src/operations v2/src/path v2/src/portability v2/src/utf8_codecvt_facet ;
+SOURCES =
+    v2/src/v2_operations v2/src/v2_path v2/src/v2_portability v2/src/v2_utf8_codecvt_facet
+    v3/src/operations v3/src/path v3/src/portability v3/src/utf8_codecvt_facet
+    v3/src/codecvt_error_category v3/src/path_traits v3/src/unique_path v3/src/windows_file_codecvt 
+    ;
 
-SOURCES3 =
-    v3/src/operations v3/src/path v3/src/path_traits v3/src/portability v3/src/unique_path
-    v3/src/utf8_codecvt_facet v3/src/windows_file_codecvt v3/src/codecvt_error_category ;
 
-lib boost_filesystem2
+lib boost_filesystem
     : $(SOURCES).cpp ../../system/build//boost_system
     : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1 # tell source we're building dll's
     :
@@ -33,17 +33,5 @@ lib boost_filesystem2
       <link>shared:<library>../../system/build//boost_system
     ;
     
-#lib boost_filesystem
-#    : $(SOURCES).cpp ../../system/build//boost_system
-#    : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1 # tell source we're building dll's
-#    :
-#    : # Boost.Filesystem uses some of Boost.System functions in inlined/templated
-      # functions, so clients that use Boost.Filesystem will have direct references 
-      # to Boost.System symbols. On Windows, Darwin, and some other platforms, this
-      # means those clients have to be directly linked to Boost.System. For static
-      # linking this happens anyway, but for shared we need to make it happen. Since
-      # doing so is harmless even when not needed, we do it for all platforms.
-      <link>shared:<library>../../system/build//boost_system
-#    ;
 
-boost-install boost_filesystem2 ;
+boost-install boost_filesystem ;
