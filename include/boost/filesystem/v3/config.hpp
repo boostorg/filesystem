@@ -1,4 +1,4 @@
-//  boost/filesystem/config.hpp  -------------------------------------------------------//
+//  boost/filesystem/v3/config.hpp  ----------------------------------------------------//
 
 //  Copyright Beman Dawes 2003
 
@@ -9,15 +9,18 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_CONFIG_HPP
-#define BOOST_FILESYSTEM_CONFIG_HPP
+#ifndef BOOST_FILESYSTEM3_CONFIG_HPP
+#define BOOST_FILESYSTEM3_CONFIG_HPP
+
+# if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3
+#   error Compiling Filesystem version 3 file with BOOST_FILESYSTEM_VERSION defined != 3
+# endif
+
+# if !defined(BOOST_FILESYSTEM_VERSION)
+#   define BOOST_FILESYSTEM_VERSION 3
+# endif
 
 #define BOOST_FILESYSTEM_I18N  // aid users wishing to compile several versions
-
-//  ability to change namespace aids path_table.cpp  ----------------------------------// 
-#ifndef BOOST_FILESYSTEM_NAMESPACE
-# define BOOST_FILESYSTEM_NAMESPACE filesystem
-#endif
 
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
@@ -79,4 +82,4 @@
 #include <boost/config/auto_link.hpp>
 #endif  // auto-linking disabled
 
-#endif // BOOST_FILESYSTEM_CONFIG_HPP
+#endif // BOOST_FILESYSTEM3_CONFIG_HPP

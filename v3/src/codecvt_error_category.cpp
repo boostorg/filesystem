@@ -15,8 +15,8 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path_traits.hpp>
+#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/v3/path_traits.hpp>
 #include <boost/system/error_code.hpp>
 #include <locale>
 #include <vector>
@@ -67,7 +67,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem3
   {
 
     BOOST_FILESYSTEM_DECL const boost::system::error_category& codecvt_error_category()
@@ -76,5 +76,5 @@ namespace boost
       return codecvt_error_cat_const;
     }
 
-  } // namespace system
+  } // namespace filesystem3
 } // namespace boost

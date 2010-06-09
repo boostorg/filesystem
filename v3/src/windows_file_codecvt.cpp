@@ -11,7 +11,7 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/v3/config.hpp>
 
 #ifdef BOOST_WINDOWS_API
 

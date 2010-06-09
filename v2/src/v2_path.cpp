@@ -13,11 +13,11 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/v2/config.hpp>
 
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v2/path.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <locale>
@@ -68,7 +68,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem2
   {
     bool wpath_traits::imbue( const std::locale & new_loc, const std::nothrow_t & )
     {
@@ -167,7 +167,7 @@ namespace boost
     }
 # endif // BOOST_POSIX_API
 
-  } // namespace filesystem
+  } // namespace filesystem2
 } // namespace boost
 
 #endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY

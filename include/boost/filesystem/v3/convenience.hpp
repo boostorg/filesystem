@@ -10,17 +10,17 @@
 
 //----------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_CONVENIENCE_HPP
-#define BOOST_FILESYSTEM_CONVENIENCE_HPP
+#ifndef BOOST_FILESYSTEM3_CONVENIENCE_HPP
+#define BOOST_FILESYSTEM3_CONVENIENCE_HPP
 
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/v3/operations.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem3
   {
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
@@ -45,8 +45,8 @@ namespace boost
 # endif
 
 
-  } // namespace filesystem
+  } // namespace filesystem3
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-#endif // BOOST_FILESYSTEM_CONVENIENCE_HPP
+#endif // BOOST_FILESYSTEM3_CONVENIENCE_HPP

@@ -11,10 +11,10 @@
 
 //----------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_OPERATIONS_HPP
-#define BOOST_FILESYSTEM_OPERATIONS_HPP
+#ifndef BOOST_FILESYSTEM2_OPERATIONS_HPP
+#define BOOST_FILESYSTEM2_OPERATIONS_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v2/path.hpp>
 #include <boost/detail/scoped_enum_emulation.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -45,11 +45,11 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem2
   {
 
 // typedef boost::filesystem::path Path; needs to be in namespace boost::filesystem
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 #   define BOOST_FS_FUNC(BOOST_FS_TYPE) \
       template<class Path> typename boost::enable_if<is_basic_path<Path>, \
       BOOST_FS_TYPE>::type
@@ -60,13 +60,13 @@ namespace boost
 # else
 #   define BOOST_FS_FUNC(BOOST_FS_TYPE) inline BOOST_FS_TYPE
 #   define BOOST_INLINE_FS_FUNC(BOOST_FS_TYPE) inline BOOST_FS_TYPE
-    typedef boost::filesystem::path Path;
+    typedef boost::filesystem2::path Path;
 #   define BOOST_FS_TYPENAME
 # endif
 
     template<class Path> class basic_directory_iterator;
 
-    // BOOST_FILESYSTEM_NARROW_ONLY needs this:
+    // BOOST_FILESYSTEM2_NARROW_ONLY needs this:
     typedef basic_directory_iterator<path> directory_iterator;
 
     template<class Path> class basic_directory_entry;
@@ -190,9 +190,9 @@ namespace boost
       BOOST_FILESYSTEM_DECL system::error_code
         get_full_path_name_api( const std::string & ph, std::string & target );
 
-#     if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+#     if !defined(BOOST_FILESYSTEM2_NARROW_ONLY)
 
-      BOOST_FILESYSTEM_DECL  boost::filesystem::file_status
+      BOOST_FILESYSTEM_DECL  boost::filesystem2::file_status
         status_api( const std::wstring & ph, system::error_code & ec );
       BOOST_FILESYSTEM_DECL query_pair 
         is_empty_api( const std::wstring & ph );
@@ -357,7 +357,7 @@ namespace boost
     }
 
     // VC++ 7.0 and earlier has a serious namespace bug that causes a clash
-    // between boost::filesystem::is_empty and the unrelated type trait
+    // between boost::filesystem2::is_empty and the unrelated type trait
     // boost::is_empty.
 
 # if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300
@@ -554,9 +554,9 @@ namespace boost
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     // legacy support
     inline path current_path()  // overload supports pre-i18n apps
-      { return current_path<boost::filesystem::path>(); }
+      { return current_path<boost::filesystem2::path>(); }
     inline const path & initial_path() // overload supports pre-i18n apps
-      { return initial_path<boost::filesystem::path>(); }
+      { return initial_path<boost::filesystem2::path>(); }
 # endif
 
     BOOST_FS_FUNC(Path) system_complete( const Path & ph )
@@ -610,7 +610,7 @@ namespace boost
           "boost::filesystem::last_write_time", ph, ec ) );
     }
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
     // "do-the-right-thing" overloads  ---------------------------------------//
 
@@ -665,9 +665,9 @@ namespace boost
       { return is_symlink<wpath>( ph ); }
 
     inline bool is_empty( const path & ph )
-      { return boost::filesystem::is_empty<path>( ph ); }
+      { return boost::filesystem2::is_empty<path>( ph ); }
     inline bool is_empty( const wpath & ph )
-      { return boost::filesystem::is_empty<wpath>( ph ); }
+      { return boost::filesystem2::is_empty<wpath>( ph ); }
 
     inline bool equivalent( const path & ph1, const path & ph2 )
       { return equivalent<path>( ph1, ph2 ); }
@@ -771,7 +771,7 @@ namespace boost
     inline void current_path( const wpath & ph )
       { current_path<wpath>( ph ); }
 
-# endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# endif // ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
     namespace detail
     {
@@ -792,16 +792,16 @@ namespace boost
       template<class Path>
       unsigned long remove_all_aux( const Path & ph, file_status f )
       {
-        static const boost::filesystem::basic_directory_iterator<Path> end_itr;
+        static const boost::filesystem2::basic_directory_iterator<Path> end_itr;
         unsigned long count = 1;
-        if ( !boost::filesystem::is_symlink( f ) // don't recurse symbolic links
-          && boost::filesystem::is_directory( f ) )
+        if ( !boost::filesystem2::is_symlink( f ) // don't recurse symbolic links
+          && boost::filesystem2::is_directory( f ) )
         {
-          for ( boost::filesystem::basic_directory_iterator<Path> itr( ph );
+          for ( boost::filesystem2::basic_directory_iterator<Path> itr( ph );
                 itr != end_itr; ++itr )
           {
             boost::system::error_code ec;
-            boost::filesystem::file_status fn = boost::filesystem::symlink_status( itr->path(), ec );
+            boost::filesystem2::file_status fn = boost::filesystem2::symlink_status( itr->path(), ec );
             if ( ec )
               boost::throw_exception( basic_filesystem_error<Path>( 
                 "boost::filesystem:remove_all", ph, ec ) );
@@ -850,7 +850,7 @@ namespace boost
           );
       // Effects: none if handle==0, otherwise close handle, set handle=0
 
-#     if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+#     if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM2_NARROW_ONLY)
       BOOST_FILESYSTEM_DECL system::error_code
         dir_itr_first( void *& handle, const std::wstring & ph,
           std::wstring & target, file_status & fs, file_status & symlink_fs );
@@ -928,7 +928,7 @@ namespace boost
     };
 
     typedef basic_directory_iterator< path > directory_iterator;
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     typedef basic_directory_iterator< wpath > wdirectory_iterator;
 # endif
 
@@ -1100,7 +1100,7 @@ namespace boost
     }; // basic_directory_status
 
     typedef basic_directory_entry<path> directory_entry;
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     typedef basic_directory_entry<wpath> wdirectory_entry;
 # endif
 
@@ -1116,9 +1116,9 @@ namespace boost
         if ( status_known( m_symlink_status )
           && !is_symlink( m_symlink_status ) )
           { m_status = m_symlink_status; }
-        else { m_status = boost::filesystem::status( m_path ); }
+        else { m_status = boost::filesystem2::status( m_path ); }
 #     else
-        m_status = boost::filesystem::status( m_path );
+        m_status = boost::filesystem2::status( m_path );
 #     endif
       }
       return m_status;
@@ -1134,9 +1134,9 @@ namespace boost
         if ( status_known( m_symlink_status )
           && !is_symlink( m_symlink_status ) )
           { ec = boost::system::error_code();; m_status = m_symlink_status; }
-        else { m_status = boost::filesystem::status( m_path, ec ); }
+        else { m_status = boost::filesystem2::status( m_path, ec ); }
 #     else
-        m_status = boost::filesystem::status( m_path, ec );
+        m_status = boost::filesystem2::status( m_path, ec );
 #     endif
       }
       else ec = boost::system::error_code();;
@@ -1149,7 +1149,7 @@ namespace boost
     {
 #   ifndef BOOST_WINDOWS_API
       if ( !status_known( m_symlink_status ) )
-        { m_symlink_status = boost::filesystem::symlink_status( m_path ); }
+        { m_symlink_status = boost::filesystem2::symlink_status( m_path ); }
       return m_symlink_status;
 #   else
       return status();
@@ -1162,18 +1162,67 @@ namespace boost
     {
 #   ifndef BOOST_WINDOWS_API
       if ( !status_known( m_symlink_status ) )
-        { m_symlink_status = boost::filesystem::symlink_status( m_path, ec ); }
+        { m_symlink_status = boost::filesystem2::symlink_status( m_path, ec ); }
       else ec = boost::system::error_code();;
       return m_symlink_status;
 #   else
       return status( ec );
 #   endif
     }
-  } // namespace filesystem
+  } // namespace filesystem2
 } // namespace boost
 
 #undef BOOST_FS_FUNC
 
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem2::basic_directory_entry;
+    using filesystem2::basic_directory_iterator;
+    using filesystem2::complete;
+    using filesystem2::copy_file;
+    using filesystem2::copy_option;
+    using filesystem2::create_directory;
+    using filesystem2::create_hard_link;
+    using filesystem2::create_symlink;
+    using filesystem2::current_path;
+    using filesystem2::directory_entry;
+    using filesystem2::directory_iterator;
+    using filesystem2::equivalent;
+    using filesystem2::exists;
+    using filesystem2::file_size;
+    using filesystem2::file_status;
+    using filesystem2::file_type;
+    using filesystem2::initial_path;
+    using filesystem2::is_directory;
+    using filesystem2::is_directory;
+    using filesystem2::is_empty;
+    using filesystem2::is_other;
+    using filesystem2::is_regular_file;
+    using filesystem2::is_symlink;
+    using filesystem2::last_write_time;
+    using filesystem2::remove;
+    using filesystem2::remove_all;
+    using filesystem2::rename;
+    using filesystem2::space;
+    using filesystem2::space_info;
+    using filesystem2::status;
+    using filesystem2::status_known;
+    using filesystem2::symlink_status;
+    using filesystem2::system_complete;
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    using filesystem2::is_regular;
+    using filesystem2::symbolic_link_exists;
+# endif
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
+    using filesystem2::wdirectory_iterator;
+    using filesystem2::wdirectory_entry;
+# endif
+  }
+}
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-#endif // BOOST_FILESYSTEM_OPERATIONS_HPP
+#endif // BOOST_FILESYSTEM2_OPERATIONS_HPP

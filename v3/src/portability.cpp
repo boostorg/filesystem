@@ -13,10 +13,10 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/v3/path.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = boost::filesystem3;
 
 #include <cstring> // SGI MIPSpro compilers need this
 
@@ -43,7 +43,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem3
   {
 
     //  name_check functions  ----------------------------------------------//
@@ -111,5 +111,5 @@ namespace boost
         ;
     }
 
-  } // namespace filesystem
+  } // namespace filesystem3
 } // namespace boost

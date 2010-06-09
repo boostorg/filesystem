@@ -14,10 +14,10 @@
 
 //----------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_PATH_HPP
-#define BOOST_FILESYSTEM_PATH_HPP
+#ifndef BOOST_FILESYSTEM2_PATH_HPP
+#define BOOST_FILESYSTEM2_PATH_HPP
 
-#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/v2/config.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/throw_exception.hpp>
@@ -31,17 +31,15 @@
 #include <stdexcept>
 #include <cassert>
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 #   include <locale>
 # endif
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
-//----------------------------------------------------------------------------//
-
 namespace boost
 {
-  namespace BOOST_FILESYSTEM_NAMESPACE
+  namespace BOOST_FILESYSTEM2_NAMESPACE
   {
     template<class String, class Traits> class basic_path;
 
@@ -58,7 +56,7 @@ namespace boost
         const external_string_type & src ) { return src; }
     };
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
     struct BOOST_FILESYSTEM_DECL wpath_traits;
     
@@ -84,7 +82,7 @@ namespace boost
       static bool imbue( const std::locale & loc, const std::nothrow_t & );
     };
 
-# endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# endif // ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
     //  path traits  ---------------------------------------------------------//
 
@@ -92,7 +90,7 @@ namespace boost
       { BOOST_STATIC_CONSTANT( bool, value = false ); };
     template<> struct is_basic_path<path>
       { BOOST_STATIC_CONSTANT( bool, value = true ); };
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     template<> struct is_basic_path<wpath>
       { BOOST_STATIC_CONSTANT( bool, value = true ); };
 # endif
@@ -109,7 +107,7 @@ namespace boost
     template<class Path> struct colon
       { BOOST_STATIC_CONSTANT( char, value = ':' ); };
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     template<> struct slash<wpath>
       { BOOST_STATIC_CONSTANT( wchar_t, value = L'/' ); };
     template<> struct dot<wpath>
@@ -121,7 +119,7 @@ namespace boost
 # ifdef BOOST_WINDOWS_PATH
     template<class Path> struct path_alt_separator
       { BOOST_STATIC_CONSTANT( char, value = '\\' ); };
-#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     template<> struct path_alt_separator<wpath>
       { BOOST_STATIC_CONSTANT( wchar_t, value = L'\\' ); };
 #   endif
@@ -273,23 +271,23 @@ namespace boost
       {
       private:
         friend class boost::iterator_core_access;
-        friend class boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits>;
+        friend class boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits>;
 
         const string_type & dereference() const
           { return m_name; }
         bool equal( const iterator & rhs ) const
           { return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos; }
 
-        friend class boost::BOOST_FILESYSTEM_NAMESPACE::detail::iterator_helper<path_type>;
+        friend class boost::BOOST_FILESYSTEM2_NAMESPACE::detail::iterator_helper<path_type>;
 
         void increment()
         { 
-          boost::BOOST_FILESYSTEM_NAMESPACE::detail::iterator_helper<path_type>::do_increment(
+          boost::BOOST_FILESYSTEM2_NAMESPACE::detail::iterator_helper<path_type>::do_increment(
             *this );
         }
         void decrement()
         { 
-          boost::BOOST_FILESYSTEM_NAMESPACE::detail::iterator_helper<path_type>::do_decrement(
+          boost::BOOST_FILESYSTEM2_NAMESPACE::detail::iterator_helper<path_type>::do_decrement(
             *this );
         }
 
@@ -330,7 +328,7 @@ namespace boost
       // Was qualified; como433beta8 reports:
       //    warning #427-D: qualified name is not allowed in member declaration 
       friend class iterator;
-      friend class boost::BOOST_FILESYSTEM_NAMESPACE::detail::iterator_helper<path_type>;
+      friend class boost::BOOST_FILESYSTEM2_NAMESPACE::detail::iterator_helper<path_type>;
 
       // Deprecated features ease transition for existing code. Don't use these
       // in new code.
@@ -408,7 +406,7 @@ namespace boost
                     const typename basic_path<String, Traits>::string_type::value_type * rhs )
     {
       typedef typename
-        boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits> path_type;
+        boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits> path_type;
       const typename path_type::string_type::value_type * l (lhs.string().c_str());
       while ( (*l == *rhs
 #      ifdef BOOST_WINDOWS_PATH
@@ -728,7 +726,7 @@ namespace boost
 
     typedef basic_filesystem_error<path> filesystem_error;
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     typedef basic_filesystem_error<wpath> wfilesystem_error;
 # endif
 
@@ -769,7 +767,7 @@ namespace boost
       // return 0 if str itself is filename (or empty)
       {
         typedef typename
-          boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits> path_type;
+          boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits> path_type;
 
         // case: "//"
         if ( end_pos == 2 
@@ -817,7 +815,7 @@ namespace boost
         element_size = 0;
         if ( src.empty() ) return;
 
-        typedef typename boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits> path_type;
+        typedef typename boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits> path_type;
 
         typename String::size_type cur(0);
         
@@ -877,7 +875,7 @@ namespace boost
         typename String::size_type size )
       // return npos if no root_directory found
       {
-        typedef typename boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits> path_type;
+        typedef typename boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits> path_type;
 
 #     ifdef BOOST_WINDOWS_PATH
         // case "c:/"
@@ -915,7 +913,7 @@ namespace boost
         typename String::size_type pos ) // pos is position of the slash
       {
         typedef typename
-          boost::BOOST_FILESYSTEM_NAMESPACE::basic_path<String, Traits>
+          boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits>
             path_type;
 
         assert( !str.empty() && str[pos] == slash<path_type>::value
@@ -1523,9 +1521,47 @@ namespace boost
       catch (...) { m_imp_ptr.reset(); }
     }
 
-  } // namespace BOOST_FILESYSTEM_NAMESPACE
+  } // namespace BOOST_FILESYSTEM2_NAMESPACE
 } // namespace boost
+
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem2::basic_path;
+    using filesystem2::path_traits;
+    using filesystem2::path;
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
+    using filesystem2::wpath_traits;
+    using filesystem2::wpath;
+# endif
+    using filesystem2::basic_filesystem_error;
+    using filesystem2::filesystem_error;
+    using filesystem2::wfilesystem_error;
+    using filesystem2::portable_posix_name;
+    using filesystem2::windows_name;
+    using filesystem2::portable_name;
+    using filesystem2::portable_directory_name;
+    using filesystem2::portable_file_name;
+    using filesystem2::native;
+    using filesystem2::no_check;
+    using filesystem2::swap;
+    using filesystem2::operator<;
+    using filesystem2::operator==;
+    using filesystem2::operator!=;
+    using filesystem2::operator>;
+    using filesystem2::operator<=;
+    using filesystem2::operator>=;
+    using filesystem2::operator/;
+    using filesystem2::operator<<;
+    using filesystem2::operator>>;
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 
-#endif // BOOST_FILESYSTEM_PATH_HPP
+#endif // BOOST_FILESYSTEM2_PATH_HPP

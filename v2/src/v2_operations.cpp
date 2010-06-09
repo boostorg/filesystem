@@ -38,13 +38,13 @@
 #endif
 
 
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/v2/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/detail/workaround.hpp>
 #include <cstdlib>  // for malloc, free
 
-namespace fs = boost::filesystem;
+namespace fs = boost::filesystem2;
 using boost::system::error_code;
 using boost::system::system_category;
 
@@ -217,7 +217,7 @@ namespace
   { return ::GetFileAttributesExA( ph, ::GetFileExInfoStandard, &fad ); }
 
   template< class String >
-  boost::filesystem::detail::query_pair
+  boost::filesystem2::detail::query_pair
   is_empty_template( const String & ph )
   {
     WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -255,7 +255,7 @@ namespace
   };
 
   template< class String >
-  boost::filesystem::detail::query_pair
+  boost::filesystem2::detail::query_pair
   equivalent_template( const String & ph1, const String & ph2 )
   {
     // Note well: Physical location on external media is part of the
@@ -316,7 +316,7 @@ namespace
   }
 
   template< class String >
-  boost::filesystem::detail::uintmax_pair
+  boost::filesystem2::detail::uintmax_pair
   file_size_template( const String & ph )
   {
     WIN32_FILE_ATTRIBUTE_DATA fad;
@@ -336,11 +336,11 @@ namespace
     { return ::GetDiskFreeSpaceExA( ph.c_str(), avail, total, free ) != 0; }
 
   template< class String >
-  boost::filesystem::detail::space_pair
+  boost::filesystem2::detail::space_pair
   space_template( String & ph )
   {
     ULARGE_INTEGER avail, total, free;
-    boost::filesystem::detail::space_pair result;
+    boost::filesystem2::detail::space_pair result;
     if ( get_free_disk_space( ph, &avail, &total, &free ) )
     {
       result.first = ok;
@@ -483,7 +483,7 @@ namespace
   }
 
   template<class String>
-  boost::filesystem::detail::time_pair
+  boost::filesystem2::detail::time_pair
   last_write_time_template( const String & ph )
   {
     FILETIME lwt;
@@ -535,7 +535,7 @@ namespace
     {  return ::CreateDirectoryA( dir.c_str(), 0 ) != 0; }
          
   template<class String>
-  boost::filesystem::detail::query_pair
+  boost::filesystem2::detail::query_pair
   create_directory_template( const String & dir_ph )
   {
     error_code error, dummy;
@@ -588,7 +588,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem2
   {
     namespace detail
     {
@@ -1364,5 +1364,5 @@ namespace boost
 
 #   endif
     } // namespace detail
-  } // namespace filesystem
+  } // namespace filesystem2
 } // namespace boost

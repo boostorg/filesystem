@@ -7,9 +7,10 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-#ifndef BOOST_FILESYSTEM_WIN_FILE_CODECVT_HPP
-#define BOOST_FILESYSTEM_WIN_FILE_CODECVT_HPP
+#ifndef BOOST_FILESYSTEM3_WIN_FILE_CODECVT_HPP
+#define BOOST_FILESYSTEM3_WIN_FILE_CODECVT_HPP
 
+#include <boost/filesystem/v3/config.hpp>
 #include <locale>  
 
   //------------------------------------------------------------------------------------//
@@ -52,4 +53,4 @@
     virtual int do_max_length() const throw () { return 0; }
   };
 
-#endif  // BOOST_FILESYSTEM_WIN_FILE_CODECVT_HPP
+#endif  // BOOST_FILESYSTEM3_WIN_FILE_CODECVT_HPP

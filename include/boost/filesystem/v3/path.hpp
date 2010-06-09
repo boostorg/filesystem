@@ -15,8 +15,8 @@
 #ifndef BOOST_FILESYSTEM_PATH_HPP
 #define BOOST_FILESYSTEM_PATH_HPP
 
-#include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path_traits.hpp>
+#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/v3/path_traits.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
@@ -35,7 +35,7 @@
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
   //------------------------------------------------------------------------------------//
   //                                                                                    //
@@ -330,40 +330,41 @@ namespace filesystem
 
     //  -----  deprecated functions  -----
 
-# if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-    // Deprecated features ease transition for existing code. Don't use these
-    // in new code.
+# if defined(BOOST_FILESYSTEM_DEPRECATED) && defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+#   error both BOOST_FILESYSTEM_DEPRECATED and BOOST_FILESYSTEM_NO_DEPRECATED are defined
+# endif
 
+# if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+    //  recently deprecated functions supplied by default
     path&  normalize()              { return m_normalize(); }
     path&  remove_leaf()            { return remove_filename(); }
-
-    typedef bool (*name_check)(const std::string & name);
-    path(const std::string& str, name_check)  { operator/=(str); }
-    path(const std::wstring& str, name_check) { operator/=(str); }
-    path(const char* s, name_check)           { operator/=(s);}
-    path(const wchar_t* s, name_check)        { operator/=(s);}
-    static bool default_name_check_writable() { return false; } 
-    static void default_name_check(name_check){}
-    static name_check default_name_check()    { return 0; }
-
-    const std::string file_string() const               { return string(); }
-    const std::string directory_string() const          { return string(); }
-    const std::string native_file_string() const        { return string(); }
-    const std::string native_directory_string() const   { return string(); }
-    // for functions that returned string_type, return std::string since we are 
-    // emulating the old path rather than the old wpath.
-    const std::string external_file_string() const      { return string(); }
-    const std::string external_directory_string() const { return string(); }
-
-    std::string leaf() const        { return filename().string(); }
+    path   leaf() const             { return filename(); }
     path   branch_path() const      { return parent_path(); }
     bool   has_leaf() const         { return !m_pathname.empty(); }
     bool   has_branch_path() const  { return !parent_path().empty(); }
     bool   is_complete() const      { return is_absolute(); }
 # endif
 
-   //  older functions no longer supported
-   //basic_path& canonize();
+# if defined(BOOST_FILESYSTEM_DEPRECATED)
+    //  deprecated functions with enough signature or semantic changes that they are
+    //  not supplied by default 
+    const std::string file_string() const               { return string(); }
+    const std::string directory_string() const          { return string(); }
+    const std::string native_file_string() const        { return string(); }
+    const std::string native_directory_string() const   { return string(); }
+    const string_type external_file_string() const      { return native(); }
+    const string_type external_directory_string() const { return native(); }
+
+    //  older functions no longer supported
+    //typedef bool (*name_check)(const std::string & name);
+    //basic_path(const string_type& str, name_check) { operator/=(str); }
+    //basic_path(const typename string_type::value_type* s, name_check)
+    //  { operator/=(s);}
+    //static bool default_name_check_writable() { return false; } 
+    //static void default_name_check(name_check) {}
+    //static name_check default_name_check() { return 0; }
+    //basic_path& canonize();
+# endif
 
 //--------------------------------------------------------------------------------------//
 //                            class path private members                                //
@@ -411,7 +412,7 @@ namespace filesystem
 
   };  // class path
 
-# if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   typedef path wpath;
 # endif
 
@@ -427,7 +428,7 @@ namespace filesystem
   {
   private:
     friend class boost::iterator_core_access;
-    friend class boost::filesystem::path;
+    friend class boost::filesystem3::path;
     friend void m_path_iterator_increment(path::iterator & it);
     friend void m_path_iterator_decrement(path::iterator & it);
 
@@ -572,15 +573,12 @@ namespace filesystem
 
   //  name_checks
 
-  BOOST_FILESYSTEM_DECL bool portable_posix_name(const std::string& name);
-  BOOST_FILESYSTEM_DECL bool windows_name(const std::string& name);
-  BOOST_FILESYSTEM_DECL bool portable_name(const std::string& name);
-  BOOST_FILESYSTEM_DECL bool portable_directory_name(const std::string& name);
-  BOOST_FILESYSTEM_DECL bool portable_file_name(const std::string& name);
-  BOOST_FILESYSTEM_DECL bool native(const std::string& name);
-# if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-  inline bool no_check( const std::string & ) { return true; }
-# endif
+  BOOST_FILESYSTEM_DECL bool portable_posix_name(const std::string & name);
+  BOOST_FILESYSTEM_DECL bool windows_name(const std::string & name);
+  BOOST_FILESYSTEM_DECL bool portable_name(const std::string & name);
+  BOOST_FILESYSTEM_DECL bool portable_directory_name(const std::string & name);
+  BOOST_FILESYSTEM_DECL bool portable_file_name(const std::string & name);
+  BOOST_FILESYSTEM_DECL bool native(const std::string & name);
  
 //--------------------------------------------------------------------------------------//
 //                     class path member template implementation                        //
@@ -629,8 +627,40 @@ namespace filesystem
   std::wstring path::generic_string<std::wstring>() const { return generic_wstring(); }
 
 
-}  // namespace filesystem
+}  // namespace filesystem3
 }  // namespace boost
+
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem3::path;
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    using filesystem3::wpath;
+# endif
+    using filesystem3::lexicographical_compare;
+    using filesystem3::portable_posix_name;
+    using filesystem3::windows_name;
+    using filesystem3::portable_name;
+    using filesystem3::portable_directory_name;
+    using filesystem3::portable_file_name;
+    using filesystem3::native;
+    using filesystem3::swap;
+    using filesystem3::operator<;
+    using filesystem3::operator==;
+    using filesystem3::operator!=;
+    using filesystem3::operator>;
+    using filesystem3::operator<=;
+    using filesystem3::operator>=;
+    using filesystem3::operator/;
+    using filesystem3::operator<<;
+    using filesystem3::operator>>;
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 

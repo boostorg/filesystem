@@ -12,10 +12,11 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM_OPERATIONS_HPP
-#define BOOST_FILESYSTEM_OPERATIONS_HPP
+#ifndef BOOST_FILESYSTEM3_OPERATIONS_HPP
+#define BOOST_FILESYSTEM3_OPERATIONS_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/v3/path.hpp>
 
 #include <boost/detail/scoped_enum_emulation.hpp>
 #include <boost/system/error_code.hpp>
@@ -43,7 +44,7 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem3
   {
 
 //--------------------------------------------------------------------------------------//
@@ -472,9 +473,6 @@ public:
   void replace_leaf(const boost::filesystem::path& p,
     file_status st, file_status symlink_st)
       { replace_filename(p, st, symlink_st); }
-  std::string filename() const { return path().filename().string(); } 
-  std::string leaf() const { return path().filename().string(); } 
-  std::string string() const { return path().string(); } 
 # endif
 
   const boost::filesystem::path&  path() const               {return m_path;}
@@ -913,9 +911,60 @@ namespace detail
     BOOST_FILESYSTEM_DECL bool possible_large_file_size_support();
   }
 
-  } // namespace filesystem
+  } // namespace filesystem3
 } // namespace boost
 
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem3::resize_file;
+    using filesystem3::copy_file;
+    using filesystem3::copy_option;
+    using filesystem3::copy_symlink;
+    using filesystem3::create_directories;
+    using filesystem3::create_directory;
+    using filesystem3::create_hard_link;
+    using filesystem3::create_symlink;
+    using filesystem3::current_path;
+    using filesystem3::directory_entry;
+    using filesystem3::directory_iterator;
+    using filesystem3::equivalent;
+    using filesystem3::exists;
+    using filesystem3::file_not_found;
+    using filesystem3::file_size;
+    using filesystem3::file_status;
+    using filesystem3::file_type;
+    using filesystem3::filesystem_error;
+    using filesystem3::hard_link_count;
+    using filesystem3::initial_path;
+    using filesystem3::is_directory;
+    using filesystem3::is_directory;
+    using filesystem3::is_empty;
+    using filesystem3::is_other;
+    using filesystem3::is_regular_file;
+    using filesystem3::is_symlink;
+    using filesystem3::last_write_time;
+    using filesystem3::read_symlink;
+    using filesystem3::remove;
+    using filesystem3::remove_all;
+    using filesystem3::rename;
+    using filesystem3::space;
+    using filesystem3::space_info;
+    using filesystem3::status;
+    using filesystem3::status_known;
+    using filesystem3::symlink_status;
+    using filesystem3::system_complete;
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    using filesystem3::is_regular;
+    using filesystem3::symbolic_link_exists;
+    //using filesystem3::wdirectory_iterator;
+    //using filesystem3::wdirectory_entry;
+# endif
+  }
+}
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-#endif // BOOST_FILESYSTEM_OPERATIONS_HPP
+#endif // BOOST_FILESYSTEM3_OPERATIONS_HPP

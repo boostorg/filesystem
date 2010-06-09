@@ -9,8 +9,8 @@
 
 //----------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_FSTREAM_HPP
-#define BOOST_FILESYSTEM_FSTREAM_HPP
+#ifndef BOOST_FILESYSTEM2_FSTREAM_HPP
+#define BOOST_FILESYSTEM2_FSTREAM_HPP
 
 #include <boost/filesystem/operations.hpp> // for 8.3 hack (see below)
 #include <boost/utility/enable_if.hpp>
@@ -29,19 +29,19 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem2
   {
     namespace detail
     {
-#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+#   if defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM2_NARROW_ONLY)
 #     if !defined(BOOST_DINKUMWARE_STDLIB) || BOOST_DINKUMWARE_STDLIB < 405
       // The 8.3 hack:
       // C++98 does not supply a wchar_t open, so try to get an equivalent
       // narrow char name based on the short, so-called 8.3, name.
       // Not needed for Dinkumware 405 and later as they do supply wchar_t open.
-      BOOST_FILESYSTEM_DECL bool create_file_api( const std::wstring & ph,
+      BOOST_FILESYSTEM2_DECL bool create_file_api( const std::wstring & ph,
         std::ios_base::openmode mode ); // true if succeeds
-      BOOST_FILESYSTEM_DECL std::string narrow_path_api(
+      BOOST_FILESYSTEM2_DECL std::string narrow_path_api(
         const std::wstring & ph ); // return is empty if fails
 
       inline std::string path_proxy( const std::wstring & file_ph,
@@ -90,7 +90,7 @@ namespace boost
       basic_filebuf() {}
       virtual ~basic_filebuf() {}
 
-#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   ifndef BOOST_FILESYSTEM2_NARROW_ONLY
       template<class Path>
       typename boost::enable_if<is_basic_path<Path>,
         basic_filebuf<charT,traits> *>::type
@@ -118,7 +118,7 @@ namespace boost
       // use two signatures, rather than one signature with default second
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
-#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   ifndef BOOST_FILESYSTEM2_NARROW_ONLY
       template<class Path>
       explicit basic_ifstream( const Path & file_ph,
         typename boost::enable_if<is_basic_path<Path> >::type* dummy = 0 );
@@ -162,7 +162,7 @@ namespace boost
       // use two signatures, rather than one signature with default second
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
-#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
       template<class Path>
       explicit basic_ofstream( const Path & file_ph,
@@ -207,7 +207,7 @@ namespace boost
       // use two signatures, rather than one signature with default second
       // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
 
-#   ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#   ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
       template<class Path>
       explicit basic_fstream( const Path & file_ph,
@@ -246,14 +246,14 @@ namespace boost
     typedef basic_ofstream<char> ofstream;
     typedef basic_fstream<char> fstream;
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     typedef basic_filebuf<wchar_t> wfilebuf;
     typedef basic_ifstream<wchar_t> wifstream;
     typedef basic_fstream<wchar_t> wfstream;
     typedef basic_ofstream<wchar_t> wofstream;
 # endif
     
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
 //  basic_filebuf definitions  -----------------------------------------------//
 
@@ -577,8 +577,8 @@ namespace boost
         file_ph.file_string().c_str(), mode );
     }
 #   endif
-  } // namespace filesystem
+  } // namespace filesystem2
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-#endif  // BOOST_FILESYSTEM_FSTREAM_HPP
+#endif  // BOOST_FILESYSTEM2_FSTREAM_HPP

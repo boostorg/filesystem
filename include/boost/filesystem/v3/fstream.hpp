@@ -9,10 +9,10 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_FSTREAM_HPP
-#define BOOST_FILESYSTEM_FSTREAM_HPP
+#ifndef BOOST_FILESYSTEM3_FSTREAM_HPP
+#define BOOST_FILESYSTEM3_FSTREAM_HPP
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v3/path.hpp>
 #include <boost/config.hpp>
 
 #include <iosfwd>
@@ -30,7 +30,7 @@
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
 
 //--------------------------------------------------------------------------------------//
@@ -169,8 +169,8 @@ namespace filesystem
   typedef basic_fstream<wchar_t> wfstream;
   typedef basic_ofstream<wchar_t> wofstream;
   
-} // namespace filesystem
+} // namespace filesystem3
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-#endif  // BOOST_FILESYSTEM_FSTREAM_HPP
+#endif  // BOOST_FILESYSTEM3_FSTREAM_HPP

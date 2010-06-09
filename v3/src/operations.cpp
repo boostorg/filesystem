@@ -31,7 +31,7 @@
       // That is required at least on Solaris, and possibly on other
       // systems as well.
 
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/v3/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <cstdlib>  // for malloc, free
@@ -40,9 +40,9 @@
 # include <iostream>
 #endif
 
-namespace fs = boost::filesystem;
-using boost::filesystem::path;
-using boost::filesystem::filesystem_error;
+namespace fs = boost::filesystem3;
+using boost::filesystem3::path;
+using boost::filesystem3::filesystem_error;
 using boost::system::error_code;
 using boost::system::error_category;
 using boost::system::system_category;
@@ -220,7 +220,7 @@ namespace
   const wchar_t dot = L'.';
 # endif
 
-  boost::filesystem::directory_iterator end_dir_itr;
+  boost::filesystem3::directory_iterator end_dir_itr;
 
   const std::size_t buf_size(128);
   const error_code ok;
@@ -571,7 +571,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
 namespace detail
 {
@@ -650,13 +650,13 @@ namespace detail
     if (error(!create_symbolic_link_api,
         error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
         to, from, ec,
-        "boost::filesystem::copy_symlink"))
+        "boost::filesystem3::copy_symlink"))
       return;
 
 	  // preconditions met, so attempt the copy
 	  error(!::CopyFileExW(from.c_str(), to.c_str(), 0, 0, 0,
 		  COPY_FILE_COPY_SYMLINK | COPY_FILE_FAIL_IF_EXISTS), to, from, ec,
-		  "boost::filesystem::copy_symlink");
+		  "boost::filesystem3::copy_symlink");
 #   endif
 
   }
@@ -1473,7 +1473,7 @@ namespace path_traits
   }
 
 }  // namespace path_traits
-} // namespace filesystem
+} // namespace filesystem3
 } // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -1652,7 +1652,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
 
 namespace detail
@@ -1765,5 +1765,5 @@ namespace detail
     }
   }
 }  // namespace detail
-} // namespace filesystem
+} // namespace filesystem3
 } // namespace boost

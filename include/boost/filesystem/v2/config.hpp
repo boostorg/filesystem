@@ -1,4 +1,4 @@
-//  boost/filesystem/config.hpp  ---------------------------------------------//
+//  boost/filesystem/v2/config.hpp  ------------------------------------------//
 
 //  Copyright Beman Dawes 2003
 
@@ -9,14 +9,22 @@
 
 //----------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_CONFIG_HPP
-#define BOOST_FILESYSTEM_CONFIG_HPP
+#ifndef BOOST_FILESYSTEM2_CONFIG_HPP
+#define BOOST_FILESYSTEM2_CONFIG_HPP
+
+# if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 2
+#   error Compiling Filesystem version 2 file with BOOST_FILESYSTEM_VERSION defined != 2
+# endif
+
+# if !defined(BOOST_FILESYSTEM_VERSION)
+#   define BOOST_FILESYSTEM_VERSION 2
+# endif
 
 #define BOOST_FILESYSTEM_I18N  // aid users wishing to compile several versions
 
 //  ability to change namespace aids path_table.cpp  ------------------------// 
-#ifndef BOOST_FILESYSTEM_NAMESPACE
-# define BOOST_FILESYSTEM_NAMESPACE filesystem
+#ifndef BOOST_FILESYSTEM2_NAMESPACE
+# define BOOST_FILESYSTEM2_NAMESPACE filesystem2
 #endif
 
 #include <boost/config.hpp>
@@ -46,7 +54,7 @@
 //  narrow support only for badly broken compilers or libraries  -------------//
 
 # if defined(BOOST_NO_STD_WSTRING) || defined(BOOST_NO_SFINAE) || defined(BOOST_NO_STD_LOCALE) || BOOST_WORKAROUND(__BORLANDC__, <0x610)
-#   define BOOST_FILESYSTEM_NARROW_ONLY
+#   define BOOST_FILESYSTEM2_NARROW_ONLY
 # endif
 
 // This header implements separate compilation features as described in
@@ -66,7 +74,8 @@
 
 //  enable automatic library variant selection  ------------------------------// 
 
-#if !defined(BOOST_FILESYSTEM_SOURCE) && !defined(BOOST_ALL_NO_LIB) && !defined(BOOST_FILESYSTEM_NO_LIB)
+#if !defined(BOOST_FILESYSTEM_SOURCE) && !defined(BOOST_ALL_NO_LIB) \
+  && !defined(BOOST_FILESYSTEM_NO_LIB)
 //
 // Set the name of our library, this will get undef'ed by auto_link.hpp
 // once it's done with it:
@@ -84,4 +93,4 @@
 #include <boost/config/auto_link.hpp>
 #endif  // auto-linking disabled
 
-#endif // BOOST_FILESYSTEM_CONFIG_HPP
+#endif // BOOST_FILESYSTEM2_CONFIG_HPP

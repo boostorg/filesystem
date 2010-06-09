@@ -11,8 +11,8 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/v3/path.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
@@ -32,9 +32,9 @@
 # include <iomanip>
 #endif
 
-namespace fs = boost::filesystem;
+namespace fs = boost::filesystem3;
 
-using fs::path;
+using boost::filesystem3::path;
 
 using std::string;
 using std::wstring;
@@ -129,7 +129,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
 
   path & path::operator/=(const path & p)
@@ -467,7 +467,7 @@ namespace filesystem
     return *this;
   }
 
-}  // namespace filesystem
+}  // namespace filesystem3
 }  // namespace boost
   
 //--------------------------------------------------------------------------------------//
@@ -639,7 +639,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
 
   path::iterator path::begin() const
@@ -753,7 +753,7 @@ namespace filesystem
       it.m_element.m_pathname = separator_string;  // needed for Windows, harmless on POSIX
   }
 
-}  // namespace filesystem
+}  // namespace filesystem3
 }  // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -822,7 +822,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace filesystem3
 {
 
   const path::codecvt_type *&
@@ -844,5 +844,5 @@ namespace filesystem
     return temp;
   }
 
-}  // namespace filesystem
+}  // namespace filesystem3
 }  // namespace boost

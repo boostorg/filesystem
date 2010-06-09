@@ -11,16 +11,16 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#include <boost/filesystem/path_traits.hpp>
-#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/v3/path_traits.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/scoped_array.hpp>
 #include <locale>   // for codecvt_base::result
 #include <cstring>  // for strlen
 #include <cwchar>   // for wcslen
 
-namespace pt = boost::filesystem::path_traits;
-namespace fs = boost::filesystem;
+namespace pt = boost::filesystem3::path_traits;
+namespace fs = boost::filesystem3;
 namespace bs = boost::system;
 
 //--------------------------------------------------------------------------------------//
@@ -117,7 +117,7 @@ namespace {
 //                                   path_traits                                        //
 //--------------------------------------------------------------------------------------//
 
-namespace boost { namespace filesystem { namespace path_traits {
+namespace boost { namespace filesystem3 { namespace path_traits {
 
 //--------------------------------------------------------------------------------------//
 //                          convert const char* to wstring                             //
@@ -191,4 +191,4 @@ namespace boost { namespace filesystem { namespace path_traits {
       convert_aux(from, from_end, buf, buf+default_codecvt_buf_size, to, cvt);
     }
   }
-}}} // namespace boost::filesystem::path_traits
+}}} // namespace boost::filesystem3::path_traits

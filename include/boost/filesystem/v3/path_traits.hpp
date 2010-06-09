@@ -10,7 +10,7 @@
 #ifndef BOOST_FILESYSTEM_PATH_TRAITS_HPP
 #define BOOST_FILESYSTEM_PATH_TRAITS_HPP
 
-#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/v3/config.hpp>
 #include <string>
 #include <vector>
 #include <iterator>
@@ -20,7 +20,7 @@
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
-namespace boost { namespace filesystem {
+namespace boost { namespace filesystem3 {
 
   BOOST_FILESYSTEM_DECL const system::error_category& codecvt_error_category();
   //  uses std::codecvt_base::result used for error codes:
