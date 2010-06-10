@@ -951,6 +951,7 @@ namespace boost
     using filesystem3::is_symlink;
     using filesystem3::last_write_time;
     using filesystem3::read_symlink;
+    using filesystem3::recursive_directory_iterator;
     using filesystem3::regular_file;
     using filesystem3::remove;
     using filesystem3::remove_all;
@@ -974,6 +975,10 @@ namespace boost
     //using filesystem3::wdirectory_iterator;
     //using filesystem3::wdirectory_entry;
 # endif
+    namespace detail
+    {
+      using filesystem3::detail::possible_large_file_size_support;
+    }
   }
 }
 

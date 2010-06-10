@@ -1,4 +1,4 @@
-//  boost/filesystem.hpp  --------------------------------------------------------------//
+//  boost/filesystem/fstream.hpp  ------------------------------------------------------//
 
 //  Copyright Beman Dawes 2010
 
@@ -9,8 +9,8 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM_FILESYSTEM_HPP
-#define BOOST_FILESYSTEM_FILESYSTEM_HPP
+#ifndef BOOST_FILESYSTEM_FSTREAMX_HPP
+#define BOOST_FILESYSTEM_FSTREAMX_HPP
 
 # if defined(BOOST_FILESYSTEM_VERSION) \
   && BOOST_FILESYSTEM_VERSION != 2  && BOOST_FILESYSTEM_VERSION != 3
@@ -22,17 +22,11 @@
 # endif
 
 #if BOOST_FILESYSTEM_VERSION == 2
-#  include <boost/filesystem/v2/config.hpp>
-#  include <boost/filesystem/v2/path.hpp>
-#  include <boost/filesystem/v2/operations.hpp>
-#  include <boost/filesystem/v2/convenience.hpp>
+#  include <boost/filesystem/v2/fstream.hpp>
 
 # else
-#  include <boost/filesystem/v3/config.hpp>
-#  include <boost/filesystem/v3/path.hpp>
-#  include <boost/filesystem/v3/operations.hpp>
-#  include <boost/filesystem/v3/convenience.hpp>
+#  include <boost/filesystem/v3/fstream.hpp>
 
 # endif
 
-#endif  // BOOST_FILESYSTEM_FILESYSTEM_HPP 
+#endif  // BOOST_FILESYSTEM_FSTREAMX_HPP 

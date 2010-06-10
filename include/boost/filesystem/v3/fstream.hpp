@@ -166,11 +166,37 @@ namespace filesystem3
 
   typedef basic_filebuf<wchar_t> wfilebuf;
   typedef basic_ifstream<wchar_t> wifstream;
-  typedef basic_fstream<wchar_t> wfstream;
   typedef basic_ofstream<wchar_t> wofstream;
+  typedef basic_fstream<wchar_t> wfstream;
   
 } // namespace filesystem3
 } // namespace boost
+
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem3::filebuf;
+    using filesystem3::ifstream;
+    using filesystem3::ofstream;
+    using filesystem3::fstream;
+    using filesystem3::wfilebuf;
+    using filesystem3::wifstream;
+    using filesystem3::wfstream;
+    using filesystem3::wofstream;
+    using filesystem3::basic_filebuf;
+    using filesystem3::basic_ifstream;
+    using filesystem3::basic_ofstream;
+    using filesystem3::basic_fstream;
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+# endif
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif  // BOOST_FILESYSTEM3_FSTREAM_HPP

@@ -48,5 +48,21 @@ namespace boost
   } // namespace filesystem3
 } // namespace boost
 
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    using filesystem3::extension;
+    using filesystem3::basename;
+    using filesystem3::change_extension;
+# endif
+  }
+}
+
+//----------------------------------------------------------------------------//
+
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif // BOOST_FILESYSTEM3_CONVENIENCE_HPP
