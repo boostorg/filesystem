@@ -56,7 +56,7 @@ namespace boost
          return true;
      }
 
-# ifndef BOOST_FILESYSTEM2_NO_DEPRECATED
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 
     BOOST_FS_FUNC_STRING extension(const Path& ph)
     {
@@ -85,7 +85,7 @@ namespace boost
 
 # endif
 
-# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
 
     // "do-the-right-thing" overloads  ---------------------------------------//
 
@@ -94,7 +94,7 @@ namespace boost
     inline bool create_directories(const wpath& ph)
       { return create_directories<wpath>(ph); }
 
-# ifndef BOOST_FILESYSTEM2_NO_DEPRECATED
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     inline std::string extension(const path& ph)
       { return extension<path>(ph); }
     inline std::wstring extension(const wpath& ph)
@@ -199,7 +199,7 @@ namespace boost
     };
 
     typedef basic_recursive_directory_iterator<path> recursive_directory_iterator;
-# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
     typedef basic_recursive_directory_iterator<wpath> wrecursive_directory_iterator;
 # endif
 
@@ -301,6 +301,31 @@ namespace boost
 
 #undef BOOST_FS_FUNC_STRING
 #undef BOOST_FS_FUNC
+
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem2::create_directories;
+    using filesystem2::basic_recursive_directory_iterator;
+    using filesystem2::recursive_directory_iterator;
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    using filesystem2::extension;
+    using filesystem2::basename;
+    using filesystem2::change_extension;
+# endif
+
+# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+    using filesystem2::wrecursive_directory_iterator;
+# endif
+
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif // BOOST_FILESYSTEM2_CONVENIENCE_HPP

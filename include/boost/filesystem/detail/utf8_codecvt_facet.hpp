@@ -7,10 +7,10 @@
 #ifndef BOOST_FILESYSTEM_UTF8_CODECVT_FACET_HPP
 #define BOOST_FILESYSTEM_UTF8_CODECVT_FACET_HPP
 
-#include <boost/filesystem/v2/config.hpp>
+#include <boost/filesystem/config.hpp>
 
 #define BOOST_UTF8_BEGIN_NAMESPACE \
-     namespace boost { namespace filesystem2 { namespace detail {
+     namespace boost { namespace filesystem { namespace detail {
 
 #define BOOST_UTF8_END_NAMESPACE }}}
 #define BOOST_UTF8_DECL BOOST_FILESYSTEM_DECL

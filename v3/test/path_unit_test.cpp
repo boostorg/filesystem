@@ -27,7 +27,7 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 
 #include <boost/filesystem/path.hpp>
-#include "../src/utf8_codecvt_facet.hpp"  // for imbue tests
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include <boost/detail/lightweight_test.hpp>
 
 #include <iostream>

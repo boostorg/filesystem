@@ -8,7 +8,7 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/v2/path.hpp>
 #include <cwchar>      // for std::mbstate_t
 #include <string>
 #include <ios>         // for std::streamoff
@@ -93,7 +93,7 @@ namespace user
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem2
   {
     template<> struct is_basic_path<user::lpath>
       { static const bool value = true; };

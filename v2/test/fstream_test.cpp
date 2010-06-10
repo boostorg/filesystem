@@ -18,7 +18,7 @@
 #include <iostream>
 #include <cstdio> // for std::remove
 
-#include "../src/utf8_codecvt_facet.hpp"
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
 #  include "lpath.hpp"

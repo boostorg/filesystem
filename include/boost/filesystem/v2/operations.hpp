@@ -1182,6 +1182,8 @@ namespace boost
   {
     using filesystem2::basic_directory_entry;
     using filesystem2::basic_directory_iterator;
+    using filesystem2::block_file;
+    using filesystem2::character_file;
     using filesystem2::complete;
     using filesystem2::copy_file;
     using filesystem2::copy_option;
@@ -1190,9 +1192,12 @@ namespace boost
     using filesystem2::create_symlink;
     using filesystem2::current_path;
     using filesystem2::directory_entry;
+    using filesystem2::directory_file;
     using filesystem2::directory_iterator;
     using filesystem2::equivalent;
     using filesystem2::exists;
+    using filesystem2::fifo_file;
+    using filesystem2::file_not_found;
     using filesystem2::file_size;
     using filesystem2::file_status;
     using filesystem2::file_type;
@@ -1204,15 +1209,19 @@ namespace boost
     using filesystem2::is_regular_file;
     using filesystem2::is_symlink;
     using filesystem2::last_write_time;
+    using filesystem2::regular_file;
     using filesystem2::remove;
     using filesystem2::remove_all;
     using filesystem2::rename;
+    using filesystem2::socket_file;
     using filesystem2::space;
     using filesystem2::space_info;
     using filesystem2::status;
     using filesystem2::status_known;
+    using filesystem2::symlink_file;
     using filesystem2::symlink_status;
     using filesystem2::system_complete;
+    using filesystem2::type_unknown;
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     using filesystem2::is_regular;
     using filesystem2::symbolic_link_exists;
@@ -1221,6 +1230,11 @@ namespace boost
     using filesystem2::wdirectory_iterator;
     using filesystem2::wdirectory_entry;
 # endif
+    namespace detail
+    {
+      using filesystem2::detail::not_found_error;
+      using filesystem2::detail::possible_large_file_size_support;
+    }
   }
 }
 

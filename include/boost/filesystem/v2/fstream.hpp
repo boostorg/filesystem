@@ -12,7 +12,7 @@
 #ifndef BOOST_FILESYSTEM2_FSTREAM_HPP
 #define BOOST_FILESYSTEM2_FSTREAM_HPP
 
-#include <boost/filesystem/operations.hpp> // for 8.3 hack (see below)
+#include <boost/filesystem/v2/operations.hpp> // for 8.3 hack (see below)
 #include <boost/utility/enable_if.hpp>
 #include <boost/detail/workaround.hpp>
 
@@ -579,6 +579,32 @@ namespace boost
 #   endif
   } // namespace filesystem2
 } // namespace boost
+
+//----------------------------------------------------------------------------//
+
+namespace boost
+{
+  namespace filesystem
+  {
+    using filesystem2::filebuf;
+    using filesystem2::ifstream;
+    using filesystem2::ofstream;
+    using filesystem2::fstream;
+    using filesystem2::wfilebuf;
+    using filesystem2::wifstream;
+    using filesystem2::wfstream;
+    using filesystem2::wofstream;
+    using filesystem2::basic_filebuf;
+    using filesystem2::basic_ifstream;
+    using filesystem2::basic_ofstream;
+    using filesystem2::basic_fstream;
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+# endif
+  }
+}
+
+//----------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif  // BOOST_FILESYSTEM2_FSTREAM_HPP
