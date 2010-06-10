@@ -39,9 +39,9 @@ namespace boost
       // C++98 does not supply a wchar_t open, so try to get an equivalent
       // narrow char name based on the short, so-called 8.3, name.
       // Not needed for Dinkumware 405 and later as they do supply wchar_t open.
-      BOOST_FILESYSTEM2_DECL bool create_file_api( const std::wstring & ph,
+      BOOST_FILESYSTEM_DECL bool create_file_api( const std::wstring & ph,
         std::ios_base::openmode mode ); // true if succeeds
-      BOOST_FILESYSTEM2_DECL std::string narrow_path_api(
+      BOOST_FILESYSTEM_DECL std::string narrow_path_api(
         const std::wstring & ph ); // return is empty if fails
 
       inline std::string path_proxy( const std::wstring & file_ph,

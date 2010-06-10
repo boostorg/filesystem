@@ -55,22 +55,27 @@ int main(int, char*[])
   BOOST_TEST(!fs::create_directories(""));  // should be harmless
   BOOST_TEST(!fs::create_directories("/")); // ditto
 
-  fs::remove_all("xx");  // make sure slate is blank
-  BOOST_TEST(!fs::exists("xx")); // reality check
+  path unique_dir = fs::unique_path();  // unique name in case tests running in parallel
+  path unique_yy = unique_dir / "yy";
+  path unique_yya = unique_dir / "yya";
+  path unique_yy_zz = unique_dir / "yy" / "zz";
 
-  BOOST_TEST(fs::create_directories("xx"));
-  BOOST_TEST(fs::exists("xx"));
-  BOOST_TEST(fs::is_directory("xx"));
+  fs::remove_all(unique_dir);  // make sure slate is blank
+  BOOST_TEST(!fs::exists(unique_dir)); // reality check
 
-  BOOST_TEST(fs::create_directories("xx/yy/zz"));
-  BOOST_TEST(fs::exists("xx"));
-  BOOST_TEST(fs::exists("xx/yy"));
-  BOOST_TEST(fs::exists("xx/yy/zz"));
-  BOOST_TEST(fs::is_directory("xx"));
-  BOOST_TEST(fs::is_directory("xx/yy"));
-  BOOST_TEST(fs::is_directory("xx/yy/zz"));
+  BOOST_TEST(fs::create_directories(unique_dir));
+  BOOST_TEST(fs::exists(unique_dir));
+  BOOST_TEST(fs::is_directory(unique_dir));
 
-  path is_a_file("xx/uu");
+  BOOST_TEST(fs::create_directories(unique_yy_zz));
+  BOOST_TEST(fs::exists(unique_dir));
+  BOOST_TEST(fs::exists(unique_yy));
+  BOOST_TEST(fs::exists(unique_yy_zz));
+  BOOST_TEST(fs::is_directory(unique_dir));
+  BOOST_TEST(fs::is_directory(unique_yy));
+  BOOST_TEST(fs::is_directory(unique_yy_zz));
+
+  path is_a_file(unique_dir / "uu");
   {
     std::ofstream f(is_a_file.string().c_str());
     BOOST_TEST(!!f);
@@ -89,63 +94,63 @@ int main(int, char*[])
   BOOST_TEST(throws_fs_error(
     boost::bind(create_recursive_iterator, "/no-such-path")));
 
-  fs::remove("xx/uu");
+  fs::remove(unique_dir / "uu");
 
 #ifdef BOOST_WINDOWS_API
   // These tests depends on ordering of directory entries, and that's guaranteed
   // on Windows but not necessarily on other operating systems
   {
-    std::ofstream f("xx/yya");
+    std::ofstream f(unique_yya.string().c_str());
     BOOST_TEST(!!f);
   }
 
-  for (it = fs::recursive_directory_iterator("xx");
+  for (it = fs::recursive_directory_iterator(unique_dir);
         it != fs::recursive_directory_iterator(); ++it)
     { std::cout << it->path() << '\n'; }
 
-  it = fs::recursive_directory_iterator("xx");
-  BOOST_TEST(it->path() == "xx/yy");
+  it = fs::recursive_directory_iterator(unique_dir);
+  BOOST_TEST(it->path() == unique_yy);
   BOOST_TEST(it.level() == 0);
   ++it;
-  BOOST_TEST(it->path() == "xx/yy/zz");
+  BOOST_TEST(it->path() == unique_yy_zz);
   BOOST_TEST(it.level() == 1);
   it.pop();
-  BOOST_TEST(it->path() == "xx/yya");
+  BOOST_TEST(it->path() == unique_yya);
   BOOST_TEST(it.level() == 0);
   it++;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
-  it = fs::recursive_directory_iterator("xx");
-  BOOST_TEST(it->path() == "xx/yy");
+  it = fs::recursive_directory_iterator(unique_dir);
+  BOOST_TEST(it->path() == unique_yy);
   it.no_push();
   ++it;
-  BOOST_TEST(it->path() == "xx/yya");
+  BOOST_TEST(it->path() == unique_yya);
   ++it;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
-  fs::remove("xx/yya");
+  fs::remove(unique_yya);
 #endif
 
-  it = fs::recursive_directory_iterator("xx/yy/zz");
+  it = fs::recursive_directory_iterator(unique_yy_zz);
   BOOST_TEST(it == fs::recursive_directory_iterator());
   
-  it = fs::recursive_directory_iterator("xx");
-  BOOST_TEST(it->path() == "xx/yy");
+  it = fs::recursive_directory_iterator(unique_dir);
+  BOOST_TEST(it->path() == unique_yy);
   BOOST_TEST(it.level() == 0);
   ++it;
-  BOOST_TEST(it->path() == "xx/yy/zz");
+  BOOST_TEST(it->path() == unique_yy_zz);
   BOOST_TEST(it.level() == 1);
   it++;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
-  it = fs::recursive_directory_iterator("xx");
-  BOOST_TEST(it->path() == "xx/yy");
+  it = fs::recursive_directory_iterator(unique_dir);
+  BOOST_TEST(it->path() == unique_yy);
   it.no_push();
   ++it;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
-  it = fs::recursive_directory_iterator("xx");
-  BOOST_TEST(it->path() == "xx/yy");
+  it = fs::recursive_directory_iterator(unique_dir);
+  BOOST_TEST(it->path() == unique_yy);
   ++it;
   it.pop();
   BOOST_TEST(it == fs::recursive_directory_iterator());
@@ -156,6 +161,8 @@ int main(int, char*[])
   BOOST_TEST(fs::recursive_directory_iterator("nosuchdir", ec)
     == fs::recursive_directory_iterator());
   BOOST_TEST(ec);
+
+  fs::remove_all(unique_dir);  // clean up behind ourselves
 
   return ::boost::report_errors();
 }
