@@ -23,7 +23,7 @@
 #include <boost/scoped_array.hpp>
 #include <boost/detail/lightweight_test.hpp>
 
-#include "../src/utf8_codecvt_facet.hpp"
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
 namespace fs = boost::filesystem;
 

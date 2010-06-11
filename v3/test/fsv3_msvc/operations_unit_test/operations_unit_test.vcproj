@@ -175,43 +175,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\src\codecvt_error_category.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\system\src\error_code.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\operations.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\operations_unit_test.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\path.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\path_traits.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\portability.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\unique_path.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\utf8_codecvt_facet.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\windows_file_codecvt.cpp"
 				>
 			</File>
 		</Filter>

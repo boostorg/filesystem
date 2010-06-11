@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="operations_test"
-	ProjectGUID="{8BB7E604-46EF-42BE-ABB5-D7044B3E8A40}"
-	RootNamespace="operations_test"
+	Name="path_unit_test"
+	ProjectGUID="{3C77F610-2E31-4087-9DF2-7CD45198A02D}"
+	RootNamespace="path_unit_test"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="BOOST_FILEYSTEM_INCLUDE_IOSTREAM"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -85,7 +85,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Executing test $(TargetName).exe..."
-				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;  -x"
+				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -114,6 +114,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -159,7 +160,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Executing test $(TargetName).exe..."
-				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;  -x"
+				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -172,31 +173,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\src\codecvt_error_category.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\system\src\error_code.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\operations.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\operations_test.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\path.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\path_traits.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\windows_file_codecvt.cpp"
+				RelativePath="..\..\path_unit_test.cpp"
 				>
 			</File>
 		</Filter>

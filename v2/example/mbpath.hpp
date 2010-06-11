@@ -36,7 +36,7 @@ namespace user
 
 namespace boost
 {
-  namespace filesystem
+  namespace filesystem2
   {
     template<> struct is_basic_path<user::mbpath>
       { static const bool value = true; };

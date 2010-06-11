@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="system_dll"
-	ProjectGUID="{F94CCADD-A90B-480C-A304-C19D015D36B1}"
-	RootNamespace="system_dll"
+	Name="operations_test"
+	ProjectGUID="{8BB7E604-46EF-42BE-ABB5-D7044B3E8A40}"
+	RootNamespace="operations_test"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -18,9 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(TEMP)\$(SolutionName)\$(ConfigurationName)"
-			IntermediateDirectory="$(TEMP)\$(SolutionName)\$(ProjectName)\$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="1"
+			InheritedPropertySheets="..\common.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,10 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\.."
-				PreprocessorDefinitions="BOOST_ALL_NO_LIB;BOOST_ALL_DYN_LINK;WIN32;_DEBUG;_WINDOWS;_USRDLL;SYSTEM_DLL_EXPORTS"
+				PreprocessorDefinitions="BOOST_FILEYSTEM_INCLUDE_IOSTREAM"
 				MinimalRebuild="true"
-				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
@@ -64,7 +61,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				SubSystem="2"
+				SubSystem="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -87,13 +84,14 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Executing test $(TargetName).exe..."
+				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;  -x"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(TEMP)\$(SolutionName)\$(ConfigurationName)"
-			IntermediateDirectory="$(TEMP)\$(SolutionName)\$(ProjectName)\$(ConfigurationName)"
-			ConfigurationType="2"
+			ConfigurationType="1"
+			InheritedPropertySheets="..\common.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -116,9 +114,6 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\..\..\.."
-				PreprocessorDefinitions="BOOST_ALL_NO_LIB;BOOST_ALL_DYN_LINK;WIN32;NDEBUG;_WINDOWS;_USRDLL;SYSTEM_DLL_EXPORTS"
-				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -138,7 +133,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				SubSystem="2"
+				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -163,6 +158,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Executing test $(TargetName).exe..."
+				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;  -x"
 			/>
 		</Configuration>
 	</Configurations>
@@ -175,7 +172,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\system\src\error_code.cpp"
+				RelativePath="..\..\operations_test.cpp"
 				>
 			</File>
 		</Filter>

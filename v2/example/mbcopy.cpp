@@ -21,7 +21,7 @@
 #include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include "../src/utf8_codecvt_facet.hpp"
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
 namespace fs = boost::filesystem;
 

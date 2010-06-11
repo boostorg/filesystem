@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="convenience_test"
-	ProjectGUID="{08986FB5-0C83-4BC4-92DF-05E12E1C03C1}"
-	RootNamespace="convenience_test"
+	Name="path_test"
+	ProjectGUID="{F3D230C4-9185-4C2B-AB0E-0F0D28D8268C}"
+	RootNamespace="path_test"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="BOOST_FILESYSTEM_PATH_CTOR_COUNT;WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -173,31 +173,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\src\codecvt_error_category.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\convenience_test.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\system\src\error_code.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\operations.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\path.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\path_traits.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\windows_file_codecvt.cpp"
+				RelativePath="..\..\path_test.cpp"
 				>
 			</File>
 		</Filter>

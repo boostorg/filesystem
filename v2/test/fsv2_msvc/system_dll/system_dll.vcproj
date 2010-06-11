@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="simple_ls"
-	ProjectGUID="{6B8EC880-702E-418A-BC63-CA46C6CC7B27}"
-	RootNamespace="simple_ls"
+	Name="system_dll"
+	ProjectGUID="{15371D22-F930-4286-9126-C3516E78CB09}"
+	RootNamespace="system_dll"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -18,9 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(TEMP)\$(SolutionName)\$(ConfigurationName)"
-			IntermediateDirectory="$(TEMP)\$(SolutionName)\$(ProjectName)\$(ConfigurationName)"
-			ConfigurationType="1"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			InheritedPropertySheets="..\common.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -41,13 +42,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\.."
-				PreprocessorDefinitions="BOOST_ALL_NO_LIB;BOOST_SYSTEM_DYN_LINK;BOOST_FILESYSTEM_DYN_LINK;WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SYSTEM_DLL_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
-				WarningLevel="4"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -63,7 +62,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -86,15 +85,14 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Executing test $(TargetName).exe..."
-				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(TEMP)\$(SolutionName)\$(ConfigurationName)"
-			IntermediateDirectory="$(TEMP)\$(SolutionName)\$(ProjectName)\$(ConfigurationName)"
-			ConfigurationType="1"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			InheritedPropertySheets="..\common.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -117,12 +115,10 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\..\..\..\.."
-				PreprocessorDefinitions="BOOST_ALL_NO_LIB;BOOST_SYSTEM_DYN_LINK;BOOST_FILESYSTEM_DYN_LINK;WIN32;NDEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SYSTEM_DLL_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -138,7 +134,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -163,8 +159,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Executing test $(TargetName).exe..."
-				CommandLine="&quot;$(TargetDir)\$(TargetName).exe&quot;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -177,7 +171,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\example\simple_ls.cpp"
+				RelativePath="..\..\..\..\..\system\src\error_code.cpp"
 				>
 			</File>
 		</Filter>

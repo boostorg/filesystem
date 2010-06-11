@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="filesystem_dll"
-	ProjectGUID="{F31C02C7-63A4-489C-A176-695D68E5BCA4}"
+	ProjectGUID="{FFD738F7-96F0-445C-81EA-551665EF53D1}"
 	RootNamespace="filesystem_dll"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TEMP)\$(SolutionName)\$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\common.vsprops"
@@ -45,10 +45,11 @@
 				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FILESYSTEM_DLL_EXPORTS"
 				MinimalRebuild="true"
+				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				DefaultCharIsUnsigned="false"
 				UsePrecompiledHeader="0"
+				WarningLevel="4"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -91,7 +92,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(TEMP)\$(SolutionName)\$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="..\common.vsprops"
@@ -117,10 +118,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FILESYSTEM_DLL_EXPORTS"
+				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
+				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -173,6 +177,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\src\codecvt_error_category.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\operations.cpp"
 				>
 			</File>
@@ -181,11 +189,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\path_traits.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\portability.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\unique_path.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\utf8_codecvt_facet.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\windows_file_codecvt.cpp"
 				>
 			</File>
 		</Filter>
