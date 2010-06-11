@@ -6,7 +6,7 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Filesystem Home</title>
-<link rel="stylesheet" type="text/css" href="minimal.css">
+<link rel="stylesheet" type="text/css" href="../../../../doc/html/minimal.css">
 </head>
 
 <body>
@@ -14,8 +14,8 @@
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td width="277">
-<a href="../../../index.htm">
-<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
+<a href="../../../../index.htm">
+<img src="../../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
     <td align="middle">
     <font size="7">Filesystem Library<br>
     Version 3</font>
@@ -25,7 +25,7 @@
 
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
   <tr>
-    <td><a href="../../../index.htm">Boost Home</a> &nbsp;&nbsp;
+    <td><a href="../../../../index.htm">Boost Home</a> &nbsp;&nbsp;
     <a href="index.htm">Library Home</a> &nbsp;&nbsp;
     <a href="reference.html">Reference</a> &nbsp;&nbsp;
     <a href="tutorial.html">Tutorial</a> &nbsp;&nbsp;
@@ -66,11 +66,19 @@
   <table border="1" cellpadding="10" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
     <tr>
       <td>
-      <p align="center">This is Version 3 of the Filesystem library.</p>
-      <p align="center">Version 3 is major revision with many new and improved 
-      features, but has breaking changes from Version 2.</p>
-      <p align="center">See <a href="../../../../dual_versions.html">Dual Version Support</a> 
-      for how to change to Version 2.</td>
+      <p align="center"><b>This is Version 3 of the Filesystem library.</b></p>
+      <p align="center">Version 3 is a major revision with many new and improved 
+      features. It breaks some Version 2 code.</p>
+      <p align="center"><a href="../../v2/doc/index.htm">Version 2</a> is the default version for Boost release 1.44 
+      only. Version 3 will become the default starting with release 1.45.</p>
+      <p align="center"><b>For this release only, you must define macro 
+      BOOST_FILESYSTEM_VERSION as 3 to use Version 3. You may do this via a 
+      compiler argument or via <code>#define BOOST_FILESYSTEM_VERSION 3</code></b></p>
+      <p align="center">Existing code should be moved to Version 3 as soon as 
+      convenient. New code should be written for Version 3.</p>
+      <p align="center">Version 2 is deprecated, and will be removed from Boost 
+      releases at the end of a transition period.</p>
+      </td>
     </tr>
   </table>
   </center>
@@ -452,7 +460,7 @@ version 1.31.0.&nbsp;</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19844" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19839" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
