@@ -81,8 +81,15 @@ namespace boost
 
     BOOST_FS_FUNC(Path) change_extension( const Path & ph,
       const BOOST_FS_TYPENAME Path::string_type & new_extension )
-      { return ph.parent_path() / (basename(ph) + new_extension); }
-
+    {
+#   if !defined(_STLPORT_VERSION)
+      return ph.parent_path() / (basename(ph) + new_extension); 
+#   else
+	    typedef BOOST_FS_TYPENAME Path::string_type string_type; 
+	    string_type filename = basename(ph) + new_extension; 
+	    return ph.parent_path() / filename;
+#   endif
+	  } 
 # endif
 
 # ifndef BOOST_FILESYSTEM_NARROW_ONLY
