@@ -4,22 +4,16 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or www.boost.org/LICENSE_1_0.txt)
 
-
 # See library home page at http://www.boost.org/libs/filesystem
 
 project boost/filesystem
-    : source-location ..
+    : source-location ../src
     : usage-requirements # pass these requirement to dependents (i.e. users)
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
     ;
-    
-SOURCES =
-    v2/src/v2_operations v2/src/v2_path v2/src/v2_portability
-    v3/src/operations v3/src/path v3/src/portability v3/src/utf8_codecvt_facet
-    v3/src/codecvt_error_category v3/src/path_traits v3/src/unique_path
-    v3/src/windows_file_codecvt 
-    ;
 
+SOURCES =
+    operations path portability utf8_codecvt_facet ;
 
 lib boost_filesystem
     : $(SOURCES).cpp ../../system/build//boost_system
@@ -33,6 +27,5 @@ lib boost_filesystem
       # doing so is harmless even when not needed, we do it for all platforms.
       <link>shared:<library>../../system/build//boost_system
     ;
-    
 
 boost-install boost_filesystem ;
