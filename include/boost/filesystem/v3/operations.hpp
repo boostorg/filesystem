@@ -799,7 +799,7 @@ namespace detail
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
   
-  class filesystem_error : public system::system_error
+  class BOOST_SYMBOL_VISIBLE filesystem_error : public system::system_error
   {
   // see http://www.boost.org/more/error_handling.html for design rationale
 
