@@ -1359,10 +1359,10 @@ int main( int, char*[] )
 # if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300 // bypass VC++ 7.0 and earlier
   std::cout << "\nInserter and extractor test...";
   std::stringstream ss;
-  ss << fs::path( "foo/bar" ) << std::endl;
+  ss << fs::path( "foo bar" ) << std::endl;  // ensure space in path roundtrips
   fs::path round_trip;
   ss >> round_trip;
-  BOOST_TEST( round_trip.string() == "foo/bar" );
+  BOOST_TEST( round_trip.string() == "foo bar" );
   std::cout << round_trip.string() << "..." << round_trip << " complete\n";
 # endif
 

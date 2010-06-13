@@ -558,7 +558,7 @@ namespace filesystem3
   inline std::istream& operator>>(std::istream & is, path& p)
   {
     std::string str;
-    is >> str;
+    std::getline(is, str);  // See ticket #3863
     p = str;
     return is;
   }
@@ -566,7 +566,7 @@ namespace filesystem3
   inline std::wistream& operator>>(std::wistream & is, path& p)
   {
     std::wstring str;
-    is >> str;
+    std::getline(is, str);  // See ticket #3863
     p = str;
     return is;
   }

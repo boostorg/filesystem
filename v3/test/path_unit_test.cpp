@@ -389,7 +389,7 @@ namespace
   {
     std::cout << "testing inserter and extractor..." << std::endl;
 
-    path p1("foo");
+    path p1("foo bar");  // verify space in path roundtrips per ticket #3863
     path p2;
 
     std::stringstream ss;

@@ -594,7 +594,7 @@ namespace boost
       typename Path::string_type::traits_type >& is, Path & ph )
     {
       typename Path::string_type str;
-      is >> str;
+      std::getline(is, str);  // See ticket 3863
       ph = str;
       return is;
     }
@@ -620,7 +620,7 @@ namespace boost
         basic_path< String, Traits > & ph )
     {
       String str;
-      is >> str;
+      std::getline(is, str);  // See ticket 3863
       ph = str;
       return is;
     }
