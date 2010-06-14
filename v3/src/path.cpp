@@ -24,7 +24,7 @@
 # include "windows_file_codecvt.hpp"
 # include <windows.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
-# include "utf8_codecvt_facet.hpp"
+# include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #endif
 
 #ifdef BOOST_FILESYSTEM_DEBUG
