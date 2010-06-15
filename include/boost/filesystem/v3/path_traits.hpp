@@ -56,71 +56,6 @@ namespace path_traits {
      bool empty(T (&)[N])
        { return N <= 1; }
 
-  //  Source dispatch
-
-  //  contiguous containers
-  template <class U> inline
-    void dispatch(const std::string& c, U& to, const codecvt_type& cvt)
-  {
-    if (c.size())
-      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
-  }
-  template <class U> inline
-    void dispatch(const std::wstring& c, U& to, const codecvt_type& cvt)
-  {
-    if (c.size())
-      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
-  }
-  template <class U> inline
-    void dispatch(const std::vector<char>& c, U& to, const codecvt_type& cvt)
-  {
-    if (c.size())
-      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
-  }
-  template <class U> inline
-    void dispatch(const std::vector<wchar_t>& c, U& to, const codecvt_type& cvt)
-  {
-    if (c.size())
-      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
-  }
-
-  //  non-contiguous containers
-  template <class Container, class U> inline
-  void dispatch(const Container & c, U& to, const codecvt_type& cvt)
-  {
-    if (c.size())
-    {
-      std::basic_string<typename Container::value_type> s(c.begin(), c.end());
-      convert(s.c_str(), s.c_str()+s.size(), to, cvt);
-    }
-  }
-
-  //  c_str
-  template <class T, class U> inline
-  void dispatch(T * const & c_str, U& to, const codecvt_type& cvt)
-  {
-//    std::cout << "dispatch() const T *\n";
-    BOOST_ASSERT(c_str);
-    convert(c_str, to, cvt);
-  }
-  
-  //  C-style array
-  template <typename T, size_t N, class U> inline
-  void dispatch(T (&array)[N], U& to, const codecvt_type& cvt) // T, N, U deduced
-  {
-//    std::cout << "dispatch() array, N=" << N << "\n"; 
-    convert(array, array + N - 1, to, cvt);
-  }
-
-  BOOST_FILESYSTEM_DECL
-  void dispatch(const directory_entry & de,
-#                ifdef BOOST_WINDOWS_API
-                   std::wstring & to,
-#                else   
-                   std::string & to,
-#                endif
-                 const codecvt_type&);
-
   // value types differ  ---------------------------------------------------------------//
   //
   //   A from_end argument of 0 is less efficient than a known end, so use only if needed
@@ -196,6 +131,72 @@ namespace path_traits {
     BOOST_ASSERT(from);
     to += from;
   }
+
+  //  Source dispatch
+
+  //  contiguous containers
+  template <class U> inline
+    void dispatch(const std::string& c, U& to, const codecvt_type& cvt)
+  {
+    if (c.size())
+      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
+  }
+  template <class U> inline
+    void dispatch(const std::wstring& c, U& to, const codecvt_type& cvt)
+  {
+    if (c.size())
+      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
+  }
+  template <class U> inline
+    void dispatch(const std::vector<char>& c, U& to, const codecvt_type& cvt)
+  {
+    if (c.size())
+      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
+  }
+  template <class U> inline
+    void dispatch(const std::vector<wchar_t>& c, U& to, const codecvt_type& cvt)
+  {
+    if (c.size())
+      convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
+  }
+
+  //  non-contiguous containers
+  template <class Container, class U> inline
+  void dispatch(const Container & c, U& to, const codecvt_type& cvt)
+  {
+    if (c.size())
+    {
+      std::basic_string<typename Container::value_type> s(c.begin(), c.end());
+      convert(s.c_str(), s.c_str()+s.size(), to, cvt);
+    }
+  }
+
+  //  c_str
+  template <class T, class U> inline
+  void dispatch(T * const & c_str, U& to, const codecvt_type& cvt)
+  {
+//    std::cout << "dispatch() const T *\n";
+    BOOST_ASSERT(c_str);
+    convert(c_str, to, cvt);
+  }
+  
+  //  C-style array
+  template <typename T, size_t N, class U> inline
+  void dispatch(T (&array)[N], U& to, const codecvt_type& cvt) // T, N, U deduced
+  {
+//    std::cout << "dispatch() array, N=" << N << "\n"; 
+    convert(array, array + N - 1, to, cvt);
+  }
+
+  BOOST_FILESYSTEM_DECL
+  void dispatch(const directory_entry & de,
+#                ifdef BOOST_WINDOWS_API
+                   std::wstring & to,
+#                else   
+                   std::string & to,
+#                endif
+                 const codecvt_type&);
+
 
 }}} // namespace boost::filesystem::path_traits
 
