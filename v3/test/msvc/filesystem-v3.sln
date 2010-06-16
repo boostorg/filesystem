@@ -86,6 +86,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tut4", "tut4\tut4.vcproj", 
 		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "delimit_string_test", "delimit_string_test\delimit_string_test.vcproj", "{2907CBB1-FFA6-49DE-A105-B75236214E1F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94CCADD-A90B-480C-A304-C19D015D36B1} = {F94CCADD-A90B-480C-A304-C19D015D36B1}
+		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -152,6 +158,10 @@ Global
 		{256EA89A-E073-4CE8-B675-BE2FBC6B2691}.Debug|Win32.Build.0 = Debug|Win32
 		{256EA89A-E073-4CE8-B675-BE2FBC6B2691}.Release|Win32.ActiveCfg = Release|Win32
 		{256EA89A-E073-4CE8-B675-BE2FBC6B2691}.Release|Win32.Build.0 = Release|Win32
+		{2907CBB1-FFA6-49DE-A105-B75236214E1F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2907CBB1-FFA6-49DE-A105-B75236214E1F}.Debug|Win32.Build.0 = Debug|Win32
+		{2907CBB1-FFA6-49DE-A105-B75236214E1F}.Release|Win32.ActiveCfg = Release|Win32
+		{2907CBB1-FFA6-49DE-A105-B75236214E1F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
