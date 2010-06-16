@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <iterator>
+#include <locale>
 #include <boost/assert.hpp>
 #include <boost/system/error_code.hpp>
 // #include <iostream>   //**** comment me out ****
