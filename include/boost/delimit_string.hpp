@@ -11,48 +11,24 @@
 #include <istream>
 #include <ostream>
 #include <string>
-#include <sstream>
-#include <iomanip>
+#include <boost/io/ios_state.hpp>
 
 namespace boost
 {
-  namespace string
+  namespace detail
   {
-    namespace detail
-    {
-      //  ostream operator<< takes a const_proxy& argument, and thus works for arguments
-      //  of both type const_proxy and type proxy. istream operator>> takes a proxy&
-      //  argument, and thus works for arguments of type proxy but not type const_proxy.
-      //  That's what ensures const strings can't be inadvertently written into, not
-      //  whether or not const_proxy::s is const.
-      template <class String>
-      struct const_proxy
-      {
-        typedef typename String::value_type value_type;
-        String& s;      // must be non-const
-        value_type escape;
-        value_type delim;
-        const_proxy(std::string& s_, value_type escape_, value_type delim_)
-          : s(s_), escape(escape_), delim(delim_) {}
-      };
-
-      template <class String>
-      struct proxy : public const_proxy<String>
-      {
-        proxy(String& s_, value_type escape_, value_type delim_)
-          : const_proxy(s_, escape_, delim_ ) {}
-      };
-    }
+    //  inserter support
 
     template <class String>
-    inline detail::const_proxy<String> delimit_string(const String& s,
-      typename String::value_type escape='\\',
-      typename String::value_type delim='\"')
+    struct const_proxy
     {
-      // const safety is provided by the detail::proxy - detail::const_proxy relationship,
-      // so we are not giving up type safety by casting away const.
-      return detail::const_proxy<String>(const_cast<std::string&>(s), escape, delim);
-    }
+      typedef typename String::value_type value_type;
+      const String& s;
+      value_type escape;
+      value_type delim;
+      const_proxy(const String& s_, value_type escape_, value_type delim_)
+        : s(s_), escape(escape_), delim(delim_) {}
+    };
 
     template <class String>
     std::basic_ostream<typename String::value_type>&
@@ -73,13 +49,45 @@ namespace boost
       return os;
     }
 
-    template <class String>
-    inline detail::proxy<String> delimit_string(String& s,
-      typename String::value_type escape='\\',
-      typename String::value_type delim='\"')
+    template <class Char>
+    struct c_str_proxy
     {
-      return detail::proxy<String>(s, escape, delim);
+      const Char* s;
+      Char escape;
+      Char delim;
+      c_str_proxy(const Char* s_, Char escape_, Char delim_)
+        : s(s_), escape(escape_), delim(delim_) {}
+    };
+
+    template <class Char>
+    std::basic_ostream<Char>&
+      operator<<(std::basic_ostream<Char>& os, const detail::c_str_proxy<Char>& prox)
+    {
+      os << prox.delim;
+      for (const Char* it = prox.s;
+        *it;
+        ++it )
+      {
+        if (*it == prox.delim || *it == prox.escape)
+          os << prox.escape;
+        os << *it;
+      }
+      os << prox.delim;
+      return os;
     }
+
+    //  extractor support
+
+    template <class String>
+    struct proxy
+    {
+      typedef typename String::value_type value_type;
+      String& s;
+      value_type escape;
+      value_type delim;
+      proxy(String& s_, value_type escape_, value_type delim_)
+        : s(s_), escape(escape_), delim(delim_) {}
+    };
 
     template <class String>
     std::basic_istream<typename String::value_type>&
@@ -95,18 +103,47 @@ namespace boost
         return is;
       }
       prox.s.clear();
-      for (;;)
       {
-      is >> std::noskipws >> c;  //************ save and restore?
-        if (c == prox.escape)
+        boost::io::ios_flags_saver ifs(is);
+        is >> std::noskipws;
+        for (;;)
+        {
           is >> c;
-        else if (c == prox.delim)
-          break;
-        prox.s += c;
+          if (c == prox.escape)
+            is >> c;
+          else if (c == prox.delim)
+            break;
+          prox.s += c;
+        }
       }
       return is;
     }
-  } // namespace string
+
+  }  // namespace detail
+
+  template <class String>
+  inline detail::const_proxy<String> delimit(const String& s,
+    typename String::value_type escape='\\',
+    typename String::value_type delim='\"')
+  {
+    return detail::const_proxy<String>(s, escape, delim);
+  }
+
+  template <class Char>
+  inline detail::c_str_proxy<Char> delimit(const Char* s,
+    Char escape='\\',
+    Char delim='\"')
+  {
+    return detail::c_str_proxy<Char>(s, escape, delim);
+  }
+
+  template <class String>
+  inline detail::proxy<String> undelimit(String& s,
+    typename String::value_type escape='\\',
+    typename String::value_type delim='\"')
+  {
+    return detail::proxy<String>(s, escape, delim);
+  }
 } // namespace boost
 
 #endif // BOOST_DELIMIT_STRING
