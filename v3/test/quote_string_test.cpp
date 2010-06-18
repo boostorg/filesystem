@@ -1,31 +1,30 @@
-#include <boost/io/quote_manip.hpp>
+#include <boost/io/quoted_manip.hpp>
 #include <iostream>
 #include <sstream>
 #include <cassert>
 
-using boost::io::quote;
-using boost::io::unquote;
+using boost::io::quoted;
 
 int main()
 {
 
-  std::cout << quote(std::string("foo\\bar, \" *")) << std::endl;
-  std::cout << quote("foo\\bar, \" *") << std::endl;
-  std::cout << quote("foo & bar, \" *", '&') << std::endl;
-  std::cout << quote("foo & bar, * ", '&', '*') << std::endl;
+  std::cout << quoted(std::string("foo\\bar, \" *")) << std::endl;
+  std::cout << quoted("foo\\bar, \" *") << std::endl;
+  std::cout << quoted("foo & bar, \" *", '&') << std::endl;
+  std::cout << quoted("foo & bar, * ", '&', '*') << std::endl;
 
-  std::wcout << quote(L"foo$bar, \" *", L'$') << std::endl;
+  std::wcout << "Wide: " << quoted(L"foo$bar, \" *", L'$') << std::endl;
 
-  std::string non_const_string("non_const_string");
-  std::cout << quote(non_const_string) << '\n';
+  std::string non_const_string("non-const string");
+  std::cout << quoted(non_const_string) << '\n';
 
   std::stringstream ss;
 
   const std::string expected("foo\\bar, \" *");
   std::string actual;
 
-  ss << quote(expected);
-  ss >> unquote(actual);
+  ss << quoted(expected);
+  ss >> quoted(actual);
 
   std::cout << "round trip tests...\n";
   std::cout << "  expected--: " << expected << '\n';
@@ -34,8 +33,8 @@ int main()
   assert(expected == actual);
 
   // these should fail to compile because the arguments are non-const:
-  //   ss >> unquote(expected);
-  //   ss >> unquote("foo");
+  //   ss >> quoted(expected);
+  //   ss >> quoted("foo");
 
   return 0;
 }

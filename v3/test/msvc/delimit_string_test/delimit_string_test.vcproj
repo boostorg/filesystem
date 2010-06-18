@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="delimit_string_test"
+	Name="quote_string_test"
 	ProjectGUID="{2907CBB1-FFA6-49DE-A105-B75236214E1F}"
 	RootNamespace="delimit_string_test"
 	Keyword="Win32Proj"
@@ -177,7 +177,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\delim_string_test.cpp"
+				RelativePath="..\..\quote_string_test.cpp"
 				>
 			</File>
 		</Filter>
