@@ -9,10 +9,7 @@ int main()
 {
 
   std::cout << quoted(std::string("foo\\bar, \" *")) << std::endl;
-  std::cout << quoted("foo\\bar, \" *") << std::endl;
-  std::cout << quoted("foo & bar, \" *", '&') << std::endl;
-  std::cout << quoted("foo & bar, * ", '&', '*') << std::endl;
-
+  std::cout << quoted("'Jack & Jill'", '&', '\'') << '\n';  // outputs: '&'Jack && Jill&''
   std::wcout << "Wide: " << quoted(L"foo$bar, \" *", L'$') << std::endl;
 
   std::string non_const_string("non-const string");
@@ -31,6 +28,10 @@ int main()
   std::cout << "  actual----: " << actual << '\n';
 
   assert(expected == actual);
+
+  ss << "\"abc"; // note missing end delimiter
+  ss >> quoted(actual);
+  std::cout << '*' << actual << "*\n";
 
   // these should fail to compile because the arguments are non-const:
   //   ss >> quoted(expected);
