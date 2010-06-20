@@ -1177,36 +1177,30 @@ const string_type  external_directory_string() const { return native(); }</pre>
 <blockquote>
   <p><i>Returns:</i> <code>path(lhs) /= rhs</code>.</p>
 </blockquote>
-<h3> <a name="path-non-member-operators"><code><font size="4">path</font></code></a><a name="path-inserter-extractor"><span style="background-color: #FFFFFF"> inserters 
-  and extractor</span></a><span style="background-color: #FFFFFF">s</span></h3>
-<pre>std::ostream&amp; operator&lt;&lt;(std::ostream &amp; os, const path&amp; p);</pre>
+<h3> <a name="path-non-member-operators"><code><font size="4">path</font></code></a><a name="path-inserter-extractor"><span style="background-color: #FFFFFF"> inserter 
+  and extractor</span></a></h3>
+<p> The inserter and extractor delimit the string with double-quotes (<code>&quot;</code>) 
+to ensure that paths with embedded spaces will round trip correctly. Ampersand (<code>&amp;</code>) 
+is used as an escape character, so the path can itself contain double quotes.</p>
+<pre>template &lt;class Char, class Traits&gt;
+std::basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(std::basic_ostream&lt;Char, Traits&gt;&amp; os, const path&amp; p)
+</pre>
 <blockquote>
   <p><i><span style="background-color: #FFFFFF">Effects:</span></i><span style="background-color: #FFFFFF">&nbsp;
-  <code>os &lt;&lt; p.string();</code></span></p>
+  <code>os &lt;&lt; <a href="../../../io/doc/quoted_manip.html">
+  boost::io::quoted</a>(p.string&lt;std::basic_string&lt;Char&gt;&gt;(), static_cast&lt;Char&gt;('&amp;'));</code></span></p>
   <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
   </span> <code><span style="background-color: #FFFFFF">os</span></code></p>
 </blockquote>
-<pre>std::wostream&amp; operator&lt;&lt;(std::wostream &amp; os, const path&amp; p);</pre>
-<blockquote style="font-size: 10pt">
-  <p style="font-size: 10pt"><i><span style="background-color: #FFFFFF">Effects:</span></i><span style="background-color: #FFFFFF">&nbsp;
-  <code>os &lt;&lt; p.wstring();</code></span></p>
-  <p style="font-size: 10pt"><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
-  </span><code><span style="background-color: #FFFFFF">os</span></code></p>
-</blockquote>
-<pre>std::istream&amp; operator&gt;&gt;(std::istream &amp; is, path&amp; p);</pre>
+<pre>template &lt;class Char, class Traits&gt;
+inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_istream&lt;Char, Traits&gt;&amp; is, path&amp; p)
+</pre>
 <blockquote>
-  <p><span style="background-color: #FFFFFF"><i>Effects: </i>
-      <code>&nbsp; std::string str;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is &gt;&gt; str;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = str;</code></span></p>
-  <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
-  </span> <code><span style="background-color: #FFFFFF">is</span></code></p>
-  </blockquote>
-<pre>std::wistream&amp; operator&gt;&gt;(std::wistream &amp; is, path&amp; p);</pre>
-<blockquote>
-  <p><span style="background-color: #FFFFFF"><i>Effects: </i>
-      <code>&nbsp; std::wstring str;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is &gt;&gt; str;<br>
+  <p><span style="background-color: #FFFFFF"><i>Effects:&nbsp; </i>
+      <code>&nbsp;std::basic_string&lt;Char&gt; str;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is &gt;&gt;
+  <a href="../../../io/doc/quoted_manip.html">boost::io::quoted</a>(str, 
+  static_cast&lt;Char&gt;('&amp;'));<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = str;</code></span></p>
   <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF">
   </span> <code><span style="background-color: #FFFFFF">is</span></code></p>
@@ -3074,7 +3068,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17550" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->20 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17544" --></p>
 
 </body>
 

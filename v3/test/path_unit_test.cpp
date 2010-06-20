@@ -398,6 +398,16 @@ namespace
     ss << p1;
     ss >> p2;
     CHECK(p1 == p2);
+
+    path wp1(L"foo bar");
+    path wp2;
+
+    std::wstringstream wss;
+
+    CHECK(wp1 != wp2);
+    wss << wp1;
+    wss >> wp2;
+    CHECK(wp1 == wp2);
   }
 
   //  test_other_non_members  ----------------------------------------------------------//
