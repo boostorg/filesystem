@@ -7,9 +7,13 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-
 //  See deprecated_test for tests of deprecated features
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+# define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+# define BOOST_SYSTEM_NO_DEPRECATED
+#endif
 
 #include <boost/filesystem/operations.hpp>
 namespace fs = boost::filesystem;

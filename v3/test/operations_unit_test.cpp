@@ -12,12 +12,17 @@
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
 
-#include <iostream>
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem.hpp>   // make sure filesystem.hpp works
 #include <boost/system/error_code.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <iostream>
 
 using namespace boost::filesystem;
 using namespace boost::system;

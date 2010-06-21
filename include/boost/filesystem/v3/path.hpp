@@ -566,6 +566,9 @@ namespace filesystem3
   
   //  name_checks
 
+  //  These functions are holdovers from version 1. It isn't clear they have much
+  //  usefulness, or how to generalize them for later versions.
+
   BOOST_FILESYSTEM_DECL bool portable_posix_name(const std::string & name);
   BOOST_FILESYSTEM_DECL bool windows_name(const std::string & name);
   BOOST_FILESYSTEM_DECL bool portable_name(const std::string & name);

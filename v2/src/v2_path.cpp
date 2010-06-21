@@ -13,6 +13,10 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+# define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #include <boost/filesystem/v2/config.hpp>
 
 #ifndef BOOST_FILESYSTEM_NARROW_ONLY
@@ -85,7 +89,7 @@ namespace boost
       if ( locked ) boost::throw_exception(
         wfilesystem_error(
           "boost::filesystem::wpath_traits::imbue() after lockdown",
-          make_error_code( system::posix::not_supported ) ) );
+          make_error_code( system::errc::not_supported ) ) );
       imbue( new_loc, std::nothrow );
     }
 

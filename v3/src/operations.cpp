@@ -14,7 +14,13 @@
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
 
-#define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+# define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
+#endif
 
 #if !(defined(__HP_aCC) && defined(_ILP32) && \
       !defined(_STATVFS_ACPP_PROBLEMS_FIXED))

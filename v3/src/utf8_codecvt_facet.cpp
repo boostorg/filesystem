@@ -3,6 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+# define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #define BOOST_FILESYSTEM_SOURCE
 #include <boost/filesystem/config.hpp>
 

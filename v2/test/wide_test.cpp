@@ -11,7 +11,12 @@
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+# define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+# define BOOST_SYSTEM_NO_DEPRECATED
+#endif
 
 #include <boost/filesystem/config.hpp>
 # ifdef BOOST_FILESYSTEM_NARROW_ONLY
@@ -51,7 +56,7 @@ namespace
     if ( !f )
       throw fs::basic_filesystem_error<Path>( "wide_test create_file",
         ph,
-        boost::system::error_code( errno, boost::system::errno_ecat ) );
+        boost::system::error_code( errno, boost::system::generic_category() ) );
     if ( !contents.empty() ) f << contents;
   }
 

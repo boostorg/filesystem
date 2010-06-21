@@ -14,7 +14,12 @@
 //  convenience_test.cpp by Vladimir Prus.
 
 //  See deprecated_test for tests of deprecated features
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+# define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+# define BOOST_SYSTEM_NO_DEPRECATED
+#endif
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/utility.hpp>
