@@ -212,7 +212,7 @@ below is extracted from a real program, slightly modified for clarity:</p>
     {
       if ( find_file( itr-&gt;path(), file_name, path_found ) ) return true;
     }
-    else if ( itr-&gt;leaf() == file_name ) // see below
+    else if ( itr-&gt;path().filename() == file_name ) // see below
     {
       path_found = itr-&gt;path();
       return true;
@@ -221,14 +221,12 @@ below is extracted from a real program, slightly modified for clarity:</p>
   return false;
 }</pre>
 </blockquote>
-<p>The expression <i>itr-&gt;path().leaf() == file_name</i>, in the line commented <i>// 
-see below</i>, calls the <i>leaf()</i> function on the <i>path</i> returned by 
+<p>The expression <i>itr-&gt;path().filename() == file_name</i>, in the line commented <i>// 
+see below</i>, calls the <i>filename()</i> function on the <i>path</i> returned by 
 calling the <i>path()</i> function of the <i>directory_entry </i>object pointed 
-to by the iterator. <i>leaf()</i> returns a string which is a copy of the 
+to by the iterator. <i>filename()</i> returns a string which is a copy of the 
 last (closest to the leaf, farthest from the root) file or directory name in the
 <i>path</i> object.</p>
-<p>In addition to <i>leaf()</i>, several other function names use the 
-tree/root/branch/leaf metaphor.</p>
 <p>Notice that <i>find_file()</i> does not do explicit error checking, such as 
 verifying that the <i>dir_path</i> argument really represents a directory.  
 Boost.Filesystem  functions throw 
@@ -799,7 +797,7 @@ Version 1.30.0 - March 19th, 2003</h3>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->11 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19839" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19840" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
