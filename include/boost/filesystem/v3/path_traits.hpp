@@ -11,12 +11,14 @@
 #define BOOST_FILESYSTEM_PATH_TRAITS_HPP
 
 #include <boost/filesystem/v3/config.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_array.hpp>
+#include <boost/system/error_code.hpp>
 #include <string>
 #include <vector>
 #include <iterator>
 #include <locale>
 #include <boost/assert.hpp>
-#include <boost/system/error_code.hpp>
 // #include <iostream>   //**** comment me out ****
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
@@ -43,8 +45,11 @@ namespace path_traits {
   //  Pathable empty
 
   template <class Container> inline
-    bool empty(const Container & c)
-      { return c.begin() == c.end(); }
+    // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
+    // conforming compilers. Replace by plain "bool" at some future date (2012?) 
+    typename boost::disable_if<boost::is_array<Container>, bool>::type
+      empty(const Container & c)
+        { return c.begin() == c.end(); }
 
   template <class T> inline
     bool empty(T * const & c_str)
@@ -163,7 +168,10 @@ namespace path_traits {
 
   //  non-contiguous containers
   template <class Container, class U> inline
-  void dispatch(const Container & c, U& to, const codecvt_type& cvt)
+    // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
+    // conforming compilers. Replace by plain "void" at some future date (2012?) 
+    typename boost::disable_if<boost::is_array<Container>, void>::type
+      dispatch(const Container & c, U& to, const codecvt_type& cvt)
   {
     if (c.size())
     {
