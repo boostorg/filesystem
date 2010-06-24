@@ -487,39 +487,45 @@ system. </p>
       class path
       {
       public:
-        typedef <b><i><a href="#value_type">see below</a></i></b>                     value_type;  // char for POSIX, wchar_t for Windows
-        typedef std::basic_string&lt;value_type&gt; string_type;
-        typedef path_traits::codecvt_type     codecvt_type;
+        typedef <b><i><a href="#value_type">see below</a></i></b>                                    value_type;  // char for POSIX, wchar_t for Windows
+        typedef std::basic_string&lt;value_type&gt;                string_type;
+        typedef std::codecvt&lt;wchar_t, char, std::mbstate_t&gt;  codecvt_type;
 
         // <a href="#path-constructors">constructors</a> and destructor
         path();
         path(const path&amp; p);
 
-        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-          path(InputIterator begin, InputIterator end);
+        template &lt;class <a href="#Source">Source</a>&gt;
+          path(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());
 
-        template &lt;class Source&gt;
-          path(Source const&amp; source);
+        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+          path(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
 
        ~path();
 
         // <a href="#path-assignments">assignments</a>
         path&amp; operator=(const path&amp; p);
 
-        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-          path&amp; assign(InputIterator begin, InputIterator end);
-
-        template &lt;class Source&gt;
+        template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator=(Source const&amp; source);
+
+        template &lt;class <a href="#Source">Source</a>&gt;
+          path&amp; assign(Source const&amp; source, const codecvt_type&amp; cvt)
+
+        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+          path&amp; assign(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
 
         // <a href="#path-appends">appends</a>
         path&amp; operator/=(const path&amp; p);
 
-        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-          path&amp; append(InputIterator begin, InputIterator end);
-
-        template &lt;class Source&gt;
+        template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator/=(Source const&amp; source);
+
+        template &lt;class <a href="#Source">Source</a>&gt;
+          path&amp; append(Source const&amp; source, const codecvt_type&amp; cvt);
+
+        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+          path&amp; append(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
 
         // <a href="#path-modifiers">modifiers</a>
         void  <a href="#path-clear">clear</a>();
@@ -530,25 +536,25 @@ system. </p>
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
         // <a href="#path-native-format-observers">native format observers</a>
-        const string_type&amp;  native() const;            // native format, encoding
-        const value_type*   c_str() const;             // native().c_str()
+        const string_type&amp;  native() const;  // native format, encoding
+        const value_type*   c_str() const;   // native().c_str()
 
         template &lt;class String&gt;
-        String string() const;                         // native format, uses codecvt() for encoding
+        String string(const codecvt_type&amp; cvt=codecvt()) const;                // native format
 
-        const string        string() const;            // native format, uses codecvt() for encoding
-        const wstring       wstring() const;           // ditto
-        const u16string     u16string() const;         // ditto
-        const u32string     u32string() const;         // ditto
+        const string        string(const codecvt_type&amp; cvt=codecvt()) const;   // native format
+        const wstring       wstring(const codecvt_type&amp; cvt=codecvt()) const;  // ditto
+        const u16string     u16string() const;                                 // ditto
+        const u32string     u32string() const;                                 // ditto
 
         // <a href="#path-generic-format-observers">generic format observers</a>
         template &lt;class String&gt;
         String generic_string() const;
 
-        const string        generic_string() const;    // generic format, uses codecvt() for encoding
-        const wstring       generic_wstring() const;   // ditto
-        const u16string     generic_u16string() const; // ditto
-        const u32string     generic_u32string() const; // ditto
+        const string        generic_string(const codecvt_type&amp; cvt=codecvt()) const;   // generic format
+        const wstring       generic_wstring(const codecvt_type&amp; cvt=codecvt()) const;  // ditto
+        const u16string     generic_u16string() const;                                 // ditto
+        const u32string     generic_u32string() const;                                 // ditto
 
         // <a href="#path-decomposition">decomposition</a>
         path  <a href="#path-root_name">root_name</a>() const;
@@ -675,10 +681,10 @@ letters to uppercase.<i> -- end note.</i>]</p>
 <blockquote>
   <p><i>Postconditions:</i> <code>empty()</code>.</p>
   </blockquote>
+<pre>template &lt;class <a href="#Source">Source</a>&gt;
+  path(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());</pre>
 <pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-  path(InputIterator begin, InputIterator end);</pre>
-<pre>template &lt;class Source&gt;
-  path(Source const&amp; source);</pre>
+  path(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());</pre>
 <blockquote>
   <p><i>Effects:</i> Stores the contents [<code>begin</code>,<code>end</code>) 
   or <code>source</code> in <code>pathname</code>. If the contents are in the 
@@ -688,15 +694,17 @@ letters to uppercase.<i> -- end note.</i>]</p>
   performed. <i>--end note</i>]</p>
   <p>
   <i>Remarks:</i> If the value type of&nbsp; [<code>begin</code>,<code>end</code>) 
-  or <code>source</code> is not <code>value_type</code>, the contents are 
-  converted by <code>codecvt()</code>.</p>
+  or <code>source</code> is not <code>value_type</code>, conversion is performed 
+  by <code>cvt</code>.</p>
 </blockquote>
 <h3> <a name="path-assignments"> <code>
 <font size="4">path</font></code> assignments</a></h3>
-<pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-  path&amp; assign(InputIterator begin, InputIterator end);</pre>
-<pre>template &lt;class Source&gt;
+<pre>template &lt;class <a href="#Source">Source</a>&gt;
   path&amp; operator=(Source const&amp; source);</pre>
+<pre>template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; assign(Source const&amp; source, const codecvt_type&amp; cvt);</pre>
+<pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+  path&amp; assign(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());</pre>
 <blockquote>
   <p><i>Effects:</i> Stores the contents [<code>begin</code>,<code>end</code>) 
   or <code>source</code> in <code>pathname</code>. If the contents are in the 
@@ -708,8 +716,8 @@ letters to uppercase.<i> -- end note.</i>]</p>
   <i>Returns: </i><code>*this</code></p>
   <p>
   <i>Remarks:</i> If the value type of&nbsp; [<code>begin</code>,<code>end</code>) 
-  or <code>source</code> is not <code>value_type</code>, the contents are 
-  converted by <code>codecvt()</code>.</p>
+  or <code>source</code> is not <code>value_type</code>, conversion is performed 
+  by <code>cvt</code>.</p>
   </blockquote>
 <h3> <a name="path-appends"><code><font size="4"> path</font></code> appends</a></h3>
   <p>The append operations use <code>operator/=</code> to denote their semantic 
@@ -740,10 +748,12 @@ letters to uppercase.<i> -- end note.</i>]</p>
   </blockquote>
   <p><i>Returns: </i><code>*this</code></p>
 </blockquote>
-<pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-  path&amp; append(InputIterator begin, InputIterator end);</pre>
-<pre>template &lt;class Source&gt;
+<pre>template &lt;class <a href="#Source">Source</a>&gt;
   path&amp; operator/=(Source const &amp; source);</pre>
+<pre>template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; append(Source const &amp; source, const codecvt_type&amp; cvt);</pre>
+<pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+  path&amp; append(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());</pre>
 <blockquote>
   <p><i>Effects:</i></p>
   <blockquote>
@@ -763,8 +773,8 @@ letters to uppercase.<i> -- end note.</i>]</p>
     performed. <i>--end note</i>]</p>
   </blockquote>
   <p><i>Remarks:</i> If the value type of&nbsp; [<code>begin</code>,<code>end</code>) 
-  or <code>source</code> is not <code>value_type</code>, the contents are 
-  converted by <code>codecvt()</code>.</p>
+  or <code>source</code> is not <code>value_type</code>, conversion is performed 
+  by <code>cvt</code>.</p>
   <p><i>Returns: </i><code>*this</code></p>
   </blockquote>
   
@@ -863,22 +873,21 @@ native format observers</a></h3>
 <p><i>Throws:</i> nothing.</p>
 </blockquote>
 <pre>template &lt;class String&gt;
-String string() const;</pre>
+String string(const codecvt_type&amp; cvt=codecvt()) const;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>pathname</code>.</p>
-<p><i>Remarks:</i> If <code>pathname</code> is of a different type than <code>
-String</code>, conversion is performed using
-<code>codecvt()</code>.</p>
+<p><i>Remarks:</i> If <code>string_type</code> is a different type than <code>
+String</code>, conversion is performed by <code>cvt</code>.</p>
 </blockquote>
-<pre>const string string() const;
-const wstring wstring() const;
+<pre>const string string(const codecvt_type&amp; cvt=codecvt()) const;
+const wstring wstring(const codecvt_type&amp; cvt=codecvt()) const;
 const u16string u16string() const;
 const u32wstring u32wstring() const; </pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
-<p><i>Remarks:</i> If <code>pathname</code> is not of the same type as the 
-function's return type, conversion is performed using
-<code>codecvt()</code>. If <code>pathname</code> is of the same type as the 
+<p><i>Remarks:</i> If <code>string_type</code> is a different type than 
+function's return type, conversion is performed by <code>cvt</code>.</p>
+<p>If <code>string_type</code> is the same type as the 
 function's return type, the function is permitted to return by <code>const&amp;</code> 
 rather than <code>const</code> value. [<i>Note:</i> For POSIX, this occurs for
 <code>string()</code>, for Windows, <code>wstring()</code>. <i>--end note</i>]</p>
@@ -892,22 +901,22 @@ generic format observers</a></h3>
 generic format are the same. For Windows, backslashes are converted to slashes
 <i>--end note</i>]</p>
 <pre>template &lt;class String&gt;
-String generic_string() const;</pre>
+String generic_string(const codecvt_type&amp; cvt=codecvt()) const;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>pathname</code>.</p>
-<p><i>Remarks:</i> If <code>pathname</code> is of a different type than <code>
-String</code>, conversion is performed using
-<code>codecvt()</code>.</p>
+<p><i>Remarks:</i> If <code>string_type</code> is a different type than <code>
+String</code>, conversion is performed by
+<code>cvt</code>.</p>
 </blockquote>
-<pre>const string generic_string() const;
-const wstring generic_wstring() const;
+<pre>const string generic_string(const codecvt_type&amp; cvt=codecvt()) const;
+const wstring generic_wstring(const codecvt_type&amp; cvt=codecvt()) const;
 const u16string generic_u16string() const;
 const u32wstring generic_u32wstring() const; </pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
-<p><i>Remarks:</i> If <code>pathname</code> is not of the same type as the 
-function's return type, conversion is performed using
-<code>codecvt()</code>. If <code>pathname</code> is of the same type as the 
+<p><i>Remarks:</i>&nbsp; If <code>string_type</code> is a different type than 
+function's return type, conversion is performed by <code>cvt</code>.</p>
+<p>If <code>string_type</code> is of the same type as the 
 function's return type, and the generic format is the same as the native format, 
 the function is permitted to return by <code>const&amp;</code> rather than <code>
 const</code> value. [<i>Note:</i> For POSIX, this occurs for <code>string()</code>. 
@@ -3068,7 +3077,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->20 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17544" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17552" --></p>
 
 </body>
 
