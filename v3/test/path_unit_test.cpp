@@ -597,30 +597,19 @@ namespace
   {
     std::cout << "testing imbue locale..." << std::endl;
 
+    //  weak test case for before/after states since we don't know what characters the
+    //  default locale accepts. 
+    path before("abc");
+
+    //  So that tests are run with known encoding, use Boost UTF-8 codecvt
     //  \u2722 and \xE2\x9C\xA2 are UTF-16 and UTF-8 FOUR TEARDROP-SPOKED ASTERISK
 
-    std::cout << "  testing p0 ..." << std::endl;
-    path p0(L"\u2722");  // for tests that depend on path_traits::convert
-#   ifdef BOOST_WINDOWS_API
-    CHECK(p0.string() != "\xE2\x9C\xA2");
-#   endif
-    string p0_string(p0.string());
-
-    std::cout << "  testing p1 ..." << std::endl;
-    path p1("\xE2\x9C\xA2");
-#   ifdef BOOST_WINDOWS_API
-    CHECK(p1 != L"\u2722");
-#   endif
-    wstring p1_wstring(p1.wstring());
-
-    // So that tests are run with known encoding, use Boost UTF-8 codecvt
     std::locale global_loc = std::locale();
     std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
     std::cout << "  imbuing locale ..." << std::endl;
     std::locale old_loc = path::imbue(loc);
 
     std::cout << "  testing with the imbued locale ..." << std::endl;
-    CHECK(p0.string() == "\xE2\x9C\xA2");
     path p2("\xE2\x9C\xA2");
     CHECK(p2 == L"\u2722");
     CHECK(p2.wstring() == L"\u2722");
@@ -629,12 +618,8 @@ namespace
     path::imbue(old_loc);
 
     std::cout << "  testing with the original locale ..." << std::endl;
-    CHECK(p0.string() == p0_string);
-    path p3("\xE2\x9C\xA2");
-#   ifdef BOOST_WINDOWS_API
-    CHECK(p3 != L"\u2722");
-#   endif
-    CHECK(p3.wstring() == p1_wstring);
+    path after("abc");
+    CHECK(before == after);
 
     std::cout << "  locale testing complete" << std::endl;
   }
