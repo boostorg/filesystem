@@ -44,22 +44,6 @@ namespace filesystem3
   //                                                                                    //
   //------------------------------------------------------------------------------------//
 
-/*
-   Why are there no const codecvt_type& arguments?
-   ------------------------------------------------
-
-   To hold down the size of the class path interface. Per function codecvt facets
-   just aren't needed very often in practice.
-
-   An RAII idiom can be used to ensure push/pop behavior as an alternative.
-
-   Note that codecvt() is passed to the path_traits::convert functions, since that
-   decouples the convert functions from class path.
-
-   const codecvt_type & can be added later, but once added, they can never be removed
-   since that would break user code.
-*/
-
   class BOOST_FILESYSTEM_DECL path
   {
   public:
@@ -68,12 +52,13 @@ namespace filesystem3
     //  represent paths.
 
 #   ifdef BOOST_WINDOWS_API
-    typedef wchar_t                        value_type;
+    typedef wchar_t                                     value_type;
 #   else 
-    typedef char                           value_type;
+    typedef char                                        value_type;
 #   endif
-    typedef std::basic_string<value_type>  string_type;  
-    typedef path_traits::codecvt_type      codecvt_type;
+    typedef std::basic_string<value_type>               string_type;  
+    typedef std::codecvt<wchar_t, char, std::mbstate_t> codecvt_type;
+
 
     //  ----- character encoding conversions -----
 
@@ -101,20 +86,6 @@ namespace filesystem3
     //
     //  See m_pathname comments for further important rationale.
 
-    //  Design alternative; each function can have an additional overload that
-    //  supplies a conversion locale. For example:
-    //
-    //      template< class ForwardIterator, class WStringConvert >
-    //      path(ForwardIterator begin, ForwardIterator end,
-    //            const std::locale & loc,
-    //            system::error_code & ec = boost::throws());
-    // 
-    //  This alternative was rejected as too complex for the limited benefits;
-    //  it nearly doubles the size of the interface, and adds a lot of
-    //  implementation and test code, yet would likely be rarely used. The same
-    //  effect can be achieved via the much simpler imbue() mechanism.
-
-
     //  TODO: rules needed for operating systems that use / or .
     //  differently, or format directory paths differently from file paths. 
     //
@@ -139,11 +110,28 @@ namespace filesystem3
     //  multi-byte character strings which may have embedded nulls. Embedded null
     //  support is required for some Asian languages on Windows.
 
+    //  "const codecvt_type& cvt=codecvt()" default arguments are not used because some
+    //  compilers, such as Microsoft prior to VC++ 10, do not handle defaults correctly
+    //  in templates.
+
     //  -----  constructors  -----
 
     path(){}                                          
 
     path(const path& p) : m_pathname(p.m_pathname) {}
+ 
+    template <class Source>
+    path(Source const& source)
+    {
+      path_traits::dispatch(source, m_pathname, codecvt());
+    }
+
+    template <class Source>
+    path(Source const& source, const codecvt_type& cvt)
+    //  see note above explaining why codecvt() default arguments are not used
+    {
+      path_traits::dispatch(source, m_pathname, cvt);
+    }
 
     template <class InputIterator>
     path(InputIterator begin, InputIterator end)
@@ -156,10 +144,15 @@ namespace filesystem3
       }
     }
 
-    template <class Source>
-    path(Source const& source)
-    {
-      path_traits::dispatch(source, m_pathname, codecvt());
+    template <class InputIterator>
+    path(InputIterator begin, InputIterator end, const codecvt_type& cvt)
+    { 
+      if (begin != end)
+      {
+        std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
+          s(begin, end);
+        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
+      }
     }
 
     //  -----  assignments  -----
@@ -167,19 +160,6 @@ namespace filesystem3
     path& operator=(const path& p)
     {
       m_pathname = p.m_pathname;
-      return *this;
-    }
-
-    template <class InputIterator>
-    path& assign(InputIterator begin, InputIterator end)
-    { 
-      m_pathname.clear();
-      if (begin != end)
-      {
-        std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-          s(begin, end);
-        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, codecvt());
-      }
       return *this;
     }
 
@@ -191,6 +171,33 @@ namespace filesystem3
       return *this;
     }
 
+    template <class Source>
+    path& assign(Source const& source, const codecvt_type& cvt)
+    {
+      m_pathname.clear();
+      path_traits::dispatch(source, m_pathname, cvt);
+      return *this;
+    }
+
+    template <class InputIterator>
+    path& assign(InputIterator begin, InputIterator end)
+    {
+      return assign(begin, end, codecvt());
+    }
+
+    template <class InputIterator>
+    path& assign(InputIterator begin, InputIterator end, const codecvt_type& cvt)
+    { 
+      m_pathname.clear();
+      if (begin != end)
+      {
+        std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
+          s(begin, end);
+        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
+      }
+      return *this;
+    }
+
     //  -----  appends  -----
 
     //  if a separator is added, it is the preferred separator for the platform;
@@ -198,22 +205,34 @@ namespace filesystem3
 
     path& operator/=(const path& p);
 
-    template <class InputIterator>
-    path& append(InputIterator begin, InputIterator end);
+    template <class Source>
+    path& operator/=(Source const& source)
+    {
+      return append(source, codecvt());
+    }
 
     template <class Source>
-    path& operator/=(Source const& source);
+    path& append(Source const& source, const codecvt_type& cvt);
+
+    template <class InputIterator>
+    path& append(InputIterator begin, InputIterator end)
+    { 
+      return append(begin, end, codecvt());
+    }
+
+    template <class InputIterator>
+    path& append(InputIterator begin, InputIterator end, const codecvt_type& cvt);
 
     //  -----  modifiers  -----
 
     void   clear()             { m_pathname.clear(); }
     path&  make_absolute(const path& base); 
     path&  make_preferred()
-#                              ifdef BOOST_POSIX_API
-                               { return *this; }  // POSIX no effect
-#                              else // BOOST_WINDOWS_API
-                               ;  // change slashes to backslashes
-#                              endif
+#   ifdef BOOST_POSIX_API
+      { return *this; }  // POSIX no effect
+#   else // BOOST_WINDOWS_API
+      ;  // change slashes to backslashes
+#   endif
     path&  remove_filename();
     path&  replace_extension(const path& new_extension = path());
     void   swap(path& rhs)     { m_pathname.swap(rhs.m_pathname); }
@@ -245,18 +264,36 @@ namespace filesystem3
     template <class String>
     String string() const;
 
+    template <class String>
+    String string(const codecvt_type& cvt) const;
+
 #   ifdef BOOST_WINDOWS_API
-    const std::string    string() const;
+    const std::string string() const { return string(codecvt()); } 
+    const std::string string(const codecvt_type& cvt) const
+    { 
+      std::string tmp;
+      if (!m_pathname.empty())
+        path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
+          tmp, cvt);
+      return tmp;
+    }
+    
+    //  string_type is std::wstring, so there is no conversion
     const std::wstring&  wstring() const { return m_pathname; }
+    const std::wstring&  wstring(const codecvt_type&) const { return m_pathname; }
 
 #   else   // BOOST_POSIX_API
-    const std::string&  string() const   { return m_pathname; }
-    const std::wstring  wstring() const
+    //  string_type is std::string, so there is no conversion
+    const std::string&  string() const { return m_pathname; }
+    const std::string&  string(const codecvt_type&) const { return m_pathname; }
+
+    const std::wstring  wstring() const { return wstring(codecvt()); }
+    const std::wstring  wstring(const codecvt_type& cvt) const
     { 
       std::wstring tmp;
       if (!m_pathname.empty())
         path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
-          tmp, codecvt());
+          tmp, cvt);
       return tmp;
     }
 
@@ -267,13 +304,21 @@ namespace filesystem3
     template <class String>
     String generic_string() const;
 
+    template <class String>
+    String generic_string(const codecvt_type& cvt) const;
+
 #   ifdef BOOST_WINDOWS_API
-    const std::string   generic_string() const; 
+    const std::string   generic_string() const { return generic_string(codecvt()); } 
+    const std::string   generic_string(const codecvt_type& cvt) const; 
     const std::wstring  generic_wstring() const;
+    const std::wstring  generic_wstring(const codecvt_type&) const { return generic_wstring(); };
 
 #   else // BOOST_POSIX_API
+    //  On POSIX-like systems, the generic format is the same as the native format
     const std::string&  generic_string() const  { return m_pathname; }
+    const std::string&  generic_string(const codecvt_type&) const  { return m_pathname; }
     const std::wstring  generic_wstring() const { return wstring(); }
+    const std::wstring  generic_wstring(const codecvt_type&) const { return wstring(); }
 
 #   endif
 
@@ -312,11 +357,11 @@ namespace filesystem3
 
     //  -----  imbue  -----
 
-    static std::locale imbue(const std::locale & loc);
+    static std::locale imbue(const std::locale& loc);
 
     //  -----  codecvt  -----
 
-    static const codecvt_type & codecvt()
+    static const codecvt_type& codecvt()
     {
       return *wchar_t_codecvt_facet();
     }
@@ -453,30 +498,30 @@ namespace filesystem3
                                          // m_pos == m_path_ptr->m_pathname.size()
   }; // path::iterator
 
-  //------------------------------------------------------------------------------------//
-  //                                                                                    //
-  //                            class scoped_path_locale                                //
-  //                                                                                    //
-  //------------------------------------------------------------------------------------//
+  ////------------------------------------------------------------------------------------//
+  ////                                                                                    //
+  ////                            class scoped_path_locale                                //
+  ////                                                                                    //
+  ////------------------------------------------------------------------------------------//
  
-  class scoped_path_locale
-  {
-  public:
-    scoped_path_locale(const std::locale & loc)
-                      : m_saved_locale(loc)
-    {
-      path::imbue(loc);
-    }
+  //class scoped_path_locale
+  //{
+  //public:
+  //  scoped_path_locale(const std::locale & loc)
+  //                    : m_saved_locale(loc)
+  //  {
+  //    path::imbue(loc);
+  //  }
 
-    ~scoped_path_locale()   // never throws()
-    {
-      try { path::imbue(m_saved_locale); }
-      catch (...) {}
-    };
+  //  ~scoped_path_locale()   // never throws()
+  //  {
+  //    try { path::imbue(m_saved_locale); }
+  //    catch (...) {}
+  //  };
 
-  private:
-    std::locale m_saved_locale;
-  };
+  //private:
+  //  std::locale m_saved_locale;
+  //};
    
   //------------------------------------------------------------------------------------//
   //                                                                                    //
@@ -581,26 +626,26 @@ namespace filesystem3
 //--------------------------------------------------------------------------------------//
 
   template <class InputIterator>
-  path& path::append(InputIterator begin, InputIterator end)
+  path& path::append(InputIterator begin, InputIterator end, const codecvt_type& cvt)
   { 
     if (begin == end)
       return *this;
     string_type::size_type sep_pos(m_append_separator_if_needed());
     std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
       s(begin, end);
-    path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, codecvt());
+    path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
     if (sep_pos)
       m_erase_redundant_separator(sep_pos);
     return *this;
   }
 
   template <class Source>
-  path& path::operator/=(Source const & source)
+  path& path::append(Source const & source, const codecvt_type& cvt)
   {
     if (path_traits::empty(source))
       return *this;
     string_type::size_type sep_pos(m_append_separator_if_needed());
-    path_traits::dispatch(source, m_pathname, codecvt());
+    path_traits::dispatch(source, m_pathname, cvt);
     if (sep_pos)
       m_erase_redundant_separator(sep_pos);
     return *this;
@@ -611,16 +656,36 @@ namespace filesystem3
 //--------------------------------------------------------------------------------------//
 
   template <> inline
-  std::string path::string<std::string>() const    { return string(); }
+  std::string path::string<std::string>() const
+    { return string(); }
 
   template <> inline
-  std::wstring path::string<std::wstring>() const  { return wstring(); }
+  std::wstring path::string<std::wstring>() const
+    { return wstring(); }
 
   template <> inline
-  std::string path::generic_string<std::string>() const   { return generic_string(); }
+  std::string path::string<std::string>(const codecvt_type& cvt) const
+    { return string(cvt); }
 
   template <> inline
-  std::wstring path::generic_string<std::wstring>() const { return generic_wstring(); }
+  std::wstring path::string<std::wstring>(const codecvt_type& cvt) const
+    { return wstring(cvt); }
+
+  template <> inline
+  std::string path::generic_string<std::string>() const
+    { return generic_string(); }
+
+  template <> inline
+  std::string path::generic_string<std::string>(const codecvt_type& cvt) const
+    { return generic_string(cvt); }
+
+  template <> inline
+  std::wstring path::generic_string<std::wstring>() const
+    { return generic_wstring(); }
+
+  template <> inline
+  std::wstring path::generic_string<std::wstring>(const codecvt_type& cvt) const
+    { return generic_wstring(cvt); }
 
 
 }  // namespace filesystem3

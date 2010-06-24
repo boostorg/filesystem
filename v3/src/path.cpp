@@ -148,15 +148,6 @@ namespace filesystem3
 
 # ifdef BOOST_WINDOWS_API
 
-  const std::string  path::string() const
-  { 
-    std::string tmp;
-    if (!m_pathname.empty())
-      path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
-        tmp, codecvt());
-    return tmp;
-  }
-
   void path::m_portable()
   {
     for (string_type::iterator it = m_pathname.begin();
@@ -167,11 +158,11 @@ namespace filesystem3
     }
   }
 
-  const std::string path::generic_string() const
+  const std::string path::generic_string(const codecvt_type& cvt) const
   { 
     path tmp(*this);
     tmp.m_portable();
-    return tmp.string();
+    return tmp.string(cvt);
   }
 
   const std::wstring path::generic_wstring() const
