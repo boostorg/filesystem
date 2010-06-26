@@ -639,45 +639,66 @@ namespace
 
     fs::detail::utf8_codecvt_facet cvt;
 
+	int t = 0;
+
     //  constructors
+	std::cout << "  constructors test " << ++t << std::endl;
     path p(c1, cvt);
-    CHECK(p == path(ws1));
+	std::cout << "  test " << ++t << std::endl;
     path p1(s1.begin(), s1.end(), cvt);
-    CHECK(p1 == path(ws1));
+	std::cout << "  test " << ++t << std::endl;
+    CHECK(p1 == path(ws1, cvt));
     // path p2(p1, cvt);  // fails to compile, and that is OK
 
     //  assigns
     p1.clear();
+	std::cout << "  assigns test " << ++t << std::endl;
     p1.assign(s1,cvt);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p == p1);
     p1.clear();
+	std::cout << "  test " << ++t << std::endl;
     p1.assign(s1.begin(), s1.end(), cvt);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p == p1);
     // p1.assign(p, cvt);  // fails to compile, and that is OK
 
 
     //  appends
     p1.clear();
+	std::cout << "  appends test " << ++t << std::endl;
     p1.append(s1,cvt);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p == p1);
     p1.clear();
+	std::cout << "  test " << ++t << std::endl;
     p1.append(s1.begin(), s1.end(), cvt);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p == p1);
     // p1.append(p, cvt);  // fails to compile, and that is OK
 
     //  native observers
 #   ifdef BOOST_WINDOWS_API
+	std::cout << "  (windows) test " << ++t << std::endl;
     CHECK(p.string<std::string>() != s1); // non-Windows systems may have UTF-8 as default
 #   endif
+	std::cout << "  native observers test " << ++t << std::endl;
     CHECK(p.string<std::string>(cvt) == s1);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p.string(cvt) == s1);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p.string<std::wstring>(cvt) == ws1);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p.wstring(cvt) == ws1);
 
     //  generic observers
+	std::cout << "  generic observers test " << ++t << std::endl;
     CHECK(p.generic_string<std::string>(cvt) == s1);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string(cvt) == s1);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string<std::wstring>(cvt) == ws1);
+	std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_wstring(cvt) == ws1);
 
     std::cout << "  codecvt arguments testing complete" << std::endl;
