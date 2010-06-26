@@ -928,12 +928,6 @@ int main(int, char*[])
 #ifdef BOOST_WINDOWS_API
   cout << "BOOST_WINDOWS_API" << endl;
 #endif
-#ifdef BOOST_POSIX_API
-  cout << "BOOST_PATH_API" << endl;
-#endif
-#ifdef BOOST_WINDOWS_API
-  cout << "BOOST_WINDOWS_API" << endl;
-#endif
 
   l.push_back('s');
   l.push_back('t');
