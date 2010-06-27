@@ -317,8 +317,8 @@ namespace filesystem3
     //  On POSIX-like systems, the generic format is the same as the native format
     const std::string&  generic_string() const  { return m_pathname; }
     const std::string&  generic_string(const codecvt_type&) const  { return m_pathname; }
-    const std::wstring  generic_wstring() const { return wstring(); }
-    const std::wstring  generic_wstring(const codecvt_type&) const { return wstring(); }
+    const std::wstring  generic_wstring() const { return wstring(codecvt()); }
+    const std::wstring  generic_wstring(const codecvt_type& cvt) const { return wstring(cvt); }
 
 #   endif
 
@@ -651,12 +651,12 @@ namespace filesystem3
     { return generic_string(); }
 
   template <> inline
-  std::string path::generic_string<std::string>(const codecvt_type& cvt) const
-    { return generic_string(cvt); }
-
-  template <> inline
   std::wstring path::generic_string<std::wstring>() const
     { return generic_wstring(); }
+
+  template <> inline
+  std::string path::generic_string<std::string>(const codecvt_type& cvt) const
+    { return generic_string(cvt); }
 
   template <> inline
   std::wstring path::generic_string<std::wstring>(const codecvt_type& cvt) const

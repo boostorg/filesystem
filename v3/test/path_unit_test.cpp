@@ -33,9 +33,11 @@
 
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
+#include "test_codecvt.hpp"                                // for codecvt arg tests
 #include <boost/detail/lightweight_test.hpp>
 
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <locale>
@@ -51,6 +53,7 @@ using std::wstring;
 
 #define CHECK(x) check(x, __FILE__, __LINE__)
 #define PATH_IS(a, b) check_path(a, b, __FILE__, __LINE__)
+#define NATIVE_IS(p, s, ws) check_native(p, s, ws, __FILE__, __LINE__)
 #define IS(a,b) check_equal(a, b, __FILE__, __LINE__)
 
 #if defined(_MSC_VER)
@@ -67,8 +70,8 @@ namespace
 
   std::string platform(BOOST_PLATFORM);
 
-  void check_path(const path & source,
-              const wstring & expected, const char* file, int line)
+  void check_path(const path& source,
+              const wstring& expected, const char* file, int line)
   {
     if (source == expected) return;
 
@@ -81,9 +84,32 @@ namespace
                << L"\"\n" ;
   }
 
+# ifdef BOOST_WINDOWS_API
+  void check_native(const path& p,
+    const string&, const wstring& expected, const char* file, int line)
+# else
+  void check_native(const path& p,
+    const string& expected, const wstring&, const char* file, int line)
+# endif
+  {
+    if (p.native() == expected) return;
+
+    ++::boost::detail::test_errors();
+
+	  std::cout << file  << '(' << line << "): native() is not equal expected\n"
+      "  native---: " << std::hex;
+	  path::string_type nat(p.native());
+	  for (path::string_type::const_iterator it = nat.begin(); it != nat.end(); ++it)
+      std::cout << long(*it) << ' ';
+    std::cout << "\n  expected-: ";
+	  for (path::string_type::const_iterator it = expected.begin(); it != expected.end(); ++it)
+      std::cout << long(*it) << ' ';
+    std::cout << std::dec << std::endl;
+  }
+
   template< class T1, class T2 >
-  void check_equal(const T1 & value,
-                    const T2 & expected, const char* file, int line)
+  void check_equal(const T1& value,
+                    const T2& expected, const char* file, int line)
   {
     if (value == expected) return;
 
@@ -630,75 +656,76 @@ namespace
   {
     std::cout << "testing codecvt arguments..." << std::endl;
 
-    //  U+2780 is DINGBAT CIRCLED SANS-SERIF DIGIT ONE == 0xE2 0x9E 0x80 in UTF-8
-    //  U+1234 is ETHIOPIC SYLLABLE SEE == 0xE1 0x88 0xB4 in UTF-8
+    const char * c1 = "a1";
+    const std::string s1(c1);
+    const std::wstring ws1(L"b2");  // off-by-one mimics test_codecvt
+    const std::string s2("y8");
+    const std::wstring ws2(L"z9");
 
-    const char * c1 = "\xE2\x9E\x80\xE1\x88\xB4";
-    const std::string s1("\xE2\x9E\x80\xE1\x88\xB4");
-    const std::wstring ws1(L"\u2780\u1234");
+    test_codecvt cvt;  // produces off-by-one values that will always differ from
+                       // the system's default locale codecvt facet
 
-    fs::detail::utf8_codecvt_facet cvt;
-
-	int t = 0;
+	  int t = 0;
 
     //  constructors
-	std::cout << "  constructors test " << ++t << std::endl;
+	  std::cout << "  constructors test " << ++t << std::endl;
     path p(c1, cvt);
-	std::cout << "  test " << ++t << std::endl;
+    NATIVE_IS(p, s1, ws1);
+
+	  std::cout << "  test " << ++t << std::endl;
     path p1(s1.begin(), s1.end(), cvt);
-	std::cout << "  test " << ++t << std::endl;
-    CHECK(p1 == path(ws1, cvt));
+    NATIVE_IS(p1, s1, ws1);
+
+	  std::cout << "  test " << ++t << std::endl;
+    path p2(ws2, cvt);
+    NATIVE_IS(p2, s2, ws2);
+
+	  std::cout << "  test " << ++t << std::endl;
+    path p3(ws2.begin(), ws2.end(), cvt);
+    NATIVE_IS(p3, s2, ws2);
+
     // path p2(p1, cvt);  // fails to compile, and that is OK
 
     //  assigns
     p1.clear();
-	std::cout << "  assigns test " << ++t << std::endl;
+	  std::cout << "  assigns test " << ++t << std::endl;
     p1.assign(s1,cvt);
-	std::cout << "  test " << ++t << std::endl;
-    CHECK(p == p1);
+    NATIVE_IS(p1, s1, ws1);
     p1.clear();
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     p1.assign(s1.begin(), s1.end(), cvt);
-	std::cout << "  test " << ++t << std::endl;
-    CHECK(p == p1);
+    NATIVE_IS(p1, s1, ws1);
     // p1.assign(p, cvt);  // fails to compile, and that is OK
-
 
     //  appends
     p1.clear();
-	std::cout << "  appends test " << ++t << std::endl;
+	  std::cout << "  appends test " << ++t << std::endl;
     p1.append(s1,cvt);
-	std::cout << "  test " << ++t << std::endl;
-    CHECK(p == p1);
+    NATIVE_IS(p1, s1, ws1);
     p1.clear();
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     p1.append(s1.begin(), s1.end(), cvt);
-	std::cout << "  test " << ++t << std::endl;
-    CHECK(p == p1);
+    NATIVE_IS(p1, s1, ws1);
     // p1.append(p, cvt);  // fails to compile, and that is OK
 
     //  native observers
-#   ifdef BOOST_WINDOWS_API
-	std::cout << "  (windows) test " << ++t << std::endl;
-    CHECK(p.string<std::string>() != s1); // non-Windows systems may have UTF-8 as default
-#   endif
-	std::cout << "  native observers test " << ++t << std::endl;
+	  std::cout << "  native observers test " << ++t << std::endl;
     CHECK(p.string<std::string>(cvt) == s1);
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     CHECK(p.string(cvt) == s1);
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     CHECK(p.string<std::wstring>(cvt) == ws1);
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     CHECK(p.wstring(cvt) == ws1);
 
     //  generic observers
-	std::cout << "  generic observers test " << ++t << std::endl;
+	  std::cout << "  generic observers test " << ++t << std::endl;
     CHECK(p.generic_string<std::string>(cvt) == s1);
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string(cvt) == s1);
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string<std::wstring>(cvt) == ws1);
-	std::cout << "  test " << ++t << std::endl;
+	  std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_wstring(cvt) == ws1);
 
     std::cout << "  codecvt arguments testing complete" << std::endl;
