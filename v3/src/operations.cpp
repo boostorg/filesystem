@@ -18,9 +18,8 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-//  Sun must told to use modern semantics for readdir_r. See their readdir_r man page.
-#if defined(__sun)
-# define _POSIX_C_SOURCE 199506L
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
 #endif
 
 #if !(defined(__HP_aCC) && defined(_ILP32) && \
@@ -76,9 +75,6 @@ using std::wstring;
 #   include <fcntl.h>
 #   include <utime.h>
 #   include "limits.h"
-#   if defined(__sun) && (!defined(_POSIX_PTHREAD_SEMANTICS) || !defined(_REENTRANT))
-#     error Library not behaving as specified by Sun readdir_r man page
-#   endif
 
 # else // BOOST_WINDOW_API
 
