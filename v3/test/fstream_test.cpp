@@ -47,31 +47,26 @@ namespace
   
   void test(const fs::path & p)
   {
-    { 
-      std::cout << " in test 1\n";
-      fs::filebuf fb;
-      fb.open(p, std::ios_base::in);
-      BOOST_TEST(fb.is_open() == fs::exists(p));
-    }
+    fs::remove(p);
     {
-      std::cout << " in test 2\n";
+      std::cout << " in test 1\n";
       fs::filebuf fb1;
       fb1.open(p, std::ios_base::out);
       BOOST_TEST(fb1.is_open());
     }
     {
-      std::cout << " in test 3\n";
+      std::cout << " in test 2\n";
       fs::filebuf fb2;
       fb2.open(p, std::ios_base::in);
       BOOST_TEST(fb2.is_open());
     }
     {
-      std::cout << " in test 4\n";
+      std::cout << " in test 3\n";
       fs::ifstream tfs(p);
       BOOST_TEST(tfs.is_open());
     }
     {
-      std::cout << " in test 4.1\n";
+      std::cout << " in test 4\n";
       fs::ifstream tfs(p / p.filename()); // should fail
       BOOST_TEST(!tfs.is_open());
     }
@@ -137,7 +132,8 @@ namespace
       BOOST_TEST(tfs.is_open());
     }
 
-    if (cleanup) fs::remove(p);
+    if (cleanup)
+      fs::remove(p);
 
   } // test
 } // unnamed namespace
