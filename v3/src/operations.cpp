@@ -77,7 +77,7 @@ using std::wstring;
 #   include <utime.h>
 #   include "limits.h"
 #   if defined(__sun) && (!defined(_POSIX_PTHREAD_SEMANTICS) || !defined(_REENTRANT))
-#     error Library not behaving as specified by Sun's readdir_r man page
+#     error Library not behaving as specified by Sun readdir_r man page
 #   endif
 
 # else // BOOST_WINDOW_API
