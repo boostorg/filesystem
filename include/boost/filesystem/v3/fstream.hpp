@@ -20,12 +20,12 @@
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
-//  glibc++ and older Dinkumware don't have wchar_t overloads for file stream paths,
-//  so on Windows use path::string() to get a narrow character c_str()
+//  on Windows, except for standard libaries known to have wchar_t overloads for
+//  file stream I/O, use path::string() to get a narrow character c_str()
 #if defined(BOOST_WINDOWS_API) \
-  && (defined(__GLIBCXX__) || (defined(_CPPLIB_VER) && _CPPLIB_VER < 405))
-# define BOOST_FILESYSTEM_C_STR string().c_str()
-#else
+  && !(defined(_CPPLIB_VER) && _CPPLIB_VER >= 405)  // not (Dinkumware with overloads)
+# define BOOST_FILESYSTEM_C_STR string().c_str()  // use narrow, since wide not available
+#else  // use the native c_str, which will be narrow on POSIX, wide on Windows
 # define BOOST_FILESYSTEM_C_STR c_str()
 #endif
 
