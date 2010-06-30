@@ -855,7 +855,8 @@ namespace
 
     std::cout << "  restoring original locale ..." << std::endl;
     path::imbue(old_loc);
-  }
+    std::cout << "  testing error handling complete" << std::endl;
+ }
 
 # if 0
 
