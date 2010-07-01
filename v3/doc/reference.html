@@ -97,8 +97,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp i<a href="#initial_path">nitial_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp i<a href="#is_directory">s_directory</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_regular_file">is_regular_file</a><br>
@@ -367,9 +366,6 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p);
       <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);
-
-      const path&amp;  <a href="#initial_path">initial_path</a>();
-      const path&amp;  <a href="#initial_path">initial_path</a>(system::error_code&amp; ec);
 
       bool         <a href="#is_directory">is_directory</a>(file_status s);
       bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
@@ -1989,12 +1985,12 @@ path <a name="current_path2">current_path</a>(system::error_code&amp; ec);</pre>
   <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
-  <p>[<i>Note:</i> The current path as returned by many operating systems is a 
-  dangerous global variable. It may be changed unexpectedly by a third-party or 
-  system library functions, or by another thread. For a safer alternative, 
-  see <code><a href="#initial_path">initial_path()</a></code>. The <code>
+  <p>[<i>Note: </i>The <code>
   current_path()</code> name was chosen to emphasize that the return is a 
-  path, not just a single directory name. <i>-- end note</i>]</p>
+  path, not just a single directory name.</p>
+  <p>The current path as returned by many operating systems is a dangerous 
+  global variable. It may be changed unexpectedly by a third-party or system 
+  library functions, or by another thread.&nbsp; <i>-- end note</i>]</p>
 </blockquote>
 <pre>void current_path(const path&amp; p);
 void current_path(const path&amp; p, system::error_code&amp; ec);</pre>
@@ -2009,6 +2005,9 @@ void current_path(const path&amp; p, system::error_code&amp; ec);</pre>
 <p><i>Throws:</i> As specified in
 <a href="#Error-reporting">
 Error reporting</a>.</p>
+  <p>[<i>Note: </i>The current path for many operating systems is a dangerous 
+  global state. It may be changed unexpectedly by a third-party or system 
+  library functions, or by another thread.&nbsp; <i>-- end note</i>]</p>
 </blockquote>
 <pre><span style="background-color: #FFFFFF">bool <a name="exists">exists</a>(file_status s);</span></pre>
 <blockquote>
@@ -2074,23 +2073,6 @@ uintmax_t</span> <a name="file_size2">file_size</a>(const path&amp; p, system::e
   <p style="font-size: 10pt"><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
-</blockquote>
-<pre>const path&amp; <a name="initial_path">initial_path</a>();
-const path&amp; <a name="initial_path2">initial_path</a>(system::error_code&amp; ec);</pre>
-<blockquote>
-  <p><i>Returns:</i> <code>current_path()</code> at the time of entry to <code>
-  main()</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
-  <p>[<i>Note:</i> These semantics turn a dangerous global variable into a safer 
-  global constant. <i>--end note</i>]</p>
-  <p>[<i>Note:</i> Full implementation requires runtime library support. 
-  Implementations which cannot provide runtime library support are encouraged to 
-  instead store the value of <code>current_path()</code> at the first call of
-  <code>initial_path</code><code>()</code>, and 
-  return this value for all subsequent calls. Programs using
-  <code>initial_path</code><code>()</code> are 
-  encouraged to call it immediately on entrance to <code>main()</code> so that 
-  they will work correctly with such partial implementations. <i>--end note</i>]</p>
 </blockquote>
 <pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF"><a name="is_directory">is_directory</a></span></code><span style="background-color: #FFFFFF">(file_status s);</span></pre>
 <blockquote>
@@ -3077,7 +3059,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17552" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->01 July 2010<!--webbot bot="Timestamp" endspan i-checksum="18760" --></p>
 
 </body>
 

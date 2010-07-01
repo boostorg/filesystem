@@ -194,6 +194,8 @@ int main(int /*argc*/, char* /*argv*/[])
                : "POSIX";
   std::cout << "Platform is " << platform << '\n';
 
+  BOOST_TEST(fs::initial_path() == fs::current_path());
+
   //path::default_name_check(fs::no_check);
 
   fs::directory_entry de("foo/bar");

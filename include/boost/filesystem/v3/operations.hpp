@@ -353,14 +353,13 @@ namespace boost
   inline
   boost::uintmax_t hard_link_count(const path& p, system::error_code& ec)
                                        {return detail::hard_link_count(p, &ec);}
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   inline
   path initial_path()                  {return detail::initial_path();}
 
   inline
   path initial_path(system::error_code& ec) {return detail::initial_path(&ec);}
 
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-  //  support legacy initial_path<...>()
   template <class Path>
   path initial_path() {return initial_path();}
   template <class Path>
@@ -942,7 +941,6 @@ namespace boost
     using filesystem3::file_type;
     using filesystem3::filesystem_error;
     using filesystem3::hard_link_count;
-    using filesystem3::initial_path;
     using filesystem3::is_directory;
     using filesystem3::is_directory;
     using filesystem3::is_empty;
@@ -969,6 +967,7 @@ namespace boost
     using filesystem3::type_unknown;
     using filesystem3::unique_path;
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    using filesystem3::initial_path;
     using filesystem3::is_regular;
     using filesystem3::status_unknown;
     using filesystem3::symbolic_link_exists;

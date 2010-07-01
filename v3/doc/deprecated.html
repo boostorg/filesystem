@@ -43,7 +43,7 @@ the old names and features, but by default continues to provide many of them.
 The deprecated names and other workarounds can be suppressed by defining macro <code>
 BOOST_FILESYSTEM_NO_DEPRECATED</code>, and this is recommended for all new code.</p>
 <p style="font-size: 10pt">In the table, &#10004; indicates a synonym or other 
-workaround is provide unless <code>
+workaround is provided unless <code>
 BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
 <table border="1" cellpadding="5" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
@@ -250,6 +250,16 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
     <td style="font-size: 10pt" valign="top">
     <code>operations.hpp</code></td>
     <td style="font-size: 10pt" valign="top">
+    <code>initial_path()</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>operations.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
     <code>is_regular(file_status f)</code></td>
     <td style="font-size: 10pt" valign="top">
     &#10004;</td>
@@ -338,9 +348,17 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
   </tr>
 </table>
 
+<h2>Deprecation rationale</h2>
+<h3><code>initial_path</code> function</h3>
+<p dir="ltr">Full implementation of <code>initial_path()</code> would require 
+support from the C++ runtime startup code, and that doesn't seem likely to 
+happen. Depending on the user to call <code>initial_path()</code> at the 
+beginning of <code>main()</code> is too error prone.&nbsp; An equivalent 
+function can trivially be provided by a user.</p>
+
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19844" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 July, 2010<!--webbot bot="Timestamp" endspan i-checksum="21054" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005, 2010</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
