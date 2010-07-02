@@ -11,7 +11,12 @@
 #define BOOST_FILESYSTEM_VERSION 3
 
 //  As an example program, we don't want to use any deprecated features
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
 
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
@@ -22,7 +27,7 @@ namespace fs = boost::filesystem;
 
 int main(int argc, char* argv[])
 {
-  fs::path p(fs::initial_path());
+  fs::path p(fs::current_path());
 
   if (argc > 1)
     p = fs::system_complete(argv[1]);
