@@ -88,7 +88,8 @@
     <td width="33%" valign="top">
     <a href="#Operational-functions">
     Operational functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp <a href="#copy_file">copy_file</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp <a href="#absolute">absolute</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#create_directories">create_directories</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#create_directory">create_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#create_hard_link">create_hard_link</a><br>
@@ -334,7 +335,9 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       // <a href="#Operational-functions">operational functions</a>
 
-</span>      void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
+</span>      path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
+
+      void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option,
@@ -525,7 +528,7 @@ system. </p>
 
         // <a href="#path-modifiers">modifiers</a>
         void  <a href="#path-clear">clear</a>();
-        path&amp; <a href="#path-make_absolute">make_absolute</a>(const path&amp; base);
+        path&amp; <a href="#absolute">make_absolute</a>(const path&amp; base);
         path&amp; <a href="#path-make_preferred">make_preferred</a>();  // POSIX: no effect. Windows: convert slashes to backslashes
         path&amp; <a href="#path-remove_filename">remove_filename</a>();
         path&amp; <a href="#path-replace_extension">replace_extension</a>(const path&amp; new_extension = path());
@@ -779,45 +782,6 @@ letters to uppercase.<i> -- end note.</i>]</p>
 <pre>void <a name="path-clear">clear</a>();</pre>
 <blockquote>
 <p><i>Postcondition:</i> <code>this-&gt;empty()</code> is true.</p>
-</blockquote>
-<pre>path&amp; <a name="path-make_absolute">make_absolute</a>(const path&amp; base);</pre>
-  <blockquote>
-  <p><i>Preconditions:</i> <code>
-  (has_root_name() || base.has_root_name() || path(&quot;/&quot;).is_absolute()) &amp;&amp; (has_root_directory() 
-  || base.has_root_directory())</code> is true.</p>
-  <p><i>Effects:</i> Makes <code>m_pathname</code> absolute by applying the following rules:</p>
-  <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
-    <tr>
-      <td align="center">&nbsp;</td>
-      <td align="center"><i><b><code>has_root_directory()</code></b></i></td>
-      <td align="center"><i><b><code>!has_root_directory()</code></b></i></td>
-    </tr>
-    <tr>
-      <td align="center"><i><b><code>has_root_name()</code></b></i></td>
-      <td align="center">No change</td>
-      <td align="center"><code>root_name() / base.root_directory()<br>
-      / base.relative_path() / relative_path()</code></td>
-    </tr>
-    <tr>
-      <td align="center"><i><b><code>!has_root_name()</code></b></i></td>
-      <td align="center"><code>base.root_name()<br>
-      / pathname</code></td>
-      <td align="center"><code>base / pathname</code></td>
-    </tr>
-  </table>
-  <p><i>Postconditions:</i> <code>
-  is_absolute()</code> is true.</p>
-  <p><i>Returns:</i> <code>*this</code>.</p>
-  <p>[<i><a name="complete_note">Note</a>:</i> When portable behavior is 
-  required, use <i>absolute()</i>. When operating system dependent behavior is 
-  required, use <i>system_complete()</i>.</p>
-  <p>Portable behavior is useful when dealing with paths created 
-  internally within a program, particularly if the program should exhibit the 
-  same behavior on all operating systems.</p>
-  <p>Operating system dependent behavior is useful when dealing with 
-  paths supplied by user input, reported to program users, or when such behavior 
-  is expected by program users. <i>-- 
-  end note</i>]</p>
 </blockquote>
 <pre>path&amp; <a name="path-make_preferred">make_preferred</a>();</pre>
 <blockquote>
@@ -1866,6 +1830,38 @@ other kinds of errors occur frequently in file system operations, users should b
 that any filesystem operational function, no matter how apparently innocuous, may encounter 
 an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end note</i>]</p>
 <h4><a name="Function-specifications">Operational function specifications</a></h4>
+<pre>path <a name="absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());</pre>
+  <blockquote>
+  <p><i>Returns:</i> If <code>p.is_empty() || p.is_absolute()</code>, returns
+  <code>p</code>. Otherwise returns a path composed according to to the 
+  following table</p>
+  <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
+    <tr>
+      <td align="center">&nbsp;</td>
+      <td align="center"><b><code>p.has_root_directory()</code></b></td>
+      <td align="center"><b><code>!p.has_root_directory()</code></b></td>
+    </tr>
+    <tr>
+      <td align="center"><b><code>p.has_root_name()</code></b></td>
+      <td align="center"><code>return p</code></td>
+      <td align="center"><code>return p.root_name() / 
+      absolute(base).root_directory()<br>
+      / absolute(base).relative_path() / p.relative_path()</code></td>
+    </tr>
+    <tr>
+      <td align="center"><b><code>!p.has_root_name()</code></b></td>
+      <td align="center"><code>return absolute(base).root_name()<br>
+      / p</code></td>
+      <td align="center"><code>return absolute(base) / p</code></td>
+    </tr>
+  </table>
+  <p><i>Postconditions:</i> For the returned path, <code>rp,</code> <code>
+  rp.is_absolute()</code> is true.</p>
+  <p>[<i><a name="complete_note">Note</a>:</i> On POSIX-like systems, the return 
+  is effectively <code>p.is_empty() || p.is_absolute() ? p : absolute(base) / p</code> <i>-- 
+  end note</i>]</p>
+  <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws nothing.</p>
+</blockquote>
 <pre>void copy_file(const path&amp; from, const path&amp; to);</pre>
 <blockquote>
   <p><i>Effects: </i><code>copy_file(from, to, 

@@ -206,51 +206,6 @@ namespace filesystem3
 
   //  modifiers  -----------------------------------------------------------------------//
 
-  path&  path::make_absolute(const path& base)
-  {
-    //  store expensive to compute values that are needed multiple times
-    path this_root_name (root_name());
-    path base_root_name (base.root_name());
-    path this_root_directory (root_directory());
-
-#   ifdef BOOST_WINDOWS_API
-    BOOST_ASSERT(!this_root_name.empty() || !base_root_name.empty());
-#   endif
-
-    BOOST_ASSERT(!this_root_directory.empty() || base.has_root_directory());
-
-    if (m_pathname.empty())
-      m_pathname = base.m_pathname;
-
-    else if (!this_root_name.empty()) // has_root_name
-    {
-      if (this_root_directory.empty()) // !root_directory()
-      {
-        path tmp (this_root_name / base.root_directory()
-                   / base.relative_path() / relative_path());
-        m_pathname.swap(tmp.m_pathname);
-      }
-      // else is_absolute() so do nothing at all
-    }
-
-    else if (has_root_directory())
-    {
-#     ifdef BOOST_POSIX_API
-      if (base_root_name.empty()) return *this;
-#     endif
-      path tmp (base_root_name / m_pathname);
-      m_pathname.swap(tmp.m_pathname);
-    }
-
-    else
-    {
-      path tmp (base / m_pathname);
-      m_pathname.swap(tmp.m_pathname);
-    }
-
-    return *this;
-  }
-
 # ifdef BOOST_WINDOWS_API
   path & path::make_preferred()
   {

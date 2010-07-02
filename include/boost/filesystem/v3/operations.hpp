@@ -246,18 +246,28 @@ namespace boost
 //                  in alphabetical order, unless otherwise noted                       //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
+ 
+  //  forward declarations
+  path current_path();  // fwd declaration
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+  path initial_path();
+# endif
+
+  BOOST_FILESYSTEM_DECL
+  path absolute(const path& p, const path& base=current_path());
+  //  If base.is_absolute(), throws nothing. Thus no need for ec argument
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   inline
   path complete(const path& p)
   {
-    return path(p).make_absolute(detail::initial_path(0));
+    return absolute(p, initial_path());
   }
 
   inline
   path complete(const path& p, const path& base)
   {
-    return path(p).make_absolute(base);
+    return absolute(p, base);
   }
 # endif
 
@@ -919,6 +929,7 @@ namespace boost
 {
   namespace filesystem
   {
+    using filesystem3::absolute;
     using filesystem3::block_file;
     using filesystem3::character_file;
     using filesystem3::copy_file;

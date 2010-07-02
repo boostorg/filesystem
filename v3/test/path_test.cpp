@@ -1214,56 +1214,6 @@ namespace
   {
     std::cout << "composition_tests..." << std::endl;
 
-    // these are white box tests constructed with knowledge of execution paths
-
-    // *this.empty()
-      BOOST_TEST_EQ(path().make_absolute("//foo/bar"), "//foo/bar");
-      if (platform == "Windows")
-        BOOST_TEST_EQ(path().make_absolute("a:/bar"), "a:/bar");
-
-    // *this.has_root_name()
-      //   *this.has_root_directory()
-        BOOST_TEST_EQ(path("//foo/bar").make_absolute("//uvw/xyz"), "//foo/bar");
-        if (platform == "Windows")
-          BOOST_TEST_EQ(path("a:/bar").make_absolute("b:/xyz"), "a:/bar");
-      //   !*this.has_root_directory()
-        BOOST_TEST_EQ(path("//net").make_absolute("//xyz/"), "//net/");
-        BOOST_TEST_EQ(path("//net").make_absolute("//xyz/abc"), "//net/abc");
-        BOOST_TEST_EQ(path("//net").make_absolute("//xyz/abc/def"), "//net/abc/def");
-        if (platform == "Windows")
-        {
-          BOOST_TEST_EQ(path("a:").make_absolute("b:/"), "a:/");
-          BOOST_TEST_EQ(path("a:").make_absolute("b:/abc"), "a:/abc");
-          BOOST_TEST_EQ(path("a:").make_absolute("b:/abc/def"), "a:/abc/def");
-          BOOST_TEST_EQ(path("a:foo").make_absolute("b:/"), "a:/foo");
-          BOOST_TEST_EQ(path("a:foo").make_absolute("b:/abc"), "a:/abc/foo");
-          BOOST_TEST_EQ(path("a:foo").make_absolute("b:/abc/def"), "a:/abc/def/foo");
-          BOOST_TEST_EQ(path("a:foo/bar").make_absolute("b:/"), "a:/foo/bar");
-          BOOST_TEST_EQ(path("a:foo/bar").make_absolute("b:/abc"), "a:/abc/foo/bar");
-          BOOST_TEST_EQ(path("a:foo/bar").make_absolute("b:/abc/def"), "a:/abc/def/foo/bar");
-        }
-    // !*this.has_root_name()
-      //   *this.has_root_directory()
-        BOOST_TEST_EQ(path("/").make_absolute("//xyz/"), "//xyz/");
-        BOOST_TEST_EQ(path("/").make_absolute("//xyz/abc"), "//xyz/");
-        BOOST_TEST_EQ(path("/foo").make_absolute("//xyz/"), "//xyz/foo");
-        BOOST_TEST_EQ(path("/foo").make_absolute("//xyz/abc"), "//xyz/foo");
-      //   !*this.has_root_directory()
-        BOOST_TEST_EQ(path("foo").make_absolute("//xyz/abc"), "//xyz/abc/foo");
-        BOOST_TEST_EQ(path("foo/bar").make_absolute("//xyz/abc"), "//xyz/abc/foo/bar");
-        BOOST_TEST_EQ(path(".").make_absolute("//xyz/abc"), "//xyz/abc/.");
-        BOOST_TEST_EQ(path("..").make_absolute("//xyz/abc"), "//xyz/abc/..");
-        BOOST_TEST_EQ(path("./foo").make_absolute("//xyz/abc"), "//xyz/abc/./foo");
-        BOOST_TEST_EQ(path("../foo").make_absolute("//xyz/abc"), "//xyz/abc/../foo");
-        if (platform == "POSIX")
-        {
-          BOOST_TEST_EQ(path("foo").make_absolute("/abc"), "/abc/foo");
-          BOOST_TEST_EQ(path("foo/bar").make_absolute("/abc"), "/abc/foo/bar");
-          BOOST_TEST_EQ(path(".").make_absolute("/abc"), "/abc/.");
-          BOOST_TEST_EQ(path("..").make_absolute("/abc"), "/abc/..");
-          BOOST_TEST_EQ(path("./foo").make_absolute("/abc"), "/abc/./foo");
-          BOOST_TEST_EQ(path("../foo").make_absolute("/abc"), "/abc/../foo");
-        }
   }
 
  //  construction_tests  ---------------------------------------------------------------//

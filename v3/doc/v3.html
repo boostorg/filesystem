@@ -56,8 +56,6 @@ changes include:</p>
   <li><code><a href="reference.html#path-is_absolute">is_absolute</a>()</code>. This renames <code>is_complete()</code>, which 
   is now deprecated.</li>
   <li><code><a href="reference.html#path-is_relative">is_relative</a>()</code></li>
-  <li><code><a href="reference.html#path-make_absolute">make_absolute</a>()</code>. This replaces the operations function <code>
-  complete()</code>, which is now deprecated.</li>
   <li><code><a href="reference.html#path-make_preferred">make_preferred</a>()<br>
 &nbsp;</code></li>
 </ul>
@@ -65,6 +63,10 @@ changes include:</p>
   </li>
   <li>New or improved operations functions include:<br>
 &nbsp;<ul>
+    <li><code><a href="reference.html#absolute">absolute</a>()</code>. This replaces the operations function <code>
+  complete()</code>, which is now deprecated. Semantics are now provided for a 
+    Windows corner case where the <code>base</code> argument was not an absolute 
+    path. Previously this resulted in an exception being thrown.</li>
     <li><code><a href="reference.html#create_symlink">create_symlink</a>()</code> now supported on both POSIX and Windows.</li>
     <li><code><a href="reference.html#read_symlink">read_symlink</a>()</code> function added. Supported on both POSIX and 
     Windows. Used to read the contents of a symlink itself.</li>
@@ -142,7 +144,7 @@ cycle, and then Version 3 will become the default version.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 June 2010<!--webbot bot="Timestamp" endspan i-checksum="17550" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 July 2010<!--webbot bot="Timestamp" endspan i-checksum="18762" --></p>
 
 </body>
 

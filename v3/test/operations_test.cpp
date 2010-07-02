@@ -949,7 +949,7 @@ namespace
     BOOST_TEST(fs::remove(link2));
     BOOST_TEST(!fs::exists(link));
     BOOST_TEST(!fs::exists(link2));
-    BOOST_TEST(!fs::is_symlink(link));
+  BOOST_TEST(!fs::is_symlink(link));
 
     // remove() symbolic link to file
     fs::path file_ph = "link_target";
@@ -973,7 +973,81 @@ namespace
     BOOST_TEST(!fs::exists(file_ph));
   }
 
-  //  copy_file_tests  -----------------------------------------------------------------//
+  //  absolute_tests  -----------------------------------------------------------------//
+
+  void absolute_tests()
+  {
+    std::cout << "absolute_tests..." << std::endl;
+
+    BOOST_TEST(fs::absolute("").empty());
+    BOOST_TEST_EQ(fs::absolute(fs::current_path() / "foo/bar"), fs::current_path() / "foo/bar");
+    BOOST_TEST_EQ(fs::absolute("foo"), fs::current_path() / "foo");
+    BOOST_TEST_EQ(fs::absolute("foo", fs::current_path()), fs::current_path() / "foo");
+    BOOST_TEST_EQ(fs::absolute("bar", "foo"), fs::current_path() / "foo" / "bar");
+    BOOST_TEST_EQ(fs::absolute("/foo"), fs::current_path().root_name().string() + "/foo");
+
+#  ifdef BOOST_WINDOWS_API
+    BOOST_TEST_EQ(fs::absolute("a:foo", "b:/bar"), "a:/bar/foo");
+#  endif
+
+    // these tests were moved from elsewhere, so may duplicate some of the above tests
+
+    // p.empty()
+      BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), "");
+      if (platform == "Windows")
+      {
+        BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), "");
+      }
+
+    // p.has_root_name()
+      //   p.has_root_directory()
+        BOOST_TEST_EQ(fs::absolute(fs::path("//foo/bar"), "//uvw/xyz"), "//foo/bar");
+        if (platform == "Windows")
+        {
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:/bar"), "b:/xyz"), "a:/bar");
+        }
+      //   !p.has_root_directory()
+        BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/"), "//net/");
+        BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc"), "//net/abc");
+        BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc/def"), "//net/abc/def");
+        if (platform == "Windows")
+        {
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/"), "a:/");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:"),"b:/abc"), "a:/abc");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:"),"b:/abc/def"), "a:/abc/def");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/"), "a:/foo");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc"), "a:/abc/foo");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc/def"), "a:/abc/def/foo");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/"), "a:/foo/bar");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/abc"), "a:/abc/foo/bar");
+          BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/abc/def"), "a:/abc/def/foo/bar");
+        }
+    // !p.has_root_name()
+      //   p.has_root_directory()
+        BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/"), "//xyz/");
+        BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/abc"), "//xyz/");
+        BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/"), "//xyz/foo");
+        BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/abc"), "//xyz/foo");
+      //   !p.has_root_directory()
+        BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "//xyz/abc"), "//xyz/abc/foo");
+        BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "//xyz/abc"), "//xyz/abc/foo/bar");
+        BOOST_TEST_EQ(fs::absolute(fs::path("."), "//xyz/abc"), "//xyz/abc/.");
+        BOOST_TEST_EQ(fs::absolute(fs::path(".."), "//xyz/abc"), "//xyz/abc/..");
+        BOOST_TEST_EQ(fs::absolute(fs::path("./foo"), "//xyz/abc"), "//xyz/abc/./foo");
+        BOOST_TEST_EQ(fs::absolute(fs::path("../foo"), "//xyz/abc"), "//xyz/abc/../foo");
+        if (platform == "POSIX")
+        {
+          BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "/abc"), "/abc/foo");
+          BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "/abc"), "/abc/foo/bar");
+          BOOST_TEST_EQ(fs::absolute(fs::path("."), "/abc"), "/abc/.");
+          BOOST_TEST_EQ(fs::absolute(fs::path(".."), "/abc"), "/abc/..");
+          BOOST_TEST_EQ(fs::absolute(fs::path("./foo"), "/abc"), "/abc/./foo");
+          BOOST_TEST_EQ(fs::absolute(fs::path("../foo"), "/abc"), "/abc/../foo");
+        }
+
+  }
+
+ //  copy_file_tests  -----------------------------------------------------------------//
 
   void copy_file_tests(const fs::path& file_ph, const fs::path& d1)
   {
@@ -1076,11 +1150,6 @@ namespace
       std::string s1(p1.string() );
       std::string s2(init_path.root_path().string()+"foo");
       BOOST_TEST_EQ(s1, s2);
-
-      BOOST_TEST(fs::path("x:/").make_absolute(init_path).string()
-        == "x:/");
-      BOOST_TEST(fs::path("x:/foo").make_absolute(init_path).string()
-        ==  "x:/foo");
 
       BOOST_TEST(fs::system_complete(fs::path(init_path.root_name()))
         == init_path);
@@ -1276,6 +1345,7 @@ int main(int argc, char* argv[])
   create_hard_link_tests();
   create_symlink_tests();
   resize_file_tests();
+  absolute_tests();
   copy_file_tests(file_ph, d1);
   rename_tests();
   remove_tests(dir);

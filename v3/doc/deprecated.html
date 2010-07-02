@@ -229,7 +229,7 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
     <td style="font-size: 10pt" valign="top">
     <code>path.hpp</code></td>
     <td style="font-size: 10pt" valign="top">
-    <code>typedef basic_path&lt;std::string, path_traits&gt; path;</code></td>
+    <code>typedef basic_path&lt;std::string, path_traits&gt; path</code></td>
     <td style="font-size: 10pt" valign="top">
     &#10004;</td>
     <td style="font-size: 10pt" valign="top">
@@ -239,12 +239,12 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
     <td style="font-size: 10pt" valign="top">
     <code>path.hpp</code></td>
     <td style="font-size: 10pt" valign="top">
-    <code>typedef basic_path&lt;std::wstring, wpath_traits&gt; wpath;</code></td>
+    <code>typedef basic_path&lt;std::wstring, wpath_traits&gt; wpath</code></td>
     <td style="font-size: 10pt" valign="top">
     &#10004;</td>
     <td style="font-size: 10pt" valign="top">
     <i>Removed; use </i><code>class path</code><i> instead. Workaround provides
-    </i><code>typedef path wpath;</code></td>
+    </i><code>typedef path wpath</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
@@ -260,11 +260,26 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
     <td style="font-size: 10pt" valign="top">
     <code>operations.hpp</code></td>
     <td style="font-size: 10pt" valign="top">
+    <p dir="ltr"><code>template &lt;class Path&gt;<br>
+    Path complete(const Path&amp; p,<br>
+&nbsp;const Path&amp; base=<br>
+&nbsp;&nbsp; initial_path&lt;Path&gt;())</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &#10004;</td>
+    <td style="font-size: 10pt" valign="top">
+    <p dir="ltr"><code>path absolute(const path&amp; p, const path&amp; base=<br>
+&nbsp; current_path())</code></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>operations.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
     <code>is_regular(file_status f)</code></td>
     <td style="font-size: 10pt" valign="top">
     &#10004;</td>
     <td style="font-size: 10pt" valign="top">
-    <code>is_regular_file( file_status f )</code></td>
+    <p dir="ltr">
+    <code>is_regular_file(file_status f)</code></td>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
@@ -358,7 +373,7 @@ function can trivially be provided by a user.</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 July, 2010<!--webbot bot="Timestamp" endspan i-checksum="21054" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->02 July, 2010<!--webbot bot="Timestamp" endspan i-checksum="21056" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005, 2010</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

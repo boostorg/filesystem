@@ -579,6 +579,26 @@ namespace boost
 {
 namespace filesystem3
 {
+
+  BOOST_FILESYSTEM_DECL
+  path absolute(const path& p, const path& base)
+  {
+    if ( p.empty() || p.is_absolute() )
+      return p;
+    //  recursively calling absolute is sub-optimal, but is simple
+    path abs_base(base.is_absolute() ? base : absolute(base));
+# ifdef BOOST_WINDOWS_API
+    if (p.has_root_directory())
+      return abs_base.root_name() / p;
+    //  !p.has_root_directory
+    if (p.has_root_name())
+      return p.root_name()
+        / abs_base.root_directory() / abs_base.relative_path() / p.relative_path();
+    //  !p.has_root_name()
+# endif
+    return abs_base / p;
+  }
+
 namespace detail
 {
   BOOST_FILESYSTEM_DECL bool possible_large_file_size_support()

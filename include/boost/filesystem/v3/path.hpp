@@ -226,7 +226,6 @@ namespace filesystem3
     //  -----  modifiers  -----
 
     void   clear()             { m_pathname.clear(); }
-    path&  make_absolute(const path& base); 
     path&  make_preferred()
 #   ifdef BOOST_POSIX_API
       { return *this; }  // POSIX no effect

@@ -517,20 +517,6 @@ namespace
   {
     std::cout << "testing modifiers..." << std::endl;
 
-//    CHECK(path("").make_absolute("") == "");  // should assert
-//    CHECK(path("").make_absolute("foo") == ""); // should assert
-
-#   ifdef BOOST_WINDOWS_API
-    CHECK(path("baa").make_absolute("c:/") == "c:/baa");
-    CHECK(path("/baa").make_absolute("c:/foo").string() == path("c:/baa").string());
-    CHECK(path("baa/baz").make_absolute("c:/foo/bar").string()
-      == path("c:/foo/bar\\baa/baz").string());
-#   else
-    CHECK(path("baa").make_absolute("/") == "/baa");
-    CHECK(path("/baa").make_absolute("/foo").string() == path("/baa").string());
-    CHECK(path("baa/baz").make_absolute("/foo/bar").string()
-      == path("/foo/bar/baa/baz").string());
-#   endif
   }
 
   //  test_decompositions  -------------------------------------------------------------//
