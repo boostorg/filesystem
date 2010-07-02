@@ -979,7 +979,7 @@ namespace
   {
     std::cout << "absolute_tests..." << std::endl;
 
-    BOOST_TEST(fs::absolute("").empty());
+    BOOST_TEST_EQ(fs::absolute(""), fs::current_path() );
     BOOST_TEST_EQ(fs::absolute(fs::current_path() / "foo/bar"), fs::current_path() / "foo/bar");
     BOOST_TEST_EQ(fs::absolute("foo"), fs::current_path() / "foo");
     BOOST_TEST_EQ(fs::absolute("foo", fs::current_path()), fs::current_path() / "foo");
@@ -993,10 +993,10 @@ namespace
     // these tests were moved from elsewhere, so may duplicate some of the above tests
 
     // p.empty()
-      BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), "");
+      BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), "//foo/bar");
       if (platform == "Windows")
       {
-        BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), "");
+        BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), "a:/bar");
       }
 
     // p.has_root_name()

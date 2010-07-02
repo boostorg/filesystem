@@ -1832,8 +1832,7 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
 <h4><a name="Function-specifications">Operational function specifications</a></h4>
 <pre>path <a name="absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());</pre>
   <blockquote>
-  <p><i>Returns:</i> If <code>p.is_empty() || p.is_absolute()</code>, returns
-  <code>p</code>. Otherwise returns a path composed according to to the 
+  <p><i>Returns:</i> A path composed according to to the 
   following table</p>
   <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
     <tr>
@@ -1857,10 +1856,8 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
   </table>
   <p><i>Postconditions:</i> For the returned path, <code>rp,</code> <code>
   rp.is_absolute()</code> is true.</p>
-  <p>[<i><a name="complete_note">Note</a>:</i> On POSIX-like systems, the return 
-  is effectively <code>p.is_empty() || p.is_absolute() ? p : absolute(base) / p</code> <i>-- 
-  end note</i>]</p>
-  <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws nothing.</p>
+  <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws only if 
+  memory allocation fails.</p>
 </blockquote>
 <pre>void copy_file(const path&amp; from, const path&amp; to);</pre>
 <blockquote>
@@ -3055,7 +3052,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->01 July 2010<!--webbot bot="Timestamp" endspan i-checksum="18760" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 July 2010<!--webbot bot="Timestamp" endspan i-checksum="18762" --></p>
 
 </body>
 
