@@ -1,4 +1,3 @@
-
 # Boost Filesystem Library Build Jamfile
 
 # (C) Copyright Beman Dawes 2002-2006
@@ -9,24 +8,31 @@
 # See library home page at http://www.boost.org/libs/filesystem
 
 project boost/filesystem
-    : source-location ../src
+    : source-location ..
     : usage-requirements # pass these requirement to dependents (i.e. users)
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
-      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+    ;
+    
+SOURCES =
+    v2/src/v2_operations v2/src/v2_path v2/src/v2_portability
+    v3/src/operations v3/src/path v3/src/portability v3/src/utf8_codecvt_facet
+    v3/src/codecvt_error_category v3/src/path_traits v3/src/unique_path
+    v3/src/windows_file_codecvt 
     ;
 
-SOURCES =
-    operations path portability utf8_codecvt_facet ;
 
 lib boost_filesystem
+    : $(SOURCES).cpp ../../system/build//boost_system
+    : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1 # tell source we're building dll's
     :
-    $(SOURCES).cpp
-    ../../system/build//boost_system
-    :
-    <link>shared:<define>BOOST_ALL_DYN_LINK=1 # tell source we're building dll's
-    <link>static:<define>BOOST_All_STATIC_LINK=1 # tell source we're building static lib's
-    :
-    :
+    : # Boost.Filesystem uses some of Boost.System functions in inlined/templated
+      # functions, so clients that use Boost.Filesystem will have direct references 
+      # to Boost.System symbols. On Windows, Darwin, and some other platforms, this
+      # means those clients have to be directly linked to Boost.System. For static
+      # linking this happens anyway, but for shared we need to make it happen. Since
+      # doing so is harmless even when not needed, we do it for all platforms.
+      <link>shared:<library>../../system/build//boost_system
     ;
+    
 
 boost-install boost_filesystem ;
