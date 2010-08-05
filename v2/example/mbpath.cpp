@@ -9,7 +9,7 @@
 //  See Boost.Filesystem home page at http://www.boost.org/libs/filesystem
 
 #include <boost/filesystem/config.hpp>
-# ifdef BOOST_FILESYSTEM_NARROW_ONLY
+# ifdef BOOST_FILESYSTEM2_NARROW_ONLY
 #   error This compiler or standard library does not support wide-character strings or paths
 # endif
 

@@ -1536,10 +1536,10 @@ namespace boost
 # ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     using filesystem2::wpath_traits;
     using filesystem2::wpath;
+    using filesystem2::wfilesystem_error;
 # endif
     using filesystem2::basic_filesystem_error;
     using filesystem2::filesystem_error;
-    using filesystem2::wfilesystem_error;
     using filesystem2::portable_posix_name;
     using filesystem2::windows_name;
     using filesystem2::portable_name;

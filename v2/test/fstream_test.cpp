@@ -25,7 +25,7 @@
 
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
-#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 #  include "lpath.hpp"
 #endif
 
@@ -156,7 +156,7 @@ int main( int argc, char*[] )
   std::cout << "path tests:\n";
   test( fs::path( "fstream_test_foo" ) );
 
-#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
   // So that tests are run with known encoding, use Boost UTF-8 codecvt
   std::locale global_loc = std::locale();

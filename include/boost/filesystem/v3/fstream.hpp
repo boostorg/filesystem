@@ -12,9 +12,13 @@
 #ifndef BOOST_FILESYSTEM3_FSTREAM_HPP
 #define BOOST_FILESYSTEM3_FSTREAM_HPP
 
-#include <boost/filesystem/v3/path.hpp>
 #include <boost/config.hpp>
 
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
+
+#include <boost/filesystem/v3/path.hpp>
 #include <iosfwd>
 #include <fstream>
 

@@ -9,6 +9,12 @@
 
 #define BOOST_FILESYSTEM_VERSION 3
 
+#include <boost/config.hpp>
+
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
+
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -949,7 +955,7 @@ namespace
     BOOST_TEST(fs::remove(link2));
     BOOST_TEST(!fs::exists(link));
     BOOST_TEST(!fs::exists(link2));
-  BOOST_TEST(!fs::is_symlink(link));
+    BOOST_TEST(!fs::is_symlink(link));
 
     // remove() symbolic link to file
     fs::path file_ph = "link_target";
@@ -1353,15 +1359,21 @@ int main(int argc, char* argv[])
     remove_symlink_tests();
   write_time_tests(dir);
 
+  std::cout << "testing complete" << std::endl;
+
   // post-test cleanup
   if (cleanup)
   {
+    std::cout << "post-test removal of " << dir << std::endl;
     BOOST_TEST(fs::remove_all(dir) != 0);
     // above was added just to simplify testing, but it ended up detecting
     // a bug (failure to close an internal search handle). 
+    std::cout << "post-test removal complete" << std::endl;
     BOOST_TEST(!fs::exists(dir));
     BOOST_TEST(fs::remove_all(dir) == 0);
   }
+
+  std::cout << "returning from main()" << std::endl;
   return ::boost::report_errors();
 } // main
 

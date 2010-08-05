@@ -586,14 +586,16 @@ namespace boost
 {
   namespace filesystem
   {
-    using filesystem2::filebuf;
-    using filesystem2::ifstream;
-    using filesystem2::ofstream;
-    using filesystem2::fstream;
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     using filesystem2::wfilebuf;
     using filesystem2::wifstream;
     using filesystem2::wfstream;
     using filesystem2::wofstream;
+# endif
+    using filesystem2::filebuf;
+    using filesystem2::ifstream;
+    using filesystem2::ofstream;
+    using filesystem2::fstream;
     using filesystem2::basic_filebuf;
     using filesystem2::basic_ifstream;
     using filesystem2::basic_ofstream;
