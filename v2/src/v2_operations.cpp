@@ -122,7 +122,7 @@ namespace
   inline DWORD get_file_attributes( const char * ph )
     { return ::GetFileAttributesA( ph ); }
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
   inline DWORD get_file_attributes( const wchar_t * ph )
     { return ::GetFileAttributesW( ph ); }
@@ -180,7 +180,7 @@ namespace
     {  return ::CreateHardLinkW( from_ph.c_str(), to_ph.c_str(), 0 ) != 0; }
 #endif
   
-# endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# endif // ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
   template< class String >
   fs::file_status status_template( const String & ph, error_code & ec )
@@ -625,7 +625,7 @@ namespace boost
         status_api( const std::string & ph, error_code & ec )
         { return status_template( ph, ec ); }
 
-#     ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#     ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
       BOOST_FILESYSTEM_DECL fs::file_status
       status_api( const std::wstring & ph, error_code & ec )
@@ -806,7 +806,7 @@ namespace boost
         return ok;
       }
 
-#     endif // ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#     endif // ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
       // suggested by Walter Landry
       BOOST_FILESYSTEM_DECL bool symbolic_link_exists_api( const std::string & )

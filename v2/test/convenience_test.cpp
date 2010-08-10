@@ -28,7 +28,7 @@ namespace sys = boost::system;
 #include <fstream>
 #include <iostream>
 
-#ifndef BOOST_FILESYSTEM_NARROW_ONLY
+#ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 # define BOOST_FS_IS_EMPTY fs::is_empty
 # define BOOST_BND(BOOST_FUNC_TO_DO) BOOST_FUNC_TO_DO<fs::path>
 #else

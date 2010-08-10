@@ -92,7 +92,7 @@ namespace boost
 	  } 
 # endif
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
     // "do-the-right-thing" overloads  ---------------------------------------//
 
@@ -206,7 +206,7 @@ namespace boost
     };
 
     typedef basic_recursive_directory_iterator<path> recursive_directory_iterator;
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     typedef basic_recursive_directory_iterator<wpath> wrecursive_directory_iterator;
 # endif
 
@@ -325,7 +325,7 @@ namespace boost
     using filesystem2::change_extension;
 # endif
 
-# ifndef BOOST_FILESYSTEM_NARROW_ONLY
+# ifndef BOOST_FILESYSTEM2_NARROW_ONLY
     using filesystem2::wrecursive_directory_iterator;
 # endif
 

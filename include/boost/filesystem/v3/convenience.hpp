@@ -13,6 +13,12 @@
 #ifndef BOOST_FILESYSTEM3_CONVENIENCE_HPP
 #define BOOST_FILESYSTEM3_CONVENIENCE_HPP
 
+#include <boost/config.hpp>
+
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
+
 #include <boost/filesystem/v3/operations.hpp>
 #include <boost/system/error_code.hpp>
 
