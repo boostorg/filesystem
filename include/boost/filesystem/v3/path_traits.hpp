@@ -20,6 +20,7 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/system/error_code.hpp>
+#include <cwchar>  // for mbstate_t
 #include <string>
 #include <vector>
 #include <iterator>

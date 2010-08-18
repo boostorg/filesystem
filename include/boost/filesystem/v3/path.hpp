@@ -22,7 +22,7 @@
 # endif
 
 #include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path_traits.hpp>
+#include <boost/filesystem/v3/path_traits.hpp>  // includes <cwchar>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
