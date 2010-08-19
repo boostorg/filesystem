@@ -196,13 +196,8 @@ namespace path_traits {
     convert(c_str, to, cvt);
   }
   
-  //  C-style array
-  template <typename T, size_t N, class U> inline
-  void dispatch(T (&array)[N], U& to, const codecvt_type& cvt) // T, N, U deduced
-  {
-//    std::cout << "dispatch() array, N=" << N << "\n"; 
-    convert(array, array + N - 1, to, cvt);
-  }
+  //  Note: there is no dispatch on C-style arrays because the array may
+  //  contain a string smaller than the array size. 
 
   BOOST_FILESYSTEM_DECL
   void dispatch(const directory_entry & de,

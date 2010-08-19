@@ -46,6 +46,8 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstring>
+#include <cwchar>
 #include <locale>
 #include <list>
 
@@ -190,6 +192,18 @@ namespace
     path x7(L"array wchar_t");                         // array wchar_t
     PATH_IS(x7, L"array wchar_t");
     BOOST_TEST_EQ(x7.native().size(), 13U);
+
+    char char_array[100];
+    std::strcpy(char_array, "big array char");
+    path x6o(char_array);                              // array char, only partially full
+    PATH_IS(x6o, L"big array char");
+    BOOST_TEST_EQ(x6o.native().size(), 14U);
+
+    wchar_t wchar_array[100];
+    std::wcscpy(wchar_array, L"big array wchar_t");
+    path x7o(wchar_array);                             // array char, only partially full
+    PATH_IS(x7o, L"big array wchar_t");
+    BOOST_TEST_EQ(x7o.native().size(), 17U);
 
     path x8(s.c_str());                                // const char* null terminated
     PATH_IS(x8, L"string");
