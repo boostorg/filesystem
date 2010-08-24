@@ -19,10 +19,12 @@
 #include <boost/filesystem/v3/config.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_array.hpp>
+#include <boost/type_traits/decay.hpp>
 #include <boost/system/error_code.hpp>
 #include <cwchar>  // for mbstate_t
 #include <string>
 #include <vector>
+#include <list>
 #include <iterator>
 #include <locale>
 #include <boost/assert.hpp>
@@ -48,6 +50,23 @@ namespace boost { namespace filesystem3 {
 namespace path_traits {
  
   typedef std::codecvt<wchar_t, char, std::mbstate_t> codecvt_type;
+
+  //  is_pathable type trait; allows disabling over-agressive class path member templates
+
+  template <class T>
+  struct is_pathable { static const bool value = false; };
+
+  template<> struct is_pathable<char*>                  { static const bool value = true; };
+  template<> struct is_pathable<const char*>            { static const bool value = true; };
+  template<> struct is_pathable<wchar_t*>               { static const bool value = true; };
+  template<> struct is_pathable<const wchar_t*>         { static const bool value = true; };
+  template<> struct is_pathable<std::string>            { static const bool value = true; };
+  template<> struct is_pathable<std::wstring>           { static const bool value = true; };
+  template<> struct is_pathable<std::vector<char> >     { static const bool value = true; };
+  template<> struct is_pathable<std::vector<wchar_t> >  { static const bool value = true; };
+  template<> struct is_pathable<std::list<char> >       { static const bool value = true; };
+  template<> struct is_pathable<std::list<wchar_t> >    { static const bool value = true; };
+  template<> struct is_pathable<directory_entry>        { static const bool value = true; };
 
   //  Pathable empty
 

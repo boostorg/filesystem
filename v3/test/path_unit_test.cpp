@@ -41,6 +41,7 @@
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/smart_ptr.hpp>  // used constructor tests
 
 #include <iostream>
 #include <iomanip>
@@ -146,6 +147,11 @@ namespace
   std::vector<char> v;      // see main() for initialization to f, u, z
   std::vector<wchar_t> wv;  // see main() for initialization to w, f, u, z
 
+  class Base {};
+  class Derived : public Base {};
+  void fun(const boost::filesystem::path&) {}
+  void fun(const boost::shared_ptr< Base >&) {}
+
   //  test_constructors  ---------------------------------------------------------------//
 
   void test_constructors()
@@ -224,6 +230,10 @@ namespace
 
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK
+
+    boost::shared_ptr< Derived > pDerived( new Derived() ); 
+    fun( pDerived );  // tests constructor member template enable_if working correctly;
+                      // will fail to compile if enable_if not taking path off the table
   }
 
   path x;
