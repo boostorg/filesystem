@@ -92,6 +92,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hebrew_example", "hebrew_ex
 		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "enable_if_test", "enable_if_test\enable_if_test.vcproj", "{03FC7556-1052-45FF-A162-90D595713EAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -162,6 +164,8 @@ Global
 		{F9F236A2-8B57-415A-8397-7145144400F5}.Debug|Win32.Build.0 = Debug|Win32
 		{F9F236A2-8B57-415A-8397-7145144400F5}.Release|Win32.ActiveCfg = Release|Win32
 		{F9F236A2-8B57-415A-8397-7145144400F5}.Release|Win32.Build.0 = Release|Win32
+		{03FC7556-1052-45FF-A162-90D595713EAB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{03FC7556-1052-45FF-A162-90D595713EAB}.Release|Win32.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
