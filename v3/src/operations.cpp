@@ -373,7 +373,7 @@ namespace
             itr != end_dir_itr; ++itr)
       {
         fs::file_status tmp_sym_stat = fs::symlink_status(itr->path(), *ec);
-        if (ec != 0 && ec)
+        if (ec != 0 && *ec)
           return count;
         count += remove_all_aux(itr->path(), tmp_sym_stat, ec);
       }
@@ -659,7 +659,7 @@ namespace detail
   void copy(const path& from, const path& to, system::error_code* ec)
   {
     file_status s(symlink_status(from, *ec));
-    if (ec != 0 && ec)return;
+    if (ec != 0 && *ec) return;
 
     if(is_symlink(s))
     {
@@ -703,32 +703,20 @@ namespace detail
   }
 
   BOOST_FILESYSTEM_DECL
-  void copy_symlink(const path& from, const path& to, system::error_code* ec)
+  void copy_symlink(const path& existing_symlink, const path& new_symlink,
+    system::error_code* ec)
   {
-#   ifdef BOOST_POSIX_API  
-    path p(read_symlink(from, ec));
-    if (ec != 0 && ec) return;
-    create_symlink(p, to, ec);
-
-#   elif _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
-    error(true, error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()), to, from, ec,
+# if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
+    error(true, error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
+      new_symlink, existing_symlink, ec,
       "boost::filesystem::copy_symlink");
 
-#   else  // modern Windows
+# else  // modern Windows or BOOST_POSIX_API 
+    path p(read_symlink(existing_symlink, ec));
+    if (ec != 0 && *ec) return;
+    create_symlink(p, new_symlink, ec);
 
-    // see if actually supported by Windows runtime dll
-    if (error(!create_symbolic_link_api,
-        error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
-        to, from, ec,
-        "boost::filesystem3::copy_symlink"))
-      return;
-
-	  // preconditions met, so attempt the copy
-	  error(!::CopyFileExW(from.c_str(), to.c_str(), 0, 0, 0,
-		  COPY_FILE_COPY_SYMLINK | COPY_FILE_FAIL_IF_EXISTS), to, from, ec,
-		  "boost::filesystem3::copy_symlink");
-#   endif
-
+# endif
   }
 
   BOOST_FILESYSTEM_DECL
@@ -842,12 +830,12 @@ namespace detail
         if (error(!create_symbolic_link_api,
             error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()),
             to, from, ec,
-            "boost::filesystem::create_directory_symlink"))
+            "boost::filesystem::create_symlink"))
           return;
 #     endif
 
     error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), 0),
-      to, from, ec, "boost::filesystem::create_directory_symlink");
+      to, from, ec, "boost::filesystem::create_symlink");
 #   endif
   }
 

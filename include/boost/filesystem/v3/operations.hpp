@@ -145,7 +145,7 @@ namespace boost
                     BOOST_SCOPED_ENUM(copy_option) option,  // See ticket #2925
                     system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
-    void copy_symlink(const path& from, const path& to, system::error_code* ec=0);
+    void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     bool create_directories(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -304,11 +304,11 @@ namespace boost
   void copy_file(const path& from, const path& to, system::error_code& ec)
                                        {detail::copy_file(from, to, copy_option::fail_if_exists, &ec);}
   inline
-  void copy_symlink(const path& from, const path& to) {detail::copy_symlink(from, to);}
+  void copy_symlink(const path& existing_symlink, const path& new_symlink) {detail::copy_symlink(existing_symlink, new_symlink);}
 
   inline
-  void copy_symlink(const path& from, const path& to, system::error_code& ec)
-                                       {detail::copy_symlink(from, to, &ec);}
+  void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code& ec)
+                                       {detail::copy_symlink(existing_symlink, new_symlink, &ec);}
   inline
   bool create_directories(const path& p) {return detail::create_directories(p);}
 
@@ -938,6 +938,7 @@ namespace boost
     using filesystem3::absolute;
     using filesystem3::block_file;
     using filesystem3::character_file;
+//    using filesystem3::copy;
     using filesystem3::copy_file;
     using filesystem3::copy_option;
     using filesystem3::copy_symlink;

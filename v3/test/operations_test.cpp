@@ -1087,6 +1087,39 @@ namespace
     BOOST_TEST(copy_ex_ok);
   }
 
+ //  copy_symlink_tests  ---------------------------------------------------------------//
+
+  void copy_symlink_tests(const fs::path& file_ph, const fs::path& d1)
+  {
+    std::cout << "copy_symlink_tests..." << std::endl;
+
+    BOOST_TEST(fs::exists(file_ph));
+    BOOST_TEST(fs::exists(d1));
+    fs::path sym1(d1 / "symlink1");
+    fs::remove(sym1);  // remove possible residue from prior testing
+    fs::create_symlink(file_ph, sym1);
+    BOOST_TEST(fs::exists(sym1));
+    BOOST_TEST(fs::is_symlink(sym1));
+    fs::path sym2(d1 / "symlink2");
+    fs::copy_symlink(sym1, sym2);
+    BOOST_TEST(fs::exists(sym2));
+    BOOST_TEST(fs::is_symlink(sym2));
+    //fs::path sym3(d1 / "symlink3");
+    //fs::copy(sym1, sym3);
+    //BOOST_TEST(fs::exists(sym3));
+    //BOOST_TEST(fs::is_symlink(sym3));
+
+    bool copy_ex_ok = false;
+    try { fs::copy_symlink("no-such-file", "new-symlink1"); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
+    BOOST_TEST(copy_ex_ok);
+
+    copy_ex_ok = false;
+    try { fs::copy_symlink(file_ph, "new-symlink2"); } // should fail; file_ph not symlink
+    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
+    BOOST_TEST(copy_ex_ok);
+  }
+
   //  write_time_tests  ----------------------------------------------------------------//
 
   void write_time_tests(const fs::path& dir)
@@ -1353,6 +1386,8 @@ int main(int argc, char* argv[])
   resize_file_tests();
   absolute_tests();
   copy_file_tests(file_ph, d1);
+  if (create_symlink_ok)  // only if symlinks supported
+    copy_symlink_tests(file_ph, d1);
   rename_tests();
   remove_tests(dir);
   if (create_symlink_ok)  // only if symlinks supported
