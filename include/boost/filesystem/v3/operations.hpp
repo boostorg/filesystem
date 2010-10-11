@@ -68,14 +68,17 @@ namespace boost
     file_not_found,
     regular_file,
     directory_file,
-    // the following will never be reported by some operating or file systems
+    // the following may not apply to some operating systems or file systems
     symlink_file,
     block_file,
     character_file,
     fifo_file,
     socket_file,
-    type_unknown // file does exist, but isn't one of the above types or
-                 // we don't have strong enough permission to find its type
+    reparse_file,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
+    type_unknown, // file does exist, but isn't one of the above types or
+                  // we don't have strong enough permission to find its type
+
+    _detail_directory_symlink  // internal use only; never exposed to users
   };
 
   class BOOST_FILESYSTEM_DECL file_status
@@ -946,6 +949,7 @@ namespace boost
     using filesystem3::create_directory;
     using filesystem3::create_hard_link;
     using filesystem3::create_symlink;
+    using filesystem3::create_directory_symlink;
     using filesystem3::current_path;
     using filesystem3::directory_entry;
     using filesystem3::directory_file;
