@@ -464,7 +464,7 @@ namespace
 
   inline fs::file_type query_file_type(const path& p, error_code* ec)
   {
-    return fs::symlink_status(p, ec).type();
+    return fs::detail::symlink_status(p, ec).type();
   }
 
 # else
