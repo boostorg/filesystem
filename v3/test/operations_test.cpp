@@ -38,6 +38,8 @@ using boost::system::system_error;
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <cstring> // for strncmp, etc.
 #include <ctime>
 #include <cstdlib> // for system(), getenv(), etc.
@@ -416,64 +418,76 @@ namespace
     // test the basic operation of directory_iterators, and test that
     // stepping one iterator doesn't affect a different iterator.
     {
-      fs::directory_iterator dir_itr(dir);
-      BOOST_TEST(fs::exists(dir_itr->status()));
-      BOOST_TEST(fs::is_directory(dir_itr->status()));
-      BOOST_TEST(!fs::is_regular_file(dir_itr->status()));
-      BOOST_TEST(!fs::is_other(dir_itr->status()));
-      BOOST_TEST(!fs::is_symlink(dir_itr->status()));
+      typedef std::vector<fs::directory_entry> vec_type;
+      vec_type vec;
 
-      fs::directory_iterator dir_itr2(dir);
-      BOOST_TEST(dir_itr->path().filename() == "d1"
-        || dir_itr->path().filename() == "d2");
-      BOOST_TEST(dir_itr2->path().filename() == "d1"
-        || dir_itr2->path().filename() == "d2");
-      //if (dir_itr->path().filename() == "d1")
-      //{
-      //  BOOST_TEST((++dir_itr)->path().filename() == "d2");
-      //  BOOST_TEST(dir_itr2->path().filename() == "d1");
-      //  BOOST_TEST((++dir_itr2)->path().filename() == "d2");
-      //}
-      //else
-      //{
-      //  BOOST_TEST(dir_itr->path().filename() == "d2");
-      //  BOOST_TEST((++dir_itr)->path().filename() == "d1");
-      //  BOOST_TEST((dir_itr2)->path().filename() == "d2");
-      //  BOOST_TEST((++dir_itr2)->path().filename() == "d1");
-      //}
-      ++dir_itr;
-      ++dir_itr;
-      ++dir_itr;
-      BOOST_TEST(++dir_itr == fs::directory_iterator());
-      BOOST_TEST(dir_itr2 != fs::directory_iterator());
+      fs::directory_iterator it1(dir);
+      BOOST_TEST(it1 != fs::directory_iterator());
+      BOOST_TEST(fs::exists(it1->status()));
+      vec.push_back(*it1);
+      BOOST_TEST(*it1 == vec[0]);
+
+      fs::directory_iterator it2(dir);
+      BOOST_TEST(it2 != fs::directory_iterator());
+      BOOST_TEST(*it1 == *it2);
+
+      ++it1;
+      BOOST_TEST(it1 != fs::directory_iterator());
+      BOOST_TEST(fs::exists(it1->status()));
+      BOOST_TEST(it1 != it2);
+      BOOST_TEST(*it1 != vec[0]);
+      BOOST_TEST(*it2 == vec[0]);
+      vec.push_back(*it1);
+
+      ++it1;
+      BOOST_TEST(it1 != fs::directory_iterator());
+      BOOST_TEST(fs::exists(it1->status()));
+      BOOST_TEST(it1 != it2);
+      BOOST_TEST(*it2 == vec[0]);
+      vec.push_back(*it1);
+
+      ++it1;
+      BOOST_TEST(it1 != fs::directory_iterator());
+      BOOST_TEST(fs::exists(it1->status()));
+      BOOST_TEST(it1 != it2);
+      BOOST_TEST(*it2 == vec[0]);
+      vec.push_back(*it1);
+
+      ++it1;
+      BOOST_TEST(it1 == fs::directory_iterator());
+
+      BOOST_TEST(*it2 == vec[0]);
       ec.clear();
-      dir_itr2.increment(ec);
+      it2.increment(ec);
       BOOST_TEST(!ec);
-      ++dir_itr2;
-      ++dir_itr2;
-      ++dir_itr2;
-      BOOST_TEST(dir_itr2 == fs::directory_iterator());
+      BOOST_TEST(it2 != fs::directory_iterator());
+      BOOST_TEST(it1 == fs::directory_iterator());
+      BOOST_TEST(*it2 == vec[1]);
+      ++it2;
+      BOOST_TEST(*it2 == vec[2]);
+      BOOST_TEST(it1 == fs::directory_iterator());
+      ++it2;
+      BOOST_TEST(*it2 == vec[3]);
+      ++it2;
+      BOOST_TEST(it1 == fs::directory_iterator());
+      BOOST_TEST(it2 == fs::directory_iterator());
+
+      // sort vec and check that the right directory entries were found
+      std::sort(vec.begin(), vec.end());
+
+      BOOST_TEST_EQ(vec[0].path().filename().string(), std::string("d1"));
+      BOOST_TEST_EQ(vec[1].path().filename().string(), std::string("d2"));
+      BOOST_TEST_EQ(vec[2].path().filename().string(), std::string("f0"));
+      BOOST_TEST_EQ(vec[3].path().filename().string(), std::string("f1"));
     }
 
-    { // *i++ must work to meet the standard's InputIterator requirements
+    { // *i++ must meet the standard's InputIterator requirements
       fs::directory_iterator dir_itr(dir);
-      BOOST_TEST(dir_itr->path().filename() == "d1"
-        || dir_itr->path().filename() == "d2");
-      if (dir_itr->path().filename() == "d1")
-      {
-        BOOST_TEST((*dir_itr++).path().filename() == "d1");
-        BOOST_TEST(dir_itr->path().filename() == "d2");
-      }
-      else
-      {
-        // Check C++98 input iterator requirements
-        BOOST_TEST((*dir_itr++).path().filename() == "d2");
-        // input iterator requirements in the current WP would require this check:
-        // BOOST_TEST(implicit_cast<std::string const&>(*dir_itr++).filename() == "d1");
-
-        BOOST_TEST(dir_itr->path().filename() == "d1"
-          || dir_itr->path().filename() == "f0" || dir_itr->path().filename() == "f1");
-      }
+      BOOST_TEST(dir_itr != fs::directory_iterator());
+      fs::path p = dir_itr->path();
+      BOOST_TEST((*dir_itr++).path() == p);
+      BOOST_TEST(dir_itr != fs::directory_iterator());
+      BOOST_TEST(dir_itr->path() != p);
 
       // test case reported in comment to SourceForge bug tracker [937606]
       fs::directory_iterator it(dir);
