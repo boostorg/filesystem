@@ -114,6 +114,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#status_known">status_known</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#symlink_status">symlink_status</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#system_complete">system_complete</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp <a href="#temp_directory_path">temp_directory_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a></td>
     <td width="34%" valign="top">
     <a href="#File-streams">File streams</a><br>
@@ -436,6 +437,9 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       path         <a href="#system_complete">system_complete</a>(const path&amp; p);
       path         <a href="#system_complete">system_complete</a>(const path&amp; p, system::error_code&amp; ec);
+
+      path         <a href="#temp_directory_path">temp_directory_path</a>();
+      path         <a href="#temp_directory_path">temp_directory_path</a>(system::error_code&amp; ec);
 
       path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
       path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
@@ -2442,6 +2446,21 @@ path <a name="system_complete2">system_complete</a>(const path&amp; p, system::e
   <p>See <a href="#complete_note">
   <i>complete()</i> note</a> for usage suggestions. <i>-- end note</i>]</p>
 </blockquote>
+<pre>path <a name="temp_directory_path">temp_directory_path</a>();
+path temp_directory_path(system::error_code&amp; ec);</pre>
+<blockquote>
+  <p><i>Returns:</i> A directory path suitable for temporary files under the 
+  conventions of the operating system. The specifics of how this path is 
+  determined are implementation defined. An error shall be reported if<code> !exists(p) 
+  || !is_directory(p)</code>, where <code>p</code> is the path to be returned.</p>
+  <p><i>POSIX:</i> The path supplied by the first environment variable in the 
+  list TMPDIR, TMP, TEMP, TEMPDIR that names an existing directory.</p>
+  <p><i>Windows:</i> The path reported by the <i>Windows</i> <code>GetTempPath</code> API function.</p>
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">
+  Error reporting</a>.</p>
+  <p>[<i>Note: </i>The <code>temp_directory_path()</code> name was chosen to emphasize that the return is a 
+  path, not just a single directory name.&nbsp; <i>-- end note</i>]</p>
+</blockquote>
 <pre>path <a name="unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
 path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
 <blockquote>
@@ -3038,7 +3057,8 @@ http://www.boost.org/libs/filesystem/doc/index.htm#Acknowledgements</a>.</p>
 <p>Dietmar Kuehl contributed the original Boost Filesystem Library directory_iterator design. Peter Dimov, Walter Landry, Rob Stewart, and Thomas 
 Witt were particularly helpful in refining the library.</p>
 <p>The create_directories, extension, basename, and replace_extension functions 
-were developed by Vladimir Prus.</p>
+were developed by Vladimir Prus. The temp_directory_path function was 
+contributed by Jeff Flinn.</p>
 <p>Howard Hinnant and John Maddock reviewed a draft of the version 2 proposal, and 
 identified a number of mistakes or weaknesses, resulting in a more polished 
 final document.</p>
@@ -3069,7 +3089,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->05 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32123" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32126" --></p>
 
 </body>
 

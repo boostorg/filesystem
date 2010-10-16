@@ -191,6 +191,8 @@ namespace boost
     BOOST_FILESYSTEM_DECL
     path system_complete(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
+    path temp_directory_path(system::error_code* ec=0);
+    BOOST_FILESYSTEM_DECL
     path unique_path(const path& p, system::error_code* ec=0);
   }  // namespace detail
 
@@ -445,6 +447,12 @@ namespace boost
   inline
   path system_complete(const path& p, system::error_code& ec)
                                        {return detail::system_complete(p, &ec);}
+  inline
+  path temp_directory_path()           {return detail::temp_directory_path();}
+
+  inline
+  path temp_directory_path(system::error_code& ec) 
+                                       {return detail::temp_directory_path(&ec);}
   inline
   path unique_path(const path& p="%%%%-%%%%-%%%%-%%%%")
                                        { return detail::unique_path(p); }
@@ -986,6 +994,7 @@ namespace boost
     using filesystem3::symlink_file;
     using filesystem3::symlink_status;
     using filesystem3::system_complete;
+    using filesystem3::temp_directory_path;
     using filesystem3::type_unknown;
     using filesystem3::unique_path;
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED

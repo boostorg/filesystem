@@ -49,6 +49,7 @@
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <cstdlib>  // for malloc, free
+#include <vector>
 
 #ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 # include <iostream>
@@ -1512,6 +1513,55 @@ namespace detail
 #   endif
   }
 
+   // contributed by Jeff Flinn
+  BOOST_FILESYSTEM_DECL
+  path temp_directory_path(system::error_code* ec)
+  {
+#   ifdef BOOST_POSIX_API
+      const char* val = 0;
+      
+      (val = std::getenv("TMPDIR" )) ||
+      (val = std::getenv("TMP"    )) ||
+      (val = std::getenv("TEMP"   )) ||
+      (val = std::getenv("TEMPDIR"));
+      
+      path p((val!=0)? val : "");
+      
+      if(!val||(ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
+      {
+        errno = ENOTDIR;
+        error(true, ec, "boost::filesystem::temp_directory_path");
+        return p;
+      }
+        
+      return p;
+      
+#   else  // Windows
+
+      std::vector<path::value_type> buf(GetTempPathW(0, NULL));
+
+      if(buf.empty() || GetTempPathW(buf.size(), &buf[0])==0)
+      {
+        if(!buf.empty()) ::SetLastError(ENOTDIR);
+        error(true, ec, "boost::filesystem::temp_directory_path");
+        return path();
+      }
+          
+      buf.pop_back();
+      
+      path p(buf.begin(), buf.end());
+          
+      if((ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
+      {
+        ::SetLastError(ENOTDIR);
+        error(true, ec, "boost::filesystem::temp_directory_path");
+        return path();
+      }
+      
+      return p;
+#   endif
+  }
+  
   BOOST_FILESYSTEM_DECL
   path system_complete(const path& p, system::error_code* ec)
   {
