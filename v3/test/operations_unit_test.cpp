@@ -7,6 +7,12 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//  ------------------------------------------------------------------------------------//
+
+//  This program is misnamed - it is really a smoke test rather than a unit_test
+
+//  ------------------------------------------------------------------------------------//
+
 #define BOOST_FILESYSTEM_VERSION 3
 
 #include <boost/config.hpp>

@@ -692,6 +692,7 @@ namespace
 
     // extension() tests not otherwise covered
     BOOST_TEST(path("a/b").extension() == "");
+    BOOST_TEST(path("a.b/c").extension() == "");
     BOOST_TEST(path("a/b.txt").extension() == ".txt");
     BOOST_TEST(path("a/b.").extension() == ".");
     BOOST_TEST(path("a.b.c").extension() == ".c");
@@ -1561,7 +1562,9 @@ namespace
     BOOST_TEST(path("a").replace_extension(".txt") == "a.txt");
     BOOST_TEST(path("a").replace_extension("txt") == "a");
     BOOST_TEST(path("a.b.txt").replace_extension(".tex") == "a.b.tex");  
-    BOOST_TEST(path("a.b.txt").replace_extension("tex") == "a.b");  
+    BOOST_TEST(path("a.b.txt").replace_extension("tex") == "a.b");
+    BOOST_TEST(path("a/b").replace_extension(".c") == "a/b.c");
+    BOOST_TEST_EQ(path("a.txt/b").replace_extension(".c"), "a.txt/b.c"); // ticket 4702
   }
 
 } // unnamed namespace

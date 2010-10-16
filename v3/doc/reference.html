@@ -337,11 +337,20 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
 </span>      path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
 
+      void         copy(const path&amp; from, const path&amp; to);
+      void         copy(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+
+      void         copy_directory(const path&amp; from, const path&amp; to);
+      void         copy_directory(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option,
                              system::error_code&amp; ec);
+
+      void         copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink);
+      void         copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);
 
       bool         <a href="#create_directories">create_directories</a>(const path&amp; p);
       bool         <a href="#create_directories">create_directories</a>(const path&amp; p, system::error_code&amp; ec);
@@ -349,11 +358,14 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       bool         <a href="#create_directory">create_directory</a>(const path&amp; p);
       bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
-      void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; from);
-      void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; from, system::error_code&amp; ec);
+<span style="background-color: #FFFFFF">      void         create_directory_symlink(const path&amp; to, const path&amp; </span>new_symlink<span style="background-color: #FFFFFF">);
+      void         create_directory_symlink(const path&amp; to, const path&amp; </span>new_symlink, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
+</span>
+      void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
+      void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);
 
-<span style="background-color: #FFFFFF">      void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; from);
-      void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; from</span>, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
+<span style="background-color: #FFFFFF">      void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; </span>new_symlink<span style="background-color: #FFFFFF">);
+      void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; </span>new_symlink, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
 
 </span>      path         <a href="#current_path">current_path</a>();
       path         <a href="#current_path">current_path</a>(system::error_code&amp; ec);
@@ -368,7 +380,9 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);
 
       <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p);
-      <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);
+      <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+<pre>      uintmax_t    hard_link_count(const path&amp; p);
+      uintmax_t    hard_link_count(const path&amp; p, system::error_code&amp; ec);
 
       bool         <a href="#is_directory">is_directory</a>(file_status s);
       bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
@@ -405,6 +419,9 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to);
       void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+
+      void         resize_file(const path&amp; p, uintmax_t size);
+      void         resize_file(const path&amp; p, uintmax_t size, system::error_code&amp; ec);
 
 <span style="background-color: #FFFFFF">      <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p);
       <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p</span>, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
@@ -3052,7 +3069,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 July 2010<!--webbot bot="Timestamp" endspan i-checksum="18762" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->05 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32123" --></p>
 
 </body>
 

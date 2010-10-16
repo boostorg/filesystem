@@ -41,11 +41,14 @@
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/smart_ptr.hpp>  // used constructor tests
 
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstring>
+#include <cwchar>
 #include <locale>
 #include <list>
 
@@ -144,6 +147,11 @@ namespace
   std::vector<char> v;      // see main() for initialization to f, u, z
   std::vector<wchar_t> wv;  // see main() for initialization to w, f, u, z
 
+  class Base {};
+  class Derived : public Base {};
+  void fun(const boost::filesystem::path&) {}
+  void fun(const boost::shared_ptr< Base >&) {}
+
   //  test_constructors  ---------------------------------------------------------------//
 
   void test_constructors()
@@ -191,6 +199,18 @@ namespace
     PATH_IS(x7, L"array wchar_t");
     BOOST_TEST_EQ(x7.native().size(), 13U);
 
+    char char_array[100];
+    std::strcpy(char_array, "big array char");
+    path x6o(char_array);                              // array char, only partially full
+    PATH_IS(x6o, L"big array char");
+    BOOST_TEST_EQ(x6o.native().size(), 14U);
+
+    wchar_t wchar_array[100];
+    std::wcscpy(wchar_array, L"big array wchar_t");
+    path x7o(wchar_array);                             // array char, only partially full
+    PATH_IS(x7o, L"big array wchar_t");
+    BOOST_TEST_EQ(x7o.native().size(), 17U);
+
     path x8(s.c_str());                                // const char* null terminated
     PATH_IS(x8, L"string");
     BOOST_TEST_EQ(x8.native().size(), 6U);
@@ -210,6 +230,10 @@ namespace
 
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK
+
+    boost::shared_ptr< Derived > pDerived( new Derived() ); 
+    fun( pDerived );  // tests constructor member template enable_if working correctly;
+                      // will fail to compile if enable_if not taking path off the table
   }
 
   path x;

@@ -1329,6 +1329,7 @@ int main( int, char*[] )
 // extension() tests
 
   BOOST_TEST( path("a/b").extension() == "" );
+  BOOST_TEST( path("a.b/c").extension() == "" );
   BOOST_TEST( path("a/b.txt").extension() == ".txt" );
   BOOST_TEST( path("a/b.").extension() == "." );
   BOOST_TEST( path("a.b.c").extension() == ".c" );
@@ -1359,6 +1360,7 @@ int main( int, char*[] )
   BOOST_TEST( path("a.b.txt" ).replace_extension("tex").string() == "a.b.tex" );  
   // see the rationale in html docs for explanation why this works
   BOOST_TEST( path("").replace_extension(".png").string() == ".png" );
+  BOOST_TEST_EQ(path("a.txt/b").replace_extension(".c"), "a.txt/b.c"); // ticket 4702
 
   // inserter and extractor tests
 # if !defined( BOOST_MSVC ) || BOOST_MSVC > 1300 // bypass VC++ 7.0 and earlier

@@ -11,7 +11,8 @@
 #define BOOST_FILESYSTEM3_TEST_CODECVT_HPP
 
 #include <boost/filesystem/v3/config.hpp>
-#include <locale>  
+#include <locale>
+#include <cwchar>  // for mbstate_t
 
   //------------------------------------------------------------------------------------//
   //                                                                                    //
