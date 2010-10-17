@@ -1525,43 +1525,23 @@ namespace
         {}                
       };
 
-      try
       {
-        guarded_tmp_vars vars(0, 0, 0, 0);
-        fs::path ph = fs::temp_directory_path();
-        
-        BOOST_TEST(false); // should throw
-      }
-      catch(const boost::filesystem::filesystem_error& e)
-      {
-        BOOST_TEST(e.code() == boost::system::errc::not_a_directory);
-      }
-      
-      {
-          guarded_tmp_vars vars(0, 0, 0, 0);
-          error_code ec;
-          fs::path ph = fs::temp_directory_path(ec);
-          BOOST_TEST(ec);
-          BOOST_TEST(ec == boost::system::errc::not_a_directory);
-      }
-      
-      {
-        guarded_tmp_vars vars(test_temp_dir.BOOST_FILESYSTEM_C_STR, 0, 0, 0);
+        guarded_tmp_vars vars(test_temp_dir.c_str(), 0, 0, 0);
         fs::path ph = fs::temp_directory_path();
         BOOST_TEST(equivalent(test_temp_dir, ph));
       }
       {
-        guarded_tmp_vars vars(0, test_temp_dir.BOOST_FILESYSTEM_C_STR, 0, 0);
+        guarded_tmp_vars vars(0, test_temp_dir.c_str(), 0, 0);
         fs::path ph = fs::temp_directory_path();
         BOOST_TEST(equivalent(test_temp_dir, ph));
       }
       {
-        guarded_tmp_vars vars(0, 0, test_temp_dir.BOOST_FILESYSTEM_C_STR, 0);
+        guarded_tmp_vars vars(0, 0, test_temp_dir.c_str(), 0);
         fs::path ph = fs::temp_directory_path();
         BOOST_TEST(equivalent(test_temp_dir, ph));
       }
       {
-        guarded_tmp_vars vars(0, 0, 0, test_temp_dir.BOOST_FILESYSTEM_C_STR);
+        guarded_tmp_vars vars(0, 0, 0, test_temp_dir.c_str());
         fs::path ph = fs::temp_directory_path();
         BOOST_TEST(equivalent(test_temp_dir, ph));
       }

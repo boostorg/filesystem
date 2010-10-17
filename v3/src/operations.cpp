@@ -1525,12 +1525,12 @@ namespace detail
       (val = std::getenv("TEMP"   )) ||
       (val = std::getenv("TEMPDIR"));
       
-      path p((val!=0)? val : "");
+      path p((val!=0) ? val : "/tmp");
       
-      if(!val||(ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
+      if (p.empty() || (ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
       {
         errno = ENOTDIR;
-        error(true, ec, "boost::filesystem::temp_directory_path");
+        error(true, p, ec, "boost::filesystem::temp_directory_path");
         return p;
       }
         
@@ -1540,7 +1540,7 @@ namespace detail
 
       std::vector<path::value_type> buf(GetTempPathW(0, NULL));
 
-      if(buf.empty() || GetTempPathW(buf.size(), &buf[0])==0)
+      if (buf.empty() || GetTempPathW(buf.size(), &buf[0])==0)
       {
         if(!buf.empty()) ::SetLastError(ENOTDIR);
         error(true, ec, "boost::filesystem::temp_directory_path");
@@ -1551,10 +1551,10 @@ namespace detail
       
       path p(buf.begin(), buf.end());
           
-      if((ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
+      if ((ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
       {
         ::SetLastError(ENOTDIR);
-        error(true, ec, "boost::filesystem::temp_directory_path");
+        error(true, p, ec, "boost::filesystem::temp_directory_path");
         return path();
       }
       

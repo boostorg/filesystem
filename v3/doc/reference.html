@@ -2453,8 +2453,8 @@ path temp_directory_path(system::error_code&amp; ec);</pre>
   conventions of the operating system. The specifics of how this path is 
   determined are implementation defined. An error shall be reported if<code> !exists(p) 
   || !is_directory(p)</code>, where <code>p</code> is the path to be returned.</p>
-  <p><i>POSIX:</i> The path supplied by the first environment variable in the 
-  list TMPDIR, TMP, TEMP, TEMPDIR that names an existing directory.</p>
+  <p><i>POSIX:</i> The path supplied by the first environment variable found in the 
+  list TMPDIR, TMP, TEMP, TEMPDIR. If none of these are found, <code>&quot;/tmp&quot;</code>.</p>
   <p><i>Windows:</i> The path reported by the <i>Windows</i> <code>GetTempPath</code> API function.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">
   Error reporting</a>.</p>
@@ -3089,7 +3089,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32126" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->17 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32128" --></p>
 
 </body>
 
