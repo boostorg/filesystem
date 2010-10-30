@@ -117,7 +117,7 @@ Boost.Filesystem and the TR2 proposal.</p>
 <p>The Boost.Filesystem library provides several&nbsp; headers:</p>
 
 <ul>
-  <li>Header &lt;<a href="../../../boost/filesystem.hpp">boost/filesystem.hpp</a>&gt; provides class <i>
+  <li>Header &lt;<a href="../../../../boost/filesystem.hpp">boost/filesystem.hpp</a>&gt; provides class <i>
   basic_path, </i>a portable mechanism for representing
       <a href="#path">paths</a> in C++ programs. Typedefs <i>path</i> and <i>
   wpath</i> ease the most common usages of <i>basic_path</i>. Operational 
@@ -127,7 +127,7 @@ Boost.Filesystem and the TR2 proposal.</p>
   the contents of directories. Convenience functions and classes combine lower-level functionality 
   in useful ways.<br>
 &nbsp;</li>
-  <li>Header &lt;<a href="../../../boost/filesystem/fstream.hpp">boost/filesystem<i>/</i>fstream.hpp</a>&gt; provides the same components as the C++ Standard 
+  <li>Header &lt;<a href="../../../../boost/filesystem/fstream.hpp">boost/filesystem<i>/</i>fstream.hpp</a>&gt; provides the same components as the C++ Standard 
   Library's <i>fstream</i> header, except 
       that files are identified by <i>basic_path</i> objects rather that <i>char *</i>'s.</li>
 </ul>
@@ -286,7 +286,7 @@ which may throw <i>std::bad_alloc</i>. These exceptions may be thrown even
 though the error condition leading to the exception is not explicitly specified 
 in the function's &quot;Throws&quot; paragraph.</p>
 <p>All exceptions thrown by the Filesystem 
-Library are implemented by calling <a href="../../utility/throw_exception.html">
+Library are implemented by calling <a href="../../../utility/throw_exception.html">
 boost::throw_exception()</a>. Thus exact behavior may differ depending on 
 BOOST_NO_EXCEPTIONS at the time the filesystem source files are compiled.</p>
 <p>Non-throwing versions are provided of several functions that are often used 
@@ -312,8 +312,8 @@ happens.</p>
 <p>The programs used to generate the Boost regression test status tables use the 
 Filesystem Library extensively.&nbsp; See:</p>
 <ul>
-  <li><a href="../../../tools/regression/src/process_jam_log.cpp">process_jam_log.cpp</a></li>
-  <li><a href="../../../tools/regression/src/compiler_status.cpp">compiler_status.cpp</a></li>
+  <li><a href="../../../../tools/regression/src/process_jam_log.cpp">process_jam_log.cpp</a></li>
+  <li><a href="../../../../tools/regression/src/compiler_status.cpp">compiler_status.cpp</a></li>
 </ul>
 <p>Test programs are sometimes useful in understanding a library, as they 
 illustrate what the developer expected to work and not work. See:</p>
@@ -532,7 +532,7 @@ compilers or operating systems.</p>
 <h2><a name="Building">Building</a> the object-library</h2>
 <p>The object-library will  be built automatically if you are using the Boost 
 build system. See
-<a href="../../../more/getting_started.html">Getting Started</a>. It can also be 
+<a href="../../../../more/getting_started.html">Getting Started</a>. It can also be 
 built manually using a <a href="../build/Jamfile.v2">Jamfile</a> 
 supplied in directory libs/filesystem/build, or the user can construct an IDE 
 project or make file which includes the object-library source files.</p>
@@ -708,7 +708,7 @@ performance issues.</p>
 <h3>Version 1.35.0 - March 29th, 2008</h3>
 
 <ul>
-  <li>Diagnostics moved to the separate <a href="../../system/doc/index.html">
+  <li>Diagnostics moved to the separate <a href="../../../system/doc/index.html">
   Boost.System</a> library.</li>
   <li>current_path() function added to set the current directory path.</li>
   <li>Test coverage extended.</li>
@@ -780,7 +780,7 @@ performance issues.</p>
   <li>The object library can now be <a href="#Building">built</a> for either 
   static or dynamic (shared/dll) linking. </li>
   <li>Several added functions, including improved checking for directory and 
-  file name portability. See <a href="portability_guide.htm#name_checkÂ­_functions">
+  file name portability. See <a href="portability_guide.htm#name_check­_functions">
   Name check functions</a>.</li>
   <li>Separation of canonical form and normalized form and a new path member 
   function normalize(). This changes behavior, 
