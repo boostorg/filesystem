@@ -18,7 +18,7 @@ Guide</h1>
 
 <p>
 <a href="#Introduction">Introduction</a><br>
-<a href="#name_check­_functions">name_check functions</a><br>
+<a href="#name_check_functions">name_check functions</a><br>
 <a href="#recommendations">File and directory name recommendations</a></p>
 <h2><a name="Introduction">Introduction</a></h2>
 <p>Like any other C++ program which performs I/O operations, there is no 
@@ -52,7 +52,7 @@ cannot guarantee directory and file name portability. Rather, they are intended 
 give the programmer a &quot;fighting chance&quot; to achieve portability by early 
 detection of common naming problems.</p>
 
-<h2><a name="name_check­_functions">name_check functions</a></h2>
+<h2><a name="name_check_functions">name_check functions</a></h2>
 
 <p>A <i>name_check</i> function 
 returns true if its argument is valid as a directory and regular file name for a 
@@ -142,7 +142,7 @@ portability yet not overly restrict expressiveness.</p>
   </tr>
   <tr>
     <td valign="top">Limit file and directory names to the characters A-Z, a-z, 0-9, period, hyphen, and
-    underscore.<p>Use any of the &quot;portable_&quot; <a href="#name_check­_functions">
+    underscore.<p>Use any of the &quot;portable_&quot; <a href="#name_check_functions">
     name check functions</a> to enforce this recommendation.</td>
     <td valign="top">These are the characters specified by the POSIX standard for portable directory and
     file names, and are also valid for Windows, Mac, and many other modern file systems.</td>
