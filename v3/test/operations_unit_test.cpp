@@ -34,6 +34,7 @@
 #include <boost/filesystem.hpp>   // make sure filesystem.hpp works
 #include <boost/system/error_code.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 #include <iostream>
 
 using namespace boost::filesystem;
@@ -214,7 +215,7 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-int main()
+int cpp_main(int, char*[])
 {
 // document state of critical macros
 #ifdef BOOST_POSIX_API

@@ -30,6 +30,7 @@
 namespace fs = boost::filesystem;
 
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 using boost::system::error_code;
 using boost::system::system_category;
@@ -1617,7 +1618,7 @@ namespace
   //                                                                                    //
   //------------------------------------------------------------------------------------//
 
-int main(int argc, char* argv[])
+int cpp_main(int argc, char* argv[])
 {
 // document state of critical macros
 #ifdef BOOST_POSIX_API

@@ -41,6 +41,7 @@
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 #include <boost/smart_ptr.hpp>  // used constructor tests
 
 #include <iostream>
@@ -963,7 +964,7 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-int main(int, char*[])
+int cpp_main(int, char*[])
 {
 // document state of critical macros
 #ifdef BOOST_POSIX_API
