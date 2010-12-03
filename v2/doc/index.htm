@@ -74,13 +74,22 @@
       <td>
       <p align="center"><b>This is Version 2 of the Filesystem library.</b></p>
       <p align="center"><a href="../../v3/doc/index.htm">Version 3</a>, a major revision with many new and improved 
-      features is also available, but breaks some existing code.</p>
-      <p align="center">Version 2 is the default version for Boost release 1.44 
-      only. Version 3 will become the default starting with release 1.45.</p>
+      features, is also available. Version 3 may break some user code written 
+      for Version 2.</p>
+      <p align="center">To ease the transition, Boost releases 1.44 through 1.47 
+      will supply both V2 and V3. Version 2 is the default version for Boost release 1.44 
+      and 1.45. Version 3 will be the default starting with release 1.46.</p>
+      <p align="center"><b>Define macro BOOST_FILESYSTEM_VERSION as 3 to use Version 3. You may do this via a 
+      compiler argument or via <code>#define BOOST_FILESYSTEM_VERSION 3</code>. 
+      This will be the default for release 1.46 and later.</b></p>
+      <p align="center"><b>Define macro BOOST_FILESYSTEM_VERSION as 2 to use Version 
+      2. You may do this via a 
+      compiler argument or via <code>#define BOOST_FILESYSTEM_VERSION 2</code>. 
+      This is the default for release 1.44 and 1.45.</b></p>
       <p align="center">Existing code should be moved to version 3 as soon as 
       convenient. New code should be written for version 3.</p>
-      <p align="center">Version 2 is deprecated, and will be removed from Boost 
-      releases at the end of a transition period.</p>
+      <p align="center">Version 2 is deprecated, and will not be included in Boost 
+      releases 1.48 and later.</p>
       </td>
     </tr>
   </table>
@@ -797,7 +806,7 @@ Version 1.30.0 - March 19th, 2003</h3>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19840" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 December, 2010<!--webbot bot="Timestamp" endspan i-checksum="38634" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

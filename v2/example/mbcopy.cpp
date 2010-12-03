@@ -9,6 +9,8 @@
 //  Copy the files in a directory, using mbpath to represent the new file names
 //  See http://../doc/path.htm#mbpath for more information
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 //  See deprecated_test for tests of deprecated features
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 

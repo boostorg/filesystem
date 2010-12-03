@@ -8,6 +8,8 @@
 
 //  See http://www.boost.org/libs/filesystem for documentation.
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 //  As an example program, we don't want to use any deprecated features
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 

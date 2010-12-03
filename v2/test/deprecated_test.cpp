@@ -12,6 +12,8 @@
 //  This test verifies that various deprecated names still compile. This is
 //  important to preserve existing code that uses the old names.
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 #include <boost/filesystem.hpp>
 #include <boost/detail/lightweight_test.hpp>
 
