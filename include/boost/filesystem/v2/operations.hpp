@@ -14,6 +14,7 @@
 #ifndef BOOST_FILESYSTEM2_OPERATIONS_HPP
 #define BOOST_FILESYSTEM2_OPERATIONS_HPP
 
+#include <boost/filesystem/v2/config.hpp>
 #include <boost/filesystem/v2/path.hpp>
 #include <boost/detail/scoped_enum_emulation.hpp>
 

@@ -13,7 +13,8 @@
 #ifndef BOOST_FILESYSTEM2_CONVENIENCE_HPP
 #define BOOST_FILESYSTEM2_CONVENIENCE_HPP
 
-#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/v2/config.hpp>
+#include <boost/filesystem/v2/operations.hpp>
 #include <boost/system/error_code.hpp>
 #include <vector>
 #include <stack>

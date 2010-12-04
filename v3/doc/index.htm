@@ -67,22 +67,34 @@
     <tr>
       <td>
       <p align="center"><b>This is the home page for Version 3 of the Filesystem library.</b></p>
-      <p align="center">Version 3 is a major revision with many new and improved 
+      <p align="left">Version 3 is a major revision with many new and improved 
       features. It may, however, break some user code written for Version 2.</p>
-      <p align="center">To ease the transition, Boost releases 1.44 through 1.47 
+      <p align="left">To ease the transition, Boost releases 1.44 through 1.47 
       will supply both V2 and V3. <a href="../../v2/doc/index.htm">Version 2</a> 
       is the default version for Boost release 1.44 
       and 1.45. Version 3 will be the default starting with release 1.46.</p>
-      <p align="center"><b>Define macro BOOST_FILESYSTEM_VERSION as 3 to use Version 3. You may do this via a 
-      compiler argument or via <code>#define BOOST_FILESYSTEM_VERSION 3</code>. 
-      This will be the default for release 1.46 and later.</b></p>
-      <p align="center"><b>Define macro BOOST_FILESYSTEM_VERSION as 2 to use Version 
-      2. You may do this via a 
-      compiler argument or via <code>#define BOOST_FILESYSTEM_VERSION 2</code>. 
-      This is the default for release 1.44 and 1.45.</b></p>
-      <p align="center">Existing code should be moved to Version 3 as soon as 
+      <p align="left"><b>Define macro BOOST_FILESYSTEM_VERSION as 3 to use 
+      Version 3. This will be the default for release 1.46 and later.</b></p>
+      <p align="left"><b>Define macro BOOST_FILESYSTEM_VERSION as 2 to use 
+      Version 2. This is the default for release 1.44 and 1.45.</b></p>
+      <p align="left"><b>You may define the BOOST_FILESYSTEM_VERSION macro:</b></p>
+      <ul>
+        <li>
+      <p align="left"><b>On the build command line; the exact format depends on 
+      your compiler or IDE</b></p>
+        </li>
+        <li>
+      <p align="left"><b>In your code, before including any filesystem header, 
+      #define BOOST_FILESYSTEM_VERSION <i>n</i></b></p>
+        </li>
+        <li>
+      <p align="left"><b>#define BOOST_FILESYSTEM_VERSION <i>n </i>in boost/config/user.hpp. 
+      Note that this approach applies to all uses of Boost.Filesystem.</b></p>
+        </li>
+      </ul>
+      <p align="left">Existing code should be moved to Version 3 as soon as 
       convenient. New code should be written for Version 3.</p>
-      <p align="center">Version 2 is deprecated, and will not be included in Boost 
+      <p align="left">Version 2 is deprecated, and will not be included in Boost 
       releases 1.48 and later.</p>
       </td>
     </tr>
