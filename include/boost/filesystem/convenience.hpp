@@ -12,6 +12,9 @@
 #ifndef BOOST_FILESYSTEM_CONVENIENCEX_HPP
 #define BOOST_FILESYSTEM_CONVENIENCEX_HPP
 
+#include <boost/config.hpp>  // for <boost/config/user.hpp>, in case
+                             //  BOOST_FILESYSTEM_VERSION defined there
+
 # if defined(BOOST_FILESYSTEM_VERSION) \
   && BOOST_FILESYSTEM_VERSION != 2  && BOOST_FILESYSTEM_VERSION != 3
 #   error BOOST_FILESYSTEM_VERSION defined, but not as 2 or 3
