@@ -1187,10 +1187,14 @@ namespace
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
 
+    create_file(d1 / "f2", "1234567890");
+    BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 10);
     copy_ex_ok = true;
     try { fs::copy_file(f1, d1 / "f2", fs::copy_option::overwrite_if_exists); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 7);
+    verify_file(d1 / "f2", "file-f1");
   }
 
  //  symlink_status_tests  -------------------------------------------------------------//
