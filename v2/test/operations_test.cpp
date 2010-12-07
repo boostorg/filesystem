@@ -26,6 +26,7 @@ namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 using boost::system::error_code;
 using boost::system::system_category;
@@ -266,7 +267,7 @@ namespace
 
 //  main  ------------------------------------------------------------------------------//
 
-int main( int argc, char * argv[] )
+int cpp_main( int argc, char * argv[] )
 {
   if ( argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t' ) report_throws = true;
 

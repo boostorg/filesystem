@@ -39,6 +39,7 @@ namespace fs = boost::filesystem;
 #endif
 
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 namespace
 {
@@ -150,7 +151,7 @@ namespace
   } // test
 } // unnamed namespace
 
-int main( int argc, char*[] )
+int cpp_main( int argc, char*[] )
 {
   if ( argc > 1 ) cleanup = false;
 

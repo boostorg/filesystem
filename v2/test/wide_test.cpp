@@ -29,6 +29,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
@@ -127,7 +128,7 @@ namespace
 
 //  main  ------------------------------------------------------------------------------//
 
-int main( int argc, char * /*argv*/[] )
+int cpp_main( int argc, char * /*argv*/[] )
 {
 
   if ( argc > 1 ) cleanup = false;
