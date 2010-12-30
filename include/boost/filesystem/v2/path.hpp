@@ -24,12 +24,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/assert.hpp>
 
 #include <string>
 #include <algorithm> // for lexicographical_compare
 #include <iosfwd>    // needed by basic_path inserter and extractor
 #include <stdexcept>
-#include <cassert>
 
 # ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 #   include <locale>
@@ -916,7 +916,7 @@ namespace boost
           boost::BOOST_FILESYSTEM2_NAMESPACE::basic_path<String, Traits>
             path_type;
 
-        assert( !str.empty() && str[pos] == slash<path_type>::value
+        BOOST_ASSERT( !str.empty() && str[pos] == slash<path_type>::value
           && "precondition violation" );
 
         // subsequent logic expects pos to be for leftmost slash of a set
@@ -1380,7 +1380,7 @@ namespace boost
         typedef typename Path::string_type string_type;
         typedef typename Path::traits_type traits_type;
 
-        assert( itr.m_pos < itr.m_path_ptr->m_path.size() && "basic_path::iterator increment past end()" );
+        BOOST_ASSERT( itr.m_pos < itr.m_path_ptr->m_path.size() && "basic_path::iterator increment past end()" );
 
         bool was_net( itr.m_name.size() > 2
           && itr.m_name[0] == slash<Path>::value
@@ -1439,7 +1439,7 @@ namespace boost
       template<class Path>
       void iterator_helper<Path>::do_decrement( iterator & itr )
       {                                                                                
-        assert( itr.m_pos && "basic_path::iterator decrement past begin()"  );
+        BOOST_ASSERT( itr.m_pos && "basic_path::iterator decrement past begin()"  );
 
         typedef typename Path::string_type string_type;
         typedef typename Path::traits_type traits_type;

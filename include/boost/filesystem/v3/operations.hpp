@@ -807,7 +807,8 @@ namespace detail
     { 
       BOOST_ASSERT(m_imp.get() && "increment of end recursive_directory_iterator");
       m_imp->increment(0);
-      if (m_imp->m_stack.empty()) m_imp.reset(); // done, so make end iterator
+      if (m_imp->m_stack.empty())
+        m_imp.reset(); // done, so make end iterator
     }
 
     bool equal(const recursive_directory_iterator& rhs) const

@@ -632,7 +632,7 @@ namespace
       BOOST_TEST(fs::is_symlink(from_ph));
       BOOST_TEST(fs::exists(f1));
       BOOST_TEST(fs::equivalent(from_ph, f1));
-		  BOOST_TEST(fs::read_symlink(from_ph) == f1);
+      BOOST_TEST(fs::read_symlink(from_ph) == f1);
 
       fs::file_status stat = fs::symlink_status(from_ph);
       BOOST_TEST(fs::exists(stat));
@@ -648,9 +648,9 @@ namespace
       BOOST_TEST(!fs::is_other(stat));
       BOOST_TEST(!fs::is_symlink(stat));
        
-	  // since create_symlink worked, copy_symlink should also work
+      // since create_symlink worked, copy_symlink should also work
       fs::path symlink2_ph(dir / "symlink2");
-	    fs::copy_symlink(from_ph, symlink2_ph);
+      fs::copy_symlink(from_ph, symlink2_ph);
       stat = fs::symlink_status(symlink2_ph);
       BOOST_TEST(fs::is_symlink(stat));
       BOOST_TEST(fs::exists(stat));

@@ -106,13 +106,13 @@ namespace
 
     ++::boost::detail::test_errors();
 
-	  std::cout << file  << '(' << line << "): native() is not equal expected\n"
+    std::cout << file  << '(' << line << "): native() is not equal expected\n"
       "  native---: " << std::hex;
-	  path::string_type nat(p.native());
-	  for (path::string_type::const_iterator it = nat.begin(); it != nat.end(); ++it)
+    path::string_type nat(p.native());
+    for (path::string_type::const_iterator it = nat.begin(); it != nat.end(); ++it)
       std::cout << long(*it) << ' ';
     std::cout << "\n  expected-: ";
-	  for (path::string_type::const_iterator it = expected.begin(); it != expected.end(); ++it)
+    for (path::string_type::const_iterator it = expected.begin(); it != expected.end(); ++it)
       std::cout << long(*it) << ' ';
     std::cout << std::dec << std::endl;
   }
@@ -682,22 +682,22 @@ namespace
     test_codecvt cvt;  // produces off-by-one values that will always differ from
                        // the system's default locale codecvt facet
 
-	  int t = 0;
+    int t = 0;
 
     //  constructors
-	  std::cout << "  constructors test " << ++t << std::endl;
+    std::cout << "  constructors test " << ++t << std::endl;
     path p(c1, cvt);
     NATIVE_IS(p, s1, ws1);
 
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     path p1(s1.begin(), s1.end(), cvt);
     NATIVE_IS(p1, s1, ws1);
 
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     path p2(ws2, cvt);
     NATIVE_IS(p2, s2, ws2);
 
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     path p3(ws2.begin(), ws2.end(), cvt);
     NATIVE_IS(p3, s2, ws2);
 
@@ -705,44 +705,44 @@ namespace
 
     //  assigns
     p1.clear();
-	  std::cout << "  assigns test " << ++t << std::endl;
+    std::cout << "  assigns test " << ++t << std::endl;
     p1.assign(s1,cvt);
     NATIVE_IS(p1, s1, ws1);
     p1.clear();
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     p1.assign(s1.begin(), s1.end(), cvt);
     NATIVE_IS(p1, s1, ws1);
     // p1.assign(p, cvt);  // fails to compile, and that is OK
 
     //  appends
     p1.clear();
-	  std::cout << "  appends test " << ++t << std::endl;
+    std::cout << "  appends test " << ++t << std::endl;
     p1.append(s1,cvt);
     NATIVE_IS(p1, s1, ws1);
     p1.clear();
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     p1.append(s1.begin(), s1.end(), cvt);
     NATIVE_IS(p1, s1, ws1);
     // p1.append(p, cvt);  // fails to compile, and that is OK
 
     //  native observers
-	  std::cout << "  native observers test " << ++t << std::endl;
+    std::cout << "  native observers test " << ++t << std::endl;
     CHECK(p.string<std::string>(cvt) == s1);
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     CHECK(p.string(cvt) == s1);
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     CHECK(p.string<std::wstring>(cvt) == ws1);
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     CHECK(p.wstring(cvt) == ws1);
 
     //  generic observers
-	  std::cout << "  generic observers test " << ++t << std::endl;
+    std::cout << "  generic observers test " << ++t << std::endl;
     CHECK(p.generic_string<std::string>(cvt) == s1);
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string(cvt) == s1);
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string<std::wstring>(cvt) == ws1);
-	  std::cout << "  test " << ++t << std::endl;
+    std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_wstring(cvt) == ws1);
 
     std::cout << "  codecvt arguments testing complete" << std::endl;
