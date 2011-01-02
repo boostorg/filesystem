@@ -89,7 +89,6 @@ namespace
   std::string platform(BOOST_PLATFORM);
   bool report_throws;
   bool cleanup = true;
-  fs::path init_path(fs::current_path());
   fs::directory_iterator end_itr;
   fs::path dir;
   fs::path d1;
@@ -1352,20 +1351,20 @@ namespace
         && dir.string()[1] == ':'); // verify path includes drive
 
       BOOST_TEST(fs::system_complete("").empty());
-      BOOST_TEST(fs::system_complete("/") == init_path.root_path());
+      BOOST_TEST(fs::system_complete("/") == fs::initial_path().root_path());
       BOOST_TEST(fs::system_complete("foo")
-        == init_path / "foo");
+        == fs::initial_path() / "foo");
 
       fs::path p1(fs::system_complete("/foo"));
       BOOST_TEST_EQ(p1.string().size(), 6U);  // this failed during v3 development due to bug
       std::string s1(p1.string() );
-      std::string s2(init_path.root_path().string()+"foo");
+      std::string s2(fs::initial_path().root_path().string()+"foo");
       BOOST_TEST_EQ(s1, s2);
 
-      BOOST_TEST(fs::system_complete(fs::path(init_path.root_name()))
-        == init_path);
-      BOOST_TEST(fs::system_complete(fs::path(init_path.root_name().string()
-        + "foo")).string() == init_path / "foo");
+      BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name()))
+        == fs::initial_path());
+      BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name().string()
+        + "foo")).string() == fs::initial_path() / "foo");
       BOOST_TEST(fs::system_complete(fs::path("c:/")).generic_string()
         == "c:/");
       BOOST_TEST(fs::system_complete(fs::path("c:/foo")).generic_string()
@@ -1378,12 +1377,12 @@ namespace
     {
       std::cout << "POSIX specific tests..." << std::endl;
       BOOST_TEST(fs::system_complete("").empty());
-      BOOST_TEST(init_path.root_path().string() == "/");
+      BOOST_TEST(fs::initial_path().root_path().string() == "/");
       BOOST_TEST(fs::system_complete("/").string() == "/");
       BOOST_TEST(fs::system_complete("foo").string()
-        == init_path.string()+"/foo");
+        == fs::initial_path().string()+"/foo");
       BOOST_TEST(fs::system_complete("/foo").string()
-        == init_path.root_path().string()+"foo");
+        == fs::initial_path().root_path().string()+"foo");
     } // POSIX
   }
 
@@ -1394,11 +1393,12 @@ namespace
     std::cout << "initial_tests..." << std::endl;
 
     std::cout << "  current_path().string() is\n  \""
-              << init_path.string()
+              << fs::initial_path().string()
               << "\"\n\n";
-    BOOST_TEST(init_path.is_absolute());
+    BOOST_TEST(fs::initial_path() == fs::current_path());
+    BOOST_TEST(fs::initial_path().is_absolute());
     BOOST_TEST(fs::current_path().is_absolute());
-    BOOST_TEST(init_path.string()
+    BOOST_TEST(fs::initial_path().string()
       == fs::current_path().string());
   }
 
@@ -1506,7 +1506,7 @@ namespace
       BOOST_TEST(!exists(ph));
     }
     
-    fs::path test_temp_dir = init_path;
+    fs::path test_temp_dir = fs::initial_path();
 
 #if defined BOOST_POSIX_API
     {
@@ -1652,7 +1652,7 @@ int cpp_main(int argc, char* argv[])
 # endif
   std::cout << "API is " << platform << std::endl;
 
-  dir = init_path / temp_dir_name;
+  dir = fs::initial_path() / temp_dir_name;
 
   if (fs::exists(dir))
   {

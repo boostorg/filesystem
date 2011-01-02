@@ -5,7 +5,7 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Filesystem Reference
+<title>Filesystem V3 Reference
 </title>
 <link rel="stylesheet" type="text/css" href="../../../../doc/src/minimal.css">
 </head>
@@ -98,6 +98,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
@@ -385,7 +386,10 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 <pre>      uintmax_t    hard_link_count(const path&amp; p);
       uintmax_t    hard_link_count(const path&amp; p, system::error_code&amp; ec);
 
-      bool         <a href="#is_directory">is_directory</a>(file_status s);
+      <span style="background-color: #FFFFFF">const path&amp;  <a href="#initial_path">initial_path</a>();
+      const path&amp;  <a href="#initial_path">initial_path</a>(</span><code>system::error_code&amp; ec</code><span style="background-color: #FFFFFF">);
+
+</span>      bool         <a href="#is_directory">is_directory</a>(file_status s);
       bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
       bool         <a href="#is_directory2">is_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
@@ -2072,8 +2076,10 @@ bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 </blockquote>
+<div dir="ltr">
 <pre><span style="background-color: #FFFFFF; ">uintmax_t</span> <a name="file_size">file_size</a>(const path&amp; p);<span style="background-color: #FFFFFF; ">
 uintmax_t</span> <a name="file_size2">file_size</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+</div>
 <blockquote>
   <p><span style="background-color: #FFFF00">Remarks: </span></p>
   <p><i>Returns:</i> If <code>exists(p) &amp;&amp; is_regular_file(p)</code>, the size 
@@ -2087,6 +2093,20 @@ uintmax_t</span> <a name="file_size2">file_size</a>(const path&amp; p, system::e
   <p style="font-size: 10pt"><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
+</blockquote>
+<pre><span style="background-color: #FFFFFF">const path&amp; <a name="initial_path">initial_path</a>();
+const path&amp; <a name="initial_path">initial_path</a>(</span><code>system::error_code&amp; ec</code><span style="background-color: #FFFFFF">);</span></pre>
+<blockquote>
+  <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF"> </span>
+  <code>current_path()</code> as of the first call to <code>initial_path()</code>.</p>
+  <p>[<i><span style="background-color: #FFFFFF">Note:</span></i> <code>
+  initial_path()</code> is not thread safe, and may return an undesirable result 
+  if called subsequent to a change to the current directory. These problems can 
+  be avoided by calling <code>initial_path()</code> immediately on entry to 
+  main().&nbsp; <i><span style="background-color: #FFFFFF">--end note</span></i>]</p>
+  <p><i>Throws:</i> For the first call, as specified in
+  <a href="#Error-reporting">
+  Error reporting</a>. Subsequent calls throw nothing.</p>
 </blockquote>
 <pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF"><a name="is_directory">is_directory</a></span></code><span style="background-color: #FFFFFF">(file_status s);</span></pre>
 <blockquote>
@@ -3089,7 +3109,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->17 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32128" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 January 2011<!--webbot bot="Timestamp" endspan i-checksum="32200" --></p>
 
 </body>
 
