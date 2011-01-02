@@ -57,9 +57,9 @@ namespace
     std::ofstream f( ph.external_file_string().c_str() );
 # endif    
     if ( !f )
-      throw fs::basic_filesystem_error<Path>( "wide_test create_file",
+      BOOST_FILESYSTEM_THROW( fs::basic_filesystem_error<Path>( "wide_test create_file",
         ph,
-        boost::system::error_code( errno, boost::system::generic_category() ) );
+        boost::system::error_code( errno, boost::system::generic_category() ) ) );
     if ( !contents.empty() ) f << contents;
   }
 

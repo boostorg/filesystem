@@ -20,7 +20,6 @@
 #include <boost/filesystem/v2/config.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/throw_exception.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/static_assert.hpp>

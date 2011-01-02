@@ -259,7 +259,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
         "boost::filesystem::status", ph, ec ) );
       return result;
     }
@@ -278,7 +278,7 @@ namespace boost
       system::error_code ec;
       file_status result( symlink_status( ph, ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
         "boost::filesystem::symlink_status", ph, ec ) );
       return result;
     }
@@ -293,7 +293,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::exists", ph, ec ) );
       return exists( result );
     }
@@ -303,7 +303,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::is_directory", ph, ec ) );
       return is_directory( result );
     }
@@ -313,7 +313,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::is_regular_file", ph, ec ) );
       return is_regular_file( result );
     }
@@ -324,7 +324,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::is_regular", ph, ec ) );
       return is_regular( result );
     }
@@ -335,7 +335,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::is_other", ph, ec ) );
       return is_other( result );
     }
@@ -351,7 +351,7 @@ namespace boost
       system::error_code ec;
       file_status result( detail::symlink_status_api( ph.external_file_string(), ec ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::is_symlink", ph, ec ) );
       return is_symlink( result );
 #   endif
@@ -370,7 +370,7 @@ namespace boost
       detail::query_pair result(
         detail::is_empty_api( ph.external_file_string() ) );
       if ( result.first )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::is_empty", ph, result.first ) );
       return result.second;
     }
@@ -380,7 +380,7 @@ namespace boost
       detail::query_pair result( detail::equivalent_api(
         ph1.external_file_string(), ph2.external_file_string() ) );
       if ( result.first )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::equivalent", ph1, ph2, result.first ) );
       return result.second;
     }
@@ -390,7 +390,7 @@ namespace boost
       detail::uintmax_pair result
         ( detail::file_size_api( ph.external_file_string() ) );
       if ( result.first )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::file_size", ph, result.first ) );
       return result.second;
     }
@@ -400,7 +400,7 @@ namespace boost
       detail::space_pair result
         ( detail::space_api( ph.external_file_string() ) );
       if ( result.first )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::space", ph, result.first ) );
       return result.second;
     }
@@ -410,7 +410,7 @@ namespace boost
       detail::time_pair result
         ( detail::last_write_time_api( ph.external_file_string() ) );
       if ( result.first )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::last_write_time", ph, result.first ) );
       return result.second;
     }
@@ -423,7 +423,7 @@ namespace boost
       detail::query_pair result(
         detail::create_directory_api( dir_ph.external_directory_string() ) );
       if ( result.first )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::create_directory",
           dir_ph, result.first ) );
       return result.second;
@@ -438,7 +438,7 @@ namespace boost
           to_ph.external_file_string(),
           from_ph.external_file_string() ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::create_hard_link",
           to_ph, from_ph, ec ) );
     }
@@ -462,7 +462,7 @@ namespace boost
           to_ph.external_file_string(),
           from_ph.external_file_string() ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::create_symlink",
           to_ph, from_ph, ec ) );
     }
@@ -482,7 +482,7 @@ namespace boost
       system::error_code ec;
       file_status f = symlink_status( ph, ec );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::remove", ph, ec ) );
       return detail::remove_aux( ph, f );
     }
@@ -492,7 +492,7 @@ namespace boost
       system::error_code ec;
       file_status f = symlink_status( ph, ec );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::remove_all", ph, ec ) );
       return exists( f ) ? detail::remove_all_aux( ph, f ) : 0;
     }
@@ -503,7 +503,7 @@ namespace boost
         from_path.external_directory_string(),
         to_path.external_directory_string() ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::rename",
           from_path, to_path, ec ) );
     }
@@ -519,7 +519,7 @@ namespace boost
         from_path.external_directory_string(),
         to_path.external_directory_string(), option == copy_option::fail_if_exists ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::copy_file",
           from_path, to_path, ec ) );
     }
@@ -530,7 +530,7 @@ namespace boost
       typename Path::external_string_type ph;
       system::error_code ec( detail::get_current_path_api( ph ) );
       if ( ec )
-          boost::throw_exception( basic_filesystem_error<Path>(
+          BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
             "boost::filesystem::current_path", ec ) );
       return Path( Path::traits_type::to_internal( ph ) );
     }
@@ -540,7 +540,7 @@ namespace boost
       system::error_code ec( detail::set_current_path_api(
         ph.external_directory_string() ) );
       if ( ec )
-          boost::throw_exception( basic_filesystem_error<Path>(
+          BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
             "boost::filesystem::current_path", ph, ec ) );
     }
 
@@ -568,7 +568,7 @@ namespace boost
       system::error_code ec( detail::get_full_path_name_api( ph.external_file_string(),
               sys_ph ) );
       if ( ec )
-          boost::throw_exception( basic_filesystem_error<Path>(
+          BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
             "boost::filesystem::system_complete", ph, ec ) );
       return Path( Path::traits_type::to_internal( sys_ph ) );
 # else
@@ -607,7 +607,7 @@ namespace boost
       system::error_code ec( detail::last_write_time_api( ph.external_file_string(),
           new_time ) );
       if ( ec )
-        boost::throw_exception( basic_filesystem_error<Path>(
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
           "boost::filesystem::last_write_time", ph, ec ) );
     }
 
@@ -783,7 +783,7 @@ namespace boost
         {
           system::error_code ec = remove_api( ph.external_file_string() );
           if ( ec )
-            boost::throw_exception( basic_filesystem_error<Path>(
+            BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(
               "boost::filesystem::remove", ph, ec ) );
           return true;
         }
@@ -804,7 +804,7 @@ namespace boost
             boost::system::error_code ec;
             boost::filesystem2::file_status fn = boost::filesystem2::symlink_status( itr->path(), ec );
             if ( ec )
-              boost::throw_exception( basic_filesystem_error<Path>( 
+              BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>( 
                 "boost::filesystem:remove_all", ph, ec ) );
             count += remove_all_aux( itr->path(), fn );
           }
@@ -981,7 +981,7 @@ namespace boost
       system::error_code ec( m_init(dir_path) );
       if ( ec )
       {
-        boost::throw_exception( basic_filesystem_error<Path>( 
+        BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>( 
           "boost::filesystem::basic_directory_iterator constructor",
           dir_path, ec ) );
       }
@@ -1014,7 +1014,7 @@ namespace boost
           name, fs, symlink_fs );
         if ( ec )
         {
-          boost::throw_exception( basic_filesystem_error<Path>(  
+          BOOST_FILESYSTEM_THROW( basic_filesystem_error<Path>(  
             "boost::filesystem::basic_directory_iterator increment",
             m_imp->m_directory_entry.path().parent_path(), ec ) );
         }

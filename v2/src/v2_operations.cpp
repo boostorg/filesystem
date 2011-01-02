@@ -44,7 +44,6 @@
 
 #include <boost/filesystem/v2/operations.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/throw_exception.hpp>
 #include <boost/assert.hpp>
 #include <boost/detail/workaround.hpp>
 #include <cstdlib>  // for malloc, free

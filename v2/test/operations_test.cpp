@@ -80,8 +80,8 @@ namespace
   {
     std::ofstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test create_file",
-      ph, error_code(errno, system_category()) );
+      BOOST_FILESYSTEM_THROW( fs::filesystem_error( "operations_test create_file",
+      ph, error_code(errno, system_category()) ) );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -89,13 +89,13 @@ namespace
   {
     std::ifstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test verify_file",
-        ph, error_code(errno, system_category()) );
+      BOOST_FILESYSTEM_THROW( fs::filesystem_error( "operations_test verify_file",
+        ph, error_code(errno, system_category()) ) );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_error( "operations_test verify_file contents \""
-        + contents  + "\" != \"" + expected + "\"", ph, error_code() );
+      BOOST_FILESYSTEM_THROW( fs::filesystem_error( "operations_test verify_file contents \""
+        + contents  + "\" != \"" + expected + "\"", ph, error_code() ) );
   }
 
   template< typename F >
