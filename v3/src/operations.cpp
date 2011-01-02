@@ -1448,6 +1448,9 @@ namespace detail
       {
         return process_status_failure(p, ec);
       }
+
+      if (!is_reparse_point_a_symlink(p))
+        return file_status(reparse_file);
     }
 
     if (ec != 0) ec->clear();
