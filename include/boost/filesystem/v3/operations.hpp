@@ -75,8 +75,8 @@ namespace boost
     fifo_file,
     socket_file,
     reparse_file,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
-    type_unknown, // file does exist, but isn't one of the above types or
-                  // we don't have strong enough permission to find its type
+    type_unknown,  // file does exist, but isn't one of the above types or
+                   // we don't have strong enough permission to find its type
 
     _detail_directory_symlink  // internal use only; never exposed to users
   };
@@ -191,6 +191,8 @@ namespace boost
     BOOST_FILESYSTEM_DECL
     path system_complete(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
+    path temp_directory_path(system::error_code* ec=0);
+    BOOST_FILESYSTEM_DECL
     path unique_path(const path& p, system::error_code* ec=0);
   }  // namespace detail
 
@@ -258,9 +260,7 @@ namespace boost
  
   //  forward declarations
   path current_path();  // fwd declaration
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   path initial_path();
-# endif
 
   BOOST_FILESYSTEM_DECL
   path absolute(const path& p, const path& base=current_path());
@@ -372,7 +372,6 @@ namespace boost
   inline
   boost::uintmax_t hard_link_count(const path& p, system::error_code& ec)
                                        {return detail::hard_link_count(p, &ec);}
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   inline
   path initial_path()                  {return detail::initial_path();}
 
@@ -383,7 +382,6 @@ namespace boost
   path initial_path() {return initial_path();}
   template <class Path>
   path initial_path(system::error_code& ec) {return detail::initial_path(&ec);}
-# endif
 
   inline
   std::time_t last_write_time(const path& p) {return detail::last_write_time(p);}
@@ -445,6 +443,12 @@ namespace boost
   inline
   path system_complete(const path& p, system::error_code& ec)
                                        {return detail::system_complete(p, &ec);}
+  inline
+  path temp_directory_path()           {return detail::temp_directory_path();}
+
+  inline
+  path temp_directory_path(system::error_code& ec) 
+                                       {return detail::temp_directory_path(&ec);}
   inline
   path unique_path(const path& p="%%%%-%%%%-%%%%-%%%%")
                                        { return detail::unique_path(p); }
@@ -799,7 +803,8 @@ namespace detail
     { 
       BOOST_ASSERT(m_imp.get() && "increment of end recursive_directory_iterator");
       m_imp->increment(0);
-      if (m_imp->m_stack.empty()) m_imp.reset(); // done, so make end iterator
+      if (m_imp->m_stack.empty())
+        m_imp.reset(); // done, so make end iterator
     }
 
     bool equal(const recursive_directory_iterator& rhs) const
@@ -963,6 +968,7 @@ namespace boost
     using filesystem3::file_type;
     using filesystem3::filesystem_error;
     using filesystem3::hard_link_count;
+    using filesystem3::initial_path;
     using filesystem3::is_directory;
     using filesystem3::is_directory;
     using filesystem3::is_empty;
@@ -986,10 +992,10 @@ namespace boost
     using filesystem3::symlink_file;
     using filesystem3::symlink_status;
     using filesystem3::system_complete;
+    using filesystem3::temp_directory_path;
     using filesystem3::type_unknown;
     using filesystem3::unique_path;
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    using filesystem3::initial_path;
     using filesystem3::is_regular;
     using filesystem3::status_unknown;
     using filesystem3::symbolic_link_exists;

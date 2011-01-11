@@ -13,6 +13,8 @@
 //  on basename(), extension(), and change_extension() tests from the original
 //  convenience_test.cpp by Vladimir Prus.
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 //  See deprecated_test for tests of deprecated features
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
 # define BOOST_FILESYSTEM_NO_DEPRECATED
@@ -35,6 +37,7 @@ using boost::filesystem::path;
 
 
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 #define PATH_CHECK( a, b ) check( a, b, __LINE__ )
 #define DIR_CHECK( a, b ) check_dir( a, b, __LINE__ )
@@ -87,7 +90,7 @@ namespace
   {
     const std::string str_1("string-1");
     boost::system::error_code ec( 12345, boost::system::system_category());
-    try { throw fs::filesystem_error( str_1, ec ); }
+    try { BOOST_FILESYSTEM_THROW( fs::filesystem_error( str_1, ec ) ); }
     catch ( const fs::filesystem_error & ex )
     {
       //std::cout << ex.what() << "*" << std::endl;
@@ -96,7 +99,7 @@ namespace
       BOOST_TEST( ex.code() == ec );
     }
 
-    try { throw fs::filesystem_error( str_1, "p1", "p2", ec ); }
+    try { BOOST_FILESYSTEM_THROW( fs::filesystem_error( str_1, "p1", "p2", ec ) ); }
     catch ( const fs::filesystem_error & ex )
     {
       //std::cout << ex.what() << "*" << std::endl;                    
@@ -194,7 +197,7 @@ namespace
 
 } // unnamed namespace
 
-int main( int, char*[] )
+int cpp_main( int, char* [] )
 {
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though

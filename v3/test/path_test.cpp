@@ -44,6 +44,7 @@ namespace fs = boost::filesystem;
 using boost::filesystem::path;
 
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 #define PATH_CHECK(a, b) check(a, b, __FILE__, __LINE__)
 #define CHECK_EQUAL(a,b) check_equal(a, b, __FILE__, __LINE__)
@@ -1575,7 +1576,7 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-int main(int, char*[])
+int cpp_main(int, char*[])
 {
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though

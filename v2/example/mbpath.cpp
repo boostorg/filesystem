@@ -8,6 +8,8 @@
 
 //  See Boost.Filesystem home page at http://www.boost.org/libs/filesystem
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 #include <boost/filesystem/config.hpp>
 # ifdef BOOST_FILESYSTEM2_NARROW_ONLY
 #   error This compiler or standard library does not support wide-character strings or paths

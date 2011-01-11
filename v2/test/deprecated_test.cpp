@@ -12,8 +12,11 @@
 //  This test verifies that various deprecated names still compile. This is
 //  important to preserve existing code that uses the old names.
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 #include <boost/filesystem.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -145,7 +148,7 @@ namespace
 
 //----------------------------------------------------------------------------//
 
-int main( int /*argc*/, char * /*argv*/[] )
+int cpp_main( int /*argc*/, char * /*argv*/[] )
 {
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though

@@ -72,15 +72,41 @@
   <table border="1" cellpadding="10" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
     <tr>
       <td>
-      <p align="center"><b>This is Version 2 of the Filesystem library.</b></p>
-      <p align="center"><a href="../../v3/doc/index.htm">Version 3</a>, a major revision with many new and improved 
-      features is also available, but breaks some existing code.</p>
-      <p align="center">Version 2 is the default version for Boost release 1.44 
-      only. Version 3 will become the default starting with release 1.45.</p>
-      <p align="center">Existing code should be moved to version 3 as soon as 
+      <p align="center"><b>This is the home page for Version 2 of the Filesystem library.</b></p>
+      <p align="left"><a href="../../v3/doc/index.htm">Version 3</a>, a major revision with many new and improved 
+      features, is also available. Version 3 may break some user code written 
+      for Version 2.</p>
+      <p align="left">To ease the transition, Boost releases 1.44 through 1.47 
+      will supply both V2 and V3. Version 2 is the default version for Boost release 1.44 
+      and 1.45. Version 3 will be the default starting with release 1.46.</p>
+      <p align="left"><b>Define macro BOOST_FILESYSTEM_VERSION as 3 to use 
+      Version 3. This will be the default for release 1.46 and later.</b></p>
+      <p align="left"><b>Define macro BOOST_FILESYSTEM_VERSION as 2 to use 
+      Version 2. This is the default for release 1.44 and 1.45.</b></p>
+      <p align="left"><b>You may define the BOOST_FILESYSTEM_VERSION macro:</b></p>
+      <ul>
+        <li>
+      <p align="left"><b>On the build command line; the exact format depends on 
+      your compiler or IDE</b></p>
+        </li>
+        <li>
+      <p align="left"><b>In your code, before including any filesystem header, 
+      #define BOOST_FILESYSTEM_VERSION <i>n</i></b></p>
+        </li>
+        <li>
+      <p align="left"><b>#define BOOST_FILESYSTEM_VERSION <i>n </i>in boost/config/user.hpp. 
+      Note that this approach applies to all uses of Boost.Filesystem.</b></p>
+        </li>
+      </ul>
+      <p align="left">Existing code should be moved to version 3 as soon as 
       convenient. New code should be written for version 3.</p>
-      <p align="center">Version 2 is deprecated, and will be removed from Boost 
-      releases at the end of a transition period.</p>
+      <p align="left">Version 2 is deprecated, and will not be included in Boost 
+      releases 1.48 and later.</p>
+      <p align="left"><b>Building the library</b></p>
+      <p align="left">By default, the Boost build system creates libraries that 
+      support both version 2 and version 3. To support only a single version, 
+      include <code>--disable-filesystem2</code> or <code>--disable-filesystem3</code> 
+      on the <code>bjam</code> command line.</p>
       </td>
     </tr>
   </table>
@@ -797,7 +823,7 @@ Version 1.30.0 - March 19th, 2003</h3>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 June, 2010<!--webbot bot="Timestamp" endspan i-checksum="19840" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 December, 2010<!--webbot bot="Timestamp" endspan i-checksum="38640" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 

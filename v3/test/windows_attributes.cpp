@@ -13,6 +13,8 @@
 
 //--------------------------------------------------------------------------------------//
 
+#include <boost/filesystem.hpp>
+#include <boost/detail/lightweight_main.hpp>
 #include <windows.h>
 #include <map>
 #include <utility>
@@ -20,8 +22,9 @@
 #include <string>
 
 using std::make_pair;
+namespace fs = boost::filesystem;
 
-int main( int argc, char* argv[])
+int cpp_main( int argc, char* argv[])
 {
   typedef std::map<DWORD, std::string> decode_type;
   decode_type table;
@@ -46,6 +49,8 @@ int main( int argc, char* argv[])
     std::cout << "Usage: windows_attributes path\n";
     return 1;
   }
+
+  //  report Win32  ::GetFileAttributesA()
 
   DWORD at(::GetFileAttributesA(argv[1]));
   if (at == INVALID_FILE_ATTRIBUTES)
@@ -72,7 +77,32 @@ int main( int argc, char* argv[])
   std::cout << std::endl;
 
   if (at)
-    std::cout << "plus unknown attributes " << at << std::endl; 
+    std::cout << "plus unknown attributes " << at << std::endl;
+
+  //  report Boost Filesystem file_type
+
+  fs::file_status stat = fs::status(argv[1]);
+
+  const char* types[] = 
+    { 
+    "status_error",
+    "file_not_found",
+    "regular_file",
+    "directory_file",
+    // the following may not apply to some operating systems or file systems
+    "symlink_file",
+    "block_file",
+    "character_file",
+    "fifo_file",
+    "socket_file",
+    "reparse_file",  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
+    "type_unknown",  // file does exist", but isn't one of the above types or
+                   // we don't have strong enough permission to find its type
+
+    "_detail_directory_symlink"  // internal use only; never exposed to users
+  };
+
+  std::cout << "boost::filesystem::status().type() is " << types[stat.type()] << std::endl;
 
   return 0;
 }

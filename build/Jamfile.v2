@@ -13,13 +13,36 @@ project boost/filesystem
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
     ;
     
-SOURCES =
-    v2/src/v2_operations v2/src/v2_path v2/src/v2_portability
-    v3/src/operations v3/src/path v3/src/portability v3/src/utf8_codecvt_facet
-    v3/src/codecvt_error_category v3/src/path_traits v3/src/unique_path
-    v3/src/windows_file_codecvt 
-    ;
-
+local disable-filesystem2 = [ MATCH (--disable-filesystem2) : [ modules.peek : ARGV ] ] ;
+local disable-filesystem3 = [ MATCH (--disable-filesystem3) : [ modules.peek : ARGV ] ] ;   
+    
+if ! $(disable-filesystem2)
+{
+  if ! $(disable-filesystem3)
+  {
+    SOURCES =
+        v2/src/v2_operations v2/src/v2_path v2/src/v2_portability
+        v3/src/operations v3/src/path v3/src/portability v3/src/windows_file_codecvt
+        v3/src/codecvt_error_category v3/src/path_traits v3/src/unique_path
+        v3/src/utf8_codecvt_facet 
+        ;
+  }
+  else
+  {
+    SOURCES =
+        v2/src/v2_operations v2/src/v2_path v2/src/v2_portability
+        v3/src/utf8_codecvt_facet   # used by both v2 and v3
+        ;
+  }
+}
+else
+{
+  SOURCES =
+      v3/src/operations v3/src/path v3/src/portability v3/src/windows_file_codecvt
+      v3/src/codecvt_error_category v3/src/path_traits v3/src/unique_path
+      v3/src/utf8_codecvt_facet 
+      ;
+}
 
 lib boost_filesystem
     : $(SOURCES).cpp ../../system/build//boost_system

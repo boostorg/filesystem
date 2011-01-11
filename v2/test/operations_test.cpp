@@ -7,6 +7,8 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -24,6 +26,7 @@ namespace fs = boost::filesystem;
 
 #include <boost/config.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 using boost::system::error_code;
 using boost::system::system_category;
@@ -77,8 +80,8 @@ namespace
   {
     std::ofstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test create_file",
-      ph, error_code(errno, system_category()) );
+      BOOST_FILESYSTEM_THROW( fs::filesystem_error( "operations_test create_file",
+      ph, error_code(errno, system_category()) ) );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -86,13 +89,13 @@ namespace
   {
     std::ifstream f( ph.file_string().c_str() );
     if ( !f )
-      throw fs::filesystem_error( "operations_test verify_file",
-        ph, error_code(errno, system_category()) );
+      BOOST_FILESYSTEM_THROW( fs::filesystem_error( "operations_test verify_file",
+        ph, error_code(errno, system_category()) ) );
     std::string contents;
     f >> contents;
     if ( contents != expected )
-      throw fs::filesystem_error( "operations_test verify_file contents \""
-        + contents  + "\" != \"" + expected + "\"", ph, error_code() );
+      BOOST_FILESYSTEM_THROW( fs::filesystem_error( "operations_test verify_file contents \""
+        + contents  + "\" != \"" + expected + "\"", ph, error_code() ) );
   }
 
   template< typename F >
@@ -264,7 +267,7 @@ namespace
 
 //  main  ------------------------------------------------------------------------------//
 
-int main( int argc, char * argv[] )
+int cpp_main( int argc, char * argv[] )
 {
   if ( argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t' ) report_throws = true;
 

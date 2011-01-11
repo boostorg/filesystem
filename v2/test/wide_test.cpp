@@ -8,6 +8,8 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -27,6 +29,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 
@@ -54,9 +57,9 @@ namespace
     std::ofstream f( ph.external_file_string().c_str() );
 # endif    
     if ( !f )
-      throw fs::basic_filesystem_error<Path>( "wide_test create_file",
+      BOOST_FILESYSTEM_THROW( fs::basic_filesystem_error<Path>( "wide_test create_file",
         ph,
-        boost::system::error_code( errno, boost::system::generic_category() ) );
+        boost::system::error_code( errno, boost::system::generic_category() ) ) );
     if ( !contents.empty() ) f << contents;
   }
 
@@ -125,7 +128,7 @@ namespace
 
 //  main  ------------------------------------------------------------------------------//
 
-int main( int argc, char * /*argv*/[] )
+int cpp_main( int argc, char * /*argv*/[] )
 {
 
   if ( argc > 1 ) cleanup = false;

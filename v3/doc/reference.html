@@ -5,7 +5,7 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Filesystem Reference
+<title>Filesystem V3 Reference
 </title>
 <link rel="stylesheet" type="text/css" href="../../../../doc/src/minimal.css">
 </head>
@@ -98,6 +98,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
@@ -114,6 +115,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#status_known">status_known</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#symlink_status">symlink_status</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#system_complete">system_complete</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp <a href="#temp_directory_path">temp_directory_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a></td>
     <td width="34%" valign="top">
     <a href="#File-streams">File streams</a><br>
@@ -384,7 +386,10 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 <pre>      uintmax_t    hard_link_count(const path&amp; p);
       uintmax_t    hard_link_count(const path&amp; p, system::error_code&amp; ec);
 
-      bool         <a href="#is_directory">is_directory</a>(file_status s);
+      <span style="background-color: #FFFFFF">const path&amp;  <a href="#initial_path">initial_path</a>();
+      const path&amp;  <a href="#initial_path">initial_path</a>(</span><code>system::error_code&amp; ec</code><span style="background-color: #FFFFFF">);
+
+</span>      bool         <a href="#is_directory">is_directory</a>(file_status s);
       bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
       bool         <a href="#is_directory2">is_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
@@ -436,6 +441,9 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       path         <a href="#system_complete">system_complete</a>(const path&amp; p);
       path         <a href="#system_complete">system_complete</a>(const path&amp; p, system::error_code&amp; ec);
+
+      path         <a href="#temp_directory_path">temp_directory_path</a>();
+      path         <a href="#temp_directory_path">temp_directory_path</a>(system::error_code&amp; ec);
 
       path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
       path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
@@ -2068,8 +2076,10 @@ bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 </blockquote>
+<div dir="ltr">
 <pre><span style="background-color: #FFFFFF; ">uintmax_t</span> <a name="file_size">file_size</a>(const path&amp; p);<span style="background-color: #FFFFFF; ">
 uintmax_t</span> <a name="file_size2">file_size</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+</div>
 <blockquote>
   <p><span style="background-color: #FFFF00">Remarks: </span></p>
   <p><i>Returns:</i> If <code>exists(p) &amp;&amp; is_regular_file(p)</code>, the size 
@@ -2083,6 +2093,20 @@ uintmax_t</span> <a name="file_size2">file_size</a>(const path&amp; p, system::e
   <p style="font-size: 10pt"><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
+</blockquote>
+<pre><span style="background-color: #FFFFFF">const path&amp; <a name="initial_path">initial_path</a>();
+const path&amp; <a name="initial_path">initial_path</a>(</span><code>system::error_code&amp; ec</code><span style="background-color: #FFFFFF">);</span></pre>
+<blockquote>
+  <p><i><span style="background-color: #FFFFFF">Returns:</span></i><span style="background-color: #FFFFFF"> </span>
+  <code>current_path()</code> as of the first call to <code>initial_path()</code>.</p>
+  <p>[<i><span style="background-color: #FFFFFF">Note:</span></i> <code>
+  initial_path()</code> is not thread safe, and may return an undesirable result 
+  if called subsequent to a change to the current directory. These problems can 
+  be avoided by calling <code>initial_path()</code> immediately on entry to 
+  main().&nbsp; <i><span style="background-color: #FFFFFF">--end note</span></i>]</p>
+  <p><i>Throws:</i> For the first call, as specified in
+  <a href="#Error-reporting">
+  Error reporting</a>. Subsequent calls throw nothing.</p>
 </blockquote>
 <pre><span style="background-color: #FFFFFF">bool </span><code><span style="background-color: #FFFFFF"><a name="is_directory">is_directory</a></span></code><span style="background-color: #FFFFFF">(file_status s);</span></pre>
 <blockquote>
@@ -2441,6 +2465,21 @@ path <a name="system_complete2">system_complete</a>(const path&amp; p, system::e
   error-prone.</p>
   <p>See <a href="#complete_note">
   <i>complete()</i> note</a> for usage suggestions. <i>-- end note</i>]</p>
+</blockquote>
+<pre>path <a name="temp_directory_path">temp_directory_path</a>();
+path temp_directory_path(system::error_code&amp; ec);</pre>
+<blockquote>
+  <p><i>Returns:</i> A directory path suitable for temporary files under the 
+  conventions of the operating system. The specifics of how this path is 
+  determined are implementation defined. An error shall be reported if<code> !exists(p) 
+  || !is_directory(p)</code>, where <code>p</code> is the path to be returned.</p>
+  <p><i>POSIX:</i> The path supplied by the first environment variable found in the 
+  list TMPDIR, TMP, TEMP, TEMPDIR. If none of these are found, <code>&quot;/tmp&quot;</code>.</p>
+  <p><i>Windows:</i> The path reported by the <i>Windows</i> <code>GetTempPath</code> API function.</p>
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">
+  Error reporting</a>.</p>
+  <p>[<i>Note: </i>The <code>temp_directory_path()</code> name was chosen to emphasize that the return is a 
+  path, not just a single directory name.&nbsp; <i>-- end note</i>]</p>
 </blockquote>
 <pre>path <a name="unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
 path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
@@ -3038,7 +3077,8 @@ http://www.boost.org/libs/filesystem/doc/index.htm#Acknowledgements</a>.</p>
 <p>Dietmar Kuehl contributed the original Boost Filesystem Library directory_iterator design. Peter Dimov, Walter Landry, Rob Stewart, and Thomas 
 Witt were particularly helpful in refining the library.</p>
 <p>The create_directories, extension, basename, and replace_extension functions 
-were developed by Vladimir Prus.</p>
+were developed by Vladimir Prus. The temp_directory_path function was 
+contributed by Jeff Flinn.</p>
 <p>Howard Hinnant and John Maddock reviewed a draft of the version 2 proposal, and 
 identified a number of mistakes or weaknesses, resulting in a more polished 
 final document.</p>
@@ -3069,7 +3109,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->05 October 2010<!--webbot bot="Timestamp" endspan i-checksum="32123" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 January 2011<!--webbot bot="Timestamp" endspan i-checksum="32200" --></p>
 
 </body>
 

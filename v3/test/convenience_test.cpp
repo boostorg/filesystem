@@ -32,6 +32,7 @@ using fs::path;
 namespace sys = boost::system;
 
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
 #include <iostream>
@@ -58,7 +59,7 @@ namespace
 
 //  ------------------------------------------------------------------------------------//
 
-int main(int, char*[])
+int cpp_main(int, char*[])
 {
 
 //  create_directories() tests  --------------------------------------------------------//

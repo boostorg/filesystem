@@ -7,6 +7,8 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
+#define BOOST_FILESYSTEM_VERSION 2
+
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -37,6 +39,7 @@ namespace fs = boost::filesystem;
 #endif
 
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 namespace
 {
@@ -148,7 +151,7 @@ namespace
   } // test
 } // unnamed namespace
 
-int main( int argc, char*[] )
+int cpp_main( int argc, char*[] )
 {
   if ( argc > 1 ) cleanup = false;
 
