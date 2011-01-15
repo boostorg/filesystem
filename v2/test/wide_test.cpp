@@ -36,7 +36,7 @@
 namespace fs = boost::filesystem;
 
 #include <iostream>
-#include <boost/detail/iomanip.hpp>
+#include <iomanip>
 #include <ios>
 #include <string>
 #include <cerrno>

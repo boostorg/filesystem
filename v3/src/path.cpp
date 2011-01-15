@@ -40,7 +40,7 @@
 
 #ifdef BOOST_FILESYSTEM_DEBUG
 # include <iostream>
-# include <boost/detail/iomanip.hpp>
+# include <iomanip>
 #endif
 
 namespace fs = boost::filesystem3;

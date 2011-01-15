@@ -45,7 +45,7 @@
 #include <boost/smart_ptr.hpp>  // used constructor tests
 
 #include <iostream>
-#include <boost/detail/iomanip.hpp>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <cstring>
