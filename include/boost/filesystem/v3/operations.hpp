@@ -648,7 +648,7 @@ namespace detail
   };
   BOOST_SCOPED_ENUM_END
 
-  BOOST_BITMASK(BOOST_SCOPED_ENUM(symlink_option));
+  BOOST_BITMASK(BOOST_SCOPED_ENUM(symlink_option))
 
   namespace detail
   {
