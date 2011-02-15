@@ -199,7 +199,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
     std::cerr <<
       "Usage: path_table \"POSIX\"|\"Windows\" input-file posix-file output-file\n"
       "Run on POSIX first, then on Windows\n"
-      "  \"POSIX\" causes POSIX results to be save in posix-file;\n"
+      "  \"POSIX\" causes POSIX results to be saved in posix-file;\n"
       "  \"Windows\" causes POSIX results read from posix-file\n"
       "  input-file contains the paths to appear in the table.\n"
       "  posix-file will be used for POSIX results\n"

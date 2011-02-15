@@ -89,7 +89,10 @@
     <a href="#Operational-functions">
     Operational functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#absolute">absolute</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy">copy</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_directory">copy_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_symlink">copy_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#create_directories">create_directories</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#create_directory">create_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#create_hard_link">create_hard_link</a><br>
@@ -98,6 +101,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
@@ -330,8 +334,17 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       BOOST_SCOPED_ENUM_START(<a name="copy_option">copy_option</a>)
       {
-        fail_if_exists,
+        none
+        fail_if_exists = none,
         overwrite_if_exists
+      };
+      BOOST_SCOPED_ENUM_END
+
+      BOOST_SCOPED_ENUM_START(<a name="symlink_option">symlink_option</a>)
+      {
+        none
+        no_recurse = none,
+        recurse
       };
       BOOST_SCOPED_ENUM_END
 
@@ -339,11 +352,11 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
 </span>      path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
 
-      void         copy(const path&amp; from, const path&amp; to);
-      void         copy(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+      void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to);
+      void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
 
-      void         copy_directory(const path&amp; from, const path&amp; to);
-      void         copy_directory(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+      void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
+      void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
 
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
@@ -351,8 +364,8 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option,
                              system::error_code&amp; ec);
 
-      void         copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink);
-      void         copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);
+      void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
+      void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);
 
       bool         <a href="#create_directories">create_directories</a>(const path&amp; p);
       bool         <a href="#create_directories">create_directories</a>(const path&amp; p, system::error_code&amp; ec);
@@ -360,8 +373,8 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       bool         <a href="#create_directory">create_directory</a>(const path&amp; p);
       bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
-<span style="background-color: #FFFFFF">      void         create_directory_symlink(const path&amp; to, const path&amp; </span>new_symlink<span style="background-color: #FFFFFF">);
-      void         create_directory_symlink(const path&amp; to, const path&amp; </span>new_symlink, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
+<span style="background-color: #FFFFFF">      void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; </span>new_symlink<span style="background-color: #FFFFFF">);
+      void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; </span>new_symlink, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
 </span>
       void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
       void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);
@@ -383,8 +396,8 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p);
       <span style="background-color: #FFFFFF; ">uintmax_t</span>    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);</pre>
-<pre>      uintmax_t    hard_link_count(const path&amp; p);
-      uintmax_t    hard_link_count(const path&amp; p, system::error_code&amp; ec);
+<pre>      uintmax_t    <a href="#hard_link_count">hard_link_count</a>(const path&amp; p);
+      uintmax_t    <a href="#hard_link_count">hard_link_count</a>(const path&amp; p, system::error_code&amp; ec);
 
       <span style="background-color: #FFFFFF">const path&amp;  <a href="#initial_path">initial_path</a>();
       const path&amp;  <a href="#initial_path">initial_path</a>(</span><code>system::error_code&amp; ec</code><span style="background-color: #FFFFFF">);
@@ -425,8 +438,8 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to);
       void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
 
-      void         resize_file(const path&amp; p, uintmax_t size);
-      void         resize_file(const path&amp; p, uintmax_t size, system::error_code&amp; ec);
+      void         <a href="#resize_file">resize_file</a>(const path&amp; p, uintmax_t size);
+      void         <a href="#resize_file2">resize_file</a>(const path&amp; p, uintmax_t size, system::error_code&amp; ec);
 
 <span style="background-color: #FFFFFF">      <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p);
       <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p</span>, system::error_code&amp; ec<span style="background-color: #FFFFFF">);
@@ -703,7 +716,7 @@ letters to uppercase.<i> -- end note.</i>]</p>
 <font size="4">path</font></code> constructors</a></h3>
 <pre>path();</pre>
 <blockquote>
-  <p><i>Postconditions:</i> <code>empty()</code>.</p>
+  <p><i>Postcondition:</i> <code>empty()</code>.</p>
   </blockquote>
 <pre>template &lt;class <a href="#Source">Source</a>&gt;
   path(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());</pre>
@@ -1231,7 +1244,7 @@ clause.</p>
 <h4> <a name="filesystem_error-members"> <code>filesystem_error</code> members</a></h4>
 <pre><a name="filesystem_error-2-arg">filesystem_error</a>(const std::string&amp; <span style="background-color: #FFFFFF">what_arg</span>, error_code ec);</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="46%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1259,7 +1272,7 @@ clause.</p>
 </blockquote>
 <pre><a name="filesystem_error-3-arg">filesystem_error</a>(const std::string&amp; <span style="background-color: #FFFFFF">what_arg</span>, const path_type&amp; p1, error_code ec);</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="46%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1288,7 +1301,7 @@ clause.</p>
 </blockquote>
 <pre><a name="filesystem_error-4-arg">filesystem_error</a>(const std::string&amp; <span style="background-color: #FFFFFF">what_arg</span>, const path_type&amp; p1, const path_type&amp; p2, error_code ec);</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="46%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1394,7 +1407,7 @@ systems that provide status as a by-product of directory iteration.</i></span></
 <h4> <a name="directory_entry-constructors"> <code>directory_entry </code>constructors</a></h4>
 <pre>directory_entry();</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="36%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1416,7 +1429,7 @@ systems that provide status as a by-product of directory iteration.</i></span></
 </blockquote>
 <pre>explicit directory_entry(const path_type&amp; p, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="36%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1439,7 +1452,7 @@ systems that provide status as a by-product of directory iteration.</i></span></
 <h4> <a name="directory_entry-modifiers"> <code>directory_entry </code>modifiers</a></h4>
 <pre>void assign(const path_type&amp; p, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="36%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1461,7 +1474,7 @@ systems that provide status as a by-product of directory iteration.</i></span></
 </blockquote>
 <pre>void replace_filename(const path&amp; p, <span style="background-color: #FFFFFF">file_status</span> st=file_status(), <span style="background-color: #FFFFFF">file_status</span> symlink_st=file_status());</pre>
 <blockquote>
-  <p><i>Postconditions:</i></p>
+  <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="43%">
     <tr>
       <td width="18%"><b>Expression</b></td>
@@ -1674,7 +1687,7 @@ directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
 
 </blockquote>
 <h3><a name="Class-recursive_directory_iterator">Class <code>recursive_directory_iterator</code></a></h3>
-<p>Objects of type <code>directory_iterator</code> provide standard library 
+<p>Objects of type <code>recursive_directory_iterator</code> provide standard library 
 compliant iteration over the contents of a directory, including recursion into 
 its sub-directories.</p>
 <pre>  namespace boost
@@ -1682,20 +1695,23 @@ its sub-directories.</p>
     namespace filesystem
     {
       class recursive_directory_iterator :
-        public iterator&lt;input_iterator_tag, directory_entry &gt;
+        public iterator&lt;input_iterator_tag, directory_entry&gt;
       {
       public:
 
         // constructors and destructor
         recursive_directory_iterator();
         recursive_directory_iterator(const recursive_directory_iterator&amp;);
-        explicit recursive_directory_iterator(const path&amp; p);
+        explicit recursive_directory_iterator(const path&amp; p,
+          BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt = symlink_option::none);
+        recursive_directory_iterator(const path&amp; p,
+          BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt, system::error_code&amp; ec);
         recursive_directory_iterator(const path&amp; p, system::error_code&amp; ec);
        ~recursive_directory_iterator();
 
         // observers
         int level() const;
-        bool no_push<code>_request</code>() const;
+        bool no_push<code>_pending</code>() const;
 
         // modifiers
         recursive_directory_iterator&amp; operator=(const recursive_directory_iterator&amp;);
@@ -1704,31 +1720,33 @@ its sub-directories.</p>
         recursive_directory_iterator&amp; increment(system::error_code&amp; ec);
 
         void pop();
-        void no_push();
+        void no_push(bool value=true);
 
         // other members as required by
         //  C++ Std, 24.1.2 Input iterators [input.iterators]
 
       private:
-        int  m_level; <b><i>          // for exposition only</i></b>
-        bool m_no_<code>push_request</code>;  <b><i>// for exposition only</i></b>
+<i><b>        // actual data members will probably be stored in a shared pimpl object,
+        // or some similar mechanism, to achieve the required input iterator copy semantics
+</b></i>        int  m_level; <b><i>                                // for exposition only</i></b>
+        bool m_no_<code>push</code>;  <i><b>                             // for exposition only
+        </b></i>BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) m_options;  <i><b>// for exposition only</b></i>
       };
 
     } // namespace filesystem
   } // namespace boost</pre>
+
 <p>The behavior of a <code>recursive_directory_iterator</code> is the same 
 as a <code>directory_iterator</code> unless otherwise specified.</p>
 <ul>
-  <li>When an iterator reaches the end of the directory currently being iterated 
+  <li>Incrementing a <code>recursive_directory_iterator</code> pointing to a 
+  directory causes that directory itself to be iterated ovee, as specified by 
+  the <code>operator++</code> and <code>increment</code> functions.<br>
+&nbsp;</li>
+  <li>When a <code>recursive_directory_iterator</code> reaches the end of the directory currently being iterated 
   over, or when <code>pop()</code> is called, <code>m_level</code> is 
-  decremented, and iteration continues with the parent directory, until the 
-  directory specified in the constructor argument is reached.</li>
+  decremented, and iteration of the parent directory continues.</li>
 </ul>
-<blockquote>
-  <p>[<i>Note:</i> One of the uses of <code>no_push()</code> is to prevent 
-  unwanted recursion into a directory symlink. This may be necessary to 
-  prevent loops on some operating systems. <i>--end note</i>]</p>
-</blockquote>
 <pre>recursive_directory_iterator();</pre>
 <blockquote>
 
@@ -1738,15 +1756,18 @@ as a <code>directory_iterator</code> unless otherwise specified.</p>
 
 </blockquote>
 
-<pre><code>explicit </code>recursive_<code>directory_iterator(</code>const path&amp; p<code>);
-</code>recursive_<code>directory_iterator(</code>const path&amp; p, system::error_code&amp; ec<code>);</code></pre>
+<pre>explicit recursive_directory_iterator(const path&amp; p, BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt = symlink_option::none);
+recursive_directory_iterator(const path&amp; p, BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt, system::error_code&amp; ec);
+recursive_<code>directory_iterator(</code>const path&amp; p, system::error_code&amp; ec<code>);</code></pre>
 <blockquote>
 
 <p><i>Effects:</i>&nbsp; Constructs a iterator representing the first 
 entry in the directory <code>p</code> resolves to, if any; otherwise, the end iterator.</p>
 
-<p><i>Postconditions: </i>Unless the end iterator was constructed,<i> </i><code>
-level() == 0</code>, <code>no_push_request() == false</code>.</p>
+<p dir="ltr"><i>Postcondition: </i>Unless the end iterator was constructed,<i> </i>
+<code>level() == 0 &amp;&amp; no_push_pending() == false &amp;&amp; m_options == opt</code>. 
+For the signature without a <code>symlink_option</code> argument, <code>opt</code> 
+is assumed to be <code>symlink_option::none</code>.</p>
 
 <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
@@ -1755,6 +1776,11 @@ level() == 0</code>, <code>no_push_request() == false</code>.</p>
 <p>[<i>Note:</i> To iterate over the current directory, use <code>recursive_directory_iterator(&quot;.&quot;)</code> rather than
 <code>recursive_directory_iterator(&quot;&quot;)</code>.
 <i>-- end note</i>]</p>
+
+<p>[<i>Note:</i> By default, <code>recursive_directory_iterator</code> does not 
+follow directory symlinks. To follow directory symlinks, specify <code>opt</code> 
+as <code>symlink_option::recurse</code>
+<i>-- end note</i>]</p>
 </blockquote>
 <pre>int level() const;</pre>
 <blockquote>
@@ -1762,10 +1788,10 @@ level() == 0</code>, <code>no_push_request() == false</code>.</p>
   <p><i>Returns:</i> <code>m_level</code>.</p>
   <p><i>Throws:</i> Nothing.</p>
 </blockquote>
-<pre>bool <code>no_push_request</code>() const;</pre>
+<pre>bool <code>no_push_pending</code>() const;</pre>
 <blockquote>
   <p><i>Requires:</i> <code>*this != recursive_directory_iterator()</code>.</p>
-  <p><i>Returns:</i> <code>m_no_push_request</code>.</p>
+  <p><i>Returns:</i> <code>m_no_push</code>.</p>
   <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre><code>recursive_directory_iterator</code>&amp; <a name="recursive_directory_iterator-increment">operator++</a>();
@@ -1773,10 +1799,23 @@ recursive_directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
 <blockquote>
 
 <p><i>Effects:</i> As specified by the C++ Standard, 24.1.1 Input iterators [input.iterators], 
-except that if <code>(*this)-&gt;is_directory() &amp;&amp; !no_push_requested()</code> then&nbsp; <code>m_level</code> 
-is incremented and <code>(*this)-&gt;path()</code> is recursively iterated into.</p>
+except:</p>
 
-<p><i>Postconditions:</i> <code>no_push_request() == false</code>.</p>
+<ul>
+  <li dir="ltr">
+
+<p dir="ltr">if <code>!no_push_pending() &amp;&amp; is_directory(this-&gt;status()) 
+&amp;&amp; (!is_symlink(this-&gt;symlink_status()) || (m_options 
+&amp; symlink_option::recurse) != 0)</code> then&nbsp; <code>m_level</code> 
+is incremented and directory <code>(*this)-&gt;path()</code> is recursively iterated into.<br>
+&nbsp;</p>
+
+  </li>
+  <li>if there are no more directory entries at this level then <code>m_level</code> 
+is decremented and iteration of the parent directory resumes.</li>
+</ul>
+
+<p><i>Postcondition:</i> <code>no_push_pending() == false</code>.</p>
 
 <p><i>Returns:</i> <code>*this</code>.</p>
 
@@ -1793,14 +1832,13 @@ is incremented and <code>(*this)-&gt;path()</code> is recursively iterated into.
   iterated over, and continue iteration over the parent directory.</p>
   <p><i>Throws:</i> Nothing.</p>
 </blockquote>
-<pre>void no_push();</pre>
+<pre>void no_push(bool value=true);</pre>
 <blockquote>
   <p><i>Requires:</i> <code>*this != recursive_directory_iterator()</code>.</p>
-<p><i>Postconditions:</i> <code>no_push_request() == true</code>.</p>
+<p><i>Postcondition:</i> <code>no_push_pending() == value</code>.</p>
   <p><i>Throws:</i> Nothing.</p>
-  <p>[<i>Note:</i> One of the uses of <code>no_push()</code> is to prevent 
-  unwanted recursion into a directory symlink. This may be necessary to 
-  prevent loops on some operating systems. <i>--end note</i>]</p>
+  <p>[<i>Note:</i> <code>no_push()</code> is used to prevent 
+  unwanted recursion into a directory. <i>--end note</i>]</p>
 </blockquote>
 <h3><a name="file_status">Class file_status</a></h3>
 <pre>  namespace boost
@@ -1879,25 +1917,47 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
       <td align="center"><code>return absolute(base) / p</code></td>
     </tr>
   </table>
-  <p><i>Postconditions:</i> For the returned path, <code>rp,</code> <code>
+  <p><i>Postcondition:</i> For the returned path, <code>rp,</code> <code>
   rp.is_absolute()</code> is true.</p>
   <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws only if 
   memory allocation fails.</p>
 </blockquote>
-<pre>void copy_file(const path&amp; from, const path&amp; to);</pre>
+<pre>void <a name="copy">copy</a>(const path&amp; from, const path&amp; to);
+void copy(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects: </i><code>copy_file(from, to, 
-  copy_option::fail_if_exists)</code>.</p>
+  <p><i>Effects:</i> As if</p>
+  
+  <blockquote>
+    <pre>file_status s(symlink_status(from<i>[</i><code>, ec</code><i>]</i>));
+if(is_symlink(s))
+  copy_symlink(from, to<i>[</i><code>, ec</code><i>]</i>);
+else if(is_directory(s))
+  copy_directory(from, to<i>[</i><code>, ec</code><i>]</i>);
+else if(is_regular_file(s))
+  copy_file(from, to, copy_option::fail_if_exists<i>[</i><code>, ec</code><i>]</i>);
+else
+<i> Report error as specified in <a href="#Error-reporting">Error reporting</a>.</i></pre>
+  </blockquote>
+  <p><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
+  
+</blockquote>
+<pre>void <a name="copy_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
+void copy_directory(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
+<blockquote>
+  <p><i>Effects: </i></p>
   
   <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
   
 </blockquote>
-<pre>void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
+<pre>void copy_file(const path&amp; from, const path&amp; to);
+void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Effects: </i><code>copy_file(from, to, 
-  copy_option::fail_if_exists, ec)</code>.</p>
+  copy_option::fail_if_exists</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
   
   <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
@@ -1914,13 +1974,24 @@ void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 </blockquote>
+<pre>void <a name="copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
+void copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);</pre>
+<blockquote>
+  <p><i>Effects: </i><code>create_symlink(read_symlink(existing_symlink</code><i>[</i><code>, ec</code><i>]</i><code>), 
+  new_symlink</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
+  
+  <p><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
+  
+</blockquote>
 <pre>bool <a name="create_directories">create_directories</a>(const path&amp; p);
 bool <a name="create_directories2">create_directories</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Requires:</i> <code>p.empty() || <br>
   forall px: px == p || is_parent(px, p): is_directory(px) || !exists( px )</code>
   </p>
-  <p><i>Postconditions:</i> <code>is_directory(p)</code></p>
+  <p><i>Postcondition:</i> <code>is_directory(p)</code></p>
   <p><i>Returns:</i> The value of <code>!exists(p)</code> prior to the 
   establishment of the postcondition.</p>
   <p><i>Throws:</i> As specified in
@@ -1940,19 +2011,51 @@ bool <a name="create_directory2">create_directory</a>(const path&amp; p, system:
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 </blockquote>
-<pre><span style="background-color: #FFFFFF">void <a name="create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; from);
-void <a name="create_hard_link2">create_hard_link</a>(const path&amp; to, const path&amp; from, system::error_code&amp; ec);</span></pre>
+<pre><span style="background-color: #FFFFFF">void <a name="create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
+void create_directory_symlink(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);</span></pre>
+<blockquote style="font-size: 10pt">
+  <p style="font-size: 10pt"><i><span style="background-color: #FFFFFF">Effects:</span></i><span style="background-color: #FFFFFF"> 
+  Establishes the postcondition, as if by </span><i>
+  <span style="background-color: #FFFFFF">POSIX</span></i><span style="background-color: #FFFFFF">
+  </span><code><span style="background-color: #FFFFFF">
+  <a href="http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html">
+  symlink()</a></span></code><span style="background-color: #FFFFFF">.</span></p>
+  <p style="font-size: 10pt"><span style="background-color: #FFFFFF"><i>
+  Postcondition:</i> <code>new_symlink</code> resolves to a symbolic link file that 
+  contains an unspecified representation of <code>to</code>.</span></p>
+  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
+  <p style="font-size: 10pt"><span style="background-color: #FFFFFF">[</span><i><span style="background-color: #FFFFFF">Note:</span></i><span style="background-color: #FFFFFF"> 
+  Some <b>operating systems</b>, such as Windows, require symlink creation to 
+  identify that the link is to a directory. Portable code should use <code>
+  create_directory_symlink()</code> to create directory symlinks rather than
+  <code>create_symlink()</code> </span> <i><span style="background-color: #FFFFFF">-- end note</span></i><span style="background-color: #FFFFFF">]</span></p>
+  <p><span style="background-color: #FFFFFF">[</span><i><span style="background-color: #FFFFFF">Note:</span></i><span style="background-color: #FFFFFF"> 
+  Some <b>operating systems</b> do not support symbolic links at all or support 
+  them only for regular files. Windows prior to Vista, for example, did not 
+  support symbolic links. 
+  Some <b>file systems</b> do not 
+  support 
+  symbolic links regardless of the operating system - the FAT system used on floppy discs, memory cards and flash 
+  drives, 
+  for example. Thus symbolic links should only be used if these situations are 
+  not concerns, or if workarounds are provided. </span> <i><span style="background-color: #FFFFFF">-- end note</span></i><span style="background-color: #FFFFFF">]</span></p>
+  </blockquote>
+<pre><span style="background-color: #FFFFFF">void <a name="create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
+void <a name="create_hard_link2">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);</span></pre>
 <blockquote>
   <p><i><span style="background-color: #FFFFFF">Effects:</span></i><span style="background-color: #FFFFFF"> Establishes the postcondition, as if by
   </span> <i><span style="background-color: #FFFFFF">POSIX</span></i><span style="background-color: #FFFFFF">
   </span> <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/link.html">
   <span style="background-color: #FFFFFF">link()</span></a></code><span style="background-color: #FFFFFF">.</span></p>
-  <p><i><span style="background-color: #FFFFFF">Postconditions:</span></i></p>
+  <p><i><span style="background-color: #FFFFFF">Postcondition:</span></i></p>
   <ul>
     <li><span style="background-color: #FFFFFF">&nbsp;</span><code><span style="background-color: #FFFFFF">exists(to) &amp;&amp; 
-    exists(from) &amp;&amp; equivalent(to, 
-    from)</span></code></li>
+    exists(</span></code><span style="background-color: #FFFFFF"><code>new_hard_link</code></span><code><span style="background-color: #FFFFFF">) &amp;&amp; equivalent(to, 
+     
+    </span></code><span style="background-color: #FFFFFF"><code>new_hard_link</code></span><code><span style="background-color: #FFFFFF">)</span></code></li>
     <li><span style="background-color: #FFFFFF">The contents of the file or directory
     <code>to</code> resolves to are unchanged.</span></li>
   </ul>
@@ -1967,8 +2070,8 @@ void <a name="create_hard_link2">create_hard_link</a>(const path&amp; to, const 
   number of links per file. Thus hard links should only be used if these 
   situations are not concerns, or if workarounds are provided. </span> <i><span style="background-color: #FFFFFF">-- end note</span></i><span style="background-color: #FFFFFF">]</span></p>
   </blockquote>
-<pre><span style="background-color: #FFFFFF">void <a name="create_symlink">create_symlink</a>(const path&amp; to, const path&amp; from);
-void <a name="create_symlink2">create_symlink</a>(const path&amp; to, const path&amp; from, system::error_code&amp; ec);</span></pre>
+<pre><span style="background-color: #FFFFFF">void <a name="create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink);
+void <a name="create_symlink2">create_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);</span></pre>
 <blockquote style="font-size: 10pt">
   <p style="font-size: 10pt"><i><span style="background-color: #FFFFFF">Effects:</span></i><span style="background-color: #FFFFFF"> 
   Establishes the postcondition, as if by </span><i>
@@ -1977,7 +2080,7 @@ void <a name="create_symlink2">create_symlink</a>(const path&amp; to, const path
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html">
   symlink()</a></span></code><span style="background-color: #FFFFFF">.</span></p>
   <p style="font-size: 10pt"><span style="background-color: #FFFFFF"><i>
-  Postconditions:</i> <code>from</code> resolves to a symbolic link file that 
+  Postcondition:</i> <code>new_symlink</code> resolves to a symbolic link file that 
   contains an unspecified representation of <code>to</code>.</span></p>
   <p style="font-size: 10pt"><i>Throws:</i> As specified in
   <a href="#Error-reporting">
@@ -2019,7 +2122,7 @@ void current_path(const path&amp; p, system::error_code&amp; ec);</pre>
   </span><code><span style="background-color: #FFFFFF">
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/chdir.html">
   chdir()</a></span></code><span style="background-color: #FFFFFF">.</span></p>
-<p><i>Postconditions:</i> <code>equivalent(p, current_path())</code>.</p>
+<p><i>Postcondition:</i> <code>equivalent(p, current_path())</code>.</p>
 <p><i>Throws:</i> As specified in
 <a href="#Error-reporting">
 Error reporting</a>.</p>
@@ -2094,6 +2197,17 @@ uintmax_t</span> <a name="file_size2">file_size</a>(const path&amp; p, system::e
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 </blockquote>
+<pre>uintmax_t <a name="hard_link_count">hard_link_count</a>(const path&amp; p);
+uintmax_t hard_link_count(const path&amp; p, system::error_code&amp; ec);</pre>
+<blockquote>
+
+  <p><i>Returns:</i> The number of hard links for <code>p</code>.</p>
+  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
+
+</blockquote>
+
 <pre><span style="background-color: #FFFFFF">const path&amp; <a name="initial_path">initial_path</a>();
 const path&amp; <a name="initial_path">initial_path</a>(</span><code>system::error_code&amp; ec</code><span style="background-color: #FFFFFF">);</span></pre>
 <blockquote>
@@ -2280,7 +2394,7 @@ void <a name="rename2">rename</a>(const path&amp; old_p, const path&amp; new_p, 
 <pre>void <a name="resize_file">resize_file</a>(const path&amp; p, <span style="background-color: #FFFFFF; ">uintmax_t new_size</span>);
 void <a name="resize_file2">resize_file</a>(const path&amp; p, <span style="background-color: #FFFFFF; ">uintmax_t new_size, </span>system::error_code&amp; ec);</pre>
 <blockquote>
-<p><i>Postconditions:</i> <code>file_size() == new_size</code>.</p>
+<p><i>Postcondition:</i> <code>file_size() == new_size</code>.</p>
 <p><i>Throws:</i> As specified in
 <a href="#Error-reporting">
 Error reporting</a>.</p>
@@ -2449,7 +2563,7 @@ path <a name="system_complete2">system_complete</a>(const path&amp; p, system::e
   same rules used by the operating system to resolve a path passed as the 
   filename argument to standard library open functions.</p>
   <p><i>Returns:</i> The composed path.</p>
-  <p><i>Postconditions:</i> For the returned path, <code>rp,</code> <code>
+  <p><i>Postcondition:</i> For the returned path, <code>rp,</code> <code>
   rp.is_absolute()</code> is true.</p>
   <p>[<i>Note:</i> For <i>POSIX</i>, <code>system_complete(p)</code> has the same semantics as
   <code>complete(p, current_path())</code>.</p>
@@ -2569,10 +2683,10 @@ semantics.</p>
 <p>Shaded entries indicate cases where <i>POSIX</i> and <i>Windows</i> 
 implementations yield different results. The top value is the
 <i>POSIX</i> result and the bottom value is the <i>Windows</i> result. <br>
-&nbsp;<table border="1" cellspacing="0" cellpadding="5">
+<table border="1" cellspacing="0" cellpadding="5">
 <p>
-<tr><td><b><font size="2">Constructor<br>argument</font></b></td>
-<td><b><font size="2">Iteration<br>over<br>Elements</font></b></td>
+<tr><td><b>Constructor<br>argument</b></td>
+<td><b>Iteration<br>over<br>Elements</b></td>
 <td><b><code>string()</code></b></td>
 <td><b><code>generic_<br>string()</code></b></td>
 <td><b><code>root_<br>path()</code></b></td>
@@ -3063,8 +3177,6 @@ implementations yield different results. The top value is the
 <td><span style="background-color: #CCFFCC"><code>foo\bar</code><br><code>bar</code></span></td>
 </tr>
 </table>
-<table border="1" cellspacing="0" cellpadding="5" width="1066">
-</table>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>This Filesystem Library is dedicated to my wife, Sonda, who provided the 
 support necessary to see both a trial implementation and the proposal itself 
@@ -3109,7 +3221,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->02 January 2011<!--webbot bot="Timestamp" endspan i-checksum="32200" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->12 February 2011<!--webbot bot="Timestamp" endspan i-checksum="40670" --></p>
 
 </body>
 

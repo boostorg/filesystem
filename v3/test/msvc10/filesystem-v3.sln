@@ -53,6 +53,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tut6b", "tut6b\tut6b.vcxpro
 		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tut6c", "tut6c\tut6c.vcxproj", "{17C6DD1B-EF6F-4561-B4FF-CF39F975ED29}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F94CCADD-A90B-480C-A304-C19D015D36B1} = {F94CCADD-A90B-480C-A304-C19D015D36B1}
+		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -128,6 +134,10 @@ Global
 		{4A77CA6A-8E72-4CC6-9FE7-2C555C51815C}.Debug|Win32.Build.0 = Debug|Win32
 		{4A77CA6A-8E72-4CC6-9FE7-2C555C51815C}.Release|Win32.ActiveCfg = Release|Win32
 		{4A77CA6A-8E72-4CC6-9FE7-2C555C51815C}.Release|Win32.Build.0 = Release|Win32
+		{17C6DD1B-EF6F-4561-B4FF-CF39F975ED29}.Debug|Win32.ActiveCfg = Debug|Win32
+		{17C6DD1B-EF6F-4561-B4FF-CF39F975ED29}.Debug|Win32.Build.0 = Debug|Win32
+		{17C6DD1B-EF6F-4561-B4FF-CF39F975ED29}.Release|Win32.ActiveCfg = Release|Win32
+		{17C6DD1B-EF6F-4561-B4FF-CF39F975ED29}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -21,7 +21,7 @@ project
        [ run ../v3/test/path_unit_test.cpp :  :  :  : v3_path_unit_test ]                  
        [ run ../v3/test/path_test.cpp :  :  :  : v3_path_test ]                  
        [ run ../v3/test/operations_unit_test.cpp :  :  :  : v3_operations_unit_test ]
-       [ run ../v3/test/operations_test.cpp :  :  :  : v3_operations_test ]
+       [ run ../v3/test/operations_test.cpp :  :  : <test-info>always_show_run_output : v3_operations_test ]
        [ run ../v3/test/fstream_test.cpp :  :  :  : v3_fstream_test ]
        [ run ../v3/test/convenience_test.cpp :  :  :  : v3_convenience_test ]
        [ run ../v3/test/large_file_support_test.cpp :  :  :  : v3_large_file_support_test ]

@@ -1799,9 +1799,13 @@ namespace
         ? 0 : ::GetLastError(), system_category() );
     }
     target = data.cFileName;
-    if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-    { sf.type(fs::directory_file); symlink_sf.type(fs::directory_file); }
-    else { sf.type(fs::regular_file); symlink_sf.type(fs::regular_file); }
+    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+      // reparse points are complex, so don't try to handle them here
+      { sf.type(fs::status_error); symlink_sf.type(fs::status_error); }
+    else if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+      { sf.type(fs::directory_file); symlink_sf.type(fs::directory_file); }
+    else
+      { sf.type(fs::regular_file); symlink_sf.type(fs::regular_file); }
     return error_code();
   }
 
@@ -1816,9 +1820,13 @@ namespace
       return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
     }
     target = data.cFileName;
-    if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+      // reparse points are complex, so don't try to handle them here
+      { sf.type(fs::status_error); symlink_sf.type(fs::status_error); }
+    else if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
       { sf.type(fs::directory_file); symlink_sf.type(fs::directory_file); }
-    else { sf.type(fs::regular_file); symlink_sf.type(fs::regular_file); }
+    else
+      { sf.type(fs::regular_file); symlink_sf.type(fs::regular_file); }
     return error_code();
   }
 #endif
@@ -1935,7 +1943,12 @@ namespace detail
       }
       else if (ec != 0) ec->clear();
 
-      if (it.m_imp->handle == 0){ it.m_imp.reset(); return; } // eof, make end
+      if (it.m_imp->handle == 0)  // eof, make end
+      {
+        it.m_imp.reset();
+        return;
+      }
+
       if (!(filename[0] == dot // !(dot or dot-dot)
         && (filename.size()== 1
           || (filename[1] == dot
