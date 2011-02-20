@@ -573,25 +573,25 @@ system. </p>
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
         // <a href="#path-native-format-observers">native format observers</a>
-        const string_type&amp;  native() const;  // native format, encoding
-        const value_type*   c_str() const;   // native().c_str()
+        const string_type&amp;  <a href="#native">native</a>() const;  // native format, encoding
+        const value_type*   <a href="#c_str">c_str</a>() const;   // native().c_str()
 
         template &lt;class String&gt;
-        String string(const codecvt_type&amp; cvt=codecvt()) const;                // native format
+        String <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;                // native format
 
-        const string        string(const codecvt_type&amp; cvt=codecvt()) const;   // native format
-        const wstring       wstring(const codecvt_type&amp; cvt=codecvt()) const;  // ditto
-        const u16string     u16string() const;                                 // ditto
-        const u32string     u32string() const;                                 // ditto
+        const string        <a href="#string">string</a>(const codecvt_type&amp; cvt=codecvt()) const;   // native format
+        const wstring       <a href="#wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;  // ditto
+        const u16string     <a href="#u16string">u16string</a>() const;                                 // ditto
+        const u32string     <a href="#u32wstring">u32string</a>() const;                                 // ditto
 
         // <a href="#path-generic-format-observers">generic format observers</a>
         template &lt;class String&gt;
-        String generic_string() const;
+        String <a href="#generic_string-template">generic_string</a>() const;
 
-        const string        generic_string(const codecvt_type&amp; cvt=codecvt()) const;   // generic format
-        const wstring       generic_wstring(const codecvt_type&amp; cvt=codecvt()) const;  // ditto
-        const u16string     generic_u16string() const;                                 // ditto
-        const u32string     generic_u32string() const;                                 // ditto
+        const string        <a href="#generic_string">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;   // generic format
+        const wstring       <a href="#generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;  // ditto
+        const u16string     <a href="#generic_u16string">generic_u16string</a>() const;                                 // ditto
+        const u32string     <a href="#generic_u32wstring">generic_u32string</a>() const;                                 // ditto
 
         // <a href="#path-decomposition">decomposition</a>
         path  <a href="#path-root_name">root_name</a>() const;
@@ -623,9 +623,9 @@ system. </p>
         iterator begin() const;
         iterator end() const;
         
-        // encoding conversion
-        static std::locale imbue( const std::locale&amp; loc );
-        static const codecvt_type &amp; codecvt();
+        // <a href="#path_encoding">encoding conversion</a>
+        static std::locale <a href="#path-imbue">imbue</a>( const std::locale&amp; loc );
+        static const codecvt_type &amp; <a href="#path-codecvt">codecvt</a>();
 
       private:
         string_type pathname;  // <b><i>exposition only</i></b>
@@ -633,16 +633,37 @@ system. </p>
 
     } // namespace filesystem
   } // namespace boost</pre>
-<p><code><a name="value_type">value_type</a></code> is an implementation-defined typedef for the 
+<p><code><a name="value_type">value_type</a></code> is an implementation-defined 
+<code>typedef</code> for the 
 character type used by the implementation to represent pathnames.</p>
+<p>If the value type of&nbsp; [<code>begin</code>,<code>end</code>) 
+  or <code>source</code> arguments for member functions is not <code>value_type</code>, 
+and no <code>cvt</code> argument is supplied, conversion to <code>value_type</code> 
+occurs using an imbued locale. This imbued locale is initialized with a <code>
+codecvt</code> facet appropriate for the operating system.</p>
 <blockquote>
-<p><i>[Note:</i> For POSIX-like implementations, including<b> </b>Unixes, Linux, 
-and Mac OS X, <code>path::value_type</code> 
-is <code>char</code> .</p>
+<p>For Apple OS X implementations, <code>path::value_type</code> 
+is <code>char</code>. The default imbued locale provides a UTF-8 <code>codecvt</code> 
+facet. [<i>Rationale:</i> &quot;All BSD system functions expect their string 
+parameters to be in UTF-8 encoding and nothing else.&quot; See
+<a href="http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html">
+Apple docs</a>. <i>-- end rationale</i>]</p>
 <p>For Windows-like implementations, including 
   <a href="http://www.cygwin.com/">Cygwin</a> and
 <a href="http://www.mingw.org/">MinGW</a>, <code>path::value_type</code> is <code>
-wchar_t</code>.&nbsp;<i>--end note]</i></p>
+wchar_t</code>. The default imbued locale provides a <code>codecvt</code> facet 
+that invokes Windows <code>MultiByteToWideChar</code> or <code>
+WideCharToMultiByte</code> API's with a codepage of <code>CP_THREAD_ACP</code> 
+if Windows <code>AreFileApisANSI()</code>is true, otherwise codepage <code>
+CP_OEMCP</code>. [<i>Rationale:</i> this is the current behavior of C and C++ 
+programs that perform file operations using narrow character string to identify 
+paths. Changing this in the Filesystem library would be too surprising, 
+particularly where user input is involved. <i>-- end rationale</i>]</p>
+<p>For all other implementations, including<b> </b>Linux, <code>path::value_type</code> 
+is <code>char</code>. The default imbued locale is <code>std::locale(&quot;&quot;)</code>. 
+[<i>Rationale:</i> ISO C specifies this as &quot;the locale-specific native 
+environment&quot;, while POSIX says it &quot;Specifies an implementation-defined native 
+environment.&quot; <i>-- end rationale</i></p>
 </blockquote>
 <p>For member functions described as returning <code>const string</code>, <code>
 const wstring</code>, <code>const u16string</code>, or <code>const u32string</code>, 
@@ -672,7 +693,7 @@ compliant iterator. The iterator's value type is required to be <code>char</code
   wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</li>
   <li>A <code>boost::filesystem::directory_entry</code>.</li>
 </ul>
-<p>The specifications for certain <code>path</code> functions require that 
+<p>The specifications for <code>path</code> functions require that 
 arguments in the generic pathname format be converted to native pathname format 
 as they are stored in <code>pathname</code>. If the native format requires 
 regular file paths and directory paths to be formatted differently, the 
@@ -684,7 +705,7 @@ path, and have a native format of <code>&quot;[CATS]JANE&quot;</code>, while a
 path constructed from <code>&quot;/cats/jane/&quot;</code> would be considered a 
 directory path, and have a native format of <code>&quot;[CATS.JANE]&quot;</code>.
 <i>--end example</i>] [<i>Note</i>: POSIX and Windows use the same native format 
-for regular file and directory pathnames, so this paragraph does not apply to 
+for both regular file and directory pathnames, so this paragraph does not apply to 
 them. <i>--end note</i>]</p>
 
 <table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
@@ -725,8 +746,9 @@ letters to uppercase.<i> -- end note.</i>]</p>
 <blockquote>
   <p><i>Effects:</i> Stores the contents [<code>begin</code>,<code>end</code>) 
   or <code>source</code> in <code>pathname</code>. If the contents are in the 
-  generic format, they are converted to the native format. [<i>Note:</i> For 
-  POSIX and Windows based implementations, the generic format is already 
+  generic format and the generic format is unacceptable to the operating 
+  system's API, they are converted to the native format. [<i>Note:</i> For 
+  POSIX and Windows  implementations, the generic format is already 
   acceptable as a native format, so no generic to native conversion is 
   performed. <i>--end note</i>]</p>
   <p>
@@ -860,27 +882,27 @@ letters to uppercase.<i> -- end note.</i>]</p>
 native format observers</a></h3>
 <p>The string returned by all native format observers is in the
 <a href="#native-pathname-format">native pathname format</a>.</p>
-<pre>const string_type&amp;  native() const;</pre>
+<pre>const string_type&amp;  <a name="native">native</a>() const;</pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
 <p><i>Throws:</i> nothing.</p>
 </blockquote>
-<pre>const value_type* c_str() const;</pre>
+<pre>const value_type* <a name="c_str">c_str</a>() const;</pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname.c_str()</code>.</p>
 <p><i>Throws:</i> nothing.</p>
 </blockquote>
 <pre>template &lt;class String&gt;
-String string(const codecvt_type&amp; cvt=codecvt()) const;</pre>
+String <a name="string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>pathname</code>.</p>
 <p><i>Remarks:</i> If <code>string_type</code> is a different type than <code>
 String</code>, conversion is performed by <code>cvt</code>.</p>
 </blockquote>
-<pre>const string string(const codecvt_type&amp; cvt=codecvt()) const;
-const wstring wstring(const codecvt_type&amp; cvt=codecvt()) const;
-const u16string u16string() const;
-const u32wstring u32wstring() const; </pre>
+<pre>const string <a name="string">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
+const wstring <a name="wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
+const u16string <a name="u16string">u16string</a>() const;
+const u32wstring <a name="u32wstring">u32wstring</a>() const; </pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
 <p><i>Remarks:</i> If <code>string_type</code> is a different type than 
@@ -899,17 +921,17 @@ generic format observers</a></h3>
 generic format are the same. For Windows, backslashes are converted to slashes
 <i>--end note</i>]</p>
 <pre>template &lt;class String&gt;
-String generic_string(const codecvt_type&amp; cvt=codecvt()) const;</pre>
+String <a name="generic_string-template">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>pathname</code>.</p>
 <p><i>Remarks:</i> If <code>string_type</code> is a different type than <code>
 String</code>, conversion is performed by
 <code>cvt</code>.</p>
 </blockquote>
-<pre>const string generic_string(const codecvt_type&amp; cvt=codecvt()) const;
-const wstring generic_wstring(const codecvt_type&amp; cvt=codecvt()) const;
-const u16string generic_u16string() const;
-const u32wstring generic_u32wstring() const; </pre>
+<pre>const string <a name="generic_string">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;
+const wstring <a name="generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
+const u16string <a name="generic_u16string">generic_u16string</a>() const;
+const u32wstring <a name="generic_u32wstring">generic_u32wstring</a>() const; </pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
 <p><i>Remarks:</i>&nbsp; If <code>string_type</code> is a different type than 
@@ -1083,6 +1105,19 @@ path</code>.</p>
 <pre>iterator end() const;</pre>
 <blockquote>
   <p><i>Returns:</i> The end iterator.</p>
+</blockquote>
+ <h3><a name="path_encoding"><code><font size="4"> path</font></code> encoding</a> conversion</h3>
+ <pre>static std::locale <a name="path-imbue">imbue</a>(const std::locale&amp; loc);</pre>
+<blockquote>
+  <p><i>Effects:</i> Stores <code>loc</code> as the default locale for all 
+  objects of type <code>path</code>.</p>
+  <p><i>Returns:</i> The previous default locale for all objects of type <code>
+  path</code>.</p>
+</blockquote>
+<pre>static const codecvt_type&amp; <a name="path-codecvt">codecvt</a>();</pre>
+<blockquote>
+  <p><i>Returns:</i> The <code>codecvt</code> facet for the default locale for 
+  all objects of type <code>path</code>.</p>
 </blockquote>
 <h3> <a name="path-deprecated-functions"><code><font size="4"> path</font></code> deprecated functions</a></h3>
 <p> Several member functions from previous versions of <code>class path</code> 
@@ -3221,7 +3256,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->12 February 2011<!--webbot bot="Timestamp" endspan i-checksum="40670" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->18 February 2011<!--webbot bot="Timestamp" endspan i-checksum="40682" --></p>
 
 </body>
 
