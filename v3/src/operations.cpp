@@ -34,6 +34,7 @@
       !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #endif
+#if !defined(__PGI)
 #define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
       // 64-bit systems or on 32-bit systems which don't have files larger 
       // than can be represented by a traditional POSIX/UNIX off_t type. 
@@ -44,6 +45,9 @@
       // ensure that they are available to all included headers.
       // That is required at least on Solaris, and possibly on other
       // systems as well.
+#else
+#define _FILE_OFFSET_BITS 64
+#endif
 
 #include <boost/filesystem/v3/operations.hpp>
 #include <boost/scoped_array.hpp>
@@ -1693,6 +1697,10 @@ namespace
     result = max;
     return ok;
   }
+
+#if defined(__PGI) && defined(__USE_FILE_OFFSET64)
+#define dirent dirent64
+#endif
 
   error_code dir_itr_first(void *& handle, void *& buffer,
     const char* dir, string& target,
