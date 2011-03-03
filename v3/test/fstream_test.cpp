@@ -149,6 +149,9 @@ int cpp_main(int argc, char*[])
 {
   if (argc > 1) cleanup = false;
 
+  std::cout << "BOOST_FILESYSTEM_C_STR defined as \""
+            << BOOST_STRINGIZE(BOOST_FILESYSTEM_C_STR) << "\"\n";
+
   // test narrow characters
   std::cout << "narrow character tests:\n";
   test("fstream_test_foo");
