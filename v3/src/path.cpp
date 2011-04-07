@@ -159,14 +159,14 @@ namespace filesystem3
   const std::string path::generic_string(const codecvt_type& cvt) const
   { 
     path tmp(*this);
-    tmp.make_preferred();
+    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
     return tmp.string(cvt);
   }
 
   const std::wstring path::generic_wstring() const
   { 
     path tmp(*this);
-    tmp.make_preferred();
+    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
     return tmp.wstring();
   }
 
@@ -207,7 +207,7 @@ namespace filesystem3
 # ifdef BOOST_WINDOWS_API
   path & path::make_preferred()
   {
-    std::replace(m_pathname.begin(), m_pathname.end(), L'\\', L'/');
+    std::replace(m_pathname.begin(), m_pathname.end(), L'/', L'\\');
     return *this;
   }
 # endif
