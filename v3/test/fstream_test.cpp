@@ -154,7 +154,7 @@ int cpp_main(int argc, char*[])
 
   // test narrow characters
   std::cout << "narrow character tests:\n";
-  test("fstream_test_foo");
+  test("v3_fstream_test");
 
 
   // So that tests are run with known encoding, use Boost UTF-8 codecvt
