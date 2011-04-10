@@ -1070,6 +1070,26 @@ namespace
 
     if (platform == "Windows")
     {
+ 
+      //p = q = L"\\\\?\\";
+      //BOOST_TEST(p.relative_path().string() == "");
+      //BOOST_TEST(p.parent_path().string() == "");
+      //BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      //BOOST_TEST(p.filename() == "");
+      //BOOST_TEST(p.stem() == "");
+      //BOOST_TEST(p.extension() == "");
+      //BOOST_TEST(p.root_name() == "");
+      //BOOST_TEST(p.root_directory() == "");
+      //BOOST_TEST(p.root_path().string() == "");
+      //BOOST_TEST(!p.has_root_path());
+      //BOOST_TEST(!p.has_root_name());
+      //BOOST_TEST(!p.has_root_directory());
+      //BOOST_TEST(!p.has_relative_path());
+      //BOOST_TEST(!p.has_filename());
+      //BOOST_TEST(!p.has_stem());
+      //BOOST_TEST(!p.has_extension());
+      //BOOST_TEST(!p.has_parent_path());
+      //BOOST_TEST(!p.is_absolute());
 
       p = q = path("c:");
       BOOST_TEST(p.relative_path().string() == "");
@@ -1086,6 +1106,22 @@ namespace
       BOOST_TEST(p.has_filename());
       BOOST_TEST(!p.has_parent_path());
       BOOST_TEST(!p.is_absolute());
+ 
+      //p = q = path(L"\\\\?\\c:");
+      //BOOST_TEST(p.relative_path().string() == "");
+      //BOOST_TEST(p.parent_path().string() == "");
+      //BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      //BOOST_TEST(p.filename() == "c:");
+      //BOOST_TEST(p.root_name() == "c:");
+      //BOOST_TEST(p.root_directory() == "");
+      //BOOST_TEST(p.root_path().string() == "c:");
+      //BOOST_TEST(p.has_root_path());
+      //BOOST_TEST(p.has_root_name());
+      //BOOST_TEST(!p.has_root_directory());
+      //BOOST_TEST(!p.has_relative_path());
+      //BOOST_TEST(p.has_filename());
+      //BOOST_TEST(!p.has_parent_path());
+      //BOOST_TEST(!p.is_absolute());
 
       p = q = path("c:foo");
       BOOST_TEST(p.relative_path().string() == "foo");
@@ -1102,6 +1138,22 @@ namespace
       BOOST_TEST(p.has_filename());
       BOOST_TEST(p.has_parent_path());
       BOOST_TEST(!p.is_absolute());
+
+      //p = q = path(L"\\\\?\\c:foo");
+      //BOOST_TEST(p.relative_path().string() == "foo");
+      //BOOST_TEST(p.parent_path().string() == "c:");
+      //BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      //BOOST_TEST(p.filename() == "foo");
+      //BOOST_TEST(p.root_name() == "c:");
+      //BOOST_TEST(p.root_directory() == "");
+      //BOOST_TEST(p.root_path().string() == "c:");
+      //BOOST_TEST(p.has_root_path());
+      //BOOST_TEST(p.has_root_name());
+      //BOOST_TEST(!p.has_root_directory());
+      //BOOST_TEST(p.has_relative_path());
+      //BOOST_TEST(p.has_filename());
+      //BOOST_TEST(p.has_parent_path());
+      //BOOST_TEST(!p.is_absolute());
    
       p = q = path("c:/");
       BOOST_TEST(p.relative_path().string() == "");

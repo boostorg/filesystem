@@ -84,6 +84,7 @@ namespace
   const wchar_t* preferred_separator_string = L"\\";
   const wchar_t colon = L':';
   const wchar_t dot = L'.';
+  const wchar_t questionmark = L'?';
   const fs::path dot_path(L".");
   const fs::path dot_dot_path(L"..");
 
@@ -489,6 +490,19 @@ namespace
     if (size == 2
       && is_separator(path[0])
       && is_separator(path[1])) return string_type::npos;
+
+#   ifdef BOOST_WINDOWS_API
+  	// case "\\?\"
+  	if (size > 4
+  	  && is_separator(path[0])
+  	  && is_separator(path[1])
+  	  && path[2] == questionmark
+  	  && is_separator(path[3]))
+  	{
+  	  string_type::size_type pos(path.find_first_of(separators, 4));
+        return pos < size ? pos : string_type::npos;
+  	}
+#   endif
 
     // case "//net {/}"
     if (size > 3
