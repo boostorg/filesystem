@@ -74,6 +74,10 @@ inline int unsetenv(const char* name)
   return SetEnvironmentVariableW(convert(name).c_str(), 0); 
 }
 
+#else
+
+#include <stdlib.h>  // allow unqualifed calls to env funcs on SunOS
+
 #endif
 
 //  on Windows, except for standard libaries known to have wchar_t overloads for
