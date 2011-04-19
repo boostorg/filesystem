@@ -1926,8 +1926,8 @@ namespace detail
   void directory_iterator_increment(directory_iterator& it,
     system::error_code* ec)
   {
-    BOOST_ASSERT(it.m_imp.get() && "attempt to increment end iterator");
-    BOOST_ASSERT(it.m_imp->handle != 0 && "internal program error");
+    BOOST_ASSERT_MSG(it.m_imp.get(), "attempt to increment end iterator");
+    BOOST_ASSERT_MSG(it.m_imp->handle != 0, "internal program error");
     
     path::string_type filename;
     file_status file_stat, symlink_file_stat;

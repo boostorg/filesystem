@@ -428,8 +428,8 @@ namespace
   bool is_non_root_separator(const string_type & str, size_type pos)
     // pos is position of the separator
   {
-    BOOST_ASSERT(!str.empty() && is_separator(str[pos])
-      && "precondition violation");
+    BOOST_ASSERT_MSG(!str.empty() && is_separator(str[pos]),
+      "precondition violation");
 
     // subsequent logic expects pos to be for leftmost slash of a set
     while (pos > 0 && is_separator(str[pos-1]))
@@ -621,7 +621,8 @@ namespace filesystem3
 
   void path::m_path_iterator_increment(path::iterator & it)
   {
-    BOOST_ASSERT(it.m_pos < it.m_path_ptr->m_pathname.size() && "path::basic_iterator increment past end()");
+    BOOST_ASSERT_MSG(it.m_pos < it.m_path_ptr->m_pathname.size(),
+      "path::basic_iterator increment past end()");
 
     // increment to position past current element
     it.m_pos += it.m_element.m_pathname.size();
@@ -677,7 +678,7 @@ namespace filesystem3
 
   void path::m_path_iterator_decrement(path::iterator & it)
   {
-    BOOST_ASSERT(it.m_pos && "path::iterator decrement past begin()");
+    BOOST_ASSERT_MSG(it.m_pos, "path::iterator decrement past begin()");
 
     size_type end_pos(it.m_pos);
 
