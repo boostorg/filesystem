@@ -30,7 +30,7 @@
 # define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
 #endif
 
-#if !(defined(__HP_aCC) && defined(_ILP32) && \
+#if !defined(__QNXNTO__) && !(defined(__HP_aCC) && defined(_ILP32) && \
       !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #endif
@@ -182,6 +182,9 @@ typedef struct _REPARSE_DATA_BUFFER {
 #include <string>
 #include <cstring>
 #include <cstdio>      // for remove, rename
+#if defined(__QNXNTO__)  // see ticket #5355 
+# include <stdio.h>
+#endif
 #include <cerrno>
 #include <cassert>
 // #include <iostream>    // for debugging only; comment out when not in use
@@ -1923,8 +1926,8 @@ namespace detail
   void directory_iterator_increment(directory_iterator& it,
     system::error_code* ec)
   {
-    BOOST_ASSERT(it.m_imp.get() && "attempt to increment end iterator");
-    BOOST_ASSERT(it.m_imp->handle != 0 && "internal program error");
+    BOOST_ASSERT_MSG(it.m_imp.get(), "attempt to increment end iterator");
+    BOOST_ASSERT_MSG(it.m_imp->handle != 0, "internal program error");
     
     path::string_type filename;
     file_status file_stat, symlink_file_stat;

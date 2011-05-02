@@ -84,6 +84,7 @@ namespace
   const wchar_t* preferred_separator_string = L"\\";
   const wchar_t colon = L':';
   const wchar_t dot = L'.';
+  const wchar_t questionmark = L'?';
   const fs::path dot_path(L".");
   const fs::path dot_dot_path(L"..");
 
@@ -159,14 +160,14 @@ namespace filesystem3
   const std::string path::generic_string(const codecvt_type& cvt) const
   { 
     path tmp(*this);
-    tmp.make_preferred();
+    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
     return tmp.string(cvt);
   }
 
   const std::wstring path::generic_wstring() const
   { 
     path tmp(*this);
-    tmp.make_preferred();
+    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
     return tmp.wstring();
   }
 
@@ -207,7 +208,7 @@ namespace filesystem3
 # ifdef BOOST_WINDOWS_API
   path & path::make_preferred()
   {
-    std::replace(m_pathname.begin(), m_pathname.end(), L'\\', L'/');
+    std::replace(m_pathname.begin(), m_pathname.end(), L'/', L'\\');
     return *this;
   }
 # endif
@@ -427,8 +428,8 @@ namespace
   bool is_non_root_separator(const string_type & str, size_type pos)
     // pos is position of the separator
   {
-    BOOST_ASSERT(!str.empty() && is_separator(str[pos])
-      && "precondition violation");
+    BOOST_ASSERT_MSG(!str.empty() && is_separator(str[pos]),
+      "precondition violation");
 
     // subsequent logic expects pos to be for leftmost slash of a set
     while (pos > 0 && is_separator(str[pos-1]))
@@ -489,6 +490,19 @@ namespace
     if (size == 2
       && is_separator(path[0])
       && is_separator(path[1])) return string_type::npos;
+
+#   ifdef BOOST_WINDOWS_API
+  	// case "\\?\"
+  	if (size > 4
+  	  && is_separator(path[0])
+  	  && is_separator(path[1])
+  	  && path[2] == questionmark
+  	  && is_separator(path[3]))
+  	{
+  	  string_type::size_type pos(path.find_first_of(separators, 4));
+        return pos < size ? pos : string_type::npos;
+  	}
+#   endif
 
     // case "//net {/}"
     if (size > 3
@@ -607,7 +621,8 @@ namespace filesystem3
 
   void path::m_path_iterator_increment(path::iterator & it)
   {
-    BOOST_ASSERT(it.m_pos < it.m_path_ptr->m_pathname.size() && "path::basic_iterator increment past end()");
+    BOOST_ASSERT_MSG(it.m_pos < it.m_path_ptr->m_pathname.size(),
+      "path::basic_iterator increment past end()");
 
     // increment to position past current element
     it.m_pos += it.m_element.m_pathname.size();
@@ -663,7 +678,7 @@ namespace filesystem3
 
   void path::m_path_iterator_decrement(path::iterator & it)
   {
-    BOOST_ASSERT(it.m_pos && "path::iterator decrement past begin()");
+    BOOST_ASSERT_MSG(it.m_pos, "path::iterator decrement past begin()");
 
     size_type end_pos(it.m_pos);
 

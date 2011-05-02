@@ -124,6 +124,8 @@
     <td width="34%" valign="top">
     <a href="#File-streams">File streams</a><br>
 <a href="#Path-decomposition-table">Path decomposition table</a><br>
+    <a href="#long-path-warning">Warning: Long paths on Windows and the 
+    extended-length <b>\\?\ </b>prefix</a><br>
 <a href="#Acknowledgements">Acknowledgements</a><br>
 <a href="#References">References</a><br>
 &nbsp;</td>
@@ -3225,6 +3227,37 @@ implementations yield different results. The top value is the
 <td><span style="background-color: #CCFFCC"><code>foo\bar</code><br><code>bar</code></span></td>
 </tr>
 </table>
+<h2><a name="long-path-warning"></a>Warning: Long paths on Windows and the 
+extended-length <b>\\?\ </b>prefix</h2>
+<p>The Microsoft Windows &quot;Maximum Path Length Limitation&quot; specifies:</p>
+<blockquote>
+<p>In the Windows API (with some exceptions ...), the maximum length for a path 
+is MAX_PATH, which is defined as 260 characters.</p>
+<p>The Windows API has many functions that also have Unicode versions to permit 
+an extended-length path for a maximum total path length of 32,767 characters. 
+... To specify an extended-length path, use the <b>&quot;\\?\&quot; prefix</b>. For 
+example, &quot;<a href="//?/D:/very long path">\\?\D:\<em>very long path</em></a>&quot;.&nbsp;
+<i>[C++ string literals require backslashes be doubled, of course.]</i></p>
+</blockquote>
+<p>Because most Boost.Filesystem operational functions just pass the contents of 
+a class path object to the Windows API, they do work with the extended-length 
+prefixes. But some won't work, because to the limitations imposed by Windows. 
+Read the following cautions carefully!</p>
+<h3>Cautions for paths with extended-length prefixes</h3>
+<ul>
+  <li>Individual components of a path are still are limited to whatever is 
+  supported for the particular filesystem, commonly 255 characters.</li>
+  <li>Only backslashes only are acceptable as directory separators. Slashes are 
+  not treated as separators.</li>
+  <li>All paths must be absolute - relative paths are not allowed.</li>
+  <li>Once an absolute path grows beyond 260 characters, it is essentially 
+  poisoned and all operations must use extended-length prefixes. So even a 
+  simple operation like <code>create_directory(&quot;a&quot;)</code> will fail if the 
+  absolute path of the resulting directory would exceed 260 characters.</li>
+  <li>Certain Boost.Filesystem functions that decompose their argument path and 
+  then work on individual relative directories or files will not work properly 
+  with extended-length prefix paths.</li>
+</ul>
 <h2><a name="Acknowledgements">Acknowledgements</a></h2>
 <p>This Filesystem Library is dedicated to my wife, Sonda, who provided the 
 support necessary to see both a trial implementation and the proposal itself 
@@ -3265,11 +3298,11 @@ multiple string types. His idea became the basis for the version 3 path design.<
   </tr>
 </table>
 <hr>
-<p>Â© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010</p>
+<p>© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->25 February 2011<!--webbot bot="Timestamp" endspan i-checksum="40677" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->12 April 2011<!--webbot bot="Timestamp" endspan i-checksum="28281" --></p>
 
 </body>
 

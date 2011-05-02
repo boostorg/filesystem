@@ -157,7 +157,7 @@ int cpp_main( int argc, char*[] )
 
   // test fs::path
   std::cout << "path tests:\n";
-  test( fs::path( "fstream_test_foo" ) );
+  test( fs::path( "v2_fstream_test" ) );
 
 #ifndef BOOST_FILESYSTEM2_NARROW_ONLY
 
@@ -170,7 +170,7 @@ int cpp_main( int argc, char*[] )
   //  x2780 is circled 1 against white background == e2 9e 80 in UTF-8
   //  x2781 is circled 2 against white background == e2 9e 81 in UTF-8
   std::cout << "\nwpath tests:\n";
-  test( fs::wpath( L"fstream_test_\x2780" ) );
+  test( fs::wpath( L"v2_fstream_test_\x2780" ) );
 
   // test user supplied basic_path
   const long lname[] = { 'f', 's', 'r', 'e', 'a', 'm', '_', 't', 'e', 's',
