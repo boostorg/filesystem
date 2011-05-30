@@ -10,6 +10,25 @@
 
 //--------------------------------------------------------------------------------------// 
 
+//  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
+#if !(defined(__HP_aCC) && defined(_ILP32) && !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
+#define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
+#endif
+#if !defined(__PGI)
+#define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
+      // 64-bit systems or on 32-bit systems which don't have files larger 
+      // than can be represented by a traditional POSIX/UNIX off_t type. 
+      // OTOH, defining them should kick in 64-bit off_t's (and thus 
+      // st_size)on 32-bit systems that provide the Large File
+      // Support (LFS)interface, such as Linux, Solaris, and IRIX.
+      // The defines are given before any headers are included to
+      // ensure that they are available to all included headers.
+      // That is required at least on Solaris, and possibly on other
+      // systems as well.
+#else
+#define _FILE_OFFSET_BITS 64
+#endif
+
 #include <boost/config.hpp>
 #if !defined( BOOST_NO_STD_WSTRING )
 // Boost.Filesystem V3 and later requires std::wstring support.
@@ -30,30 +49,18 @@
 # define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
 #endif
 
-#if !defined(__QNXNTO__) && !(defined(__HP_aCC) && defined(_ILP32) && \
-      !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
-#define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
-#endif
-#if !defined(__PGI)
-#define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
-      // 64-bit systems or on 32-bit systems which don't have files larger 
-      // than can be represented by a traditional POSIX/UNIX off_t type. 
-      // OTOH, defining them should kick in 64-bit off_t's (and thus 
-      // st_size)on 32-bit systems that provide the Large File
-      // Support (LFS)interface, such as Linux, Solaris, and IRIX.
-      // The defines are given before any headers are included to
-      // ensure that they are available to all included headers.
-      // That is required at least on Solaris, and possibly on other
-      // systems as well.
-#else
-#define _FILE_OFFSET_BITS 64
-#endif
-
 #include <boost/filesystem/v3/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
-#include <cstdlib>  // for malloc, free
-#include <vector>
+#include <vector> 
+#include <cstdlib>     // for malloc, free
+#include <sys/stat.h>  // even on Windows some functions use stat()
+#include <cstring>
+#include <cstdio>      // for remove, rename
+#if defined(__QNXNTO__)  // see ticket #5355 
+# include <stdio.h>
+#endif
+#include <cerrno>
 
 #ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 # include <iostream>
@@ -177,17 +184,6 @@ typedef struct _REPARSE_DATA_BUFFER {
   || defined(_DIRENT_HAVE_D_TYPE)// defined by GNU C library if d_type present
 #   define BOOST_FILESYSTEM_STATUS_CACHE
 # endif
-
-#include <sys/stat.h>  // even on Windows some functions use stat()
-#include <string>
-#include <cstring>
-#include <cstdio>      // for remove, rename
-#if defined(__QNXNTO__)  // see ticket #5355 
-# include <stdio.h>
-#endif
-#include <cerrno>
-#include <cassert>
-// #include <iostream>    // for debugging only; comment out when not in use
 
 //  POSIX/Windows macros  ----------------------------------------------------//
 
