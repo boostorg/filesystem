@@ -74,6 +74,20 @@ namespace
     cout << "is_symlink(s) is " << (is_symlink(s) ? "true" : "false") << "\n";
   }
 
+  void try_exists()
+  {
+    cout << "\nexists(" << p << ") ";
+    try
+    {
+      bool result = exists(p);
+      cout << "is " << (result ? "true" : "false") << "\n";
+    }
+    catch (const filesystem_error& ex)
+    {
+      cout << "throws a filesystem_error exception: " << ex.what() << "\n";
+    }
+  }
+
 }
 
 int cpp_main(int argc, char* argv[])
@@ -96,6 +110,8 @@ int cpp_main(int argc, char* argv[])
   s = symlink_status(p, ec);
   cout << "\nfile_status s = symlink_status(" << p << ", ec) ";
   show_status(s, ec);
+
+  try_exists();
 
   return 0;
 }
