@@ -28,6 +28,7 @@ project
        [ run large_file_support_test.cpp ]
        [ run deprecated_test.cpp ]                  
        [ run ../example/simple_ls.cpp ]
+       [ run ../example/file_status.cpp ]
  
 #       [ compile ../example/mbcopy.cpp ]
 #       [ compile ../example/mbpath.cpp ]
