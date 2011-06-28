@@ -21,4 +21,7 @@ exe tut2 : tut2.cpp ;
 exe tut3 : tut3.cpp ;
 exe tut4 : tut4.cpp ;
 exe tut5 : tut5.cpp ;
-exe path_info : path_info.cpp ;    
+exe path_info : path_info.cpp ;
+exe file_status : file_status.cpp ;
+
+install bin : file_status ;    #invoke via "bjam", not "bjam install"
