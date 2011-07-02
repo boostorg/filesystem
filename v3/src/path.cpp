@@ -727,11 +727,6 @@ namespace
   //                              locale helpers                                        //
   //------------------------------------------------------------------------------------//
 
-  // std::locale construction can throw (if LC_MESSAGES is wrong, for example),
-  // so a static at function scope is used to ensure that exceptions can be
-  // caught. (A previous version was at namespace scope, so initialization
-  // occurred before main(), preventing exceptions from being caught.)
-
   std::locale default_locale()
   {
 #   ifdef BOOST_WINDOWS_API
@@ -741,32 +736,43 @@ namespace
 
 #   elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
     // "All BSD system functions expect their string parameters to be in UTF-8 encoding
-    // and nothing else." http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
+    // and nothing else." See
+    // http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
     //
     // "The kernel will reject any filename that is not a valid UTF-8 string, and it will
     // even be normalized (to Unicode NFD) before stored on disk, at least when using HFS.
     // The right way to deal with it would be to always convert the filename to UTF-8
-    // before trying to open/create a file." http://lists.apple.com/archives/unix-porting/2007/Sep/msg00023.html
+    // before trying to open/create a file." See
+    // http://lists.apple.com/archives/unix-porting/2007/Sep/msg00023.html
     //
     // "How a file name looks at the API level depends on the API. Current Carbon APIs
     // handle file names as an array of UTF-16 characters; POSIX ones handle them as an
     // array of UTF-8, which is why UTF-8 works well in Terminal. How it's stored on disk
     // depends on the disk format; HFS+ uses UTF-16, but that's not important in most
-    // cases." http://lists.apple.com/archives/applescript-users/2002/Sep/msg00319.html
+    // cases." See
+    // http://lists.apple.com/archives/applescript-users/2002/Sep/msg00319.html
     //
     // Many thanks to Peter Dimov for digging out the above references!
+
     std::locale global_loc = std::locale();
     std::locale loc(global_loc, new boost::filesystem::detail::utf8_codecvt_facet);
     return loc;
 
-#   else
-    // ISO C calls this "the locale-specific native environment":
+#   else  // Other POSIX
+
+    // ISO C calls std::locale("") "the locale-specific native environment", and this
+    // locale is the default for many POSIX-based operating systems such as Linux.
+
+    // std::locale("") construction can throw (if environmental variables LC_MESSAGES or
+    // or LANG are wrong, for example), so dynamic initialization is used to ensure
+    // that exceptions can be caught.
+
     return std::locale("");
 
 #   endif
   }
 
-  std::locale & path_locale()
+  std::locale& path_locale()
   {
     static std::locale loc(default_locale());
     return loc;
@@ -783,8 +789,7 @@ namespace boost
 namespace filesystem3
 {
 
-  const path::codecvt_type *&
-    path::wchar_t_codecvt_facet()
+  const path::codecvt_type *& path::wchar_t_codecvt_facet()
   {
    static const std::codecvt<wchar_t, char, std::mbstate_t> *
      facet(
@@ -797,12 +802,12 @@ namespace filesystem3
   {
     std::locale temp(path_locale());
     path_locale() = loc;
-    wchar_t_codecvt_facet() = &std::use_facet
-        <std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
+    wchar_t_codecvt_facet() =
+      &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
     return temp;
   }
 
 }  // namespace filesystem3
 }  // namespace boost
 
-#endif  // no wide character support
+#endif  // has wide character support
