@@ -28,4 +28,5 @@ project
        [ run ../v3/test/deprecated_test.cpp :  :  :  : v3_deprecated_test ]                  
        [ run ../v3/example/simple_ls.cpp :  :  :  : v3_simple_ls ]
  
+       [ run ../v3/test/locale_info.cpp  : : : <test-info>always_show_run_output ]
        ;
