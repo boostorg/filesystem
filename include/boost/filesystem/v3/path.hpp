@@ -95,7 +95,7 @@ namespace filesystem3
     //  TODO: rules needed for operating systems that use / or .
     //  differently, or format directory paths differently from file paths. 
     //
-    //  ************************************************************************
+    //  **********************************************************************************
     //
     //  More work needed: How to handle an operating system that may have
     //  slash characters or dot characters in valid filenames, either because
@@ -107,7 +107,7 @@ namespace filesystem3
     //                                             ^^^^
     //  Note that 0x2F is the ASCII slash character
     //
-    //  ************************************************************************
+    //  **********************************************************************************
 
     //  Supported source arguments: half-open iterator range, container, c-array,
     //  and single pointer to null terminated string.
@@ -116,9 +116,9 @@ namespace filesystem3
     //  multi-byte character strings which may have embedded nulls. Embedded null
     //  support is required for some Asian languages on Windows.
 
-    //  "const codecvt_type& cvt=codecvt()" default arguments are not used because some
-    //  compilers, such as Microsoft prior to VC++ 10, do not handle defaults correctly
-    //  in templates.
+    //  [defaults] "const codecvt_type& cvt=codecvt()" default arguments are not used
+    //  because some compilers, such as Microsoft prior to VC++ 10, do not handle defaults
+    //  correctly in templates.
 
     //  -----  constructors  -----
 
@@ -147,7 +147,7 @@ namespace filesystem3
 
     template <class Source>
     path(Source const& source, const codecvt_type& cvt)
-    //  see note above explaining why codecvt() default arguments are not used
+    //  see [defaults] note above explaining why codecvt() default arguments are not used
     {
       path_traits::dispatch(source, m_pathname, cvt);
     }
