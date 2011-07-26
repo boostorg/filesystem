@@ -11,6 +11,11 @@
 #include <cstdlib>
 using namespace std;
 
+#ifdef _MSC_VER
+#  pragma warning(push)
+#  pragma warning(disable: 4996)  // ... Function call with parameters that may be unsafe
+#endif
+
 namespace
 {
   void facet_info(const locale& loc, const char* msg)
@@ -77,3 +82,7 @@ int main()
 
   return 0;
 }
+
+#ifdef _MSC_VER
+#  pragma warning(pop)
+#endif
