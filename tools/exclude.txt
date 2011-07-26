@@ -4,6 +4,9 @@
 .log
 .user
 .filters
+.sdf
+.ncb
+.ipch
 ipch
 Debug
 Release
