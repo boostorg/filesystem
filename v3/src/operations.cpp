@@ -431,7 +431,10 @@ namespace
 
     struct stat from_stat;
     if (::stat(from_p.c_str(), &from_stat)!= 0)
-      { return false; }
+    { 
+      ::close(infile);
+      return false;
+    }
 
     int oflag = O_CREAT | O_WRONLY | O_TRUNC;
     if (fail_if_exists)
