@@ -29,6 +29,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/io/detail/quoted_manip.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/functional/hash_fwd.hpp>
 #include <string>
 #include <iterator>
 #include <cstring>
@@ -565,12 +566,25 @@ namespace filesystem3
   inline bool operator==(const path& lhs, const path::string_type& rhs) { return lhs == rhs.c_str(); }
   inline bool operator==(const path::string_type& lhs, const path& rhs) { return rhs == lhs.c_str(); }
   inline bool operator==(const path::value_type* lhs, const path& rhs)  { return rhs == lhs; }
+
+  inline std::size_t hash_value(const path& x)
+  {
+    std::size_t seed = 0;
+    for(const path::value_type* it = x.c_str(); *it; ++it)
+      hash_combine(seed, *it == '/' ? L'\\' : *it);
+    return seed;
+  }
 # else   // BOOST_POSIX_API
   inline bool operator==(const path& lhs, const path& rhs)              { return lhs.native() == rhs.native(); }
   inline bool operator==(const path& lhs, const path::string_type& rhs) { return lhs.native() == rhs; }
   inline bool operator==(const path& lhs, const path::value_type* rhs)  { return lhs.native() == rhs; }
   inline bool operator==(const path::string_type& lhs, const path& rhs) { return lhs == rhs.native(); }
   inline bool operator==(const path::value_type* lhs, const path& rhs)  { return lhs == rhs.native(); }
+
+  inline std::size_t hash_value(const path& x)
+  {
+    return hash_range(x.native().begin(), x.native().end());
+  }
 # endif
 
   inline bool operator!=(const path& lhs, const path& rhs)              { return !(lhs == rhs); }

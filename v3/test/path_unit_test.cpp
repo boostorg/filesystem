@@ -43,6 +43,7 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <boost/smart_ptr.hpp>  // used constructor tests
+#include <boost/functional/hash.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -399,9 +400,12 @@ namespace
   {
     std::cout << "testing relationals..." << std::endl;
 
+    boost::hash<path> hash;
+
 # ifdef BOOST_WINDOWS_API
     // this is a critical use case to meet user expectations
     CHECK(path("c:\\abc") == path("c:/abc"));
+    CHECK(hash(path("c:\\abc")) == hash(path("c:/abc")));
 # endif
 
     const path p("bar");
@@ -430,6 +434,9 @@ namespace
     CHECK(string("baz") == p2);
     CHECK(L"baz" == p2);
     CHECK(wstring(L"baz") == p2);
+
+    CHECK(hash(p) == hash(p));
+    CHECK(hash(p) != hash(p2)); // Not strictly required, but desirable
 
     CHECK(!(p != p));
     CHECK(p != p2);
