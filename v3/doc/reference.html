@@ -298,6 +298,7 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       void swap(path&amp; lhs, path&amp; rhs);
       bool lexicographical_compare(path::iterator first1, path::iterator last1,
                                    path::iterator first2, path::iterator last2);
+      std::size_t hash_value(const path&amp; p);
 
       bool operator==(const path&amp; lhs, const path&amp; rhs);
       bool operator!=(const path&amp; lhs, const path&amp; rhs);
@@ -1174,6 +1175,14 @@ non-member functions</a></h3>
   is provided to avoid infinite recursion in <code>std::lexicographical_compare</code> 
   due to the <code>path</code> iterator's value type itself being <code>path</code>.
   <i>--end note</i>]</p>
+</blockquote>
+<pre>std::size_t hash_value (const path&amp; p);</pre>
+<blockquote>
+  <p><i>Returns:</i> A hash value for the path <code>p</code>. If
+  for two paths, <code>p1 == p2</code> then
+  <code>hash_value(p1) == hash_value(p2)</code>.</p>
+  <p>This allows paths to be used with
+  <a href="../../../functional/hash/index.html">Boost.Hash</a>.</p>
 </blockquote>
 <pre>bool operator&lt; (const path&amp; lhs, const path&amp; rhs);</pre>
 <blockquote>
