@@ -560,7 +560,7 @@ namespace filesystem3
     const path::value_type* l(lhs.c_str());
     while ((*l == *rhs || (*l == L'\\' && *rhs == L'/') || (*l == L'/' && *rhs == L'\\'))
       && *l) { ++l; ++rhs; }
-    return *l == *rhs || (*l == L'\\' && *rhs == L'/') || (*l == L'/' && *rhs == L'\\');  
+    return *l == *rhs;
   }
   inline bool operator==(const path& lhs, const path& rhs)              { return lhs == rhs.c_str(); }
   inline bool operator==(const path& lhs, const path::string_type& rhs) { return lhs == rhs.c_str(); }
