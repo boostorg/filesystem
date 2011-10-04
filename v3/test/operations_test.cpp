@@ -388,45 +388,46 @@ namespace
  
   void create_tree()
   {
+    cout << "creating test directories and files in " << dir << endl;
 
-  // create directory d1
-  BOOST_TEST(!fs::create_directory(dir));
-  BOOST_TEST(!fs::is_symlink(dir));
-  BOOST_TEST(!fs::is_symlink("nosuchfileordirectory"));
-  d1 = dir / "d1";
-  BOOST_TEST(fs::create_directory(d1));
-  BOOST_TEST(fs::exists(d1));
-  BOOST_TEST(fs::is_directory(d1));
-  BOOST_TEST(fs::is_empty(d1));
+    // create directory d1
+    BOOST_TEST(!fs::create_directory(dir));
+    BOOST_TEST(!fs::is_symlink(dir));
+    BOOST_TEST(!fs::is_symlink("nosuchfileordirectory"));
+    d1 = dir / "d1";
+    BOOST_TEST(fs::create_directory(d1));
+    BOOST_TEST(fs::exists(d1));
+    BOOST_TEST(fs::is_directory(d1));
+    BOOST_TEST(fs::is_empty(d1));
 
-  // create an empty file named "d1f1"
-  d1f1 = d1 / "d1f1";
-  create_file(d1f1, "");
-  BOOST_TEST(fs::exists(d1f1));
-  BOOST_TEST(!fs::is_directory(d1f1));
-  BOOST_TEST(fs::is_regular_file(d1f1));
-  BOOST_TEST(fs::is_empty(d1f1));
-  BOOST_TEST(fs::file_size(d1f1) == 0);
-  BOOST_TEST(fs::hard_link_count(d1f1) == 1);
+    // create an empty file named "d1f1"
+    d1f1 = d1 / "d1f1";
+    create_file(d1f1, "");
+    BOOST_TEST(fs::exists(d1f1));
+    BOOST_TEST(!fs::is_directory(d1f1));
+    BOOST_TEST(fs::is_regular_file(d1f1));
+    BOOST_TEST(fs::is_empty(d1f1));
+    BOOST_TEST(fs::file_size(d1f1) == 0);
+    BOOST_TEST(fs::hard_link_count(d1f1) == 1);
 
-  // create an empty file named "f0"
-  f0 = dir / "f0";
-  create_file(f0, "");
-  BOOST_TEST(fs::exists(f0));
-  BOOST_TEST(!fs::is_directory(f0));
-  BOOST_TEST(fs::is_regular_file(f0));
-  BOOST_TEST(fs::is_empty(f0));
-  BOOST_TEST(fs::file_size(f0) == 0);
-  BOOST_TEST(fs::hard_link_count(f0) == 1);
+    // create an empty file named "f0"
+    f0 = dir / "f0";
+    create_file(f0, "");
+    BOOST_TEST(fs::exists(f0));
+    BOOST_TEST(!fs::is_directory(f0));
+    BOOST_TEST(fs::is_regular_file(f0));
+    BOOST_TEST(fs::is_empty(f0));
+    BOOST_TEST(fs::file_size(f0) == 0);
+    BOOST_TEST(fs::hard_link_count(f0) == 1);
 
-  // create a file named "f1"
-  f1 = dir / "f1";
-  create_file(f1, "file-f1");
-  BOOST_TEST(fs::exists(f1));
-  BOOST_TEST(!fs::is_directory(f1));
-  BOOST_TEST(fs::is_regular_file(f1));
-  BOOST_TEST(fs::file_size(f1) == 7);
-  verify_file(f1, "file-f1");
+    // create a file named "f1"
+    f1 = dir / "f1";
+    create_file(f1, "file-f1");
+    BOOST_TEST(fs::exists(f1));
+    BOOST_TEST(!fs::is_directory(f1));
+    BOOST_TEST(fs::is_regular_file(f1));
+    BOOST_TEST(fs::file_size(f1) == 7);
+    verify_file(f1, "file-f1");
   }
 
   //  directory_iterator_tests  --------------------------------------------------------//
@@ -1228,11 +1229,12 @@ namespace
     cout << "absolute_tests..." << endl;
 
     BOOST_TEST_EQ(fs::absolute(""), fs::current_path() );
+    BOOST_TEST_EQ(fs::absolute("", ""), fs::current_path() );
     BOOST_TEST_EQ(fs::absolute(fs::current_path() / "foo/bar"), fs::current_path() / "foo/bar");
     BOOST_TEST_EQ(fs::absolute("foo"), fs::current_path() / "foo");
     BOOST_TEST_EQ(fs::absolute("foo", fs::current_path()), fs::current_path() / "foo");
     BOOST_TEST_EQ(fs::absolute("bar", "foo"), fs::current_path() / "foo" / "bar");
-    BOOST_TEST_EQ(fs::absolute("/foo"), fs::current_path().root_name().string() + "/foo");
+    BOOST_TEST_EQ(fs::absolute("/foo"), fs::current_path().root_path().string() + "foo");
 
 #  ifdef BOOST_WINDOWS_API
     BOOST_TEST_EQ(fs::absolute("a:foo", "b:/bar"), "a:/bar/foo");
@@ -1295,7 +1297,58 @@ namespace
 
   }
 
- //  copy_file_tests  -----------------------------------------------------------------//
+  //  canonical_basic_tests  -----------------------------------------------------------//
+
+  void canonical_basic_tests()
+  {
+    cout << "canonical_basic_tests..." << endl;
+
+    // error handling
+    error_code ec;
+    ec.clear();
+    fs::canonical("no-such-file", ec);
+    BOOST_TEST(ec);
+    ec.clear();
+    fs::canonical("no-such-file", "x", ec);
+    BOOST_TEST(ec);
+    bool ok(false);
+    try { fs::canonical("no-such-file"); }
+    catch (const fs::filesystem_error&) { ok = true; }
+    BOOST_TEST(ok);
+
+    // non-symlink tests; also see canonical_symlink_tests()
+    BOOST_TEST_EQ(fs::canonical(""), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical("", fs::current_path()), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical("", ""), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical(fs::current_path()), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical(fs::current_path(), ""), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical(fs::current_path(), "no-such-file"), fs::current_path());
+
+    BOOST_TEST_EQ(fs::canonical("."), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical(".."), fs::current_path().parent_path());
+    BOOST_TEST_EQ(fs::canonical("/"), fs::current_path().root_path());
+
+    fs::path relative_dir(dir.filename());
+    BOOST_TEST_EQ(fs::canonical(dir), dir);
+    BOOST_TEST_EQ(fs::canonical(relative_dir), dir);
+    BOOST_TEST_EQ(fs::canonical(dir / "f0"), dir / "f0");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "f0"), dir / "f0");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "./f0"), dir / "f0");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0"), dir / "f0");
+  }
+
+  //  canonical_symlink_tests  -----------------------------------------------------------//
+
+  void canonical_symlink_tests()
+  {
+    cout << "canonical_symlink_tests..." << endl;
+
+    fs::path relative_dir(dir.filename());
+    BOOST_TEST_EQ(fs::canonical(dir / "sym-d1/f2"), d1 / "f2");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "sym-d1/f2"), d1 / "f2");
+  }
+
+ //  copy_file_tests  ------------------------------------------------------------------//
 
   void copy_file_tests(const fs::path& f1, const fs::path& d1)
   {
@@ -1761,6 +1814,7 @@ namespace
 
 int cpp_main(int argc, char* argv[])
 {
+
 // document state of critical macros
 #ifdef BOOST_POSIX_API
   cout << "BOOST_POSIX_API is defined\n";
@@ -1805,7 +1859,6 @@ int cpp_main(int argc, char* argv[])
   initial_tests();
   predicate_and_status_tests();
   exception_tests();
-  platform_specific_tests();
   create_directory_tests();
   current_directory_tests();
   space_tests();
@@ -1840,11 +1893,13 @@ int cpp_main(int argc, char* argv[])
   create_symlink_tests();
   resize_file_tests();
   absolute_tests();
+  canonical_basic_tests();
   copy_file_tests(f1, d1);
   if (create_symlink_ok)  // only if symlinks supported
   {
     symlink_status_tests();
     copy_symlink_tests(f1, d1);
+    canonical_symlink_tests();
   }
   iterator_status_tests();  // lots of cases by now, so a good time to test
 //  dump_tree(dir);
@@ -1857,6 +1912,7 @@ int cpp_main(int argc, char* argv[])
   write_time_tests(dir);
   
   temp_directory_path_tests();
+  platform_specific_tests();
   
   cout << "testing complete" << endl;
 

@@ -50,7 +50,7 @@
     <a href="#Definitions">Definitions</a><br>
     <a href="#Conformance">Conformance</a><br>
     <a href="#Header-filesystem-synopsis">
-    Header &lt;filesystem&gt; synopsis</a><br>
+    Header &lt;boost/filesystem.hpp&gt; synopsis</a><br>
     <a href="#Error-reporting">Error reporting</a><br>
     <a href="#class-path">Class path</a><br>
     &nbsp;&nbsp;&nbsp; <a href="#path-constructors">path constructors</a><br>
@@ -89,6 +89,7 @@
     <a href="#Operational-functions">
     Operational functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#absolute">absolute</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#canonical">canonical</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy">copy</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_directory">copy_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
@@ -158,11 +159,13 @@ additional filenames that have special meaning.</p>
   \</code>,<code> /</code>, and<code> |</code>&nbsp;<i>--end note]</i></p>
 </blockquote>
 <p><b><i><a name="Path">Path</a>:</i></b> A sequence of elements that identify 
-a location within a filesystem. The elements are the <i>root-name<sub>opt</sub></i>, <i>
+the location of a file within a filesystem. The elements are the <i>root-name<sub>opt</sub></i>, <i>
 root-directory<sub>opt</sub></i>, and an optional sequence of filenames. [<i>Note:</i> 
 A <a href="#Pathname">pathname</a> is the concrete representation of a path. <i>--end note</i>]</p>
-<p><b><i><a name="Absolute-path">Absolute path</a>:</i></b> A path that uniquely 
-identifies a file. The format is implementation defined. </p>
+<p><b><i><a name="Absolute-path">Absolute path</a>:</i></b> A path that 
+unambiguously 
+identifies the location of a file within a filesystem without reference to an 
+additional starting location. The format is implementation defined. </p>
 <blockquote>
   <p><i>[Note:</i> For POSIX-like implementations, including<b> </b>Unix 
   variants, Linux, and Mac OS X, only paths 
@@ -173,9 +176,13 @@ identifies a file. The format is implementation defined. </p>
   specifier followed by a slash, or begin with two slashes, are absolute paths.&nbsp;<i>--end 
   note]</i></p>
 </blockquote>
-<p><b><a name="Relative-path">Relative path</a>:</b> A path that uniquely 
-identifies a file only when considered relative to some other path. [<i>Note:</i> 
+<p><b><a name="Relative-path">Relative path</a>:</b> A path that only 
+unambiguously 
+identifies the location of a file within a filesystem when resolved relative to 
+a starting location. The format is implementation defined. [<i>Note:</i> 
 Paths &quot;.&quot; and &quot;..&quot; are considered to be relative paths. <i>--end note</i>]</p>
+<p><b><a name="Canonical-path">Canonical path</a>:</b> An absolute path that has 
+no elements which are symbolic links, and no dot or dot dot elements.</p>
 <p><i><b><a name="Pathname">Pathname</a>:</b> </i>A character string that represents a 
 path. Pathnames are formatted according to the generic pathname format or the 
 native pathname format.</p>
@@ -288,7 +295,7 @@ specified as a <i>Throws</i> condition.</p>
 is unreasonable for a program to detect them prior to calling the function. <i>
 -- end note</i>]</p>
 </blockquote>
-<h2><a name="Header-filesystem-synopsis">Header <code>&lt;boost/filesystem&gt;</code> synopsis</a></h2>
+<h2><a name="Header-filesystem-synopsis">Header <code>&lt;boost/filesystem.hpp&gt;</code> synopsis</a></h2>
 <pre>  namespace boost
   {
     namespace filesystem
@@ -298,7 +305,7 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       void swap(path&amp; lhs, path&amp; rhs);
       bool lexicographical_compare(path::iterator first1, path::iterator last1,
                                    path::iterator first2, path::iterator last2);
-      std::size_t hash_value(const path&amp; p);
+      std::size_t <a href="#hash_value">hash_value</a>(const path&amp; p);
 
       bool operator==(const path&amp; lhs, const path&amp; rhs);
       bool operator!=(const path&amp; lhs, const path&amp; rhs);
@@ -354,6 +361,10 @@ is unreasonable for a program to detect them prior to calling the function. <i>
       // <a href="#Operational-functions">operational functions</a>
 
       path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
+
+      path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
+      path         <a href="#canonical">canonical</a>(const path&amp; p, system::error_code&amp; ec);
+      path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base, system::error_code&amp; ec);
 
       void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to);
       void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
@@ -1176,7 +1187,7 @@ non-member functions</a></h3>
   due to the <code>path</code> iterator's value type itself being <code>path</code>.
   <i>--end note</i>]</p>
 </blockquote>
-<pre>std::size_t hash_value (const path&amp; p);</pre>
+<pre>std::size_t <a name="hash_value">hash_value</a> (const path&amp; p);</pre>
 <blockquote>
   <p><i>Returns:</i> A hash value for the path <code>p</code>. If
   for two paths, <code>p1 == p2</code> then
@@ -1952,7 +1963,7 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
 <h4><a name="Function-specifications">Operational function specifications</a></h4>
 <pre>path <a name="absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());</pre>
   <blockquote>
-  <p><i>Returns:</i> A path composed according to to the 
+  <p><i>Returns:</i> A <a href="#Absolute-path">absolute path</a> composed according to the 
   following table</p>
   <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
     <tr>
@@ -1974,10 +1985,27 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
       <td align="center"><code>return absolute(base) / p</code></td>
     </tr>
   </table>
-  <p><i>Postcondition:</i> For the returned path, <code>rp,</code> <code>
-  rp.is_absolute()</code> is true.</p>
+  <p dir="ltr">[<i>Note:</i> For the returned path, <code>rp,</code> <code>
+  rp.is_absolute()</code> is true. <i>-- end note</i>]</p>
   <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws only if 
   memory allocation fails.</p>
+</blockquote>
+<pre>path <a name="canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
+path canonical(const path&amp; p, system::error_code&amp; ec);
+path canonical(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
+<blockquote>
+<p><i>Overview:</i> Converts <code>p</code>, which must exist, to an absolute 
+path that has no symbolic link, <a href="#Dot">dot</a>, 
+or <a href="#Dot">dot-dot</a> elements. </p>
+<p><i>Returns:</i> A <a href="#Canonical-path">canonical path</a> that refers to 
+the same file system object as <code>absolute(p,base)</code>. For the overload 
+without a <code>base</code> argument, <code>base</code> is <code>current_path()</code>.</p>
+  <p><i>Throws:</i>&nbsp; As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
+  
+  <p><i>Remarks:</i> <code>!exists(p)</code> is an error.</p>
+  
 </blockquote>
 <pre>void <a name="copy">copy</a>(const path&amp; from, const path&amp; to);
 void copy(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
@@ -3245,7 +3273,7 @@ is MAX_PATH, which is defined as 260 characters.</p>
 <p>The Windows API has many functions that also have Unicode versions to permit 
 an extended-length path for a maximum total path length of 32,767 characters. 
 ... To specify an extended-length path, use the <b>&quot;\\?\&quot; prefix</b>. For 
-example, &quot;<a href="//?/D:/very long path">\\?\D:\<em>very long path</em></a>&quot;.&nbsp;
+example, &quot;<a href="file://?/D:/very long path">\\?\D:\<em>very long path</em></a>&quot;.&nbsp;
 <i>[C++ string literals require backslashes be doubled, of course.]</i></p>
 </blockquote>
 <p>Because most Boost.Filesystem operational functions just pass the contents of 
@@ -3280,12 +3308,14 @@ http://www.boost.org/libs/filesystem/doc/index.htm#Acknowledgements</a>.</p>
 Witt were particularly helpful in refining the library.</p>
 <p>The create_directories, extension, basename, and replace_extension functions 
 were developed by Vladimir Prus. The temp_directory_path function was 
-contributed by Jeff Flinn.</p>
+contributed by Jeff Flinn. David Svoboda suggested the canonical function and 
+provided psuedo-code.</p>
 <p>Howard Hinnant and John Maddock reviewed a draft of the version 2 proposal, and 
 identified a number of mistakes or weaknesses, resulting in a more polished 
 final document.</p>
 <p>Peter Dimov suggested a single class path, with member templates to adapt to 
 multiple string types. His idea became the basis for the version 3 path design.</p>
+<p>&nbsp;</p>
 <h2><a name="References">References</a></h2>
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
   <tr>
@@ -3307,11 +3337,12 @@ multiple string types. His idea became the basis for the version 3 path design.<
   </tr>
 </table>
 <hr>
-<p>© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010</p>
-<p>Distributed under the Boost Software License, Version 1.0. See
-<a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
-<p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->12 April 2011<!--webbot bot="Timestamp" endspan i-checksum="28281" --></p>
+<p><font size="2">© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</font></p>
+<p><font size="2">Distributed under the Boost Software License, Version 1.0. See
+</font>
+<a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
+<p><font size="2">Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->03 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32183" --></font></p>
 
 </body>
 

@@ -36,6 +36,22 @@
   </tr>
 </table>
 
+<h2>1.48.0</h2>
+<ul>
+  <li>Added operational function <a href="reference.html#canonical">canonical()</a>, 
+  suggested by David Svoboda, who also provided pseudo-code.</li>
+  <li>Added <a href="reference.html#hash_value">hash_value()</a> function for 
+  paths. (Daniel James)</li>
+  <li>Fix path inserter problem (<a href="https://svn.boost.org/trac/boost/ticket/5764">#5764</a>) 
+  reported for QNX6.3.2 host (gcc-3.3.5)</li>
+  <li>Fix problem of locale(&quot;&quot;) exception being thrown before main() starts on 
+  poorly configured (e.g. LANG=&quot;bad name&quot;) POSIX systems. Resolves the most 
+  serious aspect of tickets
+  <a href="https://svn.boost.org/trac/boost/ticket/4688">#4688</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/5100">#5100</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/5289">#5289</a>.</li>
+</ul>
+
 <h2>1.47.0</h2>
 <ul>
   <li>Program file_status.cpp added (V3). See boost-root/libs/filesystem/v3/example. 
@@ -45,6 +61,10 @@
 </ul>
 
 <h2>1.46.1</h2>
+
+<ul>
+  <li>Fix fstream problem for STLPort masquerading as Dinkumware (<a href="https://svn.boost.org/trac/boost/ticket/5217">#5217</a>).</li>
+</ul>
 
 <h2>1.46.0</h2>
 <ul>
@@ -68,7 +88,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 May, 2011<!--webbot bot="Timestamp" endspan i-checksum="13963" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 October, 2011<!--webbot bot="Timestamp" endspan i-checksum="38359" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
