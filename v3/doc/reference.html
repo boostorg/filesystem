@@ -2006,6 +2006,9 @@ without a <code>base</code> argument, <code>base</code> is <code>current_path()<
   
   <p><i>Remarks:</i> <code>!exists(p)</code> is an error.</p>
   
+  <p>[<i>Note:</i> Canonical pathnames allow security checking of a path (eg. 
+  does this path live in /home/goodguy or /home/badguy?)&nbsp; -- end note]</p>
+  
 </blockquote>
 <pre>void <a name="copy">copy</a>(const path&amp; from, const path&amp; to);
 void copy(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
@@ -3342,7 +3345,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->03 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32183" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->06 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32189" --></font></p>
 
 </body>
 
