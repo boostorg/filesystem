@@ -8,6 +8,15 @@
 <title>Filesystem V3 Reference
 </title>
 <link rel="stylesheet" type="text/css" href="../../../../doc/src/minimal.css">
+<style type="text/css">
+ pre {background-color:#D7EEFF}
+ body
+ { 
+   font-family: sans-serif;
+   max-width : 8.5in;
+   margin: 1em;
+ }
+</style>
 </head>
 
 <body>
@@ -748,7 +757,7 @@ letters to uppercase.<i> -- end note.</i>]</p>
 
 <h3> <a name="path-constructors"> <code>
 <font size="4">path</font></code> constructors</a></h3>
-<pre>path();</pre>
+<pre><span style="background-color: #D7EEFF">path();</span></pre>
 <blockquote>
   <p><i>Postcondition:</i> <code>empty()</code>.</p>
   </blockquote>
@@ -999,7 +1008,7 @@ with the first <i>filename</i> after <i>root-path</i>. Otherwise, <code>path()</
   <p><i>Returns:</i> <code>empty() ? path() : *--end()</code></p>
   <p>[<i>Example:</i></p>
   <blockquote>
-    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).filename();</code> // outputs &quot;<code>bar.txt</code>&quot; (without the quotes)</pre>
+    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).filename();</code> // outputs &quot;<code>bar.txt</code>&quot;</pre>
   </blockquote>
   <p> <i>--end example</i>]</p>
 </blockquote>
@@ -1013,8 +1022,8 @@ with the first <i>filename</i> after <i>root-path</i>. Otherwise, <code>path()</
   p.filename()</code>.</p>
   <p>[<i>Example:</i></p>
   <blockquote>
-    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).stem();</code> // outputs &quot;<code>bar</code>&quot; (without the quotes)</pre>
-    <pre>path p = &quot;foo.bar.baz.tar&quot;;
+    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).stem();</code> // outputs &quot;<code>bar</code>&quot;
+path p = &quot;foo.bar.baz.tar&quot;;
 for (; !p.extension().empty(); p = p.stem())
   std::cout &lt;&lt; p.extension() &lt;&lt; '\n';
   // outputs: .tar
@@ -1035,7 +1044,7 @@ for (; !p.extension().empty(); p = p.stem())
   as alternate data streams or partitioned dataset names.</p>
   <p>[<i>Example:</i></p>
   <blockquote>
-    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).extension(); //</code> outputs &quot;<code>.txt</code>&quot; (without the quotes)</pre>
+    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).extension(); //</code> outputs &quot;<code>.txt</code>&quot;</pre>
   </blockquote>
   <p> <i>--end example</i>]</p>
   <p>[<i>Note:<b> </b></i>The dot is included in the return value so that 
@@ -1246,7 +1255,8 @@ non-member functions</a></h3>
 to ensure that paths with embedded spaces will round trip correctly. Ampersand (<code>&amp;</code>) 
 is used as an escape character, so the path can itself contain double quotes.</p>
 <pre>template &lt;class Char, class Traits&gt;
-std::basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(std::basic_ostream&lt;Char, Traits&gt;&amp; os, const path&amp; p)
+std::basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(std::basic_ostream&lt;Char, Traits&gt;&amp; os,
+                                             const path&amp; p)
 </pre>
 <blockquote>
   <p><i>Effects:</i>&nbsp;
@@ -1256,7 +1266,8 @@ std::basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(std::basic_ostream&
    <code>os</code></p>
 </blockquote>
 <pre>template &lt;class Char, class Traits&gt;
-inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_istream&lt;Char, Traits&gt;&amp; is, path&amp; p)
+inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_istream&lt;Char, Traits&gt;&amp; is,
+                                                    path&amp; p)
 </pre>
 <blockquote>
   <p><i>Effects:&nbsp; </i>
@@ -1278,9 +1289,12 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
       public:
         filesystem_error();
         filesystem_error(const filesystem_error&amp;);
-        <a href="#filesystem_error-2-arg">filesystem_error</a>(const std::string&amp; what_arg, system::error_code ec);
-        <a href="#filesystem_error-3-arg">filesystem_error</a>(const std::string&amp; what_arg, const path&amp; p1, system::error_code ec);
-        <a href="#filesystem_error-4-arg">filesystem_error</a>(const std::string&amp; what_arg, const path&amp; p1, const path&amp; p2, system::error_code ec);
+        <a href="#filesystem_error-2-arg">filesystem_error</a>(const std::string&amp; what_arg,
+          system::error_code ec);
+        <a href="#filesystem_error-3-arg">filesystem_error</a>(const std::string&amp; what_arg,
+          const path&amp; p1, system::error_code ec);
+        <a href="#filesystem_error-4-arg">filesystem_error</a>(const std::string&amp; what_arg,
+          const path&amp; p1, const path&amp; p2, system::error_code ec);
 
         filesystem_error&amp; filesystem_error(const filesystem_error&amp;);
        ~filesystem_error();
@@ -1405,6 +1419,7 @@ clause.</p>
   string.</p>
 </blockquote>
 <h3><a name="Class-directory_entry">Class <code>directory_entry</code></a></h3>
+<div dir="ltr">
 <pre>  namespace boost
   {
     namespace filesystem
@@ -1416,13 +1431,16 @@ clause.</p>
         // <a href="#directory_entry-constructors">constructors</a> and destructor
         directory_entry();
         directory_entry(const directory_entry&amp;);
-        explicit directory_entry(const path_type&amp; p, file_status st=file_status(), file_status symlink_st=file_status());
+        explicit directory_entry(const path_type&amp; p, file_status st=file_status(),
+          file_status symlink_st=file_status());
        ~directory_entry(); 
 
         // <a href="#directory_entry-modifiers">modifiers</a>
         directory_entry&amp; operator=(const directory_entry&amp;);
-        void assign(const path_type&amp; p, file_status st=file_status(), file_status symlink_st=file_status());
-        void replace_filename(const path&amp; p, file_status st=file_status(), file_status symlink_st=file_status());
+        void assign(const path_type&amp; p, file_status st=file_status(),
+          file_status symlink_st=file_status());
+        void replace_filename(const path&amp; p, file_status st=file_status(),
+          file_status symlink_st=file_status());
 
         // <a href="#directory_entry-observers">observers</a>
         const path&amp;  path() const;
@@ -1446,6 +1464,7 @@ clause.</p>
 
     } // namespace filesystem
   } // namespace boost</pre>
+</div>
 <p>A <code>directory_entry</code> object stores a <code>path object</code>, 
 a <code>file_status</code> object for non-symbolic link status, and a <code>
 file_status</code> object for symbolic link status. The <code>file_status</code> 
