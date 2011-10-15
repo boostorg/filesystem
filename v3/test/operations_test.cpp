@@ -95,8 +95,10 @@ namespace
 {
   typedef int errno_t;
   std::string platform(BOOST_PLATFORM);
-  bool report_throws;
+  bool report_throws = false;
   bool cleanup = true;
+  bool skip_long_windows_tests = false;
+
   fs::directory_iterator end_itr;
   fs::path dir;
   fs::path d1;
@@ -113,7 +115,7 @@ namespace
 
   const char* temp_dir_name = "v3_operations_test";
 
-  void create_file(const fs::path & ph, const std::string & contents)
+  void create_file(const fs::path & ph, const std::string & contents = std::string())
   {
     std::ofstream f(ph.BOOST_FILESYSTEM_C_STR);
     if (!f)
@@ -800,6 +802,45 @@ namespace
     fs::create_symlink("doesnotexist", "", ec);
     BOOST_TEST(ec);
   }
+
+  //  permissions_tests  ---------------------------------------------------------------//
+
+  void permissions_tests()
+  {
+    cout << "permissions_tests..." << endl;
+
+    fs::path p(dir / "permissions.txt");
+    create_file(p);
+
+    if (platform == "POSIX")
+    {
+      cout << "  fs::status(p).permissions() " << std::oct << fs::status(p).permissions()
+        << std::dec << endl;
+      BOOST_TEST(fs::status(p).permissions() == 0644);
+      fs::permissions(p, fs::owner_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+
+      fs::permissions(p, fs::add_perms | fs::group_all);
+      BOOST_TEST(fs::status(p).permissions() == (fs::owner_all | fs::group_all));
+
+      fs::permissions(p, fs::remove_perms | fs::group_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+
+      // some POSIX platforms cache permissions during directory iteration, some don't
+      // so test that iteration finds the correct permissions
+      for (fs::directory_iterator itr(dir); itr != fs::directory_iterator(); ++itr)
+        if (itr->path().filename() == fs::path("permissions.txt"))
+          BOOST_TEST(itr->status().permissions() == fs::owner_all);
+    }
+    else // Windows
+    {
+      BOOST_TEST(fs::status(p).permissions() == 0666);
+      fs::permissions(p, fs::remove_perms | fs::group_write);
+      BOOST_TEST(fs::status(p).permissions() == 0444);
+      fs::permissions(p, fs::add_perms | fs::group_write);
+      BOOST_TEST(fs::status(p).permissions() == 0666);
+    }
+  }
   
   //  rename_tests  --------------------------------------------------------------------//
 
@@ -917,6 +958,8 @@ namespace
     BOOST_TEST(!fs::is_regular_file(ng));
     BOOST_TEST(!fs::is_symlink(ng));
     fs::file_status stat(fs::status(ng));
+    BOOST_TEST(fs::type_present(stat));
+    BOOST_TEST(fs::permissions_present(stat));
     BOOST_TEST(fs::status_known(stat));
     BOOST_TEST(!fs::exists(stat));
     BOOST_TEST(!fs::is_directory(stat));
@@ -924,6 +967,8 @@ namespace
     BOOST_TEST(!fs::is_other(stat));
     BOOST_TEST(!fs::is_symlink(stat));
     stat = fs::status("");
+    BOOST_TEST(fs::type_present(stat));
+    BOOST_TEST(fs::permissions_present(stat));
     BOOST_TEST(fs::status_known(stat));
     BOOST_TEST(!fs::exists(stat));
     BOOST_TEST(!fs::is_directory(stat));
@@ -1059,7 +1104,7 @@ namespace
     fs::file_status s = fs::status(p);
     BOOST_TEST(!fs::exists(s));
     BOOST_TEST_EQ(s.type(), fs::file_not_found);
-    BOOST_TEST(fs::status_known(s));
+    BOOST_TEST(fs::type_present(s));
     BOOST_TEST(!fs::is_regular_file(s));
     BOOST_TEST(!fs::is_directory(s));
     BOOST_TEST(!fs::is_symlink(s));
@@ -1093,7 +1138,7 @@ namespace
 
     BOOST_TEST(!fs::exists(s));
     BOOST_TEST_EQ(s.type(), fs::file_not_found);
-    BOOST_TEST(fs::status_known(s));
+    BOOST_TEST(fs::type_present(s));
     BOOST_TEST(!fs::is_regular_file(s));
     BOOST_TEST(!fs::is_directory(s));
     BOOST_TEST(!fs::is_symlink(s));
@@ -1529,12 +1574,17 @@ namespace
     // Windows only tests
     if (platform == "Windows")
     {
-      cout << "Window specific tests..."
-        "\n (may take several seconds)" << endl;
+      cout << "Window specific tests..." << endl;
+      if (!skip_long_windows_tests)
+      {
+        cout << "  (may take several seconds)"<< endl;
 
-      BOOST_TEST(!fs::exists(fs::path("//share-not")));
-      BOOST_TEST(!fs::exists(fs::path("//share-not/")));
-      BOOST_TEST(!fs::exists(fs::path("//share-not/foo")));
+        BOOST_TEST(!fs::exists(fs::path("//share-not")));
+        BOOST_TEST(!fs::exists(fs::path("//share-not/")));
+        BOOST_TEST(!fs::exists(fs::path("//share-not/foo")));
+      }
+      cout << endl;
+
       BOOST_TEST(!fs::exists("tools/jam/src/:sys:stat.h")); // !exists() if ERROR_INVALID_NAME
       BOOST_TEST(!fs::exists(":sys:stat.h")); // !exists() if ERROR_INVALID_PARAMETER
       BOOST_TEST(dir.string().size() > 1
@@ -1814,7 +1864,6 @@ namespace
 
 int cpp_main(int argc, char* argv[])
 {
-
 // document state of critical macros
 #ifdef BOOST_POSIX_API
   cout << "BOOST_POSIX_API is defined\n";
@@ -1823,8 +1872,15 @@ int cpp_main(int argc, char* argv[])
   cout << "BOOST_WINDOWS_API is defined\n";
 #endif
 
-  if (argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='t') report_throws = true;
-  if (argc > 1 && *argv[1]=='-' && *(argv[1]+1)=='x') cleanup = false;
+  for (; argc > 1; --argc, ++argv)
+  {
+    if (*argv[1]=='-' && *(argv[1]+1)=='t')
+      report_throws = true;
+    else if (*argv[1]=='-' && *(argv[1]+1)=='x')
+      cleanup = false;
+    else if (*argv[1]=='-' && *(argv[1]+1)=='w')
+      skip_long_windows_tests = true;
+  }
 
   // The choice of platform to test is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
@@ -1859,6 +1915,7 @@ int cpp_main(int argc, char* argv[])
   initial_tests();
   predicate_and_status_tests();
   exception_tests();
+  platform_specific_tests();
   create_directory_tests();
   current_directory_tests();
   space_tests();
@@ -1894,6 +1951,7 @@ int cpp_main(int argc, char* argv[])
   resize_file_tests();
   absolute_tests();
   canonical_basic_tests();
+  permissions_tests();
   copy_file_tests(f1, d1);
   if (create_symlink_ok)  // only if symlinks supported
   {
@@ -1912,7 +1970,6 @@ int cpp_main(int argc, char* argv[])
   write_time_tests(dir);
   
   temp_directory_path_tests();
-  platform_specific_tests();
   
   cout << "testing complete" << endl;
 

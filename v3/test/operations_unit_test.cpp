@@ -40,6 +40,7 @@
 using namespace boost::filesystem;
 using namespace boost::system;
 using std::cout;
+using std::endl;
 using std::string;
 
 #define CHECK(x) check(x, __FILE__, __LINE__)
@@ -53,21 +54,40 @@ namespace
 
     ++::boost::detail::test_errors();
 
-    std::cout << file << '(' << line << "): test failed\n";
+    cout << file << '(' << line << "): test failed\n";
+  }
+
+  //  file_status_test  ----------------------------------------------------------------//
+
+  void file_status_test()
+  {
+    cout << "file_status test..." << endl;
+
+    file_status s = status(".");
+    int v = s.permissions();
+    cout << "  status(\".\") permissions are "
+      << std::oct << (v & 0777) << std::dec << endl; 
+    CHECK((v & 0400) == 0400);
+
+    s = symlink_status(".");
+    v = s.permissions();
+    cout << "  symlink_status(\".\") permissions are "
+      << std::oct << (v & 0777) << std::dec << endl; 
+    CHECK((v & 0400) == 0400);
   }
 
   //  query_test  ----------------------------------------------------------------------//
 
   void query_test()
   {
-    std::cout << "query test..." << std::endl;
+    cout << "query test..." << endl;
 
     error_code ec;
 
     CHECK(file_size("no-such-file", ec) == static_cast<boost::uintmax_t>(-1));
     CHECK(ec == errc::no_such_file_or_directory);
 
-    CHECK(status("no-such-file") == file_status(file_not_found));
+    CHECK(status("no-such-file") == file_status(file_not_found, no_perms));
 
     CHECK(exists("/"));
     CHECK(is_directory("/"));
@@ -76,8 +96,8 @@ namespace
     exists("/", ec);
     if (ec)
     {
-      std::cout << "exists(\"/\", ec) resulted in non-zero ec.value()" << std::endl;
-      std::cout << "ec value: " << ec.value() << ", message: "<< ec.message() << std::endl;
+      cout << "exists(\"/\", ec) resulted in non-zero ec.value()" << endl;
+      cout << "ec value: " << ec.value() << ", message: "<< ec.message() << endl;
     }
     CHECK(!ec);
 
@@ -92,7 +112,7 @@ namespace
 
   void directory_iterator_test()
   {
-    std::cout << "directory_iterator_test..." << std::endl;
+    cout << "directory_iterator_test..." << endl;
 
     directory_iterator end;
 
@@ -123,14 +143,14 @@ namespace
 //      cout << "  " << it->path().string() << "\n";
     }
 
-    std::cout << "directory_iterator_test complete" << std::endl;
+    cout << "directory_iterator_test complete" << endl;
   }
 
   //  operations_test  -------------------------------------------------------//
 
   void operations_test()
   {
-    std::cout << "operations test..." << std::endl;
+    cout << "operations test..." << endl;
 
     error_code ec;
 
@@ -155,13 +175,14 @@ namespace
 
   void directory_entry_test()
   {
-    std::cout << "directory_entry test..." << std::endl;
+    cout << "directory_entry test..." << endl;
 
-    directory_entry de("foo.bar", file_status(regular_file), file_status(directory_file));
+    directory_entry de("foo.bar",
+      file_status(regular_file, owner_all), file_status(directory_file, group_all));
 
     CHECK(de.path() == "foo.bar");
-    CHECK(de.status() == file_status(regular_file));
-    CHECK(de.symlink_status() == file_status(directory_file));
+    CHECK(de.status() == file_status(regular_file, owner_all));
+    CHECK(de.symlink_status() == file_status(directory_file, group_all));
     CHECK(de < directory_entry("goo.bar"));
     CHECK(de == directory_entry("foo.bar"));
     CHECK(de != directory_entry("goo.bar"));
@@ -173,7 +194,7 @@ namespace
 
   void directory_entry_overload_test()
   {
-    std::cout << "directory_entry overload test..." << std::endl;
+    cout << "directory_entry overload test..." << endl;
 
     directory_iterator it(".");
     path p(*it);
@@ -183,7 +204,7 @@ namespace
 
   void error_handling_test()
   {
-    std::cout << "error handling test..." << std::endl;
+    cout << "error handling test..." << endl;
 
     bool threw(false);
     try
@@ -198,7 +219,7 @@ namespace
     }
     catch (...)
     {
-      cout << "\nunexpected exception type caught" << std::endl;
+      cout << "\nunexpected exception type caught" << endl;
     }
 
     CHECK(threw);
@@ -227,8 +248,9 @@ int cpp_main(int, char*[])
   cout << "BOOST_FILESYSTEM_DECL" << BOOST_STRINGIZE(=BOOST_FILESYSTEM_DECL) << "\n";
   cout << "BOOST_SYMBOL_VISIBLE" << BOOST_STRINGIZE(=BOOST_SYMBOL_VISIBLE) << "\n";
   
-  cout << "current_path() is " << current_path().string() << std::endl;
+  cout << "current_path() is " << current_path().string() << endl;
 
+  file_status_test();
   query_test();
   directory_iterator_test();
   operations_test();
@@ -236,8 +258,8 @@ int cpp_main(int, char*[])
   directory_entry_overload_test();
   error_handling_test();
 
-  std::cout << unique_path() << std::endl;
-  std::cout << unique_path("foo-%%%%%-%%%%%-bar") << std::endl;
+  cout << unique_path() << endl;
+  cout << unique_path("foo-%%%%%-%%%%%-bar") << endl;
   
   return ::boost::report_errors();
 }
