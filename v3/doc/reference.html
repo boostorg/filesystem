@@ -1494,7 +1494,20 @@ clause.</p>
 <p>This enum specifies bitmask constants uses to identify file 
 permissions. The POSIX standard specifies actual values, and those values have 
 been adopted here because they are very familiar and ingrained for many POSIX 
-users. </p>
+users.</p>
+<blockquote>
+<p>Caution: Operating systems do not always support permissions as described in 
+the table.</p>
+<p>There is much variation in the meaning of <code><a href="#sticky_bit">
+sticky_bit</a></code>; do not use it unless you understand what it means for 
+your operating system.</p>
+<p>There is much variation in how operating systems treat symlinks. See <code>
+<a href="#symlink_perms">symlink_perms</a></code>.</p>
+<p>Windows: All permissions except write are currently ignored. There is only a 
+single write permission; setting write permission for owner, group, or others 
+sets write permission for all, and removing write permission for owner, group, 
+or others removes write permission for all. </p>
+</blockquote>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td><b>Name</b></td>
@@ -1555,7 +1568,7 @@ users. </p>
 <tr><td><code>set_gid_on_exe</code></td><td><code>02000</code></td><td> <code>S_ISGID</code></td>
   <td> Set-group-ID on execution</td>
 </tr>
-<tr><td><code>sticky_bit </code>    </td><td><code>01000</code></td><td> <code>S_ISVTX</code></td>
+<tr><td><code><a name="sticky_bit">sticky_bit</a> </code>    </td><td><code>01000</code></td><td> <code>S_ISVTX</code></td>
   <td> Meaning varies; see <a href="http://en.wikipedia.org/wiki/Sticky_bit">http:en.wikipedia.org/wiki/Sticky_bit</a></td>
 </tr>
 <tr><td><code>perms_mask</code></td><td><code>07777</code></td><td> &nbsp;</td>
@@ -1574,8 +1587,9 @@ users. </p>
   <code>permissions()</code> removes the argument permission bits from the 
   file's current bits</td>
 </tr>
-<tr><td><code>symlink_perms</code></td><td><code>0x4000</code></td><td></td><td>
-  Instructs <code>permissions()</code> on POSIX not to resolve symlinks. 
+<tr><td><code><a name="symlink_perms">symlink_perms</a></code></td><td><code>0x4000</code></td><td></td><td>
+  On POSIX <code>permissions()</code> resolves symlinks unless <code>symlink_perms</code> 
+  is specified. 
   Meaningless on Windows as <code>permissions()</code> never resolves symlinks. 
   Meaningless on Mac OS X and some other BSD systems as <code>permissions()</code> 
   always resolves symlinks. Get over it.</td>
@@ -2625,6 +2639,42 @@ void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std
   <p>[<i>Note:</i> A postcondition of <code>last_write_time(p) == 
   new_time</code> is not specified since it might not hold for file systems 
   with coarse time granularity. <i>-- end note</i>]</p>
+</blockquote>
+<pre>void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
+void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, system::error_code&amp; ec);</pre>
+<blockquote>
+  <p dir="ltr">Applies an operating system set of permissions to a file. See
+  <a href="#symlink_perms">perms</a> for specifics.<br>
+  <i><br>
+  Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
+  <p dir="ltr"><i>Effects:</i> Applies the effective permissions bits from <code>
+  prms</code> to the file <code>p</code> resolves to, as if by <i>POSIX</i>
+  <code>
+  <a href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/fchmodat.html">
+  fchmodat()</a></code>. The effective permission bits are determined as 
+  specified by the following table. </p>
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+    <tr>
+      <td><b>bits present in <code>prms</code></b></td>
+      <td><b>Effective bits applied</b></td>
+    </tr>
+    <tr>
+      <td>Neither <code>add_perms</code> nor <code>remove_perms</code></td>
+      <td><code>prms &amp; perms_mask</code></td>
+    </tr>
+    <tr>
+      <td><code>add_perms</code></td>
+      <td>
+      <p dir="ltr">current_status.permissions() | (<code>prms &amp; perms_mask</code>)
+      </td>
+    </tr>
+    <tr>
+      <td><code>remove_perms</code></td>
+      <td>current_status.permissions() &amp; ~(<code>prms &amp; perms_mask</code>) </td>
+    </tr>
+  </table>
+  <p>[<i>Note:</i> Conceptually permissions are viewed as bits, but the actual 
+  implementation by a file system may use some other mechanism. -- <i>end note</i>]</p>
 </blockquote>
 <pre>path <a name="read_symlink">read_symlink</a>(const path&amp; p);
 path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
