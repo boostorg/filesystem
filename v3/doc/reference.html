@@ -82,6 +82,8 @@
 &nbsp;&nbsp;&nbsp; f<a href="#filesystem_error-path1">ilesystem_error path1</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path2">filesystem_error path2</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what">filesystem_error what</a><br>
+    <a href="#file_status">Class 
+    file_status</a><br>
 <a href="#Class-directory_entry">Class directory_entry</a><br>
 &nbsp;&nbsp;&nbsp;
 <a href="#directory_entry-constructors">directory_entry constructors</a><br>
@@ -91,8 +93,7 @@
 &nbsp;&nbsp;&nbsp; <a href="#directory_iterator-members">directory_iterator 
     members</a><br>
 <a href="#Class-recursive_directory_iterator">Class recursive_directory_iterator</a><br>
-    <a href="#file_status">Class 
-    file_status</a><br>
+    <br>
     &nbsp;</td>
     <td width="33%" valign="top">
     <a href="#Operational-functions">
@@ -1418,6 +1419,140 @@ clause.</p>
   not empty, and <code>system_error::what()</code> strings in the returned 
   string.</p>
 </blockquote>
+<h3><a name="Enum-file_type">Enum file_type</a></h3>
+<p>&nbsp;</p>
+<h3><a name="Enum-perms">Enum perms</a></h3>
+<p>This <code>enum</code> specifies bitmask constants uses to identify file 
+permissions. The POSIX standard specifies actual values, and those values have 
+been adopted here because they are very familiar and ingrained for many POSIX 
+users. </p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td><b>Name</b></td>
+    <td align="center"><b>Value<br>
+    (octal)</b></td>
+    <td align="center"><b>POSIX<br>
+    macro</b></td>
+    <td><b>Definition or notes</b></td>
+  </tr>
+
+<tr><td>
+  <p dir="ltr"><code>no_perms</code></td><td><code>0</code></td><td></td>
+  <td>There are no permissions set for the file. Note: <code>file_not_found</code> is 
+  <code>no_perms</code> rather than <code>perms_not_known</code></td>
+</tr>
+<tr><td><code>owner_read</code></td><td><code>0400</code></td><td> <code>S_IRUSR</code></td>
+  <td> Read permission, owner</td>
+</tr>
+<tr><td><code>owner_write</code></td><td><code>0200</code></td><td> <code>S_IWUSR</code></td>
+  <td> Write permission, owner</td>
+</tr>
+<tr><td><code>owner_exe</code></td><td><code>0100</code></td><td>  <code>S_IXUSR</code></td>
+  <td> Execute/search permission, owner</td>
+</tr>
+<tr><td><code>owner_all</code></td><td><code>0700</code></td><td>  <code>S_IRWXU</code></td>
+  <td> Read, write, execute/search by owner; <code>owner_read | owner_write | owner_exe</code></td>
+</tr>
+<tr><td><code>group_read</code></td><td><code>040</code></td><td>  <code>S_IRGRP</code></td>
+  <td> Read permission, group</td>
+</tr>
+<tr><td><code>group_write</code></td><td><code>020</code></td><td> <code>S_IWGRP</code></td>
+  <td> Write permission, group</td>
+</tr>
+<tr><td><code>group_exe</code></td><td><code>010</code></td><td>   <code>S_IXGRP</code></td>
+  <td> Execute/search permission, group</td>
+</tr>
+<tr><td><code>group_all</code></td><td><code>070</code></td><td>   <code>S_IRWXG</code></td>
+  <td> Read, write, execute/search by group; <code>group_read | group_write | 
+  group_exe</code></td>
+</tr>
+<tr><td><code>others_read</code></td><td><code>04</code></td><td>  <code>S_IROTH</code></td>
+  <td> Read permission, others</td>
+</tr>
+<tr><td><code>others_write</code></td><td><code>02</code></td><td> <code>S_IWOTH</code></td>
+  <td> Write permission, others</td>
+</tr>
+<tr><td><code>others_exe</code></td><td><code>01</code></td><td>   <code>S_IXOTH</code></td>
+  <td> Execute/search permission, others</td>
+</tr>
+<tr><td><code>others_all</code></td><td><code>07</code></td><td>   <code>S_IRWXO</code></td>
+  <td>Read, write, execute/search by others; <code>others_read | others_write | others_exe</code></td>
+</tr>
+<tr><td><code>all_all</code></td><td><code>0777</code></td><td> </td><td><code>owner_all | group_all | others_all</code></td>
+</tr>
+<tr><td><code>set_uid_on_exe</code></td><td><code>04000</code></td><td> <code>S_ISUID</code></td>
+  <td> Set-user-ID on execution</td>
+</tr>
+<tr><td><code>set_gid_on_exe</code></td><td><code>02000</code></td><td> <code>S_ISGID</code></td>
+  <td> Set-group-ID on execution</td>
+</tr>
+<tr><td><code>sticky_bit </code>    </td><td><code>01000</code></td><td> <code>S_ISVTX</code></td>
+  <td> Meaning varies; see <a href="http://en.wikipedia.org/wiki/Sticky_bit">http:en.wikipedia.org/wiki/Sticky_bit</a></td>
+</tr>
+<tr><td><code>perms_mask</code></td><td><code>07777</code></td><td> &nbsp;</td>
+  <td><code>all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit</code></td>
+</tr>
+<tr><td><code>perms_not_known</code></td><td><code>0xFFFF</code></td><td></td><td> 
+  The permissions are not known, such as when a <code>file_status</code> object 
+  is created without specifying the permissions</td>
+</tr>
+<tr><td>
+  <p dir="ltr"><code>add_perms</code></td><td><code>0x1000</code></td><td></td><td>
+  <p dir="ltr"><code>permissions()</code> adds the argument permission bits to the 
+  file's current bits</td>
+</tr>
+<tr><td><code>remove_perms</code></td><td><code>0x2000</code></td><td></td><td>
+  <code>permissions()</code> removes the argument permission bits from the 
+  file's current bits</td>
+</tr>
+<tr><td><code>symlink_perms</code></td><td><code>0x4000</code></td><td></td><td>
+  Instructs <code>permissions()</code> on POSIX not to resolve symlinks. 
+  Meaningless on Windows as <code>permissions()</code> never resolves symlinks. 
+  Meaningless on Mac OS X and some other BSD systems as <code>permissions()</code> 
+  always resolves symlinks. Get over it.</td>
+</tr>
+
+</table>
+<h3><a name="file_status">Class file_status</a></h3>
+<pre>  namespace boost
+  {
+    namespace filesystem
+    {
+      class file_status
+      {
+      public:
+        file_status();
+        file_status(const file_status&amp;);
+        explicit file_status(file_type v=status_error);
+       ~file_status();
+
+        <a href="#file_type">file_type</a> type() const;
+        void type(file_type v);
+      };
+    } // namespace filesystem
+  } // namespace boost</pre>
+<p>An object of type <code>file_status</code> stores information about the status of a 
+file. The internal form of the stored information is unspecified.</p>
+<blockquote>
+  <p><i>[Note: </i>The class may be extended in the future to store 
+  additional status information. <i>--end note]</i></p>
+</blockquote>
+<h4>Members</h4>
+<pre>explicit file_status(<a href="#file_type">file_type</a> v=status_error);</pre>
+<blockquote>
+  <p><i>Effects:</i> Stores <code>v</code>.</p>
+  <p><i>Throws:</i> Nothing.</p>
+</blockquote>
+<pre>file_type type() const;</pre>
+<blockquote>
+  <p><i>Returns: </i>The stored <a href="#file_type"> <code>file_type</code>.</a></p>
+</blockquote>
+<pre>void type(<a href="#file_type">file_type</a> v);</pre>
+<blockquote>
+  <p><i>Effects:</i> Stores <code>v</code>, replacing the previously stored 
+  value.</p>
+</blockquote>
+<p>&nbsp;</p>
 <h3><a name="Class-directory_entry">Class <code>directory_entry</code></a></h3>
 <div dir="ltr">
 <pre>  namespace boost
@@ -1926,45 +2061,6 @@ is decremented and iteration of the parent directory resumes.</li>
   <p><i>Throws:</i> Nothing.</p>
   <p>[<i>Note:</i> <code>no_push()</code> is used to prevent 
   unwanted recursion into a directory. <i>--end note</i>]</p>
-</blockquote>
-<h3><a name="file_status">Class file_status</a></h3>
-<pre>  namespace boost
-  {
-    namespace filesystem
-    {
-      class file_status
-      {
-      public:
-        file_status();
-        file_status(const file_status&amp;);
-        explicit file_status(file_type v=status_error);
-       ~file_status();
-
-        <a href="#file_type">file_type</a> type() const;
-        void type(file_type v);
-      };
-    } // namespace filesystem
-  } // namespace boost</pre>
-<p>An object of type <code>file_status</code> stores information about the status of a 
-file. The internal form of the stored information is unspecified.</p>
-<blockquote>
-  <p><i>[Note: </i>The class may be extended in the future to store 
-  additional status information. <i>--end note]</i></p>
-</blockquote>
-<h4>Members</h4>
-<pre>explicit file_status(<a href="#file_type">file_type</a> v=status_error);</pre>
-<blockquote>
-  <p><i>Effects:</i> Stores <code>v</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
-</blockquote>
-<pre>file_type type() const;</pre>
-<blockquote>
-  <p><i>Returns: </i>The stored <a href="#file_type"> <code>file_type</code>.</a></p>
-</blockquote>
-<pre>void type(<a href="#file_type">file_type</a> v);</pre>
-<blockquote>
-  <p><i>Effects:</i> Stores <code>v</code>, replacing the previously stored 
-  value.</p>
 </blockquote>
 <h3><a name="Operational-functions">Operational functions</a></h3>
 <p>Operational functions query or modify files, including directories, in external 
@@ -3364,7 +3460,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->06 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32189" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->15 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32188" --></font></p>
 
 </body>
 
