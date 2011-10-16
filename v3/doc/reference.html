@@ -59,46 +59,52 @@
     <a href="#Definitions">Definitions</a><br>
     <a href="#Conformance">Conformance</a><br>
     <a href="#Header-filesystem-synopsis">
-    Header &lt;boost/filesystem.hpp&gt; synopsis</a><br>
+    Header <code>&lt;boost/filesystem.hpp&gt;</code> synopsis</a><br>
     <a href="#Error-reporting">Error reporting</a><br>
-    <a href="#class-path">Class path</a><br>
-    &nbsp;&nbsp;&nbsp; <a href="#path-constructors">path constructors</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-assignments">path assignments</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends">path appends</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-modifiers">path modifiers</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-native-format-observers">path native 
+    <a href="#class-path">Class <code>path</code></a><br>
+    &nbsp;&nbsp;&nbsp; <a href="#path-constructors"><code>path</code> constructors</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-assignments"><code>path</code> assignments</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends"><code>path</code> appends</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-modifiers"><code>path</code> modifiers</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-native-format-observers"><code>path</code> native 
     format observers</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-generic-format-observers">path generic 
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-generic-format-observers"><code>path</code> generic 
     format observers</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-decomposition">path decomposition</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-query">path query</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-iterators">path iterators</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-deprecated-functions">path deprecated functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-non-member-functions">path non-member functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-inserter-extractor">path inserters and extractors</a><br>
- &nbsp;<a href="#Class-filesystem_error">Class filesystem_error</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-members">filesystem_error 
+&nbsp;&nbsp;&nbsp; <a href="#path-decomposition"><code>path</code> decomposition</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-query"><code>path</code> query</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-iterators"><code>path</code> iterators</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-deprecated-functions"><code>path</code> deprecated functions</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-non-member-functions"><code>path</code> non-member functions</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-inserter-extractor"><code>path</code> inserters and extractors</a><br>
+ &nbsp;<a href="#Class-filesystem_error">Class <code>filesystem_error</code></a><br>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-members"><code>filesystem_error</code> 
     constructors</a><br>
-&nbsp;&nbsp;&nbsp; f<a href="#filesystem_error-path1">ilesystem_error path1</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path2">filesystem_error path2</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what">filesystem_error what</a><br>
-    <a href="#file_status">Class 
-    file_status</a><br>
-<a href="#Class-directory_entry">Class directory_entry</a><br>
-&nbsp;&nbsp;&nbsp;
-<a href="#directory_entry-constructors">directory_entry constructors</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-modifiers">directory_entry modifiers</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-observers">directory_entry observers</a><br>
-<a href="#Class-directory_iterator">Class  directory_iterator</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#directory_iterator-members">directory_iterator 
-    members</a><br>
-<a href="#Class-recursive_directory_iterator">Class recursive_directory_iterator</a><br>
-    <br>
-    &nbsp;</td>
+&nbsp;&nbsp;&nbsp; <code>f</code><a href="#filesystem_error-path1"><code>ilesystem_error</code> path1</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path2"><code>filesystem_error</code> path2</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what"><code>filesystem_error</code><code>
+    </code>what</a></td>
     <td width="33%" valign="top">
+    <a href="#Enum-file_type">Enum <code>file_type</code></a><br>
+    <a href="#Enum-perms">Enum <code>perms</code></a><br>
+    <a href="#file_status">Class 
+    <code>file_status</code></a><br>
+&nbsp;&nbsp;&nbsp;
+    <a href="#file_status"> 
+    <code>file_status</code></a><a href="#file_status-constructors"> constructors</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<code><a href="#file_status-modifiers">file_status-modifiers</a></code><a href="#directory_entry-observers"> observers</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<code><a href="#file_status-observers">file_status-observers</a></code><a href="#directory_entry-modifiers"> modifiers</a><br>
+<a href="#Class-directory_entry">Class <code>directory_entry</code></a><br>
+&nbsp;&nbsp;&nbsp;
+<a href="#directory_entry-constructors"><code>directory_entry</code> constructors</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-observers"><code>directory_entry</code> observers</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-modifiers"><code>directory_entry</code> modifiers</a><br>
+<a href="#Class-directory_iterator">Class  <code>directory_iterator</code></a><br>
+&nbsp;&nbsp;&nbsp; <a href="#directory_iterator-members"><code>directory_iterator</code> 
+    members</a><br>
+<a href="#Class-recursive_directory_iterator">Class <code>recursive_directory_iterator</code></a><br>
     <a href="#Operational-functions">
     Operational functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp <a href="#absolute">absolute</a><br>
+    <code>&nbsp;&nbsp;&nbsp;&nbsp <a href="#absolute">absolute</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#canonical">canonical</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy">copy</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_directory">copy_directory</a><br>
@@ -112,14 +118,16 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a></code></td>
+    <td width="34%" valign="top">
+    <code>&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_regular_file">is_regular_file</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#last_write_time">last_write_time</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; permissions<br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#remove_all">remove_all</a><br>
@@ -131,8 +139,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#symlink_status">symlink_status</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#system_complete">system_complete</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#temp_directory_path">temp_directory_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a></td>
-    <td width="34%" valign="top">
+&nbsp;&nbsp;&nbsp;&nbsp; </code> <code> <a href="#unique_path">unique_path</a></code><br>
     <a href="#File-streams">File streams</a><br>
 <a href="#Path-decomposition-table">Path decomposition table</a><br>
     <a href="#long-path-warning">Warning: Long paths on Windows and the 
@@ -338,10 +345,23 @@ is unreasonable for a program to detect them prior to calling the function. <i>
 
       class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
 
-      enum <a name="file_type">file_type</a> { status_error, file_not_found, regular_file, directory_file,
-                       symlink_file, block_file, character_file, fifo_file, socket_file,
-                       type_unknown
-                     };
+      enum <a name="file_type" href="#Enum-file_type">file_type</a>
+      {
+        status_error, file_not_found, regular_file, directory_file,
+        symlink_file, block_file, character_file, fifo_file, socket_file,
+        type_unknown
+      };
+  
+      enum <a href="#Enum-perms">perms</a>
+      {
+        no_perms,
+        owner_read, owner_write, owner_exe, owner_all,
+        group_read, group_write, group_exe, group_all,
+        others_read, others_write, others_exe, others_all, all_all,
+        set_uid_on_exe, set_gid_on_exe, sticky_bit,
+        perms_mask, perms_not_known,
+        add_perms, remove_perms, symlink_perms
+      };
 
       class <a href="#file_status">file_status</a>;
 
@@ -1420,9 +1440,58 @@ clause.</p>
   string.</p>
 </blockquote>
 <h3><a name="Enum-file_type">Enum file_type</a></h3>
-<p>&nbsp;</p>
+<p>This enum specifies constants uses to identify file types.</p>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td><b>Constant Name</b></td>
+    <td><b>Meaning</b></td>
+  </tr>
+  <tr>
+    <td><code>status_error</code></td>
+    <td>An error occurred while trying to obtain the status of the file. The 
+    file simply not being found is <b><u>not</u></b> considered a status error.
+    </td>
+  </tr>
+  <tr>
+    <td><code>file_not_found</code></td>
+    <td>The file could not be found</td>
+  </tr>
+  <tr>
+    <td><code>regular_file</code></td>
+    <td>Regular file</td>
+  </tr>
+  <tr>
+    <td><code>directory_file</code></td>
+    <td>Directory file</td>
+  </tr>
+  <tr>
+    <td><code>symlink_file</code></td>
+    <td>Symbolic link file</td>
+  </tr>
+  <tr>
+    <td><code>block_file</code></td>
+    <td>Block special file</td>
+  </tr>
+  <tr>
+    <td><code>character_file</code></td>
+    <td>Character special file</td>
+  </tr>
+  <tr>
+    <td><code>fifo_file</code></td>
+    <td>FIFO or pipe file</td>
+  </tr>
+  <tr>
+    <td><code>socket_file</code></td>
+    <td>Socket file</td>
+  </tr>
+  <tr>
+    <td><code>type_unknown</code></td>
+    <td>The file exists, but it is of a system specific type not covered by any 
+    of the above cases.</td>
+  </tr>
+</table>
 <h3><a name="Enum-perms">Enum perms</a></h3>
-<p>This <code>enum</code> specifies bitmask constants uses to identify file 
+<p>This enum specifies bitmask constants uses to identify file 
 permissions. The POSIX standard specifies actual values, and those values have 
 been adopted here because they are very familiar and ingrained for many POSIX 
 users. </p>
@@ -1521,38 +1590,63 @@ users. </p>
       class file_status
       {
       public:
-        file_status();
-        file_status(const file_status&amp;);
-        explicit file_status(file_type v=status_error);
-       ~file_status();
 
-        <a href="#file_type">file_type</a> type() const;
-        void type(file_type v);
+        // <a href="#file_status-constructors">constructors</a>
+        file_status() noexcept;
+        explicit file_status(<a href="#file_type">file_type</a> ft, <a href="#Enum-perms">perms</a> prms = perms_not_known) noexcept;
+
+        // compiler generated
+        file_status(const file_status&amp;) noexcept;
+        file_status&amp; operator=(const file_status&amp;) noexcept;
+       ~file_status() noexcept;
+
+        // <a href="#file_status-observers">observers</a>
+        <a href="#file_type">file_type</a>  type() const noexcept;
+        <a href="#Enum-perms">perms</a>      permissions() const noexcept;
+
+        // <a href="#file_status-modifiers">modifiers</a>
+        void       type(<a href="#file_type">file_type</a> ft) noexcept;
+        void       permissions(<a href="#Enum-perms">perms</a> prms) noexcept;
       };
     } // namespace filesystem
   } // namespace boost</pre>
-<p>An object of type <code>file_status</code> stores information about the status of a 
-file. The internal form of the stored information is unspecified.</p>
+<p>An object of type <code>file_status</code> stores information about the type 
+and permissions of a file.</p>
+<h4 dir="ltr"><a name="file_status-constructors"><code>file_status</code> 
+constructors</a></h4>
+<pre>explicit file_status() noexcept;</pre>
 <blockquote>
-  <p><i>[Note: </i>The class may be extended in the future to store 
-  additional status information. <i>--end note]</i></p>
+  <p><i>Postconditions:</i> <code>type() == status_error</code>, <code>
+  permissions() == perms_not_known</code>.</p>
 </blockquote>
-<h4>Members</h4>
-<pre>explicit file_status(<a href="#file_type">file_type</a> v=status_error);</pre>
+<pre>explicit file_status(<a href="#file_type">file_type</a> ft, <a href="#Enum-perms">perms</a> prms = perms_not_known) noexcept;</pre>
 <blockquote>
-  <p><i>Effects:</i> Stores <code>v</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
+  <p><i>Postconditions:</i> <code>type() == ft</code>, <code>permissions() == 
+  prms</code>.</p>
 </blockquote>
-<pre>file_type type() const;</pre>
+  <h4 dir="ltr"><a name="file_status-observers"><code>file_status</code> 
+  observers</a></h4>
+<pre><a href="#file_type">file_type</a> type() const noexcept;</pre>
 <blockquote>
-  <p><i>Returns: </i>The stored <a href="#file_type"> <code>file_type</code>.</a></p>
+  <p><i>Returns: </i>The value of <code>type()</code> specified by the <i>
+  postconditions</i> of the most recent call to a constructor, operator=, or
+  <code>type(file_type)</code> function.</p>
 </blockquote>
-<pre>void type(<a href="#file_type">file_type</a> v);</pre>
+<pre><a href="#Enum-perms">perms</a> permissions() const noexcept;</pre>
 <blockquote>
-  <p><i>Effects:</i> Stores <code>v</code>, replacing the previously stored 
-  value.</p>
+  <p><i>Returns: </i>The value of <code>permissions()</code> specified by the <i>
+  postconditions</i> of the most recent call to a constructor, operator=, or
+  <code>permissions(perms)</code> function.</p>
 </blockquote>
-<p>&nbsp;</p>
+<h4 dir="ltr"><a name="file_status-modifiers"><code>file_status</code> modifiers</a></h4>
+<pre>void type(<a href="#file_type">file_type</a> ft) noexcept;</pre>
+<blockquote>
+  <p dir="ltr"><i>Postconditions:</i> <code>type() == ft</code>.</p>
+</blockquote>
+<pre>void permissions(<a href="#Enum-perms">perms</a> prms) noexcept;</pre>
+<blockquote>
+  <p dir="ltr"><i>Postconditions:</i> <code>permissions() == prms</code>.</p>
+</blockquote>
 <h3><a name="Class-directory_entry">Class <code>directory_entry</code></a></h3>
 <div dir="ltr">
 <pre>  namespace boost
@@ -3460,7 +3554,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->15 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32188" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32190" --></font></p>
 
 </body>
 
