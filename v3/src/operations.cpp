@@ -1393,7 +1393,8 @@ namespace detail
 
 # ifdef BOOST_POSIX_API
     // Mac OS X Lion and some other platforms don't support fchmodat()  
-#   if defined(AT_FDCWD) && defined(AT_SYMLINK_NOFOLLOW)
+#   if defined(AT_FDCWD) && defined(AT_SYMLINK_NOFOLLOW) \
+      && (!defined(__SUNPRO_CC) || __SUNPRO_CC > 0x5100)
       if (::fchmodat(AT_FDCWD, p.c_str(), mode_cast(prms),
            !(prms & symlink_perms) ? 0 : AT_SYMLINK_NOFOLLOW))
 #   else  // fallback if fchmodat() not supported

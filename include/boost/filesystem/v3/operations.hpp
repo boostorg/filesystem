@@ -145,9 +145,9 @@ namespace boost
   class BOOST_FILESYSTEM_DECL file_status
   {
   public:
-    file_status() : m_value(status_error), m_perms(perms_not_known) {}
+             file_status()            : m_value(status_error), m_perms(perms_not_known) {}
     explicit file_status(file_type v, perms prms = perms_not_known)
-      : m_value(v), m_perms(prms) {}
+                                      : m_value(v), m_perms(prms) {}
 
     // observers
     file_type  type() const                       { return m_value; }
