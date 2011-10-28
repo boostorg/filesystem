@@ -502,15 +502,21 @@ namespace
       || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
   }
 
+#if defined(_MSC_VER) || (defined(__GLIBCXX__) && __GLIBCXX__ >= 20110325)
+#  define BOOST_FILESYSTEM_STRICMP _stricmp
+#else
+#  define BOOST_FILESYSTEM_STRICMP strcmp
+#endif
+
   perms make_permissions(const path& p, DWORD attr)
   {
     perms prms = fs::owner_read | fs::group_read | fs::others_read;
     if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
       prms |= fs::owner_write | fs::group_write | fs::others_write;
-    if (_stricmp(p.extension().string().c_str(), ".exe") == 0
-      || _stricmp(p.extension().string().c_str(), ".com") == 0
-      || _stricmp(p.extension().string().c_str(), ".bat") == 0
-      || _stricmp(p.extension().string().c_str(), ".cmd") == 0)
+    if (BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".exe") == 0
+      || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".com") == 0
+      || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".bat") == 0
+      || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".cmd") == 0)
       prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
     return prms;
   }
@@ -767,21 +773,6 @@ namespace detail
     return true;
 #   endif
   }
-
-# ifdef BOOST_POSIX_API
-    const perms active_bits(all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit);
-    inline mode_t mode_cast(perms prms) { return prms & active_bits; }
-# else
-    inline int mode_cast(perms prms)
-    { 
-      //  Windows _wchmod() can only make a file read-only and there is only one
-      //  such attribute bit for the file. Files are always readable. Get over it.
-      return (prms & (owner_write|group_write|others_write)
-                ? _S_IREAD | _S_IWRITE
-                : _S_IREAD
-             );
-    }
-# endif
 
   BOOST_FILESYSTEM_DECL
   path canonical(const path& p, const path& base, system::error_code* ec)
@@ -1357,6 +1348,11 @@ namespace detail
 #   endif
   }
 
+# ifdef BOOST_POSIX_API
+    const perms active_bits(all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit);
+    inline mode_t mode_cast(perms prms) { return prms & active_bits; }
+# endif
+
   BOOST_FILESYSTEM_DECL
   void permissions(const path& p, perms prms, system::error_code* ec)
   {
@@ -1366,6 +1362,7 @@ namespace detail
     if ((prms & add_perms) && (prms & remove_perms))  // precondition failed
       return;
 
+# ifdef BOOST_POSIX_API
     error_code local_ec;
     file_status current_status((prms & symlink_perms)
                                ? fs::symlink_status(p, local_ec)
@@ -1383,15 +1380,8 @@ namespace detail
     if (prms & add_perms)
       prms |= current_status.permissions();
     else if (prms & remove_perms)
-    {
-#   ifdef BOOST_WINDOWS_API
-      if (prms & (owner_write|group_write|others_write))
-        prms |= owner_write|group_write|others_write;
-#   endif
       prms = current_status.permissions() & ~prms;
-    }
 
-# ifdef BOOST_POSIX_API
     // Mac OS X Lion and some other platforms don't support fchmodat()  
 #   if defined(AT_FDCWD) && defined(AT_SYMLINK_NOFOLLOW) \
       && (!defined(__SUNPRO_CC) || __SUNPRO_CC > 0x5100)
@@ -1400,9 +1390,6 @@ namespace detail
 #   else  // fallback if fchmodat() not supported
       if (::chmod(p.c_str(), mode_cast(prms)))
 #   endif
-# else
-    if (::_wchmod(p.c_str(), mode_cast(prms)))  // if error
-# endif
     {
       if (ec == 0)
       BOOST_FILESYSTEM_THROW(filesystem_error(
@@ -1412,6 +1399,30 @@ namespace detail
         ec->assign(errno, system::generic_category());
     }
 
+# else  // Windows
+
+    // if not going to alter FILE_ATTRIBUTE_READONLY, just return
+    if (!(!((prms & (add_perms | remove_perms)))
+      || (prms & (owner_write|group_write|others_write))))
+      return;
+
+    DWORD attr = ::GetFileAttributesW(p.c_str());
+
+    if (error(attr == 0, p, ec, "boost::filesystem::permissions"))
+      return;
+
+    if (prms & add_perms)
+      attr &= ~FILE_ATTRIBUTE_READONLY;
+    else if (prms & remove_perms)
+      attr |= FILE_ATTRIBUTE_READONLY;
+    else if (prms & (owner_write|group_write|others_write))
+      attr &= ~FILE_ATTRIBUTE_READONLY;
+    else
+      attr |= FILE_ATTRIBUTE_READONLY;
+
+    error(::SetFileAttributesW(p.c_str(), attr) == 0,
+      p, ec, "boost::filesystem::permissions");
+# endif
   }
 
   BOOST_FILESYSTEM_DECL
