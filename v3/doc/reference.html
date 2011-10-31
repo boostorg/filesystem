@@ -304,11 +304,21 @@ implementation-defined manner.</p>
 static_assert</code>, a <code>filesystem_error</code> exception, a special 
 return value, or some other manner. <i>--end note</i>]</p>
 </blockquote>
+<p>Implementations are not required to provide behavior that is not supported by 
+a particular file system.</p>
+<blockquote>
+<p>[<i>Example:</i> The <a href="http://en.wikipedia.org/wiki/FAT_filesystem">
+FAT file system</a> used by some memory cards, camera memory, and floppy discs 
+does not support hard links, symlinks, and many other features of more capable 
+file systems. Implementations are only required to support the FAT features 
+supported by the host operating system. <i>-- end example</i>]</p>
+</blockquote>
 <p>Specific operating systems such as <i>OpenMVS</i>,
 <i>UNIX</i>, and <i>Windows</i> are mentioned only for purposes of illustration or to 
-give guidance to implementers. No slight to other operating systems is implied 
-or intended.</p>
-<p>The <i>Effects</i> and <i>Postconditions</i> of functions described in this 
+give guidance to users and implementers. No slight to other operating systems is implied 
+or intended. When unlikely to cause confusion, the term <i>POSIX</i> is 
+sometimes used to refer to &quot;POSIX-compliant operating systems&quot;.</p>
+<p>The behavior of functions described in this 
 reference 
 may not be achieved in 
 the presence of <a href="#Race-condition">race conditions</a>. No diagnostic is required.</p>
@@ -567,8 +577,14 @@ report errors as follows, unless otherwise specified:</p>
 <h2><a name="class-path">Class <code>path</code></a></h2>
 <p>An object of class <code>path</code> represents a <a href="#Path">path</a>, 
 and contains a <a href="#Pathname">pathname</a> Such an object is concerned only with the lexical and syntactic aspects 
-of a path. The path may not actually exist in external storage, and may contain pathnames which are not even valid for the current operating 
-system. </p>
+of a path. The path does not necessarily exist in external storage, and the 
+pathname is not necessarily valid for the current operating 
+system or for a particular file system.</p>
+<blockquote>
+<p>[<i>Example:</i> A <a href="#long-path-warning">long path name on Windows</a> 
+is an example of an innocuous appearing path that is not actually valid. <i>-- 
+end example</i>]</p>
+</blockquote>
 <pre>  namespace boost
   {
     namespace filesystem
