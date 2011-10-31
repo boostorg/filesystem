@@ -62,6 +62,14 @@
     Header <code>&lt;boost/filesystem.hpp&gt;</code> synopsis</a><br>
     <a href="#Error-reporting">Error reporting</a><br>
     <a href="#class-path">Class <code>path</code></a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-Conversions"><code>path</code> conversions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-Conversions-to-native-format"><code>path</code> 
+    conversions to native format</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-Conversions-to-generic-format"><code>path</code> 
+    conversions to generic format</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-Encoding-conversions"><code>path</code> 
+    encoding conversions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#path-Requirements"><code>path</code> requirements</a><br>
     &nbsp;&nbsp;&nbsp; <a href="#path-constructors"><code>path</code> constructors</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#path-assignments"><code>path</code> assignments</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends"><code>path</code> appends</a><br>
@@ -118,12 +126,12 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a></code></td>
-    <td width="34%" valign="top">
-    <code>&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a></code></td>
+    <td width="34%" valign="top">
+    <code>&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_regular_file">is_regular_file</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#last_write_time">last_write_time</a><br>
@@ -202,6 +210,7 @@ Paths &quot;.&quot; and &quot;..&quot; are considered to be relative paths. <i>-
 no elements which are symbolic links, and no dot or dot dot elements.</p>
 <p><i><b><a name="Pathname">Pathname</a>:</b> </i>A character string that represents a 
 path. Pathnames are formatted according to the generic pathname format or the 
+implementation defined 
 native pathname format.</p>
 <p><b><i><a name="generic-pathname-format">Generic pathname format:</a></i></b></p>
 <blockquote>
@@ -678,39 +687,9 @@ system. </p>
   } // namespace boost</pre>
 <p><code><a name="value_type">value_type</a></code> is an implementation-defined 
 <code>typedef</code> for the 
-character type used by the implementation to represent pathnames.</p>
-<p>If the value type of&nbsp; [<code>begin</code>,<code>end</code>) 
-  or <code>source</code> arguments for member functions is not <code>value_type</code>, 
-and no <code>cvt</code> argument is supplied, conversion to <code>value_type</code> 
-occurs using an imbued locale. This imbued locale is initialized with a <code>
-codecvt</code> facet appropriate for the operating system.</p>
-<blockquote>
-<p>For Apple OS X implementations, <code>path::value_type</code> 
-is <code>char</code>. The default imbued locale provides a UTF-8 <code>codecvt</code> 
-facet. [<i>Rationale:</i> &quot;All BSD system functions expect their string 
-parameters to be in UTF-8 encoding and nothing else.&quot; See
-<a href="http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html">
-Apple docs</a>. <i>-- end rationale</i>]</p>
-<p>For Windows-like implementations, including 
-  <a href="http://www.cygwin.com/">Cygwin</a> and
-<a href="http://www.mingw.org/">MinGW</a>, <code>path::value_type</code> is <code>
-wchar_t</code>. The default imbued locale provides a <code>codecvt</code> facet 
-that invokes Windows <code>MultiByteToWideChar</code> or <code>
-WideCharToMultiByte</code> API's with a codepage of <code>CP_THREAD_ACP</code> 
-if Windows <code>AreFileApisANSI()</code>is true, otherwise codepage <code>
-CP_OEMCP</code>. [<i>Rationale:</i> this is the current behavior of C and C++ 
-programs that perform file operations using narrow character string to identify 
-paths. Changing this in the Filesystem library would be too surprising, 
-particularly where user input is involved. <i>-- end rationale</i>]</p>
-<p>For all other implementations, including<b> </b>Linux, <code>path::value_type</code> 
-is <code>char</code>. The default imbued locale is <code>std::locale(&quot;&quot;)</code>. 
-[<i>Rationale:</i> ISO C specifies this as &quot;the locale-specific native 
-environment&quot;, while POSIX says it &quot;Specifies an implementation-defined native 
-environment.&quot; <i>-- end rationale</i></p>
-</blockquote>
-<p>For member functions described as returning <code>const string</code>, <code>
-const wstring</code>, <code>const u16string</code>, or <code>const u32string</code>, 
-implementations are permitted to return <code>const string&amp;</code>, <code>const 
+character type used by the operating system to represent pathnames.</p>
+<p>Member functions described as returning <code>const string</code>, <code>
+const wstring</code>, <code>const u16string</code>, or <code>const u32string</code> are permitted to return <code>const string&amp;</code>, <code>const 
 wstring&amp;</code>, <code>const u16string&amp;</code>, or <code>const u32string&amp;</code>, 
 respectively.</p>
 <blockquote>
@@ -721,35 +700,24 @@ Return-by-value is specified as
 implementation. <i>-- 
 end note</i>]</p>
 </blockquote>
-<p><code><a name="InputIterator">InputIterator</a></code> is required meet the 
-requirements for a C++ standard library <code>RandomIterator</code> 
-compliant iterator. The iterator's value type is required to be <code>char</code>, <code>
-  wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</p>
-<p><code><a name="Source">Source</a></code> is required to be one of:</p>
-<ul>
-  <li>A container with a value type of <code>char</code>, <code>
-  wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</li>
-  <li>An iterator for a null terminated byte-string. The value type is required 
-  to be <code>char</code>, <code>wchar_t</code>, <code>char16_t</code>, or <code>
-  char32_t</code>.</li>
-  <li>A C-array. The value type is required to be <code>char</code>, <code>
-  wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</li>
-  <li>A <code>boost::filesystem::directory_entry</code>.</li>
-</ul>
-<p>The specifications for <code>path</code> functions require that 
-arguments in the generic pathname format be converted to native pathname format 
-as they are stored in <code>pathname</code>. If the native format requires 
-regular file paths and directory paths to be formatted differently, the 
-implementation shall determine which format to use according to whether or not 
-the last element of the generic format string is a separator. [<i>Example:</i> 
-On <a href="http://en.wikipedia.org/wiki/OpenVMS">OpenVMS</a>, a path 
-constructed from <code>&quot;/cats/jane&quot;</code> would considered a regular file 
-path, and have a native format of <code>&quot;[CATS]JANE&quot;</code>, while a 
-path constructed from <code>&quot;/cats/jane/&quot;</code> would be considered a 
-directory path, and have a native format of <code>&quot;[CATS.JANE]&quot;</code>.
-<i>--end example</i>] [<i>Note</i>: POSIX and Windows use the same native format 
-for both regular file and directory pathnames, so this paragraph does not apply to 
-them. <i>--end note</i>]</p>
+<h3><a name="path-Conversions"><code>path</code> Conversions</a></h3>
+<h4><a name="path-Conversions-to-native-format"><code>path</code> Conversions to 
+native format</a></h4>
+<p>Member function arguments that take character sequences representing paths 
+may use the <a href="#generic-pathname-format">generic pathname format</a> or 
+the <a href="#native-pathname-format">native pathname format</a>. If such an 
+argument uses the generic format, an implementation defined conversion to native format is performed 
+during the processing of the argument. </p>
+<blockquote>
+<p>[<i>Note:</i> No conversion occurs on POSIX and Windows since they have 
+native formats that conform to the generic format. <i>--end note</i>]</p>
+<p>[<i>Rationale:</i> There is no unambiguous way for an implementation to 
+always be able distinguish between native format and generic format arguments. 
+This is by design as it simplifies use. Should an implementation encounter an 
+operating system where disambiguation is required, an implementation defined 
+native format prefix can be introduced to identify the native format. <i>-- end 
+rationale</i>]</p>
+</blockquote>
 
 <table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
   <tr>
@@ -775,6 +743,83 @@ letters to uppercase.<i> -- end note.</i>]</p>
     </td>
   </tr>
 </table>
+
+<p>If the native format requires 
+paths for regular files to be formatted differently from paths for directories, the 
+path shall be treated as a directory path if last element is a separator, 
+otherwise it shall be treated as a regular file path.</p>
+
+<blockquote>
+
+<p>[<i>Note</i>: The above paragraph does not apply to POSIX and Windows since 
+they use the same format 
+for both regular file and directory pathnames. <i>--end note</i>]</p>
+
+<p>[<i>Example:</i> 
+On <a href="http://en.wikipedia.org/wiki/OpenVMS">OpenVMS</a>, a path 
+constructed from <code>&quot;/cats/jane&quot;</code> would considered a regular file 
+path, and have a native format of <code>&quot;[CATS]JANE&quot;</code>, while a 
+path constructed from <code>&quot;/cats/jane/&quot;</code> would be considered a 
+directory path, and have a native format of <code>&quot;[CATS.JANE]&quot;</code>.
+<i>--end example</i>]</p>
+
+</blockquote>
+<h4><a name="path-Conversions-to-generic-format"><code>path</code> Conversions 
+to generic format</a></h4>
+<p><a href="#path-generic-format-observers">Generic format observer</a> 
+functions return strings formatted according to the
+<a href="#generic-pathname-format">generic pathname format</a>. The conversion 
+from generic to native formats is implementation defined.</p>
+<blockquote>
+<p>[<i>Note:</i> For POSIX, no conversion is performed. For Windows,  backslashes are converted to 
+forward slashes. <i>-- end note</i>]</p>
+</blockquote>
+<h4><a name="path-Encoding-conversions"><code>path</code> Encoding conversions</a></h4>
+<p>If the value type of member function arguments that are character sequences 
+representing paths is not <code>value_type</code>, 
+and no <code>cvt</code> argument is supplied, conversion to <code>value_type</code> 
+occurs using an imbued locale. This imbued locale is initialized with a <code>
+codecvt</code> facet appropriate for the operating system.</p>
+<blockquote>
+<p>For Apple OS X implementations, <code>path::value_type</code> 
+is <code>char</code>. The default imbued locale provides a UTF-8 <code>codecvt</code> 
+facet. [<i>Rationale:</i> &quot;All BSD system functions expect their string 
+parameters to be in UTF-8 encoding and nothing else.&quot; See
+<a href="http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html">
+Apple docs</a>. <i>-- end rationale</i>]</p>
+<p>For Windows-like implementations, including
+<a href="http://www.mingw.org/">MinGW</a>, <code>path::value_type</code> is <code>
+wchar_t</code>. The default imbued locale provides a <code>codecvt</code> facet 
+that invokes Windows <code>MultiByteToWideChar</code> or <code>
+WideCharToMultiByte</code> API with a codepage of <code>CP_THREAD_ACP</code> 
+if Windows <code>AreFileApisANSI()</code>is true, otherwise codepage <code>
+CP_OEMCP</code>. [<i>Rationale:</i> this is the current behavior of C and C++ 
+programs that perform file operations using narrow character string to identify 
+paths. Changing this in the Filesystem library would be too surprising, 
+particularly where user input is involved. <i>-- end rationale</i>]</p>
+<p>For all other implementations, including<b> </b>Linux, <code>path::value_type</code> 
+is <code>char</code>. The default imbued locale is <code>std::locale(&quot;&quot;)</code>. 
+[<i>Rationale:</i> ISO C specifies this as &quot;the locale-specific native 
+environment&quot;, while POSIX says it &quot;Specifies an implementation-defined native 
+environment.&quot; <i>-- end rationale</i>]</p>
+</blockquote>
+<h3><a name="path-Requirements"><code>path</code> Requirements</a></h3>
+<p>Template parameters named <code><a name="InputIterator">InputIterator</a></code> 
+are required meet the 
+requirements for a C++ standard library <code>RandomIterator</code> 
+compliant iterator. The iterator's value type is required to be <code>char</code>, <code>
+  wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</p>
+<p>Template parameters named <code><a name="Source">Source</a></code> are required to be one of:</p>
+<ul>
+  <li>A container with a value type of <code>char</code>, <code>
+  wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</li>
+  <li>An iterator for a null terminated byte-string. The value type is required 
+  to be <code>char</code>, <code>wchar_t</code>, <code>char16_t</code>, or <code>
+  char32_t</code>.</li>
+  <li>A C-array. The value type is required to be <code>char</code>, <code>
+  wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</li>
+  <li>A <code>boost::filesystem::directory_entry</code>.</li>
+</ul>
 
 <h3> <a name="path-constructors"> <code>
 <font size="4">path</font></code> constructors</a></h3>
@@ -3535,7 +3580,7 @@ is MAX_PATH, which is defined as 260 characters.</p>
 <p>The Windows API has many functions that also have Unicode versions to permit 
 an extended-length path for a maximum total path length of 32,767 characters. 
 ... To specify an extended-length path, use the <b>&quot;\\?\&quot; prefix</b>. For 
-example, &quot;<a href="file://?/D:/very long path">\\?\D:\<em>very long path</em></a>&quot;.&nbsp;
+example, &quot;\\?\D:\<em>very long path</em>&quot;.&nbsp;
 <i>[C++ string literals require backslashes be doubled, of course.]</i></p>
 </blockquote>
 <p>Because most Boost.Filesystem operational functions just pass the contents of 
@@ -3604,7 +3649,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32190" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->31 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32182" --></font></p>
 
 </body>
 
