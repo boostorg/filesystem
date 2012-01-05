@@ -816,7 +816,8 @@ namespace
     {
       cout << "  fs::status(p).permissions() " << std::oct << fs::status(p).permissions()
         << std::dec << endl;
-      BOOST_TEST((fs::status(p).permissions() & 0644) == 0644);  // 0664 sometimes returned
+      BOOST_TEST((fs::status(p).permissions() & 0600) == 0600);  // 0644, 0664 sometimes returned
+
       fs::permissions(p, fs::owner_all);
       BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
 
