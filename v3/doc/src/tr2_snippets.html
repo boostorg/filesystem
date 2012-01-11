@@ -101,19 +101,17 @@ class would be the best place to experiment with this concept, not a path class.
     application is correct.</li>
     <li>Boost.Filesystem needs to implement <code>char16_t</code> and <code>char32_t</code> support to verify the 
     specification for these is correct.</li>
-    <li>Class <code>file_status</code> is overdesigned. It holds just a single <code>file_type</code> variable, and that's unlikely to change 
-  because of performance considerations. It would be simpler to eliminate class <code>
-  file_status</code>, and just use <code>file_type</code> in its stead. Perhaps 
-    rename to <code>file_status</code>. This hasn't been done in the Boost 
-    because it would break existing code, albeit noisily.</li>
     <li>Replace path inserter and extractor <i>Effects</i> with prose, since the 
     current wording relies on 
   <code>boost::io::quoted</code></span>.</li>
-    <li>Replace uses of <code>boost::iterator_facade</code>.</li>
+    <li>The Boost implementation has more class path non-member relational 
+    functions that shown in the docs, and the specific set of relational 
+    functions varies between Windows and POSIX. Figure out what's happening and 
+    document it.</li>
     <li><code><a href="#Source">Source</a></code> is not specified as actually 
     implemented. Expose <code>path_traits</code>?</li>
     <li><i>Effects</i> for <code>copy</code> and <code>copy_directory</code> 
-    need to be reviewed, revised, tested.</li>
+    need to be reviewed, revised, tested, peer reviewed.</li>
     <li>Review changes to header &lt;fstream&gt;</li>
   </ul>
   
