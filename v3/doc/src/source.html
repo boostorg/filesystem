@@ -8,6 +8,8 @@
 <title>
 $if $TARGET; == BOOST
   Filesystem V3 Reference
+  $def WHAT "reference documentation"
+  $def SNIPPET_FILE "boost_snippets.html"
   $def HEADER "boost/filesystem.hpp"
   $def NAMESPACE boost
   $def SUBNAMESPACE filesystem
@@ -19,6 +21,8 @@ $if $TARGET; == BOOST
 }  // namespace boost"
 $else
   Filesystem TR2 Proposal
+  $def WHAT "Clause"
+  $def SNIPPET_FILE "tr2_snippets.html"
   $def HEADER "files"
   $def NAMESPACE std
   $def SUBNAMESPACE files
@@ -33,11 +37,7 @@ $include "../../../../../doc/src/minimal.css"
 </head>
 
 <body>
-$if $TARGET; == BOOST
-$snippet frontmatter "boost_snippets.html"
-$elif $TARGET; == TR2
-$snippet frontmatter "tr2_snippets.html"
-$endif
+$snippet frontmatter "$SNIPPET_FILE;"
 
 <h2><a name="TOC">Table of Contents</a></h2>
 
@@ -123,7 +123,7 @@ $endif
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_regular_file">is_regular_file</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#last_write_time">last_write_time</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; permissions<br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#permissions">permissions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#remove_all">remove_all</a><br>
@@ -146,15 +146,70 @@ $endif
   </tr>
 </table>
 
-<h2><a name="Introduction">Introduction</a></h2>
+$snippet wording_prefix "$SNIPPET_FILE;"
 
-<p>This reference documentation describes components that C++ programs may use 
-to perform operations involving file systems, including paths, regular files, 
-and directories.</p>
+<p>This $WHAT; describes components that perform operations on file systems and 
+their components, such as paths, regular files, and directories.</p>
+<p>Operating systems such as <i>MAC OS, UNIX</i>, and <i>Windows</i> are 
+mentioned in this $WHAT; for purposes of illustration or to give guidance to 
+implementers. No slight to other operating systems is implied or intended.</p>
+<p><a name="Footnote-3">Footnote 3</a>: <i>MAC OS</i>® is a registered trademark 
+of Apple Inc.</p>
+<p><a name="Footnote-4">Footnote 4</a>: <i>Windows</i>® is a registered 
+trademark of Microsoft Corporation.</p>
+
+<h2><a name="Conformance">Conformance</a></h2>
+<p>Behavior is sometimes specified by reference to ISO/IEC 9945:2003, <i>
+<a href="http://www.unix.org/single_unix_specification/">POSIX</a></i>. How such behavior is actually implemented is unspecified.</p>
+<blockquote>
+<p>[<i>Note:</i> This constitutes an &quot;as if&quot; rule for implementation of 
+operating system dependent behavior. Presumably implementations will usually call native 
+operating system API's. <i>--end note</i>]</p>
+</blockquote>
+<p>Implementations are encouraged, but not required, to support such behavior 
+ 
+as it is defined by <i>POSIX</i>. Implementations shall document any 
+behavior that differs from the <i>POSIX</i> defined behavior. Implementations that do not support exact <i>POSIX</i> behavior are 
+encouraged to provide behavior as close to <i>POSIX</i> behavior as is reasonable given the 
+limitations of actual operating systems and file systems. If an implementation cannot provide any 
+reasonable behavior, the implementation shall report an error in an 
+implementation-defined manner.</p>
+<blockquote>
+<p>[<i>Note:</i> Such errors might be reported by an #error directive, a <code>
+static_assert</code>, a <code>filesystem_error</code> exception, a special 
+return value, or some other manner. <i>--end note</i>]</p>
+</blockquote>
+<p>Implementations are not required to provide behavior that is not supported by 
+a particular file system.</p>
+<blockquote>
+<p>[<i>Example:</i> The <a href="http://en.wikipedia.org/wiki/FAT_filesystem">
+FAT file system</a> used by some memory cards, camera memory, and floppy discs 
+does not support hard links, symlinks, and many other features of more capable 
+file systems. Implementations are only required to support the FAT features 
+supported by the host operating system. <i>-- end example</i>]</p>
+</blockquote>
+<p>Specific operating systems such as <i>OpenVMS</i>,
+<i>UNIX</i>, and <i>Windows</i> are mentioned only for purposes of illustration or to 
+give guidance to users and implementers. No slight to other operating systems is implied 
+or intended. When unlikely to cause confusion, the term <i>POSIX</i> is 
+sometimes used to refer to &quot;POSIX-compliant operating systems&quot;.</p>
+<p>The behavior of functions described in this 
+reference 
+may differ from their specification in 
+the presence of <a href="#Race-condition">file system races</a>. No diagnostic is required.</p>
+<p>If the possibility of a file system race would make it unreliable for a program to 
+test for a precondition before calling a function described in this $WHAT;, <i>
+Requires</i> is not specified for the condition. Instead, the condition is 
+specified as a <i>Throws</i> condition.</p>
+<blockquote>
+<p>[<i>Note:</i> As a design practice, preconditions are not specified when it 
+is unreasonable for a program to detect them prior to calling the function. <i>
+-- end note</i>]</p>
+</blockquote>
 <h2><a name="Definitions">Definitions</a></h2>
 <p>The following definitions  shall apply throughout this reference documentation:</p>
 <p><i><b><a name="File">File</a>:</b> </i>An object that can be written to, or read from, or both. A file 
-has certain attributes, including type. Common types of files include regular files 
+has certain attributes, including type. File types include regular files 
 and directories. Other types of files, such as symbolic links, may be supported by the 
 implementation.</p>
 <p><b><i><a name="File-system">File system</a>:</i></b> A collection of files and certain of their attributes.</p>
@@ -177,7 +232,7 @@ root-directory<sub>opt</sub></i>, and an optional sequence of filenames. [<i>Not
 A <a href="#Pathname">pathname</a> is the concrete representation of a path. <i>--end note</i>]</p>
 <p><b><i><a name="Absolute-path">Absolute path</a>:</i></b> A path that 
 unambiguously 
-identifies the location of a file within a filesystem without reference to an 
+identifies the location of a file within a file system without reference to an 
 additional starting location. The format is implementation defined. </p>
 <blockquote>
   <p><i>[Note:</i> For POSIX-like implementations, including<b> </b>Unix 
@@ -189,16 +244,15 @@ additional starting location. The format is implementation defined. </p>
   specifier followed by a slash, or begin with two slashes, are absolute paths.&nbsp;<i>--end 
   note]</i></p>
 </blockquote>
-<p><b><a name="Relative-path">Relative path</a>:</b> A path that only 
+<p><i><b><a name="Relative-path">Relative path</a>:</b></i> A path that only 
 unambiguously 
 identifies the location of a file within a filesystem when resolved relative to 
 a starting location. The format is implementation defined. [<i>Note:</i> 
 Paths &quot;.&quot; and &quot;..&quot; are considered to be relative paths. <i>--end note</i>]</p>
-<p><b><a name="Canonical-path">Canonical path</a>:</b> An absolute path that has 
+<p><i><b><a name="Canonical-path">Canonical path</a>:</b></i> An absolute path that has 
 no elements which are symbolic links, and no dot or dot dot elements.</p>
 <p><i><b><a name="Pathname">Pathname</a>:</b> </i>A character string that represents a 
-path. Pathnames are formatted according to the generic pathname format or the 
-implementation defined 
+path. Pathnames are formatted according to the generic pathname format or an implementation defined 
 native pathname format.</p>
 <p><b><i><a name="generic-pathname-format">Generic pathname format:</a></i></b></p>
 <blockquote>
@@ -210,7 +264,7 @@ root-directory<sub>opt</sub> relative-path<sub>opt</sub></i></p>
 implementation-defined</i></p>
 <blockquote>
   <blockquote>
-<p>[<i>Note:</i> Most POSIX and Windows based operating system define a name 
+<p>[<i>Note:</i> Most POSIX and Windows based operating systems define a name 
 beginning with two slashes (or backslashes, for Windows) as a root-name 
 identifying network locations. Windows defines a single letter followed by a
 <code>&quot;:&quot;</code> as a root-name identifying a disc drive. <i>--end note</i>]</p>
@@ -264,61 +318,13 @@ stored by the file is used to modify the pathname resolution.</p>
 If the file pointed to does not exist, the symbolic link is said to be a 
 &quot;dangling&quot; symbolic link.<i> -- end note</i>]<i> </i></p>
 </blockquote>
-<p><b><i><a name="Race-condition">Race condition</a>:</i></b> The condition that occurs 
+<p><b><i><a name="Race-condition">File system race</a>:</i></b> The condition that occurs 
 when multiple threads, processes, or computers interleave access and 
 modification of 
 the same object within a file system.</p>
 <p><b><i><a name="Dot">Dot</a>, Dot Dot:</i></b> Synonyms for the filenames <code>&quot;.&quot;</code> 
 and <code>&quot;..&quot;</code>, respectively. The dot filename names the current 
 directory. The dot dot filename names the parent directory.</p>
-<h2><a name="Conformance">Conformance</a></h2>
-<p>Behavior is sometimes specified by reference to ISO/IEC 9945:2003, <i>
-<a href="http://www.unix.org/single_unix_specification/">POSIX</a></i>. How such behavior is actually implemented is unspecified.</p>
-<blockquote>
-<p>[<i>Note:</i> This constitutes an &quot;as if&quot; rule for implementation of 
-operating system dependent behavior. Presumably implementations will usually call native 
-operating system API's. <i>--end note</i>]</p>
-</blockquote>
-<p>Implementations are encouraged, but not required, to support such behavior 
- 
-as it is defined by <i>POSIX</i>. Implementations shall document any 
-behavior that differs from the <i>POSIX</i> defined behavior. Implementations that do not support exact <i>POSIX</i> behavior are 
-encouraged to provide behavior as close to <i>POSIX</i> behavior as is reasonable given the 
-limitations of actual operating systems and file systems. If an implementation cannot provide any 
-reasonable behavior, the implementation shall report an error in an 
-implementation-defined manner.</p>
-<blockquote>
-<p>[<i>Note:</i> Such errors might be reported by an #error directive, a <code>
-static_assert</code>, a <code>filesystem_error</code> exception, a special 
-return value, or some other manner. <i>--end note</i>]</p>
-</blockquote>
-<p>Implementations are not required to provide behavior that is not supported by 
-a particular file system.</p>
-<blockquote>
-<p>[<i>Example:</i> The <a href="http://en.wikipedia.org/wiki/FAT_filesystem">
-FAT file system</a> used by some memory cards, camera memory, and floppy discs 
-does not support hard links, symlinks, and many other features of more capable 
-file systems. Implementations are only required to support the FAT features 
-supported by the host operating system. <i>-- end example</i>]</p>
-</blockquote>
-<p>Specific operating systems such as <i>OpenMVS</i>,
-<i>UNIX</i>, and <i>Windows</i> are mentioned only for purposes of illustration or to 
-give guidance to users and implementers. No slight to other operating systems is implied 
-or intended. When unlikely to cause confusion, the term <i>POSIX</i> is 
-sometimes used to refer to &quot;POSIX-compliant operating systems&quot;.</p>
-<p>The behavior of functions described in this 
-reference 
-may not be achieved in 
-the presence of <a href="#Race-condition">race conditions</a>. No diagnostic is required.</p>
-<p>If the possibility of race conditions would make it unreliable for a program to 
-test for a precondition before calling a function described in this clause, <i>
-Requires</i> is not specified for the condition. Instead, the condition is 
-specified as a <i>Throws</i> condition.</p>
-<blockquote>
-<p>[<i>Note:</i> As a design practice, preconditions are not specified when it 
-is unreasonable for a program to detect them prior to calling the function. <i>
--- end note</i>]</p>
-</blockquote>
 <h2><a name="Header-filesystem-synopsis">Header <code>&lt;$HEADER;&gt;</code> synopsis</a></h2>
 <pre>$NAMESPACE_BEGIN;
     class <a href="#class-path">path</a>;
@@ -1368,7 +1374,7 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
 $NAMESPACE_END;</pre>
 <p>The class template <code>basic_filesystem_error</code> defines the type of 
 objects thrown as exceptions to report file system errors from functions described in this 
-clause.</p>
+$WHAT;.</p>
 <h4> <a name="filesystem_error-members"> <code>filesystem_error</code> members</a></h4>
 <pre><a name="filesystem_error-2-arg">filesystem_error</a>(const std::string&amp; what_arg, error_code ec);</pre>
 <blockquote>
@@ -1608,7 +1614,7 @@ or others removes write permission for all. </p>
 <tr><td><code><a name="sticky_bit">sticky_bit</a> </code>    </td><td><code>01000</code></td><td> <code>S_ISVTX</code></td>
   <td> Meaning varies; see <a href="http://en.wikipedia.org/wiki/Sticky_bit">http:en.wikipedia.org/wiki/Sticky_bit</a></td>
 </tr>
-<tr><td><code>perms_mask</code></td><td><code>07777</code></td><td> &nbsp;</td>
+<tr><td><code><a name="perms_mask">perms_mask</a></code></td><td><code>07777</code></td><td> &nbsp;</td>
   <td><code>all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit</code></td>
 </tr>
 <tr><td><code>perms_not_known</code></td><td><code>0xFFFF</code></td><td></td><td> 
@@ -1745,7 +1751,7 @@ objects act as value caches.</p>
 <p>[<i>Note:</i> Because <code>status()</code>on a pathname may be a very expensive operation, 
 some operating systems provide status information as a byproduct of directory 
 iteration. Caching such status information can result is significant time savings. Cached and 
-non-cached results may differ in the presence of race conditions. <i>-- end note</i>]</p>
+non-cached results may differ in the presence of file system races. <i>-- end note</i>]</p>
 <p><span style="background-color: #E0E0E0"><i>Actual cold-boot timing of iteration over 
 a directory with 15,047 entries was six seconds for non-cached status queries 
 versus one second for cached status queries. Windows XP, 3.0 GHz processor, with 
@@ -2200,7 +2206,7 @@ path is resolved as if by the <i>POSIX</i>
 <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap04.html#tag_04_11">
 Pathname Resolution</a> mechanism.</p>
 <p>[<i>Note: </i>Because hardware failures, network failures,
-<a href="#Race-condition">race conditions</a>, and many 
+<a href="#Race-condition">file system races</a>, and many 
 other kinds of errors occur frequently in file system operations, users should be aware 
 that any filesystem operational function, no matter how apparently innocuous, may encounter 
 an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end note</i>]</p>
@@ -2345,20 +2351,20 @@ bool <a name="create_directory2">create_directory</a>(const path&amp; p, system:
 </blockquote>
 <pre>void <a name="create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
 void create_directory_symlink(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);</pre>
-<blockquote style="font-size: 10pt">
-  <p style="font-size: 10pt"><i>Effects:</i> 
+<blockquote>
+  <p><i>Effects:</i> 
   Establishes the postcondition, as if by <i>
   POSIX</i>
   <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html">
   symlink()</a></code>.</p>
-  <p style="font-size: 10pt"><i>
+  <p><i>
   Postcondition:</i> <code>new_symlink</code> resolves to a symbolic link file that 
   contains an unspecified representation of <code>to</code>.</p>
-  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
-  <p style="font-size: 10pt">[<i>Note:</i> 
+  <p>[<i>Note:</i> 
   Some <b>operating systems</b>, such as Windows, require symlink creation to 
   identify that the link is to a directory. Portable code should use <code>
   create_directory_symlink()</code> to create directory symlinks rather than
@@ -2661,13 +2667,11 @@ void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std
   new_time</code> is not specified since it might not hold for file systems 
   with coarse time granularity. <i>-- end note</i>]</p>
 </blockquote>
-<pre>void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
+<pre>void <a name="permissions">permissions</a>(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
 void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p dir="ltr">Applies an operating system set of permissions to a file. See
-  <a href="#symlink_perms">perms</a> for specifics.<br>
-  <i><br>
-  Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
+  <p dir="ltr">
+  <i>Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
   <p dir="ltr"><i>Effects:</i> Applies the effective permissions bits from <code>
   prms</code> to the file <code>p</code> resolves to, as if by <i>POSIX</i>
   <code>
@@ -2686,16 +2690,19 @@ void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, sys
     <tr>
       <td><code>add_perms</code></td>
       <td>
-      <p dir="ltr">current_status.permissions() | (<code>prms &amp; perms_mask</code>)
+      <p dir="ltr"><code>status(p).permissions() | (prms &amp; 
+      <a href="#perms_mask">perms_mask</a>)</code>
       </td>
     </tr>
     <tr>
       <td><code>remove_perms</code></td>
-      <td>current_status.permissions() &amp; ~(<code>prms &amp; perms_mask</code>) </td>
+      <td><code>status(p)</code><code>.permissions() &amp; ~(prms &amp; 
+      <a href="#perms_mask">perms_mask</a>)
+      </code> </td>
     </tr>
   </table>
   <p>[<i>Note:</i> Conceptually permissions are viewed as bits, but the actual 
-  implementation by a file system may use some other mechanism. -- <i>end note</i>]</p>
+  implementation may use some other mechanism. -- <i>end note</i>]</p>
 </blockquote>
 <pre>path <a name="read_symlink">read_symlink</a>(const path&amp; p);
 path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
@@ -2860,7 +2867,8 @@ thrown.<i> -- end note</i>] </p>
       return <code>
       file_status(regular_file)</code>. [<i>Note:</i> <code>
 regular_file</code> implies appropriate <code>&lt;fstream&gt;</code> operations 
-      would succeed, assuming no hardware, permission, access, or race condition 
+      would succeed, assuming no hardware, permission, access, or file system 
+      race 
       errors. Lack of
 <code>regular_file</code> does not necessarily imply <code>&lt;fstream&gt;</code> operations would 
 fail on a directory.
@@ -3044,6 +3052,8 @@ semantics.</p>
     typedef basic_ofstream&lt;wchar_t&gt; wofstream;
     
 $NAMESPACE_END;</pre>
+$snippet wording_suffix "$SNIPPET_FILE;"
+
 <h2><a name="Path-decomposition-table">Path decomposition table</a></h2>
 <p>The table is generated by a program compiled with the Boost implementation.</p>
 <p>Shaded entries indicate cases where <i>POSIX</i> and <i>Windows</i> 
@@ -3594,13 +3604,12 @@ identified a number of mistakes or weaknesses, resulting in a more polished
 final document.</p>
 <p>Peter Dimov suggested a single class path, with member templates to adapt to 
 multiple string types. His idea became the basis for the version 3 path design.</p>
-<p>&nbsp;</p>
 <h2><a name="References">References</a></h2>
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
   <tr>
     <td width="16%" valign="top">[<a name="ISO_POSIX">ISO-POSIX</a>]</td>
     <td width="84%">ISO/IEC 9945:2003, IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group 
-    Base Specifications, Issue 6. Also known as The Single Unix<font face="Times New Roman">Â® 
+    Base Specifications, Issue 6. Also known as The Single Unix<font face="Times New Roman">® 
     Specification, Version 3. Available from each of the organizations involved 
     in its creation. For example, read online or download from
     <a href="http://www.unix.org/single_unix_specification/">
@@ -3616,13 +3625,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
   </tr>
 </table>
 <hr>
-<p><font size="2">Â© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</font></p>
-<p><font size="2">Distributed under the Boost Software License, Version 1.0. See
-</font>
-<a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
-<p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->10 January 2012<!--webbot bot="Timestamp" endspan i-checksum="32261" --></font></p>
-
+$snippet backmatter "$SNIPPET_FILE;"
 </body>
 
 </html>

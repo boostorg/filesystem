@@ -13,12 +13,12 @@ $id frontmatter=
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426">N3239 = 11-0009</td>
+      <td width="426"><span style="background-color: #FFFF00">D3335=12-0025</span></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-10<!--webbot bot="Timestamp" endspan i-checksum="12039" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-11<!--webbot bot="Timestamp" endspan i-checksum="12041" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -31,7 +31,7 @@ $id frontmatter=
   </table>
 
 
-<h1>Filesystem Library Update for TR2 (Preliminary)</h1>
+<h1>Filesystem Library for C++11/TR2 (Revision 1)</h1>
 
 
 <p>This paper proposes that the&nbsp;filesystem library component of <i>C++ Standard 
@@ -120,7 +120,66 @@ class would be the best place to experiment with this concept, not a path class.
   <h2>Revisions</h2>
   <p>TBS</p>
   
- $endid 
+$endid
+
+$id wording_prefix=
+<h2>Proposed Wording</h2>
+
+<p><span style="font-style: italic; background-color: rgb(224, 224, 224);">
+Gray-shaded italic text is commentary on the proposal. It is not to be added to 
+the TR.</span></p>
+<blockquote>
+  <table style="border-collapse: collapse" bgcolor="#E0E0E0" border="1" bordercolor="#111111" cellpadding="7" cellspacing="0">
+    <tr>
+      <td><span style="font-style: italic; ">The following wording is a lighted 
+      edited version of the Boost Filesystem reference documentation. Although 
+      further editing is required, the features described are relatively stable 
+      and major feature changes are not anticipated. </span></td>
+    </tr>
+  </table>
+</blockquote>
+<p><span style="font-style: italic; background-color: #E0E0E0">Add the following 
+to the Technical Report's front matter:</span></p>
+<p>The following standard contains provisions which, through reference in this 
+text, constitute provisions of this Technical Report. At the time of 
+publication, the editions indicated were valid. All standards are subject to 
+revision, and parties to agreements based on this Technical Report are 
+encouraged to investigate the possibility of applying the most recent editions 
+of the standard indicated below. Members of IEC and ISO maintain registers of 
+currently valid International Standards.</p>
+<ul>
+  <li>ISO/IEC 9945:2003, <i>Portable Operating System Interface (POSIX<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html#Footnote-1"><sup>1</sup></a>), 
+  part 1 (Base Definitions) and part 2 (System Interfaces)</i>, both as 
+  corrected by their respective 2004 Correction 1 documents.<p>[<i>Note:</i> 
+  ISO/IEC 9945:2003 is also IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group Base 
+  Specifications, Issue 6, and is also known as The Single Unix<font face="Times New Roman"><sup><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html#Footnote-2">2</a></sup><i><b>
+  </b></i>Specification, Version 3. It is available from each of those 
+  organizations, and may be read online or downloaded from
+  <a href="http://www.unix.org/single_unix_specification/">
+  www.unix.org/single_unix_specification/</a> <i>-- end note</i>]</font></li>
+</ul>
+<p>ISO/IEC 9945:2003, with the indicated corrections, is hereinafter called <i>
+POSIX</i>.</p>
+<p><a name="Footnote-1">Footnote 1</a>: <i>POSIX</i>® is a registered trademark 
+of The IEEE.</p>
+<p><a name="Footnote-2">Footnote 2</a>: <i>UNIX</i>® is a registered trademark 
+of The Open Group.</p>
+<p><span style="font-style: italic; background-color: #E0E0E0">Add the following 
+to the Technical Report as a new Clause:</span></p>
+<h2>Filesystem Library</h2>
+
+$endid
+
+$id wording_suffix=
+
+<span style="font-style: italic; background-color: rgb(224, 224, 224);">
+End of proposed wording.</span>
+<hr>
+$endid
+
+$id backmatter=
+$endid
+ 
 </body>
 
 </html>
