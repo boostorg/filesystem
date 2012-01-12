@@ -136,7 +136,7 @@ namespace boost
     symlink_perms = 0x4000  // on POSIX, don't resolve symlinks; implied on Windows
   };
 
-  BOOST_BITMASK(perms);
+  BOOST_BITMASK(perms)
 
 //--------------------------------------------------------------------------------------//
 //                                    file_status                                       //
