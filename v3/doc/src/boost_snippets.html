@@ -51,15 +51,71 @@ and directories.</p>
 $endid
 
 $id wording_suffix=
+<h3><a name="File-streams">File streams</a> -
+<a href="../../../../boost/filesystem/fstream.hpp">&lt;boost/filesystem/fstream.hpp&gt;</a></h3>
+<p>Replacements are provided for the file stream classes from the C++ standard 
+library's <code>&lt;fstream&gt;</code> header. These replacement classes 
+publicly inherit from the standard library classes. In the Boost.Filesystem 
+version, constructors and open functions take <code>const path&amp;</code> arguments 
+instead of <code>
+const char*</code> arguments. There are no other differences in syntax or 
+semantics.</p>
+<pre>$NAMESPACE_BEGIN;
+    template &lt; class charT, class traits = std::char_traits&lt;charT&gt; &gt;
+    class basic_filebuf : public std::basic_filebuf&lt;charT,traits&gt;
+    {
+    public:
+      basic_filebuf&lt;charT,traits&gt;*
+        open(const path&amp; p, std::ios_base::openmode mode);
+    };
+
+    template &lt; class charT, class traits = std::char_traits&lt;charT&gt; &gt;
+    class basic_ifstream : public std::basic_ifstream&lt;charT,traits&gt;
+    {
+    public:
+      explicit basic_ifstream(const path&amp; p, std::ios_base::openmode mode=std::ios_base::in)
+      void open(const path&amp; p, std::ios_base::openmode mode=std::ios_base::in);
+    };
+
+    template &lt; class charT, class traits = std::char_traits&lt;charT&gt; &gt;
+    class basic_ofstream : public std::basic_ofstream&lt;charT,traits&gt;
+    {
+    public:
+      explicit basic_ofstream(const path&amp; p, std::ios_base::openmode mode=std::ios_base::out);
+      void open(const path&amp; p, std::ios_base::openmode mode=std::ios_base::out);
+    };
+
+    template &lt; class charT, class traits = std::char_traits&lt;charT&gt; &gt;
+    class basic_fstream : public std::basic_fstream&lt;charT,traits&gt;
+    {
+    public:
+      explicit basic_fstream(const path&amp; p,
+        std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);
+      void open(const path&amp; p,
+        std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);
+    };
+
+    typedef basic_filebuf&lt;char&gt; filebuf;
+    typedef basic_ifstream&lt;char&gt; ifstream;
+    typedef basic_ofstream&lt;char&gt; ofstream;
+    typedef basic_fstream&lt;char&gt; fstream;
+
+    typedef basic_filebuf&lt;wchar_t&gt; wfilebuf;
+    typedef basic_ifstream&lt;wchar_t&gt; wifstream;
+    typedef basic_fstream&lt;wchar_t&gt; wfstream;
+    typedef basic_ofstream&lt;wchar_t&gt; wofstream;
+    
+$NAMESPACE_END;</pre>
+
 $endid
 
-$id backmatter=
+$id backmatter=>
 <p><font size="2">© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</font></p>
 <p><font size="2">Distributed under the Boost Software License, Version 1.0. See
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->11 January 2012<!--webbot bot="Timestamp" endspan i-checksum="32263" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->13 January 2012<!--webbot bot="Timestamp" endspan i-checksum="32267" --></font></p>
 
 $endid
 

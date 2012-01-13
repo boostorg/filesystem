@@ -13,12 +13,12 @@ $id frontmatter=
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426"><span style="background-color: #FFFF00">D3335=12-0025</span></td>
+      <td width="426">N3335=12-0025</td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-11<!--webbot bot="Timestamp" endspan i-checksum="12041" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-13<!--webbot bot="Timestamp" endspan i-checksum="12045" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -41,12 +41,37 @@ www.boost.org/libs/filesystem</a>). Preliminary wording is provided. A
 <a href="#TODO">TODO</a> list identifies remaining work to be done.</p>
 
 
-<p><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html">
-J16/06-0045 = WG21/N1975</a>, Filesystem Library Proposal for TR2 (Revision 3), 
-was adopted by the committee in April, 2006, at the Berlin meeting. Shortly 
-afterward the Library Working Group set aside work on TR2 to concentrate on 
-C++0x. In the meantime, work on the Boost version of the Filesystem Library has 
-continued, and Version 3 of the library has been released. Changes include:</p>
+<h2>Revision history</h2>
+
+
+<p><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3335.html">
+N3335=12-0025</a>, Filesystem Library for C++11/TR2 (Revision 1). Changes 
+include:</p>
+
+
+  <ul>
+    <li>Regenerated the proposed wording from the Boost Filesystem library 
+    reference documentation, using an automated process. This process reduces 
+    the likelihood of inadvertent discrepancies between descriptions.</li>
+    <li>An <a href="#Issues-List">Issues list</a> was added, seeded with issues 
+    raised by the LWG review of N3239 at the Bloomington meeting, and private 
+    communications from LWG members.</li>
+    <li>Namespace changed to <code>files</code> as an experiment. Made this 
+    issue number 1 so the LWG can pass judgement.</li>
+    <li>New functions were added, suggested by David Svoboda, to generate 
+    canonical paths and manage permissions.</li>
+    <li>More C++11 functionality was applied. This process is still incomplete, 
+    however.</li>
+    <li>Added proposed changes to header &lt;fstream&gt;. The previous paper had 
+    inadvertently supplied the wrong wording.</li>
+    <li>Continued the general cleanup of wording.</li>
+</ul>
+
+
+<p><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3239.html">
+N3239 = 11-0009</a>, Filesystem Library Update for TR2 (Preliminary), reflected 
+changes made to the Boost library version 3 since the previously accepted 
+committee paper:</p>
 
 
   <ul>
@@ -56,17 +81,21 @@ continued, and Version 3 of the library has been released. Changes include:</p>
     <code>wchar_t</code>, <code>char16_t</code>, and <code>char32_t</code> are 
     supported. This is a major simplification of the path abstraction, 
     particularly for functions that take path arguments. This change was based 
-    on a suggestion by Peter Dimov.<br>
-&nbsp;</li>
+    on a suggestion by Peter Dimov.</li>
     <li>Several operational functions have been added, including much better 
     symlink support, the ability to resize a file, and the ability to generate a 
-    unique path.<br>
-&nbsp;</li>
+    unique path.</li>
     <li>Support for error reporting via <code>error_code</code> is now uniform 
-    throughout the operations functions.|<br>
-&nbsp;</li>
+    throughout the operations functions.</li>
     <li>Several functions have been renamed, based on feedback from users.</li>
   </ul>
+
+
+<p><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html">
+N1975 = 06-0045</a>, Filesystem Library Proposal for TR2 (Revision 3), was 
+adopted by the committee in April, 2006, at the Berlin meeting. Shortly 
+afterward the Library Working Group set aside work on TR2 to concentrate on 
+C++0x.</p>
 
 
 <h2>Motivation and Scope</h2>
@@ -97,7 +126,7 @@ class would be the best place to experiment with this concept, not a path class.
 
   <h2><a name="TODO">TODO</a></h2>
   <ul>
-    <li>Apply C++0X features. Boost.Filesystem needs to implement these to verify their 
+    <li>Apply more C++0X features. Boost.Filesystem needs to implement these to verify their 
     application is correct.</li>
     <li>Boost.Filesystem needs to implement <code>char16_t</code> and <code>char32_t</code> support to verify the 
     specification for these is correct.</li>
@@ -112,13 +141,11 @@ class would be the best place to experiment with this concept, not a path class.
     implemented. Expose <code>path_traits</code>?</li>
     <li><i>Effects</i> for <code>copy</code> and <code>copy_directory</code> 
     need to be reviewed, revised, tested, peer reviewed.</li>
-    <li>Review changes to header &lt;fstream&gt;</li>
+    <li>Review changes to header &lt;fstream&gt;. Add semantics. Add section 
+    names. Verify still in sync with WP.</li>
   </ul>
   
-  <h2>Revisions</h2>
-  <p>TBS</p>
-  
-$endid
+  $endid
 
 $id wording_prefix=
 <h2>Proposed Wording</h2>
@@ -126,16 +153,6 @@ $id wording_prefix=
 <p><span style="font-style: italic; background-color: rgb(224, 224, 224);">
 Gray-shaded italic text is commentary on the proposal. It is not to be added to 
 the TR.</span></p>
-<blockquote>
-  <table style="border-collapse: collapse" bgcolor="#E0E0E0" border="1" bordercolor="#111111" cellpadding="7" cellspacing="0">
-    <tr>
-      <td><span style="font-style: italic; ">The following wording is a lighted 
-      edited version of the Boost Filesystem reference documentation. Although 
-      further editing is required, the features described are relatively stable 
-      and major feature changes are not anticipated. </span></td>
-    </tr>
-  </table>
-</blockquote>
 <p><span style="font-style: italic; background-color: #E0E0E0">Add the following 
 to the Technical Report's front matter:</span></p>
 <p>The following standard contains provisions which, through reference in this 
@@ -169,14 +186,124 @@ to the Technical Report as a new Clause:</span></p>
 $endid
 
 $id wording_suffix=
+<p><span style="font-style: italic; background-color: #E0E0E0">End of new 
+Clause.</span></p>
+<p dir="ltr"><span style="font-style: italic; background-color: #E0E0E0">Modify <a name="File-streams">File streams</a> 
+[fstreams] as follows:</span></p>
+<p><span style="font-style: italic; background-color: #E0E0E0">To class 
+basic_filebuf public members add:</span></p>
+<blockquote>
+<pre>basic_filebuf&lt;charT,traits&gt;* open(const path&amp; p, std::ios_base::openmode mode);</pre>
+
+</blockquote>
+<p><span style="font-style: italic; background-color: #E0E0E0">To class 
+basic_ifstream public members add:</span></p>
+
+<blockquote>
+<pre>explicit basic_ifstream(const path&amp; p, std::ios_base::openmode mode=std::ios_base::in)</pre>
+
+<pre>void open(const path&amp; p, std::ios_base::openmode mode=std::ios_base::in);</pre>
+
+</blockquote>
+<p><span style="font-style: italic; background-color: #E0E0E0">To class 
+basic_ofstream public members add:</span></p>
+
+<blockquote>
+  <pre>explicit basic_ofstream(const path&amp; p, std::ios_base::openmode mode=std::ios_base::out);</pre>
+  <pre>void open(const path&amp; p, std::ios_base::openmode mode=std::ios_base::out);</pre>
+</blockquote>
+<p><span style="font-style: italic; background-color: #E0E0E0">To class 
+basic_fstream public members add:</span></p>
+<blockquote>
+  <pre>explicit basic_fstream(const path&amp; p,
+  std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);</pre>
+  <pre>void open(const path&amp; p,
+  std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);</pre>
+</blockquote>
+<p>
 
 <span style="font-style: italic; background-color: rgb(224, 224, 224);">
-End of proposed wording.</span>
+End of proposed wording.</span> </p>
 <hr>
-$endid
+<h2><a name="Issues-List">Issues List</a></h2>
+<hr>
+<h3>Issue 1: What is the appropriate namespace?</h3>
+<h4>Discussion</h4>
+<p>The proposal places the library in <code>namespace std::tr2::$SUBNAMESPACE;</code>. 
+Rationale for a sub-namespace is that the library uses several names that don't 
+seem appropriate for namespace <code>tr2</code> since full standardization would 
+then put the names into <code>std</code>. The function names <code>remove</code> 
+and <code>rename</code> are of particular concern because these functions differ 
+in behavior from current standard library functions with those names. It also 
+doesn't seem desirable to preempt names like <code>equivalent</code> and <code>
+status</code>.</p>
+<p>The Boost Filesystem library used <code>namespace boost::filesystem</code>, 
+but that always seemed a bit too long.</p>
+<h4>Proposed resolution</h4>
+<p>Status quo. Leave in <code>namespace std::tr2::$SUBNAMESPACE;</code>.</p>
+<hr>
+<h3>Issue 2: Excessive use of <code>const codecvt_type&amp;</code> arguments</h3>
+<h4>Discussion</h4>
+<p>Users sometimes need to do path conversions that use something other than the 
+imbued codecvt facet. The need is particularly acute in multi-threaded 
+applications where changing the imbued facet would introduce a data race. That 
+said, providing an optional <code>const codecvt_type&amp;</code> argument for every 
+function where the need might possibly arise is excessive because its use is so 
+rare and it adds considerable interface clutter.</p>
+<h4>Proposed resolution</h4>
+<p dir="ltr">Remove all existing class path <code>const codecvt_type&amp;</code> 
+arguments.</p>
+<p>Add an additional non-member function:</p>
+<blockquote>
+  <pre>unspecified-iterator-type convert(<code>const path&amp; p, const codecvt_type&amp; codecvt</code>);</pre>
+  <p dir="ltr"><i>Returns: </i>An unspecified iterator type whose value type is
+  <code>path::value_type</code>. The returned iterator points to the beginning 
+  of a sequence equivalent to <code>p.native()</code> with encoding as specified 
+  by <code>codecvt</code>.</p>
+</blockquote>
+<hr>
+<h3>Issue 3: Possible &quot;implicit cast to native type&quot;?</h3>
+<h4>Discussion</h4>
+<p>In Bloomington there was discussion of &quot;implicit cast to implicit cast to 
+native OS type to inter operate with existing iostream library and native 
+functions instead of modifying fstream&quot;.</p>
+<p>Beman comments: I wasn't in Bloomington and am not sure of the context of the 
+above. N3239 inadvertently included the Boost docs for &lt;fstream&gt; rather than 
+suggested &lt;fstream&gt; changes for TR2, and that may have caused some confusion. Or 
+maybe I'm just missing something from the wiki notes. Some further discussions 
+are needed to better define the issue.</p>
+<h4>Proposed resolution</h4>
+<hr>
+<h3>Issue 4: Given move semantics, it is best not to return const strings.</h3>
+<h4>Discussion</h4>
+<p>The issue title pretty much says it all.</p>
+<h4>Proposed resolution</h4>
+<p>As part of the C++11 refinements to the interface, review returns of const 
+strings and change to plain strings where appropriate.</p>
+<hr>
+<h3>Issue 5: Is there a way to handle characters that are illegal for particular 
+OS?</h3>
+<h4>Discussion</h4>
+<p>Question raised by Pablo in Bloomington.</p>
+<h4>Proposed resolution</h4>
+<p>Beman suggests NAD, Future. I've done some work on this, including looking at 
+systems like OpenVMS that have an escape mechanism to handle otherwise 
+unrepresentable characters. There was a comment to that effect in N3239. I 
+believe it should be deferred to some future release since (1) it is complex 
+enough that I'd like to see actual implementation and use experience (presumably 
+via Boost), and (2) I can't recall a user ever requesting such a feature.</p>
+<hr>
+<h3>Issue 6: Could allocator support be class path?</h3>
+<h4>Discussion</h4>
+<p>Question raised by a committee member in private email.</p>
+<p>Comment from Beman: How would allocator support work, given that class path 
+is not a template?</p>
+<h4>Proposed resolution</h4>
+<hr>
+<p>$endid
 
 $id backmatter=
-$endid
+$endid </p>
  
 </body>
 
