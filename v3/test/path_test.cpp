@@ -1603,7 +1603,7 @@ namespace
     BOOST_TEST(!fs::portable_file_name(std::string("foo.")));
   }
   
-  //  replace_extension_tests  ---------------------------------------------------//
+  //  replace_extension_tests  ---------------------------------------------------------//
 
   void replace_extension_tests()
   {
