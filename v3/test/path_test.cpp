@@ -57,6 +57,12 @@ using boost::filesystem::path;
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
+#ifdef BOOST_WINDOWS_API
+# define BOOST_DIR_SEP "\\"
+#else
+# define BOOST_DIR_SEP "/"
+#endif
+
 #define PATH_CHECK(a, b) check(a, b, __FILE__, __LINE__)
 #define CHECK_EQUAL(a,b) check_equal(a, b, __FILE__, __LINE__)
 
@@ -1520,6 +1526,48 @@ namespace
 
   }
 
+//  self_assign_and_append_tests  ------------------------------------------------------//
+
+  void self_assign_and_append_tests()
+  {
+    std::cout << "self_assign_and_append_tests..." << std::endl;
+
+    path p;
+
+    p = "snafubar";
+    BOOST_TEST_EQ(p = p, "snafubar");
+
+    p = "snafubar";
+    p = p.c_str();
+    BOOST_TEST_EQ(p, "snafubar");
+
+    p = "snafubar";
+    p.assign(p.c_str(), path::codecvt());
+    BOOST_TEST_EQ(p, "snafubar");  
+
+    p = "snafubar";
+    BOOST_TEST_EQ(p = p.c_str()+5, "bar");
+
+    p = "snafubar";
+    BOOST_TEST_EQ(p.assign(p.c_str() + 5, p.c_str() + 7), "ba");
+
+    p = "snafubar";
+    p /= p;
+    BOOST_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");
+
+    p = "snafubar";
+    p /= p.c_str();
+    BOOST_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");  
+
+    p = "snafubar";
+    p.append(p.c_str(), path::codecvt());
+    BOOST_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar"); 
+
+    p = "snafubar";
+    BOOST_TEST_EQ(p.append(p.c_str() + 5, p.c_str() + 7), "snafubar" BOOST_DIR_SEP "ba");
+  }
+
+
   //  name_function_tests  -------------------------------------------------------------//
 
   void name_function_tests()
@@ -1678,6 +1726,7 @@ int cpp_main(int, char*[])
 
   construction_tests();
   append_tests();
+  self_assign_and_append_tests();
   overload_tests();
   query_and_decomposition_tests();
   composition_tests();
