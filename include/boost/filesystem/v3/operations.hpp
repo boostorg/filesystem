@@ -765,9 +765,10 @@ namespace detail
     {
       if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
         m_options &= ~symlink_option::_detail_no_push;
-      else if (is_directory(m_stack.top()->status())
-        && (!is_symlink(m_stack.top()->symlink_status())
-            || (m_options & symlink_option::recurse) == symlink_option::recurse))
+      // patch for following else if contributed by Daniel Aarno, fixing #5652 for cyclic symlinks  
+      else if (((m_options & symlink_option::recurse) == symlink_option::recurse
+        || !is_symlink(m_stack.top()->symlink_status()))
+           && is_directory(m_stack.top()->status()))
       {
         if (ec == 0)
           m_stack.push(directory_iterator(m_stack.top()->path()));
