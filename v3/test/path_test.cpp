@@ -286,9 +286,9 @@ namespace
       itr_ck = "c:\\";
       itr = itr_ck.begin();
       PATH_TEST_EQ(itr->string(), "c:");
-      PATH_TEST_EQ(*++itr, "\\");
+      PATH_TEST_EQ(*++itr, "/");  // test that iteration returns generic format
       BOOST_TEST(++itr == itr_ck.end());
-      PATH_TEST_EQ(*--itr, "\\");
+      PATH_TEST_EQ(*--itr, "/");  // test that iteration returns generic format
       PATH_TEST_EQ(*--itr, "c:");
 
       itr_ck = "c:/foo";
