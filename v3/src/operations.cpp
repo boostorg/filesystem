@@ -2146,7 +2146,7 @@ namespace detail
         && (filename.size()== 1
           || (filename[1] == dot
             && filename.size()== 2)))
-        {  it.increment(); }
+        {  it.increment(*ec); }
     }
   }
 
@@ -2168,13 +2168,14 @@ namespace detail
 #       endif
         filename, file_stat, symlink_file_stat);
 
-      if (temp_ec)
+      if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
       {
+        path error_path(it.m_imp->dir_entry.path().parent_path());  // fix ticket #5900
         it.m_imp.reset();
         if (ec == 0)
           BOOST_FILESYSTEM_THROW(
             filesystem_error("boost::filesystem::directory_iterator::operator++",
-              it.m_imp->dir_entry.path().parent_path(),
+              error_path,
               error_code(BOOST_ERRNO, system_category())));
         ec->assign(BOOST_ERRNO, system_category());
         return;
