@@ -2146,7 +2146,7 @@ namespace detail
         && (filename.size()== 1
           || (filename[1] == dot
             && filename.size()== 2)))
-        {  it.increment(); }
+        {  it.increment(*ec); }
     }
   }
 
