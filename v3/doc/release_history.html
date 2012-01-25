@@ -38,26 +38,32 @@
 
 <h2>1.49.0</h2>
 <ul>
-  <li>Fix directory_iterator access violation on Windows if error is thrown 
-  (#5900). Thanks to Andreas Eckleder for the patch.</li>
-  <li>Fix a bug in director_iterator construction with error_code argument that 
-  caused increment to be called without the ec argument being passed. Reported 
-  by anonymous as ticket #5900 comment 3.</li>
-  <li>Cleaned up test suite path_test.cpp code issues exposed by #5989 even 
-  though the ticket itself was NAD. Clarified docs; iteration over a path yields 
-  generic format.</li>
-  <li>Added test cases and fixes for class path errors when assignment or append 
-  used self or portion of self as source. Fixes ticket #3714.</li>
-  <li>Change Windows codecvt processing from CP_THREAD_ACP to CP_ACP, resolving 
-  ticket #5592.</li>
-  <li>Operations function fixes for PGI compiler, thanks to Noel Belcourt.</li>
-  <li>Relax permissions test to reflect reality, particularly on the Sandia test 
-  platforms.</li>
-  <li>Fix #4889, #6320, Locale codecvt_facet not thread safe on Windows. Move 
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/3714">#3714</a>, 
+  Added test cases and fixes for class path errors when assignment or append 
+  used self or portion of self as source. </li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/4889">#4889</a>, 
+  <a href="https://svn.boost.org/trac/boost/ticket/6320">#6320</a>, Locale codecvt_facet not thread safe on Windows. Move 
   Windows, Mac OS X, locale and codecvt facet back to namespace scope. POSIX 
   except OS X uses local static initialization (IE lazy) to ensure exceptions 
   are catchable if environmental variables are misconfigured and to avoid use of 
   locale(&quot;&quot;) if not actually used.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5652">#5652</a>, 
+  recursive_directory_iterator fails on cyclic symbolic links. Thanks to Daniel 
+  Aarno for the patch.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5653">#5653</a>, 
+  recursive_directory_iterator(error_code) can still throw filesystem_error.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900">#5900</a>, directory_iterator 
+  access violation on Windows if error is thrown. Thanks to Andreas Eckleder for the patch.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900#comment:2">#5900 
+  comment 2</a>, a bug in director_iterator construction with error_code argument that 
+  caused increment to be called without the ec argument being passed.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900">#5989</a> by cleaning up test suite path_test.cpp code even 
+  though the ticket itself was not a defect, and clarifying docs; iteration over a path yields 
+  generic format.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5592">#5592</a>, Change Windows codecvt processing from CP_THREAD_ACP to CP_ACP.</li>
+  <li>Operations function fixes for PGI compiler, thanks to Noel Belcourt.</li>
+  <li>Relax permissions test to reflect reality, particularly on the Sandia test 
+  platforms.</li>
 </ul>
 
 <h2>1.48.0</h2>
@@ -112,7 +118,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->21 January, 2012<!--webbot bot="Timestamp" endspan i-checksum="38504" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 January, 2012<!--webbot bot="Timestamp" endspan i-checksum="38510" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
