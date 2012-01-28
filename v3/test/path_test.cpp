@@ -19,8 +19,23 @@
 //                                                                                      //
 //  The class path relational operators (==, !=, <, etc.) on Windows treat slash and    //
 //  backslash as equal. Thus any tests on Windows where the difference between slash    //
-//  and backslash is significant should compare based on native observers rather than   //
-//  directly on path objects.                                                           //
+//  and backslash is significant should compare strings rather than paths.              //
+//                                                                                      //
+//  BOOST_TEST(path == path)                     // '\\' and '/' are equal              //
+//  BOOST_TEST(path == convertable to string)    // '\\' and '/' are equal              //
+//  PATH_TEST_EQ(path, path)                     // '\\' and '/' are equal              //
+//                                                                                      //
+//  BOOST_TEST(path.string() == path.string())   // '\\' and '/' are not equal          //
+//  BOOST_TEST(path.string() ==                                                         //
+//               convertable to string)          // '\\' and '/' are not equal          //
+//  PATH_TEST_EQ(path.string(),                                                         //
+//                convertable to string)         // '\\' and '/' are not equal          //
+//                                                                                      //
+//  The last of these is often what is needed, so the PATH_TEST_EQ macro is provided.   //
+//  It converts its first argument to a path, and then performs a .string() on it,      //
+//  eliminating much boilerplate .string() or even path(...).string() code.             //
+//                                                                                      //
+//  PATH_TEST_EQ(path, convertable to string)    // '\\' and '/' are not equal          //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
@@ -57,8 +72,13 @@ using boost::filesystem::path;
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
-#define PATH_CHECK(a, b) check(a, b, __FILE__, __LINE__)
-#define CHECK_EQUAL(a,b) check_equal(a, b, __FILE__, __LINE__)
+#ifdef BOOST_WINDOWS_API
+# define BOOST_DIR_SEP "\\"
+#else
+# define BOOST_DIR_SEP "/"
+#endif
+
+#define PATH_TEST_EQ(a, b) check(a, b, __FILE__, __LINE__)
 
 namespace
 {
@@ -71,23 +91,11 @@ namespace
       return;
 
     std::cout << file
-              << '(' << line << "): source: \"" << source
+              << '(' << line << "): source: \"" << source.string()
               << "\" != expected: \"" << expected
               << "\"" << std::endl;
 
     ++::boost::detail::test_errors();
-  }
-
-  void check_equal(const fs::path & source,
-              const std::string & expected, const char* file, int line)
-  {
-    if (source == expected) return;
-
-    ++::boost::detail::test_errors();
-
-    std::cout << file << '(' << line << "): source: \"" << source
-              << "\" != expected: \"" << expected
-              << "\"" << std::endl;
   }
 
   path p1("fe/fi/fo/fum");
@@ -161,9 +169,9 @@ namespace
 
     itr_ck = "/";
     itr = itr_ck.begin();
-    BOOST_TEST(*itr == std::string("/"));
+    BOOST_TEST(itr->string() == "/");
     BOOST_TEST(++itr == itr_ck.end());
-    BOOST_TEST(*--itr == std::string("/"));
+    BOOST_TEST((--itr)->string() == "/");
 
     itr_ck = "foo";
     BOOST_TEST(*itr_ck.begin() == std::string("foo"));
@@ -172,7 +180,7 @@ namespace
     BOOST_TEST(boost::prior(itr_ck.end()) == itr_ck.begin());
 
     itr_ck = path("/foo");
-    BOOST_TEST(*itr_ck.begin() == std::string("/"));
+    BOOST_TEST((itr_ck.begin())->string() == "/");
     BOOST_TEST(*boost::next(itr_ck.begin()) == std::string("foo"));
     BOOST_TEST(boost::next(boost::next(itr_ck.begin())) == itr_ck.end());
     BOOST_TEST(boost::next(itr_ck.begin()) == boost::prior(itr_ck.end()));
@@ -182,121 +190,139 @@ namespace
 
     itr_ck = "/foo/bar";
     itr = itr_ck.begin();
-    BOOST_TEST(*itr == std::string("/"));
+    BOOST_TEST(itr->string() == "/");
     BOOST_TEST(*++itr == std::string("foo"));
     BOOST_TEST(*++itr == std::string("bar"));
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, "bar");
-    CHECK_EQUAL(*--itr, "foo");
-    CHECK_EQUAL(*--itr, "/");
+    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "foo");
+    PATH_TEST_EQ(*--itr, "/");
 
     itr_ck = "../f"; // previously failed due to short name bug
     itr = itr_ck.begin();
-    CHECK_EQUAL(*itr, "..");
-    CHECK_EQUAL(*++itr, "f");
+    PATH_TEST_EQ(itr->string(), "..");
+    PATH_TEST_EQ(*++itr, "f");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, "f");
-    CHECK_EQUAL(*--itr, "..");
+    PATH_TEST_EQ(*--itr, "f");
+    PATH_TEST_EQ(*--itr, "..");
 
     // POSIX says treat "/foo/bar/" as "/foo/bar/."
     itr_ck = "/foo/bar/";
     itr = itr_ck.begin();
-    CHECK_EQUAL(*itr, "/");
-    CHECK_EQUAL(*++itr, "foo");
-    CHECK_EQUAL(*++itr, "bar");
-    CHECK_EQUAL(*++itr, ".");
+    PATH_TEST_EQ(itr->string(), "/");
+    PATH_TEST_EQ(*++itr, "foo");
+    PATH_TEST_EQ(*++itr, "bar");
+    PATH_TEST_EQ(*++itr, ".");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, ".");
-    CHECK_EQUAL(*--itr, "bar");
-    CHECK_EQUAL(*--itr, "foo");
-    CHECK_EQUAL(*--itr, "/");
+    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "foo");
+    PATH_TEST_EQ(*--itr, "/");
 
     // POSIX says treat "/f/b/" as "/f/b/."
     itr_ck = "/f/b/";
     itr = itr_ck.begin();
-    CHECK_EQUAL(*itr, "/");
-    CHECK_EQUAL(*++itr, "f");
-    CHECK_EQUAL(*++itr, "b");
-    CHECK_EQUAL(*++itr, ".");
+    PATH_TEST_EQ(itr->string(), "/");
+    PATH_TEST_EQ(*++itr, "f");
+    PATH_TEST_EQ(*++itr, "b");
+    PATH_TEST_EQ(*++itr, ".");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, ".");
-    CHECK_EQUAL(*--itr, "b");
-    CHECK_EQUAL(*--itr, "f");
-    CHECK_EQUAL(*--itr, "/");
+    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "b");
+    PATH_TEST_EQ(*--itr, "f");
+    PATH_TEST_EQ(*--itr, "/");
 
     itr_ck = "//net";
     itr = itr_ck.begin();
     // two leading slashes are permitted by POSIX (as implementation defined),
     // while for Windows it is always well defined (as a network name)
-    CHECK_EQUAL(*itr, "//net");
+    PATH_TEST_EQ(itr->string(), "//net");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, "//net");
+    PATH_TEST_EQ(*--itr, "//net");
 
     itr_ck = "//net/";
     itr = itr_ck.begin();
-    CHECK_EQUAL(*itr, "//net");
-    CHECK_EQUAL(*++itr, "/");
+    PATH_TEST_EQ(itr->string(), "//net");
+    PATH_TEST_EQ(*++itr, "/");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, "/");
-    CHECK_EQUAL(*--itr, "//net");
+    PATH_TEST_EQ(*--itr, "/");
+    PATH_TEST_EQ(*--itr, "//net");
 
     itr_ck = "//foo///bar///";
     itr = itr_ck.begin();
-    CHECK_EQUAL(*itr, "//foo");
-    CHECK_EQUAL(*++itr, "/");
-    CHECK_EQUAL(*++itr, "bar");
-    CHECK_EQUAL(*++itr, ".");
+    PATH_TEST_EQ(itr->string(), "//foo");
+    PATH_TEST_EQ(*++itr, "/");
+    PATH_TEST_EQ(*++itr, "bar");
+    PATH_TEST_EQ(*++itr, ".");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, ".");
-    CHECK_EQUAL(*--itr, "bar");
-    CHECK_EQUAL(*--itr, "/");
-    CHECK_EQUAL(*--itr, "//foo");
+    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "/");
+    PATH_TEST_EQ(*--itr, "//foo");
 
     itr_ck = "///foo///bar///";
     itr = itr_ck.begin();
     // three or more leading slashes are to be treated as a single slash
-    CHECK_EQUAL(*itr, "/");
-    CHECK_EQUAL(*++itr, "foo");
-    CHECK_EQUAL(*++itr, "bar");
-    CHECK_EQUAL(*++itr, ".");
+    PATH_TEST_EQ(itr->string(), "/");
+    PATH_TEST_EQ(*++itr, "foo");
+    PATH_TEST_EQ(*++itr, "bar");
+    PATH_TEST_EQ(*++itr, ".");
     BOOST_TEST(++itr == itr_ck.end());
-    CHECK_EQUAL(*--itr, ".");
-    CHECK_EQUAL(*--itr, "bar");
-    CHECK_EQUAL(*--itr, "foo");
-    CHECK_EQUAL(*--itr, "/");
+    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "foo");
+    PATH_TEST_EQ(*--itr, "/");
 
     if (platform == "Windows")
     {
       itr_ck = "c:/";
       itr = itr_ck.begin();
-      CHECK_EQUAL(*itr, "c:");
-      CHECK_EQUAL(*++itr, "/");
+      PATH_TEST_EQ(itr->string(), "c:");
+      PATH_TEST_EQ(*++itr, std::string("/"));
       BOOST_TEST(++itr == itr_ck.end());
-      CHECK_EQUAL(*--itr, "/");
-      CHECK_EQUAL(*--itr, "c:");
+      PATH_TEST_EQ(*--itr, "/");
+      PATH_TEST_EQ(*--itr, "c:");
 
-      itr_ck = "c:\\foo";
+      itr_ck = "c:\\";
+      itr = itr_ck.begin();
+      PATH_TEST_EQ(itr->string(), "c:");
+      PATH_TEST_EQ(*++itr, "/");  // test that iteration returns generic format
+      BOOST_TEST(++itr == itr_ck.end());
+      PATH_TEST_EQ(*--itr, "/");  // test that iteration returns generic format
+      PATH_TEST_EQ(*--itr, "c:");
+
+      itr_ck = "c:/foo";
       itr = itr_ck.begin();
       BOOST_TEST(*itr == std::string("c:"));
       BOOST_TEST(*++itr == std::string("/"));
       BOOST_TEST(*++itr == std::string("foo"));
       BOOST_TEST(++itr == itr_ck.end());
       BOOST_TEST(*--itr == std::string("foo"));
-      BOOST_TEST(*--itr == std::string("/"));
+      BOOST_TEST((--itr)->string() == "/");
+      BOOST_TEST(*--itr == std::string("c:"));
+
+      itr_ck = "c:\\foo";
+      itr = itr_ck.begin();
+      BOOST_TEST(*itr == std::string("c:"));
+      BOOST_TEST(*++itr == std::string("\\"));
+      BOOST_TEST(*++itr == std::string("foo"));
+      BOOST_TEST(++itr == itr_ck.end());
+      BOOST_TEST(*--itr == std::string("foo"));
+      BOOST_TEST(*--itr == std::string("\\"));
       BOOST_TEST(*--itr == std::string("c:"));
 
       itr_ck = "\\\\\\foo\\\\\\bar\\\\\\";
       itr = itr_ck.begin();
       // three or more leading slashes are to be treated as a single slash
-      CHECK_EQUAL(*itr, "/");
-      CHECK_EQUAL(*++itr, "foo");
-      CHECK_EQUAL(*++itr, "bar");
-      CHECK_EQUAL(*++itr, ".");
+      PATH_TEST_EQ(itr->string(), "/");
+      PATH_TEST_EQ(*++itr, "foo");
+      PATH_TEST_EQ(*++itr, "bar");
+      PATH_TEST_EQ(*++itr, ".");
       BOOST_TEST(++itr == itr_ck.end());
-      CHECK_EQUAL(*--itr, ".");
-      CHECK_EQUAL(*--itr, "bar");
-      CHECK_EQUAL(*--itr, "foo");
-      CHECK_EQUAL(*--itr, "/");
+      PATH_TEST_EQ(*--itr, ".");
+      PATH_TEST_EQ(*--itr, "bar");
+      PATH_TEST_EQ(*--itr, "foo");
+      PATH_TEST_EQ(*--itr, "/");
 
       itr_ck = "c:foo";
       itr = itr_ck.begin();
@@ -355,12 +381,12 @@ namespace
       BOOST_TEST(*prior(itr_ck.end()) == std::string("//net"));
 
       itr_ck = path("//net/");
-      CHECK_EQUAL(*itr_ck.begin(), "//net");
-      CHECK_EQUAL(*next(itr_ck.begin()), "/");
+      PATH_TEST_EQ(itr_ck.begin()->string(), "//net");
+      PATH_TEST_EQ(next(itr_ck.begin())->string(), "/");
       BOOST_TEST(next(next(itr_ck.begin())) == itr_ck.end());
       BOOST_TEST(prior(prior(itr_ck.end())) == itr_ck.begin());
-      CHECK_EQUAL(*prior(itr_ck.end()), "/");
-      CHECK_EQUAL(*prior(prior(itr_ck.end())), "//net");
+      PATH_TEST_EQ(prior(itr_ck.end())->string(), "/");
+      PATH_TEST_EQ(prior(prior(itr_ck.end()))->string(), "//net");
 
       itr_ck = path("//net/foo");
       BOOST_TEST(*itr_ck.begin() == std::string("//net"));
@@ -382,7 +408,7 @@ namespace
     {
       itr_ck = "///";
       itr = itr_ck.begin();
-      CHECK_EQUAL(*itr,  "/");
+      PATH_TEST_EQ(itr->string(),  "/");
       BOOST_TEST(++itr == itr_ck.end());
     }
   }
@@ -421,8 +447,8 @@ namespace
     BOOST_TEST(b.string() == "b");
 
     // probe operator /
-    PATH_CHECK(path("") / ".", ".");
-    PATH_CHECK(path("") / "..", "..");
+    PATH_TEST_EQ(path("") / ".", ".");
+    PATH_TEST_EQ(path("") / "..", "..");
     if (platform == "Windows")
     {
       BOOST_TEST(path("foo\\bar") == "foo/bar");
@@ -431,93 +457,93 @@ namespace
       BOOST_TEST((bcs / a).native() == path("b\\a").native());
       BOOST_TEST((b / as).native() == path("b\\a").native());
       BOOST_TEST((b / acs).native() == path("b\\a").native());
-      PATH_CHECK(path("a") / "b", "a\\b");
-      PATH_CHECK(path("..") / "", "..");
-      PATH_CHECK(path("foo") / path("bar"), "foo\\bar"); // path arg
-      PATH_CHECK(path("foo") / "bar", "foo\\bar");       // const char* arg
-      PATH_CHECK(path("foo") / path("woo/bar").filename(), "foo\\bar"); // const std::string & arg
-      PATH_CHECK("foo" / path("bar"), "foo\\bar");
-      PATH_CHECK(path("..") / ".." , "..\\..");
-      PATH_CHECK(path("/") / ".." , "/..");
-      PATH_CHECK(path("/..") / ".." , "/..\\..");
-      PATH_CHECK(path("..") / "foo" , "..\\foo");
-      PATH_CHECK(path("foo") / ".." , "foo\\..");
-      PATH_CHECK(path("..") / "f" , "..\\f");
-      PATH_CHECK(path("/..") / "f" , "/..\\f");
-      PATH_CHECK(path("f") / ".." , "f\\..");
-      PATH_CHECK(path("foo") / ".." / ".." , "foo\\..\\..");
-      PATH_CHECK(path("foo") / ".." / ".." / ".." , "foo\\..\\..\\..");
-      PATH_CHECK(path("f") / ".." / "b" , "f\\..\\b");
-      PATH_CHECK(path("foo") / ".." / "bar" , "foo\\..\\bar");
-      PATH_CHECK(path("foo") / "bar" / ".." , "foo\\bar\\..");
-      PATH_CHECK(path("foo") / "bar" / ".." / "..", "foo\\bar\\..\\..");
-      PATH_CHECK(path("foo") / "bar" / ".." / "blah", "foo\\bar\\..\\blah");
-      PATH_CHECK(path("f") / "b" / ".." , "f\\b\\..");
-      PATH_CHECK(path("f") / "b" / ".." / "a", "f\\b\\..\\a");
-      PATH_CHECK(path("foo") / "bar" / "blah" / ".." / "..", "foo\\bar\\blah\\..\\..");
-      PATH_CHECK(path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo\\bar\\blah\\..\\..\\bletch");
+      PATH_TEST_EQ(path("a") / "b", "a\\b");
+      PATH_TEST_EQ(path("..") / "", "..");
+      PATH_TEST_EQ(path("foo") / path("bar"), "foo\\bar"); // path arg
+      PATH_TEST_EQ(path("foo") / "bar", "foo\\bar");       // const char* arg
+      PATH_TEST_EQ(path("foo") / path("woo/bar").filename(), "foo\\bar"); // const std::string & arg
+      PATH_TEST_EQ("foo" / path("bar"), "foo\\bar");
+      PATH_TEST_EQ(path("..") / ".." , "..\\..");
+      PATH_TEST_EQ(path("/") / ".." , "/..");
+      PATH_TEST_EQ(path("/..") / ".." , "/..\\..");
+      PATH_TEST_EQ(path("..") / "foo" , "..\\foo");
+      PATH_TEST_EQ(path("foo") / ".." , "foo\\..");
+      PATH_TEST_EQ(path("..") / "f" , "..\\f");
+      PATH_TEST_EQ(path("/..") / "f" , "/..\\f");
+      PATH_TEST_EQ(path("f") / ".." , "f\\..");
+      PATH_TEST_EQ(path("foo") / ".." / ".." , "foo\\..\\..");
+      PATH_TEST_EQ(path("foo") / ".." / ".." / ".." , "foo\\..\\..\\..");
+      PATH_TEST_EQ(path("f") / ".." / "b" , "f\\..\\b");
+      PATH_TEST_EQ(path("foo") / ".." / "bar" , "foo\\..\\bar");
+      PATH_TEST_EQ(path("foo") / "bar" / ".." , "foo\\bar\\..");
+      PATH_TEST_EQ(path("foo") / "bar" / ".." / "..", "foo\\bar\\..\\..");
+      PATH_TEST_EQ(path("foo") / "bar" / ".." / "blah", "foo\\bar\\..\\blah");
+      PATH_TEST_EQ(path("f") / "b" / ".." , "f\\b\\..");
+      PATH_TEST_EQ(path("f") / "b" / ".." / "a", "f\\b\\..\\a");
+      PATH_TEST_EQ(path("foo") / "bar" / "blah" / ".." / "..", "foo\\bar\\blah\\..\\..");
+      PATH_TEST_EQ(path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo\\bar\\blah\\..\\..\\bletch");
 
-      PATH_CHECK(path(".") / "foo", ".\\foo");
-      PATH_CHECK(path(".") / "..", ".\\..");
-      PATH_CHECK(path("foo") / ".", "foo\\.");
-      PATH_CHECK(path("..") / ".", "..\\.");
-      PATH_CHECK(path(".") / ".", ".\\.");
-      PATH_CHECK(path(".") / "." / ".", ".\\.\\.");
-      PATH_CHECK(path(".") / "foo" / ".", ".\\foo\\.");
-      PATH_CHECK(path("foo") / "." / "bar", "foo\\.\\bar");
-      PATH_CHECK(path("foo") / "." / ".", "foo\\.\\.");
-      PATH_CHECK(path("foo") / "." / "..", "foo\\.\\..");
-      PATH_CHECK(path(".") / "." / "..", ".\\.\\..");
-      PATH_CHECK(path(".") / ".." / ".", ".\\..\\.");
-      PATH_CHECK(path("..") / "." / ".", "..\\.\\.");
+      PATH_TEST_EQ(path(".") / "foo", ".\\foo");
+      PATH_TEST_EQ(path(".") / "..", ".\\..");
+      PATH_TEST_EQ(path("foo") / ".", "foo\\.");
+      PATH_TEST_EQ(path("..") / ".", "..\\.");
+      PATH_TEST_EQ(path(".") / ".", ".\\.");
+      PATH_TEST_EQ(path(".") / "." / ".", ".\\.\\.");
+      PATH_TEST_EQ(path(".") / "foo" / ".", ".\\foo\\.");
+      PATH_TEST_EQ(path("foo") / "." / "bar", "foo\\.\\bar");
+      PATH_TEST_EQ(path("foo") / "." / ".", "foo\\.\\.");
+      PATH_TEST_EQ(path("foo") / "." / "..", "foo\\.\\..");
+      PATH_TEST_EQ(path(".") / "." / "..", ".\\.\\..");
+      PATH_TEST_EQ(path(".") / ".." / ".", ".\\..\\.");
+      PATH_TEST_EQ(path("..") / "." / ".", "..\\.\\.");
     }
     else  // POSIX
     {
-      BOOST_TEST((b / a).string() == "b/a");
-      BOOST_TEST((bs / a).string() == "b/a");
-      BOOST_TEST((bcs / a).string() == "b/a");
-      BOOST_TEST((b / as).string() == "b/a");
-      BOOST_TEST((b / acs).string() == "b/a");
-      PATH_CHECK(path("a") / "b", "a/b");
-      PATH_CHECK(path("..") / "", "..");
-      PATH_CHECK(path("") / "..", "..");
-      PATH_CHECK(path("foo") / path("bar"), "foo/bar"); // path arg
-      PATH_CHECK(path("foo") / "bar", "foo/bar");       // const char* arg
-      PATH_CHECK(path("foo") / path("woo/bar").filename(), "foo/bar"); // const std::string & arg
-      PATH_CHECK("foo" / path("bar"), "foo/bar");
-      PATH_CHECK(path("..") / ".." , "../..");
-      PATH_CHECK(path("/") / ".." , "/..");
-      PATH_CHECK(path("/..") / ".." , "/../..");
-      PATH_CHECK(path("..") / "foo" , "../foo");
-      PATH_CHECK(path("foo") / ".." , "foo/..");
-      PATH_CHECK(path("..") / "f" , "../f");
-      PATH_CHECK(path("/..") / "f" , "/../f");
-      PATH_CHECK(path("f") / ".." , "f/..");
-      PATH_CHECK(path("foo") / ".." / ".." , "foo/../..");
-      PATH_CHECK(path("foo") / ".." / ".." / ".." , "foo/../../..");
-      PATH_CHECK(path("f") / ".." / "b" , "f/../b");
-      PATH_CHECK(path("foo") / ".." / "bar" , "foo/../bar");
-      PATH_CHECK(path("foo") / "bar" / ".." , "foo/bar/..");
-      PATH_CHECK(path("foo") / "bar" / ".." / "..", "foo/bar/../..");
-      PATH_CHECK(path("foo") / "bar" / ".." / "blah", "foo/bar/../blah");
-      PATH_CHECK(path("f") / "b" / ".." , "f/b/..");
-      PATH_CHECK(path("f") / "b" / ".." / "a", "f/b/../a");
-      PATH_CHECK(path("foo") / "bar" / "blah" / ".." / "..", "foo/bar/blah/../..");
-      PATH_CHECK(path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo/bar/blah/../../bletch");
+      PATH_TEST_EQ(b / a, "b/a");
+      PATH_TEST_EQ(bs / a, "b/a");
+      PATH_TEST_EQ(bcs / a, "b/a");
+      PATH_TEST_EQ(b / as, "b/a");
+      PATH_TEST_EQ(b / acs, "b/a");
+      PATH_TEST_EQ(path("a") / "b", "a/b");
+      PATH_TEST_EQ(path("..") / "", "..");
+      PATH_TEST_EQ(path("") / "..", "..");
+      PATH_TEST_EQ(path("foo") / path("bar"), "foo/bar"); // path arg
+      PATH_TEST_EQ(path("foo") / "bar", "foo/bar");       // const char* arg
+      PATH_TEST_EQ(path("foo") / path("woo/bar").filename(), "foo/bar"); // const std::string & arg
+      PATH_TEST_EQ("foo" / path("bar"), "foo/bar");
+      PATH_TEST_EQ(path("..") / ".." , "../..");
+      PATH_TEST_EQ(path("/") / ".." , "/..");
+      PATH_TEST_EQ(path("/..") / ".." , "/../..");
+      PATH_TEST_EQ(path("..") / "foo" , "../foo");
+      PATH_TEST_EQ(path("foo") / ".." , "foo/..");
+      PATH_TEST_EQ(path("..") / "f" , "../f");
+      PATH_TEST_EQ(path("/..") / "f" , "/../f");
+      PATH_TEST_EQ(path("f") / ".." , "f/..");
+      PATH_TEST_EQ(path("foo") / ".." / ".." , "foo/../..");
+      PATH_TEST_EQ(path("foo") / ".." / ".." / ".." , "foo/../../..");
+      PATH_TEST_EQ(path("f") / ".." / "b" , "f/../b");
+      PATH_TEST_EQ(path("foo") / ".." / "bar" , "foo/../bar");
+      PATH_TEST_EQ(path("foo") / "bar" / ".." , "foo/bar/..");
+      PATH_TEST_EQ(path("foo") / "bar" / ".." / "..", "foo/bar/../..");
+      PATH_TEST_EQ(path("foo") / "bar" / ".." / "blah", "foo/bar/../blah");
+      PATH_TEST_EQ(path("f") / "b" / ".." , "f/b/..");
+      PATH_TEST_EQ(path("f") / "b" / ".." / "a", "f/b/../a");
+      PATH_TEST_EQ(path("foo") / "bar" / "blah" / ".." / "..", "foo/bar/blah/../..");
+      PATH_TEST_EQ(path("foo") / "bar" / "blah" / ".." / ".." / "bletch", "foo/bar/blah/../../bletch");
 
-      PATH_CHECK(path(".") / "foo", "./foo");
-      PATH_CHECK(path(".") / "..", "./..");
-      PATH_CHECK(path("foo") / ".", "foo/.");
-      PATH_CHECK(path("..") / ".", "../.");
-      PATH_CHECK(path(".") / ".", "./.");
-      PATH_CHECK(path(".") / "." / ".", "././.");
-      PATH_CHECK(path(".") / "foo" / ".", "./foo/.");
-      PATH_CHECK(path("foo") / "." / "bar", "foo/./bar");
-      PATH_CHECK(path("foo") / "." / ".", "foo/./.");
-      PATH_CHECK(path("foo") / "." / "..", "foo/./..");
-      PATH_CHECK(path(".") / "." / "..", "././..");
-      PATH_CHECK(path(".") / ".." / ".", "./../.");
-      PATH_CHECK(path("..") / "." / ".", ".././.");
+      PATH_TEST_EQ(path(".") / "foo", "./foo");
+      PATH_TEST_EQ(path(".") / "..", "./..");
+      PATH_TEST_EQ(path("foo") / ".", "foo/.");
+      PATH_TEST_EQ(path("..") / ".", "../.");
+      PATH_TEST_EQ(path(".") / ".", "./.");
+      PATH_TEST_EQ(path(".") / "." / ".", "././.");
+      PATH_TEST_EQ(path(".") / "foo" / ".", "./foo/.");
+      PATH_TEST_EQ(path("foo") / "." / "bar", "foo/./bar");
+      PATH_TEST_EQ(path("foo") / "." / ".", "foo/./.");
+      PATH_TEST_EQ(path("foo") / "." / "..", "foo/./..");
+      PATH_TEST_EQ(path(".") / "." / "..", "././..");
+      PATH_TEST_EQ(path(".") / ".." / ".", "./../.");
+      PATH_TEST_EQ(path("..") / "." / ".", ".././.");
     }
 
     // probe operator <
@@ -718,7 +744,7 @@ namespace
     p = q = "";
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "");
     BOOST_TEST(p.stem() == "");
     BOOST_TEST(p.extension() == "");
@@ -738,7 +764,7 @@ namespace
     p = q = "/";
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "/");
     BOOST_TEST(p.stem() == "/");
     BOOST_TEST(p.extension() == "");
@@ -759,15 +785,15 @@ namespace
       BOOST_TEST(!p.is_absolute());
 
     p = q = "//";
-    CHECK_EQUAL(p.relative_path().string(), "");
-    CHECK_EQUAL(p.parent_path().string(), "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), "//");
-    CHECK_EQUAL(p.stem(), "//");
-    CHECK_EQUAL(p.extension(), "");
-    CHECK_EQUAL(p.root_name(), "//");
-    CHECK_EQUAL(p.root_directory(), "");
-    CHECK_EQUAL(p.root_path().string(), "//");
+    PATH_TEST_EQ(p.relative_path().string(), "");
+    PATH_TEST_EQ(p.parent_path().string(), "");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), "//");
+    PATH_TEST_EQ(p.stem(), "//");
+    PATH_TEST_EQ(p.extension(), "");
+    PATH_TEST_EQ(p.root_name(), "//");
+    PATH_TEST_EQ(p.root_directory(), "");
+    PATH_TEST_EQ(p.root_path().string(), "//");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
@@ -779,15 +805,15 @@ namespace
     BOOST_TEST(!p.is_absolute());
 
     p = q = "///";
-    CHECK_EQUAL(p.relative_path().string(), "");
-    CHECK_EQUAL(p.parent_path().string(), "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), "/");
-    CHECK_EQUAL(p.stem(), "/");
-    CHECK_EQUAL(p.extension(), "");
-    CHECK_EQUAL(p.root_name(), "");
-    CHECK_EQUAL(p.root_directory(), "/");
-    CHECK_EQUAL(p.root_path().string(), "/");
+    PATH_TEST_EQ(p.relative_path().string(), "");
+    PATH_TEST_EQ(p.parent_path().string(), "");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), "/");
+    PATH_TEST_EQ(p.stem(), "/");
+    PATH_TEST_EQ(p.extension(), "");
+    PATH_TEST_EQ(p.root_name(), "");
+    PATH_TEST_EQ(p.root_directory(), "/");
+    PATH_TEST_EQ(p.root_path().string(), "/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -804,7 +830,7 @@ namespace
     p = q = ".";
     BOOST_TEST(p.relative_path().string() == ".");
     BOOST_TEST(p.parent_path().string() == "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == ".");
     BOOST_TEST(p.stem() == ".");
     BOOST_TEST(p.extension() == "");
@@ -824,7 +850,7 @@ namespace
     p = q = "..";
     BOOST_TEST(p.relative_path().string() == "..");
     BOOST_TEST(p.parent_path().string() == "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "..");
     BOOST_TEST(p.stem() == "..");
     BOOST_TEST(p.extension() == "");
@@ -844,7 +870,7 @@ namespace
     p = q = "foo";
     BOOST_TEST(p.relative_path().string() == "foo");
     BOOST_TEST(p.parent_path().string() == "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "foo");
     BOOST_TEST(p.stem() == "foo");
     BOOST_TEST(p.extension() == "");
@@ -862,15 +888,15 @@ namespace
     BOOST_TEST(!p.is_absolute());
 
     p = q = "/foo";
-    CHECK_EQUAL(p.relative_path().string(), "foo");
-    CHECK_EQUAL(p.parent_path().string(), "/");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), "foo");
-    CHECK_EQUAL(p.stem(), "foo");
-    CHECK_EQUAL(p.extension(), "");
-    CHECK_EQUAL(p.root_name(), "");
-    CHECK_EQUAL(p.root_directory(), "/");
-    CHECK_EQUAL(p.root_path().string(), "/");
+    PATH_TEST_EQ(p.relative_path().string(), "foo");
+    PATH_TEST_EQ(p.parent_path().string(), "/");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), "foo");
+    PATH_TEST_EQ(p.stem(), "foo");
+    PATH_TEST_EQ(p.extension(), "");
+    PATH_TEST_EQ(p.root_name(), "");
+    PATH_TEST_EQ(p.root_directory(), "/");
+    PATH_TEST_EQ(p.root_path().string(), "/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -885,15 +911,15 @@ namespace
       BOOST_TEST(!p.is_absolute());
 
     p = q = "/foo/";
-    CHECK_EQUAL(p.relative_path().string(), "foo/");
-    CHECK_EQUAL(p.parent_path().string(), "/foo");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), ".");
-    CHECK_EQUAL(p.stem(), ".");
-    CHECK_EQUAL(p.extension(), "");
-    CHECK_EQUAL(p.root_name(), "");
-    CHECK_EQUAL(p.root_directory(), "/");
-    CHECK_EQUAL(p.root_path().string(), "/");
+    PATH_TEST_EQ(p.relative_path().string(), "foo/");
+    PATH_TEST_EQ(p.parent_path().string(), "/foo");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), ".");
+    PATH_TEST_EQ(p.stem(), ".");
+    PATH_TEST_EQ(p.extension(), "");
+    PATH_TEST_EQ(p.root_name(), "");
+    PATH_TEST_EQ(p.root_directory(), "/");
+    PATH_TEST_EQ(p.root_path().string(), "/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -908,13 +934,13 @@ namespace
       BOOST_TEST(!p.is_absolute());
 
     p = q = "///foo";
-    CHECK_EQUAL(p.relative_path().string(), "foo");
-    CHECK_EQUAL(p.parent_path().string(), "/");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), "foo");
-    CHECK_EQUAL(p.root_name(), "");
-    CHECK_EQUAL(p.root_directory(), "/");
-    CHECK_EQUAL(p.root_path().string(), "/");
+    PATH_TEST_EQ(p.relative_path().string(), "foo");
+    PATH_TEST_EQ(p.parent_path().string(), "/");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), "foo");
+    PATH_TEST_EQ(p.root_name(), "");
+    PATH_TEST_EQ(p.root_directory(), "/");
+    PATH_TEST_EQ(p.root_path().string(), "/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -929,7 +955,7 @@ namespace
     p = q = "foo/bar";
     BOOST_TEST(p.relative_path().string() == "foo/bar");
     BOOST_TEST(p.parent_path().string() == "foo");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "bar");
     BOOST_TEST(p.stem() == "bar");
     BOOST_TEST(p.extension() == "");
@@ -949,7 +975,7 @@ namespace
     p = q = "../foo";
     BOOST_TEST(p.relative_path().string() == "../foo");
     BOOST_TEST(p.parent_path().string() == "..");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "foo");
     BOOST_TEST(p.root_name() == "");
     BOOST_TEST(p.root_directory() == "");
@@ -963,13 +989,13 @@ namespace
     BOOST_TEST(!p.is_absolute());
 
     p = q = "..///foo";
-    CHECK_EQUAL(p.relative_path().string(), "..///foo");
-    CHECK_EQUAL(p.parent_path().string(), "..");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), "foo");
-    CHECK_EQUAL(p.root_name(), "");
-    CHECK_EQUAL(p.root_directory(), "");
-    CHECK_EQUAL(p.root_path().string(), "");
+    PATH_TEST_EQ(p.relative_path().string(), "..///foo");
+    PATH_TEST_EQ(p.parent_path().string(), "..");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), "foo");
+    PATH_TEST_EQ(p.root_name(), "");
+    PATH_TEST_EQ(p.root_directory(), "");
+    PATH_TEST_EQ(p.root_path().string(), "");
     BOOST_TEST(!p.has_root_path());
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
@@ -981,7 +1007,7 @@ namespace
     p = q = "/foo/bar";
     BOOST_TEST(p.relative_path().string() == "foo/bar");
     BOOST_TEST(p.parent_path().string() == "/foo");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "bar");
     BOOST_TEST(p.root_name() == "");
     BOOST_TEST(p.root_directory() == "/");
@@ -999,19 +1025,19 @@ namespace
 
     // Both POSIX and Windows allow two leading slashs
     // (POSIX meaning is implementation defined)
-    PATH_CHECK(path("//resource"), "//resource");
-    PATH_CHECK(path("//resource/"), "//resource/");
-    PATH_CHECK(path("//resource/foo"), "//resource/foo");
+    PATH_TEST_EQ(path("//resource"), "//resource");
+    PATH_TEST_EQ(path("//resource/"), "//resource/");
+    PATH_TEST_EQ(path("//resource/foo"), "//resource/foo");
 
     p = q = path("//net");
-    CHECK_EQUAL(p.string(), "//net");
-    CHECK_EQUAL(p.relative_path().string(), "");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.parent_path().string(), "");
-    CHECK_EQUAL(p.filename(), "//net");
-    CHECK_EQUAL(p.root_name(), "//net");
-    CHECK_EQUAL(p.root_directory(), "");
-    CHECK_EQUAL(p.root_path().string(), "//net");
+    PATH_TEST_EQ(p.string(), "//net");
+    PATH_TEST_EQ(p.relative_path().string(), "");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.parent_path().string(), "");
+    PATH_TEST_EQ(p.filename(), "//net");
+    PATH_TEST_EQ(p.root_name(), "//net");
+    PATH_TEST_EQ(p.root_directory(), "");
+    PATH_TEST_EQ(p.root_path().string(), "//net");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
@@ -1023,7 +1049,7 @@ namespace
     p = q = path("//net/");
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "//net");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "/");
     BOOST_TEST(p.root_name() == "//net");
     BOOST_TEST(p.root_directory() == "/");
@@ -1039,7 +1065,7 @@ namespace
     p = q = path("//net/foo");
     BOOST_TEST(p.relative_path().string() == "foo");
     BOOST_TEST(p.parent_path().string() == "//net/");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "foo");
     BOOST_TEST(p.root_name() == "//net");
     BOOST_TEST(p.root_directory() == "/");
@@ -1053,13 +1079,13 @@ namespace
     BOOST_TEST(p.is_absolute());
 
     p = q = path("//net///foo");
-    CHECK_EQUAL(p.relative_path().string(), "foo");
-    CHECK_EQUAL(p.parent_path().string(), "//net/");
-    BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    CHECK_EQUAL(p.filename(), "foo");
-    CHECK_EQUAL(p.root_name(), "//net");
-    CHECK_EQUAL(p.root_directory(), "/");
-    CHECK_EQUAL(p.root_path().string(), "//net/");
+    PATH_TEST_EQ(p.relative_path().string(), "foo");
+    PATH_TEST_EQ(p.parent_path().string(), "//net/");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    PATH_TEST_EQ(p.filename(), "foo");
+    PATH_TEST_EQ(p.root_name(), "//net");
+    PATH_TEST_EQ(p.root_directory(), "/");
+    PATH_TEST_EQ(p.root_path().string(), "//net/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -1074,7 +1100,7 @@ namespace
       //p = q = L"\\\\?\\";
       //BOOST_TEST(p.relative_path().string() == "");
       //BOOST_TEST(p.parent_path().string() == "");
-      //BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      //PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       //BOOST_TEST(p.filename() == "");
       //BOOST_TEST(p.stem() == "");
       //BOOST_TEST(p.extension() == "");
@@ -1094,7 +1120,7 @@ namespace
       p = q = path("c:");
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       BOOST_TEST(p.filename() == "c:");
       BOOST_TEST(p.root_name() == "c:");
       BOOST_TEST(p.root_directory() == "");
@@ -1110,7 +1136,7 @@ namespace
       //p = q = path(L"\\\\?\\c:");
       //BOOST_TEST(p.relative_path().string() == "");
       //BOOST_TEST(p.parent_path().string() == "");
-      //BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      //PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       //BOOST_TEST(p.filename() == "c:");
       //BOOST_TEST(p.root_name() == "c:");
       //BOOST_TEST(p.root_directory() == "");
@@ -1126,7 +1152,7 @@ namespace
       p = q = path("c:foo");
       BOOST_TEST(p.relative_path().string() == "foo");
       BOOST_TEST(p.parent_path().string() == "c:");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       BOOST_TEST(p.filename() == "foo");
       BOOST_TEST(p.root_name() == "c:");
       BOOST_TEST(p.root_directory() == "");
@@ -1142,7 +1168,7 @@ namespace
       //p = q = path(L"\\\\?\\c:foo");
       //BOOST_TEST(p.relative_path().string() == "foo");
       //BOOST_TEST(p.parent_path().string() == "c:");
-      //BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      //PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       //BOOST_TEST(p.filename() == "foo");
       //BOOST_TEST(p.root_name() == "c:");
       //BOOST_TEST(p.root_directory() == "");
@@ -1158,7 +1184,7 @@ namespace
       p = q = path("c:/");
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "c:");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       BOOST_TEST(p.filename() == "/");
       BOOST_TEST(p.root_name() == "c:");
       BOOST_TEST(p.root_directory() == "/");
@@ -1174,7 +1200,7 @@ namespace
       p = q = path("c:..");
       BOOST_TEST(p.relative_path().string() == "..");
       BOOST_TEST(p.parent_path().string() == "c:");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       BOOST_TEST(p.filename() == "..");
       BOOST_TEST(p.root_name() == "c:");
       BOOST_TEST(p.root_directory() == "");
@@ -1188,13 +1214,13 @@ namespace
       BOOST_TEST(!p.is_absolute());
 
       p = q = path("c:/foo");
-      CHECK_EQUAL(p.relative_path().string(), "foo");
-      CHECK_EQUAL(p.parent_path().string(), "c:/");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      CHECK_EQUAL(p.filename(), "foo");
-      CHECK_EQUAL(p.root_name(), "c:");
-      CHECK_EQUAL(p.root_directory(), "/");
-      CHECK_EQUAL(p.root_path().string(), "c:/");
+      PATH_TEST_EQ(p.relative_path().string(), "foo");
+      PATH_TEST_EQ(p.parent_path().string(), "c:/");
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(p.filename(), "foo");
+      PATH_TEST_EQ(p.root_name(), "c:");
+      PATH_TEST_EQ(p.root_directory(), "/");
+      PATH_TEST_EQ(p.root_path().string(), "c:/");
       BOOST_TEST(p.has_root_path());
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(p.has_root_directory());
@@ -1204,13 +1230,13 @@ namespace
       BOOST_TEST(p.is_absolute());
 
       p = q = path("c://foo");
-      CHECK_EQUAL(p.relative_path().string(), "foo");
-      CHECK_EQUAL(p.parent_path().string(), "c:/");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      CHECK_EQUAL(p.filename(), "foo");
-      CHECK_EQUAL(p.root_name(), "c:");
-      CHECK_EQUAL(p.root_directory(), "/");
-      CHECK_EQUAL(p.root_path().string(), "c:/");
+      PATH_TEST_EQ(p.relative_path().string(), "foo");
+      PATH_TEST_EQ(p.parent_path().string(), "c:/");
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(p.filename(), "foo");
+      PATH_TEST_EQ(p.root_name(), "c:");
+      PATH_TEST_EQ(p.root_directory(), "/");
+      PATH_TEST_EQ(p.root_path().string(), "c:/");
       BOOST_TEST(p.has_root_path());
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(p.has_root_directory());
@@ -1220,13 +1246,13 @@ namespace
       BOOST_TEST(p.is_absolute());
 
       p = q = path("c:\\foo\\bar");
-      CHECK_EQUAL(p.relative_path().string(), "foo\\bar");
-      CHECK_EQUAL(p.parent_path().string(), "c:\\foo");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      CHECK_EQUAL(p.filename(), "bar");
-      CHECK_EQUAL(p.root_name(), "c:");
-      CHECK_EQUAL(p.root_directory(), "\\");
-      CHECK_EQUAL(p.root_path().string(), "c:\\");
+      PATH_TEST_EQ(p.relative_path().string(), "foo\\bar");
+      PATH_TEST_EQ(p.parent_path().string(), "c:\\foo");
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(p.filename(), "bar");
+      PATH_TEST_EQ(p.root_name(), "c:");
+      PATH_TEST_EQ(p.root_directory(), "\\");
+      PATH_TEST_EQ(p.root_path().string(), "c:\\");
       BOOST_TEST(p.has_root_path());
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(p.has_root_directory());
@@ -1238,7 +1264,7 @@ namespace
       p = q = path("prn:");
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
       BOOST_TEST(p.filename() == "prn:");
       BOOST_TEST(p.root_name() == "prn:");
       BOOST_TEST(p.root_directory() == "");
@@ -1252,13 +1278,13 @@ namespace
       BOOST_TEST(!p.is_absolute());
 
       p = q = path("\\\\net\\\\\\foo");
-      CHECK_EQUAL(p.relative_path().string(), "foo");
-      CHECK_EQUAL(p.parent_path().string(), "\\\\net\\");
-      BOOST_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      CHECK_EQUAL(p.filename(), "foo");
-      CHECK_EQUAL(p.root_name(), "\\\\net");
-      CHECK_EQUAL(p.root_directory(), "\\");
-      CHECK_EQUAL(p.root_path().string(), "\\\\net\\");
+      PATH_TEST_EQ(p.relative_path().string(), "foo");
+      PATH_TEST_EQ(p.parent_path().string(), "\\\\net\\");
+      PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+      PATH_TEST_EQ(p.filename(), "foo");
+      PATH_TEST_EQ(p.root_name(), "\\\\net");
+      PATH_TEST_EQ(p.root_directory(), "\\");
+      PATH_TEST_EQ(p.root_path().string(), "\\\\net\\");
       BOOST_TEST(p.has_root_path());
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(p.has_root_directory());
@@ -1270,9 +1296,9 @@ namespace
 
     else
     { // POSIX
-      PATH_CHECK(path("/foo/bar/"), "/foo/bar/");
-      PATH_CHECK(path("//foo//bar//"), "//foo//bar//");
-      PATH_CHECK(path("///foo///bar///"), "///foo///bar///");
+      PATH_TEST_EQ(path("/foo/bar/"), "/foo/bar/");
+      PATH_TEST_EQ(path("//foo//bar//"), "//foo//bar//");
+      PATH_TEST_EQ(path("///foo///bar///"), "///foo///bar///");
 
       p = path("/usr/local/bin:/usr/bin:/bin");
       BOOST_TEST(p.string() == "/usr/local/bin:/usr/bin:/bin");
@@ -1293,142 +1319,142 @@ namespace
   {
     std::cout << "construction_tests..." << std::endl;
 
-    PATH_CHECK("", "");
+    PATH_TEST_EQ("", "");
 
-    PATH_CHECK("foo", "foo");
-    PATH_CHECK("f", "f");
+    PATH_TEST_EQ("foo", "foo");
+    PATH_TEST_EQ("f", "f");
 
-    PATH_CHECK("foo/", "foo/");
-    PATH_CHECK("f/", "f/");
-    PATH_CHECK("foo/..", "foo/..");
-    PATH_CHECK("foo/../", "foo/../");
-    PATH_CHECK("foo/bar/../..", "foo/bar/../..");
-    PATH_CHECK("foo/bar/../../", "foo/bar/../../");
-    PATH_CHECK(path("/"), "/");
-    PATH_CHECK(path("/f"), "/f");
+    PATH_TEST_EQ("foo/", "foo/");
+    PATH_TEST_EQ("f/", "f/");
+    PATH_TEST_EQ("foo/..", "foo/..");
+    PATH_TEST_EQ("foo/../", "foo/../");
+    PATH_TEST_EQ("foo/bar/../..", "foo/bar/../..");
+    PATH_TEST_EQ("foo/bar/../../", "foo/bar/../../");
+    PATH_TEST_EQ("/", "/");
+    PATH_TEST_EQ("/f", "/f");
 
-    PATH_CHECK("/foo", "/foo");
-    PATH_CHECK(path("/foo/bar/"), "/foo/bar/");
-    PATH_CHECK(path("//foo//bar//"), "//foo//bar//");
-    PATH_CHECK(path("///foo///bar///"), "///foo///bar///");
-    PATH_CHECK(path("\\/foo\\/bar\\/"), "\\/foo\\/bar\\/");
-    PATH_CHECK(path("\\//foo\\//bar\\//"), "\\//foo\\//bar\\//");
+    PATH_TEST_EQ("/foo", "/foo");
+    PATH_TEST_EQ("/foo/bar/", "/foo/bar/");
+    PATH_TEST_EQ("//foo//bar//", "//foo//bar//");
+    PATH_TEST_EQ("///foo///bar///", "///foo///bar///");
+    PATH_TEST_EQ("\\/foo\\/bar\\/", "\\/foo\\/bar\\/");
+    PATH_TEST_EQ("\\//foo\\//bar\\//", "\\//foo\\//bar\\//");
 
     if (platform == "Windows")
     {
-      PATH_CHECK(path("c:") / "foo", "c:foo");
-      PATH_CHECK(path("c:") / "/foo", "c:/foo");
+      PATH_TEST_EQ(path("c:") / "foo", "c:foo");
+      PATH_TEST_EQ(path("c:") / "/foo", "c:/foo");
 
-      PATH_CHECK(path("\\foo\\bar\\"), "\\foo\\bar\\");
-      PATH_CHECK(path("\\\\foo\\\\bar\\\\"), "\\\\foo\\\\bar\\\\");
-      PATH_CHECK(path("\\\\\\foo\\\\\\bar\\\\\\"), "\\\\\\foo\\\\\\bar\\\\\\");
+      PATH_TEST_EQ("\\foo\\bar\\", "\\foo\\bar\\");
+      PATH_TEST_EQ("\\\\foo\\\\bar\\\\", "\\\\foo\\\\bar\\\\");
+      PATH_TEST_EQ("\\\\\\foo\\\\\\bar\\\\\\", "\\\\\\foo\\\\\\bar\\\\\\");
 
-      PATH_CHECK(path("\\"), "\\");
-      PATH_CHECK(path("\\f"), "\\f");
-      PATH_CHECK(path("\\foo"), "\\foo");
-      PATH_CHECK(path("foo\\bar"), "foo\\bar");
-      PATH_CHECK(path("foo bar"), "foo bar");
-      PATH_CHECK(path("c:"), "c:");
-      PATH_CHECK(path("c:/"), "c:/");
-      PATH_CHECK(path("c:."), "c:.");
-      PATH_CHECK(path("c:./foo"), "c:./foo");
-      PATH_CHECK(path("c:.\\foo"), "c:.\\foo");
-      PATH_CHECK(path("c:.."), "c:..");
-      PATH_CHECK(path("c:/."), "c:/.");
-      PATH_CHECK(path("c:/.."), "c:/..");
-      PATH_CHECK(path("c:/../"), "c:/../");
-      PATH_CHECK(path("c:\\..\\"), "c:\\..\\");
-      PATH_CHECK(path("c:/../.."), "c:/../..");
-      PATH_CHECK(path("c:/../foo"), "c:/../foo");
-      PATH_CHECK(path("c:\\..\\foo"), "c:\\..\\foo");
-      PATH_CHECK(path("c:../foo"), "c:../foo");
-      PATH_CHECK(path("c:..\\foo"), "c:..\\foo");
-      PATH_CHECK(path("c:/../../foo"), "c:/../../foo");
-      PATH_CHECK(path("c:\\..\\..\\foo"), "c:\\..\\..\\foo");
-      PATH_CHECK(path("c:foo/.."), "c:foo/..");
-      PATH_CHECK(path("c:/foo/.."), "c:/foo/..");
-      PATH_CHECK(path("c:/..foo"), "c:/..foo");
-      PATH_CHECK(path("c:foo"), "c:foo");
-      PATH_CHECK(path("c:/foo"), "c:/foo");
-      PATH_CHECK(path("\\\\netname"), "\\\\netname");
-      PATH_CHECK(path("\\\\netname\\"), "\\\\netname\\");
-      PATH_CHECK(path("\\\\netname\\foo"), "\\\\netname\\foo");
-      PATH_CHECK(path("c:/foo"), "c:/foo");
-      PATH_CHECK(path("prn:"), "prn:");
+      PATH_TEST_EQ("\\", "\\");
+      PATH_TEST_EQ("\\f", "\\f");
+      PATH_TEST_EQ("\\foo", "\\foo");
+      PATH_TEST_EQ("foo\\bar", "foo\\bar");
+      PATH_TEST_EQ("foo bar", "foo bar");
+      PATH_TEST_EQ("c:", "c:");
+      PATH_TEST_EQ("c:/", "c:/");
+      PATH_TEST_EQ("c:.", "c:.");
+      PATH_TEST_EQ("c:./foo", "c:./foo");
+      PATH_TEST_EQ("c:.\\foo", "c:.\\foo");
+      PATH_TEST_EQ("c:..", "c:..");
+      PATH_TEST_EQ("c:/.", "c:/.");
+      PATH_TEST_EQ("c:/..", "c:/..");
+      PATH_TEST_EQ("c:/../", "c:/../");
+      PATH_TEST_EQ("c:\\..\\", "c:\\..\\");
+      PATH_TEST_EQ("c:/../..", "c:/../..");
+      PATH_TEST_EQ("c:/../foo", "c:/../foo");
+      PATH_TEST_EQ("c:\\..\\foo", "c:\\..\\foo");
+      PATH_TEST_EQ("c:../foo", "c:../foo");
+      PATH_TEST_EQ("c:..\\foo", "c:..\\foo");
+      PATH_TEST_EQ("c:/../../foo", "c:/../../foo");
+      PATH_TEST_EQ("c:\\..\\..\\foo", "c:\\..\\..\\foo");
+      PATH_TEST_EQ("c:foo/..", "c:foo/..");
+      PATH_TEST_EQ("c:/foo/..", "c:/foo/..");
+      PATH_TEST_EQ("c:/..foo", "c:/..foo");
+      PATH_TEST_EQ("c:foo", "c:foo");
+      PATH_TEST_EQ("c:/foo", "c:/foo");
+      PATH_TEST_EQ("\\\\netname", "\\\\netname");
+      PATH_TEST_EQ("\\\\netname\\", "\\\\netname\\");
+      PATH_TEST_EQ("\\\\netname\\foo", "\\\\netname\\foo");
+      PATH_TEST_EQ("c:/foo", "c:/foo");
+      PATH_TEST_EQ("prn:", "prn:");
     }
     else
     {
     }
 
-    PATH_CHECK("foo/bar", "foo/bar");
-    PATH_CHECK("a/b", "a/b");  // probe for length effects
-    PATH_CHECK("..", "..");
-    PATH_CHECK("../..", "../..");
-    PATH_CHECK("/..", "/..");
-    PATH_CHECK("/../..", "/../..");
-    PATH_CHECK("../foo", "../foo");
-    PATH_CHECK("foo/..", "foo/..");
-    PATH_CHECK(path("foo/..bar"), "foo/..bar");
-    PATH_CHECK("../f", "../f");
-    PATH_CHECK("/../f", "/../f");
-    PATH_CHECK("f/..", "f/..");
-    PATH_CHECK("foo/../..", "foo/../..");
-    PATH_CHECK("foo/../../..", "foo/../../..");
-    PATH_CHECK("foo/../bar", "foo/../bar");
-    PATH_CHECK("foo/bar/..", "foo/bar/..");
-    PATH_CHECK("foo/bar/../..", "foo/bar/../..");
-    PATH_CHECK("foo/bar/../blah", "foo/bar/../blah");
-    PATH_CHECK("f/../b", "f/../b");
-    PATH_CHECK("f/b/..", "f/b/..");
-    PATH_CHECK("f/b/../a", "f/b/../a");
-    PATH_CHECK("foo/bar/blah/../..", "foo/bar/blah/../..");
-    PATH_CHECK("foo/bar/blah/../../bletch", "foo/bar/blah/../../bletch");
-    PATH_CHECK("...", "...");
-    PATH_CHECK("....", "....");
-    PATH_CHECK("foo/...", "foo/...");
-    PATH_CHECK("abc.", "abc.");
-    PATH_CHECK("abc..", "abc..");
-    PATH_CHECK("foo/abc.", "foo/abc.");
-    PATH_CHECK("foo/abc..", "foo/abc..");
+    PATH_TEST_EQ("foo/bar", "foo/bar");
+    PATH_TEST_EQ("a/b", "a/b");  // probe for length effects
+    PATH_TEST_EQ("..", "..");
+    PATH_TEST_EQ("../..", "../..");
+    PATH_TEST_EQ("/..", "/..");
+    PATH_TEST_EQ("/../..", "/../..");
+    PATH_TEST_EQ("../foo", "../foo");
+    PATH_TEST_EQ("foo/..", "foo/..");
+    PATH_TEST_EQ("foo/..bar", "foo/..bar");
+    PATH_TEST_EQ("../f", "../f");
+    PATH_TEST_EQ("/../f", "/../f");
+    PATH_TEST_EQ("f/..", "f/..");
+    PATH_TEST_EQ("foo/../..", "foo/../..");
+    PATH_TEST_EQ("foo/../../..", "foo/../../..");
+    PATH_TEST_EQ("foo/../bar", "foo/../bar");
+    PATH_TEST_EQ("foo/bar/..", "foo/bar/..");
+    PATH_TEST_EQ("foo/bar/../..", "foo/bar/../..");
+    PATH_TEST_EQ("foo/bar/../blah", "foo/bar/../blah");
+    PATH_TEST_EQ("f/../b", "f/../b");
+    PATH_TEST_EQ("f/b/..", "f/b/..");
+    PATH_TEST_EQ("f/b/../a", "f/b/../a");
+    PATH_TEST_EQ("foo/bar/blah/../..", "foo/bar/blah/../..");
+    PATH_TEST_EQ("foo/bar/blah/../../bletch", "foo/bar/blah/../../bletch");
+    PATH_TEST_EQ("...", "...");
+    PATH_TEST_EQ("....", "....");
+    PATH_TEST_EQ("foo/...", "foo/...");
+    PATH_TEST_EQ("abc.", "abc.");
+    PATH_TEST_EQ("abc..", "abc..");
+    PATH_TEST_EQ("foo/abc.", "foo/abc.");
+    PATH_TEST_EQ("foo/abc..", "foo/abc..");
 
-    PATH_CHECK(path(".abc"), ".abc");
-    PATH_CHECK("a.c", "a.c");
-    PATH_CHECK(path("..abc"), "..abc");
-    PATH_CHECK("a..c", "a..c");
-    PATH_CHECK(path("foo/.abc"), "foo/.abc");
-    PATH_CHECK("foo/a.c", "foo/a.c");
-    PATH_CHECK(path("foo/..abc"), "foo/..abc");
-    PATH_CHECK("foo/a..c", "foo/a..c");
+    PATH_TEST_EQ(".abc", ".abc");
+    PATH_TEST_EQ("a.c", "a.c");
+    PATH_TEST_EQ("..abc", "..abc");
+    PATH_TEST_EQ("a..c", "a..c");
+    PATH_TEST_EQ("foo/.abc", "foo/.abc");
+    PATH_TEST_EQ("foo/a.c", "foo/a.c");
+    PATH_TEST_EQ("foo/..abc", "foo/..abc");
+    PATH_TEST_EQ("foo/a..c", "foo/a..c");
 
-    PATH_CHECK(".", ".");
-    PATH_CHECK("./foo", "./foo");
-    PATH_CHECK("./..", "./..");
-    PATH_CHECK("./../foo", "./../foo");
-    PATH_CHECK("foo/.", "foo/.");
-    PATH_CHECK("../.", "../.");
-    PATH_CHECK("./.", "./.");
-    PATH_CHECK("././.", "././.");
-    PATH_CHECK("./foo/.", "./foo/.");
-    PATH_CHECK("foo/./bar", "foo/./bar");
-    PATH_CHECK("foo/./.", "foo/./.");
-    PATH_CHECK("foo/./..", "foo/./..");
-    PATH_CHECK("foo/./../bar", "foo/./../bar");
-    PATH_CHECK("foo/../.", "foo/../.");
-    PATH_CHECK("././..", "././..");
-    PATH_CHECK("./../.", "./../.");
-    PATH_CHECK(".././.", ".././.");
+    PATH_TEST_EQ(".", ".");
+    PATH_TEST_EQ("./foo", "./foo");
+    PATH_TEST_EQ("./..", "./..");
+    PATH_TEST_EQ("./../foo", "./../foo");
+    PATH_TEST_EQ("foo/.", "foo/.");
+    PATH_TEST_EQ("../.", "../.");
+    PATH_TEST_EQ("./.", "./.");
+    PATH_TEST_EQ("././.", "././.");
+    PATH_TEST_EQ("./foo/.", "./foo/.");
+    PATH_TEST_EQ("foo/./bar", "foo/./bar");
+    PATH_TEST_EQ("foo/./.", "foo/./.");
+    PATH_TEST_EQ("foo/./..", "foo/./..");
+    PATH_TEST_EQ("foo/./../bar", "foo/./../bar");
+    PATH_TEST_EQ("foo/../.", "foo/../.");
+    PATH_TEST_EQ("././..", "././..");
+    PATH_TEST_EQ("./../.", "./../.");
+    PATH_TEST_EQ(".././.", ".././.");
   }
 
   //  append_tests  --------------------------------------------------------------------//
 
   void append_test_aux(const path & p, const std::string & s, const std::string & expect)
   {
-    PATH_CHECK(p / path(s), expect);
-    PATH_CHECK(p / s.c_str(), expect);
-    PATH_CHECK(p / s, expect);
+    PATH_TEST_EQ((p / path(s)).string(), expect);
+    PATH_TEST_EQ((p / s.c_str()).string(), expect);
+    PATH_TEST_EQ((p / s).string(), expect);
     path x(p);
     x.append(s.begin(), s.end());
-    PATH_CHECK(x, expect);
+    PATH_TEST_EQ(x.string(), expect);
   }
 
   void append_tests()
@@ -1452,73 +1478,115 @@ namespace
     //for (int i = 0; i < sizeof(x)/sizeof(char*); ++i)
     //  for (int j = 0; j < sizeof(y)/sizeof(char*); ++j)
     //  {
-    //    std::cout << "\n    PATH_CHECK(path(\"" << x[i] << "\") / \"" << y[j] << "\", \"" 
+    //    std::cout << "\n    PATH_TEST_EQ(path(\"" << x[i] << "\") / \"" << y[j] << "\", \"" 
     //              << path(x[i]) / y[j] << "\");\n";
     //    std::cout << "    append_test_aux(\"" << x[i] << "\", \"" << y[j] << "\", \""
     //              << path(x[i]) / y[j] << "\");\n";
     //  }
 
-    PATH_CHECK(path("") / "", "");
+    PATH_TEST_EQ(path("") / "", "");
     append_test_aux("", "", "");
 
-    PATH_CHECK(path("") / "/", "/");
+    PATH_TEST_EQ(path("") / "/", "/");
     append_test_aux("", "/", "/");
 
-    PATH_CHECK(path("") / "bar", "bar");
+    PATH_TEST_EQ(path("") / "bar", "bar");
     append_test_aux("", "bar", "bar");
 
-    PATH_CHECK(path("") / "/bar", "/bar");
+    PATH_TEST_EQ(path("") / "/bar", "/bar");
     append_test_aux("", "/bar", "/bar");
 
-    PATH_CHECK(path("/") / "", "/");
+    PATH_TEST_EQ(path("/") / "", "/");
     append_test_aux("/", "", "/");
 
-    PATH_CHECK(path("/") / "/", "//");
+    PATH_TEST_EQ(path("/") / "/", "//");
     append_test_aux("/", "/", "//");
 
-    PATH_CHECK(path("/") / "bar", "/bar");
+    PATH_TEST_EQ(path("/") / "bar", "/bar");
     append_test_aux("/", "bar", "/bar");
 
-    PATH_CHECK(path("/") / "/bar", "//bar");
+    PATH_TEST_EQ(path("/") / "/bar", "//bar");
     append_test_aux("/", "/bar", "//bar");
 
-    PATH_CHECK(path("foo") / "", "foo");
+    PATH_TEST_EQ(path("foo") / "", "foo");
     append_test_aux("foo", "", "foo");
 
-    PATH_CHECK(path("foo") / "/", "foo/");
+    PATH_TEST_EQ(path("foo") / "/", "foo/");
     append_test_aux("foo", "/", "foo/");
 
-    PATH_CHECK(path("foo") / "/bar", "foo/bar");
+    PATH_TEST_EQ(path("foo") / "/bar", "foo/bar");
     append_test_aux("foo", "/bar", "foo/bar");
 
-    PATH_CHECK(path("foo/") / "", "foo/");
+    PATH_TEST_EQ(path("foo/") / "", "foo/");
     append_test_aux("foo/", "", "foo/");
 
-    PATH_CHECK(path("foo/") / "/", "foo//");
+    PATH_TEST_EQ(path("foo/") / "/", "foo//");
     append_test_aux("foo/", "/", "foo//");
 
-    PATH_CHECK(path("foo/") / "bar", "foo/bar");
+    PATH_TEST_EQ(path("foo/") / "bar", "foo/bar");
     append_test_aux("foo/", "bar", "foo/bar");
 
-    PATH_CHECK(path("foo/") / "/bar", "foo//bar");
+    PATH_TEST_EQ(path("foo/") / "/bar", "foo//bar");
     append_test_aux("foo/", "/bar", "foo//bar");
 
     if (platform == "Windows")
     {
-      PATH_CHECK(path("foo") / "bar", "foo\\bar");
+      PATH_TEST_EQ(path("foo") / "bar", "foo\\bar");
       append_test_aux("foo", "bar", "foo\\bar");
 
       // hand created test case specific to Windows
-      PATH_CHECK(path("c:") / "bar", "c:bar");
+      PATH_TEST_EQ(path("c:") / "bar", "c:bar");
       append_test_aux("c:", "bar", "c:bar");
     }
     else
     {
-      PATH_CHECK(path("foo") / "bar", "foo/bar");
+      PATH_TEST_EQ(path("foo") / "bar", "foo/bar");
       append_test_aux("foo", "bar", "foo/bar");
     }
 
   }
+
+//  self_assign_and_append_tests  ------------------------------------------------------//
+
+  void self_assign_and_append_tests()
+  {
+    std::cout << "self_assign_and_append_tests..." << std::endl;
+
+    path p;
+
+    p = "snafubar";
+    PATH_TEST_EQ(p = p, "snafubar");
+
+    p = "snafubar";
+    p = p.c_str();
+    PATH_TEST_EQ(p, "snafubar");
+
+    p = "snafubar";
+    p.assign(p.c_str(), path::codecvt());
+    PATH_TEST_EQ(p, "snafubar");  
+
+    p = "snafubar";
+    PATH_TEST_EQ(p = p.c_str()+5, "bar");
+
+    p = "snafubar";
+    PATH_TEST_EQ(p.assign(p.c_str() + 5, p.c_str() + 7), "ba");
+
+    p = "snafubar";
+    p /= p;
+    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");
+
+    p = "snafubar";
+    p /= p.c_str();
+    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");  
+
+    p = "snafubar";
+    p.append(p.c_str(), path::codecvt());
+    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar"); 
+
+    p = "snafubar";
+    PATH_TEST_EQ(p.append(p.c_str() + 5, p.c_str() + 7), "snafubar" BOOST_DIR_SEP "ba");
+  }
+
 
   //  name_function_tests  -------------------------------------------------------------//
 
@@ -1628,7 +1696,7 @@ namespace
     BOOST_TEST(path("a.b.txt").replace_extension(".tex") == "a.b.tex");  
     BOOST_TEST(path("a.b.txt").replace_extension("tex") == "a.b");
     BOOST_TEST(path("a/b").replace_extension(".c") == "a/b.c");
-    BOOST_TEST_EQ(path("a.txt/b").replace_extension(".c"), "a.txt/b.c"); // ticket 4702
+    PATH_TEST_EQ(path("a.txt/b").replace_extension(".c"), "a.txt/b.c"); // ticket 4702
   }
   
   //  make_preferred_tests  ------------------------------------------------------------//
@@ -1678,6 +1746,7 @@ int cpp_main(int, char*[])
 
   construction_tests();
   append_tests();
+  self_assign_and_append_tests();
   overload_tests();
   query_and_decomposition_tests();
   composition_tests();
@@ -1704,18 +1773,18 @@ int cpp_main(int, char*[])
   // check the path member templates
   p5.assign(s1.begin(), s1.end());
 
-  PATH_CHECK(p5, "//:somestring");
+  PATH_TEST_EQ(p5.string(), "//:somestring");
   p5 = s1;
-  PATH_CHECK(p5, "//:somestring");
+  PATH_TEST_EQ(p5.string(), "//:somestring");
 
   // this code, courtesy of David Whetstone, detects a now fixed bug that
   // derefereced the end iterator (assuming debug build with checked itors)
   std::vector<char> v1;
   p5.assign(v1.begin(), v1.end());
   std::string s2(v1.begin(), v1.end());
-  PATH_CHECK(p5, s2);
+  PATH_TEST_EQ(p5.string(), s2);
   p5.assign(s1.begin(), s1.begin() + 1);
-  PATH_CHECK(p5, "/");
+  PATH_TEST_EQ(p5.string(), "/");
 
   BOOST_TEST(p1 != p4);
   BOOST_TEST(p1.string() == p2.string());

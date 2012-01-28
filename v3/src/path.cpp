@@ -145,13 +145,44 @@ namespace boost
 namespace filesystem3
 {
 
-  path & path::operator/=(const path & p)
+  path& path::operator/=(const path& p)
   {
     if (p.empty())
       return *this;
-    if (!is_separator(*p.m_pathname.begin()))
-      m_append_separator_if_needed();
-    m_pathname += p.m_pathname;
+    if (this == &p)  // self-append
+    {
+      path rhs(p);
+      if (!is_separator(rhs.m_pathname[0]))
+        m_append_separator_if_needed();
+      m_pathname += rhs.m_pathname;
+    }
+    else
+    {
+      if (!is_separator(*p.m_pathname.begin()))
+        m_append_separator_if_needed();
+      m_pathname += p.m_pathname;
+    }
+    return *this;
+  }
+
+  path& path::operator/=(const value_type* ptr)
+  {
+    if (!*ptr)
+      return *this;
+    if (ptr >= m_pathname.data()
+      && ptr < m_pathname.data() + m_pathname.size())  // overlapping source
+    {
+      path rhs(ptr);
+      if (!is_separator(rhs.m_pathname[0]))
+        m_append_separator_if_needed();
+      m_pathname += rhs.m_pathname;
+    }
+    else
+    {
+      if (!is_separator(*ptr))
+        m_append_separator_if_needed();
+      m_pathname += ptr;
+    }
     return *this;
   }
 
