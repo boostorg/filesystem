@@ -13,12 +13,12 @@ $id frontmatter=
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426">N3335=12-0025</td>
+      <td width="426"><span style="background-color: #FFFF00">D????=12-????</span></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-13<!--webbot bot="Timestamp" endspan i-checksum="12045" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-30<!--webbot bot="Timestamp" endspan i-checksum="12041" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -31,7 +31,7 @@ $id frontmatter=
   </table>
 
 
-<h1>Filesystem Library for C++11/TR2 (Revision 1)</h1>
+<h1>Filesystem Library for C++11/TR2 (Revision 2)</h1>
 
 
 <p>This paper proposes that the&nbsp;filesystem library component of <i>C++ Standard 
@@ -293,7 +293,14 @@ believe it should be deferred to some future release since (1) it is complex
 enough that I'd like to see actual implementation and use experience (presumably 
 via Boost), and (2) I can't recall a user ever requesting such a feature.</p>
 <hr>
-<h3>Issue 6: Could allocator support be class path?</h3>
+<h3>Issue 6: Could allocator support be added to class path?</h3>
+<h4>Discussion</h4>
+<p>Question raised by a committee member in private email.</p>
+<p>Comment from Beman: How would allocator support work, given that class path 
+is not a template?</p>
+<h4>Proposed resolution</h4>
+<hr>
+<h3>Issue 7: Should ?</h3>
 <h4>Discussion</h4>
 <p>Question raised by a committee member in private email.</p>
 <p>Comment from Beman: How would allocator support work, given that class path 
