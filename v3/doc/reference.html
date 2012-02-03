@@ -5,21 +5,39 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Filesystem V3 Reference
-</title>
-<link rel="stylesheet" type="text/css" href="../../../../doc/src/minimal.css">
+<title>
+
+  Filesystem V3 Reference
+  </title>
 <style type="text/css">
- pre {background-color:#D7EEFF}
- body
- { 
-   font-family: sans-serif;
-   max-width : 8.5in;
-   margin: 1em;
- }
+/*
+
+  © Copyright Beman Dawes, 2007
+
+  Distributed under the Boost Software License, Version 1.0.
+  See www.boost.org/LICENSE_1_0.txt
+  
+*/
+
+body  {
+       font-family: sans-serif;
+       margin: 1em;
+       max-width : 8.5in;
+	 }
+
+table   { margin: 0.5em; }
+
+pre     { background-color:#D7EEFF }
+
+ins     { background-color:#A0FFA0 }
+del     { background-color:#FFA0A0 }
+
+/*** end ***/
 </style>
 </head>
 
 <body>
+
 
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
@@ -51,6 +69,8 @@
 
 <h1>Reference Documentation</h1>
 
+
+
 <h2><a name="TOC">Table of Contents</a></h2>
 
 <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
@@ -81,6 +101,7 @@
 &nbsp;&nbsp;&nbsp; <a href="#path-decomposition"><code>path</code> decomposition</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#path-query"><code>path</code> query</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-iterators"><code>path</code> iterators</a><br>
+
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-deprecated-functions"><code>path</code> deprecated functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-non-member-functions"><code>path</code> non-member functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-inserter-extractor"><code>path</code> inserters and extractors</a><br>
@@ -135,7 +156,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_regular_file">is_regular_file</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#last_write_time">last_write_time</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; permissions<br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#permissions">permissions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#remove_all">remove_all</a><br>
@@ -158,15 +179,80 @@
   </tr>
 </table>
 
+
 <h2><a name="Introduction">Introduction</a></h2>
 
 <p>This reference documentation describes components that C++ programs may use 
 to perform operations involving file systems, including paths, regular files, 
 and directories.</p>
+
+
+<p>This reference documentation describes components that perform operations on file systems and 
+their components, such as paths, regular files, and directories.</p>
+<p dir="ltr">Operating systems such as <i>Linux, MAC OS, UNIX</i>, and <i>Windows</i> are 
+mentioned in this reference documentation for purposes of illustration or to give guidance to 
+implementers. No slight to other operating systems is implied or intended.</p>
+<p><span style="background-color: #E0E0E0">Footnote:</span> Linux® is a 
+registered trademark of Linus Torvalds.</p>
+<p><a name="Footnote-3"><span style="background-color: #E0E0E0">Footnote</span></a><span style="background-color: #E0E0E0">:</span> <i>MAC OS</i>® is a registered trademark 
+of Apple Inc.</p>
+<p><span style="background-color: #E0E0E0">Footnote:</span> <i>UNIX</i>® is a 
+registered trademark of The Open Group. </p>
+<p><a name="Footnote-4"><span style="background-color: #E0E0E0">Footnote</span></a><span style="background-color: #E0E0E0">:</span> <i>Windows</i>® is a registered 
+trademark of Microsoft Corporation.</p>
+
+<h2><a name="Conformance">Conformance</a></h2>
+<p>Behavior is sometimes specified by reference to ISO/IEC 9945:2003, <i>
+<a href="http://www.unix.org/single_unix_specification/">POSIX</a></i>. How such behavior is actually implemented is unspecified.</p>
+<blockquote>
+<p>[<i>Note:</i> This constitutes an &quot;as if&quot; rule for implementation of 
+operating system dependent behavior. Presumably implementations will usually call native 
+operating system API's. <i>--end note</i>]</p>
+</blockquote>
+<p>Implementations are encouraged, but not required, to support such behavior 
+ 
+as it is defined by <i>POSIX</i>. Implementations shall document any 
+behavior that differs from the <i>POSIX</i> defined behavior. Implementations that do not support exact <i>POSIX</i> behavior are 
+encouraged to provide behavior as close to <i>POSIX</i> behavior as is reasonable given the 
+limitations of actual operating systems and file systems. If an implementation cannot provide any 
+reasonable behavior, the implementation shall report an error in an 
+implementation-defined manner.</p>
+<blockquote>
+<p>[<i>Note:</i> Such errors might be reported by an #error directive, a <code>
+static_assert</code>, a <code>filesystem_error</code> exception, a special 
+return value, or some other manner. <i>--end note</i>]</p>
+</blockquote>
+<p>Implementations are not required to provide behavior that is not supported by 
+a particular file system.</p>
+<blockquote>
+<p>[<i>Example:</i> The <a href="http://en.wikipedia.org/wiki/FAT_filesystem">
+FAT file system</a> used by some memory cards, camera memory, and floppy discs 
+does not support hard links, symlinks, and many other features of more capable 
+file systems. Implementations are only required to support the FAT features 
+supported by the host operating system. <i>-- end example</i>]</p>
+</blockquote>
+<p>Specific operating systems such as <i>OpenVMS</i>,
+<i>UNIX</i>, and <i>Windows</i> are mentioned only for purposes of illustration or to 
+give guidance to users and implementers. No slight to other operating systems is implied 
+or intended. When unlikely to cause confusion, the term <i>POSIX</i> is 
+sometimes used to refer to &quot;POSIX-compliant operating systems&quot;.</p>
+<p>The behavior of functions described in this 
+reference 
+may differ from their specification in 
+the presence of <a href="#Race-condition">file system races</a>. No diagnostic is required.</p>
+<p>If the possibility of a file system race would make it unreliable for a program to 
+test for a precondition before calling a function described in this reference documentation, <i>
+Requires</i> is not specified for the condition. Instead, the condition is 
+specified as a <i>Throws</i> condition.</p>
+<blockquote>
+<p>[<i>Note:</i> As a design practice, preconditions are not specified when it 
+is unreasonable for a program to detect them prior to calling the function. <i>
+-- end note</i>]</p>
+</blockquote>
 <h2><a name="Definitions">Definitions</a></h2>
 <p>The following definitions  shall apply throughout this reference documentation:</p>
 <p><i><b><a name="File">File</a>:</b> </i>An object that can be written to, or read from, or both. A file 
-has certain attributes, including type. Common types of files include regular files 
+has certain attributes, including type. File types include regular files 
 and directories. Other types of files, such as symbolic links, may be supported by the 
 implementation.</p>
 <p><b><i><a name="File-system">File system</a>:</i></b> A collection of files and certain of their attributes.</p>
@@ -189,7 +275,7 @@ root-directory<sub>opt</sub></i>, and an optional sequence of filenames. [<i>Not
 A <a href="#Pathname">pathname</a> is the concrete representation of a path. <i>--end note</i>]</p>
 <p><b><i><a name="Absolute-path">Absolute path</a>:</i></b> A path that 
 unambiguously 
-identifies the location of a file within a filesystem without reference to an 
+identifies the location of a file within a file system without reference to an 
 additional starting location. The format is implementation defined. </p>
 <blockquote>
   <p><i>[Note:</i> For POSIX-like implementations, including<b> </b>Unix 
@@ -201,16 +287,15 @@ additional starting location. The format is implementation defined. </p>
   specifier followed by a slash, or begin with two slashes, are absolute paths.&nbsp;<i>--end 
   note]</i></p>
 </blockquote>
-<p><b><a name="Relative-path">Relative path</a>:</b> A path that only 
+<p><i><b><a name="Relative-path">Relative path</a>:</b></i> A path that only 
 unambiguously 
 identifies the location of a file within a filesystem when resolved relative to 
 a starting location. The format is implementation defined. [<i>Note:</i> 
 Paths &quot;.&quot; and &quot;..&quot; are considered to be relative paths. <i>--end note</i>]</p>
-<p><b><a name="Canonical-path">Canonical path</a>:</b> An absolute path that has 
+<p><i><b><a name="Canonical-path">Canonical path</a>:</b></i> An absolute path that has 
 no elements which are symbolic links, and no dot or dot dot elements.</p>
 <p><i><b><a name="Pathname">Pathname</a>:</b> </i>A character string that represents a 
-path. Pathnames are formatted according to the generic pathname format or the 
-implementation defined 
+path. Pathnames are formatted according to the generic pathname format or an implementation defined 
 native pathname format.</p>
 <p><b><i><a name="generic-pathname-format">Generic pathname format:</a></i></b></p>
 <blockquote>
@@ -222,7 +307,7 @@ root-directory<sub>opt</sub> relative-path<sub>opt</sub></i></p>
 implementation-defined</i></p>
 <blockquote>
   <blockquote>
-<p>[<i>Note:</i> Most POSIX and Windows based operating system define a name 
+<p>[<i>Note:</i> Most POSIX and Windows based operating systems define a name 
 beginning with two slashes (or backslashes, for Windows) as a root-name 
 identifying network locations. Windows defines a single letter followed by a
 <code>&quot;:&quot;</code> as a root-name identifying a disc drive. <i>--end note</i>]</p>
@@ -276,255 +361,207 @@ stored by the file is used to modify the pathname resolution.</p>
 If the file pointed to does not exist, the symbolic link is said to be a 
 &quot;dangling&quot; symbolic link.<i> -- end note</i>]<i> </i></p>
 </blockquote>
-<p><b><i><a name="Race-condition">Race condition</a>:</i></b> The condition that occurs 
+<p><b><i><a name="Race-condition">File system race</a>:</i></b> The condition that occurs 
 when multiple threads, processes, or computers interleave access and 
 modification of 
 the same object within a file system.</p>
 <p><b><i><a name="Dot">Dot</a>, Dot Dot:</i></b> Synonyms for the filenames <code>&quot;.&quot;</code> 
 and <code>&quot;..&quot;</code>, respectively. The dot filename names the current 
 directory. The dot dot filename names the parent directory.</p>
-<h2><a name="Conformance">Conformance</a></h2>
-<p>Behavior is sometimes specified by reference to ISO/IEC 9945:2003, <i>
-<a href="http://www.unix.org/single_unix_specification/">POSIX</a></i>. How such behavior is actually implemented is unspecified.</p>
-<blockquote>
-<p>[<i>Note:</i> This constitutes an &quot;as if&quot; rule for implementation of 
-operating system dependent behavior. Presumably implementations will usually call native 
-operating system API's. <i>--end note</i>]</p>
-</blockquote>
-<p>Implementations are encouraged, but not required, to support such behavior 
- 
-as it is defined by <i>POSIX</i>. Implementations shall document any 
-behavior that differs from the <i>POSIX</i> defined behavior. Implementations that do not support exact <i>POSIX</i> behavior are 
-encouraged to provide behavior as close to <i>POSIX</i> behavior as is reasonable given the 
-limitations of actual operating systems and file systems. If an implementation cannot provide any 
-reasonable behavior, the implementation shall report an error in an 
-implementation-defined manner.</p>
-<blockquote>
-<p>[<i>Note:</i> Such errors might be reported by an #error directive, a <code>
-static_assert</code>, a <code>filesystem_error</code> exception, a special 
-return value, or some other manner. <i>--end note</i>]</p>
-</blockquote>
-<p>Implementations are not required to provide behavior that is not supported by 
-a particular file system.</p>
-<blockquote>
-<p>[<i>Example:</i> The <a href="http://en.wikipedia.org/wiki/FAT_filesystem">
-FAT file system</a> used by some memory cards, camera memory, and floppy discs 
-does not support hard links, symlinks, and many other features of more capable 
-file systems. Implementations are only required to support the FAT features 
-supported by the host operating system. <i>-- end example</i>]</p>
-</blockquote>
-<p>Specific operating systems such as <i>OpenMVS</i>,
-<i>UNIX</i>, and <i>Windows</i> are mentioned only for purposes of illustration or to 
-give guidance to users and implementers. No slight to other operating systems is implied 
-or intended. When unlikely to cause confusion, the term <i>POSIX</i> is 
-sometimes used to refer to &quot;POSIX-compliant operating systems&quot;.</p>
-<p>The behavior of functions described in this 
-reference 
-may not be achieved in 
-the presence of <a href="#Race-condition">race conditions</a>. No diagnostic is required.</p>
-<p>If the possibility of race conditions would make it unreliable for a program to 
-test for a precondition before calling a function described in this clause, <i>
-Requires</i> is not specified for the condition. Instead, the condition is 
-specified as a <i>Throws</i> condition.</p>
-<blockquote>
-<p>[<i>Note:</i> As a design practice, preconditions are not specified when it 
-is unreasonable for a program to detect them prior to calling the function. <i>
--- end note</i>]</p>
-</blockquote>
 <h2><a name="Header-filesystem-synopsis">Header <code>&lt;boost/filesystem.hpp&gt;</code> synopsis</a></h2>
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
+    class <a href="#class-path">path</a>;
+
+    void swap(path&amp; lhs, path&amp; rhs);
+    bool lexicographical_compare(path::iterator first1, path::iterator last1,
+                                 path::iterator first2, path::iterator last2);
+    std::size_t <a href="#hash_value">hash_value</a>(const path&amp; p);
+
+    bool operator==(const path&amp; lhs, const path&amp; rhs);
+    bool operator!=(const path&amp; lhs, const path&amp; rhs);
+    bool operator&lt; (const path&amp; lhs, const path&amp; rhs);
+    bool operator&lt;=(const path&amp; lhs, const path&amp; rhs);
+    bool operator&gt; (const path&amp; lhs, const path&amp; rhs);
+    bool operator&gt;=(const path&amp; lhs, const path&amp; rhs);
+
+    path operator/ (const path&amp; lhs, const path&amp; rhs);
+
+    std::ostream&amp;  operator&lt;&lt;( std::ostream&amp; os, const path&amp; p );
+    std::wostream&amp; operator&lt;&lt;( std::wostream&amp; os, const path&amp; p );
+    std::istream&amp;  operator&gt;&gt;( std::istream&amp; is, path&amp; p );
+    std::wistream&amp; operator&gt;&gt;( std::wistream&amp; is, path&amp; p )
+
+    class <a href="#Class-filesystem_error">filesystem_error</a>;      
+    class <a href="#Class-directory_entry">directory_entry</a>;
+
+    class <a href="#Class-directory_iterator">directory_iterator</a>;
+
+    class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
+
+    enum <a name="file_type" href="#Enum-file_type">file_type</a>
     {
-      class <a href="#class-path">path</a>;
+      status_error, file_not_found, regular_file, directory_file,
+      symlink_file, block_file, character_file, fifo_file, socket_file,
+      type_unknown
+    };
 
-      void swap(path&amp; lhs, path&amp; rhs);
-      bool lexicographical_compare(path::iterator first1, path::iterator last1,
-                                   path::iterator first2, path::iterator last2);
-      std::size_t <a href="#hash_value">hash_value</a>(const path&amp; p);
+    enum <a href="#Enum-perms">perms</a>
+    {
+      no_perms,
+      owner_read, owner_write, owner_exe, owner_all,
+      group_read, group_write, group_exe, group_all,
+      others_read, others_write, others_exe, others_all, all_all,
+      set_uid_on_exe, set_gid_on_exe, sticky_bit,
+      perms_mask, perms_not_known,
+      add_perms, remove_perms, symlink_perms
+    };
 
-      bool operator==(const path&amp; lhs, const path&amp; rhs);
-      bool operator!=(const path&amp; lhs, const path&amp; rhs);
-      bool operator&lt; (const path&amp; lhs, const path&amp; rhs);
-      bool operator&lt;=(const path&amp; lhs, const path&amp; rhs);
-      bool operator&gt; (const path&amp; lhs, const path&amp; rhs);
-      bool operator&gt;=(const path&amp; lhs, const path&amp; rhs);
+    class <a href="#file_status">file_status</a>;
 
-      path operator/ (const path&amp; lhs, const path&amp; rhs);
+    struct <a name="space_info">space_info</a>  // returned by <a href="#space" style="text-decoration: none">space</a> function
+    {
+      uintmax_t capacity;
+      uintmax_t free; 
+      uintmax_t available; // free space available to a non-privileged process
+    };
 
-      std::ostream&amp;  operator&lt;&lt;( std::ostream&amp; os, const path&amp; p );
-      std::wostream&amp; operator&lt;&lt;( std::wostream&amp; os, const path&amp; p );
-      std::istream&amp;  operator&gt;&gt;( std::istream&amp; is, path&amp; p );
-      std::wistream&amp; operator&gt;&gt;( std::wistream&amp; is, path&amp; p )
+    enum class <a name="copy_option">copy_option</a>
+    {
+      none
+      fail_if_exists = none,
+      overwrite_if_exists
+    };
 
-      class <a href="#Class-filesystem_error">filesystem_error</a>;      
-      class <a href="#Class-directory_entry">directory_entry</a>;
+    enum class <a name="symlink_option">symlink_option</a>
+    {
+      none
+      no_recurse = none,
+      recurse
+    };
 
-      class <a href="#Class-directory_iterator">directory_iterator</a>;
+    // <a href="#Operational-functions">operational functions</a>
 
-      class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
+    path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
 
-      enum <a name="file_type" href="#Enum-file_type">file_type</a>
-      {
-        status_error, file_not_found, regular_file, directory_file,
-        symlink_file, block_file, character_file, fifo_file, socket_file,
-        type_unknown
-      };
-  
-      enum <a href="#Enum-perms">perms</a>
-      {
-        no_perms,
-        owner_read, owner_write, owner_exe, owner_all,
-        group_read, group_write, group_exe, group_all,
-        others_read, others_write, others_exe, others_all, all_all,
-        set_uid_on_exe, set_gid_on_exe, sticky_bit,
-        perms_mask, perms_not_known,
-        add_perms, remove_perms, symlink_perms
-      };
+    path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
+    path         <a href="#canonical">canonical</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base, system::error_code&amp; ec);
 
-      class <a href="#file_status">file_status</a>;
+    void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to);
+    void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
 
-      struct <a name="space_info">space_info</a>  // returned by <a href="#space" style="text-decoration: none">space</a> function
-      {
-        uintmax_t capacity;
-        uintmax_t free; 
-        uintmax_t available; // free space available to a non-privileged process
-      };
+    void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
+    void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
 
-      BOOST_SCOPED_ENUM_START(<a name="copy_option">copy_option</a>)
-      {
-        none
-        fail_if_exists = none,
-        overwrite_if_exists
-      };
-      BOOST_SCOPED_ENUM_END
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option,
+                           system::error_code&amp; ec);
 
-      BOOST_SCOPED_ENUM_START(<a name="symlink_option">symlink_option</a>)
-      {
-        none
-        no_recurse = none,
-        recurse
-      };
-      BOOST_SCOPED_ENUM_END
+    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
+    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);
 
-      // <a href="#Operational-functions">operational functions</a>
+    bool         <a href="#create_directories">create_directories</a>(const path&amp; p);
+    bool         <a href="#create_directories">create_directories</a>(const path&amp; p, system::error_code&amp; ec);
 
-      path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
+    bool         <a href="#create_directory">create_directory</a>(const path&amp; p);
+    bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
-      path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
-      path         <a href="#canonical">canonical</a>(const path&amp; p, system::error_code&amp; ec);
-      path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base, system::error_code&amp; ec);
+    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
+    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);
 
-      void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to);
-      void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
+    void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);
 
-      void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
-      void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink);
+    void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);
 
-      void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
-      void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
-      void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option);
-      void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option,
-                             system::error_code&amp; ec);
+    path         <a href="#current_path">current_path</a>();
+    path         <a href="#current_path">current_path</a>(system::error_code&amp; ec);
+    void         <a href="#current_path">current_path</a>(const path&amp; p);
+    void         <a href="#current_path">current_path</a>(const path&amp; p, system::error_code&amp; ec);
 
-      void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
-      void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);
+    bool         <a href="#exists">exists</a>(file_status s) noexcept;
+    bool         <a href="#exists">exists</a>(const path&amp; p);
+    bool         <a href="#exists">exists</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      bool         <a href="#create_directories">create_directories</a>(const path&amp; p);
-      bool         <a href="#create_directories">create_directories</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2);
+    bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);
 
-      bool         <a href="#create_directory">create_directory</a>(const path&amp; p);
-      bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
+    uintmax_t    <a href="#file_size">file_size</a>(const path&amp; p);
+    uintmax_t    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);
 
-      void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
-      void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);
+    uintmax_t    <a href="#hard_link_count">hard_link_count</a>(const path&amp; p);
+    uintmax_t    <a href="#hard_link_count">hard_link_count</a>(const path&amp; p, system::error_code&amp; ec);
 
-      void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
-      void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);
+    const path&amp;  <a href="#initial_path">initial_path</a>();
+    const path&amp;  <a href="#initial_path">initial_path</a>(<code>system::error_code&amp; ec</code>);
 
-      void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink);
-      void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);
+    bool         <a href="#is_directory">is_directory</a>(file_status s) noexcept;
+    bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
+    bool         <a href="#is_directory2">is_directory</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      path         <a href="#current_path">current_path</a>();
-      path         <a href="#current_path">current_path</a>(system::error_code&amp; ec);
-      void         <a href="#current_path">current_path</a>(const path&amp; p);
-      void         <a href="#current_path">current_path</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#is_empty">is_empty</a>(const path&amp; p);
+    bool         <a href="#is_empty">is_empty</a>(const path&amp; p, system::error_code&amp; ec);
 
-      bool         <a href="#exists">exists</a>(file_status s);
-      bool         <a href="#exists">exists</a>(const path&amp; p);
-      bool         <a href="#exists">exists</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#is_other">is_other</a>(file_status s) noexcept;
+    bool         <a href="#is_other2">is_other</a>(const path&amp; p,);
+    bool         <a href="#is_other2">is_other</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2);
-      bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);
+    bool         <a href="#is_regular_file">is_regular_file</a>(file_status s) noexcept; 
+    bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p);
+    bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      uintmax_t    <a href="#file_size">file_size</a>(const path&amp; p);
-      uintmax_t    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);
-      uintmax_t    <a href="#hard_link_count">hard_link_count</a>(const path&amp; p);
-      uintmax_t    <a href="#hard_link_count">hard_link_count</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#is_symlink">is_symlink</a>(file_status s noexcept);
+    bool         <a href="#is_symlink2">is_symlink</a>(const path&amp; p);
+    bool         <a href="#is_symlink2">is_symlink</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      const path&amp;  <a href="#initial_path">initial_path</a>();
-      const path&amp;  <a href="#initial_path">initial_path</a>(<code>system::error_code&amp; ec</code>);
+    std::time_t  <a href="#last_write_time">last_write_time</a>(const path&amp; p);
+    std::time_t  <a href="#last_write_time">last_write_time</a>(const path&amp; p, system::error_code&amp; ec);
+    void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time);
+    void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time, system::error_code&amp; ec);
 
-      bool         <a href="#is_directory">is_directory</a>(file_status s);
-      bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
-      bool         <a href="#is_directory2">is_directory</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#read_symlink">read_symlink</a>(const path&amp; p);
+    path         <a href="#read_symlink">read_symlink</a>(const path&amp; p, system::error_code&amp; ec);
 
-      bool         <a href="#is_empty">is_empty</a>(const path&amp; p);
-      bool         <a href="#is_empty">is_empty</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#remove">remove</a>(const path&amp; p);
+    bool         <a href="#remove">remove</a>(const path&amp; p, system::error_code&amp; ec);
 
-      bool         <a href="#is_other">is_other</a>(file_status s);
-      bool         <a href="#is_other2">is_other</a>(const path&amp; p,);
-      bool         <a href="#is_other2">is_other</a>(const path&amp; p, system::error_code&amp; ec);
+    uintmax_t    <a href="#remove_all">remove_all</a>(const path&amp; p);
+    uintmax_t    <a href="#remove_all">remove_all</a>(const path&amp; p, system::error_code&amp; ec);
 
-      bool         <a href="#is_regular_file">is_regular_file</a>(file_status s); 
-      bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p);
-      bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p, system::error_code&amp; ec);
+    void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to);
+    void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
 
-      bool         <a href="#is_symlink">is_symlink</a>(file_status s);
-      bool         <a href="#is_symlink2">is_symlink</a>(const path&amp; p);
-      bool         <a href="#is_symlink2">is_symlink</a>(const path&amp; p, system::error_code&amp; ec);
+    void         <a href="#resize_file">resize_file</a>(const path&amp; p, uintmax_t size);
+    void         <a href="#resize_file2">resize_file</a>(const path&amp; p, uintmax_t size, system::error_code&amp; ec);
 
-      std::time_t  <a href="#last_write_time">last_write_time</a>(const path&amp; p);
-      std::time_t  <a href="#last_write_time">last_write_time</a>(const path&amp; p, system::error_code&amp; ec);
-      void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time);
-      void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time, system::error_code&amp; ec);
+    <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p);
+    <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p, system::error_code&amp; ec);
 
-      path         <a href="#read_symlink">read_symlink</a>(const path&amp; p);
-      path         <a href="#read_symlink">read_symlink</a>(const path&amp; p, system::error_code&amp; ec);
+    <a href="#file_status">file_status</a>  <a href="#status">status</a>(const path&amp; p);
+    <a href="#file_status">file_status</a>  <a href="#status">status</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      bool         <a href="#remove">remove</a>(const path&amp; p);
-      bool         <a href="#remove">remove</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#status_known">status_known</a>(file_status s) noexcept;
 
-      uintmax_t    <a href="#remove_all">remove_all</a>(const path&amp; p);
-      uintmax_t    <a href="#remove_all">remove_all</a>(const path&amp; p, system::error_code&amp; ec);
+    <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p);
+    <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
-      void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to);
-      void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    path         <a href="#system_complete">system_complete</a>(const path&amp; p);
+    path         <a href="#system_complete">system_complete</a>(const path&amp; p, system::error_code&amp; ec);
 
-      void         <a href="#resize_file">resize_file</a>(const path&amp; p, uintmax_t size);
-      void         <a href="#resize_file2">resize_file</a>(const path&amp; p, uintmax_t size, system::error_code&amp; ec);
+    path         <a href="#temp_directory_path">temp_directory_path</a>();
+    path         <a href="#temp_directory_path">temp_directory_path</a>(system::error_code&amp; ec);
 
-      <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p);
-      <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p, system::error_code&amp; ec);
-      <a href="#file_status">file_status</a>  <a href="#status">status</a>(const path&amp; p);
-      <a href="#file_status">file_status</a>  <a href="#status">status</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
+    path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
 
-      bool         <a href="#status_known">status_known</a>(file_status s);
-
-      <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p);
-      <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p, system::error_code&amp; ec);
-
-      path         <a href="#system_complete">system_complete</a>(const path&amp; p);
-      path         <a href="#system_complete">system_complete</a>(const path&amp; p, system::error_code&amp; ec);
-
-      path         <a href="#temp_directory_path">temp_directory_path</a>();
-      path         <a href="#temp_directory_path">temp_directory_path</a>(system::error_code&amp; ec);
-
-      path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
-      path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
-
-    } // namespace filesystem
-  } // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
 <h2><a name="Error-reporting">Error reporting</a></h2>
 <p>Filesystem library functions often provide two overloads, one that 
 throws an exception to report file system errors, and another that sets an
@@ -585,10 +622,10 @@ system or for a particular file system.</p>
 is an example of an innocuous appearing path that is not actually valid. <i>-- 
 end example</i>]</p>
 </blockquote>
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
-    {
       class path
       {
       public:
@@ -599,6 +636,7 @@ end example</i>]</p>
         // <a href="#path-constructors">constructors</a> and destructor
         path();
         path(const path&amp; p);
+        path(path&amp;&amp; p) noexcept;
 
         template &lt;class <a href="#Source">Source</a>&gt;
           path(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());
@@ -610,6 +648,7 @@ end example</i>]</p>
 
         // <a href="#path-assignments">assignments</a>
         path&amp; operator=(const path&amp; p);
+        path&amp; operator=(path&amp;&amp; p) noexcept;
 
         template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator=(Source const&amp; source);
@@ -641,8 +680,8 @@ end example</i>]</p>
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
         // <a href="#path-native-format-observers">native format observers</a>
-        const string_type&amp;  <a href="#native">native</a>() const;  // native format, encoding
-        const value_type*   <a href="#c_str">c_str</a>() const;   // native().c_str()
+        const string_type&amp;  <a href="#native">native</a>() const noexcept;  // native format, encoding
+        const value_type*   <a href="#c_str">c_str</a>() const noexcept;   // native().c_str()
 
         template &lt;class String&gt;
         String <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;                // native format
@@ -699,8 +738,8 @@ end example</i>]</p>
         string_type pathname;  // <b><i>exposition only</i></b>
       };
 
-    } // namespace filesystem
-  } // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
 <p><code><a name="value_type">value_type</a></code> is an implementation-defined 
 <code>typedef</code> for the 
 character type used by the operating system to represent pathnames.</p>
@@ -735,30 +774,35 @@ native format prefix can be introduced to identify the native format. <i>-- end
 rationale</i>]</p>
 </blockquote>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<div align="center">
+  <center>
+
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#E0E0E0" width="90%">
   <tr>
-    <td style="font-size: 10pt">
-    Class <code>path</code> does not currently map invalid characters in 
+    <td>
+    <i>Class <code>path</code> does not currently map invalid characters in 
     filenames to valid characters. In the future we might add something like 
-    this:<blockquote>
-<p>When converting filenames to the native operating system format, 
+    this:</i><blockquote>
+<p><i>When converting filenames to the native operating system format, 
 implementations are encouraged, but not required, to convert otherwise invalid 
 characters or character sequences to valid characters or character sequences. 
-Such conversions are implementation-defined.</p>
+Such conversions are implementation-defined.</i></p>
 <blockquote>
-<p>[<i>Note:</i> Filename conversion allows much wider portability of both 
-programs and filenames that would otherwise be possible.</p>
-<p>Implementations are encouraged to base conversion on existing standards or 
+<p><i>[Note: Filename conversion allows much wider portability of both 
+programs and filenames that would otherwise be possible.</i></p>
+<p><i>Implementations are encouraged to base conversion on existing standards or 
 practice. Examples include the Uniform Resource Locator escape syntax of a percent sign (<code>'%'</code>) 
-followed by two hex digits representing the character value. On
-<i>OpenVMS</i>, which does not allow percent signs in filenames, a dollar sign (<code>'$'</code>) 
+followed by two hex digits representing the character value. On OpenVMS, which does not allow percent signs in filenames, a dollar sign (<code>'&#36;'</code>) 
 followed by two hex digits is the existing practice, as is converting lowercase 
-letters to uppercase.<i> -- end note.</i>]</p>
+letters to uppercase. -- end note.]</i></p>
 </blockquote>
     </blockquote>
     </td>
   </tr>
 </table>
+
+  </center>
+</div>
 
 <p>If the native format requires 
 paths for regular files to be formatted differently from paths for directories, the 
@@ -972,12 +1016,10 @@ compliant iterator. The iterator's value type is required to be <code>char</code
   <code>new_extension</code>.</p>
   <p><i>Returns:</i> <code>*this</code></p>
 </blockquote>
-<pre><code>void <a name="path-swap">swap</a>(path&amp; rhs);</code></pre>
+<pre><code>void <a name="path-swap">swap</a>(path&amp; rhs) noexcept;</code></pre>
 <blockquote>
   <p><i>Effects:</i> 
   Swaps the contents of the two paths.</p>
-  <p><i>Throws: </i>
-  nothing.</p>
   <p><i>Complexity: </i>
   constant time.</p>
 </blockquote>
@@ -986,15 +1028,13 @@ compliant iterator. The iterator's value type is required to be <code>char</code
 native format observers</a></h3>
 <p>The string returned by all native format observers is in the
 <a href="#native-pathname-format">native pathname format</a>.</p>
-<pre>const string_type&amp;  <a name="native">native</a>() const;</pre>
+<pre>const string_type&amp;  <a name="native">native</a>() const noexcept;</pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
-<p><i>Throws:</i> nothing.</p>
 </blockquote>
-<pre>const value_type* <a name="c_str">c_str</a>() const;</pre>
+<pre>const value_type* <a name="c_str">c_str</a>() const noexcept;</pre>
 <blockquote>
 <p><i>Returns:</i> <code>pathname.c_str()</code>.</p>
-<p><i>Throws:</i> nothing.</p>
 </blockquote>
 <pre>template &lt;class String&gt;
 String <a name="string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;</pre>
@@ -1195,7 +1235,9 @@ path</code>.</p>
 <p> The forward traversal order is as follows:</p>
 <ul>
   <li>The <i>root-name</i> element, if present.</li>
-  <li>The <i>root-directory</i> element, if present.</li>
+  <li>The <i>root-directory</i> element, if present, in the generic format. <i>
+  [note:</i> the generic format is required to ensure lexicographical 
+  comparison works correctly. <i>-- end note</i>]</li>
   <li>Each successive <i>filename</i> element, if present.</li>
   <li><i>Dot</i>, if one or more trailing non-root <i>slash</i> 
   characters are present.</li>
@@ -1223,6 +1265,8 @@ path</code>.</p>
   <p><i>Returns:</i> The <code>codecvt</code> facet for the default locale for 
   all objects of type <code>path</code>.</p>
 </blockquote>
+
+
 <h3> <a name="path-deprecated-functions"><code><font size="4"> path</font></code> deprecated functions</a></h3>
 <p> Several member functions from previous versions of <code>class path</code> 
 have been deprecated, either because they have been renamed or because the 
@@ -1246,6 +1290,7 @@ const std::string  native_directory_string() const   { return native_string(); }
 const string_type  external_file_string() const      { return native(); }
 const string_type  external_directory_string() const { return native(); }</pre>
 </blockquote>
+
 <h3> <a name="path-non-member-functions"> <code><font size="4">path</font></code>
 non-member functions</a></h3>
 <pre>void swap( path&amp; lhs, path&amp; rhs )</pre>
@@ -1362,11 +1407,11 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
    <code>is</code></p>
   </blockquote>
 <h3><a name="Class-filesystem_error">Class <code>filesystem_error</code></a></h3>
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
-    {
-      class basic_filesystem_error : public system_error
+      class filesystem_error : public system_error
       {
       public:
         filesystem_error();
@@ -1388,11 +1433,11 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
 
         const char * <a href="#filesystem_error-what">what</a>() const;
       };
-    } // namespace filesystem
-  } // namespace boost</pre>
-<p>The class template <code>basic_filesystem_error</code> defines the type of 
+  }  // namespace filesystem
+}  // namespace boost</pre>
+<p>The class template <code>filesystem_error</code> defines the type of 
 objects thrown as exceptions to report file system errors from functions described in this 
-clause.</p>
+reference documentation.</p>
 <h4> <a name="filesystem_error-members"> <code>filesystem_error</code> members</a></h4>
 <pre><a name="filesystem_error-2-arg">filesystem_error</a>(const std::string&amp; what_arg, error_code ec);</pre>
 <blockquote>
@@ -1632,7 +1677,7 @@ or others removes write permission for all. </p>
 <tr><td><code><a name="sticky_bit">sticky_bit</a> </code>    </td><td><code>01000</code></td><td> <code>S_ISVTX</code></td>
   <td> Meaning varies; see <a href="http://en.wikipedia.org/wiki/Sticky_bit">http:en.wikipedia.org/wiki/Sticky_bit</a></td>
 </tr>
-<tr><td><code>perms_mask</code></td><td><code>07777</code></td><td> &nbsp;</td>
+<tr><td><code><a name="perms_mask">perms_mask</a></code></td><td><code>07777</code></td><td> &nbsp;</td>
   <td><code>all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit</code></td>
 </tr>
 <tr><td><code>perms_not_known</code></td><td><code>0xFFFF</code></td><td></td><td> 
@@ -1658,10 +1703,10 @@ or others removes write permission for all. </p>
 
 </table>
 <h3><a name="file_status">Class file_status</a></h3>
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
-    {
       class file_status
       {
       public:
@@ -1683,8 +1728,8 @@ or others removes write permission for all. </p>
         void       type(<a href="#file_type">file_type</a> ft) noexcept;
         void       permissions(<a href="#Enum-perms">perms</a> prms) noexcept;
       };
-    } // namespace filesystem
-  } // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
 <p>An object of type <code>file_status</code> stores information about the type 
 and permissions of a file.</p>
 <h4 dir="ltr"><a name="file_status-constructors"><code>file_status</code> 
@@ -1724,10 +1769,10 @@ constructors</a></h4>
 </blockquote>
 <h3><a name="Class-directory_entry">Class <code>directory_entry</code></a></h3>
 <div dir="ltr">
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
-    {
       class directory_entry
       {
       public:
@@ -1766,8 +1811,8 @@ constructors</a></h4>
         mutable file_status  m_symlink_status; // for exposition only; lstat()-like
       };
 
-    } // namespace filesystem
-  } // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
 </div>
 <p>A <code>directory_entry</code> object stores a <code>path object</code>, 
 a <code>file_status</code> object for non-symbolic link status, and a <code>
@@ -1777,7 +1822,7 @@ objects act as value caches.</p>
 <p>[<i>Note:</i> Because <code>status()</code>on a pathname may be a very expensive operation, 
 some operating systems provide status information as a byproduct of directory 
 iteration. Caching such status information can result is significant time savings. Cached and 
-non-cached results may differ in the presence of race conditions. <i>-- end note</i>]</p>
+non-cached results may differ in the presence of file system races. <i>-- end note</i>]</p>
 <p><span style="background-color: #E0E0E0"><i>Actual cold-boot timing of iteration over 
 a directory with 15,047 entries was six seconds for non-cached status queries 
 versus one second for cached status queries. Windows XP, 3.0 GHz processor, with 
@@ -1953,19 +1998,16 @@ As if,</p>
 <p>Objects of type <code>directory_iterator</code> provide standard library 
 compliant iteration over the contents of a directory. Also see class <code>
 <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a></code>.</p>
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
-    {
       class directory_iterator
-        : public boost::iterator_facade&lt; directory_iterator,
-                                         <a href="#Class-directory_entry">directory_entry</a>,
-                                         boost::single_pass_traversal_tag &gt;
       {
       public:
         // <a href="#directory_iterator-members">member functions</a>
 
-        directory_iterator();  // creates the &quot;end&quot; iterator
+        directory_iterator() noexcept;  // creates the &quot;end&quot; iterator
         directory_iterator(const directory_iterator&amp;);
         explicit directory_iterator(const path&amp; p);
         directory_iterator(const path&amp; p, system::error_code&amp; ec);
@@ -1980,8 +2022,8 @@ compliant iteration over the contents of a directory. Also see class <code>
         //  C++ Std, 24.1.1 Input iterators [input.iterators]
       };
 
-    } // namespace filesystem
-  } // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
 <p> <code>directory_iterator</code> satisfies the requirements of an 
 input iterator (C++ Std, 24.2.1, Input iterators [input.iterators]).</p>
 <p>A <code>directory_iterator</code> reads successive elements from the directory for 
@@ -2039,13 +2081,12 @@ result in an iterator whose value is the removed or added directory entry. See
 </blockquote>
 <h4><a name="directory_iterator-members"><code>directory_iterator</code> members</a></h4>
 
-<p><code><a name="directory_iterator-default-ctor">directory_iterator</a>();</code></p>
+<p><code><a name="directory_iterator-default-ctor">directory_iterator</a>() 
+noexcept;</code></p>
 
 <blockquote>
 
 <p><i>Effects:</i> Constructs the end iterator.</p>
-
-<p><i>Throws:</i> Nothing.</p>
 
 </blockquote>
 
@@ -2081,28 +2122,28 @@ directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
 <p>Objects of type <code>recursive_directory_iterator</code> provide standard library 
 compliant iteration over the contents of a directory, including recursion into 
 its sub-directories.</p>
-<pre>  namespace boost
+<pre>namespace boost
+{
+  namespace filesystem
   {
-    namespace filesystem
-    {
       class recursive_directory_iterator :
         public iterator&lt;input_iterator_tag, directory_entry&gt;
       {
       public:
 
         // constructors and destructor
-        recursive_directory_iterator();
+        recursive_directory_iterator() noexcept;
         recursive_directory_iterator(const recursive_directory_iterator&amp;);
         explicit recursive_directory_iterator(const path&amp; p,
-          BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt = symlink_option::none);
+          <a href="#symlink_option">symlink_option</a> opt = symlink_option::none);
         recursive_directory_iterator(const path&amp; p,
-          BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt, system::error_code&amp; ec);
+          <a href="#symlink_option">symlink_option</a> opt, system::error_code&amp; ec);
         recursive_directory_iterator(const path&amp; p, system::error_code&amp; ec);
        ~recursive_directory_iterator();
 
         // observers
-        int level() const;
-        bool no_push<code>_pending</code>() const;
+        int level() const noexcept;
+        bool no_push<code>_pending</code>() const noexcept;
 
         // modifiers
         recursive_directory_iterator&amp; operator=(const recursive_directory_iterator&amp;);
@@ -2114,18 +2155,19 @@ its sub-directories.</p>
         void no_push(bool value=true);
 
         // other members as required by
-        //  C++ Std, 24.1.2 Input iterators [input.iterators]
+        //  C++ Std, Input iterators [input.iterators]
 
       private:
-<i><b>        // actual data members will probably be stored in a shared pimpl object,
-        // or some similar mechanism, to achieve the required input iterator copy semantics
-</b></i>        int  m_level; <b><i>                                // for exposition only</i></b>
-        bool m_no_<code>push</code>;  <i><b>                             // for exposition only
-        </b></i>BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) m_options;  <i><b>// for exposition only</b></i>
+<i><b>        // actual data members will probably be stored in a shared object,
+        // or some similar mechanism, to achieve the required input iterator
+        // copy semantics
+</b></i>        int            m_level; <b><i>   // for exposition only</i></b>
+        bool           m_no_<code>push</code>;  <i><b>// for exposition only
+        </b></i><a href="#symlink_option">symlink_option</a> m_options;  <i><b>// for exposition only</b></i>
       };
 
-    } // namespace filesystem
-  } // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
 
 <p>The behavior of a <code>recursive_directory_iterator</code> is the same 
 as a <code>directory_iterator</code> unless otherwise specified.</p>
@@ -2138,17 +2180,15 @@ as a <code>directory_iterator</code> unless otherwise specified.</p>
   over, or when <code>pop()</code> is called, <code>m_level</code> is 
   decremented, and iteration of the parent directory continues.</li>
 </ul>
-<pre>recursive_directory_iterator();</pre>
+<pre>recursive_directory_iterator() noexcept;</pre>
 <blockquote>
 
 <p><i>Effects:</i> Constructs the end iterator.</p>
 
-<p><i>Throws:</i> Nothing.</p>
-
 </blockquote>
 
-<pre>explicit recursive_directory_iterator(const path&amp; p, BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt = symlink_option::none);
-recursive_directory_iterator(const path&amp; p, BOOST_SCOPED_ENUM(<a href="#symlink_option">symlink_option</a>) opt, system::error_code&amp; ec);
+<pre>explicit recursive_directory_iterator(const path&amp; p, <a href="#symlink_option">symlink_option</a> opt = symlink_option::none);
+recursive_directory_iterator(const path&amp; p, <a href="#symlink_option">symlink_option</a> opt, system::error_code&amp; ec);
 recursive_<code>directory_iterator(</code>const path&amp; p, system::error_code&amp; ec<code>);</code></pre>
 <blockquote>
 
@@ -2173,17 +2213,15 @@ follow directory symlinks. To follow directory symlinks, specify <code>opt</code
 as <code>symlink_option::recurse</code>
 <i>-- end note</i>]</p>
 </blockquote>
-<pre>int level() const;</pre>
+<pre>int level() const noexcept;</pre>
 <blockquote>
   <p><i>Requires:</i> <code>*this != recursive_directory_iterator()</code>.</p>
   <p><i>Returns:</i> <code>m_level</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
-<pre>bool <code>no_push_pending</code>() const;</pre>
+<pre>bool <code>no_push_pending</code>() const noexcept;</pre>
 <blockquote>
   <p><i>Requires:</i> <code>*this != recursive_directory_iterator()</code>.</p>
   <p><i>Returns:</i> <code>m_no_push</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre><code>recursive_directory_iterator</code>&amp; <a name="recursive_directory_iterator-increment">operator++</a>();
 recursive_directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
@@ -2221,26 +2259,24 @@ is decremented and iteration of the parent directory resumes.</li>
   <p><i>Effects:</i> If <code>level() == 0</code>, set <code>*this</code> to <code>recursive_directory_iterator()</code>. 
   Otherwise, <code>--m_level</code>, cease iteration of the directory currently being 
   iterated over, and continue iteration over the parent directory.</p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre>void no_push(bool value=true);</pre>
 <blockquote>
   <p><i>Requires:</i> <code>*this != recursive_directory_iterator()</code>.</p>
 <p><i>Postcondition:</i> <code>no_push_pending() == value</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
   <p>[<i>Note:</i> <code>no_push()</code> is used to prevent 
   unwanted recursion into a directory. <i>--end note</i>]</p>
 </blockquote>
 <h3><a name="Operational-functions">Operational functions</a></h3>
 <p>Operational functions query or modify files, including directories, in external 
 storage.</p>
-<p style="font-size: 10pt">Operational functions access a file by resolving an 
+<p>Operational functions access a file by resolving an 
 object of class <code>path</code> to a particular file in a file hierarchy. The 
 path is resolved as if by the <i>POSIX</i>
 <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap04.html#tag_04_11">
 Pathname Resolution</a> mechanism.</p>
 <p>[<i>Note: </i>Because hardware failures, network failures,
-<a href="#Race-condition">race conditions</a>, and many 
+<a href="#Race-condition">file system races</a>, and many 
 other kinds of errors occur frequently in file system operations, users should be aware 
 that any filesystem operational function, no matter how apparently innocuous, may encounter 
 an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end note</i>]</p>
@@ -2336,8 +2372,8 @@ void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp;
   Error reporting</a>.</p>
   
 </blockquote>
-<pre>void <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option);
-void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, BOOST_SCOPED_ENUM(<a href="#copy_option">copy_option</a>) option, system::error_code&amp; ec);</pre>
+<pre>void <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option);
+void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Effects:</i> If <code>option == copy_option::</code><code>fail_if_exists 
   &amp;&amp; exists(to)</code>, an error is reported. Otherwise, the contents and attributes of the file <code>from</code> 
@@ -2385,34 +2421,31 @@ bool <a name="create_directory2">create_directory</a>(const path&amp; p, system:
 </blockquote>
 <pre>void <a name="create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
 void create_directory_symlink(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);</pre>
-<blockquote style="font-size: 10pt">
-  <p style="font-size: 10pt"><i>Effects:</i> 
+<blockquote>
+  <p><i>Effects:</i> 
   Establishes the postcondition, as if by <i>
   POSIX</i>
   <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html">
   symlink()</a></code>.</p>
-  <p style="font-size: 10pt"><i>
+  <p><i>
   Postcondition:</i> <code>new_symlink</code> resolves to a symbolic link file that 
   contains an unspecified representation of <code>to</code>.</p>
-  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
-  <p style="font-size: 10pt">[<i>Note:</i> 
-  Some <b>operating systems</b>, such as Windows, require symlink creation to 
+  <p dir="ltr">[<i>Note:</i> 
+  Some operating systems, such as Windows, require symlink creation to 
   identify that the link is to a directory. Portable code should use <code>
   create_directory_symlink()</code> to create directory symlinks rather than
   <code>create_symlink()</code>  <i>-- end note</i>]</p>
   <p>[<i>Note:</i> 
-  Some <b>operating systems</b> do not support symbolic links at all or support 
-  them only for regular files. Windows prior to Vista, for example, did not 
-  support symbolic links. 
-  Some <b>file systems</b> do not 
+  Some operating systems do not support symbolic links at all or support 
+  them only for regular files. 
+  Some file systems do not 
   support 
-  symbolic links regardless of the operating system - the FAT system used on floppy discs, memory cards and flash 
-  drives, 
-  for example. Thus symbolic links should only be used if these situations are 
-  not concerns, or if workarounds are provided.  <i>-- end note</i>]</p>
+  symbolic links regardless of the operating system - the FAT file system used on 
+  memory cards and flash drives, for example.  <i>-- end note</i>]</p>
   </blockquote>
 <pre>void <a name="create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
 void <a name="create_hard_link2">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);</pre>
@@ -2435,38 +2468,34 @@ void <a name="create_hard_link2">create_hard_link</a>(const path&amp; to, const 
   <a href="#Error-reporting">
   Error reporting</a>.</p>
   <p>[<i>Note:</i> 
-  Some <b>operating systems</b> do not support hard links at all or support 
-  them only for regular files. Some <b>file systems</b> do not support hard 
-  links regardless of the operating system - the FAT system used on floppy 
-  discs, memory cards and flash drives, for example. Some file systems limit the 
-  number of links per file. Thus hard links should only be used if these 
-  situations are not concerns, or if workarounds are provided.  <i>-- end note</i>]</p>
+  Some operating systems do not support hard links at all or support 
+  them only for regular files. Some file systems do not support hard 
+  links regardless of the operating system - the FAT file system used on memory 
+  cards and flash drives, for example. Some file systems limit the number of 
+  links per file.  <i>-- end note</i>]</p>
   </blockquote>
 <pre>void <a name="create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink);
 void <a name="create_symlink2">create_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);</pre>
-<blockquote style="font-size: 10pt">
-  <p style="font-size: 10pt"><i>Effects:</i> 
+<blockquote>
+  <p><i>Effects:</i> 
   Establishes the postcondition, as if by <i>
   POSIX</i>
   <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html">
   symlink()</a></code>.</p>
-  <p style="font-size: 10pt"><i>
+  <p><i>
   Postcondition:</i> <code>new_symlink</code> resolves to a symbolic link file that 
   contains an unspecified representation of <code>to</code>.</p>
-  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
   <p>[<i>Note:</i> 
-  Some <b>operating systems</b> do not support symbolic links at all or support 
-  them only for regular files. Windows prior to Vista, for example, did not 
-  support symbolic links. 
-  Some <b>file systems</b> do not 
+  Some operating systems do not support symbolic links at all or support 
+  them only for regular files. 
+  Some file systems do not 
   support 
-  symbolic links regardless of the operating system - the FAT system used on floppy discs, memory cards and flash 
-  drives, 
-  for example. Thus symbolic links should only be used if these situations are 
-  not concerns, or if workarounds are provided.  <i>-- end note</i>]</p>
+  symbolic links regardless of the operating system - the FAT system used on 
+  memory cards and flash drives, for example.  <i>-- end note</i>]</p>
   </blockquote>
 <pre>path <a name="current_path">current_path</a>();
 path <a name="current_path2">current_path</a>(system::error_code&amp; ec);</pre>
@@ -2488,7 +2517,7 @@ path <a name="current_path2">current_path</a>(system::error_code&amp; ec);</pre>
 <pre>void current_path(const path&amp; p);
 void current_path(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p style="font-size: 10pt"><i>Effects:</i> 
+  <p><i>Effects:</i> 
   Establishes the postcondition, as if by <i>
   POSIX</i>
   <code>
@@ -2502,14 +2531,13 @@ Error reporting</a>.</p>
   global state. It may be changed unexpectedly by a third-party or system 
   library functions, or by another thread.&nbsp; <i>-- end note</i>]</p>
 </blockquote>
-<pre>bool <a name="exists">exists</a>(file_status s);</pre>
+<pre>bool <a name="exists">exists</a>(file_status s) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i>
   <code>status_known(s) &amp;&amp; s.type() != file_not_found</code></p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre>bool <a name="exists2">exists</a>(const path&amp; p);
-bool <a name="exists3">exists</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+bool <a name="exists3">exists</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i> <code>exists(status(p))</code> or <code>exists(status(p, ec))</code>, 
   respectively.</p>
@@ -2518,15 +2546,15 @@ nothing.</p>
 </blockquote>
 <pre><code>bool <a name="equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2);
 bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);</code></pre>
-<blockquote style="font-size: 10pt">
-  <p style="font-size: 10pt"><i>Effects:</i> Determines <code>file_status s1</code> 
+<blockquote>
+  <p><i>Effects:</i> Determines <code>file_status s1</code> 
   and <code>s2</code>, as if by <code>status(p1)</code> and&nbsp; <code>status(p2)</code>, 
   respectively.</p>
-  <p style="font-size: 10pt"><i>Returns:</i> <code>true</code>, if <code>sf1 == 
+  <p><i>Returns:</i> <code>true</code>, if <code>sf1 == 
   sf2</code> and <code>p1</code> and <code>p2</code> resolve to the same file 
   system entity, else <code>false</code>.</p>
   <blockquote>
-  <p style="font-size: 10pt">Two paths are considered to resolve to the same 
+  <p>Two paths are considered to resolve to the same 
   file system entity if two candidate entities reside on the same device at the 
   same location. This is determined as if by the values of the <i>POSIX</i>
   <code>
@@ -2535,7 +2563,7 @@ bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">
   stat()</a></code> for the two paths, having equal <code>st_dev</code> values 
   and equal <code>st_ino</code> values.</p>
-  <p style="font-size: 10pt">[<i>Note:</i> <i>POSIX</i> requires that <i>&quot;st_dev</i> 
+  <p>[<i>Note:</i> <i>POSIX</i> requires that <i>&quot;st_dev</i> 
   must be unique within a Local Area Network&quot;. Conservative <i>POSIX</i> 
   implementations may also wish to check for equal <code>st_size</code> and
   <code>st_mtime</code> values. <i>Windows</i> implementations may use <code>
@@ -2545,7 +2573,7 @@ bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2
   <code>nFileSizeLow</code>, <code>ftLastWriteTime.dwLowDateTime</code>, and
   <code>ftLastWriteTime.dwHighDateTime</code>. <i>-- end note</i>]</p>
   </blockquote>
-  <p style="font-size: 10pt"><i>Throws:</i> <code>filesystem_error</code>
+  <p><i>Throws:</i> <code>filesystem_error</code>
   if <code>(!exists(s1) &amp;&amp; !exists(s2)) || (is_other(s1) &amp;&amp; is_other(s2))</code>, 
   otherwise as specified in
   <a href="#Error-reporting">
@@ -2556,9 +2584,6 @@ bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2
 uintmax_t <a name="file_size2">file_size</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 </div>
 <blockquote>
-  <p>
-    <span style="background-color: #FFFF00">Remarks: </span>
-  </p>
   <p><i>Returns:</i> If <code>exists(p) &amp;&amp; is_regular_file(p)</code>, the size 
   in bytes 
   of the file <code>p</code> resolves to, determined as if by the value of 
@@ -2567,7 +2592,7 @@ uintmax_t <a name="file_size2">file_size</a>(const path&amp; p, system::error_co
   obtained as if by <i>POSIX</i> <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code>. 
   Otherwise, <code>static_cast&lt;uintmax_t&gt;(-1)</code>.</p>
-  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 </blockquote>
@@ -2576,7 +2601,7 @@ uintmax_t hard_link_count(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
 
   <p><i>Returns:</i> The number of hard links for <code>p</code>.</p>
-  <p style="font-size: 10pt"><i>Throws:</i> As specified in
+  <p><i>Throws:</i> As specified in
   <a href="#Error-reporting">
   Error reporting</a>.</p>
 
@@ -2596,14 +2621,13 @@ const path&amp; <a name="initial_path">initial_path</a>(<code>system::error_code
   <a href="#Error-reporting">
   Error reporting</a>. Subsequent calls throw nothing.</p>
 </blockquote>
-<pre>bool <code><a name="is_directory">is_directory</a></code>(file_status s);</pre>
+<pre>bool <code><a name="is_directory">is_directory</a></code>(file_status s) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i> 
   <code>s.type() == directory_file</code></p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre><code>bool <a name="is_directory2">is_directory</a>(const path&amp; p);
-bool <a name="is_directory3">is_directory</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
+bool <a name="is_directory3">is_directory</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</code></pre>
 <blockquote>
   <p dir="ltr"><i>Returns:</i> <code>is_directory(status(p))</code> or <code>is_directory(status(p, ec))</code>, 
   respectively.</p>
@@ -2620,11 +2644,10 @@ bool <a name="is_empty2">is_empty</a></a>(const path&amp; p, system::error_code&
   directory_iterator(p) == directory_iterator()<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : file_size(p) == 0;</code></p>
 </blockquote>
-<pre>bool <code><a name="is_regular_file">is_regular_file</a></code>(file_status s);</pre>
+<pre>bool <code><a name="is_regular_file">is_regular_file</a></code>(file_status s) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i>
   <code>s.type() == regular_file</code></p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre><code>bool <a name="is_regular_file2">is_regular_file</a>(const path&amp; p);</code></pre>
 <blockquote>
@@ -2632,7 +2655,7 @@ bool <a name="is_empty2">is_empty</a></a>(const path&amp; p, system::error_code&
   <p><i>Throws:</i> <code>filesystem_error</code> 
   if <code>status(p)</code> would throw <code>filesystem_error.</code></p>
   </blockquote>
-<pre><code>bool <a name="is_regular_file3">is_regular_file</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
+<pre><code>bool <a name="is_regular_file3">is_regular_file</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</code></pre>
 <blockquote>
   <p><i>Effects:</i> Sets <code>ec</code> as if by <code>status(p, ec)</code>. [<i>Note:</i>
       <code>status_error</code>,
@@ -2645,30 +2668,27 @@ bool <a name="is_empty2">is_empty</a></a>(const path&amp; p, system::error_code&
   function directly. <i>-- end 
   note</i>] </p>
   <p><i>Returns:</i> <code>is_regular_file(status(p, ec))</code>.</p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
-<pre>bool <a name="is_other">is_other</a>(file_status s);</pre>
+<pre>bool <a name="is_other">is_other</a>(file_status s) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i>
   <code>return exists(s) &amp;&amp; !is_regular_file(s) &amp;&amp; !is_directory(s) &amp;&amp; !is_symlink(s)</code></p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre><code>bool <a name="is_other2">is_other</a>(const path&amp; p);
-bool <a name="is_other3">is_other</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
+bool <a name="is_other3">is_other</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</code></pre>
 <blockquote>
   <p><i>Returns:</i> <code>is_other(status(p))</code> or <code>is_other(status(p, ec))</code>, 
   respectively.</p>
   <p><i>Throws:</i> <code>filesystem_error</code>; overload with <code>error_code&amp;</code> throws 
   nothing.</p>
 </blockquote>
-<pre>bool <a name="is_symlink">is_symlink</a>(file_status s);</pre>
+<pre>bool <a name="is_symlink">is_symlink</a>(file_status s) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i> 
   <code>s.type() == symlink_file</code></p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre><code>bool <a name="is_symlink2">is_symlink</a>(const path&amp; p);
-bool <a name="is_symlink3">is_symlink</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
+bool <a name="is_symlink3">is_symlink</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</code></pre>
 <blockquote>
   <p><i>Returns:</i> <code>is_symlink(symlink_status(p))</code> or <code>is_symlink(symlink_status(p, ec))</code>, 
   respectively.</p>
@@ -2683,6 +2703,9 @@ std::time_t <a name="last_write_time2">last_write_time</a>(const path&amp; p<cod
   <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">stat</a></code> structure member <code>st_mtime</code>&nbsp; obtained 
   as if by <i>POSIX</i> <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code>.</p>
+  <p><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
 </blockquote>
 <pre>void <a name="last_write_time3">last_write_time</a>(const path&amp; p, const std::time_t new_time);
 void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std::time_t new_time<code>, system::error_code&amp; ec</code>);</pre>
@@ -2701,13 +2724,11 @@ void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std
   new_time</code> is not specified since it might not hold for file systems 
   with coarse time granularity. <i>-- end note</i>]</p>
 </blockquote>
-<pre>void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
+<pre>void <a name="permissions">permissions</a>(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
 void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p dir="ltr">Applies an operating system set of permissions to a file. See
-  <a href="#symlink_perms">perms</a> for specifics.<br>
-  <i><br>
-  Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
+  <p dir="ltr">
+  <i>Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
   <p dir="ltr"><i>Effects:</i> Applies the effective permissions bits from <code>
   prms</code> to the file <code>p</code> resolves to, as if by <i>POSIX</i>
   <code>
@@ -2726,16 +2747,22 @@ void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, sys
     <tr>
       <td><code>add_perms</code></td>
       <td>
-      <p dir="ltr">current_status.permissions() | (<code>prms &amp; perms_mask</code>)
+      <p dir="ltr"><code>status(p).permissions() | (prms &amp; 
+      <a href="#perms_mask">perms_mask</a>)</code>
       </td>
     </tr>
     <tr>
       <td><code>remove_perms</code></td>
-      <td>current_status.permissions() &amp; ~(<code>prms &amp; perms_mask</code>) </td>
+      <td><code>status(p)</code><code>.permissions() &amp; ~(prms &amp; 
+      <a href="#perms_mask">perms_mask</a>)
+      </code> </td>
     </tr>
   </table>
   <p>[<i>Note:</i> Conceptually permissions are viewed as bits, but the actual 
-  implementation by a file system may use some other mechanism. -- <i>end note</i>]</p>
+  implementation may use some other mechanism. -- <i>end note</i>]</p>
+  <p><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
 </blockquote>
 <pre>path <a name="read_symlink">read_symlink</a>(const path&amp; p);
 path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
@@ -2808,7 +2835,7 @@ void <a name="resize_file2">resize_file</a>(const path&amp; p, uintmax_t new_siz
 <p><i>Throws:</i> As specified in
 <a href="#Error-reporting">
 Error reporting</a>.</p>
-  <p style="font-size: 10pt"><i>Remarks:</i> Achieves its postconditions as if by 
+  <p><i>Remarks:</i> Achieves its postconditions as if by 
   POSIX <code>
   <a href="http://www.opengroup.org/onlinepubs/000095399/functions/truncate.html">
   truncate()</a></code>.</p>
@@ -2849,7 +2876,7 @@ return result;</pre>
   cause an exception to be 
 thrown.<i> -- end note</i>] </p>
   </blockquote>
-<pre><a href="#file_status">file_status</a> <a name="status2">status</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+<pre><a href="#file_status">file_status</a> <a name="status2">status</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</pre>
 <blockquote>
   <p><i>Effects: </i></p>
   <blockquote>
@@ -2900,7 +2927,8 @@ thrown.<i> -- end note</i>] </p>
       return <code>
       file_status(regular_file)</code>. [<i>Note:</i> <code>
 regular_file</code> implies appropriate <code>&lt;fstream&gt;</code> operations 
-      would succeed, assuming no hardware, permission, access, or race condition 
+      would succeed, assuming no hardware, permission, access, or file system 
+      race 
       errors. Lack of
 <code>regular_file</code> does not necessarily imply <code>&lt;fstream&gt;</code> operations would 
 fail on a directory.
@@ -2937,19 +2965,17 @@ directory_iterator(p)</code>would succeed.
       file_status(type_unknown)</code>.</li>
     </ul>
     </blockquote>
-<p><i>Throws:</i> Nothing.</p>
       <p><i>Remarks:</i> If a symbolic link is encountered during pathname 
       resolution, 
       pathname resolution continues using the contents of the symbolic link.</p>
 </blockquote>
-<pre>bool <a name="status_known">status_known</a>(file_status s);</pre>
+<pre>bool <a name="status_known">status_known</a>(file_status s) noexcept;</pre>
 <blockquote>
   <p><i>Returns:</i>
   <code>s.type() != status_error</code></p>
-  <p><i>Throws:</i> Nothing.</p>
 </blockquote>
 <pre>file_status <a name="symlink_status">symlink_status</a>(const path&amp; p);
-file_status <a name="symlink_status2">symlink_status</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+file_status <a name="symlink_status2">symlink_status</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</pre>
 <blockquote>
   <p><i>Effects:</i>&nbsp; Same as <a href="#status">status()</a>, above, 
   except that the attributes 
@@ -2963,8 +2989,9 @@ file_status <a name="symlink_status2">symlink_status</a>(const path&amp; p, syst
       that if the attributes indicate a symbolic link, as if by <i>POSIX</i>
       <a class="external" href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">
       S_ISLNK()</a>, return <code>file_status(symlink_file)</code>.</p>
-<p><i>Throws:</i> Nothing.</p>
       <p><i>Remarks:</i> Pathname resolution terminates if <code>p</code> names a symbolic link.</p>
+  <p><i>Throws:</i> <code>filesystem_error</code>; overload with <code>error_code&amp;</code> throws 
+  nothing.</p>
 </blockquote>
 <pre>path <a name="system_complete">system_complete</a>(const path&amp; p);
 path <a name="system_complete2">system_complete</a>(const path&amp; p, system::error_code&amp; ec);</pre>
@@ -2975,6 +3002,9 @@ path <a name="system_complete2">system_complete</a>(const path&amp; p, system::e
   <p><i>Returns:</i> The composed path.</p>
   <p><i>Postcondition:</i> For the returned path, <code>rp,</code> <code>
   rp.is_absolute()</code> is true.</p>
+  <p><i>Throws:</i> As specified in
+  <a href="#Error-reporting">
+  Error reporting</a>.</p>
   <p>[<i>Note:</i> For <i>POSIX</i>, <code>system_complete(p)</code> has the same semantics as
   <code>complete(p, current_path())</code>.</p>
   <p><a name="windows_effects">For <i>Windows</i></a>, <code>system_complete(p)</code> has the 
@@ -3029,6 +3059,7 @@ path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
   provided by the operating system. [<i>Note</i>: Such generators may block 
   until sufficient entropy develops. <i>--end note</i>]</p>
 </blockquote>
+
 <h3><a name="File-streams">File streams</a> -
 <a href="../../../../boost/filesystem/fstream.hpp">&lt;boost/filesystem/fstream.hpp&gt;</a></h3>
 <p>Replacements are provided for the file stream classes from the C++ standard 
@@ -3086,8 +3117,11 @@ semantics.</p>
     typedef basic_fstream&lt;wchar_t&gt; wfstream;
     typedef basic_ofstream&lt;wchar_t&gt; wofstream;
     
-  } // namespace filesystem
-} // namespace boost</pre>
+  }  // namespace filesystem
+}  // namespace boost</pre>
+
+
+
 <h2><a name="Path-decomposition-table">Path decomposition table</a></h2>
 <p>The table is generated by a program compiled with the Boost implementation.</p>
 <p>Shaded entries indicate cases where <i>POSIX</i> and <i>Windows</i> 
@@ -3638,13 +3672,12 @@ identified a number of mistakes or weaknesses, resulting in a more polished
 final document.</p>
 <p>Peter Dimov suggested a single class path, with member templates to adapt to 
 multiple string types. His idea became the basis for the version 3 path design.</p>
-<p>&nbsp;</p>
 <h2><a name="References">References</a></h2>
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
   <tr>
     <td width="16%" valign="top">[<a name="ISO_POSIX">ISO-POSIX</a>]</td>
     <td width="84%">ISO/IEC 9945:2003, IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group 
-    Base Specifications, Issue 6. Also known as The Single Unix<font face="Times New Roman">Ã‚Â® 
+    Base Specifications, Issue 6. Also known as The Single Unix<font face="Times New Roman">® 
     Specification, Version 3. Available from each of the organizations involved 
     in its creation. For example, read online or download from
     <a href="http://www.unix.org/single_unix_specification/">
@@ -3660,12 +3693,14 @@ multiple string types. His idea became the basis for the version 3 path design.<
   </tr>
 </table>
 <hr>
+>
 <p><font size="2">© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</font></p>
 <p><font size="2">Distributed under the Boost Software License, Version 1.0. See
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->31 October 2011<!--webbot bot="Timestamp" endspan i-checksum="32182" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->13 January 2012<!--webbot bot="Timestamp" endspan i-checksum="32267" --></font></p>
+
 
 </body>
 

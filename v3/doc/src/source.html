@@ -69,7 +69,9 @@ $snippet frontmatter "$SNIPPET_FILE;"
 &nbsp;&nbsp;&nbsp; <a href="#path-decomposition"><code>path</code> decomposition</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#path-query"><code>path</code> query</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-iterators"><code>path</code> iterators</a><br>
+$if $TARGET; == BOOST
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-deprecated-functions"><code>path</code> deprecated functions</a><br>
+$endif
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-non-member-functions"><code>path</code> non-member functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-inserter-extractor"><code>path</code> inserters and extractors</a><br>
  &nbsp;<a href="#Class-filesystem_error">Class <code>filesystem_error</code></a><br>
@@ -150,12 +152,16 @@ $snippet wording_prefix "$SNIPPET_FILE;"
 
 <p>This $WHAT; describes components that perform operations on file systems and 
 their components, such as paths, regular files, and directories.</p>
-<p>Operating systems such as <i>MAC OS, UNIX</i>, and <i>Windows</i> are 
+<p dir="ltr">Operating systems such as <i>Linux, MAC OS, UNIX</i>, and <i>Windows</i> are 
 mentioned in this $WHAT; for purposes of illustration or to give guidance to 
 implementers. No slight to other operating systems is implied or intended.</p>
-<p><a name="Footnote-3">Footnote 3</a>: <i>MAC OS</i>® is a registered trademark 
+<p><span style="background-color: #E0E0E0">Footnote:</span> Linux® is a 
+registered trademark of Linus Torvalds.</p>
+<p><a name="Footnote-3"><span style="background-color: #E0E0E0">Footnote</span></a><span style="background-color: #E0E0E0">:</span> <i>MAC OS</i>® is a registered trademark 
 of Apple Inc.</p>
-<p><a name="Footnote-4">Footnote 4</a>: <i>Windows</i>® is a registered 
+<p><span style="background-color: #E0E0E0">Footnote:</span> <i>UNIX</i>® is a 
+registered trademark of The Open Group. </p>
+<p><a name="Footnote-4"><span style="background-color: #E0E0E0">Footnote</span></a><span style="background-color: #E0E0E0">:</span> <i>Windows</i>® is a registered 
 trademark of Microsoft Corporation.</p>
 
 <h2><a name="Conformance">Conformance</a></h2>
@@ -723,30 +729,35 @@ native format prefix can be introduced to identify the native format. <i>-- end
 rationale</i>]</p>
 </blockquote>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<div align="center">
+  <center>
+
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#E0E0E0" width="90%">
   <tr>
     <td>
-    Class <code>path</code> does not currently map invalid characters in 
+    <i>Class <code>path</code> does not currently map invalid characters in 
     filenames to valid characters. In the future we might add something like 
-    this:<blockquote>
-<p>When converting filenames to the native operating system format, 
+    this:</i><blockquote>
+<p><i>When converting filenames to the native operating system format, 
 implementations are encouraged, but not required, to convert otherwise invalid 
 characters or character sequences to valid characters or character sequences. 
-Such conversions are implementation-defined.</p>
+Such conversions are implementation-defined.</i></p>
 <blockquote>
-<p>[<i>Note:</i> Filename conversion allows much wider portability of both 
-programs and filenames that would otherwise be possible.</p>
-<p>Implementations are encouraged to base conversion on existing standards or 
+<p><i>[Note: Filename conversion allows much wider portability of both 
+programs and filenames that would otherwise be possible.</i></p>
+<p><i>Implementations are encouraged to base conversion on existing standards or 
 practice. Examples include the Uniform Resource Locator escape syntax of a percent sign (<code>'%'</code>) 
-followed by two hex digits representing the character value. On
-<i>OpenVMS</i>, which does not allow percent signs in filenames, a dollar sign (<code>'&#36;'</code>) 
+followed by two hex digits representing the character value. On OpenVMS, which does not allow percent signs in filenames, a dollar sign (<code>'&#36;'</code>) 
 followed by two hex digits is the existing practice, as is converting lowercase 
-letters to uppercase.<i> -- end note.</i>]</p>
+letters to uppercase. -- end note.]</i></p>
 </blockquote>
     </blockquote>
     </td>
   </tr>
 </table>
+
+  </center>
+</div>
 
 <p>If the native format requires 
 paths for regular files to be formatted differently from paths for directories, the 
@@ -822,7 +833,7 @@ compliant iterator. The iterator's value type is required to be <code>char</code
   char32_t</code>.</li>
   <li>A C-array. The value type is required to be <code>char</code>, <code>
   wchar_t</code>, <code>char16_t</code>, or <code>char32_t</code>.</li>
-  <li>A <code>boost::filesystem::directory_entry</code>.</li>
+  <li>A <code>$NAMESPACE;::$SUBNAMESPACE;::directory_entry</code>.</li>
 </ul>
 
 <h3> <a name="path-constructors"> <code>
@@ -1179,7 +1190,9 @@ path</code>.</p>
 <p> The forward traversal order is as follows:</p>
 <ul>
   <li>The <i>root-name</i> element, if present.</li>
-  <li>The <i>root-directory</i> element, if present.</li>
+  <li>The <i>root-directory</i> element, if present, in the generic format. <i>
+  [note:</i> the generic format is required to ensure lexicographical 
+  comparison works correctly. <i>-- end note</i>]</li>
   <li>Each successive <i>filename</i> element, if present.</li>
   <li><i>Dot</i>, if one or more trailing non-root <i>slash</i> 
   characters are present.</li>
@@ -1352,7 +1365,7 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
   </blockquote>
 <h3><a name="Class-filesystem_error">Class <code>filesystem_error</code></a></h3>
 <pre>$NAMESPACE_BEGIN;
-      class basic_filesystem_error : public system_error
+      class filesystem_error : public system_error
       {
       public:
         filesystem_error();
@@ -1375,7 +1388,7 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
         const char * <a href="#filesystem_error-what">what</a>() const;
       };
 $NAMESPACE_END;</pre>
-<p>The class template <code>basic_filesystem_error</code> defines the type of 
+<p>The class template <code>filesystem_error</code> defines the type of 
 objects thrown as exceptions to report file system errors from functions described in this 
 $WHAT;.</p>
 <h4> <a name="filesystem_error-members"> <code>filesystem_error</code> members</a></h4>
