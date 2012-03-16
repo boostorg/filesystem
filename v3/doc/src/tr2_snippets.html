@@ -13,12 +13,12 @@ $id frontmatter=
   <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
     <tr>
       <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426">N3335=12-0025</td>
+      <td width="426"><span style="background-color: #FFFF00">D????=12-????</span></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-01-13<!--webbot bot="Timestamp" endspan i-checksum="12045" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-02-02<!--webbot bot="Timestamp" endspan i-checksum="12106" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -31,7 +31,7 @@ $id frontmatter=
   </table>
 
 
-<h1>Filesystem Library for C++11/TR2 (Revision 1)</h1>
+<h1>Filesystem Library for C++11/TR2 (Revision 2)</h1>
 
 
 <p>This paper proposes that the&nbsp;filesystem library component of <i>C++ Standard 
@@ -41,7 +41,19 @@ www.boost.org/libs/filesystem</a>). Preliminary wording is provided. A
 <a href="#TODO">TODO</a> list identifies remaining work to be done.</p>
 
 
-<h2>Revision history</h2>
+<h2>Revision history </h2>
+
+
+<p><span style="background-color: #FFFF00">N????=12-????</span>, Filesystem Library for C++11/TR2 (Revision 
+2). Changes 
+include:</p>
+
+
+<ul>
+  <li>Removed references to Boost within the proposed wording.</li>
+  <li>Corrected namespaces and made other minor fixes to the proposed wording.</li>
+  <li>Added Issue 7: How should class path inserter and extractor be specified?</li>
+</ul>
 
 
 <p><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3335.html">
@@ -57,7 +69,7 @@ include:</p>
     raised by the LWG review of N3239 at the Bloomington meeting, and private 
     communications from LWG members.</li>
     <li>Namespace changed to <code>files</code> as an experiment. Made this 
-    issue number 1 so the LWG can pass judgement.</li>
+    issue number 1 so the LWG can pass judgment.</li>
     <li>New functions were added, suggested by David Svoboda, to generate 
     canonical paths and manage permissions.</li>
     <li>More C++11 functionality was applied. This process is still incomplete, 
@@ -293,12 +305,32 @@ believe it should be deferred to some future release since (1) it is complex
 enough that I'd like to see actual implementation and use experience (presumably 
 via Boost), and (2) I can't recall a user ever requesting such a feature.</p>
 <hr>
-<h3>Issue 6: Could allocator support be class path?</h3>
+<h3>Issue 6: Could allocator support be added to class path?</h3>
 <h4>Discussion</h4>
 <p>Question raised by a committee member in private email.</p>
 <p>Comment from Beman: How would allocator support work, given that class path 
 is not a template?</p>
 <h4>Proposed resolution</h4>
+<hr>
+<h3>Issue 7: How should class path inserter and extractor be specified?</h3>
+<h4>Discussion</h4>
+<p>Class <code>path</code> currently is specified to used the Boost detail <code>
+quoted</code> stream manipulator. A path object is inserted delimited by quotes, 
+and extracted accordingly, ensuring that paths containing spaces are 
+round-tripped correctly.&nbsp; Quotes in the path itself are escaped, and io 
+state is saved and restored.</p>
+<p>See
+<a href="http://www.boost.org/doc/libs/1_48_0/libs/io/doc/quoted_manip.html">
+http://www.boost.org/doc/libs/1_48_0/libs/io/doc/quoted_manip.html</a></p>
+<p>Since the standard can't specify behavior in terms of something in Boost, we 
+have to change the specification. Since the <code>quoted</code> stream 
+manipulator is a handy little component, the issue is raised as to whether it 
+should go in TR2.</p>
+<h4>Proposed resolution</h4>
+<p><b>Option 1:</b> Add Boost's <code>quoted</code> stream manipulator to TR2, 
+and change the Filesystem docs to reference it.</p>
+<p><b>Option 2:</b> Specify the path inserter and extractor to have the desired 
+behavior with reference to how it is achieved. </p>
 <hr>
 <p>$endid
 

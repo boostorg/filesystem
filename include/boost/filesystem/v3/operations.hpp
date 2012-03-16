@@ -765,24 +765,43 @@ namespace detail
     {
       if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
         m_options &= ~symlink_option::_detail_no_push;
-      // patch for following else if contributed by Daniel Aarno, fixing #5652 for cyclic symlinks  
-      else if (((m_options & symlink_option::recurse) == symlink_option::recurse
-        || !is_symlink(m_stack.top()->symlink_status()))
-           && is_directory(m_stack.top()->status()))
+
+      else
       {
-        if (ec == 0)
-          m_stack.push(directory_iterator(m_stack.top()->path()));
-        else
-        {
-          m_stack.push(directory_iterator(m_stack.top()->path(), *ec));
-          if (*ec) return;
-        }
-        if (m_stack.top() != directory_iterator())
-        {
-          ++m_level;
+        // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
+        // symlinks correctly and efficiently, fixing ticket #5652.
+        //   if (((m_options & symlink_option::recurse) == symlink_option::recurse
+        //         || !is_symlink(m_stack.top()->symlink_status()))
+        //       && is_directory(m_stack.top()->status())) ...
+        // The predicate code has since been rewritten to pass error_code arguments,
+        // per ticket #5653.
+        bool or_pred = (m_options & symlink_option::recurse) == symlink_option::recurse
+                       || (ec == 0 ? !is_symlink(m_stack.top()->symlink_status())
+                                   : !is_symlink(m_stack.top()->symlink_status(*ec)));
+        if (ec != 0 && *ec)
           return;
+        bool and_pred = or_pred && (ec == 0 ? is_directory(m_stack.top()->status())
+                                            : is_directory(m_stack.top()->status(*ec)));
+        if (ec != 0 && *ec)
+          return;
+
+        if (and_pred)
+        {
+          if (ec == 0)
+            m_stack.push(directory_iterator(m_stack.top()->path()));
+          else
+          {
+            m_stack.push(directory_iterator(m_stack.top()->path(), *ec));
+            if (*ec)
+              return;
+          }
+          if (m_stack.top() != directory_iterator())
+          {
+            ++m_level;
+            return;
+          }
+          m_stack.pop();
         }
-        m_stack.pop();
       }
 
       while (!m_stack.empty() && ++m_stack.top() == directory_iterator())
@@ -859,6 +878,8 @@ namespace detail
       BOOST_ASSERT_MSG(m_imp.get(),
         "increment() on end recursive_directory_iterator");
       m_imp->increment(&ec);
+      if (m_imp->m_stack.empty())
+        m_imp.reset(); // done, so make end iterator
       return *this;
     }
 

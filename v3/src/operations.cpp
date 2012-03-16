@@ -502,7 +502,10 @@ namespace
       || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
   }
 
-#if defined(_MSC_VER) || (defined(__GLIBCXX__) && __GLIBCXX__ >= 20110325)
+// some distributions of mingw as early as GLIBCXX__ 20110325 have _stricmp, but the
+// offical 4.6.2 release with __GLIBCXX__ 20111026  doesn't. Play it safe for now, and
+// only use _stricmp if _MSC_VER is defined
+#if defined(_MSC_VER) // || (defined(__GLIBCXX__) && __GLIBCXX__ >= 20110325)
 #  define BOOST_FILESYSTEM_STRICMP _stricmp
 #else
 #  define BOOST_FILESYSTEM_STRICMP strcmp

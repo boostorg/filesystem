@@ -614,6 +614,20 @@ namespace
     BOOST_TEST(walk_tree(false) == 1);
     if (create_symlink_ok)
       BOOST_TEST(walk_tree(true) > 1);
+
+    //  test iterator increment with error_code argument
+    boost::system::error_code ec;
+    int d1f1_count = 0;
+    for (fs::recursive_directory_iterator it (dir, fs::symlink_option::no_recurse);
+         it != fs::recursive_directory_iterator();
+         it.increment(ec))
+    {
+      if (it->path().filename() == "d1f1")
+        ++d1f1_count;
+    }
+    BOOST_TEST(!ec);
+    BOOST_TEST(d1f1_count == 1);
+
     cout << "  recursive_directory_iterator_tests complete" << endl;
   }
 
