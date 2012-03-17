@@ -78,7 +78,6 @@ namespace
 # ifdef BOOST_WINDOWS_API
 
   const wchar_t separator = L'/';
-  const wchar_t preferred_separator = L'\\';
   const wchar_t* const separators = L"/\\";
   const wchar_t* separator_string = L"/";
   const wchar_t* preferred_separator_string = L"\\";
@@ -91,7 +90,6 @@ namespace
 # else
 
   const char separator = '/';
-  const char preferred_separator = '/';
   const char* const separators = "/";
   const char* separator_string = "/";
   const char* preferred_separator_string = "/";
@@ -106,7 +104,7 @@ namespace
   {
     return c == separator
 #     ifdef BOOST_WINDOWS_API
-      || c == preferred_separator
+      || c == path::preferred_separator
 #     endif
       ;
   }
@@ -144,7 +142,6 @@ namespace boost
 {
 namespace filesystem3
 {
-
   path& path::operator/=(const path& p)
   {
     if (p.empty())
@@ -629,7 +626,6 @@ namespace boost
 {
 namespace filesystem3
 {
-
   path::iterator path::begin() const
   {
     iterator itr;
@@ -682,7 +678,7 @@ namespace filesystem3
 #       endif
          )
       {
-        it.m_element.m_pathname = separator;
+        it.m_element.m_pathname = separator;  // generic format; see docs
         return;
       }
 
@@ -738,8 +734,8 @@ namespace filesystem3
 
     it.m_pos = filename_pos(it.m_path_ptr->m_pathname, end_pos);
     it.m_element = it.m_path_ptr->m_pathname.substr(it.m_pos, end_pos - it.m_pos);
-    if (it.m_element.m_pathname == preferred_separator_string)
-      it.m_element.m_pathname = separator_string;  // needed for Windows, harmless on POSIX
+    if (it.m_element.m_pathname == preferred_separator_string) // needed for Windows, harmless on POSIX 
+      it.m_element.m_pathname = separator_string;    // generic format; see docs 
   }
 
 }  // namespace filesystem3

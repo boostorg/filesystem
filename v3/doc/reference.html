@@ -20,17 +20,17 @@
 */
 
 body  {
-       font-family: sans-serif;
-       margin: 1em;
-       max-width : 8.5in;
-	 }
+        font-family: sans-serif;
+        margin: 1em;
+        max-width : 8.5in;
+      }
 
-table   { margin: 0.5em; }
+table { margin: 0.5em; }
 
-pre     { background-color:#D7EEFF }
+pre   { background-color:#D7EEFF }
 
-ins     { background-color:#A0FFA0 }
-del     { background-color:#FFA0A0 }
+ins   { background-color:#A0FFA0 }
+del   { background-color:#FFA0A0 }
 
 /*** end ***/
 </style>
@@ -632,6 +632,7 @@ end example</i>]</p>
         typedef <b><i><a href="#value_type">see below</a></i></b>                                    value_type;  // char for POSIX, wchar_t for Windows
         typedef std::basic_string&lt;value_type&gt;                string_type;
         typedef std::codecvt&lt;wchar_t, char, std::mbstate_t&gt;  codecvt_type;
+        constexpr value_type                                 preferred_separator;
 
         // <a href="#path-constructors">constructors</a> and destructor
         path();

@@ -18,7 +18,7 @@ $id frontmatter=
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-02-02<!--webbot bot="Timestamp" endspan i-checksum="12106" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-03-16<!--webbot bot="Timestamp" endspan i-checksum="12179" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -31,28 +31,37 @@ $id frontmatter=
   </table>
 
 
-<h1>Filesystem Library for C++11/TR2 (Revision 2)</h1>
+<h1><span style="background-color: #FFFF00">Draft</span><br>
+Filesystem Library Proposal (Revision 3)</h1>
 
 
-<p>This paper proposes that the&nbsp;filesystem library component of <i>C++ Standard 
-Library Technical Report 2</i> be based on Version 3 of the Boost Filesystem 
+<p>This paper proposes a filesystem library component suitable for a <i>C++ 
+Standard Library Technical Report</i> or for the <i>C++ Standard Library</i>. 
+The proposed library is based on Version 3 of the Boost Filesystem 
 Library (see <a href="http://www.boost.org/libs/filesystem">
 www.boost.org/libs/filesystem</a>). Preliminary wording is provided. A
 <a href="#TODO">TODO</a> list identifies remaining work to be done.</p>
 
 
-<h2>Revision history </h2>
+<h2>Revision history</h2>
 
 
-<p><span style="background-color: #FFFF00">N????=12-????</span>, Filesystem Library for C++11/TR2 (Revision 
+<p><span style="background-color: #FFFF00">D????=12-????</span></p>
+
+
+<p>N3365=12-0055, Filesystem Library Proposal (Revision 
 2). Changes 
 include:</p>
 
 
 <ul>
+  <li>Namespaces changed to <code>std::tbd::filesystem</code> per 
+  <a href="#Issues-List">issue 
+  1</a> discussion in Kona.</li>
   <li>Removed references to Boost within the proposed wording.</li>
-  <li>Corrected namespaces and made other minor fixes to the proposed wording.</li>
+  <li>Minor fixes to the proposed wording.</li>
   <li>Added Issue 7: How should class path inserter and extractor be specified?</li>
+  <li>Marked up all issues to reflect Kona LWG discussions.</li>
 </ul>
 
 
@@ -142,9 +151,6 @@ class would be the best place to experiment with this concept, not a path class.
     application is correct.</li>
     <li>Boost.Filesystem needs to implement <code>char16_t</code> and <code>char32_t</code> support to verify the 
     specification for these is correct.</li>
-    <li>Replace path inserter and extractor <i>Effects</i> with prose, since the 
-    current wording relies on 
-  <code>boost::io::quoted</code></span>.</li>
     <li>The Boost implementation has more class path non-member relational 
     functions that shown in the docs, and the specific set of relational 
     functions varies between Windows and POSIX. Figure out what's happening and 
@@ -153,8 +159,40 @@ class would be the best place to experiment with this concept, not a path class.
     implemented. Expose <code>path_traits</code>?</li>
     <li><i>Effects</i> for <code>copy</code> and <code>copy_directory</code> 
     need to be reviewed, revised, tested, peer reviewed.</li>
-    <li>Review changes to header &lt;fstream&gt;. Add semantics. Add section 
-    names. Verify still in sync with WP.</li>
+    <li>Dinkumware/Microsoft report slightly different results for Decomposition 
+    table. Rerun table. Check discrepancies.</li>
+    <li>Apply issue resolutions from Kona.</li>
+    <li>Remove registered trademarks from normative text per ISO policy.</li>
+    <li>Review Nick Stoughton's email for suggestions, action items.</li>
+    <li>Change <code>time_t</code> to <code>chrono system_clock::time_point</code>, 
+    per LWG discussion in Kona. </li>
+    <li>Add [section.name] and, if possible, section numbering, per LWG 
+    discussion in Kona.</li>
+    <li>Add Ed Smith-Rowland's suggestion: <br>
+    &gt;path&amp; path+=(const path&amp; p);<br>
+    &gt; and<br>
+    &gt; path operator+(const path&amp; lhs, const path&amp; rhs);<br>
+    &gt; to tack on things like suffixes or numbers on the end of files.<br>
+    &gt; This has no real semantics, it just concatenates pathnames.</li>
+    <li>Ed Smith-Rowland:<br>
+    &gt; I found it less confusing to switch to positive logic for 
+    recursive_directory_iterator:<br>
+    &gt; bool no_push_pending() const noexcept;<br>
+    &gt; to say<br>
+    &gt; bool is_push_pending() const noexcept;<br>
+    &gt;<br>
+    &gt; and<br>
+    &gt; void no_push(bool value=true);<br>
+    &gt; to say<br>
+    &gt; void push_pending(bool value=false);<br>
+    &gt; or<br>
+    &gt; void set_push_pending(bool value=false);<br>
+    &gt; I found it less confusing and I think other parts of the library strive 
+    for this.</li>
+    <li>recursive_directory_iterator is specified in terms of private data 
+    members. Remove these (including the comment!) and specify in terms of 
+    behavior only.<br>
+&nbsp;</li>
   </ul>
   
   $endid
@@ -239,9 +277,10 @@ End of proposed wording.</span> </p>
 <hr>
 <h2><a name="Issues-List">Issues List</a></h2>
 <hr>
-<h3>Issue 1: What is the appropriate namespace?</h3>
+<h3>Issue 1: What is the appropriate namespace?&nbsp;&nbsp;&nbsp; Status: 
+Tentatively resolved</h3>
 <h4>Discussion</h4>
-<p>The proposal places the library in <code>namespace std::tr2::$SUBNAMESPACE;</code>. 
+<p>The N3335 proposal places the library in namespace <code>std::tr2::files</code>. 
 Rationale for a sub-namespace is that the library uses several names that don't 
 seem appropriate for namespace <code>tr2</code> since full standardization would 
 then put the names into <code>std</code>. The function names <code>remove</code> 
@@ -249,12 +288,17 @@ and <code>rename</code> are of particular concern because these functions differ
 in behavior from current standard library functions with those names. It also 
 doesn't seem desirable to preempt names like <code>equivalent</code> and <code>
 status</code>.</p>
-<p>The Boost Filesystem library used <code>namespace boost::filesystem</code>, 
-but that always seemed a bit too long.</p>
-<h4>Proposed resolution</h4>
-<p>Status quo. Leave in <code>namespace std::tr2::$SUBNAMESPACE;</code>.</p>
+<h4>Resolution</h4>
+<p><i>Kona: Strong support for <code>filesystem</code> as the library's 
+namespace. Strong support for a technical report namespace that alerts uses that 
+contents are likely to change if and when they later get moved into the 
+standard. </i></p>
+<p><i>No decision yet on a TR namespace; <code>experimental</code> being used as 
+a placeholder. Thus the full namespace is changed to <code>
+std::experimental::filesystem.</code></i></p>
 <hr>
-<h3>Issue 2: Excessive use of <code>const codecvt_type&amp;</code> arguments</h3>
+<h3>Issue 2: Excessive use of <code>const codecvt_type&amp;</code> arguments&nbsp;&nbsp;&nbsp; 
+Status: Open</h3>
 <h4>Discussion</h4>
 <p>Users sometimes need to do path conversions that use something other than the 
 imbued codecvt facet. The need is particularly acute in multi-threaded 
@@ -263,38 +307,45 @@ said, providing an optional <code>const codecvt_type&amp;</code> argument for ev
 function where the need might possibly arise is excessive because its use is so 
 rare and it adds considerable interface clutter.</p>
 <h4>Proposed resolution</h4>
-<p dir="ltr">Remove all existing class path <code>const codecvt_type&amp;</code> 
-arguments.</p>
-<p>Add an additional non-member function:</p>
-<blockquote>
-  <pre>unspecified-iterator-type convert(<code>const path&amp; p, const codecvt_type&amp; codecvt</code>);</pre>
-  <p dir="ltr"><i>Returns: </i>An unspecified iterator type whose value type is
-  <code>path::value_type</code>. The returned iterator points to the beginning 
-  of a sequence equivalent to <code>p.native()</code> with encoding as specified 
-  by <code>codecvt</code>.</p>
-</blockquote>
+<p dir="ltr"><i>Kona:</i></p>
+<p dir="ltr"><i>Remove all existing class path <code>const codecvt_type&amp;</code> 
+arguments.</i></p>
+<p dir="ltr"><i>Beman to pursue separate encoding conversion functionality, per 
+Thursday N3336 &quot;Adapting standard library strings and IO to a Unicode World&quot; 
+discussion. See Kona wiki.</i></p>
+<p dir="ltr"><i>If a separate encoding conversion facility isn't possible, then 
+some form of minimal class path encoding conversion facility will be needed. 
+But..., the LWG would like to see use cases and clearer explanation of 
+motivation before deciding on specifics, and be very sure that there is no way 
+to achieve with existing std library functionality, albeit with some loss of 
+efficiency.</i></p>
 <hr>
-<h3>Issue 3: Possible &quot;implicit cast to native type&quot;?</h3>
+<h3>Issue 3: Possible &quot;implicit cast to native type&quot;?&nbsp;&nbsp;&nbsp;&nbsp; 
+Status: Open</h3>
 <h4>Discussion</h4>
 <p>In Bloomington there was discussion of &quot;implicit cast to implicit cast to 
 native OS type to inter operate with existing iostream library and native 
 functions instead of modifying fstream&quot;.</p>
-<p>Beman comments: I wasn't in Bloomington and am not sure of the context of the 
-above. N3239 inadvertently included the Boost docs for &lt;fstream&gt; rather than 
-suggested &lt;fstream&gt; changes for TR2, and that may have caused some confusion. Or 
-maybe I'm just missing something from the wiki notes. Some further discussions 
-are needed to better define the issue.</p>
 <h4>Proposed resolution</h4>
+<p><i>Kona: The Dinkumware/Microsoft implementation has added an implicit 
+conversion to the string type, eliminating any need to modify fstream. 
+(Discussion: might be safer to make the implicit conversion protected, then make 
+fstream classes friends).</i></p>
+<p><i>Action: Beman to investigate, test, as avoiding modification of existing 
+header and classes is much desired.</i></p>
 <hr>
-<h3>Issue 4: Given move semantics, it is best not to return const strings.</h3>
+<h3>Issue 4: Given move semantics, it is best not to return const strings.&nbsp;&nbsp;&nbsp;&nbsp; 
+Status: Resolved</h3>
 <h4>Discussion</h4>
 <p>The issue title pretty much says it all.</p>
 <h4>Proposed resolution</h4>
-<p>As part of the C++11 refinements to the interface, review returns of const 
-strings and change to plain strings where appropriate.</p>
+<p><i>Kona: Return plain strings. Remove the permission for implementations to 
+return const refs, since uses are not in performace critical code and subtle 
+portability bugs may occur.</i></p>
+<p><i>Action: Beman to apply to proposed wording.</i></p>
 <hr>
 <h3>Issue 5: Is there a way to handle characters that are illegal for particular 
-OS?</h3>
+OS?&nbsp;&nbsp;&nbsp;&nbsp; Status: NAD</h3>
 <h4>Discussion</h4>
 <p>Question raised by Pablo in Bloomington.</p>
 <h4>Proposed resolution</h4>
@@ -304,15 +355,20 @@ unrepresentable characters. There was a comment to that effect in N3239. I
 believe it should be deferred to some future release since (1) it is complex 
 enough that I'd like to see actual implementation and use experience (presumably 
 via Boost), and (2) I can't recall a user ever requesting such a feature.</p>
+<p><i>Kona: No consensus for change, since there doesn't appear to be any 
+compelling use case.</i></p>
 <hr>
-<h3>Issue 6: Could allocator support be added to class path?</h3>
+<h3>Issue 6: Could allocator support be added to class path?&nbsp;&nbsp;&nbsp;&nbsp; 
+Status: Open</h3>
 <h4>Discussion</h4>
 <p>Question raised by a committee member in private email.</p>
-<p>Comment from Beman: How would allocator support work, given that class path 
-is not a template?</p>
-<h4>Proposed resolution</h4>
+<p><i>Kona: Much discussion.</i></p>
+<p><i>Action: Alisdair to write paper, based on a real implementation, so that 
+it is possible to assess the impact on interface, performance, etc.</i></p>
+<p><i>Post-Kona: Alisdair will defer paper until after TR. </i></p>
 <hr>
-<h3>Issue 7: How should class path inserter and extractor be specified?</h3>
+<h3>Issue 7: How should class path inserter and extractor be specified?&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Status: Resolved</h3>
 <h4>Discussion</h4>
 <p>Class <code>path</code> currently is specified to used the Boost detail <code>
 quoted</code> stream manipulator. A path object is inserted delimited by quotes, 
@@ -326,11 +382,11 @@ http://www.boost.org/doc/libs/1_48_0/libs/io/doc/quoted_manip.html</a></p>
 have to change the specification. Since the <code>quoted</code> stream 
 manipulator is a handy little component, the issue is raised as to whether it 
 should go in TR2.</p>
-<h4>Proposed resolution</h4>
-<p><b>Option 1:</b> Add Boost's <code>quoted</code> stream manipulator to TR2, 
-and change the Filesystem docs to reference it.</p>
-<p><b>Option 2:</b> Specify the path inserter and extractor to have the desired 
-behavior with reference to how it is achieved. </p>
+<h4>Resolution</h4>
+<p><i>Kona: Specify the path inserter and extractor to have the desired 
+behavior without reference to how it is achieved. (If someone wants to propose a 
+quoted manipulator, that's a separate proposal for a different TR.)</i></p>
+<p><i>Action:&nbsp; Beman to apply to proposed wording.</i></p>
 <hr>
 <p>$endid
 

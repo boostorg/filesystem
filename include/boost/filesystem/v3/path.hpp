@@ -58,13 +58,16 @@ namespace filesystem3
     //  value_type is the character type used by the operating system API to
     //  represent paths.
 
-#   ifdef BOOST_WINDOWS_API
-    typedef wchar_t                                     value_type;
-#   else 
-    typedef char                                        value_type;
-#   endif
-    typedef std::basic_string<value_type>               string_type;  
-    typedef std::codecvt<wchar_t, char, std::mbstate_t> codecvt_type;
+# ifdef BOOST_WINDOWS_API
+    typedef wchar_t                        value_type;
+    BOOST_STATIC_CONSTEXPR value_type      preferred_separator = L'\\';
+# else 
+    typedef char                           value_type;
+    BOOST_STATIC_CONSTEXPR value_type      preferred_separator = '/';
+# endif
+    typedef std::basic_string<value_type>  string_type;  
+    typedef std::codecvt<wchar_t, char,
+                         std::mbstate_t>   codecvt_type;
 
 
     //  ----- character encoding conversions -----
@@ -406,15 +409,10 @@ namespace filesystem3
     iterator begin() const;
     iterator end() const;
 
-    //  -----  static members  -----
+    //  -----  static member functions  -----
 
-    //  -----  imbue  -----
-
-    static std::locale imbue(const std::locale& loc);
-
-    //  -----  codecvt  -----
-
-    static const codecvt_type& codecvt()
+    static std::locale  imbue(const std::locale& loc);
+    static const        codecvt_type& codecvt()
     {
       return *wchar_t_codecvt_facet();
     }

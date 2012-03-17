@@ -976,9 +976,11 @@ int cpp_main(int, char*[])
 // document state of critical macros
 #ifdef BOOST_POSIX_API
   cout << "BOOST_POSIX_API" << endl;
+  BOOST_TEST(path::preferred_separator == '/');
 #endif
 #ifdef BOOST_WINDOWS_API
   cout << "BOOST_WINDOWS_API" << endl;
+  BOOST_TEST(path::preferred_separator == '\\');
 #endif
 
   l.push_back('s');
@@ -1021,7 +1023,7 @@ int cpp_main(int, char*[])
   test_codecvt_argument();
   test_error_handling();
 
-# if 0
+#if 0
 
   test_user_supplied_type();
 
