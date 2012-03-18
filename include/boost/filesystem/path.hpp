@@ -21,8 +21,8 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path_traits.hpp>  // includes <cwchar>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path_traits.hpp>  // includes <cwchar>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>

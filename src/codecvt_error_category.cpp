@@ -26,8 +26,8 @@
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path_traits.hpp>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path_traits.hpp>
 #include <boost/system/error_code.hpp>
 #include <locale>
 #include <vector>

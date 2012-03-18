@@ -10,7 +10,7 @@
 #ifndef BOOST_FILESYSTEM3_WIN_FILE_CODECVT_HPP
 #define BOOST_FILESYSTEM3_WIN_FILE_CODECVT_HPP
 
-#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/config.hpp>
 #include <locale>  
 
   //------------------------------------------------------------------------------------//

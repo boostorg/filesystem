@@ -24,7 +24,7 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/operations.hpp>
+#include <boost/filesystem/operations.hpp>
 
 # ifdef BOOST_POSIX_API
 #   include <fcntl.h>

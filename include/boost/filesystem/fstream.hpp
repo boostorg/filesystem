@@ -18,7 +18,7 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/filesystem/v3/path.hpp>
+#include <boost/filesystem/path.hpp>
 #include <iosfwd>
 #include <fstream>
 

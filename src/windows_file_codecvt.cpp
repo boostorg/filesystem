@@ -24,7 +24,7 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/config.hpp>
 #include <cwchar>  // for mbstate_t
 
 #ifdef BOOST_WINDOWS_API

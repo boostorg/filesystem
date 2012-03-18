@@ -49,7 +49,7 @@
 # define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
 #endif
 
-#include <boost/filesystem/v3/operations.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <vector> 

@@ -22,8 +22,8 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path.hpp>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
