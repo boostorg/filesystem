@@ -520,16 +520,16 @@ namespace
       && is_separator(path[1])) return string_type::npos;
 
 #   ifdef BOOST_WINDOWS_API
-  	// case "\\?\"
-  	if (size > 4
-  	  && is_separator(path[0])
-  	  && is_separator(path[1])
-  	  && path[2] == questionmark
-  	  && is_separator(path[3]))
-  	{
-  	  string_type::size_type pos(path.find_first_of(separators, 4));
+    // case "\\?\"
+    if (size > 4
+      && is_separator(path[0])
+      && is_separator(path[1])
+      && path[2] == questionmark
+      && is_separator(path[3]))
+    {
+      string_type::size_type pos(path.find_first_of(separators, 4));
         return pos < size ? pos : string_type::npos;
-  	}
+    }
 #   endif
 
     // case "//net {/}"

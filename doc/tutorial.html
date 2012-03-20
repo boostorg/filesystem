@@ -6,7 +6,7 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Filesystem Tutorial</title>
-<link rel="stylesheet" type="text/css" href="../../../../doc/src/minimal.css">
+<link rel="stylesheet" type="text/css" href="../../../doc/src/minimal.css">
 </head>
 
 <body>
@@ -14,8 +14,8 @@
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td width="277">
-<a href="../../../../index.htm">
-<img src="../../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
+<a href="../../../index.htm">
+<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
     <td align="middle">
     <font size="7">Filesystem Tutorial</font>
     </td>
@@ -158,7 +158,7 @@ containing the size of the file named by the argument. The declaration looks
 like this:</p>
 
 <blockquote>
-  <pre><span style="background-color: #FFFFFF; ">uintmax_t</span> <a name="file_size">file_size</a>(const path&amp; p);</pre>
+  <pre><span style="background-color: #FFFFFF; ">uintmax_t</span> file_size(const path&amp; p);</pre>
 </blockquote>
 <p>For now, all you need to know is that class path has constructors that take
 <code>const char *</code> and many other useful types. (If you can't wait to 
@@ -1095,7 +1095,7 @@ on an
   operational error. <code>filesystem_error</code> is derived from <code>std::runtime_error</code>. 
 It has a 
   member function to obtain the <code>
-<a href="../../../system/doc/reference.html#Class-error_code">error_code</a></code> reported by the source 
+<a href="../../system/doc/reference.html#Class-error_code">error_code</a></code> reported by the source 
   of the error. It also has member functions to obtain the path or paths that caused 
   the error.</p>
 
@@ -1121,7 +1121,7 @@ It has a
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->20 February 2011<!--webbot bot="Timestamp" endspan i-checksum="40667" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->20 March 2012<!--webbot bot="Timestamp" endspan i-checksum="27254" --></p>
 
 </body>
 
