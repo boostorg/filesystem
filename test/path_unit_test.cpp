@@ -19,14 +19,6 @@
 //
 //  ----------------------------------------------------------------------------------  //
 
-#define BOOST_FILESYSTEM_VERSION 3
-
-#include <boost/config.hpp>
-
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
-
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -38,6 +30,7 @@
 #endif
 
 #include <boost/filesystem/path.hpp>
+
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
 #include <boost/detail/lightweight_test.hpp>

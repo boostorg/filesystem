@@ -7,12 +7,12 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//  Old standard library configurations, particularly MingGW, don't support wide strings.
+//  Report this with an explicit error message.
 #include <boost/config.hpp>
-#if !defined( BOOST_NO_STD_WSTRING )
-// Boost.Filesystem V3 and later requires std::wstring support.
-// During the transition to V3, libraries are compiled with both V2 and V3 sources.
-// On old compilers that don't support V3 anyhow, we just skip everything so the compile
-// will succeed and the library can be built.
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/system/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
@@ -839,5 +839,3 @@ namespace filesystem3
 
 }  // namespace filesystem3
 }  // namespace boost
-
-#endif  // has wide character support

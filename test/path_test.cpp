@@ -39,14 +39,6 @@
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-#define BOOST_FILESYSTEM_VERSION 3
-
-#include <boost/config.hpp>
-
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
-
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -58,6 +50,12 @@
 #endif
 
 #include <boost/filesystem/operations.hpp>
+
+#include <boost/config.hpp>
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
+
 #include <boost/utility.hpp>
 #include <iostream>
 #include <sstream>
@@ -65,12 +63,11 @@
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <boost/detail/lightweight_test.hpp>
+#include <boost/detail/lightweight_main.hpp>
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
-
-#include <boost/detail/lightweight_test.hpp>
-#include <boost/detail/lightweight_main.hpp>
 
 #ifdef BOOST_WINDOWS_API
 # define BOOST_DIR_SEP "\\"

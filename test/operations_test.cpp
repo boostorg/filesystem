@@ -7,14 +7,6 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-#define BOOST_FILESYSTEM_VERSION 3
-
-#include <boost/config.hpp>
-
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
-
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -26,12 +18,17 @@
 #endif
 
 #include <boost/filesystem/operations.hpp>
-#include <boost/cerrno.hpp>
-namespace fs = boost::filesystem;
 
+#include <boost/config.hpp>
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
+
+#include <boost/cerrno.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
+namespace fs = boost::filesystem;
 using boost::system::error_code;
 using boost::system::system_category;
 using boost::system::system_error;
