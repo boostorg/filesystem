@@ -43,7 +43,7 @@
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
   //------------------------------------------------------------------------------------//
   //                                                                                    //
@@ -516,7 +516,7 @@ namespace filesystem3
   {
   private:
     friend class boost::iterator_core_access;
-    friend class boost::filesystem3::path;
+    friend class boost::filesystem::path;
     friend void m_path_iterator_increment(path::iterator & it);
     friend void m_path_iterator_decrement(path::iterator & it);
 
@@ -718,38 +718,8 @@ namespace filesystem3
     { return generic_wstring(cvt); }
 
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost
-
-//----------------------------------------------------------------------------//
-
-namespace boost
-{
-  namespace filesystem
-  {
-    using filesystem3::path;
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    using filesystem3::wpath;
-# endif
-    using filesystem3::lexicographical_compare;
-    using filesystem3::portable_posix_name;
-    using filesystem3::windows_name;
-    using filesystem3::portable_name;
-    using filesystem3::portable_directory_name;
-    using filesystem3::portable_file_name;
-    using filesystem3::native;
-    using filesystem3::swap;
-    using filesystem3::operator<;
-    using filesystem3::operator==;
-    using filesystem3::operator!=;
-    using filesystem3::operator>;
-    using filesystem3::operator<=;
-    using filesystem3::operator>=;
-    using filesystem3::operator/;
-    using filesystem3::operator<<;
-    using filesystem3::operator>>;
-  }
-}
 
 //----------------------------------------------------------------------------//
 

@@ -71,7 +71,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem3
+  namespace filesystem
   {
 
     BOOST_FILESYSTEM_DECL const boost::system::error_category& codecvt_error_category()
@@ -80,5 +80,5 @@ namespace boost
       return codecvt_error_cat_const;
     }
 
-  } // namespace filesystem3
+  } // namespace filesystem
 } // namespace boost

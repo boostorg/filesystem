@@ -25,8 +25,8 @@
 #include <cstring>  // for strlen
 #include <cwchar>   // for wcslen
 
-namespace pt = boost::filesystem3::path_traits;
-namespace fs = boost::filesystem3;
+namespace pt = boost::filesystem::path_traits;
+namespace fs = boost::filesystem;
 namespace bs = boost::system;
 
 //--------------------------------------------------------------------------------------//
@@ -123,7 +123,7 @@ namespace {
 //                                   path_traits                                        //
 //--------------------------------------------------------------------------------------//
 
-namespace boost { namespace filesystem3 { namespace path_traits {
+namespace boost { namespace filesystem { namespace path_traits {
 
 //--------------------------------------------------------------------------------------//
 //                          convert const char* to wstring                             //
@@ -197,4 +197,4 @@ namespace boost { namespace filesystem3 { namespace path_traits {
       convert_aux(from, from_end, buf, buf+default_codecvt_buf_size, to, cvt);
     }
   }
-}}} // namespace boost::filesystem3::path_traits
+}}} // namespace boost::filesystem::path_traits

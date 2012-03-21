@@ -44,9 +44,9 @@
 # include <iomanip>
 #endif
 
-namespace fs = boost::filesystem3;
+namespace fs = boost::filesystem;
 
-using boost::filesystem3::path;
+using boost::filesystem::path;
 
 using std::string;
 using std::wstring;
@@ -140,7 +140,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
   path& path::operator/=(const path& p)
   {
@@ -439,7 +439,7 @@ namespace filesystem3
     return *this;
   }
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost
   
 //--------------------------------------------------------------------------------------//
@@ -624,7 +624,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
   path::iterator path::begin() const
   {
@@ -738,7 +738,7 @@ namespace filesystem3
       it.m_element.m_pathname = separator_string;    // generic format; see docs 
   }
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -812,7 +812,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
 
   const path::codecvt_type*& path::wchar_t_codecvt_facet()
@@ -837,5 +837,5 @@ namespace filesystem3
     return temp;
   }
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost

@@ -20,7 +20,7 @@
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 
-namespace fs = boost::filesystem3;
+namespace fs = boost::filesystem;
 
 #include <cstring> // SGI MIPSpro compilers need this
 
@@ -47,7 +47,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem3
+  namespace filesystem
   {
 
     //  name_check functions  ----------------------------------------------//
@@ -115,5 +115,5 @@ namespace boost
         ;
     }
 
-  } // namespace filesystem3
+  } // namespace filesystem
 } // namespace boost

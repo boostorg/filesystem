@@ -58,10 +58,10 @@
 # include <iostream>
 #endif
 
-namespace fs = boost::filesystem3;
-using boost::filesystem3::path;
-using boost::filesystem3::filesystem_error;
-using boost::filesystem3::perms;
+namespace fs = boost::filesystem;
+using boost::filesystem::path;
+using boost::filesystem::filesystem_error;
+using boost::filesystem::perms;
 using boost::system::error_code;
 using boost::system::error_category;
 using boost::system::system_category;
@@ -243,7 +243,7 @@ namespace
 
   fs::file_type query_file_type(const path& p, error_code* ec);
 
-  boost::filesystem3::directory_iterator end_dir_itr;
+  boost::filesystem::directory_iterator end_dir_itr;
 
   const std::size_t buf_size(128);
   const error_code ok;
@@ -699,7 +699,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
 
   BOOST_FILESYSTEM_DECL
@@ -1852,7 +1852,7 @@ namespace path_traits
   }
 
 }  // namespace path_traits
-} // namespace filesystem3
+} // namespace filesystem
 } // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -2075,7 +2075,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
 
 namespace detail
@@ -2195,5 +2195,5 @@ namespace detail
     }
   }
 }  // namespace detail
-} // namespace filesystem3
+} // namespace filesystem
 } // namespace boost
