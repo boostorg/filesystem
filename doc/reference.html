@@ -1,5 +1,7 @@
 <html>
-
+<!-- © Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011 -->
+<!-- Distributed under the Boost Software License, Version 1.0. -->
+<!-- See http://www.boost.org/LICENSE_1_0.txt -->
 <head>
 <meta http-equiv="Content-Language" content="en-us">
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
@@ -1010,11 +1012,16 @@ compliant iterator. The iterator's value type is required to be <code>char</code
 </blockquote>
 <pre>path&amp; <a name="path-replace_extension">replace_extension</a>(const path&amp; new_extension = path());</pre>
 <blockquote>
-  <p><i>Postcondition: </i> <code>extension() == <i>replacement</i></code>, 
-  where <code><i>replacement</i></code> is <code>new_extension</code> if <code>
-  new_extension.empty() || new_extension[0] ==</code> the dot character, 
-  otherwise <code><i>replacement</i></code> is the dot character followed by
-  <code>new_extension</code>.</p>
+  <p><i>Effects:</i></p>
+  <ul>
+    <li>Any existing <code>extension()</code> is removed from the stored path, 
+    then</li>
+    <li>iff
+  <code>new_extension</code> is not empty and does not begin with a dot 
+    character, a dot character is appended to the stored path, then</li>
+    <li>
+  <code>new_extension</code> is appended to the stored path.</li>
+  </ul>
   <p><i>Returns:</i> <code>*this</code></p>
 </blockquote>
 <pre><code>void <a name="path-swap">swap</a>(path&amp; rhs) noexcept;</code></pre>

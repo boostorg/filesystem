@@ -38,7 +38,17 @@
 
 <h2>1.50.0</h2>
 <ul>
-  <li>Add constexpr value_type preferred_separator to class path.</li>
+  <li>Remove Filesystem Version 2 from the distribution. Version 3 is now the 
+  only distributed version. Those still using V2 are urged to migrate to V3 as 
+  soon as possible.</li>
+  <li>Add <code>constexpr value_type preferred_separator</code> to class path.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5118">#5118</a>,
+  <code>replace_extension</code> doesn't work as specified in documentation. The 
+  documentation, implementation, and test cases have all had fixes applied. The 
+  documentation had failed to mention that any existing extension is removed. 
+  The behavior for simple cases has been reverted to the Version 2 behavior, but 
+  with corrections so that complex replacements now work. Two test cases from 
+  #5118 have been added.</li>
 </ul>
 
 <h2>1.49.0</h2>
@@ -123,7 +133,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 March, 2012<!--webbot bot="Timestamp" endspan i-checksum="28814" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 March, 2012<!--webbot bot="Timestamp" endspan i-checksum="28826" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

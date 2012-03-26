@@ -247,17 +247,18 @@ namespace filesystem
     return *this;
   }
 
-  path & path::replace_extension(const path & source)
+  path& path::replace_extension(const path& new_extension)
   {
-    // erase existing extension if any
-    size_type pos(m_pathname.rfind(dot));
-    if (pos != string_type::npos && pos >= filename_pos(m_pathname, m_pathname.size()))
-      m_pathname.erase(pos);
+    // erase existing extension, including the dot, if any
+    m_pathname.erase(m_pathname.size()-extension().m_pathname.size());
 
-    // append source extension if any
-    pos = source.m_pathname.rfind(dot);
-    if (pos != string_type::npos)
-      m_pathname += source.c_str() + pos;
+    if (!new_extension.empty())
+    {
+      // append new_extension, adding the dot if necessary
+      if (new_extension.m_pathname[0] != dot)
+        m_pathname.push_back(dot);
+      m_pathname.append(new_extension.m_pathname);
+    }
 
     return *this;
   }

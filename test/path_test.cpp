@@ -1675,9 +1675,10 @@ namespace
     std::cout << "replace_extension_tests..." << std::endl;
 
     BOOST_TEST(path().replace_extension().empty());
-    BOOST_TEST(path().replace_extension("a").empty());
-    BOOST_TEST(path().replace_extension("a.") == ".");
-    BOOST_TEST(path().replace_extension("a.txt") == ".txt");
+    BOOST_TEST(path().replace_extension("a") == ".a");
+    BOOST_TEST(path().replace_extension("a.") == ".a.");
+    BOOST_TEST(path().replace_extension(".a") == ".a");
+    BOOST_TEST(path().replace_extension("a.txt") == ".a.txt");
     // see the rationale in html docs for explanation why this works:
     BOOST_TEST(path().replace_extension(".txt") == ".txt");
 
@@ -1685,15 +1686,18 @@ namespace
     BOOST_TEST(path("a.txt").replace_extension("") == "a");
     BOOST_TEST(path("a.txt").replace_extension(".") == "a.");
     BOOST_TEST(path("a.txt").replace_extension(".tex") == "a.tex");
-    BOOST_TEST(path("a.txt").replace_extension("tex") == "a");
+    BOOST_TEST(path("a.txt").replace_extension("tex") == "a.tex");
     BOOST_TEST(path("a.").replace_extension(".tex") == "a.tex");
-    BOOST_TEST(path("a.").replace_extension("tex") == "a");
+    BOOST_TEST(path("a.").replace_extension("tex") == "a.tex");
     BOOST_TEST(path("a").replace_extension(".txt") == "a.txt");
-    BOOST_TEST(path("a").replace_extension("txt") == "a");
+    BOOST_TEST(path("a").replace_extension("txt") == "a.txt");
     BOOST_TEST(path("a.b.txt").replace_extension(".tex") == "a.b.tex");  
-    BOOST_TEST(path("a.b.txt").replace_extension("tex") == "a.b");
+    BOOST_TEST(path("a.b.txt").replace_extension("tex") == "a.b.tex");
     BOOST_TEST(path("a/b").replace_extension(".c") == "a/b.c");
     PATH_TEST_EQ(path("a.txt/b").replace_extension(".c"), "a.txt/b.c"); // ticket 4702
+    BOOST_TEST(path("foo.txt").replace_extension("exe") == "foo.exe");  // ticket 5118
+    BOOST_TEST(path("foo.txt").replace_extension(".tar.bz2")
+                                                    == "foo.tar.bz2");  // ticket 5118
   }
   
   //  make_preferred_tests  ------------------------------------------------------------//
