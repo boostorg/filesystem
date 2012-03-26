@@ -16,7 +16,7 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/filesystem/v3/config.hpp>
+#include <boost/filesystem/config.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/decay.hpp>
@@ -32,7 +32,7 @@
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
-namespace boost { namespace filesystem3 {
+namespace boost { namespace filesystem {
 
   BOOST_FILESYSTEM_DECL const system::error_category& codecvt_error_category();
   //  uses std::codecvt_base::result used for error codes:
@@ -229,18 +229,6 @@ namespace path_traits {
 
 
 }}} // namespace boost::filesystem::path_traits
-
-//----------------------------------------------------------------------------//
-
-namespace boost
-{
-  namespace filesystem
-  {
-    using filesystem3::codecvt_error_category;
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-# endif
-  }
-}
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 

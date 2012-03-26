@@ -21,8 +21,8 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path.hpp>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <boost/detail/scoped_enum_emulation.hpp>
 #include <boost/detail/bitmask.hpp>
@@ -51,7 +51,7 @@
 
 namespace boost
 {
-  namespace filesystem3
+  namespace filesystem
   {
 
 //--------------------------------------------------------------------------------------//
@@ -1089,111 +1089,8 @@ namespace detail
     BOOST_FILESYSTEM_DECL bool possible_large_file_size_support();
   }
 
-  } // namespace filesystem3
+  } // namespace filesystem
 } // namespace boost
-
-//----------------------------------------------------------------------------//
-
-namespace boost
-{
-  namespace filesystem
-  {
-    // permissions
-    using filesystem3::no_perms;
-    using filesystem3::owner_read;
-    using filesystem3::owner_write;
-    using filesystem3::owner_exe;
-    using filesystem3::owner_all;
-    using filesystem3::group_read;
-    using filesystem3::group_write;
-    using filesystem3::group_exe;
-    using filesystem3::group_all;
-    using filesystem3::others_read;
-    using filesystem3::others_write;
-    using filesystem3::others_exe;
-    using filesystem3::others_all;
-    using filesystem3::all_all;
-    using filesystem3::set_uid_on_exe;
-    using filesystem3::set_gid_on_exe;
-    using filesystem3::sticky_bit;
-    using filesystem3::perms_mask;
-    using filesystem3::perms_not_known;
-    using filesystem3::add_perms;
-    using filesystem3::remove_perms;
-    using filesystem3::symlink_perms;
-
-    using filesystem3::absolute;
-    using filesystem3::block_file;
-    using filesystem3::canonical;
-    using filesystem3::character_file;
-//    using filesystem3::copy;
-    using filesystem3::copy_file;
-    using filesystem3::copy_option;
-    using filesystem3::copy_symlink;
-    using filesystem3::create_directories;
-    using filesystem3::create_directory;
-    using filesystem3::create_hard_link;
-    using filesystem3::create_symlink;
-    using filesystem3::create_directory_symlink;
-    using filesystem3::current_path;
-    using filesystem3::directory_entry;
-    using filesystem3::directory_file;
-    using filesystem3::directory_iterator;
-    using filesystem3::equivalent;
-    using filesystem3::exists;
-    using filesystem3::fifo_file;
-    using filesystem3::file_not_found;
-    using filesystem3::file_size;
-    using filesystem3::file_status;
-    using filesystem3::file_type;
-    using filesystem3::filesystem_error;
-    using filesystem3::hard_link_count;
-    using filesystem3::initial_path;
-    using filesystem3::is_directory;
-    using filesystem3::is_directory;
-    using filesystem3::is_empty;
-    using filesystem3::is_other;
-    using filesystem3::is_regular_file;
-    using filesystem3::is_symlink;
-    using filesystem3::last_write_time;
-    using filesystem3::permissions;
-    using filesystem3::permissions_present;
-    using filesystem3::perms;
-    using filesystem3::read_symlink;
-    using filesystem3::recursive_directory_iterator;
-    using filesystem3::regular_file;
-    using filesystem3::reparse_file;
-    using filesystem3::remove;
-    using filesystem3::remove_all;
-    using filesystem3::rename;
-    using filesystem3::resize_file;
-    using filesystem3::socket_file;
-    using filesystem3::space;
-    using filesystem3::space_info;
-    using filesystem3::status;
-    using filesystem3::status_error;
-    using filesystem3::status_known;
-    using filesystem3::symlink_file;
-    using filesystem3::symlink_option;
-    using filesystem3::symlink_status;
-    using filesystem3::system_complete;
-    using filesystem3::temp_directory_path;
-    using filesystem3::type_present;
-    using filesystem3::type_unknown;
-    using filesystem3::unique_path;
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    using filesystem3::is_regular;
-    using filesystem3::status_unknown;
-    using filesystem3::symbolic_link_exists;
-    //using filesystem3::wdirectory_iterator;
-    //using filesystem3::wdirectory_entry;
-# endif
-    namespace detail
-    {
-      using filesystem3::detail::possible_large_file_size_support;
-    }
-  }
-}
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif // BOOST_FILESYSTEM3_OPERATIONS_HPP

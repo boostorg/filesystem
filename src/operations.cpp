@@ -29,16 +29,8 @@
 #define _FILE_OFFSET_BITS 64
 #endif
 
-#include <boost/config.hpp>
-#if !defined( BOOST_NO_STD_WSTRING )
-// Boost.Filesystem V3 and later requires std::wstring support.
-// During the transition to V3, libraries are compiled with both V2 and V3 sources.
-// On old compilers that don't support V3 anyhow, we just skip everything so the compile
-// will succeed and the library can be built.
-
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
-
 #define BOOST_FILESYSTEM_SOURCE 
 
 #ifndef BOOST_SYSTEM_NO_DEPRECATED 
@@ -49,7 +41,7 @@
 # define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
 #endif
 
-#include <boost/filesystem/v3/operations.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <vector> 
@@ -66,10 +58,10 @@
 # include <iostream>
 #endif
 
-namespace fs = boost::filesystem3;
-using boost::filesystem3::path;
-using boost::filesystem3::filesystem_error;
-using boost::filesystem3::perms;
+namespace fs = boost::filesystem;
+using boost::filesystem::path;
+using boost::filesystem::filesystem_error;
+using boost::filesystem::perms;
 using boost::system::error_code;
 using boost::system::error_category;
 using boost::system::system_category;
@@ -251,7 +243,7 @@ namespace
 
   fs::file_type query_file_type(const path& p, error_code* ec);
 
-  boost::filesystem3::directory_iterator end_dir_itr;
+  boost::filesystem::directory_iterator end_dir_itr;
 
   const std::size_t buf_size(128);
   const error_code ok;
@@ -707,7 +699,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
 
   BOOST_FILESYSTEM_DECL
@@ -1860,7 +1852,7 @@ namespace path_traits
   }
 
 }  // namespace path_traits
-} // namespace filesystem3
+} // namespace filesystem
 } // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -2083,7 +2075,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
 
 namespace detail
@@ -2203,7 +2195,5 @@ namespace detail
     }
   }
 }  // namespace detail
-} // namespace filesystem3
+} // namespace filesystem
 } // namespace boost
-
-#endif  // no wide character support

@@ -19,14 +19,14 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/filesystem/v3/operations.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
 namespace boost
 {
-  namespace filesystem3
+  namespace filesystem
   {
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
@@ -51,24 +51,8 @@ namespace boost
 # endif
 
 
-  } // namespace filesystem3
+  } // namespace filesystem
 } // namespace boost
-
-//----------------------------------------------------------------------------//
-
-namespace boost
-{
-  namespace filesystem
-  {
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    using filesystem3::extension;
-    using filesystem3::basename;
-    using filesystem3::change_extension;
-# endif
-  }
-}
-
-//----------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif // BOOST_FILESYSTEM3_CONVENIENCE_HPP

@@ -9,13 +9,6 @@
 
 //--------------------------------------------------------------------------------------//
 
-#include <boost/config.hpp>
-#if !defined( BOOST_NO_STD_WSTRING )
-// Boost.Filesystem V3 and later requires std::wstring support.
-// During the transition to V3, libraries are compiled with both V2 and V3 sources.
-// On old compilers that don't support V3 anyhow, we just skip everything so the compile
-// will succeed and the library can be built.
-
 #include <boost/config/warning_disable.hpp>
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
@@ -26,8 +19,8 @@
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path_traits.hpp>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path_traits.hpp>
 #include <boost/system/error_code.hpp>
 #include <locale>
 #include <vector>
@@ -78,7 +71,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem3
+  namespace filesystem
   {
 
     BOOST_FILESYSTEM_DECL const boost::system::error_category& codecvt_error_category()
@@ -87,7 +80,5 @@ namespace boost
       return codecvt_error_cat_const;
     }
 
-  } // namespace filesystem3
+  } // namespace filesystem
 } // namespace boost
-
-#endif  // no wide character support

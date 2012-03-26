@@ -9,8 +9,6 @@
 
 //  See http://msdn.microsoft.com/en-us/library/aa365247%28v=vs.85%29.aspx
 
-#define BOOST_FILESYSTEM_VERSION 3
-
 #include <boost/config/warning_disable.hpp>
 
 #include <boost/filesystem.hpp>

@@ -7,12 +7,12 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//  Old standard library configurations, particularly MingGW, don't support wide strings.
+//  Report this with an explicit error message.
 #include <boost/config.hpp>
-#if !defined( BOOST_NO_STD_WSTRING )
-// Boost.Filesystem V3 and later requires std::wstring support.
-// During the transition to V3, libraries are compiled with both V2 and V3 sources.
-// On old compilers that don't support V3 anyhow, we just skip everything so the compile
-// will succeed and the library can be built.
+# if defined( BOOST_NO_STD_WSTRING )
+#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+# endif
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/system/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
@@ -22,8 +22,8 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path.hpp>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
@@ -44,9 +44,9 @@
 # include <iomanip>
 #endif
 
-namespace fs = boost::filesystem3;
+namespace fs = boost::filesystem;
 
-using boost::filesystem3::path;
+using boost::filesystem::path;
 
 using std::string;
 using std::wstring;
@@ -140,7 +140,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
   path& path::operator/=(const path& p)
   {
@@ -439,7 +439,7 @@ namespace filesystem3
     return *this;
   }
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost
   
 //--------------------------------------------------------------------------------------//
@@ -520,16 +520,16 @@ namespace
       && is_separator(path[1])) return string_type::npos;
 
 #   ifdef BOOST_WINDOWS_API
-  	// case "\\?\"
-  	if (size > 4
-  	  && is_separator(path[0])
-  	  && is_separator(path[1])
-  	  && path[2] == questionmark
-  	  && is_separator(path[3]))
-  	{
-  	  string_type::size_type pos(path.find_first_of(separators, 4));
+    // case "\\?\"
+    if (size > 4
+      && is_separator(path[0])
+      && is_separator(path[1])
+      && path[2] == questionmark
+      && is_separator(path[3]))
+    {
+      string_type::size_type pos(path.find_first_of(separators, 4));
         return pos < size ? pos : string_type::npos;
-  	}
+    }
 #   endif
 
     // case "//net {/}"
@@ -624,7 +624,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
   path::iterator path::begin() const
   {
@@ -738,7 +738,7 @@ namespace filesystem3
       it.m_element.m_pathname = separator_string;    // generic format; see docs 
   }
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -812,7 +812,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem3
+namespace filesystem
 {
 
   const path::codecvt_type*& path::wchar_t_codecvt_facet()
@@ -837,7 +837,5 @@ namespace filesystem3
     return temp;
   }
 
-}  // namespace filesystem3
+}  // namespace filesystem
 }  // namespace boost
-
-#endif  // has wide character support

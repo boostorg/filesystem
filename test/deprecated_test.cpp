@@ -11,17 +11,15 @@
 //  This test verifies that various deprecated names still work. This is
 //  important to preserve existing code that uses the old names.
 
-#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_DEPRECATED
+
+#include <boost/filesystem.hpp>
 
 #include <boost/config.hpp>
-
 # if defined( BOOST_NO_STD_WSTRING )
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#define BOOST_FILESYSTEM_DEPRECATED
-
-#include <boost/filesystem.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 

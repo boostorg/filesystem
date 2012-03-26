@@ -9,13 +9,6 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#include <boost/config.hpp>
-#if !defined( BOOST_NO_STD_WSTRING )
-// Boost.Filesystem V3 and later requires std::wstring support.
-// During the transition to V3, libraries are compiled with both V2 and V3 sources.
-// On old compilers that don't support V3 anyhow, we just skip everything so the compile
-// will succeed and the library can be built.
-
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
 #define BOOST_FILESYSTEM_SOURCE 
@@ -24,10 +17,10 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/v3/config.hpp>
-#include <boost/filesystem/v3/path.hpp>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path.hpp>
 
-namespace fs = boost::filesystem3;
+namespace fs = boost::filesystem;
 
 #include <cstring> // SGI MIPSpro compilers need this
 
@@ -54,7 +47,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem3
+  namespace filesystem
   {
 
     //  name_check functions  ----------------------------------------------//
@@ -122,7 +115,5 @@ namespace boost
         ;
     }
 
-  } // namespace filesystem3
+  } // namespace filesystem
 } // namespace boost
-
-#endif  // no wide character support
