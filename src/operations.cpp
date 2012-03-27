@@ -46,7 +46,6 @@
 #include <boost/detail/workaround.hpp>
 #include <vector> 
 #include <cstdlib>     // for malloc, free
-#include <sys/stat.h>  // even on Windows some functions use stat()
 #include <cstring>
 #include <cstdio>      // for remove, rename
 #if defined(__QNXNTO__)  // see ticket #5355 
@@ -73,6 +72,7 @@ using std::wstring;
     const fs::path dot_path(".");
     const fs::path dot_dot_path("..");
 #   include <sys/types.h>
+#   include <sys/stat.h>
 #   if !defined(__APPLE__) && !defined(__OpenBSD__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
