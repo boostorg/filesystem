@@ -11,8 +11,8 @@ project
       <toolset>msvc:<asynch-exceptions>on
     ;
     
-# Some tests are run both statically and as shared libraries since it is helpful
-# to know if failures in shared library tests are related to sharing or not.
+# Some tests are run both statically and as shared libraries since Filesystem
+# has a history of bugs that appear only in one type of build or the other.
 
    test-suite "filesystem" :
        [ run convenience_test.cpp ]
@@ -21,12 +21,12 @@ project
        [ run large_file_support_test.cpp ]
        [ run locale_info.cpp  : : : <test-info>always_show_run_output ]
        [ run operations_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
-#       [ run operations_test.cpp :  :  : <link>static : operations_test_static ]
+       [ run operations_test.cpp :  :  : <link>static : operations_test_static ]
        [ run operations_unit_test.cpp :  :  : <link>shared ]
        [ run path_test.cpp :  :  : <link>shared ]                  
-#       [ run path_test.cpp :  :  : <link>static : path_test_static ]                  
+       [ run path_test.cpp :  :  : <link>static : path_test_static ]                  
        [ run path_unit_test.cpp :  :  : <link>shared ]                  
-#       [ run path_unit_test.cpp :  :  : <link>static : path_unit_test_static ]                  
+       [ run path_unit_test.cpp :  :  : <link>static : path_unit_test_static ]                  
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
  
