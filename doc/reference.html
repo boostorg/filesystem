@@ -336,8 +336,9 @@ directory-separator filename</i></p>
 <p>Multiple successive <i>directory-separator</i> characters are considered to 
 be the same as one <i>directory-separator</i> character. The <i>filename</i>
 <code>&quot;.&quot;</code> is considered to be a reference to the current directory. The
-<i>filename</i> <code>&quot;..&quot;</code> is considered to be a reference to the current 
-directory. Specific <i>filenames</i> may have special meaning for a particular 
+<i>filename</i> <code>&quot;..&quot;</code> is considered to be a reference to the 
+parent 
+directory. Specific <i>filenames</i> may have special meanings for a particular 
 operating system.</p>
 </blockquote>
 <p><b><i><a name="native-pathname-format">Native pathname format:</a></i></b>&nbsp; 
@@ -1234,6 +1235,7 @@ for (; !p.extension().empty(); p = p.stem())
 </blockquote>
 <h3> <a name="path-iterators"> <code>
 <font size="4">path</font></code> iterators</a></h3>
+<p> Path iterators iterate over the elements of the stored pathname.</p>
 <p> A <code>path::iterator</code> is a constant iterator satisfying all 
 the requirements of a bidirectional iterator (C++ Std, 24.1.4 Bidirectional 
 iterators [lib.bidirectional.iterators]). Its <code>value_type</code> is <code>
