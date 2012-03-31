@@ -52,6 +52,12 @@
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/3737">#3737</a>, 
   Boost.Filesystem does not compile on Windows Mobile. On Windows, &lt;sys/stat.h&gt; 
   is no longer included.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/4065">#4065</a>, 
+  Boost Filesystem lexicographic path comparison inconsistent. This required 
+  multiple source code bug fixes and code cleanup, correcting problems not 
+  related to lexicographical issues.</li>
+  <li>Add class path member function <code>compare</code> for consistency with 
+  std::string.</li>
 </ul>
 
 <h2>1.49.0</h2>
@@ -136,7 +142,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 March, 2012<!--webbot bot="Timestamp" endspan i-checksum="28828" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 March, 2012<!--webbot bot="Timestamp" endspan i-checksum="28817" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

@@ -87,6 +87,11 @@ namespace
   const fs::path dot_path(L".");
   const fs::path dot_dot_path(L"..");
 
+  inline bool is_letter(wchar_t c)
+  {
+    return (c >= L'a' && c <=L'z') || (c >= L'A' && c <=L'Z');
+  }
+
 # else
 
   const char separator = '/';
@@ -109,7 +114,7 @@ namespace
       ;
   }
 
-  bool is_non_root_separator(const string_type& str, size_type pos);
+  bool is_root_separator(const string_type& str, size_type pos);
     // pos is position of the separator
 
   size_type filename_pos(const string_type& str,
@@ -348,7 +353,7 @@ namespace filesystem
     return (m_pathname.size()
               && pos
               && is_separator(m_pathname[pos])
-              && is_non_root_separator(m_pathname, pos))
+              && !is_root_separator(m_pathname, pos))
       ? dot_path
       : path(m_pathname.c_str() + pos);
   }
@@ -452,9 +457,9 @@ namespace filesystem
 namespace
 {
 
-  //  is_non_root_separator  -------------------------------------------------//
+  //  is_root_separator  ---------------------------------------------------------------//
 
-  bool is_non_root_separator(const string_type & str, size_type pos)
+  bool is_root_separator(const string_type & str, size_type pos)
     // pos is position of the separator
   {
     BOOST_ASSERT_MSG(!str.empty() && is_separator(str[pos]),
@@ -464,13 +469,21 @@ namespace
     while (pos > 0 && is_separator(str[pos-1]))
       --pos;
 
-    return  pos != 0
-      && (pos <= 2 || !is_separator(str[1])
-        || str.find_first_of(separators, 2) != pos)
-#     ifdef BOOST_WINDOWS_API
-      && (pos !=2 || str[1] != colon)
-#     endif
-        ;
+    //  "/" [...]
+    if (pos == 0)  
+      return true;
+
+# ifdef BOOST_WINDOWS_API
+    //  "c:/" [...]
+    if (pos == 2 && is_letter(str[0]) && str[1] == colon)  
+      return true;
+# endif
+
+    //  "//" name "/"
+    if (pos < 3 || !is_separator(str[0]) || !is_separator(str[1]))
+      return false;
+
+    return str.find_first_of(separators, 2) == pos;
   }
 
   //  filename_pos  --------------------------------------------------------------------//
@@ -615,7 +628,32 @@ namespace
     return;
   }
 
-}  // unnammed namespace
+}  // unnamed namespace
+
+
+namespace boost
+{
+namespace filesystem
+{
+  namespace detail
+  {
+    BOOST_FILESYSTEM_DECL
+      int lex_compare(path::iterator first1, path::iterator last1,
+        path::iterator first2, path::iterator last2)
+    {
+      for (; first1 != last1 && first2 != last2;)
+      {
+        if (first1->native() < first2->native()) return -1;
+        if (first2->native() < first1->native()) return 1;
+        BOOST_ASSERT(first2->native() == first1->native());
+        ++first1;
+        ++first2;
+      }
+      if (first1 == last1 && first2 == last2)
+        return 0;
+      return first1 == last1 ? -1 : 1;
+    }
+  }
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -623,10 +661,6 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-namespace boost
-{
-namespace filesystem
-{
   path::iterator path::begin() const
   {
     iterator itr;
@@ -652,13 +686,14 @@ namespace filesystem
     BOOST_ASSERT_MSG(it.m_pos < it.m_path_ptr->m_pathname.size(),
       "path::basic_iterator increment past end()");
 
-    // increment to position past current element
+    // increment to position past current element; if current element is implicit dot,
+    // this will cause it.m_pos to represent the end iterator
     it.m_pos += it.m_element.m_pathname.size();
 
-    // if end reached, create end basic_iterator
+    // if the end is reached, we are done
     if (it.m_pos == it.m_path_ptr->m_pathname.size())
     {
-      it.m_element.clear(); 
+      it.m_element.clear();  // aids debugging, may release unneeded memory
       return;
     }
 
@@ -683,14 +718,14 @@ namespace filesystem
         return;
       }
 
-      // bypass separators
+      // skip separators until it.m_pos points to the start of the next element
       while (it.m_pos != it.m_path_ptr->m_pathname.size()
         && is_separator(it.m_path_ptr->m_pathname[it.m_pos]))
         { ++it.m_pos; }
 
       // detect trailing separator, and treat it as ".", per POSIX spec
       if (it.m_pos == it.m_path_ptr->m_pathname.size()
-        && is_non_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)) 
+        && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)) 
       {
         --it.m_pos;
         it.m_element = dot_path;
@@ -698,9 +733,10 @@ namespace filesystem
       }
     }
 
-    // get next element
+    // get m_element
     size_type end_pos(it.m_path_ptr->m_pathname.find_first_of(separators, it.m_pos));
-    if (end_pos == string_type::npos) end_pos = it.m_path_ptr->m_pathname.size();
+    if (end_pos == string_type::npos)
+      end_pos = it.m_path_ptr->m_pathname.size();
     it.m_element = it.m_path_ptr->m_pathname.substr(it.m_pos, end_pos - it.m_pos);
   }
 
@@ -714,7 +750,7 @@ namespace filesystem
     if (it.m_pos == it.m_path_ptr->m_pathname.size()
       && it.m_path_ptr->m_pathname.size() > 1
       && is_separator(it.m_path_ptr->m_pathname[it.m_pos-1])
-      && is_non_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
+      && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
        )
     {
       --it.m_pos;

@@ -208,8 +208,11 @@ namespace
     itr = itr_ck.begin();
     PATH_TEST_EQ(itr->string(), "/");
     PATH_TEST_EQ(*++itr, "foo");
+    BOOST_TEST(itr != itr_ck.end());
     PATH_TEST_EQ(*++itr, "bar");
+    BOOST_TEST(itr != itr_ck.end());
     PATH_TEST_EQ(*++itr, ".");
+    BOOST_TEST(itr != itr_ck.end());  // verify the . isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
     PATH_TEST_EQ(*--itr, ".");
     PATH_TEST_EQ(*--itr, "bar");
@@ -223,11 +226,26 @@ namespace
     PATH_TEST_EQ(*++itr, "f");
     PATH_TEST_EQ(*++itr, "b");
     PATH_TEST_EQ(*++itr, ".");
+    BOOST_TEST(itr != itr_ck.end());  // verify the . isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
     PATH_TEST_EQ(*--itr, ".");
     PATH_TEST_EQ(*--itr, "b");
     PATH_TEST_EQ(*--itr, "f");
     PATH_TEST_EQ(*--itr, "/");
+
+    // POSIX says treat "a/b/" as "a/b/."
+    // Although similar to the prior test case, this failed the ". isn't end" test due to
+    // a bug while the prior case did not fail.
+    itr_ck = "a/b/";
+    itr = itr_ck.begin();
+    PATH_TEST_EQ(*itr, "a");
+    PATH_TEST_EQ(*++itr, "b");
+    PATH_TEST_EQ(*++itr, ".");
+    BOOST_TEST(itr != itr_ck.end());  // verify the . isn't also seen as end()
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "b");
+    PATH_TEST_EQ(*--itr, "a");
 
     itr_ck = "//net";
     itr = itr_ck.begin();
@@ -574,10 +592,13 @@ namespace
     BOOST_TEST(!(as < acs));
     BOOST_TEST(!(acs < as));
 
-    // reality check character set is as expected
+    // character set reality check before lexicographical tests
     BOOST_TEST(std::string("a.b") < std::string("a/b"));
     // verify compare is actually lexicographical
     BOOST_TEST(path("a/b") < path("a.b"));
+    BOOST_TEST(path("a/b") == path("a///b"));
+    BOOST_TEST(path("a/b/") == path("a/b/."));
+    BOOST_TEST(path("a/b") != path("a/b/"));
 
     // make sure the derivative operators also work
 

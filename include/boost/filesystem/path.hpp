@@ -368,6 +368,12 @@ namespace filesystem
 
 #   endif
 
+    //  -----  compare  -----
+
+    int compare(const path& p) const BOOST_NOEXCEPT;  // generic, lexicographical
+    int compare(const std::string& s) const { return compare(path(s)); }
+    int compare(const value_type* s) const  { return compare(path(s)); }
+
     //  -----  decomposition  -----
 
     path  root_path() const; 
@@ -500,6 +506,13 @@ namespace filesystem
 
   };  // class path
 
+  namespace detail
+  {
+    BOOST_FILESYSTEM_DECL
+      int lex_compare(path::iterator first1, path::iterator last1,
+        path::iterator first2, path::iterator last2);
+  }
+
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   typedef path wpath;
 # endif
@@ -533,9 +546,11 @@ namespace filesystem
     void decrement() { m_path_iterator_decrement(*this); }
 
     path                    m_element;   // current element
-    const path *            m_path_ptr;  // path being iterated over
-    string_type::size_type  m_pos;       // position of name in
-                                         // m_path_ptr->m_pathname. The
+    const path*             m_path_ptr;  // path being iterated over
+    string_type::size_type  m_pos;       // position of m_element in
+                                         // m_path_ptr->m_pathname.
+                                         // if m_element is implicit dot, m_pos is the
+                                         // position of the last separator in the path.
                                          // end() iterator is indicated by 
                                          // m_pos == m_path_ptr->m_pathname.size()
   }; // path::iterator
@@ -550,68 +565,38 @@ namespace filesystem
   //  yield paths, so provide a path aware version
   inline bool lexicographical_compare(path::iterator first1, path::iterator last1,
     path::iterator first2, path::iterator last2)
-  {
-    for (; first1 != last1 && first2 != last2 ; ++first1, ++first2)
-    {
-      if (first1->native() < first2->native()) return true;
-      if (first2->native() < first1->native()) return false;
-    }
-    return first1 == last1 && first2 != last2;
-  }
+    { return detail::lex_compare(first1, last1, first2, last2) < 0; }
   
-  inline bool operator<(const path& lhs, const path& rhs)
-  {
-    return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
-  }
+  inline bool operator==(const path& lhs, const path& rhs)              {return lhs.compare(rhs) == 0;}
+  inline bool operator==(const path& lhs, const path::string_type& rhs) {return lhs.compare(rhs) == 0;} 
+  inline bool operator==(const path::string_type& lhs, const path& rhs) {return rhs.compare(lhs) == 0;}
+  inline bool operator==(const path& lhs, const path::value_type* rhs)  {return lhs.compare(rhs) == 0;}
+  inline bool operator==(const path::value_type* lhs, const path& rhs)  {return rhs.compare(lhs) == 0;}
+  
+  inline bool operator!=(const path& lhs, const path& rhs)              {return lhs.compare(rhs) != 0;}
+  inline bool operator!=(const path& lhs, const path::string_type& rhs) {return lhs.compare(rhs) != 0;} 
+  inline bool operator!=(const path::string_type& lhs, const path& rhs) {return rhs.compare(lhs) != 0;}
+  inline bool operator!=(const path& lhs, const path::value_type* rhs)  {return lhs.compare(rhs) != 0;}
+  inline bool operator!=(const path::value_type* lhs, const path& rhs)  {return rhs.compare(lhs) != 0;}
 
-  inline bool operator<=(const path& lhs, const path& rhs) { return !(rhs < lhs); }
-  inline bool operator> (const path& lhs, const path& rhs) { return rhs < lhs; }
-  inline bool operator>=(const path& lhs, const path& rhs) { return !(lhs < rhs);  }
+  // TODO: why do == and != have additional overloads, but the others don't?
 
-  // equality operators act as if comparing generic format strings, to achieve the
-  // effect of lexicographical_compare element by element compare.
-  // operator==() efficiency is a concern; a user reported the original version 2
-  // !(lhs < rhs) && !(rhs < lhs) implementation caused a serious performance problem
-  // for a map of 10,000 paths.
-
-# ifdef BOOST_WINDOWS_API
-  inline bool operator==(const path& lhs, const path::value_type* rhs)
-  {
-    const path::value_type* l(lhs.c_str());
-    while ((*l == *rhs || (*l == L'\\' && *rhs == L'/') || (*l == L'/' && *rhs == L'\\'))
-      && *l) { ++l; ++rhs; }
-    return *l == *rhs;
-  }
-  inline bool operator==(const path& lhs, const path& rhs)              { return lhs == rhs.c_str(); }
-  inline bool operator==(const path& lhs, const path::string_type& rhs) { return lhs == rhs.c_str(); }
-  inline bool operator==(const path::string_type& lhs, const path& rhs) { return rhs == lhs.c_str(); }
-  inline bool operator==(const path::value_type* lhs, const path& rhs)  { return rhs == lhs; }
+  inline bool operator<(const path& lhs, const path& rhs)  {return lhs.compare(rhs) < 0;}
+  inline bool operator<=(const path& lhs, const path& rhs) {return !(rhs < lhs);}
+  inline bool operator> (const path& lhs, const path& rhs) {return rhs < lhs;}
+  inline bool operator>=(const path& lhs, const path& rhs) {return !(lhs < rhs);}
 
   inline std::size_t hash_value(const path& x)
   {
+# ifdef BOOST_WINDOWS_API
     std::size_t seed = 0;
     for(const path::value_type* it = x.c_str(); *it; ++it)
       hash_combine(seed, *it == '/' ? L'\\' : *it);
     return seed;
-  }
 # else   // BOOST_POSIX_API
-  inline bool operator==(const path& lhs, const path& rhs)              { return lhs.native() == rhs.native(); }
-  inline bool operator==(const path& lhs, const path::string_type& rhs) { return lhs.native() == rhs; }
-  inline bool operator==(const path& lhs, const path::value_type* rhs)  { return lhs.native() == rhs; }
-  inline bool operator==(const path::string_type& lhs, const path& rhs) { return lhs == rhs.native(); }
-  inline bool operator==(const path::value_type* lhs, const path& rhs)  { return lhs == rhs.native(); }
-
-  inline std::size_t hash_value(const path& x)
-  {
     return hash_range(x.native().begin(), x.native().end());
-  }
 # endif
-
-  inline bool operator!=(const path& lhs, const path& rhs)              { return !(lhs == rhs); }
-  inline bool operator!=(const path& lhs, const path::string_type& rhs) { return !(lhs == rhs); }
-  inline bool operator!=(const path& lhs, const path::value_type* rhs)  { return !(lhs == rhs); }
-  inline bool operator!=(const path::string_type& lhs, const path& rhs) { return !(lhs == rhs); }
-  inline bool operator!=(const path::value_type* lhs, const path& rhs)  { return !(lhs == rhs); }
+  }
 
   inline void swap(path& lhs, path& rhs)                   { lhs.swap(rhs); }
 
@@ -651,6 +636,15 @@ namespace filesystem
   BOOST_FILESYSTEM_DECL bool portable_file_name(const std::string & name);
   BOOST_FILESYSTEM_DECL bool native(const std::string & name);
  
+//--------------------------------------------------------------------------------------//
+//                     class path inline member implementations                         //
+//--------------------------------------------------------------------------------------//
+
+  inline int path::compare(const path& p) const BOOST_NOEXCEPT
+  {
+    return detail::lex_compare(begin(), end(), p.begin(), p.end());
+  }
+
 //--------------------------------------------------------------------------------------//
 //                     class path member template implementation                        //
 //--------------------------------------------------------------------------------------//
