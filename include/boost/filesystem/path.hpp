@@ -418,10 +418,7 @@ namespace filesystem
     //  -----  static member functions  -----
 
     static std::locale  imbue(const std::locale& loc);
-    static const        codecvt_type& codecvt()
-    {
-      return *wchar_t_codecvt_facet();
-    }
+    static const        codecvt_type& codecvt();
 
     //  -----  deprecated functions  -----
 
@@ -501,8 +498,6 @@ namespace filesystem
     // see path::iterator::increment/decrement comment below
     static void m_path_iterator_increment(path::iterator & it);
     static void m_path_iterator_decrement(path::iterator & it);
-
-    static const codecvt_type *&  wchar_t_codecvt_facet();
 
   };  // class path
 

@@ -49,7 +49,7 @@
   The behavior for simple cases has been reverted to the Version 2 behavior, but 
   with corrections so that complex replacements now work. Two test cases from 
   #5118 have been added.</li>
-  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/3737">#3737</a>, 
+  <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/3737">#3737</a>, 
   Boost.Filesystem does not compile on Windows Mobile. On Windows, &lt;sys/stat.h&gt; 
   is no longer included.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/4065">#4065</a>, 
@@ -58,6 +58,16 @@
   related to lexicographical issues.</li>
   <li>Add class path member function <code>compare</code> for consistency with 
   std::string.</li>
+  <li>Tighten BOOST_FILESYSTEM_DYN_LINK and BOOST_FILESYSTEM_STATIC_LINK logic 
+  in filesystem/config.hpp so that one or the other is always defined, and both 
+  being defined is a #error.</li>
+  <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/6690">#6690</a> and
+  <a href="http://svn.boost.org/trac/boost/ticket/6737">#6737</a>, resolving 
+  static linking related problems with VC++ 8 through 11. Note that this fix may 
+  reintroduce codecvt thread safety problems
+  <a href="http://svn.boost.org/trac/boost/ticket/4889">#4889</a>,
+  <a href="http://svn.boost.org/trac/boost/ticket/6320">#6320</a>, for these 
+  compilers if static linking is used.</li>
 </ul>
 
 <h2>1.49.0</h2>
@@ -142,7 +152,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 March, 2012<!--webbot bot="Timestamp" endspan i-checksum="28817" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->15 April, 2012<!--webbot bot="Timestamp" endspan i-checksum="29863" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

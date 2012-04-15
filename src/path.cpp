@@ -791,12 +791,36 @@ namespace
   //                              locale helpers                                        //
   //------------------------------------------------------------------------------------//
 
-#ifdef BOOST_WINDOWS_API
+#if defined(BOOST_WINDOWS_API) && defined(BOOST_FILESYSTEM_STATIC_LINK)
+
+  inline std::locale default_locale()
+  {
+    std::locale global_loc = std::locale();
+    std::locale loc(global_loc, new windows_file_codecvt);
+    return loc;
+  }
+
+  inline std::locale& path_locale()
+  {
+    static std::locale loc(default_locale());
+    return loc;
+  }
+
+  inline const path::codecvt_type*& codecvt_facet_ptr()
+  {
+    static const std::codecvt<wchar_t, char, std::mbstate_t>*
+     facet(
+       &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
+        (path_locale()));
+    return facet;
+  }
+
+#elif defined(BOOST_WINDOWS_API) && !defined(BOOST_FILESYSTEM_STATIC_LINK)
 
   std::locale path_locale(std::locale(), new windows_file_codecvt); 
 
   const std::codecvt<wchar_t, char, std::mbstate_t>*
-    codecvt_facet(&std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
+    codecvt_facet_ptr(&std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
       (path_locale));
 
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
@@ -824,7 +848,7 @@ namespace
                           new boost::filesystem::detail::utf8_codecvt_facet);
 
   const std::codecvt<wchar_t, char, std::mbstate_t>*
-    codecvt_facet(&std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
+    codecvt_facet_ptr(&std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >
       (path_locale));
 
 #else  // Other POSIX
@@ -836,8 +860,8 @@ namespace
   // or LANG are wrong, for example), so lazy initialization is used to ensure
   // that exceptions occur after main() starts and so can be caught.
 
-  std::locale path_locale;  // initialized by path::wchar_t_codecvt_facet() below
-  const std::codecvt<wchar_t, char, std::mbstate_t>* codecvt_facet;  // ditto
+  std::locale path_locale;  // initialized by path::codecvt() below
+  const std::codecvt<wchar_t, char, std::mbstate_t>* codecvt_facet_ptr;  // ditto
 
 # endif
 
@@ -852,7 +876,26 @@ namespace boost
 namespace filesystem
 {
 
-  const path::codecvt_type*& path::wchar_t_codecvt_facet()
+#if defined(BOOST_WINDOWS_API) && defined(BOOST_FILESYSTEM_STATIC_LINK)
+
+  const path::codecvt_type& path::codecvt()
+  {
+    BOOST_ASSERT_MSG(codecvt_facet_ptr(), "codecvt_facet_ptr() facet hasn't been properly initialized");
+    return *codecvt_facet_ptr();
+  }
+
+  std::locale path::imbue(const std::locale & loc)
+  {
+    std::locale temp(path_locale());
+    path_locale() = loc;
+    codecvt_facet_ptr() =
+      &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
+    return temp;
+  }
+
+#else
+
+  const path::codecvt_type& path::codecvt()
   {
 #   if defined(BOOST_POSIX_API) && \
       !(defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
@@ -862,17 +905,20 @@ namespace filesystem
       // exception if a valid std::locale("") is actually needed.
       static std::locale posix_lazy_initialization(path::imbue(std::locale("")));
 #   endif
-    return codecvt_facet;
+    return *codecvt_facet_ptr;
   }
 
   std::locale path::imbue(const std::locale& loc)
   {
     std::locale temp(path_locale);
     path_locale = loc;
-    codecvt_facet =
+    codecvt_facet_ptr =
       &std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale);
     return temp;
   }
+
+
+#endif
 
 }  // namespace filesystem
 }  // namespace boost
