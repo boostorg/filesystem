@@ -49,7 +49,31 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-//  enable dynamic linking -------------------------------------------------------------//
+//  This header implements separate compilation features as described in
+//  http://www.boost.org/more/separate_compilation.html
+
+//  normalize macros  ------------------------------------------------------------------//
+
+#if !defined(BOOST_FILESYSTEM_DYN_LINK) && !defined(BOOST_FILESYSTEM_STATIC_LINK) \
+  && !defined(BOOST_ALL_DYN_LINK) && !defined(BOOST_ALL_STATIC_LINK)
+# error Must define BOOST_ALL_DYN_LINK, BOOST_ALL_DYN_LINK, BOOST_FILESYSTEM_DYN_LINK, or BOOST_FILESYSTEM_STATIC_LINK
+#endif
+
+#if defined(BOOST_ALL_DYN_LINK) && !defined(BOOST_FILESYSTEM_DYN_LINK)
+# define BOOST_FILESYSTEM_DYN_LINK 
+#elif defined(BOOST_ALL_STATIC_LINK) && !defined(BOOST_FILESYSTEM_STATIC_LINK)
+# define BOOST_FILESYSTEM_STATIC_LINK 
+#endif
+
+#if defined(BOOST_FILESYSTEM_DYN_LINK) && defined(BOOST_FILESYSTEM_STATIC_LINK)
+# error Must not define both BOOST_FILESYSTEM_DYN_LINK and BOOST_FILESYSTEM_STATIC_LINK
+#endif
+
+#if defined(BOOST_ALL_NO_LIB) && !defined(BOOST_FILESYSTEM_NO_LIB)
+# define BOOST_FILESYSTEM_NO_LIB 
+#endif
+
+//  enable dynamic linking  ------------------------------------------------------------//
 
 #if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_FILESYSTEM_DYN_LINK)
 # if defined(BOOST_FILESYSTEM_SOURCE)
