@@ -188,6 +188,11 @@ namespace filesystem
     return *this;
   }
 
+  int path::compare(const path& p) const BOOST_NOEXCEPT
+  {
+    return detail::lex_compare(begin(), end(), p.begin(), p.end());
+  }
+
 # ifdef BOOST_WINDOWS_API
 
   const std::string path::generic_string(const codecvt_type& cvt) const

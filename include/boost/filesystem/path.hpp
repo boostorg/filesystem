@@ -632,15 +632,6 @@ namespace filesystem
   BOOST_FILESYSTEM_DECL bool native(const std::string & name);
  
 //--------------------------------------------------------------------------------------//
-//                     class path inline member implementations                         //
-//--------------------------------------------------------------------------------------//
-
-  inline int path::compare(const path& p) const BOOST_NOEXCEPT
-  {
-    return detail::lex_compare(begin(), end(), p.begin(), p.end());
-  }
-
-//--------------------------------------------------------------------------------------//
 //                     class path member template implementation                        //
 //--------------------------------------------------------------------------------------//
 
