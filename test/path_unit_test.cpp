@@ -654,8 +654,8 @@ namespace
 
     std::cout << "  testing with the imbued locale ..." << std::endl;
     path p2("\xE2\x9C\xA2");
-    CHECK(p2 == L"\u2722");
-    CHECK(p2.wstring() == L"\u2722");
+    CHECK(p2.wstring().size() == 1);
+    CHECK(p2.wstring()[0] == 0x2722);
 
     std::cout << "  imbuing the original locale ..." << std::endl;
     path::imbue(old_loc);
