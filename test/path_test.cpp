@@ -1741,8 +1741,9 @@ namespace
 
 } // unnamed namespace
 
-static boost::filesystem::path FilePath = "FilePath";  // #6737 reported this crashed
-                                                       // on VC++ debug mode build 
+static boost::filesystem::path ticket_6737 = "FilePath";  // #6737 reported this crashed
+                                                          // on VC++ debug mode build 
+const boost::filesystem::path ticket_6690("test");  // #6690 another V++ static init crash
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
