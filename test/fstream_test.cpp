@@ -41,11 +41,6 @@ namespace fs = boost::filesystem;
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
-#if defined(_MSC_VER)
-# pragma warning(push) // Save warning settings.
-# pragma warning(disable : 4428) // Disable universal-character-name encountered in source warning.
-#endif 
-
 namespace
 {
   bool cleanup = true;
@@ -152,7 +147,7 @@ int cpp_main(int argc, char*[])
 
   // test narrow characters
   std::cout << "narrow character tests:\n";
-  test("v3_fstream_test");
+  test("narrow_fstream_test");
 
 
   // So that tests are run with known encoding, use Boost UTF-8 codecvt
@@ -165,7 +160,10 @@ int cpp_main(int argc, char*[])
   //  \u2781 is circled 2 against white background == e2 9e 81 in UTF-8
   //  \u263A is a white smiling face
   std::cout << "\nwide character tests:\n";
-  test(L"fstream_test_\u2780\u263A");
+  std::wstring ws(L"wide_fstream_test_");
+  ws += 0x2780;
+  ws += 0x263A;
+  test(ws);
 
   return ::boost::report_errors();
 }
