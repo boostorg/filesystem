@@ -144,7 +144,6 @@ namespace
 
   class Base {};
   class Derived : public Base {};
-  void fun(const boost::filesystem::path&) {}
   void fun(const boost::shared_ptr< Base >&) {}
 
   //  test_constructors  ---------------------------------------------------------------//
