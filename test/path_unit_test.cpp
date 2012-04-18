@@ -343,6 +343,73 @@ namespace
     PATH_IS(x, BOOST_FS_FOO L"wstring");
    }
 
+  //  test_concats  --------------------------------------------------------------------//
+
+  void test_concats()
+  {
+    std::cout << "testing concats..." << std::endl;
+
+    x = "/foo";
+    x += path("");                                      // empty path
+    PATH_IS(x, L"/foo");
+
+    x = "/foo";
+    x += path("/");                                     // slash path
+    PATH_IS(x, L"/foo/");
+
+    x = "/foo";
+    x += path("boo");                                  // slash path
+    PATH_IS(x, L"/fooboo");
+
+    x = "foo";
+    x += x;                                             // self-append
+    PATH_IS(x, L"foofoo");
+
+    x = "foo-";
+    x += path("yet another path");                      // another path
+    PATH_IS(x, L"foo-yet another path");
+
+    x = "foo-";
+    x.concat(l.begin(), l.end());                      // iterator range char
+    PATH_IS(x, L"foo-string");
+
+    x = "foo-";
+    x.concat(wl.begin(), wl.end());                    // iterator range wchar_t
+    PATH_IS(x, L"foo-wstring");
+
+    x = "foo-";
+    x += string("std::string");                         // container char
+    PATH_IS(x, L"foo-std::string");
+
+    x = "foo-";
+    x += wstring(L"std::wstring");                      // container wchar_t
+    PATH_IS(x, L"foo-std::wstring");
+
+    x = "foo-";
+    x += "array char";                                  // array char
+    PATH_IS(x, L"foo-array char");
+
+    x = "foo-";
+    x += L"array wchar";                                // array wchar_t
+    PATH_IS(x, L"foo-array wchar");
+
+    x = "foo-";
+    x += s.c_str();                                     // const char* null terminated
+    PATH_IS(x, L"foo-string");
+
+    x = "foo-";
+    x += ws.c_str();                                    // const wchar_t* null terminated
+    PATH_IS(x, L"foo-wstring");
+
+    x = "foo-";
+    x += 'x';                                           // char
+    PATH_IS(x, L"foo-x");
+
+    x = "foo-";
+    x += L'x';                                          // wchar
+    PATH_IS(x, L"foo-x");
+   }
+
   //  test_observers  ------------------------------------------------------------------//
 
   void test_observers()
@@ -1009,6 +1076,7 @@ int cpp_main(int, char*[])
   test_constructors();
   test_assignments();
   test_appends();
+  test_concats();
   test_modifiers();
   test_observers();
   test_relationals();

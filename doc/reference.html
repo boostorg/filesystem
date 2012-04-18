@@ -94,7 +94,8 @@ del   { background-color:#FFA0A0 }
 &nbsp;&nbsp;&nbsp; <a href="#path-Requirements"><code>path</code> requirements</a><br>
     &nbsp;&nbsp;&nbsp; <a href="#path-constructors"><code>path</code> constructors</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#path-assignments"><code>path</code> assignments</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends"><code>path</code> appends</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends"><code>path</code> appends</a><br>
+    &nbsp;&nbsp; &nbsp;<a href="#path-concatenation"><code>path</code> concatenation</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-modifiers"><code>path</code> modifiers</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-native-format-observers"><code>path</code> native 
     format observers</a><br>
@@ -192,7 +193,7 @@ and directories.</p>
 
 <p>This reference documentation describes components that perform operations on file systems and 
 their components, such as paths, regular files, and directories.</p>
-<p dir="ltr">Operating systems such as <i>Linux, MAC OS, UNIX</i>, and <i>Windows</i> are 
+<p>Operating systems such as <i>Linux, MAC OS, UNIX</i>, and <i>Windows</i> are 
 mentioned in this reference documentation for purposes of illustration or to give guidance to 
 implementers. No slight to other operating systems is implied or intended.</p>
 <p><span style="background-color: #E0E0E0">Footnote:</span> Linux® is a 
@@ -382,7 +383,7 @@ directory. The dot dot filename names the parent directory.</p>
     bool lexicographical_compare(path::iterator first1, path::iterator last1,
       path::iterator first2, path::iterator last2);
       
-<pre>    void swap(path&amp; lhs, path&amp; rhs);
+void swap(path&amp; lhs, path&amp; rhs);
     std::size_t <a href="#hash_value">hash_value</a>(const path&amp; p);
 
     bool operator==(const path&amp; lhs, const path&amp; rhs);
@@ -672,6 +673,22 @@ end example</i>]</p>
         template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
           path&amp; append(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
 
+        // <a href="#path-concatenation">concatenation</a>
+        path&amp; operator+=(const path&amp; x);
+        path&amp; operator+=(const string_type&amp; x);
+        path&amp; operator+=(const value_type* x);
+        path&amp; operator+=(value_type x);
+        template &lt;class Source&gt;
+          path&amp; operator+=(Source const&amp; x);
+        template &lt;class CharT&gt;
+          path&amp; operator+=(CharT x);
+        template &lt;class Source&gt;
+          path&amp; concat(Source const&amp; x, const codecvt_type&amp; cvt);
+        template &lt;class InputIterator&gt;
+          path&amp; concat(InputIterator begin, InputIterator end);
+        template &lt;class InputIterator&gt;
+          path&amp; concat(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt);
+        
         // <a href="#path-modifiers">modifiers</a>
         void  <a href="#path-clear">clear</a>();
         path&amp; <a href="#absolute">make_absolute</a>(const path&amp; base);
@@ -910,7 +927,7 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
   or <code>source</code> is not <code>value_type</code>, conversion is performed 
   by <code>cvt</code>.</p>
   </blockquote>
-<h3> <a name="path-appends"><code><font size="4"> path</font></code> appends</a></h3>
+<h3><a name="path-appends"><code><font size="4"> path</font></code> appends</a></h3>
   <p>The append operations use <code>operator/=</code> to denote their semantic 
   effect of appending the platform's preferred directory separator when needed. The 
   preferred 
@@ -966,9 +983,34 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
   <p><i>Returns: </i><code>*this</code></p>
   </blockquote>
   
-<h3> <a name="path-modifiers"> <code>
-<font size="4">path</font></code> modifiers</a></h3>
-<pre>void <a name="path-clear">clear</a>();</pre>
+<h3><a name="path-concatenation"><code>path</code> concatenation</a></h3>
+<pre>path&amp; operator+=(const path&amp; x);
+path&amp; operator+=(const string_type&amp; x);
+path&amp; operator+=(const value_type* x);
+path&amp; operator+=(value_type x);
+template &lt;class Source&gt;
+  path&amp; operator+=(Source const&amp; x);
+template &lt;class CharT&gt;
+  path&amp; operator+=(CharT x);
+template &lt;class Source&gt;
+  path&amp; concat(Source const&amp; x, const codecvt_type&amp; cvt);
+template &lt;class InputIterator&gt;
+  path&amp; concat(InputIterator begin, InputIterator end);
+template &lt;class InputIterator&gt;
+  path&amp; concat(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt);</pre>
+<blockquote><p><i>Postcondition:</i> <code>native() == prior_native + <i>effective-argument</i></code>,
+ where <code>prior_native</code> is <code>native()</code> prior to the call to <code>operator+=</code>,
+ and <code><i>effective-argument</i></code> is:</p>
+ <ul><li><code>x.native()</code> if <code>x</code> is present and is <code>const path&amp;</code>, otherwise</li>
+ <li><code>s</code>, where <code>s</code> is
+  <code>std::basic_string&lt;typename std::iterator_traits&lt;InputIterator&gt;::value_type&gt;<br>s(begin, end)</code>,
+   if <code>begin</code> and <code>end</code> arguments are present, otherwise</li>
+ <li><code>x</code>.</li></ul><p>If the value type of <code><i>effective-argument</i></code> would not be <code>path::value_type</code>, the actual argument or argument range is first
+   converted so that <code><i>effective-argument</i></code> has value type <code>path::value_type</code>.</li> </p>
+ <p><i>Returns: </i><code>*this</code></p>
+ </blockquote>
+<h3><a name="path-modifiers"> <code>
+path</code> modifiers</a></h3><pre>void <a name="path-clear">clear</a>();</pre>
 <blockquote>
 <p><i>Postcondition:</i> <code>this-&gt;empty()</code> is true.</p>
 </blockquote>
@@ -1342,8 +1384,7 @@ inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_i
 </pre>
 <blockquote>
   <p><i>Effects:&nbsp; </i><code>&nbsp;std::basic_string&lt;Char&gt; str;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is &gt;&gt; <a href="../../io/doc/quoted_manip.html">boost::io::quoted</a>(str, 
-  static_cast&lt;Char&gt;('&amp;'));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is &gt;&gt; <a href="../../io/doc/quoted_manip.html">boost::io::quoted</a>(str, static_cast&lt;Char&gt;('&amp;'));<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; p = str;</code></p>
   <p><i>Returns:</i> <code>is</code></p>
   </blockquote>
@@ -1559,7 +1600,7 @@ or others removes write permission for all. </p>
   </tr>
 
 <tr><td>
-  <p dir="ltr"><code>no_perms</code></td><td><code>0</code></td><td></td>
+  <p><code>no_perms</code></td><td><code>0</code></td><td></td>
   <td>There are no permissions set for the file. Note: <code>file_not_found</code> is <code>no_perms</code> rather than <code>perms_not_known</code></td>
 </tr>
 <tr><td><code>owner_read</code></td><td><code>0400</code></td><td> <code>S_IRUSR</code></td>
@@ -1584,8 +1625,7 @@ or others removes write permission for all. </p>
   <td> Execute/search permission, group</td>
 </tr>
 <tr><td><code>group_all</code></td><td><code>070</code></td><td>   <code>S_IRWXG</code></td>
-  <td> Read, write, execute/search by group; <code>group_read | group_write | 
-  group_exe</code></td>
+  <td> Read, write, execute/search by group; <code>group_read | group_write | group_exe</code></td>
 </tr>
 <tr><td><code>others_read</code></td><td><code>04</code></td><td>  <code>S_IROTH</code></td>
   <td> Read permission, others</td>
@@ -1618,8 +1658,8 @@ or others removes write permission for all. </p>
   is created without specifying the permissions</td>
 </tr>
 <tr><td>
-  <p dir="ltr"><code>add_perms</code></td><td><code>0x1000</code></td><td></td><td>
-  <p dir="ltr"><code>permissions()</code> adds the argument permission bits to the 
+  <p><code>add_perms</code></td><td><code>0x1000</code></td><td></td><td>
+  <p><code>permissions()</code> adds the argument permission bits to the 
   file's current bits</td>
 </tr>
 <tr><td><code>remove_perms</code></td><td><code>0x2000</code></td><td></td><td>
@@ -1663,17 +1703,16 @@ or others removes write permission for all. </p>
 }  // namespace boost</pre>
 <p>An object of type <code>file_status</code> stores information about the type 
 and permissions of a file.</p>
-<h4 dir="ltr"><a name="file_status-constructors"><code>file_status</code> constructors</a></h4>
+<h4><a name="file_status-constructors"><code>file_status</code> constructors</a></h4>
 <pre>explicit file_status() noexcept;</pre>
 <blockquote>
   <p><i>Postconditions:</i> <code>type() == status_error</code>, <code>permissions() == perms_not_known</code>.</p>
 </blockquote>
 <pre>explicit file_status(<a href="#file_type">file_type</a> ft, <a href="#Enum-perms">perms</a> prms = perms_not_known) noexcept;</pre>
 <blockquote>
-  <p><i>Postconditions:</i> <code>type() == ft</code>, <code>permissions() == 
-  prms</code>.</p>
+  <p><i>Postconditions:</i> <code>type() == ft</code>, <code>permissions() == prms</code>.</p>
 </blockquote>
-  <h4 dir="ltr"><a name="file_status-observers"><code>file_status</code> observers</a></h4>
+  <h4><a name="file_status-observers"><code>file_status</code> observers</a></h4>
 <pre><a href="#file_type">file_type</a> type() const noexcept;</pre>
 <blockquote>
   <p><i>Returns: </i>The value of <code>type()</code> specified by the <i>postconditions</i> of the most recent call to a constructor, operator=, or <code>type(file_type)</code> function.</p>
@@ -1682,17 +1721,17 @@ and permissions of a file.</p>
 <blockquote>
   <p><i>Returns: </i>The value of <code>permissions()</code> specified by the <i>postconditions</i> of the most recent call to a constructor, operator=, or <code>permissions(perms)</code> function.</p>
 </blockquote>
-<h4 dir="ltr"><a name="file_status-modifiers"><code>file_status</code> modifiers</a></h4>
+<h4><a name="file_status-modifiers"><code>file_status</code> modifiers</a></h4>
 <pre>void type(<a href="#file_type">file_type</a> ft) noexcept;</pre>
 <blockquote>
-  <p dir="ltr"><i>Postconditions:</i> <code>type() == ft</code>.</p>
+  <p><i>Postconditions:</i> <code>type() == ft</code>.</p>
 </blockquote>
 <pre>void permissions(<a href="#Enum-perms">perms</a> prms) noexcept;</pre>
 <blockquote>
-  <p dir="ltr"><i>Postconditions:</i> <code>permissions() == prms</code>.</p>
+  <p><i>Postconditions:</i> <code>permissions() == prms</code>.</p>
 </blockquote>
 <h3><a name="Class-directory_entry">Class <code>directory_entry</code></a></h3>
-<div dir="ltr">
+<div>
 <pre>namespace boost
 {
   namespace filesystem
@@ -1881,33 +1920,27 @@ file_status  symlink_status(system::error_code&amp; ec) const;</pre>
 </blockquote>
 <pre>bool operator==(const directory_entry&amp; rhs);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>m_path == 
-  rhs.m_path</code>.</p>
+  <p><i>Returns:</i> <code>m_path == rhs.m_path</code>.</p>
 </blockquote>
 <pre>bool operator!=(const directory_entry&amp; rhs);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>m_path != 
-  rhs.m_path</code>.</p>
+  <p><i>Returns:</i> <code>m_path != rhs.m_path</code>.</p>
 </blockquote>
 <pre>bool operator&lt; (const directory_entry&amp; rhs);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>m_path &lt; 
-  rhs.m_path</code>.</p>
+  <p><i>Returns:</i> <code>m_path &lt; rhs.m_path</code>.</p>
 </blockquote>
 <pre>bool operator&lt;=(const directory_entry&amp; rhs);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>m_path &lt;= 
-  rhs.m_path</code>.</p>
+  <p><i>Returns:</i> <code>m_path &lt;= rhs.m_path</code>.</p>
 </blockquote>
 <pre>bool operator&gt; (const directory_entry&amp; rhs);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>m_path &gt; 
-  rhs.m_path</code>.</p>
+  <p><i>Returns:</i> <code>m_path &gt; rhs.m_path</code>.</p>
 </blockquote>
 <pre>bool operator&gt;=(const directory_entry&amp; rhs);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>m_path &gt;= 
-  rhs.m_path</code>.</p>
+  <p><i>Returns:</i> <code>m_path &gt;= rhs.m_path</code>.</p>
 </blockquote>
 <h3><a name="Class-directory_iterator">Class <code>directory_iterator</code></a></h3>
 <p>Objects of type <code>directory_iterator</code> provide standard library 
@@ -2086,7 +2119,7 @@ recursive_<code>directory_iterator(</code>const path&amp; p, system::error_code&
 <p><i>Effects:</i>&nbsp; Constructs a iterator representing the first 
 entry in the directory <code>p</code> resolves to, if any; otherwise, the end iterator.</p>
 
-<p dir="ltr"><i>Postcondition: </i>Unless the end iterator was constructed,<i> </i><code>level() == 0 &amp;&amp; no_push_pending() == false &amp;&amp; m_options == opt</code>. 
+<p><i>Postcondition: </i>Unless the end iterator was constructed,<i> </i><code>level() == 0 &amp;&amp; no_push_pending() == false &amp;&amp; m_options == opt</code>. 
 For the signature without a <code>symlink_option</code> argument, <code>opt</code> is assumed to be <code>symlink_option::none</code>.</p>
 
 <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
@@ -2114,11 +2147,10 @@ recursive_directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
 except:</p>
 
 <ul>
-  <li dir="ltr">
+  <li>
 
-<p dir="ltr">if <code>!no_push_pending() &amp;&amp; is_directory(this-&gt;status()) 
-&amp;&amp; (!is_symlink(this-&gt;symlink_status()) || (m_options 
-&amp; symlink_option::recurse) != 0)</code> then&nbsp; <code>m_level</code> is incremented and directory <code>(*this)-&gt;path()</code> is recursively iterated into.<br>
+<p>if <code>!no_push_pending() &amp;&amp; is_directory(this-&gt;status()) 
+&amp;&amp; (!is_symlink(this-&gt;symlink_status()) || (m_options &amp; symlink_option::recurse) != 0)</code> then&nbsp; <code>m_level</code> is incremented and directory <code>(*this)-&gt;path()</code> is recursively iterated into.<br>
 &nbsp;</p>
 
   </li>
@@ -2171,8 +2203,7 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
     <tr>
       <td align="center"><b><code>p.has_root_name()</code></b></td>
       <td align="center"><code>return p</code></td>
-      <td align="center"><code>return p.root_name() / 
-      absolute(base).root_directory()<br>
+      <td align="center"><code>return p.root_name() / absolute(base).root_directory()<br>
       / absolute(base).relative_path() / p.relative_path()</code></td>
     </tr>
     <tr>
@@ -2182,7 +2213,7 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>-- end not
       <td align="center"><code>return absolute(base) / p</code></td>
     </tr>
   </table>
-  <p dir="ltr">[<i>Note:</i> For the returned path, <code>rp,</code> <code>rp.is_absolute()</code> is true. <i>-- end note</i>]</p>
+  <p>[<i>Note:</i> For the returned path, <code>rp,</code> <code>rp.is_absolute()</code> is true. <i>-- end note</i>]</p>
   <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws only if 
   memory allocation fails.</p>
 </blockquote>
@@ -2234,8 +2265,7 @@ void copy_directory(const path&amp; from, const path&amp; to, system::error_code
 <pre>void copy_file(const path&amp; from, const path&amp; to);
 void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects: </i><code>copy_file(from, to, 
-  copy_option::fail_if_exists</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
+  <p><i>Effects: </i><code>copy_file(from, to, copy_option::fail_if_exists</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
   
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
   
@@ -2243,15 +2273,13 @@ void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp;
 <pre>void <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option);
 void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects:</i> If <code>option == copy_option::</code><code>fail_if_exists 
-  &amp;&amp; exists(to)</code>, an error is reported. Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
+  <p><i>Effects:</i> If <code>option == copy_option::</code><code>fail_if_exists &amp;&amp; exists(to)</code>, an error is reported. Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre>void <a name="copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
 void copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects: </i><code>create_symlink(read_symlink(existing_symlink</code><i>[</i><code>, ec</code><i>]</i><code>), 
-  new_symlink</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
+  <p><i>Effects: </i><code>create_symlink(read_symlink(existing_symlink</code><i>[</i><code>, ec</code><i>]</i><code>), new_symlink</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
   
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
   
@@ -2283,7 +2311,7 @@ void create_directory_symlink(const path&amp; to, const path&amp; new_symlink, s
   Postcondition:</i> <code>new_symlink</code> resolves to a symbolic link file that 
   contains an unspecified representation of <code>to</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
-  <p dir="ltr">[<i>Note:</i> Some operating systems, such as Windows, require symlink creation to 
+  <p>[<i>Note:</i> Some operating systems, such as Windows, require symlink creation to 
   identify that the link is to a directory. Portable code should use <code>create_directory_symlink()</code> to create directory symlinks rather than <code>create_symlink()</code> <i>-- end note</i>]</p>
   <p>[<i>Note:</i> Some operating systems do not support symbolic links at all or support 
   them only for regular files. 
@@ -2379,7 +2407,7 @@ bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2
   <p><i>Throws:</i> <code>filesystem_error</code> if <code>(!exists(s1) &amp;&amp; !exists(s2)) || (is_other(s1) &amp;&amp; is_other(s2))</code>, 
   otherwise as specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
-<div dir="ltr">
+<div>
 <pre>uintmax_t <a name="file_size">file_size</a>(const path&amp; p);
 uintmax_t <a name="file_size2">file_size</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 </div>
@@ -2417,7 +2445,7 @@ const path&amp; <a name="initial_path2">initial_path</a>(<code>system::error_cod
 <pre><code>bool <a name="is_directory2">is_directory</a>(const path&amp; p);
 bool <a name="is_directory3">is_directory</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</code></pre>
 <blockquote>
-  <p dir="ltr"><i>Returns:</i> <code>is_directory(status(p))</code> or <code>is_directory(status(p, ec))</code>, 
+  <p><i>Returns:</i> <code>is_directory(status(p))</code> or <code>is_directory(status(p, ec))</code>, 
   respectively.</p>
 <p><i>Throws:</i> <code>filesystem_error</code>; overload with <code>error_code&amp;</code> throws 
 nothing.</p>
@@ -2427,8 +2455,7 @@ bool <a name="is_empty2">is_empty</a></a>(const path&amp; p, system::error_code&
 <blockquote>
   <p><i>Effects:</i> Determines <code>file_status s</code>, as if by <code>status(p, ec)</code>.</p>
   <p><i>Returns:</i> <code>is_directory(s)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ? 
-  directory_iterator(p) == directory_iterator()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ? directory_iterator(p) == directory_iterator()<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : file_size(p) == 0;</code></p>
 </blockquote>
 <pre>bool <code><a name="is_regular_file">is_regular_file</a></code>(file_status s) noexcept;</pre>
@@ -2484,16 +2511,15 @@ void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std
   <p><i>Effects:</i> Sets the time of last data modification of the file 
   resolved to by <code>p</code> to <code>new_time</code>, as if by <i>POSIX</i> <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code> followed by <i>POSIX</i> <a href="http://www.opengroup.org/onlinepubs/000095399/functions/utime.html"><code>utime()</code></a>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
-  <p>[<i>Note:</i> A postcondition of <code>last_write_time(p) == 
-  new_time</code> is not specified since it might not hold for file systems 
+  <p>[<i>Note:</i> A postcondition of <code>last_write_time(p) == new_time</code> is not specified since it might not hold for file systems 
   with coarse time granularity. <i>-- end note</i>]</p>
 </blockquote>
 <pre>void <a name="permissions">permissions</a>(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
 void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p dir="ltr">
+  <p>
   <i>Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
-  <p dir="ltr"><i>Effects:</i> Applies the effective permissions bits from <code>prms</code> to the file <code>p</code> resolves to, as if by <i>POSIX</i> <code><a href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/fchmodat.html">fchmodat()</a></code>. The effective permission bits are determined as 
+  <p><i>Effects:</i> Applies the effective permissions bits from <code>prms</code> to the file <code>p</code> resolves to, as if by <i>POSIX</i> <code><a href="http://pubs.opengroup.org/onlinepubs/9699919799/functions/fchmodat.html">fchmodat()</a></code>. The effective permission bits are determined as 
   specified by the following table. </p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
     <tr>
@@ -2507,7 +2533,7 @@ void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, sys
     <tr>
       <td><code>add_perms</code></td>
       <td>
-      <p dir="ltr"><code>status(p).permissions() | (prms &amp; <a href="#perms_mask">perms_mask</a>)</code> </td>
+      <p><code>status(p).permissions() | (prms &amp; <a href="#perms_mask">perms_mask</a>)</code> </td>
     </tr>
     <tr>
       <td><code>remove_perms</code></td>
@@ -2521,7 +2547,7 @@ void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, sys
 <pre>path <a name="read_symlink">read_symlink</a>(const path&amp; p);
 path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p dir="ltr"><i>Returns:</i>&nbsp; If <code>p</code> resolves to a symbolic 
+  <p><i>Returns:</i>&nbsp; If <code>p</code> resolves to a symbolic 
   link, a <code>path</code> object containing the contents of that symbolic 
   link. Otherwise an empty <code>path</code> object.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>. [<i>Note:</i> It is an error if <code>p</code> does not 

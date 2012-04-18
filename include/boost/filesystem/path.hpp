@@ -30,6 +30,7 @@
 #include <boost/io/detail/quoted_manip.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/functional/hash_fwd.hpp>
+#include <boost/type_traits/is_integral.hpp>
 #include <string>
 #include <iterator>
 #include <cstring>
@@ -232,6 +233,55 @@ namespace filesystem
           s(begin, end);
         path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
       }
+      return *this;
+    }
+
+    //  -----  concatenation  -----
+
+    path& operator+=(const path& p)         {m_pathname += p.m_pathname; return *this;}
+    path& operator+=(const string_type& s)  {m_pathname += s; return *this;}
+    path& operator+=(const value_type* ptr) {m_pathname += ptr; return *this;}
+    path& operator+=(value_type c)          {m_pathname += c; return *this;}
+
+    template <class Source>
+      typename boost::enable_if<path_traits::is_pathable<
+        typename boost::decay<Source>::type>, path&>::type
+    operator+=(Source const& source)
+    {
+      return concat(source, codecvt());
+    }
+
+    template <class CharT>
+      typename boost::enable_if<is_integral<CharT>, path&>::type
+    operator+=(CharT c)
+    {
+      CharT tmp[2];
+      tmp[0] = c;
+      tmp[1] = 0;
+      return concat(tmp, codecvt());
+    }
+
+    template <class Source>
+    path& concat(Source const& source, const codecvt_type& cvt)
+    {
+      path_traits::dispatch(source, m_pathname, cvt);
+      return *this;
+    }
+
+    template <class InputIterator>
+    path& concat(InputIterator begin, InputIterator end)
+    { 
+      return concat(begin, end, codecvt());
+    }
+
+    template <class InputIterator>
+    path& concat(InputIterator begin, InputIterator end, const codecvt_type& cvt)
+    { 
+      if (begin == end)
+        return *this;
+      std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
+        s(begin, end);
+      path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
       return *this;
     }
 
