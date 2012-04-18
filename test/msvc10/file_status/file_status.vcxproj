@@ -87,6 +87,9 @@
     <ClCompile Include="..\..\..\example\file_status.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\exec_monitor_dll\exec_monitor_dll.vcxproj">
+      <Project>{0ea788ca-fa52-4290-a4d0-f616390b203b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\filesystem_dll\filesystem_dll.vcxproj">
       <Project>{ffd738f7-96f0-445c-81ea-551665ef53d1}</Project>
     </ProjectReference>

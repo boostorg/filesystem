@@ -26,7 +26,13 @@
 # endif
 
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/detail/lightweight_main.hpp>
+
+#ifndef BOOST_LIGHTWEIGHT_MAIN
+#  include <boost/test/prg_exec_monitor.hpp>
+#else
+#  include <boost/detail/lightweight_main.hpp>
+#endif
+
 #include <boost/bind.hpp>
 #include <fstream>
 #include <iostream>

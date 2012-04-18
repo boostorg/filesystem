@@ -2,12 +2,18 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C++ Express 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_unit_test", "path_unit_test\path_unit_test.vcxproj", "{3C77F610-2E31-4087-9DF2-7CD45198A02D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EA788CA-FA52-4290-A4D0-F616390B203B} = {0EA788CA-FA52-4290-A4D0-F616390B203B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "operations_unit_test", "operations_unit_test\operations_unit_test.vcxproj", "{5DAF595A-4640-4F86-8A5F-E54E3E4CE7D0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "operations_test", "operations_test\operations_test.vcxproj", "{8BB7E604-46EF-42BE-ABB5-D7044B3E8A40}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_test", "path_test\path_test.vcxproj", "{F3D230C4-9185-4C2B-AB0E-0F0D28D8268C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EA788CA-FA52-4290-A4D0-F616390B203B} = {0EA788CA-FA52-4290-A4D0-F616390B203B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "system_dll", "system_dll\system_dll.vcxproj", "{F94CCADD-A90B-480C-A304-C19D015D36B1}"
 EndProject
@@ -28,6 +34,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tut4", "tut4\tut4.vcxproj", "{256EA89A-E073-4CE8-B675-BE2FBC6B2691}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "windows_attributes", "windows_attributes\windows_attributes.vcxproj", "{FC5C770F-3017-4021-8DAF-C5DCA3FDF005}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EA788CA-FA52-4290-A4D0-F616390B203B} = {0EA788CA-FA52-4290-A4D0-F616390B203B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tut5", "tut5\tut5.vcxproj", "{5C9B3380-3C6E-45CC-986A-16D245E27E58}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -89,6 +98,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filesystem_lib", "filesyste
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_test_static", "path_test_static\path_test_static.vcxproj", "{3B3010C5-D6D7-4320-A992-4EA61F256279}"
+	ProjectSection(ProjectDependencies) = postProject
+		{272DFC15-6292-49DF-B457-6784A183EAC3} = {272DFC15-6292-49DF-B457-6784A183EAC3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ticket_test", "ticket_test\ticket_test.vcxproj", "{AD2B00B7-D2CB-47B9-B6BA-15652188E072}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EA788CA-FA52-4290-A4D0-F616390B203B} = {0EA788CA-FA52-4290-A4D0-F616390B203B}
+		{F94CCADD-A90B-480C-A304-C19D015D36B1} = {F94CCADD-A90B-480C-A304-C19D015D36B1}
+		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exec_monitor_dll", "exec_monitor_dll\exec_monitor_dll.vcxproj", "{0EA788CA-FA52-4290-A4D0-F616390B203B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exec_monitor_lib", "exec_monitor_lib\exec_monitor_lib.vcxproj", "{272DFC15-6292-49DF-B457-6784A183EAC3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -204,6 +227,18 @@ Global
 		{3B3010C5-D6D7-4320-A992-4EA61F256279}.Debug|Win32.Build.0 = Debug|Win32
 		{3B3010C5-D6D7-4320-A992-4EA61F256279}.Release|Win32.ActiveCfg = Release|Win32
 		{3B3010C5-D6D7-4320-A992-4EA61F256279}.Release|Win32.Build.0 = Release|Win32
+		{AD2B00B7-D2CB-47B9-B6BA-15652188E072}.Debug|Win32.ActiveCfg = Debug|Win32
+		{AD2B00B7-D2CB-47B9-B6BA-15652188E072}.Debug|Win32.Build.0 = Debug|Win32
+		{AD2B00B7-D2CB-47B9-B6BA-15652188E072}.Release|Win32.ActiveCfg = Release|Win32
+		{AD2B00B7-D2CB-47B9-B6BA-15652188E072}.Release|Win32.Build.0 = Release|Win32
+		{0EA788CA-FA52-4290-A4D0-F616390B203B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0EA788CA-FA52-4290-A4D0-F616390B203B}.Debug|Win32.Build.0 = Debug|Win32
+		{0EA788CA-FA52-4290-A4D0-F616390B203B}.Release|Win32.ActiveCfg = Release|Win32
+		{0EA788CA-FA52-4290-A4D0-F616390B203B}.Release|Win32.Build.0 = Release|Win32
+		{272DFC15-6292-49DF-B457-6784A183EAC3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{272DFC15-6292-49DF-B457-6784A183EAC3}.Debug|Win32.Build.0 = Debug|Win32
+		{272DFC15-6292-49DF-B457-6784A183EAC3}.Release|Win32.ActiveCfg = Release|Win32
+		{272DFC15-6292-49DF-B457-6784A183EAC3}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

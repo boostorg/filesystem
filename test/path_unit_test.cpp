@@ -34,7 +34,13 @@
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/detail/lightweight_main.hpp>
+
+#ifndef BOOST_LIGHTWEIGHT_MAIN
+#  include <boost/test/prg_exec_monitor.hpp>
+#else
+#  include <boost/detail/lightweight_main.hpp>
+#endif
+
 #include <boost/smart_ptr.hpp>  // used constructor tests
 #include <boost/functional/hash.hpp>
 
