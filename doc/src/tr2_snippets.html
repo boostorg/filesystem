@@ -158,6 +158,8 @@ class would be the best place to experiment with this concept, not a path class.
   <ul>
     <li>Apply more C++0X features. Boost.Filesystem needs to implement these to verify their 
     application is correct.</li>
+    <li>Ion Todirel suggests &quot;Would be nice if path::append was variadic, to 
+    improve usability&quot;.</li>
     <li>Boost.Filesystem needs to implement <code>char16_t</code> and <code>char32_t</code> support to verify the 
     specification for these is correct.</li>
     <li>The Boost implementation has more class path non-member relational 
@@ -177,12 +179,6 @@ class would be the best place to experiment with this concept, not a path class.
     per LWG discussion in Kona. </li>
     <li>Add [section.name] and, if possible, section numbering, per LWG 
     discussion in Kona.</li>
-    <li>Add Ed Smith-Rowland's suggestion: <br>
-    &gt;path&amp; path+=(const path&amp; p);<br>
-    &gt; and<br>
-    &gt; path operator+(const path&amp; lhs, const path&amp; rhs);<br>
-    &gt; to tack on things like suffixes or numbers on the end of files.<br>
-    &gt; This has no real semantics, it just concatenates pathnames.</li>
     <li>Ed Smith-Rowland:<br>
     &gt; I found it less confusing to switch to positive logic for 
     recursive_directory_iterator:<br>
@@ -200,8 +196,9 @@ class would be the best place to experiment with this concept, not a path class.
     for this.</li>
     <li>recursive_directory_iterator is specified in terms of private data 
     members. Remove these (including the comment!) and specify in terms of 
-    behavior only.<br>
-&nbsp;</li>
+    behavior only.</li>
+    <li>Ion Todirel: Would be nice to have a make_relative. Need to review 
+    similar suggestions.</li>
   </ul>
   
   $endid

@@ -70,6 +70,10 @@
   compilers if static linking is used.</li>
   <li>Add path::operator+= and concat functions to tack on things like suffixes 
   or numbers. Suggested by Ed Smith-Rowland and others.</li>
+  <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/6809">#6809</a>, 
+  Implementation of filesystem::rename() method for MS Windows is wrong, by 
+  adding MOVEFILE_COPY_ALLOWED to deal with renames across drives, volumes, file 
+  systems. Fix has no effect on non-Windows systems.</li>
 </ul>
 
 <h2>1.49.0</h2>
@@ -154,7 +158,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->18 April, 2012<!--webbot bot="Timestamp" endspan i-checksum="29869" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 April, 2012<!--webbot bot="Timestamp" endspan i-checksum="29871" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
