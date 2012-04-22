@@ -1567,6 +1567,20 @@ namespace
       append_test_aux("foo", "bar", "foo/bar");
     }
 
+    // ticket #6819
+    union
+    {
+      char a[1];
+      char b[3];
+    } u;
+
+    u.b[0] = 'a';
+    u.b[1] = 'b';
+    u.b[2] = '\0';
+
+    path p6819;
+    p6819 /= u.a;
+    BOOST_TEST_EQ(p6819, path("ab"));
   }
 
 //  self_assign_and_append_tests  ------------------------------------------------------//

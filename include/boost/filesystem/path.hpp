@@ -704,10 +704,10 @@ namespace filesystem
   {
     if (path_traits::empty(source))
       return *this;
-      string_type::size_type sep_pos(m_append_separator_if_needed());
-      path_traits::dispatch(source, m_pathname, cvt);
-      if (sep_pos)
-        m_erase_redundant_separator(sep_pos);
+    string_type::size_type sep_pos(m_append_separator_if_needed());
+    path_traits::dispatch(source, m_pathname, cvt);
+    if (sep_pos)
+      m_erase_redundant_separator(sep_pos);
     return *this;
   }
 

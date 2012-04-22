@@ -85,8 +85,8 @@ namespace path_traits {
   }
 
   template <typename T, size_t N> inline
-     bool empty(T (&)[N])
-       { return N <= 1; }
+     bool empty(T (&x)[N])
+       { return !x[0]; }
 
   // value types differ  ---------------------------------------------------------------//
   //

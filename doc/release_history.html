@@ -74,6 +74,9 @@
   Implementation of filesystem::rename() method for MS Windows is wrong, by 
   adding MOVEFILE_COPY_ALLOWED to deal with renames across drives, volumes, file 
   systems. Fix has no effect on non-Windows systems.</li>
+  <li>Fix #6819; A path operand with a source that was a one character array was 
+  treated as empty, even if it wasn't empty. Such arrays can occur in unions or 
+  in code using C variable length array idioms.</li>
 </ul>
 
 <h2>1.49.0</h2>
@@ -158,7 +161,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 April, 2012<!--webbot bot="Timestamp" endspan i-checksum="29871" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 April, 2012<!--webbot bot="Timestamp" endspan i-checksum="29858" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
