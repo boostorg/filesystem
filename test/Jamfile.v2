@@ -17,6 +17,7 @@ project
 
    test-suite "filesystem" :
        [ run convenience_test.cpp ]
+       [ compile macro_default_test.cpp ]
        [ run deprecated_test.cpp ]                  
        [ run fstream_test.cpp ]
        [ run large_file_support_test.cpp ]

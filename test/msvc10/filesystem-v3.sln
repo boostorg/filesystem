@@ -106,6 +106,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exec_monitor_dll", "exec_mo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exec_monitor_lib", "exec_monitor_lib\exec_monitor_lib.vcxproj", "{272DFC15-6292-49DF-B457-6784A183EAC3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "macro_default_test", "macro_default_test\macro_default_test.vcxproj", "{36E2032D-F9E6-4FBA-9630-3D4AC518DC6C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3640605D-6F82-493D-879F-8F30762DA554} = {3640605D-6F82-493D-879F-8F30762DA554}
+		{2C1770A4-4AC3-4102-9D36-E652DBB686D8} = {2C1770A4-4AC3-4102-9D36-E652DBB686D8}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -228,6 +234,10 @@ Global
 		{272DFC15-6292-49DF-B457-6784A183EAC3}.Debug|Win32.Build.0 = Debug|Win32
 		{272DFC15-6292-49DF-B457-6784A183EAC3}.Release|Win32.ActiveCfg = Release|Win32
 		{272DFC15-6292-49DF-B457-6784A183EAC3}.Release|Win32.Build.0 = Release|Win32
+		{36E2032D-F9E6-4FBA-9630-3D4AC518DC6C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{36E2032D-F9E6-4FBA-9630-3D4AC518DC6C}.Debug|Win32.Build.0 = Debug|Win32
+		{36E2032D-F9E6-4FBA-9630-3D4AC518DC6C}.Release|Win32.ActiveCfg = Release|Win32
+		{36E2032D-F9E6-4FBA-9630-3D4AC518DC6C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
