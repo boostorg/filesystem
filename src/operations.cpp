@@ -916,24 +916,42 @@ namespace detail
   BOOST_FILESYSTEM_DECL
   bool create_directories(const path& p, system::error_code* ec)
   {
-    if (p.empty() || exists(p))
+    if (exists(p))
     {
-      if (!p.empty() && !is_directory(p))
+      if (!is_directory(p))
       {
         if (ec == 0)
-        BOOST_FILESYSTEM_THROW(filesystem_error(
+          BOOST_FILESYSTEM_THROW(filesystem_error(
             "boost::filesystem::create_directories", p,
             error_code(system::errc::file_exists, system::generic_category())));
-        else ec->assign(system::errc::file_exists, system::generic_category());
+        else
+          ec->assign(system::errc::file_exists, system::generic_category());
       }
+      else if (ec)
+        ec->clear();
       return false;
     }
 
     // First create branch, by calling ourself recursively
-    create_directories(p.parent_path(), ec);
+    path parent = p.parent_path();
+    if (!parent.empty())
+    {
+      error_code local_ec;
+      create_directories(parent, local_ec);
+      if (local_ec)
+      {
+        if (ec == 0)
+          BOOST_FILESYSTEM_THROW(filesystem_error(
+            "boost::filesystem::create_directories", p, local_ec));
+        else
+          *ec = local_ec;
+        return false;
+      }
+    }
+
     // Now that parent's path exists, create the directory
     create_directory(p, ec);
-    return true;
+    return ec == 0 || *ec == 0;
   }
 
   BOOST_FILESYSTEM_DECL
@@ -941,7 +959,8 @@ namespace detail
   {
     if (BOOST_CREATE_DIRECTORY(p.c_str()))
     {
-      if (ec != 0) ec->clear();
+      if (ec != 0)
+        ec->clear();
       return true;
     }
 
@@ -950,7 +969,8 @@ namespace detail
     error_code dummy;
     if (errval == BOOST_ERROR_ALREADY_EXISTS && is_directory(p, dummy))
     {
-      if (ec != 0) ec->clear();
+      if (ec != 0)
+        ec->clear();
       return false;
     }
 

@@ -1079,6 +1079,13 @@ namespace
     BOOST_TEST(fs::create_directories(p));
     BOOST_TEST(fs::exists(p));
     BOOST_TEST(fs::is_directory(p));
+
+    if (fs::exists("/permissions_test"))
+    {
+      error_code ec;
+      BOOST_TEST(!fs::create_directories("/permissions_test/another_directory", ec));
+      BOOST_TEST(ec);
+    }
   }
 
   //  resize_file_tests  ---------------------------------------------------------------//
