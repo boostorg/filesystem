@@ -20,7 +20,7 @@ $id frontmatter=
     <tr>
       <td width="153" align="left" valign="top">Date:</td>
       <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-04-18<!--webbot bot="Timestamp" endspan i-checksum="12247" --></td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-04-24<!--webbot bot="Timestamp" endspan i-checksum="12240" --></td>
     </tr>
     <tr>
       <td width="153" align="left" valign="top">Project:</td>
@@ -393,6 +393,21 @@ should go in TR2.</p>
 behavior without reference to how it is achieved. (If someone wants to propose a 
 quoted manipulator, that's a separate proposal for a different TR.)</i></p>
 <p><i>Action:&nbsp; Beman to apply to proposed wording.</i></p>
+<hr>
+<h3>Issue 8: Rename <code>rename</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Status: New</h3>
+<h4>Discussion</h4>
+<p>There are minor problems with the name of the <code>rename()</code> function:</p>
+<ul>
+  <li>There is already a &quot;rename&quot; function, albeit in namespace std, and it has 
+  different semantics as regards error handling. Thus giving the function a 
+  different name might reduce the chance of user error.</li>
+  <li>The name &quot;move&quot; would&nbsp; better reflect the actual semantics, 
+  particularly for moves between directories., and this is the name used by some 
+  API's, console commands, and GUI file managers for that functionality.</li>
+</ul>
+<h4>Proposed resolution</h4>
+<p>Change the name of the <code>rename()</code> function to <code>move()</code>.</p>
 <hr>
 <p>$endid
 
