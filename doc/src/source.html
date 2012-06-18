@@ -9,7 +9,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>
 $if $TARGET; == BOOST
-  Filesystem V3 Reference
+  Filesystem Reference
   $def WHAT "reference documentation"
   $def SNIPPET_FILE "boost_snippets.html"
   $def HEADER "boost/filesystem.hpp"
@@ -22,7 +22,7 @@ $if $TARGET; == BOOST
   $def NAMESPACE_END "  }  // namespace filesystem
 }  // namespace boost"
 $else
-  Filesystem TR2 Proposal
+  Filesystem Proposal
   $def WHAT "Clause"
   $def SNIPPET_FILE "tr2_snippets.html"
   $def HEADER "filesystem"
@@ -2227,18 +2227,24 @@ void copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink,
 <pre>bool <a name="create_directories">create_directories</a>(const path&amp; p);
 bool <a name="create_directories2">create_directories</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Requires:</i> <code>p.empty() || <br>
-  forall px: px == p || is_parent(px, p): is_directory(px) || !exists( px )</code> </p>
+  <p><i>Effects:</i> Establishes the postcondition by calling <code>
+  create_directory()</code> for any element of <code>p</code> that does not 
+  exist.</p>
   <p><i>Postcondition:</i> <code>is_directory(p)</code></p>
-  <p><i>Returns:</i> The value of <code>!exists(p)</code> prior to the 
-  establishment of the postcondition.</p>
+  <p><i>Returns:</i> <code>true</code> if a new directory was created, otherwise <code>
+  false</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
+  <p><i>Complexity:</i> <i>O(n+1)</i> where <i>n</i> is the number of elements 
+  of <code>p</code> that do not exist.</p>
 </blockquote>
 <pre>bool <a name="create_directory">create_directory</a>(const path&amp; p);
 bool <a name="create_directory2">create_directory</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects:</i> Attempts to create the directory <code>p</code> resolves to, 
-  as if by<i> POSIX </i><code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/mkdir.html">mkdir()</a></code> with a second argument of S_IRWXU|S_IRWXG|S_IRWXO. </p>
+  <p><i>Effects:</i> Establishes the postcondition by attempting to create the 
+  directory <code>p</code> resolves to, as if by<i> POSIX </i><code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/mkdir.html">
+  mkdir()</a></code> with a second argument of S_IRWXU|S_IRWXG|S_IRWXO. Creation 
+  failure because <code>p</code> resolves to an existing directory shall not be 
+  treated as an error. </p>
   <p><i>Postcondition:</i> <code>is_directory(p)</code></p>
   <p><i>Returns:</i> <code>true</code> if a new directory was created, otherwise <code>false</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
@@ -2323,10 +2329,9 @@ void current_path(const path&amp; p, system::error_code&amp; ec);</pre>
 <pre>bool <a name="exists2">exists</a>(const path&amp; p);
 bool <a name="exists3">exists</a>(const path&amp; p, system::error_code&amp; ec) noexcept;</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>exists(status(p))</code> or <code>exists(status(p, ec))</code>, 
-  respectively.</p>
-<p><i>Throws:</i> <code>filesystem_error</code>; overload with <code>error_code&amp;</code> throws 
-nothing.</p>
+  <p dir="ltr"><i>Returns:</i> <code>exists(status(p))</code> or <code>exists(status(p, ec))</code>, 
+  respectively. If ec != 0 and an error</p>
+<p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre><code>bool <a name="equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2);
 bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);</code></pre>

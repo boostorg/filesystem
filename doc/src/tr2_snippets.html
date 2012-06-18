@@ -6,29 +6,29 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>New Page 1</title>
+<title>Filesystem Proposal</title>
 </head>
 
 <body>
 
 $id frontmatter=
-  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="579">
+  <table border="0">
     <tr>
-      <td width="153" align="left" valign="top">Document number:</td>
-      <td width="426"><span style="background-color: #FFFF00">D????=12-????</span></td>
+      <td>Document number:&nbsp;&nbsp; </td>
+      <td><span style="background-color: #FFFF00">D????=12-????</span></td>
     </tr>
     <tr>
-      <td width="153" align="left" valign="top">Date:</td>
-      <td width="426">
-      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-04-18<!--webbot bot="Timestamp" endspan i-checksum="12247" --></td>
+      <td>Date:</td>
+      <td>
+      <!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%Y-%m-%d" startspan -->2012-06-02<!--webbot bot="Timestamp" endspan i-checksum="12362" --></td>
     </tr>
     <tr>
-      <td width="153" align="left" valign="top">Project:</td>
-      <td width="426">Programming Language C++, Library Working Group</td>
+      <td>Project:</td>
+      <td>Programming Language C++</td>
     </tr>
     <tr>
-      <td width="153" align="left" valign="top">Reply-to:</td>
-      <td width="426">Beman Dawes &lt;bdawes at acm dot org&gt;</td>
+      <td valign="top">Reply-to:</td>
+      <td>Beman Dawes &lt;bdawes at acm dot org&gt;</td>
     </tr>
   </table>
 
@@ -58,7 +58,7 @@ Library Proposal (Revision 3). Changes include:</p>
 </ul>
 
 
-<p>N3365=12-0055, Filesystem Library Proposal (Revision 
+<p><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3365.html">N3365=12-0055</a>, Filesystem Library Proposal (Revision 
 2). Changes 
 include:</p>
 
@@ -393,6 +393,21 @@ should go in TR2.</p>
 behavior without reference to how it is achieved. (If someone wants to propose a 
 quoted manipulator, that's a separate proposal for a different TR.)</i></p>
 <p><i>Action:&nbsp; Beman to apply to proposed wording.</i></p>
+<hr>
+<h3>Issue 8: Rename <code>rename</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+Status: New</h3>
+<h4>Discussion</h4>
+<p>There are minor problems with the name of the <code>rename()</code> function:</p>
+<ul>
+  <li>There is already a &quot;rename&quot; function, albeit in namespace std, and it has 
+  different semantics as regards error handling. Thus giving the function a 
+  different name might reduce the chance of user error.</li>
+  <li>The name &quot;move&quot; would&nbsp; better reflect the actual semantics, 
+  particularly for moves between directories., and this is the name used by some 
+  API's, console commands, and GUI file managers for that functionality.</li>
+</ul>
+<h4>Proposed resolution</h4>
+<p>Change the name of the <code>rename()</code> function to <code>move()</code>.</p>
 <hr>
 <p>$endid
 

@@ -68,8 +68,7 @@ int cpp_main(int, char*[])
 
 //  create_directories() tests  --------------------------------------------------------//
 
-  BOOST_TEST(!fs::create_directories(""));  // should be harmless
-  BOOST_TEST(!fs::create_directories("/")); // ditto
+  BOOST_TEST(!fs::create_directories("/")); // should be harmless
 
   path unique_dir = fs::unique_path();  // unique name in case tests running in parallel
   path unique_yy = unique_dir / "yy";

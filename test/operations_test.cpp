@@ -1073,12 +1073,22 @@ namespace
   {
     cout << "create_directories_tests..." << endl;
 
-    fs::path p = dir / "level1" / "level2";
+    BOOST_TEST(!fs::create_directories("/")); 
+
+    fs::path p = dir / "level1" / "level2" / "level3";
 
     BOOST_TEST(!fs::exists(p));
     BOOST_TEST(fs::create_directories(p));
     BOOST_TEST(fs::exists(p));
     BOOST_TEST(fs::is_directory(p));
+
+    if (fs::exists("/permissions_test"))
+    {
+      error_code ec;
+      BOOST_TEST(!fs::create_directories("/permissions_test", ec));
+      BOOST_TEST(!fs::create_directories("/permissions_test/another_directory", ec));
+      BOOST_TEST(ec);
+    }
   }
 
   //  resize_file_tests  ---------------------------------------------------------------//
@@ -1591,7 +1601,7 @@ namespace
     // Windows only tests
     if (platform == "Windows")
     {
-      cout << "Window specific tests..." << endl;
+      cout << "Windows specific tests..." << endl;
       if (!skip_long_windows_tests)
       {
         cout << "  (may take several seconds)"<< endl;
@@ -1932,7 +1942,6 @@ int cpp_main(int argc, char* argv[])
   initial_tests();
   predicate_and_status_tests();
   exception_tests();
-  platform_specific_tests();
   create_directory_tests();
   current_directory_tests();
   space_tests();
@@ -1985,8 +1994,10 @@ int cpp_main(int argc, char* argv[])
   if (create_symlink_ok)  // only if symlinks supported
     remove_symlink_tests();
   write_time_tests(dir);
-  
   temp_directory_path_tests();
+
+  platform_specific_tests();  // do these last since they take a lot of time on Windows,
+                              // and that's a pain during manual testing
   
   cout << "testing complete" << endl;
 
