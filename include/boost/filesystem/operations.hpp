@@ -721,6 +721,14 @@ namespace detail
       { return m_imp == rhs.m_imp; }
   };
 
+  //  enable range-base for statement use
+
+  inline
+  directory_iterator& begin(directory_iterator& iter)  {return iter;}
+
+  inline
+  directory_iterator end(const directory_iterator&)  {return directory_iterator();}
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                      recursive_directory_iterator helpers                            //
@@ -966,6 +974,15 @@ namespace detail
       { return m_imp == rhs.m_imp; }
 
   };
+
+  //  enable range-base for statement use
+
+  inline
+  recursive_directory_iterator& begin(recursive_directory_iterator& iter)  {return iter;}
+
+  inline
+  recursive_directory_iterator end(const recursive_directory_iterator&)
+                                                 {return recursive_directory_iterator();}
 
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
   typedef recursive_directory_iterator wrecursive_directory_iterator;

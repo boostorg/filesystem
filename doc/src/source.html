@@ -364,7 +364,13 @@ $endif
 
     class <a href="#Class-directory_iterator">directory_iterator</a>;
 
+    inline directory_iterator&amp; begin(directory_iterator&amp; iter);
+    inline directory_iterator end(const directory_iterator&amp;);
+
     class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
+
+    inline recursive_directory_iterator&amp; begin(recursive_directory_iterator&amp; iter);
+    inline recursive_directory_iterator end(const recursive_directory_iterator&amp;);
 
     enum <a name="file_type" href="#Enum-file_type">file_type</a>
     {
@@ -1983,6 +1989,15 @@ directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
 <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
 </blockquote>
+<h3><code>directory_iterator</code> non-member functions</h3>
+<pre>inline directory_iterator&amp; begin(directory_iterator&amp; iter);</pre>
+<blockquote>
+  <p><i>Returns: </i><code>iter</code>.</p>
+</blockquote>
+<pre>inline directory_iterator end(const directory_iterator&amp;);</pre>
+<blockquote>
+  <p><i>Returns: </i><code>directory_iterator()</code>.</p>
+</blockquote>
 <h3><a name="Class-recursive_directory_iterator">Class <code>recursive_directory_iterator</code></a></h3>
 <p>Objects of type <code>recursive_directory_iterator</code> provide standard library 
 compliant iteration over the contents of a directory, including recursion into 
@@ -2115,6 +2130,15 @@ is decremented and iteration of the parent directory resumes.</li>
 <p><i>Postcondition:</i> <code>no_push_pending() == value</code>.</p>
   <p>[<i>Note:</i> <code>no_push()</code> is used to prevent 
   unwanted recursion into a directory. <i>--end note</i>]</p>
+</blockquote>
+<h3><code>recursive_directory_iterator</code> non-member functions</h3>
+<pre>inline recursive_directory_iterator&amp; begin(recursive_directory_iterator&amp; iter);</pre>
+<blockquote>
+  <p><i>Returns: </i><code>iter</code>.</p>
+</blockquote>
+<pre>inline recursive_directory_iterator end(const recursive_directory_iterator&amp;);</pre>
+<blockquote>
+  <p><i>Returns: </i>recursive_<code>directory_iterator()</code>.</p>
 </blockquote>
 <h3><a name="Operational-functions">Operational functions</a></h3>
 <p>Operational functions query or modify files, including directories, in external 
