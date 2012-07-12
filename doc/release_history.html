@@ -39,8 +39,14 @@
 <h2>1.51.0</h2>
 <ul>
   <li>Add begin() and end() non-member functions for directory_iterator and 
-  recursive_directory_iterator so that C++11 range-based for statements now 
-  work.</li>
+  recursive_directory_iterator so that C++11 range-based for statements  work. 
+  Suggested by feature requests
+  <a href="https://svn.boost.org/trac/boost/ticket/5896">#5896</a> and
+  <a href="https://svn.boost.org/trac/boost/ticket/6521">#6521</a>, using the
+  <a href="https://svn.boost.org/trac/boost/ticket/5896">#5896</a> approach.</li>
+  <li>Add range_begin() and range_end() non-member functions for directory_iterator and 
+  recursive_directory_iterator so that 
+  <a href="http://www.boost.org/libs/foreach/">BOOST_FOREACH</a> works.</li>
 </ul>
 
 <h2>1.50.0</h2>
@@ -170,7 +176,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 July, 2012<!--webbot bot="Timestamp" endspan i-checksum="21085" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 July, 2012<!--webbot bot="Timestamp" endspan i-checksum="21089" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

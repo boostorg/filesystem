@@ -103,7 +103,12 @@ $endif
 <a href="#Class-directory_iterator">Class  <code>directory_iterator</code></a><br>
 &nbsp;&nbsp;&nbsp; <a href="#directory_iterator-members"><code>directory_iterator</code> 
     members</a><br>
+&nbsp; <code>&nbsp;<a href="#directory_iterator-non-member-functions">directory_iterator</a></code><a href="#directory_iterator-members"> 
+    non-member functions</a><br>
 <a href="#Class-recursive_directory_iterator">Class <code>recursive_directory_iterator</code></a><br>
+    <code>&nbsp; <a href="#recursive_directory_iterator-non-member-functions">
+    recursive_directory_iterator</a></code><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="#recursive_directory_iterator-non-member-functions">&nbsp;non-member functions</a><br>
     <a href="#Operational-functions">
     Operational functions</a><br>
     <code>&nbsp;&nbsp;&nbsp;&nbsp <a href="#absolute">absolute</a><br>
@@ -121,11 +126,11 @@ $endif
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#equivalent">equivalent</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#file_size">file_size</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a><br>
-    &nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp  i<a href="#is_directory">s_directory</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a></code></td>
+    &nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a></code></td>
     <td width="34%" valign="top">
-    <code>&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
+    <code>&nbsp;&nbsp;&nbsp;&nbsp; i<a href="#is_directory">s_directory</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_empty">is_empty</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp <a href="#is_other">is_other</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_regular_file">is_regular_file</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#is_symlink">is_symlink</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp <a href="#last_write_time">last_write_time</a><br>
@@ -364,14 +369,26 @@ $endif
 
     class <a href="#Class-directory_iterator">directory_iterator</a>;
 
-    inline directory_iterator&amp; begin(directory_iterator&amp; iter);
-    inline directory_iterator end(const directory_iterator&amp;);
+    // enable c++11 range-based for statements
+    const directory_iterator&amp; <a href="#directory_iterator-non-member-functions">begin</a>(const directory_iterator&amp; iter);
+    directory_iterator <a href="#directory_iterator-non-member-functions">end</a>(const directory_iterator&amp;);
+
+    // enable BOOST_FOREACH
+    directory_iterator&amp; range_begin(directory_iterator&amp; iter);
+    directory_iterator range_begin(const directory_iterator&amp; iter);
+    directory_iterator range_end(const directory_iterator&amp;);
 
     class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
 
-    inline recursive_directory_iterator&amp; begin(recursive_directory_iterator&amp; iter);
-    inline recursive_directory_iterator end(const recursive_directory_iterator&amp;);
+    // enable c++11 range-based for statements
+    const recursive_directory_iterator&amp; <a href="#recursive_directory_iterator-non-member-functions">begin</a>(const recursive_directory_iterator&amp; iter);
+    recursive_directory_iterator <a href="#recursive_directory_iterator-non-member-functions">end</a>(const recursive_directory_iterator&amp;);
 
+&nbsp;&nbsp;&nbsp; // enable BOOST_FOREACH
+&nbsp;&nbsp;&nbsp;&nbsp;recursive_directory_iterator&amp; range_begin(recursive_directory_iterator&amp; iter);
+&nbsp;&nbsp;&nbsp;&nbsp;recursive_directory_iterator range_begin(const recursive_directory_iterator&amp; iter);
+&nbsp;&nbsp;&nbsp;&nbsp;recursive_directory_iterator range_end(const recursive_directory_iterator&amp;);
+&nbsp;
     enum <a name="file_type" href="#Enum-file_type">file_type</a>
     {
       status_error, file_not_found, regular_file, directory_file,
@@ -1989,12 +2006,12 @@ directory_iterator&amp; increment(system::error_code&amp; ec);</pre>
 <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
 </blockquote>
-<h3><code>directory_iterator</code> non-member functions</h3>
-<pre>inline directory_iterator&amp; begin(directory_iterator&amp; iter);</pre>
+<h3><a name="directory_iterator-non-member-functions"><code>directory_iterator</code> non-member functions</a></h3>
+<pre>const directory_iterator&amp; begin(const directory_iterator&amp; iter);</pre>
 <blockquote>
   <p><i>Returns: </i><code>iter</code>.</p>
 </blockquote>
-<pre>inline directory_iterator end(const directory_iterator&amp;);</pre>
+<pre>directory_iterator end(const directory_iterator&amp;);</pre>
 <blockquote>
   <p><i>Returns: </i><code>directory_iterator()</code>.</p>
 </blockquote>
@@ -2131,14 +2148,14 @@ is decremented and iteration of the parent directory resumes.</li>
   <p>[<i>Note:</i> <code>no_push()</code> is used to prevent 
   unwanted recursion into a directory. <i>--end note</i>]</p>
 </blockquote>
-<h3><code>recursive_directory_iterator</code> non-member functions</h3>
-<pre>inline recursive_directory_iterator&amp; begin(recursive_directory_iterator&amp; iter);</pre>
+<h3><a name="recursive_directory_iterator-non-member-functions"><code>recursive_directory_iterator</code> non-member functions</a></h3>
+<pre>const recursive_directory_iterator&amp; begin(const recursive_directory_iterator&amp; iter);</pre>
 <blockquote>
   <p><i>Returns: </i><code>iter</code>.</p>
 </blockquote>
-<pre>inline recursive_directory_iterator end(const recursive_directory_iterator&amp;);</pre>
+<pre>recursive_directory_iterator end(const recursive_directory_iterator&amp;);</pre>
 <blockquote>
-  <p><i>Returns: </i>recursive_<code>directory_iterator()</code>.</p>
+  <p><i>Returns: </i><code>recursive_directory_iterator()</code>.</p>
 </blockquote>
 <h3><a name="Operational-functions">Operational functions</a></h3>
 <p>Operational functions query or modify files, including directories, in external 

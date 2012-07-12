@@ -33,8 +33,9 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/iterator.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/range/mutable_iterator.hpp>
+#include <boost/range/const_iterator.hpp>
 #include <boost/assert.hpp>
-
 #include <string>
 #include <utility> // for pair
 #include <ctime>
@@ -721,13 +722,36 @@ namespace detail
       { return m_imp == rhs.m_imp; }
   };
 
-  //  enable range-base for statement use
+  //  enable C++11 range-base for statement use  ---------------------------------------//
 
+  //  begin() and end() are only used by a range-based for statement in the context of
+  //  auto - thus the top-level const is stripped - so returning const is harmless and
+  //  emphasizes begin() is just a pass through.
   inline
-  directory_iterator& begin(directory_iterator& iter)  {return iter;}
-
+  const directory_iterator& begin(const directory_iterator& iter)  {return iter;}
   inline
   directory_iterator end(const directory_iterator&)  {return directory_iterator();}
+
+  //  enable BOOST_FOREACH  ------------------------------------------------------------//
+
+  inline
+  directory_iterator& range_begin(directory_iterator& iter) {return iter;}
+  inline
+  directory_iterator range_begin(const directory_iterator& iter) {return iter;}
+  inline
+  directory_iterator range_end(const directory_iterator&) {return directory_iterator();}
+  }  // namespace filesystem
+
+  //  namespace boost template specializations
+  template<>
+  struct range_mutable_iterator<boost::filesystem::directory_iterator>
+    { typedef boost::filesystem::directory_iterator type; };
+  template<>
+  struct range_const_iterator <boost::filesystem::directory_iterator>
+    { typedef boost::filesystem::directory_iterator type; };
+
+namespace filesystem
+{
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -975,14 +999,41 @@ namespace detail
 
   };
 
-  //  enable range-base for statement use
+  //  enable C++11 range-base for statement use  ---------------------------------------//
 
+  //  begin() and end() are only used by a range-based for statement in the context of
+  //  auto - thus the top-level const is stripped - so returning const is harmless and
+  //  emphasizes begin() is just a pass through.
   inline
-  recursive_directory_iterator& begin(recursive_directory_iterator& iter)  {return iter;}
-
+  const recursive_directory_iterator& begin(const recursive_directory_iterator& iter)
+                                                                            {return iter;}
   inline
   recursive_directory_iterator end(const recursive_directory_iterator&)
-                                                 {return recursive_directory_iterator();}
+                                                  {return recursive_directory_iterator();}
+
+  //  enable BOOST_FOREACH  ------------------------------------------------------------//
+
+  inline
+  recursive_directory_iterator& range_begin(recursive_directory_iterator& iter)
+                                                                            {return iter;}
+  inline
+  recursive_directory_iterator range_begin(const recursive_directory_iterator& iter)
+                                                                            {return iter;}
+  inline
+  recursive_directory_iterator range_end(const recursive_directory_iterator&)
+                                                  {return recursive_directory_iterator();}
+  }  // namespace filesystem
+
+  //  namespace boost template specializations
+  template<>
+  struct range_mutable_iterator<boost::filesystem::recursive_directory_iterator>
+                        { typedef boost::filesystem::recursive_directory_iterator type; };
+  template<>
+  struct range_const_iterator <boost::filesystem::recursive_directory_iterator>
+                        { typedef boost::filesystem::recursive_directory_iterator type; };
+
+namespace filesystem
+{
 
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
   typedef recursive_directory_iterator wrecursive_directory_iterator;

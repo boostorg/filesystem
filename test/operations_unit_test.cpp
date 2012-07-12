@@ -155,14 +155,22 @@ namespace
 #ifndef BOOST_NO_CXX11_RANGE_BASED_FOR
     for (directory_entry& x : directory_iterator("."))
     {
+      CHECK(!x.path().empty());
        //cout << "  " << x.path() << "\n";
+    }
+    const directory_iterator dir_itr(".");
+    for (directory_entry& x : dir_itr)
+    {
+      CHECK(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
     }
 #endif
 
-    //BOOST_FOREACH(directory_entry& x, directory_iterator("."))
-    //{
-    //  cout << "  " << x.path() << "\n";
-    //}
+    BOOST_FOREACH(directory_entry& x, directory_iterator("."))
+    {
+      CHECK(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
+    }
 
     cout << "directory_iterator_test complete" << endl;
   }
@@ -208,9 +216,22 @@ namespace
 #ifndef BOOST_NO_CXX11_RANGE_BASED_FOR
     for (directory_entry& x : recursive_directory_iterator(".."))
     {
-       cout << "  " << x.path() << "\n";
+      CHECK(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
+    }
+    const recursive_directory_iterator dir_itr("..");
+    for (directory_entry& x : dir_itr)
+    {
+      CHECK(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
     }
 #endif
+
+    BOOST_FOREACH(directory_entry& x, recursive_directory_iterator(".."))
+    {
+      CHECK(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
+    }
 
     cout << "recursive_directory_iterator_test complete" << endl;
   }
