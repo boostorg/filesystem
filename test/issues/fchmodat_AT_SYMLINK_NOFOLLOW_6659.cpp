@@ -7,7 +7,7 @@
 
 // Test this by running:
 //
-// rm -rf data && mkdir data && g++ -otest-fchmodat test-fchmodat.cpp && (cd data && ../test-fchmodat)
+// rm -rf data && mkdir data && g++ -otest-fchmodat fchmodat_AT_SYMLINK_NOFOLLOW_6659.cpp && (cd data && ../test-fchmodat)
 //
 // If no assertions go off, then it looks like fchmodat is supported,
 // but AT_SYMLINK_NOFOLLOW is not supported.
@@ -17,6 +17,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <cerrno>
+
+#ifdef NDEBUG
+# error This program depends on assert() so makes no sense if NDEBUG is defined
+#endif
 
 int main(int argc, char *argv[])
 {
