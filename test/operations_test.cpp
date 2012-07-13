@@ -115,7 +115,7 @@ namespace
 
   unsigned short language_id;  // 0 except for Windows
 
-  const char* temp_dir_name = "v3_operations_test";
+  const char* temp_dir_name = "operations_test";
 
   void create_file(const fs::path & ph, const std::string & contents = std::string())
   {
@@ -848,6 +848,21 @@ namespace
       for (fs::directory_iterator itr(dir); itr != fs::directory_iterator(); ++itr)
         if (itr->path().filename() == fs::path("permissions.txt"))
           BOOST_TEST(itr->status().permissions() == fs::owner_all);
+
+      if (create_symlink_ok)  // only if symlinks supported
+      {
+        BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+        fs::path p2(dir / "permissions-symlink.txt");
+        fs::create_symlink(p, p2);
+        cout << std::oct; 
+        cout << "   status(p).permissions() "  << fs::status(p).permissions() << endl;
+        cout << "  status(p2).permissions() "  << fs::status(p).permissions() << endl;
+        fs::permissions(p2, fs::add_perms | fs::others_read);
+        cout << "   status(p).permissions(): " << fs::status(p).permissions() << endl; 
+        cout << "  status(p2).permissions(): " << fs::status(p2).permissions() << endl;
+        cout << std::dec;
+      }
+
     }
     else // Windows
     {
