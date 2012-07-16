@@ -608,7 +608,8 @@ $endif;    void swap(path&amp; lhs, path&amp; rhs);
                            system::error_code&amp; ec);
 
     void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
-    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);
+    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink,
+                              system::error_code&amp; ec);
 
     bool         <a href="#create_directories">create_directories</a>(const path&amp; p);
     bool         <a href="#create_directories">create_directories</a>(const path&amp; p, system::error_code&amp; ec);
@@ -617,13 +618,16 @@ $endif;    void swap(path&amp; lhs, path&amp; rhs);
     bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
     void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
-    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);
+    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink,
+                                          system::error_code&amp; ec);
 
     void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
-    void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link, system::error_code&amp; ec);
+    void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link,
+                                  system::error_code&amp; ec);
 
     void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink);
-    void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink, system::error_code&amp; ec);
+    void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink,
+                                system::error_code&amp; ec);
 
     path         <a href="#current_path">current_path</a>();
     path         <a href="#current_path">current_path</a>(system::error_code&amp; ec);
@@ -668,7 +672,8 @@ $endif;    void swap(path&amp; lhs, path&amp; rhs);
     std::time_t  <a href="#last_write_time">last_write_time</a>(const path&amp; p);
     std::time_t  <a href="#last_write_time">last_write_time</a>(const path&amp; p, system::error_code&amp; ec);
     void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time);
-    void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time, system::error_code&amp; ec);
+    void         <a href="#last_write_time2">last_write_time</a>(const path&amp; p, const std::time_t new_time,
+                                 system::error_code&amp; ec);
 
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p);
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p, system::error_code&amp; ec);
@@ -786,10 +791,10 @@ system or for a particular file system.</p>
         template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator=(Source const&amp; source);
 
-        template &lt;class <a href="#Source">Source</a>&gt;
+$if $TARGET; == BOOST        template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; assign(Source const&amp; source$CODECVT_ARG2;)
 
-        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+$endif;        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
           path&amp; assign(InputIterator begin, InputIterator end$CODECVT_ARG2;$CODECVT_DEFAULT;);
 
         // <a href="#path-appends">appends</a>
@@ -798,10 +803,10 @@ system or for a particular file system.</p>
         template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator/=(Source const&amp; source);
 
-        template &lt;class <a href="#Source">Source</a>&gt;
+$if $TARGET; == BOOST        template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; append(Source const&amp; source$CODECVT_ARG2;);
 
-        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+$endif;        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
           path&amp; append(InputIterator begin, InputIterator end$CODECVT_ARG2;$CODECVT_DEFAULT;);
 
         // <a href="#path-concatenation">concatenation</a>
@@ -813,9 +818,9 @@ system or for a particular file system.</p>
           path&amp; operator+=(Source const&amp; x);
         template &lt;class CharT&gt;
           path&amp; operator+=(CharT x);
-        template &lt;class Source&gt;
+$if $TARGET; == BOOST        template &lt;class Source&gt;
           path&amp; concat(Source const&amp; x$CODECVT_ARG2;);
-        template &lt;class InputIterator&gt;
+$endif;        template &lt;class InputIterator&gt;
           path&amp; concat(InputIterator begin, InputIterator end);
         template &lt;class InputIterator&gt;
           path&amp; concat(InputIterator begin, InputIterator end$CODECVT_ARG2;);
@@ -961,10 +966,10 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
 <h3> <a name="path-assignments"> <code>
 <font size="4">path</font></code> assignments</a> [path.assign]</h3>
 <pre>template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; operator=(Source const&amp; source);</pre>
-<pre>template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; assign(Source const&amp; source$CODECVT_ARG2;);</pre>
-<pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+  path&amp; operator=(Source const&amp; source);
+$if $TARGET; == BOOST  template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; assign(Source const&amp; source$CODECVT_ARG2;);
+$endif;  template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
   path&amp; assign(InputIterator begin, InputIterator end$CODECVT_ARG2;$CODECVT_DEFAULT;);</pre>
 <blockquote>
   <p><i>Effects:</i> Stores the contents [<code>begin</code>,<code>end</code>) 
@@ -995,10 +1000,10 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
   <p><i>Returns: </i><code>*this</code></p>
 </blockquote>
 <pre>template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; operator/=(Source const &amp; source);</pre>
-<pre>template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; append(Source const &amp; source$CODECVT_ARG2;);</pre>
-<pre>template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+  path&amp; operator/=(Source const &amp; source);
+$if $TARGET; == BOOST  template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; append(Source const &amp; source$CODECVT_ARG2;);
+$endif;  template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
   path&amp; append(InputIterator begin, InputIterator end$CODECVT_ARG2;$CODECVT_DEFAULT;);</pre>
 <blockquote>
   <p><i>Effects:</i></p>
