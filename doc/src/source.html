@@ -530,22 +530,26 @@ $endif;    void swap(path&amp; lhs, path&amp; rhs);
     const directory_iterator&amp; <a href="#directory_iterator-non-member-functions">begin</a>(const directory_iterator&amp; iter);
     directory_iterator <a href="#directory_iterator-non-member-functions">end</a>(const directory_iterator&amp;);
 
+$if $TARGET; == BOOST
     // enable BOOST_FOREACH
     directory_iterator&amp; range_begin(directory_iterator&amp; iter);
     directory_iterator range_begin(const directory_iterator&amp; iter);
     directory_iterator range_end(const directory_iterator&amp;);
 
+$endif
     class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
 
     // enable c++11 range-based for statements
     const recursive_directory_iterator&amp; <a href="#recursive_directory_iterator-non-member-functions">begin</a>(const recursive_directory_iterator&amp; iter);
     recursive_directory_iterator <a href="#recursive_directory_iterator-non-member-functions">end</a>(const recursive_directory_iterator&amp;);
 
-&nbsp;&nbsp;&nbsp; // enable BOOST_FOREACH
-&nbsp;&nbsp;&nbsp;&nbsp;recursive_directory_iterator&amp; range_begin(recursive_directory_iterator&amp; iter);
-&nbsp;&nbsp;&nbsp;&nbsp;recursive_directory_iterator range_begin(const recursive_directory_iterator&amp; iter);
-&nbsp;&nbsp;&nbsp;&nbsp;recursive_directory_iterator range_end(const recursive_directory_iterator&amp;);
-&nbsp;
+$if $TARGET; == BOOST
+    // enable BOOST_FOREACH
+    recursive_directory_iterator&amp; range_begin(recursive_directory_iterator&amp; iter);
+    recursive_directory_iterator range_begin(const recursive_directory_iterator&amp; iter);
+    recursive_directory_iterator range_end(const recursive_directory_iterator&amp;);
+
+$endif
     enum <a name="file_type" href="#Enum-file_type">file_type</a>
     {
       status_error, file_not_found, regular_file, directory_file,
@@ -2086,7 +2090,8 @@ unspecified whether or not subsequent incrementing of the iterator will ever
 result in an iterator whose value is the removed or added directory entry. See
 ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/readdir_r.html">readdir_r()</a></code>. <i>--end note</i>]</p>
 </blockquote>
-<h4><a name="directory_iterator-members"><code>directory_iterator</code> members</a></h4>
+<h3><a name="directory_iterator-members"><code>directory_iterator</code> members</a> 
+[directory_iterator.members]</h3>
 
 <p><code><a name="directory_iterator-default-ctor">directory_iterator</a>() 
 noexcept;</code></p>
@@ -2804,8 +2809,8 @@ directory_iterator(p)</code>would succeed.
       return <code>
       file_status(character_file)</code>.<br>
 &nbsp;</li>
-      <li>Otherwise, if the attributes indicate a fifo or pipe file, as if by <i>
-      ISO/IEC 9945</i>
+      <li>Otherwise, if the attributes indicate a fifo or pipe file, as if by
+      ISO/IEC 9945
       <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">S_ISFIFO()</a>, 
       return <code>
       file_status(fifo_file)</code>.<br>
