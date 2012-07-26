@@ -115,7 +115,7 @@ namespace
 
   unsigned short language_id;  // 0 except for Windows
 
-  const char* temp_dir_name = "operations_test";
+  const fs::path temp_dir(fs::unique_path("operations-test-%%%%-%%%%-%%%%-%%%%"));
 
   void create_file(const fs::path & ph, const std::string & contents = std::string())
   {
@@ -576,7 +576,8 @@ namespace
       bool found(false);
       do
       {
-        if (it->path().filename() == temp_dir_name) found = true;
+        if (it->path().filename() == temp_dir.filename())
+          found = true;
       } while (++it != fs::directory_iterator());
       BOOST_TEST(found);
     }
@@ -1941,7 +1942,7 @@ int cpp_main(int argc, char* argv[])
 # endif
   cout << "API is " << platform << endl;
 
-  dir = fs::initial_path() / temp_dir_name;
+  dir = fs::initial_path() / temp_dir;
 
   if (fs::exists(dir))
   {
