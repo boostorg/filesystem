@@ -2295,10 +2295,36 @@ else
 <pre>void <a name="copy_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
 void copy_directory(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects: </i></p>
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
+   bordercolor="#111111" width="90%" bgcolor="#E0E0E0">
+    <tr>
+      <td width="100%">
+      <p><i>This function is poorly named; it should probably be an overload of
+      <code>create_directory</code> with an additional argument.</i></td>
+    </tr>
+  </table>
+  
+  <p><i>Effects: </i>Creates directory <code>to</code>, with 
+  attributes copied from directory <code>from</code>. The set of attributes 
+  copied is operating system dependent.</p>
+  
+<blockquote>
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
+   bordercolor="#111111" width="90%" bgcolor="#E8FFE8">
+    <tr>
+      <td width="100%">
+      <p>[<i>Note:</i> For ISO 9945/POSIX based operating systems the 
+      attributes are those copied by native API <code>stat(from.c_str(), &amp;from_stat)</code> 
+      followed by <code>mkdir(to.c_str(),from_stat.st_mode)</code>.&nbsp; For 
+      Windows based operating systems the attributes are those copied by native 
+      API <code>CreateDirectoryExW(from.c_str(), to.c_str(), 0)</code>.&nbsp; <i>
+      --end note</i>]</td>
+    </tr>
+  </table>
+</blockquote>
   
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
-  
+
 </blockquote>
 <pre>void copy_file(const path&amp; from, const path&amp; to);
 void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
@@ -3472,7 +3498,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->20 March 2012<!--webbot bot="Timestamp" endspan i-checksum="27254" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->09 August 2012<!--webbot bot="Timestamp" endspan i-checksum="31334" --></font></p>
 
 
 </body></html>
