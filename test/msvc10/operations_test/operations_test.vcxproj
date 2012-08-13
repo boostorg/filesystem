@@ -61,7 +61,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Executing test $(TargetName).exe...</Message>
-      <Command>"$(TargetDir)\$(TargetName).exe"  -x</Command>
+      <Command>"$(TargetDir)\$(TargetName).exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -84,7 +84,7 @@
     </Link>
     <PostBuildEvent>
       <Message>Executing test $(TargetName).exe...</Message>
-      <Command>"$(TargetDir)\$(TargetName).exe"  -x</Command>
+      <Command>"$(TargetDir)\$(TargetName).exe"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

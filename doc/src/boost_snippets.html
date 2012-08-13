@@ -22,7 +22,8 @@ $id frontmatter=
   </tr>
 </table>
 
-<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
+ bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
   <tr>
     <td><a href="index.htm">Filesystem Home</a> &nbsp;&nbsp;
     <a href="release_history.html">Releases</a> &nbsp;&nbsp;
@@ -48,6 +49,80 @@ $id wording_prefix=
 <p>This reference documentation describes components that C++ programs may use 
 to perform operations involving file systems, including paths, regular files, 
 and directories.</p>
+
+<blockquote>
+<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
+  bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <tr>
+    <td width="100%" align="center" colspan="2">
+    <p align="center"><b>C++11 Support</b><p align="left">This reference 
+    documentation is written as if all compilers supported C++11. Where 
+    possible, the implementation falls back to C++03 if a C++11 feature is not 
+    available.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="center">
+    <b>C++11 Feature</b></td>
+    <td width="65%" align="center">
+    <b>Action if not supported by compiler</b></td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    <code>noexcept</code></td>
+    <td width="65%" align="left">
+    Keyword omitted.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    <code>constexpr</code></td>
+    <td width="65%" align="left">
+    Keyword omitted.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    <p dir="rtl">R-value references</td>
+    <td width="65%" align="left">
+    Function signature omitted.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    New character types</td>
+    <td width="65%" align="left">
+    <p dir="ltr">The <code>boost::filesystem</code> interface doesn't use the 
+    new types directly. It does use <code>u16string</code> and <code>u32string</code> 
+    in namespace <code>boost</code>. These are typedefs to <code>std::u16string</code> 
+    and <code>std::u32string</code> for C++11, or to <code>
+    std::basic_string&lt;boost::u16_t&gt;</code> and <code>
+    std::basic_string&lt;boost::u32_t&gt;</code> for C++03.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    Defaulted and deleted functions</td>
+    <td width="65%" align="left">
+    Workaround replacement functions provided.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    Initializer lists</td>
+    <td width="65%" align="left">
+    Not currently used.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    Variadic templates</td>
+    <td width="65%" align="left">
+    Not currently used.</td>
+  </tr>
+  <tr>
+    <td width="35%" align="left">
+    Range-based for statements</td>
+    <td width="65%" align="left">
+    Supporting functions always provided; they do no harm even for C++03 
+    compilers.</td>
+  </tr>
+</table>
+</blockquote>
+
 $endid
 
 $id wording_suffix=
@@ -115,7 +190,7 @@ $id backmatter=>
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->20 March 2012<!--webbot bot="Timestamp" endspan i-checksum="27254" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->16 July 2012<!--webbot bot="Timestamp" endspan i-checksum="18787" --></font></p>
 
 $endid
 

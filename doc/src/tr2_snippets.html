@@ -38,11 +38,16 @@ Filesystem Library Proposal (Revision 3)</h1>
 
 
 <p>This paper proposes a filesystem library component suitable for a <i>C++ 
-Standard Library Technical Report</i> or for the <i>C++ Standard Library</i>. 
+Standard Library Technical Specification</i> or for the <i>C++ Standard Library</i>. 
 The proposed library is based on Version 3 of the Boost Filesystem 
 Library (see <a href="http://www.boost.org/libs/filesystem">
 www.boost.org/libs/filesystem</a>). Preliminary wording is provided. A
 <a href="#TODO">TODO</a> list identifies remaining work to be done.</p>
+
+
+<p><span style="font-style: italic; background-color: #FFFF00">Material in this 
+document high-lighted in yellow is known to be incomplete, incorrect, or 
+otherwise require further refinement.</span></p>
 
 
 <h2>Revision history</h2>
@@ -55,6 +60,19 @@ Library Proposal (Revision 3). Changes include:</p>
 <ul>
   <li>Add path::operator+= and concat functions to tack on things like suffixes 
   or numbers. Suggested by Ed Smith-Rowland and others.</li>
+    <li>Add section tags and section numbers, per LWG 
+    discussion in Kona.</li>
+  <li>Bring use of trademarked names into ISO compliance, and minimize use of 
+  such names by moving into a single examples section. Thanks to Stefanus Du 
+  Toit for advice on how to do this.</li>
+  <li>Introduce a definition for &quot;operating system dependent&quot;, and then use it 
+  to replace most &quot;implementation defined behavior&quot;.</li>
+  <li>Replace uses of&nbsp; const string return types with non-const string 
+  return types, per LWG discussion in Kona.</li>
+  <li>Remove permission for implementations to return const string&amp; in certain 
+  cases, per LWG discussion in Kona.</li>
+  <li>Remove path inserter and extractor dependency on Boost quoted manip (Issue 
+  7).</li>
 </ul>
 
 
@@ -172,13 +190,11 @@ class would be the best place to experiment with this concept, not a path class.
     need to be reviewed, revised, tested, peer reviewed.</li>
     <li>Dinkumware/Microsoft report slightly different results for Decomposition 
     table. Rerun table. Check discrepancies.</li>
-    <li>Apply issue resolutions from Kona.</li>
-    <li>Remove registered trademarks from normative text per ISO policy.</li>
+    <li>Apply issue resolutions from Kona. Complete except some remaining 
+    codecvt arguments</li>
     <li>Review Nick Stoughton's email for suggestions, action items.</li>
     <li>Change <code>time_t</code> to <code>chrono system_clock::time_point</code>, 
     per LWG discussion in Kona. </li>
-    <li>Add [section.name] and, if possible, section numbering, per LWG 
-    discussion in Kona.</li>
     <li>Ed Smith-Rowland:<br>
     &gt; I found it less confusing to switch to positive logic for 
     recursive_directory_iterator:<br>
@@ -204,82 +220,43 @@ class would be the best place to experiment with this concept, not a path class.
   $endid
 
 $id wording_prefix=
-<h2>Proposed Wording</h2>
+<h1>Proposed Wording</h1>
+
+<!-- generate-section-numbers=true -->
 
 <p><span style="font-style: italic; background-color: rgb(224, 224, 224);">
 Gray-shaded italic text is commentary on the proposal. It is not to be added to 
-the TR.</span></p>
-<p><span style="font-style: italic; background-color: #E0E0E0">Add the following 
-to the Technical Report's front matter:</span></p>
-<p>The following standard contains provisions which, through reference in this 
-text, constitute provisions of this Technical Report. At the time of 
+the working paper.</span></p>
+<h1>Filesystem Library [filesystem]</h1>
+
+<p>This clause describes components that perform operations on file systems and 
+their components, such as paths, regular files, and directories.</p>
+
+<p>ISO/IEC 9945 contains provisions which, through reference in this 
+text, constitute provisions of this clause. At the time of 
 publication, the editions indicated were valid. All standards are subject to 
-revision, and parties to agreements based on this Technical Report are 
+revision, and parties to agreements based on this clause are 
 encouraged to investigate the possibility of applying the most recent editions 
 of the standard indicated below. Members of IEC and ISO maintain registers of 
 currently valid International Standards.</p>
 <ul>
-  <li>ISO/IEC 9945:2003, <i>Portable Operating System Interface (POSIX<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html#Footnote-1"><sup>1</sup></a>), 
+  <li>ISO/IEC 9945:2003, <i>Portable Operating System Interface (POSIX</i>®<i>), 
   part 1 (Base Definitions) and part 2 (System Interfaces)</i>, both as 
-  corrected by their respective 2004 Correction 1 documents.<p>[<i>Note:</i> 
-  ISO/IEC 9945:2003 is also IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group Base 
-  Specifications, Issue 6, and is also known as The Single Unix<font face="Times New Roman"><sup><a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html#Footnote-2">2</a></sup><i><b>
-  </b></i>Specification, Version 3. It is available from each of those 
+  corrected by their respective 2004 Correction 1 documents.<p><i>
+  <span style="background-color: #E0E0E0">ISO/</span><span style="background-color: #E0E0E0">IEC</span><span style="background-color: #E0E0E0"> 9945:2003 is also IEEE&nbsp;Std&nbsp;1003.1-2001, and The Open Group Base 
+  Specifications, Issue 6, and is also known as The Single Unix®</span></i><font face="Times New Roman"><i><b><span style="background-color: #E0E0E0">
+  </span>
+  </b></i><span style="font-style: italic; background-color: #E0E0E0">Specification, Version 3. It is available from each of those 
   organizations, and may be read online or downloaded from
   <a href="http://www.unix.org/single_unix_specification/">
-  www.unix.org/single_unix_specification/</a> <i>-- end note</i>]</font></li>
+  www.unix.org/single_unix_specification/</a></span></font></li>
 </ul>
-<p>ISO/IEC 9945:2003, with the indicated corrections, is hereinafter called <i>
-POSIX</i>.</p>
-<p><a name="Footnote-1">Footnote 1</a>: <i>POSIX</i>® is a registered trademark 
-of The IEEE.</p>
-<p><a name="Footnote-2">Footnote 2</a>: <i>UNIX</i>® is a registered trademark 
-of The Open Group.</p>
-<p><span style="font-style: italic; background-color: #E0E0E0">Add the following 
-to the Technical Report as a new Clause:</span></p>
-<h2>Filesystem Library</h2>
 
 $endid
 
 $id wording_suffix=
 <p><span style="font-style: italic; background-color: #E0E0E0">End of new 
 Clause.</span></p>
-<p dir="ltr"><span style="font-style: italic; background-color: #E0E0E0">Modify <a name="File-streams">File streams</a> 
-[fstreams] as follows:</span></p>
-<p><span style="font-style: italic; background-color: #E0E0E0">To class 
-basic_filebuf public members add:</span></p>
-<blockquote>
-<pre>basic_filebuf&lt;charT,traits&gt;* open(const path&amp; p, std::ios_base::openmode mode);</pre>
-
-</blockquote>
-<p><span style="font-style: italic; background-color: #E0E0E0">To class 
-basic_ifstream public members add:</span></p>
-
-<blockquote>
-<pre>explicit basic_ifstream(const path&amp; p, std::ios_base::openmode mode=std::ios_base::in)</pre>
-
-<pre>void open(const path&amp; p, std::ios_base::openmode mode=std::ios_base::in);</pre>
-
-</blockquote>
-<p><span style="font-style: italic; background-color: #E0E0E0">To class 
-basic_ofstream public members add:</span></p>
-
-<blockquote>
-  <pre>explicit basic_ofstream(const path&amp; p, std::ios_base::openmode mode=std::ios_base::out);</pre>
-  <pre>void open(const path&amp; p, std::ios_base::openmode mode=std::ios_base::out);</pre>
-</blockquote>
-<p><span style="font-style: italic; background-color: #E0E0E0">To class 
-basic_fstream public members add:</span></p>
-<blockquote>
-  <pre>explicit basic_fstream(const path&amp; p,
-  std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);</pre>
-  <pre>void open(const path&amp; p,
-  std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);</pre>
-</blockquote>
-<p>
-
-<span style="font-style: italic; background-color: rgb(224, 224, 224);">
-End of proposed wording.</span> </p>
 <hr>
 <h2><a name="Issues-List">Issues List</a></h2>
 <hr>
@@ -296,12 +273,12 @@ doesn't seem desirable to preempt names like <code>equivalent</code> and <code>
 status</code>.</p>
 <h4>Resolution</h4>
 <p><i>Kona: Strong support for <code>filesystem</code> as the library's 
-namespace. Strong support for a technical report namespace that alerts uses that 
+namespace. Strong support for a technical specification namespace that alerts uses that 
 contents are likely to change if and when they later get moved into the 
 standard. </i></p>
-<p><i>No decision yet on a TR namespace; <code>experimental</code> being used as 
+<p><i>No decision yet on a TR namespace; <code>tbs</code> being used as 
 a placeholder. Thus the full namespace is changed to <code>
-std::experimental::filesystem.</code></i></p>
+std::tbs::filesystem.</code></i></p>
 <hr>
 <h3>Issue 2: Excessive use of <code>const codecvt_type&amp;</code> arguments&nbsp;&nbsp;&nbsp; 
 Status: Open</h3>
@@ -315,7 +292,7 @@ rare and it adds considerable interface clutter.</p>
 <h4>Proposed resolution</h4>
 <p dir="ltr"><i>Kona:</i></p>
 <p dir="ltr"><i>Remove all existing class path <code>const codecvt_type&amp;</code> 
-arguments.</i></p>
+arguments. </i></p>
 <p dir="ltr"><i>Beman to pursue separate encoding conversion functionality, per 
 Thursday N3336 &quot;Adapting standard library strings and IO to a Unicode World&quot; 
 discussion. See Kona wiki.</i></p>
@@ -349,6 +326,7 @@ Status: Resolved</h3>
 return const refs, since uses are not in performace critical code and subtle 
 portability bugs may occur.</i></p>
 <p><i>Action: Beman to apply to proposed wording.</i></p>
+<p><i>Version 3: Resolution applied.</i></p>
 <hr>
 <h3>Issue 5: Is there a way to handle characters that are illegal for particular 
 OS?&nbsp;&nbsp;&nbsp;&nbsp; Status: NAD</h3>
@@ -393,6 +371,7 @@ should go in TR2.</p>
 behavior without reference to how it is achieved. (If someone wants to propose a 
 quoted manipulator, that's a separate proposal for a different TR.)</i></p>
 <p><i>Action:&nbsp; Beman to apply to proposed wording.</i></p>
+<p><i>Version 3: Resolution applied.</i></p>
 <hr>
 <h3>Issue 8: Rename <code>rename</code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 Status: New</h3>

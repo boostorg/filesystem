@@ -115,7 +115,7 @@ namespace
 
   unsigned short language_id;  // 0 except for Windows
 
-  const char* temp_dir_name = "v3_operations_test";
+  const fs::path temp_dir(fs::unique_path("operations-test-%%%%-%%%%-%%%%-%%%%"));
 
   void create_file(const fs::path & ph, const std::string & contents = std::string())
   {
@@ -576,7 +576,8 @@ namespace
       bool found(false);
       do
       {
-        if (it->path().filename() == temp_dir_name) found = true;
+        if (it->path().filename() == temp_dir.filename())
+          found = true;
       } while (++it != fs::directory_iterator());
       BOOST_TEST(found);
     }
@@ -848,6 +849,21 @@ namespace
       for (fs::directory_iterator itr(dir); itr != fs::directory_iterator(); ++itr)
         if (itr->path().filename() == fs::path("permissions.txt"))
           BOOST_TEST(itr->status().permissions() == fs::owner_all);
+
+      if (create_symlink_ok)  // only if symlinks supported
+      {
+        BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+        fs::path p2(dir / "permissions-symlink.txt");
+        fs::create_symlink(p, p2);
+        cout << std::oct; 
+        cout << "   status(p).permissions() "  << fs::status(p).permissions() << endl;
+        cout << "  status(p2).permissions() "  << fs::status(p).permissions() << endl;
+        fs::permissions(p2, fs::add_perms | fs::others_read);
+        cout << "   status(p).permissions(): " << fs::status(p).permissions() << endl; 
+        cout << "  status(p2).permissions(): " << fs::status(p2).permissions() << endl;
+        cout << std::dec;
+      }
+
     }
     else // Windows
     {
@@ -1926,7 +1942,7 @@ int cpp_main(int argc, char* argv[])
 # endif
   cout << "API is " << platform << endl;
 
-  dir = fs::initial_path() / temp_dir_name;
+  dir = fs::initial_path() / temp_dir;
 
   if (fs::exists(dir))
   {
