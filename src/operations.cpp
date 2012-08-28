@@ -927,6 +927,7 @@ namespace detail
     }
 
     path parent = p.parent_path();
+    BOOST_ASSERT_MSG(parent != p, "internal error: p == p.parent_path()");
     if (!parent.empty())
     {
       // determine if the parent exists

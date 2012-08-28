@@ -36,6 +36,16 @@
   </tr>
 </table>
 
+<h2>1.52.0</h2>
+<ul>
+  <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/7239">#7239</a>, Stack 
+  overflow when calling <code>create_directories(&quot;:D&quot;)</code>. The reported 
+  problem was a symptom of an internal bug that caused <code>path::filename()</code> 
+  and <code>path::parent_path()</code> to fail on Windows for <code>path(&quot;:&quot;)</code>, 
+  and that in turn caused other functions that depend on <code>filename()</code> 
+  or <code>parent_path()</code> to fail, such as <code>create_directories()</code>.</li>
+</ul>
+
 <h2>1.51.0</h2>
 <ul>
   <li>Add begin() and end() non-member functions for directory_iterator and 
@@ -181,7 +191,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->13 July, 2012<!--webbot bot="Timestamp" endspan i-checksum="21091" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 August, 2012<!--webbot bot="Timestamp" endspan i-checksum="34454" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

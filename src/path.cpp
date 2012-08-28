@@ -510,7 +510,7 @@ namespace
     size_type pos(str.find_last_of(separators, end_pos-1));
 
 #   ifdef BOOST_WINDOWS_API
-    if (pos == string_type::npos)
+    if (pos == string_type::npos && end_pos > 1)
       pos = str.find_last_of(colon, end_pos-2);
 #   endif
 

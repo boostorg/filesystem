@@ -1117,6 +1117,27 @@ namespace
     BOOST_TEST(p.has_parent_path());
     BOOST_TEST(p.is_absolute());
 
+    //  ticket 2739, infinite recursion leading to stack overflow, was caused
+    //  by failure to handle this case correctly on Windows.
+    p = path(":"); 
+    PATH_TEST_EQ(p.parent_path().string(), "");
+    PATH_TEST_EQ(p.filename(), ":");
+    BOOST_TEST(!p.has_parent_path());
+    BOOST_TEST(p.has_filename());
+
+    //  test some similar cases that both POSIX and Windows should handle identically
+    p = path("c:"); 
+    PATH_TEST_EQ(p.parent_path().string(), "");
+    PATH_TEST_EQ(p.filename(), "c:");
+    BOOST_TEST(!p.has_parent_path());
+    BOOST_TEST(p.has_filename());
+    p = path("cc:"); 
+    PATH_TEST_EQ(p.parent_path().string(), "");
+    PATH_TEST_EQ(p.filename(), "cc:");
+    BOOST_TEST(!p.has_parent_path());
+    BOOST_TEST(p.has_filename());
+ 
+    //  Windows specific tests
     if (platform == "Windows")
     {
  
