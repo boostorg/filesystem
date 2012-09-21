@@ -1466,7 +1466,7 @@ reference documentation.</p>
     </tr>
   </table>
 </blockquote>
-<pre><a name="filesystem_error-3-arg">filesystem_error</a>(const std::string&amp; what_arg, const path_type&amp; p1, error_code ec);</pre>
+<pre><a name="filesystem_error-3-arg">filesystem_error</a>(const std::string&amp; what_arg, const path&amp; p1, error_code ec);</pre>
 <blockquote>
   <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="46%">
@@ -1494,7 +1494,7 @@ reference documentation.</p>
     </tr>
   </table>
 </blockquote>
-<pre><a name="filesystem_error-4-arg">filesystem_error</a>(const std::string&amp; what_arg, const path_type&amp; p1, const path_type&amp; p2, error_code ec);</pre>
+<pre><a name="filesystem_error-4-arg">filesystem_error</a>(const std::string&amp; what_arg, const path&amp; p1, const path&amp; p2, error_code ec);</pre>
 <blockquote>
   <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="46%">
@@ -1761,13 +1761,13 @@ and permissions of a file.</p>
         // <a href="#directory_entry-constructors">constructors</a> and destructor
         directory_entry();
         directory_entry(const directory_entry&amp;);
-        explicit directory_entry(const path_type&amp; p, file_status st=file_status(),
+        explicit directory_entry(const path&amp; p, file_status st=file_status(),
           file_status symlink_st=file_status());
        ~directory_entry(); 
 
         // <a href="#directory_entry-modifiers">modifiers</a>
         directory_entry&amp; operator=(const directory_entry&amp;);
-        void assign(const path_type&amp; p, file_status st=file_status(),
+        void assign(const path&amp; p, file_status st=file_status(),
           file_status symlink_st=file_status());
         void replace_filename(const path&amp; p, file_status st=file_status(),
           file_status symlink_st=file_status());
@@ -1787,7 +1787,7 @@ and permissions of a file.</p>
         bool operator&gt; (const directory_entry&amp; rhs);
         bool operator&gt;=(const directory_entry&amp; rhs);
       private:
-        path_type            m_path;           // for exposition only
+        path            m_path;           // for exposition only
         mutable file_status  m_status;         // for exposition only; stat()-like
         mutable file_status  m_symlink_status; // for exposition only; lstat()-like
       };
@@ -1831,7 +1831,7 @@ systems that provide status as a by-product of directory iteration.</i></span></
     </tr>
   </table>
 </blockquote>
-<pre>explicit directory_entry(const path_type&amp; p, file_status st=file_status(), file_status symlink_st=file_status());</pre>
+<pre>explicit directory_entry(const path&amp; p, file_status st=file_status(), file_status symlink_st=file_status());</pre>
 <blockquote>
   <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="36%">
@@ -1854,7 +1854,7 @@ systems that provide status as a by-product of directory iteration.</i></span></
   </table>
 </blockquote>
 <h4> <a name="directory_entry-modifiers"> <code>directory_entry </code>modifiers</a></h4>
-<pre>void assign(const path_type&amp; p, file_status st=file_status(), file_status symlink_st=file_status());</pre>
+<pre>void assign(const path&amp; p, file_status st=file_status(), file_status symlink_st=file_status());</pre>
 <blockquote>
   <p><i>Postcondition:</i></p>
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="36%">
@@ -3497,7 +3497,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->23 August 2012<!--webbot bot="Timestamp" endspan i-checksum="31324" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->21 September 2012<!--webbot bot="Timestamp" endspan i-checksum="39619" --></font></p>
 
 
 </body></html>
