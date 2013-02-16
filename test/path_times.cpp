@@ -33,6 +33,7 @@
 #endif
 
 namespace fs = boost::filesystem;
+using namespace boost::timer;
 
 #include <fstream>
 #include <iostream>
@@ -42,38 +43,36 @@ using std::endl;
 
 namespace
 {
-  boost::timer::nanosecond_type timeout(1000000000);
+  boost::int64_t max_cycles;
 
   template <class STD_STRING>
-  boost::int64_t time_ctor(const STD_STRING& s)
+  nanosecond_type time_ctor(const STD_STRING& s)
   {
-    boost::timer::cpu_times elapsed;
     boost::timer::auto_cpu_timer tmr;
     boost::int64_t count = 0;
     do
     {
       fs::path p(s);
       ++count;
-      elapsed = tmr.elapsed();
-    } while ((elapsed.user + elapsed.system) < timeout);
+    } while (count < max_cycles);
 
-    cout << " count = " << count << endl;
-    return count;
+    boost::timer::cpu_times elapsed = tmr.elapsed();
+    cout << (elapsed.user + elapsed.system)  << " nanoseconds\n";
+    return elapsed.user + elapsed.system;
   }
 
- boost::int64_t time_loop()
+  nanosecond_type time_loop()
   {
-    boost::timer::cpu_times elapsed;
     boost::timer::auto_cpu_timer tmr;
     boost::int64_t count = 0;
     do
     {
       ++count;
-      elapsed = tmr.elapsed();
-    } while ((elapsed.user + elapsed.system) < timeout);
+    } while (count < max_cycles);
 
-    cout << " count = " << count << endl;
-    return count;
+    boost::timer::cpu_times elapsed = tmr.elapsed();
+//    cout << (elapsed.user + elapsed.system)  << " nanoseconds\n";
+    return elapsed.user + elapsed.system;
   }
 }  // unnamed namespace
 
@@ -83,19 +82,28 @@ namespace
 
 int cpp_main(int argc, char* argv[])
 {
+  if (argc != 2)
+  {
+    cout << "Usage: path_times <cycles-in-millions>\n";
+    return 1;
+  }
+
+  max_cycles = std::atoi(argv[1]) * 1000000LL;
+  cout << "testing " << std::atoi(argv[1]) << " million cycles" << endl;
+
   cout << "time_loop" << endl;
-  boost::int64_t x = time_loop();
+  nanosecond_type x = time_loop();
    
   cout << "time_ctor with string" << endl;
-  boost::int64_t s = time_ctor(std::string("/foo/bar/baz"));
+  nanosecond_type s = time_ctor(std::string("/foo/bar/baz"));
    
   cout << "time_ctor with wstring" << endl;
-  boost::int64_t w = time_ctor(std::wstring(L"/foo/bar/baz"));
+  nanosecond_type w = time_ctor(std::wstring(L"/foo/bar/baz"));
 
   if (s > w)
-    cout << "narrow/wide ratio = " << long double(s)/w << endl;
+    cout << "narrow/wide CPU-time ratio = " << long double(s)/w << endl;
   else
-    cout << "wide/narrow ratio = " << long double(w)/s << endl;
+    cout << "wide/narrow CPU-time ratio = " << long double(w)/s << endl;
 
   cout << "returning from main()" << endl;
   return 0;
