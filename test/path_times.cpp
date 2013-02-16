@@ -42,21 +42,36 @@ using std::endl;
 
 namespace
 {
+  boost::timer::nanosecond_type timeout(1000000000);
+
   template <class STD_STRING>
-   boost::int64_t time_ctor(const STD_STRING& s)
+  boost::int64_t time_ctor(const STD_STRING& s)
   {
-    boost::timer::nanosecond_type timeout(1000000000);
-//    typename STD_STRING::size_type len(0);
+    boost::timer::cpu_times elapsed;
     boost::timer::auto_cpu_timer tmr;
     boost::int64_t count = 0;
     do
     {
       fs::path p(s);
-//      len += p.native().size();
       ++count;
-    } while (tmr.elapsed().user < timeout);
+      elapsed = tmr.elapsed();
+    } while ((elapsed.user + elapsed.system) < timeout);
 
-//    cout << " len = " << len << endl;
+    cout << " count = " << count << endl;
+    return count;
+  }
+
+ boost::int64_t time_loop()
+  {
+    boost::timer::cpu_times elapsed;
+    boost::timer::auto_cpu_timer tmr;
+    boost::int64_t count = 0;
+    do
+    {
+      ++count;
+      elapsed = tmr.elapsed();
+    } while ((elapsed.user + elapsed.system) < timeout);
+
     cout << " count = " << count << endl;
     return count;
   }
@@ -68,6 +83,9 @@ namespace
 
 int cpp_main(int argc, char* argv[])
 {
+  cout << "time_loop" << endl;
+  boost::int64_t x = time_loop();
+   
   cout << "time_ctor with string" << endl;
   boost::int64_t s = time_ctor(std::string("/foo/bar/baz"));
    
