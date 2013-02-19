@@ -110,6 +110,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_timings", "path_timing
 		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "locale_multihread_test", "locale_multihread_test\locale_multihread_test.vcxproj", "{D47F31DB-5BED-4A49-B79E-2E3CC63950ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -232,6 +234,10 @@ Global
 		{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}.Debug|Win32.Build.0 = Debug|Win32
 		{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}.Release|Win32.ActiveCfg = Release|Win32
 		{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}.Release|Win32.Build.0 = Release|Win32
+		{D47F31DB-5BED-4A49-B79E-2E3CC63950ED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D47F31DB-5BED-4A49-B79E-2E3CC63950ED}.Debug|Win32.Build.0 = Debug|Win32
+		{D47F31DB-5BED-4A49-B79E-2E3CC63950ED}.Release|Win32.ActiveCfg = Release|Win32
+		{D47F31DB-5BED-4A49-B79E-2E3CC63950ED}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
