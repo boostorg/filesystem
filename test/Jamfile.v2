@@ -8,6 +8,7 @@ project
     : requirements
       <library>/boost/filesystem//boost_filesystem
       <library>/boost/system//boost_system
+      <library>/boost/thread//boost_thread
       <library>/boost/test//boost_prg_exec_monitor
       <toolset>msvc:<asynch-exceptions>on
     ;
@@ -31,5 +32,7 @@ project
        [ run path_unit_test.cpp :  :  : <link>static : path_unit_test_static ]                  
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
+       [ run locale_multithread_test.cpp :  :  : <link>shared ] 
+       [ run locale_multithread_test.cpp :  :  : <link>static : locale_multithread_test_static ] 
  
        ;
