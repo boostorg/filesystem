@@ -57,7 +57,6 @@ namespace
     } while (count < max_cycles);
 
     boost::timer::cpu_times elapsed = tmr.elapsed();
-    cout << (elapsed.user + elapsed.system)  << " nanoseconds\n";
     return elapsed.user + elapsed.system;
   }
 
@@ -71,7 +70,6 @@ namespace
     } while (count < max_cycles);
 
     boost::timer::cpu_times elapsed = tmr.elapsed();
-//    cout << (elapsed.user + elapsed.system)  << " nanoseconds\n";
     return elapsed.user + elapsed.system;
   }
 }  // unnamed namespace
