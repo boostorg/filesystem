@@ -27,10 +27,6 @@
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
-//#include <boost/detail/lightweight_mutex.hpp>
-//  fails on VC++ static builds because the runtime does not permit use of locks in
-//  staticly initialized code, and VC++ 2010 (and probably other versions) statically
-//  initializes some instances of class path.
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -795,22 +791,10 @@ namespace
   //------------------------------------------------------------------------------------//
 
   //  Prior versions of these locale and codecvt implementations tried to take advantage
-  //  of static initialization where possible, kept a local copy of the current codecvt
-  //  facet (to avoid codecvt() having to call use_facet()), and was not multi-threading
-  //  safe (again for efficiency).
-  //
-  //  This was error prone, and required different implementation techniques depending
-  //  on the compiler and also whether static or dynamic linking was used. Furthermore,
-  //  users could not easily provide their multi-threading safe wrappers because the
-  //  path interface requires the implementation itself to call codecvt() to obtain the
-  //  default facet, and the initialization of the static within path_locale() could race.
-  //
-  //  The code below is portable to all platforms, is much simpler, and hopefully will be 
-  //  much more robust. Timing tests (on Windows, using a Visual C++ release build)
-  //  indicated the current code is roughly 9% slower than the previous code, and that
-  //  seems a small price to pay for better code that is easier to use. 
-
-  //boost::detail::lightweight_mutex locale_mutex;
+  //  of static initialization where possible. This was error prone, and required
+  //  different implementation techniques depending for whether static or dynamic linking
+  //  was used. The current implementation differs only in the choice of the default
+  //  locale.
 
   inline std::locale default_locale()
   {
@@ -868,18 +852,16 @@ namespace boost
 {
 namespace filesystem
 {
-  // See comments above
+  // See comment above
 
   const path::codecvt_type& path::codecvt()
   {
     BOOST_ASSERT_MSG(&path_locale(), "boost::filesystem::path locale initialization error");
-//    boost::detail::lightweight_mutex::scoped_lock lock(locale_mutex);
     return std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
   }
 
-  std::locale path::imbue(const std::locale& loc)
+  std::locale path::imbue(const std::locale & loc)
   {
-//    boost::detail::lightweight_mutex::scoped_lock lock(locale_mutex);
     std::locale temp(path_locale());
     path_locale() = loc;
     return temp;
