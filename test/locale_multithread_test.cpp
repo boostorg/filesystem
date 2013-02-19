@@ -10,7 +10,8 @@
 
 int main(void)
 {
-        std::string sPath("c:\\Development");
+        //std::string sPath("c:\\Development");
+        std::string sPath(".");
         
         boost::thread_group tg;
 

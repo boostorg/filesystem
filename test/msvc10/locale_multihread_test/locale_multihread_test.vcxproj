@@ -51,7 +51,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>BOOST_ALL_STATIC_LINK;WIN32;_DEBUG;_CONSOLE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BOOST_SYSTEM_NO_LIB;BOOST_FILESYSTEM_NO_LIB;BOOST_TEST_NO_LIB;BOOST_ALL_STATIC_LINK;WIN32;_DEBUG;_CONSOLE</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -79,6 +79,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\locale_multithread_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\exec_monitor_lib\exec_monitor_lib.vcxproj">
+      <Project>{272dfc15-6292-49df-b457-6784a183eac3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\filesystem_lib\filesystem_lib.vcxproj">
+      <Project>{2c1770a4-4ac3-4102-9d36-e652dbb686d8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system_lib\system_lib.vcxproj">
+      <Project>{3640605d-6f82-493d-879f-8f30762da554}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
