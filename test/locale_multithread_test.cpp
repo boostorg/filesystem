@@ -1,32 +1,34 @@
-#include <iostream>
+//  Copyright Jacob Schloss, 2013
+
+//  Distributed under the Boost Software License, Version 1.0.
+//  See http://www.boost.org/LICENSE_1_0.txt
+
+
 #include <boost/thread.hpp>
-#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 
-using std::cout;
-using std::endl;
 
-namespace
+int main(void)
 {
-  void f1()
-  { 
-    cout << "f1()" << endl;
+        std::string sPath("c:\\Development");
+        
+        boost::thread_group tg;
 
-  } 
-  void f2()
-  {
-    cout << "f2()" << endl;
-  }
+        for(int i = 0; i < 2; i++)
+        {
+                tg.create_thread([&sPath](){
+                        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+                        boost::filesystem::path p(sPath);
 
-}
+                        boost::filesystem::directory_iterator di(p), end;
+                        while(di != end)
+                                std::cout << (*(di++)).path().string() << std::endl;
+                });
+        }
 
-int main()
-{
-  boost::thread t1(f1);
-  boost::thread t2(f2);
+        tg.join_all();
 
-  cout << "t1.join()" << endl;
-  t1.join();
-  cout << "t2.join()" << endl;
-  t2.join();
-  cout << "all done" << endl;
+        int a;
+        std::cin >> a;
+
 }
