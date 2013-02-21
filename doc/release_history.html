@@ -36,6 +36,15 @@
   </tr>
 </table>
 
+<h2>1.54.0</h2>
+<ul>
+  <li>Reimplement <code>path::codecvt()</code> and <code>path::imbue()</code> 
+  with portable code that is intended to be much more robust and maintainable. A 
+  section on <a href="reference.html#path-Usage">path usage concerns</a> has 
+  been added to the reference documentation describing several concerns that 
+  arise in the context of multithreading and <code>path::codecvt()</code>.</li>
+</ul>
+
 <h2>1.52.0</h2>
 <ul>
   <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/7239">#7239</a>, Stack 
@@ -191,7 +200,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 August, 2012<!--webbot bot="Timestamp" endspan i-checksum="34454" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 February, 2013<!--webbot bot="Timestamp" endspan i-checksum="40526" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

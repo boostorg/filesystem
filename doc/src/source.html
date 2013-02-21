@@ -903,6 +903,58 @@ $endif;        template &lt;class InputIterator&gt;
 $NAMESPACE_END;</pre>
 <p><code><a name="value_type">value_type</a></code> is a <code>typedef</code> for the 
 character type used by the operating system to represent pathnames.</p>
+
+$if $TARGET; == BOOST
+<h3><a name="path-Usage"><code>path</code> Usage concerns</a> [path.usage]</h3>
+
+<h4>Multithreading concerns</h4>
+
+<p>Filesystem library functions are not protected against data races. [Modifying 
+an object of a Filesystem library type that is shared between threads risks 
+undefined behavior unless objects of that type are explicitly specified as being 
+sharable without data races or the user supplies a locking mechanism. <i>—end 
+note</i>] [<i>Note:</i> Thus the Filesystem library behaves as if it were part 
+of the standard library, and C++ standard 17.6.4.10 <i>Shared objects and the 
+library</i> [res.on.objects] would thus apply.&nbsp; <i>—end note</i>]</p>
+
+<h4>Windows concerns</h4>
+
+<p>Visual C++ at least through version 2012 does not employ C++11-style static 
+initialization locks, so the initialization of <code>path::codecvt()</code> can 
+race, either with itself or <code>path::imbue::()</code> if they are called from 
+a different thread. A workaround is to call:</p>
+
+<blockquote>
+<p><code>path::codecvt();&nbsp; // ensure VC++ does not race during 
+initialization.</code></p>
+
+</blockquote>
+<p>in the main thread before launching any additional threads. [<i>Note:</i> The 
+obvious fix of the Filesystem implementation doing the locking doesn't work 
+because of unrelated problems with the Microsoft compiler; for static linking 
+the runtime tries to do the initialization before main() starts, but doesn't 
+permit operating system lock calls at that time.&nbsp; <i>—end note</i>]</p>
+
+<h4 dir="ltr">POSIX concerns</h4>
+
+<p dir="ltr">Filesystem library initialization may throw an exception on POSIX 
+systems (e.g. Linux, but not Mac OS X) that use environmental variables to 
+determine the encoding of paths. This happens when <code>std::locale(&quot;&quot;)</code> 
+throws because an environmental variable such as LANG is set to an invalid 
+value, so it can affect any use of&nbsp; <code>std::locale(&quot;&quot;)</code>, not just 
+the Filesystem library. Filesystem uses lazy initialization so the exception is 
+only thrown if a valid <code>std::locale(&quot;&quot;)</code> is actually needed, and also 
+so that the exception is thrown after <code>main()</code> starts.</p>
+
+<p>Rather than waiting until a call to some Filesystem library function 
+unexpectedly triggers the exception when it calls <code>path::codecvt()</code>, 
+a program that needs be highly robust against environmental variable problems 
+may want to preemptively call <code>std::locale(&quot;&quot;)</code> within a try block, 
+catch the exception, and diagnose or repair the invalid environmental variable.</p>
+
+$endif
+
+
 <h3><a name="path-Conversions"><code>path</code> Conversions</a> [path.cvt]</h3>
 <h4><code>path</code> argument conversions [<a name="path.arg.convert">path.arg.cvt</a>]</h4>
 <h5><a name="path-Conversions-to-native-format"><code>path</code> argument 
