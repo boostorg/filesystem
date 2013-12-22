@@ -102,7 +102,9 @@ namespace
   const char* const separators = "/";
   const char* separator_string = "/";
   const char* preferred_separator_string = "/";
+#if defined (BOOST_WINDOWS_API)
   const char colon = ':';
+#endif
   const char dot = '.';
   const fs::path dot_path(".");
   const fs::path dot_dot_path("..");
