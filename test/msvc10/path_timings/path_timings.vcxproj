@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{36E2032D-F9E6-4FBA-9630-3D4AC518DC6C}</ProjectGuid>
+    <ProjectGuid>{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>macro_default_test</RootNamespace>
+    <RootNamespace>path_timings</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -32,16 +32,20 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\common.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <ExecutablePath>C:\boost\trunk-git-svn\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>C:\boost\trunk-git-svn\lib;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -49,12 +53,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../../..</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOOST_SYSTEM_NO_DEPRECATED;BOOST_SYSTEM_NO_LIB;BOOST_FILESYSTEM_NO_LIB;BOOST_ALL_DYN_LINK;_UNICODE;UNICODE</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\boost\trunk-git-svn\bin.v2\libs\timer\build\msvc-10.0express\debug\threading-multi;C:\boost\trunk-git-svn\bin.v2\libs\system\build\msvc-10.0express\debug\threading-multi;C:\boost\trunk-git-svn\bin.v2\libs\chrono\build\msvc-10.0express\debug\threading-multi;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -65,25 +69,25 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../../../..</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BOOST_SYSTEM_NO_DEPRECATED;BOOST_SYSTEM_NO_LIB;BOOST_FILESYSTEM_NO_LIB;BOOST_ALL_DYN_LINK;_UNICODE;UNICODE;WIN32;NDEBUG;_CONSOLE</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\boost\trunk-git-svn\bin.v2\libs\chrono\build\msvc-10.0express\release\threading-multi;C:\boost\trunk-git-svn\bin.v2\libs\system\build\msvc-10.0express\release\threading-multi;C:\boost\trunk-git-svn\bin.v2\libs\timer\build\msvc-10.0express\release\threading-multi;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\macro_default_test.cpp" />
+    <ClCompile Include="..\..\path_times.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\filesystem_lib\filesystem_lib.vcxproj">
-      <Project>{2c1770a4-4ac3-4102-9d36-e652dbb686d8}</Project>
+    <ProjectReference Include="..\filesystem_dll\filesystem_dll.vcxproj">
+      <Project>{ffd738f7-96f0-445c-81ea-551665ef53d1}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\system_lib\system_lib.vcxproj">
-      <Project>{3640605d-6f82-493d-879f-8f30762da554}</Project>
+    <ProjectReference Include="..\system_dll\system_dll.vcxproj">
+      <Project>{f94ccadd-a90b-480c-a304-c19d015d36b1}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
