@@ -815,7 +815,7 @@ namespace filesystem
     if (mm.first == p.end()
       || mm.second != base.end())
     {
-      throw filesystem_error("p does not being with base, so can not be made relative to base", p, base,
+      throw filesystem_error("p does not begin with base, so can not be made relative to base", p, base,
         boost::system::error_code(boost::system::errc::invalid_argument,
           boost::system::generic_category()));
     }
