@@ -576,6 +576,10 @@ namespace
     CHECK(path("").remove_filename() == "");
     CHECK(path("foo").remove_filename() == "");
     CHECK(path("foo/bar").remove_filename() == "foo");
+
+    //  relative
+
+    BOOST_TEST(fs::relative("/abc/def", "/abc") == path("def"));
   }
 
 //  //  test_modifiers  ------------------------------------------------------------------//

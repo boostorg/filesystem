@@ -647,6 +647,9 @@ namespace filesystem
 
   inline path operator/(const path& lhs, const path& rhs)  { return path(lhs) /= rhs; }
 
+  BOOST_FILESYSTEM_DECL
+  path relative(const path& p, const path& base);
+
   //  inserters and extractors
   //    use boost::io::quoted() to handle spaces in paths
   //    use '&' as escape character to ease use for Windows paths
