@@ -109,7 +109,7 @@ namespace boost
     others_exe = 01,    // S_IXOTH, Execute/search permission, others
     others_all = 07,    // S_IRWXO, Read, write, execute/search by others
 
-    all_all = owner_all|group_all|others_all,  // 0777
+    all_all = 0777,     // owner_all|group_all|others_all
 
     // other POSIX bits
 
@@ -122,7 +122,7 @@ namespace boost
                             // (SVID-v4.2) On directories: restricted deletion flag
                             // Also see http://en.wikipedia.org/wiki/Sticky_bit
 
-    perms_mask = all_all|set_uid_on_exe|set_gid_on_exe|sticky_bit,  // 07777
+    perms_mask = 07777,     // all_all|set_uid_on_exe|set_gid_on_exe|sticky_bit
 
     perms_not_known = 0xFFFF, // present when directory_entry cache not loaded
 
