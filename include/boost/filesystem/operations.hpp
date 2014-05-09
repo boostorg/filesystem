@@ -1051,11 +1051,14 @@ namespace filesystem
 
   // all functions are inline to avoid issues with crossing dll boundaries
 
+  // functions previously throw() are now BOOST_NOEXCEPT_OR_NOTHROW
+  // functions previously without throw() are now BOOST_NOEXCEPT
+
   public:
     // compiler generates copy constructor and copy assignment
 
     filesystem_error(
-      const std::string & what_arg, system::error_code ec)
+      const std::string & what_arg, system::error_code ec) BOOST_NOEXCEPT
       : system::system_error(ec, what_arg)
     {
       try
@@ -1067,7 +1070,7 @@ namespace filesystem
 
     filesystem_error(
       const std::string & what_arg, const path& path1_arg,
-      system::error_code ec)
+      system::error_code ec) BOOST_NOEXCEPT
       : system::system_error(ec, what_arg)
     {
       try
@@ -1080,7 +1083,7 @@ namespace filesystem
     
     filesystem_error(
       const std::string & what_arg, const path& path1_arg,
-      const path& path2_arg, system::error_code ec)
+      const path& path2_arg, system::error_code ec) BOOST_NOEXCEPT
       : system::system_error(ec, what_arg)
     {
       try
@@ -1092,20 +1095,20 @@ namespace filesystem
       catch (...) { m_imp_ptr.reset(); }
     }
 
-    ~filesystem_error() throw() {}
+      ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW {}
 
-    const path& path1() const
+    const path& path1() const BOOST_NOEXCEPT
     {
       static const path empty_path;
       return m_imp_ptr.get() ? m_imp_ptr->m_path1 : empty_path ;
     }
-    const path& path2() const
+    const path& path2() const  BOOST_NOEXCEPT
     {
       static const path empty_path;
       return m_imp_ptr.get() ? m_imp_ptr->m_path2 : empty_path ;
     }
 
-    const char* what() const throw()
+    const char* what() const BOOST_NOEXCEPT_OR_NOTHROW
     {
       if (!m_imp_ptr.get())
         return system::system_error::what();
