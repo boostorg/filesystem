@@ -808,15 +808,16 @@ namespace filesystem
   }
 
   BOOST_FILESYSTEM_DECL
-  path relative(const path& p, const path& base)
+  path lexically_relative(const path& p, const path& base)
   {
     std::pair<path::iterator, path::iterator> mm
       = detail::mismatch(p.begin(), p.end(), base.begin(), base.end());
     if (mm.first == p.end()
       || mm.second != base.end())
     {
-      throw filesystem_error("p does not begin with base, so can not be made relative to base", p, base,
-        boost::system::error_code(boost::system::errc::invalid_argument,
+      throw filesystem_error(
+        "lexically_relative: p does not begin with base, so can not be made relative to base",
+        p, base, boost::system::error_code(boost::system::errc::invalid_argument,
           boost::system::generic_category()));
     }
     path tmp(*mm.first++);
