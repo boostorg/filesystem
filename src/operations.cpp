@@ -775,6 +775,7 @@ namespace detail
   path canonical(const path& p, const path& base, system::error_code* ec)
   {
     path source (p.is_absolute() ? p : absolute(p, base));
+    path root_path (source.root_path());
     path result;
 
     system::error_code local_ec;
@@ -809,7 +810,8 @@ namespace detail
           continue;
         if (*itr == dot_dot_path)
         {
-          result.remove_filename();
+          if (result != root_path)
+            result.remove_filename();
           continue;
         }
 

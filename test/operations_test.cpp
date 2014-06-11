@@ -1411,6 +1411,7 @@ namespace
     BOOST_TEST_EQ(fs::canonical(fs::current_path()), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(fs::current_path(), ""), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(fs::current_path(), "no-such-file"), fs::current_path());
+    BOOST_TEST_EQ(fs::canonical(".." / fs::current_path(), fs::current_path().root_path()), fs::current_path());
 
     BOOST_TEST_EQ(fs::canonical("."), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(".."), fs::current_path().parent_path());
