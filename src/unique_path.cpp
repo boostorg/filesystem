@@ -97,7 +97,8 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
     ::CryptReleaseContext(handle, 0);
   }
 
-  if (!errval) return;
+  if (!errval)
+    return;
 
   fail(errval, ec);
 # endif
@@ -125,7 +126,7 @@ path unique_path(const path& model, system::error_code* ec)
       {
         system_crypt_random(ran, sizeof(ran), ec);
         if (ec != 0 && *ec)
-          return "";
+          return path();
         nibbles_used = 0;
       }
       int c = ran[nibbles_used/2];
@@ -134,7 +135,8 @@ path unique_path(const path& model, system::error_code* ec)
     }
   }
 
-  if (ec != 0) ec->clear();
+  if (ec != 0)
+    ec->clear();
 
   return s;
 }

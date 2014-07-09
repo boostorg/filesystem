@@ -805,7 +805,7 @@ namespace detail
 #   if     defined(BOOST_POSIX_API)
     , void *& buffer
 #   endif
-    ) noexcept; 
+    ) BOOST_NOEXCEPT; 
 
   struct dir_itr_imp
   {
@@ -882,7 +882,7 @@ namespace detail
    // TODO: Still not working with gcc 4.7.0
    //~directory_iterator() BOOST_NOEXCEPT = default;
 # else
-    directory_iterator() noexcept {} // creates the "end" iterator
+    directory_iterator() BOOST_NOEXCEPT {} // creates the "end" iterator
 # endif
    ~directory_iterator() {}
 
@@ -1086,7 +1086,7 @@ namespace filesystem
   {
   public:
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    recursive_directory_iterator() noexcept = default;
+    recursive_directory_iterator() BOOST_NOEXCEPT = default;
     recursive_directory_iterator(const recursive_directory_iterator&) = default;
     recursive_directory_iterator& operator=(const recursive_directory_iterator&) = default;
 # else
@@ -1294,7 +1294,7 @@ namespace filesystem
   // all functions are inline to avoid issues with crossing dll boundaries
 
   public:
-    // compiler generates copy constructor and copy assignment
+    // compiler generates copy constructor, copy assignment, and destructor
 
     filesystem_error(
       const std::string & what_arg, system::error_code ec)

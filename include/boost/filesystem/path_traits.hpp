@@ -56,17 +56,27 @@ namespace path_traits {
   template <class T>
   struct is_pathable { static const bool value = false; };
 
-  template<> struct is_pathable<char*>                  { static const bool value = true; };
-  template<> struct is_pathable<const char*>            { static const bool value = true; };
-  template<> struct is_pathable<wchar_t*>               { static const bool value = true; };
-  template<> struct is_pathable<const wchar_t*>         { static const bool value = true; };
-  template<> struct is_pathable<std::string>            { static const bool value = true; };
-  template<> struct is_pathable<std::wstring>           { static const bool value = true; };
-  template<> struct is_pathable<std::vector<char> >     { static const bool value = true; };
-  template<> struct is_pathable<std::vector<wchar_t> >  { static const bool value = true; };
-  template<> struct is_pathable<std::list<char> >       { static const bool value = true; };
-  template<> struct is_pathable<std::list<wchar_t> >    { static const bool value = true; };
-  template<> struct is_pathable<directory_entry>        { static const bool value = true; };
+  template<> struct is_pathable<char*>                  {static const bool value = true;};
+  template<> struct is_pathable<const char*>            {static const bool value = true;};
+  template<> struct is_pathable<wchar_t*>               {static const bool value = true;};
+  template<> struct is_pathable<const wchar_t*>         {static const bool value = true;};
+  template<> struct is_pathable<boost::char16*>         {static const bool value = true;};
+  template<> struct is_pathable<const boost::char16*>   {static const bool value = true;};
+  template<> struct is_pathable<boost::char32*>         {static const bool value = true;};
+  template<> struct is_pathable<const boost::char32*>   {static const bool value = true;};
+  template<> struct is_pathable<std::string>            {static const bool value = true;};
+  template<> struct is_pathable<std::wstring>           {static const bool value = true;};
+  template<> struct is_pathable<boost::u16string>       {static const bool value = true;};
+  template<> struct is_pathable<boost::u32string>       {static const bool value = true;};
+  template<> struct is_pathable<std::vector<char> >     {static const bool value = true;};
+  template<> struct is_pathable<std::vector<wchar_t> >  {static const bool value = true;};
+  template<> struct is_pathable<std::vector<boost::char16> > {static const bool value = true;};
+  template<> struct is_pathable<std::vector<boost::char32> > {static const bool value = true;};
+  template<> struct is_pathable<std::list<char> >       {static const bool value = true;};
+  template<> struct is_pathable<std::list<wchar_t> >    {static const bool value = true;};
+  template<> struct is_pathable<std::list<boost::char16> > {static const bool value = true;};
+  template<> struct is_pathable<std::list<boost::char32> > {static const bool value = true;};
+  template<> struct is_pathable<directory_entry>        {static const bool value = true;};
 
   //  Pathable empty
 
@@ -95,18 +105,74 @@ namespace path_traits {
   BOOST_FILESYSTEM_DECL
   void convert(const char* from,
                 const char* from_end,    // 0 for null terminated MBCS
-                std::wstring & to,
+                std::wstring& to,
                 const codecvt_type& cvt);
 
   BOOST_FILESYSTEM_DECL
   void convert(const wchar_t* from,
                 const wchar_t* from_end,  // 0 for null terminated MBCS
-                std::string & to,
+                std::string& to,
                 const codecvt_type& cvt);
+
+  inline
+  void convert(const char16* from,
+                const char16* from_end,
+                std::string& to,
+                const codecvt_type&)
+  {
+    typedef interop::conversion_iterator<interop::narrow, interop::utf16, const char16*>
+        iter_type;
+
+    iter_type itr(from_end ? iter_type(from, from_end) : iter_type(from));
+    for (; itr != iter_type(); ++itr)
+      to.push_back(*itr);
+  }
+
+  inline
+  void convert(const char16* from,
+                const char16* from_end,
+                std::wstring& to,
+                const codecvt_type&)
+  {
+    typedef interop::conversion_iterator<interop::wide, interop::utf16, const char16*>
+        iter_type;
+
+    iter_type itr(from_end ? iter_type(from, from_end) : iter_type(from));
+    for (; itr != iter_type(); ++itr)
+      to.push_back(*itr);
+  }
+
+  inline
+  void convert(const char32* from,
+                const char32* from_end,
+                std::string& to,
+                const codecvt_type&)
+  {
+    typedef interop::conversion_iterator<interop::narrow, interop::utf32, const char32*>
+        iter_type;
+
+    iter_type itr(from_end ? iter_type(from, from_end) : iter_type(from));
+    for (; itr != iter_type(); ++itr)
+      to.push_back(*itr);
+  }
+
+  inline
+  void convert(const char32* from,
+                const char32* from_end,
+                std::wstring& to,
+                const codecvt_type&)
+  {
+    typedef interop::conversion_iterator<interop::wide, interop::utf32, const char32*>
+        iter_type;
+
+    iter_type itr(from_end ? iter_type(from, from_end) : iter_type(from));
+    for (; itr != iter_type(); ++itr)
+      to.push_back(*itr);
+  }
 
   inline 
   void convert(const char* from,
-                std::wstring & to,
+                std::wstring& to,
                 const codecvt_type& cvt)
   {
     BOOST_ASSERT(from);
@@ -115,7 +181,43 @@ namespace path_traits {
 
   inline 
   void convert(const wchar_t* from,
-                std::string & to,
+                std::string& to,
+                const codecvt_type& cvt)
+  {
+    BOOST_ASSERT(from);
+    convert(from, 0, to, cvt);
+  }
+
+  inline 
+  void convert(const char16* from,
+                std::string& to,
+                const codecvt_type& cvt)
+  {
+    BOOST_ASSERT(from);
+    convert(from, 0, to, cvt);
+  }
+
+  inline 
+  void convert(const char32* from,
+                std::string& to,
+                const codecvt_type& cvt)
+  {
+    BOOST_ASSERT(from);
+    convert(from, 0, to, cvt);
+  }
+
+  inline 
+  void convert(const char16* from,
+                std::wstring& to,
+                const codecvt_type& cvt)
+  {
+    BOOST_ASSERT(from);
+    convert(from, 0, to, cvt);
+  }
+
+  inline 
+  void convert(const char32* from,
+                std::wstring& to,
                 const codecvt_type& cvt)
   {
     BOOST_ASSERT(from);
@@ -127,7 +229,7 @@ namespace path_traits {
   // char
 
   inline 
-  void convert(const char* from, const char* from_end, std::string & to,
+  void convert(const char* from, const char* from_end, std::string& to,
     const codecvt_type&)
   {
     BOOST_ASSERT(from);
@@ -137,7 +239,7 @@ namespace path_traits {
 
   inline 
   void convert(const char* from,
-                std::string & to,
+                std::string& to,
                 const codecvt_type&)
   {
     BOOST_ASSERT(from);
@@ -147,7 +249,7 @@ namespace path_traits {
   // wchar_t
 
   inline 
-  void convert(const wchar_t* from, const wchar_t* from_end, std::wstring & to,
+  void convert(const wchar_t* from, const wchar_t* from_end, std::wstring& to,
     const codecvt_type&)
   {
     BOOST_ASSERT(from);
