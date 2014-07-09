@@ -125,19 +125,21 @@ int cpp_main(int, char*[])
 
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
-  BOOST_TEST(it.level() == 0);
+  BOOST_TEST(it.depth() == 0);
   ++it;
   BOOST_TEST(it->path() == unique_yy_zz);
-  BOOST_TEST(it.level() == 1);
+  BOOST_TEST(it.depth() == 1);
   it.pop();
   BOOST_TEST(it->path() == unique_yya);
-  BOOST_TEST(it.level() == 0);
+  BOOST_TEST(it.depth() == 0);
   it++;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
-  it.no_push();
+  BOOST_TEST(it.recursion_pending());
+  it.disable_recursion_pending();
+  BOOST_TEST(!it.recursion_pending());
   ++it;
   BOOST_TEST(it->path() == unique_yya);
   ++it;
@@ -151,16 +153,16 @@ int cpp_main(int, char*[])
   
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
-  BOOST_TEST(it.level() == 0);
+  BOOST_TEST(it.depth() == 0);
   ++it;
   BOOST_TEST(it->path() == unique_yy_zz);
-  BOOST_TEST(it.level() == 1);
+  BOOST_TEST(it.depth() == 1);
   it++;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
-  it.no_push();
+  it.disable_recursion_pending();
   ++it;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 

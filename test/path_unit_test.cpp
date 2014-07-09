@@ -60,6 +60,15 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::wstring;
+using boost::char16;
+using boost::char32;
+using boost::u16string;
+using boost::u32string;
+using boost::interop::make_string;
+using boost::interop::narrow;
+using boost::interop::wide;
+using boost::interop::utf16;
+using boost::interop::utf32;
 
 #define CHECK(x) check(x, __FILE__, __LINE__)
 #define PATH_IS(a, b) check_path(a, b, __FILE__, __LINE__)
@@ -143,8 +152,26 @@ namespace
 
   string s("string");
   wstring ws(L"wstring");
+
+  //  Test with cases that require UTF-16 surrogate pairs
+  //  U+1F60A SMILING FACE WITH SMILING EYES
+  //  U+1F60E SMILING FACE WITH SUNGLASSES
+
+  // build test strings character by character so they work with C++03 compilers
+  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
+  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
+
+  const u32string u32s(u32c);
+  const u16string u16s(u16c);
+  const string u8s("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
+  const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
+  const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
+
+
   std::list<char> l;      // see main() for initialization to s, t, r, i, n, g
   std::list<wchar_t> wl;  // see main() for initialization to w, s, t, r, i, n, g
+  std::list<char16> u16l; // see main() for initialization to u, 1, 6, s, t, r, i, n, g
+  std::list<char32> u32l; // see main() for initialization to u, 3, 2, s, t, r, i, n, g
   std::vector<char> v;      // see main() for initialization to f, u, z
   std::vector<wchar_t> wv;  // see main() for initialization to w, f, u, z
 
@@ -170,9 +197,26 @@ namespace
     PATH_IS(x2, L"string");
     BOOST_TEST_EQ(x2.native().size(), 6U);
 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    std::cout << "  with rvalue references..." << std::endl;
+    path x2source("source------------------------32");
+    path x2m(std::move(x2source));                     // move constructor
+    BOOST_TEST(x2m == "source------------------------32");
+    BOOST_TEST(x2source.empty());
+    std::cout << "  with rvalue references complete" << std::endl;
+# endif
+
     path x3(wl.begin(), wl.end());                     // iterator range wchar_t
     PATH_IS(x3, L"wstring");
     BOOST_TEST_EQ(x3.native().size(), 7U);
+
+    path x3_16(u16l.begin(), u16l.end());              // iterator range char16
+    PATH_IS(x3_16, L"u16string");
+    BOOST_TEST_EQ(x3_16.native().size(), 9U);
+
+    path x3_32(u32l.begin(), u32l.end());              // iterator range char32
+    PATH_IS(x3_32, L"u32string");
+    BOOST_TEST_EQ(x3_32.native().size(), 9U);
 
     // contiguous containers
     path x4(string("std::string"));                    // std::string
@@ -182,6 +226,14 @@ namespace
     path x5(wstring(L"std::wstring"));                 // std::wstring
     PATH_IS(x5, L"std::wstring");
     BOOST_TEST_EQ(x5.native().size(), 12U);
+
+    path x4_16(make_string<utf16, narrow, u16string>("u16string")); // u16string
+    PATH_IS(x4_16, L"u16string");
+    BOOST_TEST_EQ(x4_16.native().size(), 9U);
+
+    path x4_32(make_string<utf32, narrow, u32string>("u32string")); // u32string
+    PATH_IS(x4_32, L"u32string");
+    BOOST_TEST_EQ(x4_32.native().size(), 9U);
 
     path x4v(v);                                       // std::vector<char>
     PATH_IS(x4v, L"fuz");
@@ -219,6 +271,14 @@ namespace
     PATH_IS(x9, L"wstring");
     BOOST_TEST_EQ(x9.native().size(), 7U);
 
+    path x9_16(make_string<utf16, narrow, u16string>("cvt-u16string").c_str()); // const char16* null terminated
+    PATH_IS(x9_16, L"cvt-u16string");
+    BOOST_TEST_EQ(x9_16.native().size(), 13U);
+
+    path x9_32(make_string<utf32, narrow, u32string>("cvt-u32string").c_str()); // const char32* null terminated
+    PATH_IS(x9_32, L"cvt-u32string");
+    BOOST_TEST_EQ(x9_32.native().size(), 13U);
+
     // non-contiguous containers
     path x10(l);                                       // std::list<char>
     PATH_IS(x10, L"string");
@@ -245,9 +305,18 @@ namespace
   {
     std::cout << "testing assignments..." << std::endl;
 
-    x = path("yet another path");                      // another path
+    x = path("yet another path");                      // copy assignment
     PATH_IS(x, L"yet another path");
     BOOST_TEST_EQ(x.native().size(), 16U);
+ 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    std::cout << "  with rvalue references" << std::endl;
+    path x2source("source------------------------32");
+    path x2;
+    x2 = std::move(x2source);                          // move assignment
+    BOOST_TEST(x2 == "source------------------------32");
+    BOOST_TEST(x2source.empty());
+# endif
 
     x = x;                                             // self-assignment
     PATH_IS(x, L"yet another path");
@@ -423,6 +492,15 @@ namespace
     CHECK(p0.string().size() == 3);
     CHECK(p0.wstring() == L"abc");
     CHECK(p0.wstring().size() == 3);
+    CHECK(p0.u16string() == (make_string<utf16, narrow, u16string>("abc")));
+    CHECK(p0.u16string().size() == 3);
+    CHECK(p0.u32string() == (make_string<utf32, narrow, u32string>("abc")));
+    CHECK(p0.u32string().size() == 3);
+
+    CHECK(p0.string() == p0.string<string>());
+    CHECK(p0.string() == (p0.basic_string<char,
+      std::char_traits<char>, std::allocator<char> >()));
+
 
 # ifdef BOOST_WINDOWS_API
 
@@ -435,6 +513,8 @@ namespace
 
     CHECK(p.generic_string() == "abc/def/ghi");
     CHECK(p.generic_wstring() == L"abc/def/ghi");
+    CHECK(p.generic_u16string() == (make_string<utf16, narrow, u16string>("abc/def/ghi")));
+    CHECK(p.generic_u32string() == (make_string<utf32, narrow, u32string>("abc/def/ghi")));
 
     CHECK(p.generic_string<string>() == "abc/def/ghi");
     CHECK(p.generic_string<wstring>() == L"abc/def/ghi");
@@ -451,6 +531,8 @@ namespace
 
     CHECK(p.generic_string() == "abc\\def/ghi");
     CHECK(p.generic_wstring() == L"abc\\def/ghi");
+    CHECK(p.generic_u16string() == (make_string<utf16, narrow, u16string>("abc\\def/ghi")));
+    CHECK(p.generic_u32string() == (make_string<utf32, narrow, u32string>("abc\\def/ghi")));
 
     CHECK(p.generic_string<string>() == "abc\\def/ghi");
     CHECK(p.generic_string<wstring>() == L"abc\\def/ghi");
@@ -473,32 +555,35 @@ namespace
     CHECK(hash(path("c:\\abc")) == hash(path("c:/abc")));
 # endif
 
-    const path p("bar");
-    const path p2("baz");
+    const path p("a/b");    
+    const path p2("a.b");
+
+    // verify "a.c" < "a/c", so tests will detect failure to do lexicographic compare
+    CHECK(string("a.b") < string("a/b"));  
 
     CHECK(!(p < p));
     CHECK(p < p2);
     CHECK(!(p2 < p));
-    CHECK(p < "baz");
-    CHECK(p < string("baz"));
-    CHECK(p < L"baz");
-    CHECK(p < wstring(L"baz"));
-    CHECK(!("baz" < p));
-    CHECK(!(string("baz") < p));
-    CHECK(!(L"baz" < p));
-    CHECK(!(wstring(L"baz") < p));
+    CHECK(p < "a.b");
+    CHECK(p < string("a.b"));
+    CHECK(p < L"a.b");
+    CHECK(p < wstring(L"a.b"));
+    CHECK(!("a.b" < p));
+    CHECK(!(string("a.b") < p));
+    CHECK(!(L"a.b" < p));
+    CHECK(!(wstring(L"a.b") < p));
 
     CHECK(p == p);
     CHECK(!(p == p2));
     CHECK(!(p2 == p));
-    CHECK(p2 == "baz");
-    CHECK(p2 == string("baz"));
-    CHECK(p2 == L"baz");
-    CHECK(p2 == wstring(L"baz"));
-    CHECK("baz" == p2);
-    CHECK(string("baz") == p2);
-    CHECK(L"baz" == p2);
-    CHECK(wstring(L"baz") == p2);
+    CHECK(p2 == "a.b");
+    CHECK(p2 == string("a.b"));
+    CHECK(p2 == L"a.b");
+    CHECK(p2 == wstring(L"a.b"));
+    CHECK("a.b" == p2);
+    CHECK(string("a.b") == p2);
+    CHECK(L"a.b" == p2);
+    CHECK(wstring(L"a.b") == p2);
 
     CHECK(hash(p) == hash(p));
     CHECK(hash(p) != hash(p2)); // Not strictly required, but desirable
@@ -619,6 +704,11 @@ namespace
   void test_modifiers()
   {
     std::cout << "testing modifiers..." << std::endl;
+
+    path p("foo/bar");
+    std::cout << p << std::endl;  // outputs: "foo/bar"
+    p.make_preferred();
+    std::cout << p << std::endl;  // outputs: "foo\bar" on Windows, otherwise "foo/bar"
 
   }
 
@@ -1062,6 +1152,26 @@ int cpp_main(int, char*[])
   wl.push_back(L'i');
   wl.push_back(L'n');
   wl.push_back(L'g');
+
+  u16l.push_back('u');
+  u16l.push_back('1');
+  u16l.push_back('6');
+  u16l.push_back('s');
+  u16l.push_back('t');
+  u16l.push_back('r');
+  u16l.push_back('i');
+  u16l.push_back('n');
+  u16l.push_back('g');
+
+  u32l.push_back('u');
+  u32l.push_back('3');
+  u32l.push_back('2');
+  u32l.push_back('s');
+  u32l.push_back('t');
+  u32l.push_back('r');
+  u32l.push_back('i');
+  u32l.push_back('n');
+  u32l.push_back('g');
 
   v.push_back('f');
   v.push_back('u');
