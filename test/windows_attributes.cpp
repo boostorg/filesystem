@@ -108,7 +108,7 @@ int cpp_main( int argc, char* argv[])
     "_detail_directory_symlink"  // internal use only; never exposed to users
   };
 
-  std::cout << "boost::filesystem::status().type() is " << types[stat.type()] << std::endl;
+  std::cout << "boost::filesystem::status().type() is " << types[static_cast<int>(stat.type())] << std::endl;
 
   return 0;
 }

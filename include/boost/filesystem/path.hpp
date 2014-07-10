@@ -332,11 +332,11 @@ namespace filesystem
 
     void   clear()             { m_pathname.clear(); }
     path&  make_preferred()
-#   ifdef BOOST_POSIX_API
+# ifdef BOOST_POSIX_API
       { return *this; }  // POSIX no effect
-#   else // BOOST_WINDOWS_API
+# else // BOOST_WINDOWS_API
       ;  // change slashes to backslashes
-#   endif
+# endif
     path&  remove_filename();
     path&  replace_filename(const path& replacement)
     {
@@ -374,9 +374,13 @@ namespace filesystem
     template <class String>
     String string(const codecvt_type& cvt) const;
 
-    // Prototype the SG3 requested templated string() function. The real thing will have
+    // TODO Prototype the SG3 requested templated string() function. The real thing will have
     // defaulted traits and Allocator template parameters, and will be named string().
-    // Will have to enable_it current Boost version of string() template.
+    // Will have to enable_if current Boost version of string() template.
+    // Also must rename function, uncomment:     //CHECK(p0.string() == (p0.basic_string<char,
+    //                                           //  std::char_traits<char>, std::allocator<char> >()));
+    // in path_unit_test.cpp
+#if 0
     template <class charT, class traits, class Allocator >
     std::basic_string<charT, traits, Allocator>
       basic_string(const Allocator& a = Allocator()) const
@@ -385,21 +389,27 @@ namespace filesystem
         typename boost::interop::select_codec<charT>::type, boost::interop::default_codec,
         std::basic_string<charT, traits, Allocator> >(m_pathname);
     }
+#endif
 
-    boost::u16string u16string() const
+# ifndef BOOST_NO_CXX11_CHAR16_T
+    std::u16string u16string() const
     { 
       return boost::interop::make_string<boost::interop::utf16,
         boost::interop::select_codec<value_type>::type,
           boost::u16string>(m_pathname);
     }
-    boost::u32string u32string() const
+# endif
+
+# ifndef BOOST_NO_CXX11_CHAR32_T
+    std::u32string u32string() const
     { 
       return boost::interop::make_string<boost::interop::utf32,
         boost::interop::select_codec<value_type>::type,
           boost::u32string>(m_pathname);
     }
+# endif
 
-#   ifdef BOOST_WINDOWS_API
+# ifdef BOOST_WINDOWS_API
     std::string string() const { return string(codecvt()); } 
     std::string string(const codecvt_type& cvt) const
     { 
@@ -414,7 +424,7 @@ namespace filesystem
     std::wstring  wstring() const { return m_pathname; }
     std::wstring  wstring(const codecvt_type&) const { return m_pathname; }
 
-#   else   // BOOST_POSIX_API
+# else   // BOOST_POSIX_API
     //  string_type is std::string, so there is no conversion
     std::string  string() const { return m_pathname; }
     std::string  string(const codecvt_type&) const { return m_pathname; }
@@ -429,7 +439,7 @@ namespace filesystem
       return tmp;
     }
 
-#   endif
+# endif
 
     //  -----  generic format observers  -----
 
@@ -439,23 +449,27 @@ namespace filesystem
     template <class String>
     String generic_string(const codecvt_type& cvt) const;
 
-#   ifdef BOOST_WINDOWS_API
+# ifdef BOOST_WINDOWS_API
     std::string   generic_string() const { return generic_string(codecvt()); } 
     std::string   generic_string(const codecvt_type& cvt) const; 
     std::wstring  generic_wstring() const;
     std::wstring  generic_wstring(const codecvt_type&) const { return generic_wstring(); };
+#  ifndef BOOST_NO_CXX11_CHAR16_T
     boost::u16string generic_u16string() const
     {
       return interop::make_string<interop::utf16, interop::wide,
         boost::u16string>(generic_wstring());
     }
+#  endif
+#  ifndef BOOST_NO_CXX11_CHAR32_T
     boost::u32string generic_u32string() const
     {
       return interop::make_string<interop::utf32, interop::wide,
         boost::u32string>(generic_wstring());
     }
+#  endif
 
-#   else // BOOST_POSIX_API
+# else // BOOST_POSIX_API
     //  On POSIX-like systems, the generic format is the same as the native format
     std::string   generic_string() const  { return m_pathname; }
     std::string   generic_string(const codecvt_type&) const  { return m_pathname; }
@@ -464,7 +478,7 @@ namespace filesystem
     boost::u16string generic_u16string() const {return u16string();}
     boost::u32string generic_u32string() const {return u32string();}
 
-#   endif
+# endif
 
     //  -----  compare  -----
 
@@ -497,11 +511,11 @@ namespace filesystem
     bool has_extension() const       { return !extension().empty(); }
     bool is_absolute() const
     {
-#     ifdef BOOST_WINDOWS_API
+# ifdef BOOST_WINDOWS_API
       return has_root_name() && has_root_directory();
-#     else
+# else
       return has_root_directory();
-#     endif
+# endif
     }
     bool is_relative() const         { return !is_absolute(); } 
 

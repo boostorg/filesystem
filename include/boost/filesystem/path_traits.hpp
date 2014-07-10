@@ -60,23 +60,30 @@ namespace path_traits {
   template<> struct is_pathable<const char*>            {static const bool value = true;};
   template<> struct is_pathable<wchar_t*>               {static const bool value = true;};
   template<> struct is_pathable<const wchar_t*>         {static const bool value = true;};
-  template<> struct is_pathable<boost::char16*>         {static const bool value = true;};
-  template<> struct is_pathable<const boost::char16*>   {static const bool value = true;};
-  template<> struct is_pathable<boost::char32*>         {static const bool value = true;};
-  template<> struct is_pathable<const boost::char32*>   {static const bool value = true;};
   template<> struct is_pathable<std::string>            {static const bool value = true;};
   template<> struct is_pathable<std::wstring>           {static const bool value = true;};
-  template<> struct is_pathable<boost::u16string>       {static const bool value = true;};
-  template<> struct is_pathable<boost::u32string>       {static const bool value = true;};
   template<> struct is_pathable<std::vector<char> >     {static const bool value = true;};
   template<> struct is_pathable<std::vector<wchar_t> >  {static const bool value = true;};
-  template<> struct is_pathable<std::vector<boost::char16> > {static const bool value = true;};
-  template<> struct is_pathable<std::vector<boost::char32> > {static const bool value = true;};
   template<> struct is_pathable<std::list<char> >       {static const bool value = true;};
   template<> struct is_pathable<std::list<wchar_t> >    {static const bool value = true;};
-  template<> struct is_pathable<std::list<boost::char16> > {static const bool value = true;};
-  template<> struct is_pathable<std::list<boost::char32> > {static const bool value = true;};
   template<> struct is_pathable<directory_entry>        {static const bool value = true;};
+
+#ifndef BOOST_NO_CXX11_CHAR16_T
+  template<> struct is_pathable<char16_t*>              {static const bool value = true;};
+  template<> struct is_pathable<const char16_t*>        {static const bool value = true;};
+  template<> struct is_pathable<std::u16string>         {static const bool value = true;};
+  template<> struct is_pathable<std::vector<char16_t> > {static const bool value = true;};
+  template<> struct is_pathable<std::list<char16_t> >   {static const bool value = true;};
+#endif
+
+#ifndef BOOST_NO_CXX11_CHAR32_T
+  template<> struct is_pathable<char32_t*>              {static const bool value = true;};
+  template<> struct is_pathable<const char32_t*>        {static const bool value = true;};
+  template<> struct is_pathable<std::u32string>         {static const bool value = true;};
+  template<> struct is_pathable<std::vector<char32_t> > {static const bool value = true;};
+  template<> struct is_pathable<std::list<char32_t> >   {static const bool value = true;};
+#endif
+
 
   //  Pathable empty
 
@@ -114,6 +121,7 @@ namespace path_traits {
                 std::string& to,
                 const codecvt_type& cvt);
 
+#ifndef BOOST_NO_CXX11_CHAR16_T
   inline
   void convert(const char16* from,
                 const char16* from_end,
@@ -127,7 +135,6 @@ namespace path_traits {
     for (; itr != iter_type(); ++itr)
       to.push_back(*itr);
   }
-
   inline
   void convert(const char16* from,
                 const char16* from_end,
@@ -141,7 +148,8 @@ namespace path_traits {
     for (; itr != iter_type(); ++itr)
       to.push_back(*itr);
   }
-
+#endif
+#ifndef BOOST_NO_CXX11_CHAR32_T
   inline
   void convert(const char32* from,
                 const char32* from_end,
@@ -169,6 +177,7 @@ namespace path_traits {
     for (; itr != iter_type(); ++itr)
       to.push_back(*itr);
   }
+#endif
 
   inline 
   void convert(const char* from,
@@ -188,17 +197,9 @@ namespace path_traits {
     convert(from, 0, to, cvt);
   }
 
-  inline 
+#ifndef BOOST_NO_CXX11_CHAR16_T
+  inline
   void convert(const char16* from,
-                std::string& to,
-                const codecvt_type& cvt)
-  {
-    BOOST_ASSERT(from);
-    convert(from, 0, to, cvt);
-  }
-
-  inline 
-  void convert(const char32* from,
                 std::string& to,
                 const codecvt_type& cvt)
   {
@@ -214,6 +215,16 @@ namespace path_traits {
     BOOST_ASSERT(from);
     convert(from, 0, to, cvt);
   }
+#endif
+#ifndef BOOST_NO_CXX11_CHAR32_T
+  inline
+  void convert(const char32* from,
+                std::string& to,
+                const codecvt_type& cvt)
+  {
+    BOOST_ASSERT(from);
+    convert(from, 0, to, cvt);
+  }
 
   inline 
   void convert(const char32* from,
@@ -223,6 +234,7 @@ namespace path_traits {
     BOOST_ASSERT(from);
     convert(from, 0, to, cvt);
   }
+#endif
 
   // value types same  -----------------------------------------------------------------//
 

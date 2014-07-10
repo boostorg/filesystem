@@ -60,15 +60,14 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::wstring;
-using boost::char16;
-using boost::char32;
-using boost::u16string;
-using boost::u32string;
-using boost::interop::make_string;
-using boost::interop::narrow;
-using boost::interop::wide;
-using boost::interop::utf16;
-using boost::interop::utf32;
+
+#ifndef BOOST_NO_CXX11_CHAR16_T
+using std::u16string;
+# endif
+
+#ifndef BOOST_NO_CXX11_CHAR16_T
+using std::u32string;
+# endif
 
 #define CHECK(x) check(x, __FILE__, __LINE__)
 #define PATH_IS(a, b) check_path(a, b, __FILE__, __LINE__)
@@ -158,11 +157,18 @@ namespace
   //  U+1F60E SMILING FACE WITH SUNGLASSES
 
   // build test strings character by character so they work with C++03 compilers
-  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
-  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
 
-  const u32string u32s(u32c);
+#ifndef BOOST_NO_CXX11_CHAR16_T
+  const char16 u16c[] = {0xD83D, 0xDE0A, 0xD83D, 0xDE0E, 0};
   const u16string u16s(u16c);
+  std::list<char16> u16l; // see main() for initialization to u, 1, 6, s, t, r, i, n, g
+#endif
+#ifndef BOOST_NO_CXX11_CHAR32_T
+  const char32 u32c[] = {0x1F60A, 0x1F60E, 0};
+  const u32string u32s(u32c);
+  std::list<char32> u32l; // see main() for initialization to u, 3, 2, s, t, r, i, n, g
+#endif
+
   const string u8s("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const string chars("\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
   const wstring wchars(L"\xF0\x9F\x98\x8A\xF0\x9F\x98\x8E");
@@ -170,8 +176,6 @@ namespace
 
   std::list<char> l;      // see main() for initialization to s, t, r, i, n, g
   std::list<wchar_t> wl;  // see main() for initialization to w, s, t, r, i, n, g
-  std::list<char16> u16l; // see main() for initialization to u, 1, 6, s, t, r, i, n, g
-  std::list<char32> u32l; // see main() for initialization to u, 3, 2, s, t, r, i, n, g
   std::vector<char> v;      // see main() for initialization to f, u, z
   std::vector<wchar_t> wv;  // see main() for initialization to w, f, u, z
 
@@ -210,13 +214,17 @@ namespace
     PATH_IS(x3, L"wstring");
     BOOST_TEST_EQ(x3.native().size(), 7U);
 
+#  ifndef BOOST_NO_CXX11_CHAR16_T
     path x3_16(u16l.begin(), u16l.end());              // iterator range char16
     PATH_IS(x3_16, L"u16string");
     BOOST_TEST_EQ(x3_16.native().size(), 9U);
+# endif
 
+#  ifndef BOOST_NO_CXX11_CHAR32_T
     path x3_32(u32l.begin(), u32l.end());              // iterator range char32
     PATH_IS(x3_32, L"u32string");
     BOOST_TEST_EQ(x3_32.native().size(), 9U);
+# endif
 
     // contiguous containers
     path x4(string("std::string"));                    // std::string
@@ -227,13 +235,16 @@ namespace
     PATH_IS(x5, L"std::wstring");
     BOOST_TEST_EQ(x5.native().size(), 12U);
 
+#  ifndef BOOST_NO_CXX11_CHAR16_T
     path x4_16(make_string<utf16, narrow, u16string>("u16string")); // u16string
     PATH_IS(x4_16, L"u16string");
     BOOST_TEST_EQ(x4_16.native().size(), 9U);
-
+# endif
+#  ifndef BOOST_NO_CXX11_CHAR32_T
     path x4_32(make_string<utf32, narrow, u32string>("u32string")); // u32string
     PATH_IS(x4_32, L"u32string");
     BOOST_TEST_EQ(x4_32.native().size(), 9U);
+# endif
 
     path x4v(v);                                       // std::vector<char>
     PATH_IS(x4v, L"fuz");
@@ -271,13 +282,18 @@ namespace
     PATH_IS(x9, L"wstring");
     BOOST_TEST_EQ(x9.native().size(), 7U);
 
+#  ifndef BOOST_NO_CXX11_CHAR16_T
     path x9_16(make_string<utf16, narrow, u16string>("cvt-u16string").c_str()); // const char16* null terminated
     PATH_IS(x9_16, L"cvt-u16string");
     BOOST_TEST_EQ(x9_16.native().size(), 13U);
+#  endif
 
+
+#  ifndef BOOST_NO_CXX11_CHAR32_T
     path x9_32(make_string<utf32, narrow, u32string>("cvt-u32string").c_str()); // const char32* null terminated
     PATH_IS(x9_32, L"cvt-u32string");
     BOOST_TEST_EQ(x9_32.native().size(), 13U);
+#  endif
 
     // non-contiguous containers
     path x10(l);                                       // std::list<char>
@@ -492,14 +508,18 @@ namespace
     CHECK(p0.string().size() == 3);
     CHECK(p0.wstring() == L"abc");
     CHECK(p0.wstring().size() == 3);
+#  ifndef BOOST_NO_CXX11_CHAR16_T
     CHECK(p0.u16string() == (make_string<utf16, narrow, u16string>("abc")));
     CHECK(p0.u16string().size() == 3);
+#  endif
+#  ifndef BOOST_NO_CXX11_CHAR32_T
     CHECK(p0.u32string() == (make_string<utf32, narrow, u32string>("abc")));
     CHECK(p0.u32string().size() == 3);
+#  endif
 
     CHECK(p0.string() == p0.string<string>());
-    CHECK(p0.string() == (p0.basic_string<char,
-      std::char_traits<char>, std::allocator<char> >()));
+    //CHECK(p0.string() == (p0.basic_string<char,
+    //  std::char_traits<char>, std::allocator<char> >()));
 
 
 # ifdef BOOST_WINDOWS_API
@@ -513,8 +533,12 @@ namespace
 
     CHECK(p.generic_string() == "abc/def/ghi");
     CHECK(p.generic_wstring() == L"abc/def/ghi");
+#  ifndef BOOST_NO_CXX11_CHAR16_T
     CHECK(p.generic_u16string() == (make_string<utf16, narrow, u16string>("abc/def/ghi")));
+#  endif
+#  ifndef BOOST_NO_CXX11_CHAR32_T
     CHECK(p.generic_u32string() == (make_string<utf32, narrow, u32string>("abc/def/ghi")));
+#  endif
 
     CHECK(p.generic_string<string>() == "abc/def/ghi");
     CHECK(p.generic_string<wstring>() == L"abc/def/ghi");
@@ -1153,6 +1177,7 @@ int cpp_main(int, char*[])
   wl.push_back(L'n');
   wl.push_back(L'g');
 
+#ifndef BOOST_NO_CXX11_CHAR16_T
   u16l.push_back('u');
   u16l.push_back('1');
   u16l.push_back('6');
@@ -1162,7 +1187,9 @@ int cpp_main(int, char*[])
   u16l.push_back('i');
   u16l.push_back('n');
   u16l.push_back('g');
+#endif
 
+#ifndef BOOST_NO_CXX11_CHAR32_T
   u32l.push_back('u');
   u32l.push_back('3');
   u32l.push_back('2');
@@ -1172,7 +1199,7 @@ int cpp_main(int, char*[])
   u32l.push_back('i');
   u32l.push_back('n');
   u32l.push_back('g');
-
+#endif
   v.push_back('f');
   v.push_back('u');
   v.push_back('z');
@@ -1208,8 +1235,7 @@ int cpp_main(int, char*[])
   std::string foo("\\abc");
   const char* bar = "/abc";
 
-  if (foo == bar)
-    cout << "unintended consequence\n";
+  BOOST_TEST(!(foo == bar)); // unintended consequence of path relational overloads
 
   return ::boost::report_errors();
 }

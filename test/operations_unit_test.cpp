@@ -24,7 +24,6 @@
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#define BOOST_CHRONO_HEADER_ONLY
 #include <boost/filesystem.hpp>   // make sure filesystem.hpp works
 
 #include <boost/config.hpp>

@@ -17,7 +17,6 @@
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#define BOOST_CHRONO_HEADER_ONLY
 #include <boost/filesystem/operations.hpp>
 
 #include <boost/config.hpp>
