@@ -1437,10 +1437,10 @@ namespace
       first = *it;
     fs::path expected(root/first);
 
-    cout << "init: " << init << endl;
-    cout << "root: " << root << endl;
-    cout << "first: " << first << endl;
-    cout << "expected: " << expected << endl;
+    cout << "  init: " << init << endl;
+    cout << "  root: " << root << endl;
+    cout << "  first: " << first << endl;
+    cout << "  expected: " << expected << endl;
 
     //  ticket 10187 tests
     BOOST_TEST_EQ(fs::canonical(root / "../.." / first), expected);
