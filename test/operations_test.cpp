@@ -1423,6 +1423,32 @@ namespace
     BOOST_TEST_EQ(fs::canonical(relative_dir / "f0"), dir / "f0");
     BOOST_TEST_EQ(fs::canonical(relative_dir / "./f0"), dir / "f0");
     BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0"), dir / "f0");
+
+    // treat parent of root as itself on both POSIX and Windows
+    fs::path init(fs::initial_path());
+    fs::path root(init.root_path());
+    fs::path::const_iterator it(init.begin());
+    fs::path first;   // relative first non-root directory
+#  ifdef BOOST_WINDOWS_API
+    if (!init.empty())
+      ++it;
+#  endif
+    if (++it != init.end())
+      first = *it;
+    fs::path expected(root/first);
+
+    cout << "init: " << init << endl;
+    cout << "root: " << root << endl;
+    cout << "first: " << first << endl;
+    cout << "expected: " << expected << endl;
+
+    //  ticket 10187 tests
+    BOOST_TEST_EQ(fs::canonical(root / "../.." / first), expected);
+    BOOST_TEST_EQ(fs::canonical(fs::path("../..") / first, root), expected);
+    BOOST_TEST_EQ(fs::canonical(fs::path("/../..") / first, fs::current_path().root_name()), expected);
+
+    //  ticket 9683 test
+    BOOST_TEST_EQ(fs::canonical(root / first / "../../../../.."), root);
   }
 
   //  canonical_symlink_tests  -----------------------------------------------------------//
@@ -1925,7 +1951,7 @@ int cpp_main(int argc, char* argv[])
       skip_long_windows_tests = true;
   }
 
-  // The choice of platform to test is make at runtime rather than compile-time
+  // The choice of platform to test is made at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
   // only the current platform is runtime tested.
 # if defined(BOOST_POSIX_API)
@@ -1941,6 +1967,16 @@ int cpp_main(int argc, char* argv[])
 #   error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 # endif
   cout << "API is " << platform << endl;
+  cout << "initial_path() is " << fs::initial_path() << endl;
+  fs::path ip = fs::initial_path();
+
+  for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
+  {
+    if (it != ip.begin())
+      cout << ", ";
+    cout << *it;
+  }
+  cout << endl;
 
   dir = fs::initial_path() / temp_dir;
 
