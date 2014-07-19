@@ -823,9 +823,11 @@ namespace filesystem
             m_stack.push(directory_iterator(m_stack.top()->path()));
           else
           {
-            m_stack.push(directory_iterator(m_stack.top()->path(), *ec));
+            directory_iterator next = directory_iterator(m_stack.top()->path(), *ec);
             if (*ec)
               return;
+            else
+              m_stack.push(next);
           }
           if (m_stack.top() != directory_iterator())
           {
