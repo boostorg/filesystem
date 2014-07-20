@@ -795,6 +795,10 @@ namespace filesystem
     void recur_dir_itr_imp::increment(system::error_code* ec)
     // ec == 0 means throw on error
     {
+      //  Before the actual increment operation is performed, discover if the iterator
+      //  is for a directory that needs to be recursed into, taking symlinks and options
+      //  into account.
+
       if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
         m_options &= ~symlink_option::_detail_no_push;
 
@@ -817,7 +821,7 @@ namespace filesystem
         if (ec != 0 && *ec)
           return;
 
-        if (and_pred)
+        if (and_pred)  // if directory and we want to iterate into it
         {
           if (ec == 0)
             m_stack.push(directory_iterator(m_stack.top()->path()));
@@ -835,6 +839,10 @@ namespace filesystem
           m_stack.pop();
         }
       }
+
+      //  Only now do the actual increment operation on the top iterator in the iterator
+      //  stack, popping the stack if necessary, until either the stack is empty or a
+      //  non-end iterator is reached.
 
       while (!m_stack.empty() && ++m_stack.top() == directory_iterator())
       {
