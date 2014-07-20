@@ -614,7 +614,7 @@ namespace
   void recursive_directory_iterator_tests()
   {
     cout << "recursive_directory_iterator_tests..." << endl;
-    BOOST_TEST(walk_tree(false) == 1);
+    BOOST_TEST_EQ(walk_tree(false), 1);
     if (create_symlink_ok)
       BOOST_TEST(walk_tree(true) > 1);
 
@@ -629,7 +629,7 @@ namespace
         ++d1f1_count;
     }
     BOOST_TEST(!ec);
-    BOOST_TEST(d1f1_count == 1);
+    BOOST_TEST_EQ(d1f1_count, 1);
 
     cout << "  recursive_directory_iterator_tests complete" << endl;
   }
