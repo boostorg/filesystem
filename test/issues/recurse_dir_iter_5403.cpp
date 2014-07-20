@@ -116,15 +116,20 @@ int cpp_main(int argc, char* argv[])
   fs::recursive_directory_iterator it("/");
   fs::recursive_directory_iterator end_it;
 
+  //  The increment function has an invarient that it always makes progress,
+  //  so even if an error occurs this loop will eventually terminate.
+
   while (it != end_it)
   {
-    //++it;
     error_code ec;
+    fs::path init_path = it->path();
     it.increment(ec);
     if (ec)
     {
+      cout << "initial path: " << init_path << endl;
       cout << "error_code: " << ec.value() << " with msg: " << ec.message() << endl;
-      it.pop();
+      if (it != end_it)
+        cout << "post-increment path: " << it->path() << endl;
     }
   }
 
