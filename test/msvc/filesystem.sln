@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C++ Express 2013
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_unit_test", "path_unit_test\path_unit_test.vcxproj", "{3C77F610-2E31-4087-9DF2-7CD45198A02D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0EA788CA-FA52-4290-A4D0-F616390B203B} = {0EA788CA-FA52-4290-A4D0-F616390B203B}
@@ -106,6 +108,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "macro_default_test", "macro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_timings", "path_timings\path_timings.vcxproj", "{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}"
 	ProjectSection(ProjectDependencies) = postProject
+		{F94CCADD-A90B-480C-A304-C19D015D36B1} = {F94CCADD-A90B-480C-A304-C19D015D36B1}
+		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recurse_dir_iter_test", "recurse_dir_iter_test\recurse_dir_iter_test.vcxproj", "{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EA788CA-FA52-4290-A4D0-F616390B203B} = {0EA788CA-FA52-4290-A4D0-F616390B203B}
 		{F94CCADD-A90B-480C-A304-C19D015D36B1} = {F94CCADD-A90B-480C-A304-C19D015D36B1}
 		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
 	EndProjectSection
@@ -232,6 +241,10 @@ Global
 		{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}.Debug|Win32.Build.0 = Debug|Win32
 		{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}.Release|Win32.ActiveCfg = Release|Win32
 		{3AB1E2A1-9616-4E91-83F4-1D7A33A586DE}.Release|Win32.Build.0 = Release|Win32
+		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Debug|Win32.Build.0 = Debug|Win32
+		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Release|Win32.ActiveCfg = Release|Win32
+		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

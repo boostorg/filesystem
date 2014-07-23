@@ -36,6 +36,31 @@
   </tr>
 </table>
 
+<h2>1.56.0</h2>
+<ul>
+  <li>Reorganize <code>recursive_directory_iterator::increment</code>, adding an 
+  invariant that progress is always made, even if an error is reported by 
+  exception or error_code. Add a manually executed test, <code>
+  test/issues/recurse_dir_iter_5403.cpp</code>. Adjust regular regression tests 
+  as needed. Thanks to Claudio Bley for the
+  <a href="https://github.com/boostorg/filesystem/pull/4">pull request</a> - the 
+  change was incorporated into the reorganized code. Fixes
+  <a href="https://svn.boost.org/trac/boost/ticket/5403">#5403</a> and
+  <a href="https://svn.boost.org/trac/boost/ticket/6821">#6821</a>.</li>
+  <li>Fix <code>canonical()</code> to treat parent of root as root. (Christian 
+  Hammerl) Fixes <a href="https://svn.boost.org/trac/boost/ticket/9683">#9683</a> 
+  and <a href="https://svn.boost.org/trac/boost/ticket/10187">#10187</a>.</li>
+  <li>Added missing test for <code>__sun</code> macro which is defined on 
+  Solaris 10. (Chris Stylianou)</li>
+  <li>Minor fixes and code cleanup.</li>
+  <li>Update IDE projects to Visual Studio 2013.</li>
+  <li>Remove unused <code>const char colon</code> to clear clang warning. (Jürgen 
+  Hunold)</li>
+  <li>Add BOOST_NOEXCEPT to <code>class filesystem_error</code>.</li>
+  <li>Change <code>perms::all_all</code> and <code>perms::perms_mask</code> to 
+  absolute values to quiet intellisense warnings, and conform to C++11.</li>
+</ul>
+
 <h2>1.54.0</h2>
 <ul>
   <li>Reimplement <code>path::codecvt()</code> and <code>path::imbue()</code> 
@@ -200,7 +225,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->20 February, 2013<!--webbot bot="Timestamp" endspan i-checksum="40526" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21122" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

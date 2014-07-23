@@ -73,6 +73,8 @@
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
+using boost::next;
+using boost::prior;
 
 #ifdef BOOST_WINDOWS_API
 # define BOOST_DIR_SEP "\\"
