@@ -2066,7 +2066,6 @@ int cpp_main(int argc, char* argv[])
     // a bug (failure to close an internal search handle). 
     cout << "post-test removal complete" << endl;
     BOOST_TEST(!fs::exists(dir));
-    BOOST_TEST(fs::remove_all(dir) == 0);
   }
 
   cout << "returning from main()" << endl;
