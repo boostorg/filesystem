@@ -1457,7 +1457,7 @@ namespace
     BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0"), dir / "f0");
 
     // treat parent of root as itself on both POSIX and Windows
-    fs::path init(fs::initial_path());
+    fs::path init(initial_path);
     fs::path root(init.root_path());
     fs::path::const_iterator it(init.begin());
     fs::path first;   // relative first non-root directory
@@ -2092,8 +2092,8 @@ int cpp_main(int argc, char* argv[])
 #   error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 # endif
   cout << "API is " << platform << endl;
-  cout << "initial_path() is " << fs::initial_path() << endl;
-  fs::path ip = fs::initial_path();
+  cout << "initial_path is " << initial_path << endl;
+  fs::path ip = initial_path;
 
   for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
   {
@@ -2185,15 +2185,22 @@ int cpp_main(int argc, char* argv[])
     cout << "post-test removal of " << dir << endl;
     boost::uintmax_t removed = fs::remove_all(dir);
     cout << "  removed " << removed << " files, including directories" << endl;
-    BOOST_TEST(removed != 0);
-    // above was added just to simplify testing, but it ended up detecting
+    // The following was added just to simplify testing, but it ended up detecting
     // a bug (failure to close an internal search handle).
+    BOOST_TEST(removed != 0);
 
     // The following is failing itermittently with a permissions error. The error
     // goes away if recursive_directory_iterator_tests() is not run, but directory
     // search handles seem to be closed properly. Very perplexing. 8/8/2012.
+    //
+    //    BOOST_TEST(fs::remove_all(dir) == 0);   // removal eliminates problems
+    //
+    // The problem appears to be that the TortiseGit plug-in for Windows Explorer
+    // is the underlying cause; it seems to temporarily delay deletes. Some unrelated
+    // tests involving deletes also fail if TortiseGit (or TortoiseSvn) Windows
+    // explorer plug-ins are active. Failures disappear if Windows Explorer is closed.
+
     BOOST_TEST(!fs::exists(dir));
-    BOOST_TEST(fs::remove_all(dir) == 0);
     cout << "post-test removal complete" << endl;
   }
 

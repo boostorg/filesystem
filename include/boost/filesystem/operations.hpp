@@ -58,11 +58,11 @@ namespace boost
   namespace filesystem
   {
 
-    //--------------------------------------------------------------------------------------//
-    //                                                                                      //
-    //                            class filesystem_error                                    //
-    //                                                                                      //
-    //--------------------------------------------------------------------------------------//
+    //----------------------------------------------------------------------------------//
+    //                                                                                  //
+    //                          class filesystem_error                                  //
+    //                                                                                  //
+    //----------------------------------------------------------------------------------//
 
     class BOOST_SYMBOL_VISIBLE filesystem_error : public system::system_error
     {
@@ -236,7 +236,7 @@ namespace boost
     others_exe = 01,    // S_IXOTH, Execute/search permission, others
     others_all = 07,    // S_IRWXO, Read, write, execute/search by others
 
-    all_all = owner_all|group_all|others_all,  // 0777
+    all_all = 0777,     // owner_all|group_all|others_all
 
     // other POSIX bits
 
@@ -249,7 +249,7 @@ namespace boost
                             // (SVID-v4.2) On directories: restricted deletion flag
                             // Also see http://en.wikipedia.org/wiki/Sticky_bit
 
-    perms_mask = all_all|set_uid_on_exe|set_gid_on_exe|sticky_bit,  // 07777
+    perms_mask = 07777,     // all_all|set_uid_on_exe|set_gid_on_exe|sticky_bit
 
     perms_not_known = 0xFFFF, // present when directory_entry cache not loaded
 
@@ -412,6 +412,7 @@ namespace boost
     BOOST_FILESYSTEM_DECL
     void copy(const path& from, const path& to, 
               BOOST_SCOPED_ENUM(copy_options) options, system::error_code* ec=0);
+    // TODO
     //BOOST_FILESYSTEM_DECL
     //void copy_directory(const path& from, const path& to, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -1124,8 +1125,9 @@ namespace filesystem
       //  Discover if the iterator is for a directory that needs to be recursed into,
       //  taking symlinks and options into account.
 
-      if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
-        m_options &= ~symlink_option::_detail_no_push;
+      if ((m_options & directory_options::_detail_no_push)
+	       == directory_options::_detail_no_push)
+        m_options &= ~directory_options::_detail_no_push;
 
       else
       {
@@ -1140,14 +1142,16 @@ namespace filesystem
 
         file_status symlink_stat;
 
-        if ((m_options & symlink_option::recurse) != symlink_option::recurse)
+        if ((m_options & directory_options::follow_directory_symlink)
+		     != directory_options::follow_directory_symlink)
         {
           symlink_stat = m_stack.top()->symlink_status(ec);
           if (ec)
             return false;
         }
 
-        if ((m_options & symlink_option::recurse) == symlink_option::recurse
+        if ((m_options & directory_options::follow_directory_symlink)
+		     == directory_options::follow_directory_symlink
           || !is_symlink(symlink_stat))
         {
           file_status stat = m_stack.top()->status(ec);
@@ -1158,7 +1162,7 @@ namespace filesystem
           if (!ec && next != directory_iterator())
           {
             m_stack.push(next);
-            ++m_level;
+            ++m_depth;
             return true;
           }
         }
