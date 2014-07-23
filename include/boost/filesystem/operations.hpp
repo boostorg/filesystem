@@ -176,17 +176,18 @@ namespace boost
   { 
     none = 0,
     not_found = -1,
-    unknown = 1,  // file does exist, but is not one of the other types or the process
-                  // does not have permission to query the file type
-    regular = 2,
-    directory = 3,
+    regular = 1,
+    directory = 2,
     // the following may not apply to some operating systems or file systems
-    symlink = 4,
-    block = 5,
-    character = 6,
-    fifo = 7,
-    socket = 8,
-    reparse_point = 9,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
+    symlink = 3,
+    block = 4,
+    character = 5,
+    fifo = 6,
+    socket = 7,
+    unknown = 8,      // file does exist, but is not one of the other types or the process
+                      // does not have permission to query the file type
+
+    reparse_point = 9,// Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
 
     _detail_directory_symlink,  // internal use only; never exposed to users
 
