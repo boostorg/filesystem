@@ -70,13 +70,13 @@ namespace
     cout << "file_status test..." << endl;
 
     file_status s = status(".");
-    int v = s.permissions();
+    int v = static_cast<int>(s.permissions());
     cout << "  status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
 
     s = symlink_status(".");
-    v = s.permissions();
+    v = static_cast<int>(s.permissions());
     cout << "  symlink_status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
@@ -93,7 +93,7 @@ namespace
     CHECK(file_size("no-such-file", ec) == static_cast<boost::uintmax_t>(-1));
     CHECK(ec == errc::no_such_file_or_directory);
 
-    CHECK(status("no-such-file") == file_status(file_type::not_found, no_perms));
+    CHECK(status("no-such-file") == file_status(file_type::not_found, perms::none));
 
     CHECK(exists("/"));
     CHECK(is_directory("/"));
@@ -272,11 +272,12 @@ namespace
     cout << "directory_entry test..." << endl;
 
     directory_entry de("foo.bar",
-      file_status(file_type::regular, owner_all), file_status(file_type::directory, group_all));
+      file_status(file_type::regular, perms::owner_all),
+      file_status(file_type::directory, perms::group_all));
 
     CHECK(de.path() == "foo.bar");
-    CHECK(de.status() == file_status(file_type::regular, owner_all));
-    CHECK(de.symlink_status() == file_status(file_type::directory, group_all));
+    CHECK(de.status() == file_status(file_type::regular, perms::owner_all));
+    CHECK(de.symlink_status() == file_status(file_type::directory, perms::group_all));
     CHECK(de < directory_entry("goo.bar"));
     CHECK(de == directory_entry("foo.bar"));
     CHECK(de != directory_entry("goo.bar"));

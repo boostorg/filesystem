@@ -863,47 +863,47 @@ namespace
 
     if (platform == "POSIX")
     {
-      cout << "  fs::status(p).permissions() " << std::oct << fs::status(p).permissions()
-        << std::dec << endl;
-      BOOST_TEST((fs::status(p).permissions() & 0600) == 0600);  // 0644, 0664 sometimes returned
+      cout << "  fs::status(p).permissions() "
+        << std::oct << static_cast<int>(fs::status(p).permissions()) << std::dec << endl;
+      BOOST_TEST((static_cast<int>(fs::status(p).permissions()) & 0600) == 0600);  // 0644, 0664 sometimes returned
 
-      fs::permissions(p, fs::owner_all);
-      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+      fs::permissions(p, fs::perms::owner_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
 
-      fs::permissions(p, fs::add_perms | fs::group_all);
-      BOOST_TEST(fs::status(p).permissions() == (fs::owner_all | fs::group_all));
+      fs::permissions(p, fs::perms::add_perms | fs::perms::group_all);
+      BOOST_TEST(fs::status(p).permissions() == (fs::perms::owner_all | fs::perms::group_all));
 
-      fs::permissions(p, fs::remove_perms | fs::group_all);
-      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+      fs::permissions(p, fs::perms::remove_perms | fs::perms::group_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
 
       // some POSIX platforms cache permissions during directory iteration, some don't
       // so test that iteration finds the correct permissions
       for (fs::directory_iterator itr(dir); itr != fs::directory_iterator(); ++itr)
         if (itr->path().filename() == fs::path("permissions.txt"))
-          BOOST_TEST(itr->status().permissions() == fs::owner_all);
+          BOOST_TEST(itr->status().permissions() == fs::perms::owner_all);
 
       if (create_symlink_ok)  // only if symlinks supported
       {
-        BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+        BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
         fs::path p2(dir / "permissions-symlink.txt");
         fs::create_symlink(p, p2);
         cout << std::oct; 
-        cout << "   status(p).permissions() "  << fs::status(p).permissions() << endl;
-        cout << "  status(p2).permissions() "  << fs::status(p).permissions() << endl;
-        fs::permissions(p2, fs::add_perms | fs::others_read);
-        cout << "   status(p).permissions(): " << fs::status(p).permissions() << endl; 
-        cout << "  status(p2).permissions(): " << fs::status(p2).permissions() << endl;
+        cout << "   status(p).permissions() "  << static_cast<int>(fs::status(p).permissions()) << endl;
+        cout << "  status(p2).permissions() "  << static_cast<int>(fs::status(p).permissions()) << endl;
+        fs::permissions(p2, fs::perms::add_perms | fs::perms::others_read);
+        cout << "   status(p).permissions(): " << static_cast<int>(fs::status(p).permissions()) << endl;
+        cout << "  status(p2).permissions(): " << static_cast<int>(fs::status(p2).permissions()) << endl;
         cout << std::dec;
       }
 
     }
     else // Windows
     {
-      BOOST_TEST(fs::status(p).permissions() == 0666);
-      fs::permissions(p, fs::remove_perms | fs::group_write);
-      BOOST_TEST(fs::status(p).permissions() == 0444);
-      fs::permissions(p, fs::add_perms | fs::group_write);
-      BOOST_TEST(fs::status(p).permissions() == 0666);
+      BOOST_TEST(static_cast<int>(fs::status(p).permissions()) == 0666);
+      fs::permissions(p, fs::perms::remove_perms | fs::perms::group_write);
+      BOOST_TEST(static_cast<int>(fs::status(p).permissions()) == 0444);
+      fs::permissions(p, fs::perms::add_perms | fs::perms::group_write);
+      BOOST_TEST(static_cast<int>(fs::status(p).permissions()) == 0666);
     }
   }
   

@@ -534,14 +534,14 @@ namespace
 
   perms make_permissions(const path& p, DWORD attr)
   {
-    perms prms = fs::owner_read | fs::group_read | fs::others_read;
+    perms prms = fs::perms::owner_read | fs::perms::group_read | fs::perms::others_read;
     if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
-      prms |= fs::owner_write | fs::group_write | fs::others_write;
+      prms |= fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
     if (BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".exe") == 0
       || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".com") == 0
       || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".bat") == 0
       || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".cmd") == 0)
-      prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
+      prms |= fs::perms::owner_exe | fs::perms::group_exe | fs::perms::others_exe;
     return prms;
   }
 
@@ -633,7 +633,7 @@ namespace
 
     if (not_found_error(errval))
     {
-      return fs::file_status(fs::file_type::not_found, fs::no_perms);
+      return fs::file_status(fs::file_type::not_found, fs::perms::none);
     }
     else if ((errval == ERROR_SHARING_VIOLATION))
     {
@@ -1569,10 +1569,12 @@ namespace detail
   BOOST_FILESYSTEM_DECL
   void permissions(const path& p, perms prms, system::error_code* ec)
   {
-    BOOST_ASSERT_MSG(!((prms & add_perms) && (prms & remove_perms)),
+    BOOST_ASSERT_MSG(!((prms & perms::add_perms) != perms::none
+      && (prms & perms::remove_perms) != perms::none),
       "add_perms and remove_perms are mutually exclusive");
 
-    if ((prms & add_perms) && (prms & remove_perms))  // precondition failed
+    if ((prms & perms::add_perms) != perms::none
+      && (prms & perms::remove_perms) != perms::none)  // precondition failed
       return;
 
 # ifdef BOOST_POSIX_API
@@ -1626,8 +1628,8 @@ namespace detail
 # else  // Windows
 
     // if not going to alter FILE_ATTRIBUTE_READONLY, just return
-    if (!(!((prms & (add_perms | remove_perms)))
-      || (prms & (owner_write|group_write|others_write))))
+    if (!(!((prms & (perms::add_perms | perms::remove_perms)) != perms::none)
+      || (prms & (perms::owner_write|perms::group_write|perms::others_write)) != perms::none))
       return;
 
     DWORD attr = ::GetFileAttributesW(p.c_str());
@@ -1635,11 +1637,11 @@ namespace detail
     if (error(attr == 0, p, ec, "boost::filesystem::permissions"))
       return;
 
-    if (prms & add_perms)
+    if ((prms & perms::add_perms) != perms::none)
       attr &= ~FILE_ATTRIBUTE_READONLY;
-    else if (prms & remove_perms)
+    else if ((prms &perms::remove_perms) != perms::none)
       attr |= FILE_ATTRIBUTE_READONLY;
-    else if (prms & (owner_write|group_write|others_write))
+    else if ((prms & (perms::owner_write|perms::group_write|perms::others_write)) != perms::none)
       attr &= ~FILE_ATTRIBUTE_READONLY;
     else
       attr |= FILE_ATTRIBUTE_READONLY;
