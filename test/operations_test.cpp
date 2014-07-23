@@ -26,6 +26,7 @@
 
 #include <boost/cerrno.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/cstdint.hpp>
 
 #ifndef BOOST_LIGHTWEIGHT_MAIN
 #  include <boost/test/prg_exec_monitor.hpp>
@@ -37,6 +38,7 @@ namespace fs = boost::filesystem;
 using boost::system::error_code;
 using boost::system::system_category;
 using boost::system::system_error;
+using boost::int_least64_t;
 
 #include <fstream>
 #include <iostream>
@@ -864,8 +866,8 @@ namespace
     if (platform == "POSIX")
     {
       cout << "  fs::status(p).permissions() "
-        << std::oct << static_cast<int>(fs::status(p).permissions()) << std::dec << endl;
-      BOOST_TEST((static_cast<int>(fs::status(p).permissions()) & 0600) == 0600);  // 0644, 0664 sometimes returned
+        << std::oct << static_cast<int_least32_t>(fs::status(p).permissions()) << std::dec << endl;
+      BOOST_TEST((static_cast<int_least32_t>(fs::status(p).permissions()) & 0600) == 0600);  // 0644, 0664 sometimes returned
 
       fs::permissions(p, fs::perms::owner_all);
       BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
@@ -888,22 +890,22 @@ namespace
         fs::path p2(dir / "permissions-symlink.txt");
         fs::create_symlink(p, p2);
         cout << std::oct; 
-        cout << "   status(p).permissions() "  << static_cast<int>(fs::status(p).permissions()) << endl;
-        cout << "  status(p2).permissions() "  << static_cast<int>(fs::status(p).permissions()) << endl;
+        cout << "   status(p).permissions() "  << static_cast<int_least32_t>(fs::status(p).permissions()) << endl;
+        cout << "  status(p2).permissions() "  << static_cast<int_least32_t>(fs::status(p).permissions()) << endl;
         fs::permissions(p2, fs::perms::add_perms | fs::perms::others_read);
-        cout << "   status(p).permissions(): " << static_cast<int>(fs::status(p).permissions()) << endl;
-        cout << "  status(p2).permissions(): " << static_cast<int>(fs::status(p2).permissions()) << endl;
+        cout << "   status(p).permissions(): " << static_cast<int_least32_t>(fs::status(p).permissions()) << endl;
+        cout << "  status(p2).permissions(): " << static_cast<int_least32_t>(fs::status(p2).permissions()) << endl;
         cout << std::dec;
       }
 
     }
     else // Windows
     {
-      BOOST_TEST(static_cast<int>(fs::status(p).permissions()) == 0666);
+      BOOST_TEST(static_cast<int_least32_t>(fs::status(p).permissions()) == 0666);
       fs::permissions(p, fs::perms::remove_perms | fs::perms::group_write);
-      BOOST_TEST(static_cast<int>(fs::status(p).permissions()) == 0444);
+      BOOST_TEST(static_cast<int_least32_t>(fs::status(p).permissions()) == 0444);
       fs::permissions(p, fs::perms::add_perms | fs::perms::group_write);
-      BOOST_TEST(static_cast<int>(fs::status(p).permissions()) == 0666);
+      BOOST_TEST(static_cast<int_least32_t>(fs::status(p).permissions()) == 0666);
     }
   }
   

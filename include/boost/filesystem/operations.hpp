@@ -256,13 +256,13 @@ namespace boost
 
     // options for permissions() function
 
-    add_perms = 0x1000,     // adds the given permission bits to the current bits
-    remove_perms = 0x2000,  // removes the given permission bits from the current bits;
+    add_perms = 0x10000,    // adds the given permission bits to the current bits
+    remove_perms = 0x20000, // removes the given permission bits from the current bits;
                             // choose add_perms or remove_perms, not both; if neither add_perms
                             // nor remove_perms is given, replace the current bits with
                             // the given bits.
 
-    symlink_perms = 0x4000,  // on POSIX, don't resolve symlinks; implied on Windows
+    symlink_perms = 0x40000, // on POSIX, don't resolve symlinks; implied on Windows
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     no_perms = none,

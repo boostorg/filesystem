@@ -34,6 +34,7 @@
 #include <boost/foreach.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include <boost/cstdint.hpp>
 
 #ifndef BOOST_LIGHTWEIGHT_MAIN
 #  include <boost/test/prg_exec_monitor.hpp>
@@ -48,6 +49,7 @@ using namespace boost::system;
 using std::cout;
 using std::endl;
 using std::string;
+using boost::int_least32_t;
 
 #define CHECK(x) check(x, __FILE__, __LINE__)
 
@@ -70,13 +72,13 @@ namespace
     cout << "file_status test..." << endl;
 
     file_status s = status(".");
-    int v = static_cast<int>(s.permissions());
+    int v = static_cast<int_least32_t>(s.permissions());
     cout << "  status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
 
     s = symlink_status(".");
-    v = static_cast<int>(s.permissions());
+    v = static_cast<int_least32_t>(s.permissions());
     cout << "  symlink_status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
