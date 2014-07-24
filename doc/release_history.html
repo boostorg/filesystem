@@ -37,6 +37,17 @@
 </table>
 
 <h2>1.57.0</h2>
+<ul>
+  <li>The primary purpose of this release is to bring Boost.Filesystem into 
+  alignment with the C++ standard library's <i>File System Technical 
+  Specification</i> Draft, also known as the DTS. See <a href="#DTS">DTS 
+  significant and breaking changes</a> for details. The DTS is available in
+  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4099.html">
+  HTML</a> or
+  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4100.pdf">
+  PDF</a> form. The PDF is paginated, and thus more suitable for printing than 
+  the HTML.</li>
+</ul>
 
 <h2>1.56.0</h2>
 <ul>
@@ -225,9 +236,9 @@
   fixing missing and broken links, and adding missing functions.</li>
   <li>Miscellaneous implementation code cleanup. </li>
 </ul>
-<h2>DTS significant and breaking changes</h2>
+<h2><a name="DTS">DTS</a> significant and breaking changes</h2>
 <ul>
-  <li>The numeric values of <code>enum class file_type</code> constants have 
+  <li>Numeric values of <code>enum class file_type</code> constants have 
   changed; synonyms provided.</li>
   <li><code>enum perms</code> changed to <code>enum class perms</code>. Constant 
   names and values have changed; synonyms provided.</li>
