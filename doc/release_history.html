@@ -237,15 +237,32 @@
   <li>Miscellaneous implementation code cleanup. </li>
 </ul>
 <h2><a name="DTS">DTS</a> significant and breaking changes</h2>
+<p>Synonyms and typedefs&nbsp; provided to mitigate breaking name changes are 
+disabled if macro <code>BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
 <ul>
-  <li>Numeric values of <code>enum class file_type</code> constants have 
-  changed; synonyms provided.</li>
+  <li><code>enum file_type</code> changed to <code>enum class file_type</code>. 
+  Constant names and values have changed; synonyms provided.</li>
   <li><code>enum perms</code> changed to <code>enum class perms</code>. Constant 
   names and values have changed; synonyms provided.</li>
+  <li><code>enum class symlink_option</code> name changed to <code>enum class 
+  directory_option<u><span style="background-color: #A0FFA0">s</span></u></code>.&nbsp; <code>typedef directory_options symlink_option</code> 
+  provided. Constant names and values have changed; synonyms provided.</li>
+  <li><code>enum class copy_option</code> name changed to <code>enum class 
+  copy_option<u><span style="background-color: #A0FFA0">s</span></u></code>. <code>typedef 
+  copy_options copy_option</code> provided. Constant names and values have changed; 
+  synonyms provided.</li>
+  <li>Some class <code>recursive_directory_iterator</code> member function names 
+  have changed; synonyms provided. </li>
+  <li><code>BOOST_NOEXCEPT</code> used for all functions the DTS specifies as
+  <code>noexcept</code>.</li>
+  <li>Unless macro <code>BOOST_FILESYSTEM_USE_TIME_T</code> is defined, the time 
+  type used by several functions has changed from <code>std::time_t</code> to
+  <code>boost::chrono::system_clock::time_point</code>. A typedef <code>
+  file_time_type</code> has been added.</li>
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->23 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21124" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21126" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
