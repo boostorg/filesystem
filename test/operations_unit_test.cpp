@@ -71,6 +71,16 @@ namespace
   {
     cout << "file_status test..." << endl;
 
+    file_status default_ctor;
+    BOOST_TEST(default_ctor.type() == file_type::none);
+    BOOST_TEST(default_ctor.permissions() == perms::unknown);
+    file_status one_arg_ctor(file_type::regular);
+    BOOST_TEST(one_arg_ctor.type() == file_type::regular);
+    BOOST_TEST(one_arg_ctor.permissions() ==  perms::unknown);
+    file_status two_arg_ctor(file_type::directory, perms::sticky_bit);
+    BOOST_TEST(two_arg_ctor.type() == file_type::directory);
+    BOOST_TEST(two_arg_ctor.permissions() ==  perms::sticky_bit);
+     
     file_status s = status(".");
     int v = static_cast<int_least32_t>(s.permissions());
     cout << "  status(\".\") permissions are "

@@ -215,7 +215,7 @@ namespace boost
 
   BOOST_SCOPED_ENUM_DECLARE_BEGIN(perms)
   {
-    none = 0,       // file_not_found is none rather than perms_not_known
+    none = 0,       // file_not_found is none rather than unknown
 
     // POSIX equivalent macros given in comments.
     // Values are from POSIX and are given in octal per the POSIX standard.
@@ -252,7 +252,7 @@ namespace boost
 
     mask = 07777,           // all | set_uid | set_gid | sticky_bit
 
-    perms_not_known = 0xFFFF, // present when directory_entry cache not loaded
+    unknown = 0xFFFF,       // present when directory_entry cache not loaded
 
     // options for permissions() function
 
@@ -272,8 +272,7 @@ namespace boost
     all_all = all,
     set_uid_on_exe = set_uid,
     set_gid_on_exe = set_gid,
-
-
+    perms_not_known = unknown,
 # endif
  }
   BOOST_SCOPED_ENUM_DECLARE_END(perms)
@@ -287,19 +286,24 @@ namespace boost
   class BOOST_FILESYSTEM_DECL file_status
   {
   public:
-    file_status() BOOST_NOEXCEPT
-	  : m_type(file_type::none), m_perms(perms::perms_not_known) {}
-    explicit file_status(file_type tp, perms prms = perms::perms_not_known) BOOST_NOEXCEPT
-	  : m_type(tp), m_perms(prms) {}
+    explicit file_status(file_type ft = file_type::none,
+      perms prms = perms::unknown) BOOST_NOEXCEPT
+      : m_type(ft), m_perms(prms) {}
 #ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    file_status(const file_status&) = default;
-    file_status& operator=(const file_status&) = default;
+    file_status(const file_status&) BOOST_NOEXCEPT = default;
+    file_status& operator=(const file_status&) BOOST_NOEXCEPT = default;
+# if !defined(BOOST_MSVC) || _MSC_FULL_VER >= 190021730 
+    file_status(file_status&&) BOOST_NOEXCEPT = default;
+    file_status& operator=(const file_status&&) BOOST_NOEXCEPT = default;
+# endif
 #endif
    ~file_status() {}
 
     // observers
-    BOOST_SCOPED_ENUM(file_type)  type() const BOOST_NOEXCEPT { return m_type; }
-    perms      permissions() const BOOST_NOEXCEPT { return m_perms; } 
+    BOOST_SCOPED_ENUM(file_type)
+               type() const BOOST_NOEXCEPT        { return m_type; }
+    BOOST_SCOPED_ENUM(perms)
+               permissions() const BOOST_NOEXCEPT { return m_perms; } 
 
     // modifiers
     void       type(file_type v) BOOST_NOEXCEPT   { m_type = v; }
@@ -320,12 +324,13 @@ namespace boost
   inline bool type_present(file_status f) BOOST_NOEXCEPT 
                                           { return f.type() != file_type::none; }
   inline bool permissions_present(file_status f) BOOST_NOEXCEPT 
-                                          { return f.permissions() != perms::perms_not_known; }
+                                          { return f.permissions() != perms::unknown; }
   inline bool status_known(file_status f) BOOST_NOEXCEPT 
-                                          { return type_present(f) && permissions_present(f); }
+                                          { return type_present(f)
+                                              && permissions_present(f); }
   inline bool exists(file_status f) BOOST_NOEXCEPT       
                                           { return f.type() != file_type::none
-                                                && f.type() != file_type::not_found; }
+                                              && f.type() != file_type::not_found; }
   inline bool is_regular_file(file_status f) BOOST_NOEXCEPT
                                           { return f.type() == file_type::regular; }
   inline bool is_directory(file_status f) BOOST_NOEXCEPT
@@ -334,7 +339,7 @@ namespace boost
                                           { return f.type() == file_type::symlink; }
   inline bool is_other(file_status f) BOOST_NOEXCEPT
                                           { return exists(f) && !is_regular_file(f)
-                                                && !is_directory(f) && !is_symlink(f); }
+                                              && !is_directory(f) && !is_symlink(f); }
    inline bool is_block_file(file_status f) BOOST_NOEXCEPT
                                           { return f.type() == file_type::block; }
    inline bool is_character_file(file_status f) BOOST_NOEXCEPT
