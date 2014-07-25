@@ -119,6 +119,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recurse_dir_iter_test", "re
 		{FFD738F7-96F0-445C-81EA-551665EF53D1} = {FFD738F7-96F0-445C-81EA-551665EF53D1}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "odr_test", "odr_test\odr_test.vcxproj", "{1F1C209D-105B-4C8A-8DFC-ABCC4D9A0014}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -245,6 +247,10 @@ Global
 		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Debug|Win32.Build.0 = Debug|Win32
 		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Release|Win32.ActiveCfg = Release|Win32
 		{C6594EC2-1BDA-41A1-B2C0-7FB8AE713CF8}.Release|Win32.Build.0 = Release|Win32
+		{1F1C209D-105B-4C8A-8DFC-ABCC4D9A0014}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1F1C209D-105B-4C8A-8DFC-ABCC4D9A0014}.Debug|Win32.Build.0 = Debug|Win32
+		{1F1C209D-105B-4C8A-8DFC-ABCC4D9A0014}.Release|Win32.ActiveCfg = Release|Win32
+		{1F1C209D-105B-4C8A-8DFC-ABCC4D9A0014}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
