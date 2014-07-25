@@ -1546,9 +1546,9 @@ namespace
 
 #ifdef BOOST_WINDOWS_API
 
-    //  On Windows, telling if a filesystem entry is a symlink, rather than some other
-    //  kind of reparse point such as a junction, requires some truely baroque code.
-    //  See ticket #4663, filesystem objects falsely identified as symlinks.
+    //  On Windows, telling if a filesystem entry is a symlink (or junction which is
+    //  treated as a symlink), rather than some other kind of reparse point, requires some
+    //  baroque code. See ticket #4663, filesystem objects falsely identified as symlinks.
     //  This test checks two directory entries created by Windows itself to verify
     //  is_symlink() works correctly. Try "dir /A %HOMEPATH%\.." from the command line to
     //  verify this test is valid on your version of Windows. It only works on Vista and
@@ -1560,8 +1560,8 @@ namespace
     BOOST_TEST(fs::exists(users));
     BOOST_TEST(fs::exists(users/"All Users"));
     BOOST_TEST(fs::exists(users/"Default User"));
-    BOOST_TEST(fs::is_symlink(users/"All Users"));       // dir /A reports <SYMLINKD>
-    BOOST_TEST(!fs::is_symlink(users/"Default User"));   // dir /A reports <JUNCTION>                  <JUNCTION>
+    BOOST_TEST(fs::is_symlink(users/"All Users"));      // dir /A reports <SYMLINKD>
+    BOOST_TEST(fs::is_symlink(users/"Default User"));   // dir /A reports <JUNCTION>
 
 #endif
   }
@@ -1687,7 +1687,7 @@ namespace
 
       // Issue 9016 asked that NTFS directory junctions be recognized as directories.
       // That is equivalent to recognizing them as symlinks, and then the normal symlink
-      // mechanism will take care of recognizing them as directories.
+      // mechanism takes care of recognizing them as directories.
       //
       // Directory junctions are very similar to symlinks, but have some performance
       // and other advantages over symlinks. They can be created from the command line
@@ -1697,14 +1697,26 @@ namespace
       {
         cout << "  directory junction tests..." << endl;
         BOOST_TEST(fs::exists(dir));
-        BOOST_TEST(fs::exists(dir / "d1f1"));
-
+        BOOST_TEST(fs::exists(dir / "d1/d1f1"));
         fs::path junc(dir / "junc");
-        std::string cmd = "pushd ";
-        cmd += dir.string();
-        std::system(cmd.c_str());
+        if (fs::exists(junc))
+          fs::remove(junc);
+        fs::path new_junc(dir / "new-junc");
+        if (fs::exists(new_junc))
+          fs::remove(new_junc);
+
+        //cout << "    dir is " << dir << endl;
+        //cout << "    junc is " << junc << endl;
+        //cout << "    new_junc is " << new_junc << endl;
+        //cout << "    current_path() is " << fs::current_path() << endl;
+
+        fs::path cur_path(fs::current_path());
+        fs::current_path(dir);
+        //cout << "    current_path() is " << fs::current_path() << endl;
         std::system("mklink /j junc d1");
-        std::system("popd");
+        //std::system("dir");
+        fs::current_path(cur_path);
+        //cout << "    current_path() is " << fs::current_path() << endl;
 
         BOOST_TEST(fs::exists(junc));
         BOOST_TEST(fs::is_symlink(junc));
@@ -1717,12 +1729,12 @@ namespace
         for (fs::directory_iterator itr(junc);
           itr != fs::directory_iterator(); ++itr)
         {
-          cout << itr->path() << endl;
+          //cout << itr->path() << endl;
           ++count;
         }
+        cout << "    iteration count is " << count << endl;
         BOOST_TEST(count > 0);
 
-        fs::path new_junc(dir / "new-junc");
         fs::rename(junc, new_junc);
         BOOST_TEST(!fs::exists(junc));
         BOOST_TEST(fs::exists(new_junc));
@@ -1736,7 +1748,7 @@ namespace
         BOOST_TEST(!fs::exists(new_junc / "d1f1"));
         BOOST_TEST(!fs::exists(new_junc));
         BOOST_TEST(fs::exists(dir));
-        BOOST_TEST(fs::exists(dir / "d1f1"));
+        BOOST_TEST(fs::exists(dir / "d1/d1f1"));
       }
 
     } // Windows
