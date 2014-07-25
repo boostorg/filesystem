@@ -1,6 +1,6 @@
 //  operations.cpp  --------------------------------------------------------------------//
 
-//  Copyright 2002-2009 Beman Dawes
+//  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
 
 //  Distributed under the Boost Software License, Version 1.0.
@@ -53,7 +53,6 @@
 #endif
 #include <cerrno>
 
-#define BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 #ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 # include <iostream>
 #endif
