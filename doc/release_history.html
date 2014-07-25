@@ -36,6 +36,19 @@
   </tr>
 </table>
 
+<h2>1.56.1</h2>
+<ul>
+  <li>The Windows implementation now treats NTFS directory junctions (also known 
+  as junctions, also known as mount points) as symlinks. This has the effect of 
+  treating directory junctions as directories, and thus supporting all 
+  operations suitable for directories. This resolves
+  <a href="https://svn.boost.org/trac/boost/ticket/9016">#9016</a>. Directory 
+  junctions are very similar to symlinks, but may have performance or other 
+  advantages in some situations. They can be created from the command line with 
+  &quot;<code>mklink /j link target</code>&quot;. There is no plan for Boost.Filesystem to 
+  be able to create them directly other than by calling <code>std::system()</code>.</li>
+</ul>
+
 <h2>1.56.0</h2>
 <ul>
   <li>Reorganize <code>recursive_directory_iterator::increment</code>, adding an 
@@ -225,7 +238,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->22 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21122" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->25 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21128" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

@@ -1684,6 +1684,61 @@ namespace
         ==  "c:/foo");
       BOOST_TEST(fs::system_complete(fs::path("//share")).generic_string()
         ==  "//share");
+
+      // Issue 9016 asked that NTFS directory junctions be recognized as directories.
+      // That is equivalent to recognizing them as symlinks, and then the normal symlink
+      // mechanism will take care of recognizing them as directories.
+      //
+      // Directory junctions are very similar to symlinks, but have some performance
+      // and other advantages over symlinks. They can be created from the command line
+      // with "mklink /j junction-name target-path".
+
+      if (create_symlink_ok)  // only if symlinks supported
+      {
+        cout << "  directory junction tests..." << endl;
+        BOOST_TEST(fs::exists(dir));
+        BOOST_TEST(fs::exists(dir / "d1f1"));
+
+        fs::path junc(dir / "junc");
+        std::string cmd = "pushd ";
+        cmd += dir.string();
+        std::system(cmd.c_str());
+        std::system("mklink /j junc d1");
+        std::system("popd");
+
+        BOOST_TEST(fs::exists(junc));
+        BOOST_TEST(fs::is_symlink(junc));
+        BOOST_TEST(fs::is_directory(junc));
+        BOOST_TEST(!fs::is_regular_file(junc));
+        BOOST_TEST(fs::exists(junc / "d1f1"));
+        BOOST_TEST(fs::is_regular_file(junc / "d1f1"));
+
+        int count = 0;
+        for (fs::directory_iterator itr(junc);
+          itr != fs::directory_iterator(); ++itr)
+        {
+          cout << itr->path() << endl;
+          ++count;
+        }
+        BOOST_TEST(count > 0);
+
+        fs::path new_junc(dir / "new-junc");
+        fs::rename(junc, new_junc);
+        BOOST_TEST(!fs::exists(junc));
+        BOOST_TEST(fs::exists(new_junc));
+        BOOST_TEST(fs::is_symlink(new_junc));
+        BOOST_TEST(fs::is_directory(new_junc));
+        BOOST_TEST(!fs::is_regular_file(new_junc));
+        BOOST_TEST(fs::exists(new_junc / "d1f1"));
+        BOOST_TEST(fs::is_regular_file(new_junc / "d1f1"));
+
+        fs::remove(new_junc);
+        BOOST_TEST(!fs::exists(new_junc / "d1f1"));
+        BOOST_TEST(!fs::exists(new_junc));
+        BOOST_TEST(fs::exists(dir));
+        BOOST_TEST(fs::exists(dir / "d1f1"));
+      }
+
     } // Windows
 
     else if (platform == "POSIX")
