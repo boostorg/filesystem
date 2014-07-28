@@ -114,6 +114,7 @@ path unique_path(const path& model, system::error_code* ec)
   std::wstring s (model.wstring());  // std::string ng for MBCS encoded POSIX
   const wchar_t hex[] = L"0123456789abcdef";
   char ran[] = "123456789abcdef";  // init to avoid clang static analyzer message
+                                   // see ticket #8954
   assert(sizeof(ran) == 16);
   const int max_nibbles = 2 * sizeof(ran);   // 4-bits per nibble
 
