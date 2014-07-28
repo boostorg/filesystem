@@ -351,6 +351,8 @@ int cpp_main(int, char*[])
 
   cout << unique_path() << endl;
   cout << unique_path("foo-%%%%%-%%%%%-bar") << endl;
-  
+  cout << unique_path("foo-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-%%%%-bar") << endl;
+  cout << unique_path("foo-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-%%%%%-bar") << endl;
+
   return ::boost::report_errors();
 }
