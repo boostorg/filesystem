@@ -115,7 +115,7 @@ namespace
 
   unsigned short language_id;  // 0 except for Windows
 
-  const fs::path temp_dir(fs::unique_path("operations-test-%%%%-%%%%-%%%%-%%%%"));
+  const fs::path temp_dir(fs::unique_path("op-test-%%%%-%%%%"));
 
   void create_file(const fs::path & ph, const std::string & contents = std::string())
   {
