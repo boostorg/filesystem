@@ -21,6 +21,8 @@
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/decay.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/utility/string_ref_fwd.hpp>
+#include <boost/container/container_fwd.hpp>
 #include <cwchar>  // for mbstate_t
 #include <string>
 #include <vector>
@@ -67,6 +69,14 @@ namespace path_traits {
   template<> struct is_pathable<std::list<char> >       { static const bool value = true; };
   template<> struct is_pathable<std::list<wchar_t> >    { static const bool value = true; };
   template<> struct is_pathable<directory_entry>        { static const bool value = true; };
+  template<> struct is_pathable<boost::container::string>           { static const bool value = true; };
+  template<> struct is_pathable<boost::container::wstring>          { static const bool value = true; };
+  template<> struct is_pathable<boost::container::vector<char> >    { static const bool value = true; };
+  template<> struct is_pathable<boost::container::vector<wchar_t> > { static const bool value = true; };
+  template<> struct is_pathable<boost::container::list<char> >      { static const bool value = true; };
+  template<> struct is_pathable<boost::container::list<wchar_t> >   { static const bool value = true; };
+  template<> struct is_pathable<boost::string_ref>                  { static const bool value = true; };
+  template<> struct is_pathable<boost::wstring_ref>                 { static const bool value = true; };
 
   //  Pathable empty
 
