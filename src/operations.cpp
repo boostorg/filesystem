@@ -19,7 +19,7 @@
 
 //  operations.cpp  --------------------------------------------------------------------//
 
-//  Copyright 2002-2009 Beman Dawes
+//  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
 
 //  Distributed under the Boost Software License, Version 1.0.
@@ -613,9 +613,18 @@ namespace
     BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(),
       MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
     if (!result) return false;
- 
-    return reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())
-      ->ReparseTag == IO_REPARSE_TAG_SYMLINK;
+
+    return reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
+        == IO_REPARSE_TAG_SYMLINK
+        // Issue 9016 asked that NTFS directory junctions be recognized as directories.
+        // That is equivalent to recognizing them as symlinks, and then the normal symlink
+        // mechanism will take care of recognizing them as directories.
+        //
+        // Directory junctions are very similar to symlinks, but have some performance
+        // and other advantages over symlinks. They can be created from the command line
+        // with "mklink /j junction-name target-path".
+      || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
+        == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
   }
 
   inline std::size_t get_full_path_name(
