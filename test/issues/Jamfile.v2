@@ -12,9 +12,17 @@ project
       <library>/boost/filesystem//boost_filesystem
       <library>/boost/system//boost_system
       <toolset>msvc:<asynch-exceptions>on
+      <link>shared
       <link>static
     ;
     
-exe issue5403 : recurse_dir_iter_5403.cpp ;
+# exe issue5403 : recurse_dir_iter_5403.cpp ;
+exe issue9054 : 9054_static_const_codecvt_segfault_pre_main.cpp :  :  : <link>static ;
 
-install bin : issue5403 ;    #invoke "b2", not "b2 install"
+   test-suite "filesystem-issues" :
+       [ run 9054_static_const_codecvt_segfault_pre_main.cpp 
+           :  :  : <link>shared : 9054_shared ]                  
+       [ run 9054_static_const_codecvt_segfault_pre_main.cpp
+           :  :  : <link>static : 9054_static ]                  
+       ;
+       
