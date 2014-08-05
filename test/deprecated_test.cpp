@@ -164,8 +164,6 @@ namespace
     fs::initial_path<fs::path>();
     fs::initial_path<fs::wpath>();
 
-    p = fs::initial_path();
-
     p.file_string();
     p.directory_string();
   }
@@ -251,25 +249,6 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
   BOOST_TEST(fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex");  
   // see the rationale in html docs for explanation why this works
   BOOST_TEST(fs::change_extension("", ".png").string() == ".png");
-
-// recursive_directory_iterator tests --------------------------------------//
-
-  fs::recursive_directory_iterator iter(".");
-  BOOST_TEST(iter.no_push_request() != iter.recursion_pending());
-  BOOST_TEST(iter.no_push_pending() != iter.recursion_pending());
-  iter.no_push();
-
-// symlink_option
-
-  BOOST_TEST(fs::directory_options::none == fs::symlink_option::none);
-  BOOST_TEST(fs::directory_options::follow_directory_symlink
-    == fs::symlink_option::recurse);
-
-// copy_option
-
-  BOOST_TEST(fs::copy_options::none == fs::copy_option::none);
-  BOOST_TEST(fs::copy_options::overwrite_if_exists
-    == fs::copy_option::overwrite_if_exists);
 
   return ::boost::report_errors();
 }

@@ -100,8 +100,8 @@ int cpp_main(int argc, char* argv[])
 #   error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 # endif
   cout << "API is " << platform << endl;
-  cout << "initial path is " << fs::current_path() << endl;
-  fs::path ip = fs::current_path();
+  cout << "initial_path() is " << fs::initial_path() << endl;
+  fs::path ip = fs::initial_path();
 
   for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
   {

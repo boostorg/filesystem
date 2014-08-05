@@ -198,14 +198,14 @@ namespace filesystem
 
 # ifdef BOOST_WINDOWS_API
 
-  std::string path::generic_string(const codecvt_type& cvt) const
+  const std::string path::generic_string(const codecvt_type& cvt) const
   { 
     path tmp(*this);
     std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
     return tmp.string(cvt);
   }
 
-  std::wstring path::generic_wstring() const
+  const std::wstring path::generic_wstring() const
   { 
     path tmp(*this);
     std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');

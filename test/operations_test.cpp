@@ -26,7 +26,6 @@
 
 #include <boost/cerrno.hpp>
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/cstdint.hpp>
 
 #ifndef BOOST_LIGHTWEIGHT_MAIN
 #  include <boost/test/prg_exec_monitor.hpp>
@@ -38,7 +37,6 @@ namespace fs = boost::filesystem;
 using boost::system::error_code;
 using boost::system::system_category;
 using boost::system::system_error;
-using boost::int_least64_t;
 
 #include <fstream>
 #include <iostream>
@@ -97,7 +95,6 @@ inline int unsetenv(const char* name)
 
 namespace
 {
-  fs::path initial_path = fs::current_path();
   typedef int errno_t;
   std::string platform(BOOST_PLATFORM);
   bool report_throws = false;
@@ -119,20 +116,6 @@ namespace
   unsigned short language_id;  // 0 except for Windows
 
   const fs::path temp_dir(fs::unique_path("op-test-%%%%-%%%%"));
-
-  std::time_t to_time_t(fs::file_time_type ft)
-# ifdef BOOST_FILESYSTEM_USE_TIME_T
-    {return ft;}
-# else
-    {return boost::chrono::system_clock::to_time_t(ft);}
-# endif
-
-  fs::file_time_type from_time_t(std::time_t ft)
-# ifdef BOOST_FILESYSTEM_USE_TIME_T
-    {return ft;}
-# else
-    {return boost::chrono::system_clock::from_time_t(ft);}
-# endif
 
   void create_file(const fs::path & ph, const std::string & contents = std::string())
   {
@@ -180,14 +163,6 @@ namespace
       return true;
     }
     return false;
-  }
-
-  void delay(std::time_t amt)
-  {
-    std::time_t start = std::time(0);
-    cout << "  start delay" << endl;
-    while (start + amt >= std::time(0)) {}
-    cout << "  end delay" << endl;
   }
 
   boost::system::error_category* poison_category_aux() { return 0; }
@@ -256,17 +231,17 @@ namespace
 
   std::ostream& operator<<(std::ostream& os, const fs::file_status& s)
   {
-    if (s.type() == fs::file_type::none)        { os << "file_type::none"; }
-    else if (s.type() == fs::file_type::not_found) { os << "file_type::not_found"; }
-    else if (s.type() == fs::file_type::regular)   { os << "file_type::regular"; }
-    else if (s.type() == fs::file_type::directory) { os << "file_type::directory"; }
-    else if (s.type() == fs::file_type::symlink)   { os << "file_type::symlink"; }
-    else if (s.type() == fs::file_type::block)     { os << "file_type::block"; }
-    else if (s.type() == fs::file_type::character) { os << "file_type::character"; }
-    else if (s.type() == fs::file_type::fifo)      { os << "file_type::fifo"; }
-    else if (s.type() == fs::file_type::socket)    { os << "file_type::socket"; }
-    else if (s.type() == fs::file_type::reparse_point)   { os << "file_type::reparse_point"; }
-    else if (s.type() == fs::file_type::unknown)   { os << "file_type::unknown"; }
+    if (s.type() == fs::status_error)        { os << "status_error"; }
+    else if (s.type() == fs::file_not_found) { os << "file_not_found"; }
+    else if (s.type() == fs::regular_file)   { os << "regular_file"; }
+    else if (s.type() == fs::directory_file) { os << "directory_file"; }
+    else if (s.type() == fs::symlink_file)   { os << "symlink_file"; }
+    else if (s.type() == fs::block_file)     { os << "block_file"; }
+    else if (s.type() == fs::character_file) { os << "character_file"; }
+    else if (s.type() == fs::fifo_file)      { os << "fifo_file"; }
+    else if (s.type() == fs::socket_file)    { os << "socket_file"; }
+    else if (s.type() == fs::reparse_file)   { os << "reparse_file"; }
+    else if (s.type() == fs::type_unknown)   { os << "type_unknown"; }
     else                                     { os << "_detail_directory_symlink"; }
     return os;
   }
@@ -274,11 +249,11 @@ namespace
   void dump_tree(const fs::path & root)
   {
     cout << "dumping tree rooted at " << root << endl;
-    for (fs::recursive_directory_iterator it (root, fs::directory_options::follow_directory_symlink);
+    for (fs::recursive_directory_iterator it (root, fs::symlink_option::recurse);
          it != fs::recursive_directory_iterator();
          ++it)
     {
-      for (int i = 0; i <= it.depth(); ++i)
+      for (int i = 0; i <= it.level(); ++i)
         cout << "  ";
 
       cout << it->path();
@@ -627,16 +602,11 @@ namespace
     cout << "    walk_tree" << endl;
     error_code ec;
     int d1f1_count = 0;
-//    for (fs::recursive_directory_iterator it (dir, fs::directory_options::none);
-      for (fs::recursive_directory_iterator it (dir,
-      recursive ? fs::directory_options::follow_directory_symlink
-                : fs::directory_options::none);
+    for (fs::recursive_directory_iterator it (dir,
+      recursive ? fs::symlink_option::recurse : fs::symlink_option::no_recurse);
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
-      BOOST_TEST(it.options() == 
-        (recursive ? fs::directory_options::follow_directory_symlink
-                  : fs::directory_options::none));
       cout << "      " << it->path() << endl;
       if (it->path().filename() == "d1f1")
         ++d1f1_count;
@@ -655,7 +625,7 @@ namespace
     cout << "  with error_code argument" << endl;
     boost::system::error_code ec;
     int d1f1_count = 0;
-    for (fs::recursive_directory_iterator it (dir);
+    for (fs::recursive_directory_iterator it (dir, fs::symlink_option::no_recurse);
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
@@ -714,7 +684,7 @@ namespace
       }
       else if (it->path().filename() == "dangling_symlink")
       {
-        BOOST_TEST(it->status().type() == fs::file_type::not_found);
+        BOOST_TEST(it->status().type() == fs::file_not_found);
         BOOST_TEST(fs::is_symlink(it->symlink_status()));
       }
       else if (it->path().filename() == "d1_symlink")
@@ -724,7 +694,7 @@ namespace
       }
       else if (it->path().filename() == "dangling_directory_symlink")
       {
-        BOOST_TEST(it->status().type() == fs::file_type::not_found);
+        BOOST_TEST(it->status().type() == fs::file_not_found);
         BOOST_TEST(fs::is_symlink(it->symlink_status()));
       }
       //else
@@ -865,47 +835,47 @@ namespace
 
     if (platform == "POSIX")
     {
-      cout << "  fs::status(p).permissions() "
-        << std::oct << static_cast<int_least32_t>(fs::status(p).permissions()) << std::dec << endl;
-      BOOST_TEST((static_cast<int_least32_t>(fs::status(p).permissions()) & 0600) == 0600);  // 0644, 0664 sometimes returned
+      cout << "  fs::status(p).permissions() " << std::oct << fs::status(p).permissions()
+        << std::dec << endl;
+      BOOST_TEST((fs::status(p).permissions() & 0600) == 0600);  // 0644, 0664 sometimes returned
 
-      fs::permissions(p, fs::perms::owner_all);
-      BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
+      fs::permissions(p, fs::owner_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
 
-      fs::permissions(p, fs::perms::add_perms | fs::perms::group_all);
-      BOOST_TEST(fs::status(p).permissions() == (fs::perms::owner_all | fs::perms::group_all));
+      fs::permissions(p, fs::add_perms | fs::group_all);
+      BOOST_TEST(fs::status(p).permissions() == (fs::owner_all | fs::group_all));
 
-      fs::permissions(p, fs::perms::remove_perms | fs::perms::group_all);
-      BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
+      fs::permissions(p, fs::remove_perms | fs::group_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
 
       // some POSIX platforms cache permissions during directory iteration, some don't
       // so test that iteration finds the correct permissions
       for (fs::directory_iterator itr(dir); itr != fs::directory_iterator(); ++itr)
         if (itr->path().filename() == fs::path("permissions.txt"))
-          BOOST_TEST(itr->status().permissions() == fs::perms::owner_all);
+          BOOST_TEST(itr->status().permissions() == fs::owner_all);
 
       if (create_symlink_ok)  // only if symlinks supported
       {
-        BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
+        BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
         fs::path p2(dir / "permissions-symlink.txt");
         fs::create_symlink(p, p2);
         cout << std::oct; 
-        cout << "   status(p).permissions() "  << static_cast<int_least32_t>(fs::status(p).permissions()) << endl;
-        cout << "  status(p2).permissions() "  << static_cast<int_least32_t>(fs::status(p).permissions()) << endl;
-        fs::permissions(p2, fs::perms::add_perms | fs::perms::others_read);
-        cout << "   status(p).permissions(): " << static_cast<int_least32_t>(fs::status(p).permissions()) << endl;
-        cout << "  status(p2).permissions(): " << static_cast<int_least32_t>(fs::status(p2).permissions()) << endl;
+        cout << "   status(p).permissions() "  << fs::status(p).permissions() << endl;
+        cout << "  status(p2).permissions() "  << fs::status(p).permissions() << endl;
+        fs::permissions(p2, fs::add_perms | fs::others_read);
+        cout << "   status(p).permissions(): " << fs::status(p).permissions() << endl; 
+        cout << "  status(p2).permissions(): " << fs::status(p2).permissions() << endl;
         cout << std::dec;
       }
 
     }
     else // Windows
     {
-      BOOST_TEST(static_cast<int_least32_t>(fs::status(p).permissions()) == 0666);
-      fs::permissions(p, fs::perms::remove_perms | fs::perms::group_write);
-      BOOST_TEST(static_cast<int_least32_t>(fs::status(p).permissions()) == 0444);
-      fs::permissions(p, fs::perms::add_perms | fs::perms::group_write);
-      BOOST_TEST(static_cast<int_least32_t>(fs::status(p).permissions()) == 0666);
+      BOOST_TEST(fs::status(p).permissions() == 0666);
+      fs::permissions(p, fs::remove_perms | fs::group_write);
+      BOOST_TEST(fs::status(p).permissions() == 0444);
+      fs::permissions(p, fs::add_perms | fs::group_write);
+      BOOST_TEST(fs::status(p).permissions() == 0666);
     }
   }
   
@@ -1180,7 +1150,7 @@ namespace
 
     fs::file_status s = fs::status(p);
     BOOST_TEST(!fs::exists(s));
-    BOOST_TEST(s.type() == fs::file_type::not_found);
+    BOOST_TEST_EQ(s.type(), fs::file_not_found);
     BOOST_TEST(fs::type_present(s));
     BOOST_TEST(!fs::is_regular_file(s));
     BOOST_TEST(!fs::is_directory(s));
@@ -1214,7 +1184,7 @@ namespace
     BOOST_TEST(ec.category() == system_category()); 
 
     BOOST_TEST(!fs::exists(s));
-    BOOST_TEST(s.type() == fs::file_type::not_found);
+    BOOST_TEST_EQ(s.type(), fs::file_not_found);
     BOOST_TEST(fs::type_present(s));
     BOOST_TEST(!fs::is_regular_file(s));
     BOOST_TEST(!fs::is_directory(s));
@@ -1459,7 +1429,7 @@ namespace
     BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0"), dir / "f0");
 
     // treat parent of root as itself on both POSIX and Windows
-    fs::path init(initial_path);
+    fs::path init(fs::initial_path());
     fs::path root(init.root_path());
     fs::path::const_iterator it(init.begin());
     fs::path first;   // relative first non-root directory
@@ -1495,7 +1465,7 @@ namespace
     BOOST_TEST_EQ(fs::canonical(dir / "sym-d1/f2"), d1 / "f2");
     BOOST_TEST_EQ(fs::canonical(relative_dir / "sym-d1/f2"), d1 / "f2");
   }
- 
+
  //  copy_file_tests  ------------------------------------------------------------------//
 
   void copy_file_tests(const fs::path& f1, const fs::path& d1)
@@ -1506,125 +1476,32 @@ namespace
     fs::remove(d1 / "f2");  // remove possible residue from prior testing
     BOOST_TEST(fs::exists(d1));
     BOOST_TEST(!fs::exists(d1 / "f2"));
-//    cout << " copy_file " << f1 << " to " << d1 / "f2" << endl;
-    BOOST_TEST(fs::copy_file(f1, d1 / "f2"));
-//    cout << " copy_file complete" << endl;
+    cout << " copy " << f1 << " to " << d1 / "f2" << endl;
+    fs::copy_file(f1, d1 / "f2");
+    cout << " copy complete" << endl;
     BOOST_TEST(fs::exists(f1));
     BOOST_TEST(fs::exists(d1 / "f2"));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 7U);
     BOOST_TEST(!fs::is_directory(d1 / "f2"));
     verify_file(d1 / "f2", "file-f1");
 
-    // default copy_options::none
     bool copy_ex_ok = false;
-    try
-    {
-      BOOST_TEST(!fs::copy_file(f1, d1 / "f2"));
-    }
-    catch (const fs::filesystem_error&) { copy_ex_ok = true; }
+    try { fs::copy_file(f1, d1 / "f2"); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
 
-    // copy_options::none
     copy_ex_ok = false;
-    try
-    { 
-      BOOST_TEST(!fs::copy_file(f1, d1 / "f2", fs::copy_options::none));
-    }
-    catch (const fs::filesystem_error&) { copy_ex_ok = true; }
+    try { fs::copy_file(f1, d1 / "f2", fs::copy_option::fail_if_exists); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
-   
+
     create_file(d1 / "f2", "1234567890");
     BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 10U);
-
-    // copy_options::skip_existing and exists(to)
-    BOOST_TEST(!fs::copy_file(f1, d1 / "f2", fs::copy_options::skip_existing));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 10U);
-
-    // copy_options::skip_existing and !exists(to)
-    BOOST_TEST(!fs::exists(d1 / "f3"));
-    BOOST_TEST(fs::copy_file(f1, d1 / "f3", fs::copy_options::skip_existing));
-    BOOST_TEST(fs::exists(d1 / "f3"));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f3"), 7U);
-
-    // copy_options::overwrite_existing and exists(to)
     copy_ex_ok = true;
-    try
-    {
-      BOOST_TEST(fs::copy_file(f1, d1 / "f2", fs::copy_options::overwrite_existing));
-    }
-    catch (const fs::filesystem_error&) { copy_ex_ok = false; }
+    try { fs::copy_file(f1, d1 / "f2", fs::copy_option::overwrite_if_exists); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
     BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 7U);
     verify_file(d1 / "f2", "file-f1");
-
-    // copy_options::overwrite_existing and !exists(to)
-    BOOST_TEST(!fs::exists(d1 / "f4"));
-    BOOST_TEST(fs::copy_file(f1, d1 / "f4", fs::copy_options::overwrite_existing));
-    BOOST_TEST(fs::exists(d1 / "f4"));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f4"), 7U);
-
-    // copy_options::update_existing and !exists(to)
-    BOOST_TEST(!fs::exists(d1 / "f5"));
-    BOOST_TEST(fs::copy_file(f1, d1 / "f5", fs::copy_options::update_existing));
-    BOOST_TEST(fs::exists(d1 / "f5"));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f5"), 7U);
-
-    // copy_options::update_existing and exists(to) and from is older
-    BOOST_TEST(!fs::copy_file(f1, d1 / "f5", fs::copy_options::update_existing));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f5"), 7U);
-
-    // copy_options::update_existing and exists(to) and from is newer
-    delay(1);
-    create_file(d1 / "f5a", "12345");
-    BOOST_TEST(fs::copy_file(d1 / "f5a", d1 / "f5", fs::copy_options::update_existing));
-    BOOST_TEST_EQ(fs::file_size(d1 / "f5"), 5U);
-  }
-
- //  copy_tests  ------------------------------------------------------------------//
-
-  void copy_tests()
-  {
-    cout << "copy_tests..." << endl;
-
-    //int regular_file_count = 0;
-    //int directory_count = 0;
-    //int logic_error_count = 0;
-    //for (fs::recursive_directory_iterator it (dir);
-    //     it != fs::recursive_directory_iterator();
-    //     ++it)
-    //{
-    //  if (fs::is_regular_file(it->status()))
-    //    ++regular_file_count;
-    //  else if (fs::is_directory(it->status()))
-    //    ++directory_count;
-    //  else
-    //    ++logic_error_count;
-    //}
-    //cout << regular_file_count << " regular_file_count \n";
-    //cout << directory_count << " directory_count \n";
-    //cout << logic_error_count << " logic_error_count \n";
-
-    fs::create_directories(dir/"dir1/dir2");
-    create_file(dir/"dir1/file1", "file1");
-    create_file(dir/"dir1/file2", "file2");
-    create_file(dir/"dir1/dir2/file3", "file3");
-    BOOST_TEST(exists(dir/"dir1/file1"));
-    BOOST_TEST(exists(dir/"dir1/file2"));
-    BOOST_TEST(exists(dir/"dir1/dir2/file3"));
-
-    fs::copy(dir/"dir1", dir/"dir3");
-    BOOST_TEST(exists(dir/"dir3/file1"));
-    BOOST_TEST(exists(dir/"dir3/file2"));
-    BOOST_TEST(!exists(dir/"dir3/dir2"));
-    BOOST_TEST(!exists(dir/"dir3/dir2/file3"));
-
-    fs::copy(dir/"dir1", dir/"dir3",
-      fs::copy_options::recursive | fs::copy_options::skip_existing);
-    BOOST_TEST(exists(dir/"dir3/file1"));
-    BOOST_TEST(exists(dir/"dir3/file2"));
-    BOOST_TEST(exists(dir/"dir3/dir2"));
-    BOOST_TEST(exists(dir/"dir3/dir2/file3"));
-
   }
 
  //  symlink_status_tests  -------------------------------------------------------------//
@@ -1649,23 +1526,23 @@ namespace
     fs::create_symlink(sym_f1, symsym_f1);
 
     //  verify all cases detected as symlinks
-    BOOST_TEST(fs::symlink_status(dangling_sym, ec).type() == fs::file_type::symlink);
-    BOOST_TEST(fs::symlink_status(dangling_directory_sym, ec).type() == fs::file_type::symlink);
-    BOOST_TEST(fs::symlink_status(sym_d1, ec).type() == fs::file_type::symlink);
-    BOOST_TEST(fs::symlink_status(symsym_d1, ec).type() == fs::file_type::symlink);
-    BOOST_TEST(fs::symlink_status(sym_f1, ec).type() == fs::file_type::symlink);
-    BOOST_TEST(fs::symlink_status(symsym_f1, ec).type() == fs::file_type::symlink);
+    BOOST_TEST_EQ(fs::symlink_status(dangling_sym, ec).type(), fs::symlink_file);
+    BOOST_TEST_EQ(fs::symlink_status(dangling_directory_sym, ec).type(), fs::symlink_file);
+    BOOST_TEST_EQ(fs::symlink_status(sym_d1, ec).type(), fs::symlink_file);
+    BOOST_TEST_EQ(fs::symlink_status(symsym_d1, ec).type(), fs::symlink_file);
+    BOOST_TEST_EQ(fs::symlink_status(sym_f1, ec).type(), fs::symlink_file);
+    BOOST_TEST_EQ(fs::symlink_status(symsym_f1, ec).type(), fs::symlink_file);
 
     //  verify all cases resolve to the (possibly recursive) symlink target
-    BOOST_TEST(fs::status(dangling_sym, ec).type() == fs::file_type::not_found);
-    BOOST_TEST(fs::status(dangling_directory_sym, ec).type() == fs::file_type::not_found);
+    BOOST_TEST_EQ(fs::status(dangling_sym, ec).type(), fs::file_not_found);
+    BOOST_TEST_EQ(fs::status(dangling_directory_sym, ec).type(), fs::file_not_found);
 
-    BOOST_TEST(fs::status(sym_d1, ec).type() == fs::file_type::directory);
-    BOOST_TEST(fs::status(sym_d1 / "d1f1", ec).type() == fs::file_type::regular);
-    BOOST_TEST(fs::status(symsym_d1, ec).type() == fs::file_type::directory);
-    BOOST_TEST(fs::status(symsym_d1 / "d1f1", ec).type() == fs::file_type::regular);
-    BOOST_TEST(fs::status(sym_f1, ec).type() == fs::file_type::regular);
-    BOOST_TEST(fs::status(symsym_f1, ec).type() == fs::file_type::regular);
+    BOOST_TEST_EQ(fs::status(sym_d1, ec).type(), fs::directory_file);
+    BOOST_TEST_EQ(fs::status(sym_d1 / "d1f1", ec).type(), fs::regular_file);
+    BOOST_TEST_EQ(fs::status(symsym_d1, ec).type(), fs::directory_file);
+    BOOST_TEST_EQ(fs::status(symsym_d1 / "d1f1", ec).type(), fs::regular_file);
+    BOOST_TEST_EQ(fs::status(sym_f1, ec).type(), fs::regular_file);
+    BOOST_TEST_EQ(fs::status(symsym_f1, ec).type(), fs::regular_file);
 
 #ifdef BOOST_WINDOWS_API
 
@@ -1740,7 +1617,7 @@ namespace
     // others (NTFS) report it as UTC. The C standard does not specify
     // if time_t is local or UTC. 
 
-    std::time_t ft = to_time_t(fs::last_write_time(f1));
+    std::time_t ft = fs::last_write_time(f1);
     cout << "\n  UTC last_write_time() for a file just created is "
       << std::asctime(std::gmtime(&ft)) << endl;
 
@@ -1748,15 +1625,15 @@ namespace
     cout << "\n  Year is " << tmp->tm_year << endl;
     --tmp->tm_year;
     cout << "  Change year to " << tmp->tm_year << endl;
-    fs::last_write_time(f1, from_time_t(std::mktime(tmp)));
-    std::time_t ft2 = to_time_t(fs::last_write_time(f1));
+    fs::last_write_time(f1, std::mktime(tmp));
+    std::time_t ft2 = fs::last_write_time(f1);
     cout << "  last_write_time() for the file is now "
       << std::asctime(std::gmtime(&ft2)) << endl;
-    BOOST_TEST(ft != to_time_t(fs::last_write_time(f1)));
+    BOOST_TEST(ft != fs::last_write_time(f1));
 
     cout << "\n  Reset to current time" << endl;
-    fs::last_write_time(f1, from_time_t(ft));
-    double time_diff = std::difftime(ft, to_time_t(fs::last_write_time(f1)));
+    fs::last_write_time(f1, ft);
+    double time_diff = std::difftime(ft, fs::last_write_time(f1));
     cout 
       << "  original last_write_time() - current last_write_time() is "
       << time_diff << " seconds" << endl;
@@ -1787,20 +1664,20 @@ namespace
         && dir.string()[1] == ':'); // verify path includes drive
 
       BOOST_TEST(fs::system_complete("").empty());
-      BOOST_TEST(fs::system_complete("/") == initial_path.root_path());
+      BOOST_TEST(fs::system_complete("/") == fs::initial_path().root_path());
       BOOST_TEST(fs::system_complete("foo")
-        == initial_path / "foo");
+        == fs::initial_path() / "foo");
 
       fs::path p1(fs::system_complete("/foo"));
       BOOST_TEST_EQ(p1.string().size(), 6U);  // this failed during v3 development due to bug
       std::string s1(p1.string() );
-      std::string s2(initial_path.root_path().string()+"foo");
+      std::string s2(fs::initial_path().root_path().string()+"foo");
       BOOST_TEST_EQ(s1, s2);
 
-      BOOST_TEST(fs::system_complete(fs::path(initial_path.root_name()))
-        == initial_path);
-      BOOST_TEST(fs::system_complete(fs::path(initial_path.root_name().string()
-        + "foo")).string() == initial_path / "foo");
+      BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name()))
+        == fs::initial_path());
+      BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name().string()
+        + "foo")).string() == fs::initial_path() / "foo");
       BOOST_TEST(fs::system_complete(fs::path("c:/")).generic_string()
         == "c:/");
       BOOST_TEST(fs::system_complete(fs::path("c:/foo")).generic_string()
@@ -1880,12 +1757,12 @@ namespace
     {
       cout << "POSIX specific tests..." << endl;
       BOOST_TEST(fs::system_complete("").empty());
-      BOOST_TEST(initial_path.root_path().string() == "/");
+      BOOST_TEST(fs::initial_path().root_path().string() == "/");
       BOOST_TEST(fs::system_complete("/").string() == "/");
       BOOST_TEST(fs::system_complete("foo").string()
-        == initial_path.string()+"/foo");
+        == fs::initial_path().string()+"/foo");
       BOOST_TEST(fs::system_complete("/foo").string()
-        == initial_path.root_path().string()+"foo");
+        == fs::initial_path().root_path().string()+"foo");
     } // POSIX
   }
 
@@ -1896,12 +1773,12 @@ namespace
     cout << "initial_tests..." << endl;
 
     cout << "  current_path().string() is\n  \""
-              << fs::current_path().string()
+              << fs::initial_path().string()
               << "\"\n\n";
-    BOOST_TEST(initial_path == fs::current_path());
-    BOOST_TEST(initial_path.is_absolute());
+    BOOST_TEST(fs::initial_path() == fs::current_path());
+    BOOST_TEST(fs::initial_path().is_absolute());
     BOOST_TEST(fs::current_path().is_absolute());
-    BOOST_TEST(initial_path.string()
+    BOOST_TEST(fs::initial_path().string()
       == fs::current_path().string());
   }
 
@@ -2009,7 +1886,7 @@ namespace
       BOOST_TEST(!exists(ph));
     }
     
-    fs::path test_temp_dir = initial_path;
+    fs::path test_temp_dir = fs::initial_path();
 
 #if defined BOOST_POSIX_API
     {
@@ -2161,8 +2038,8 @@ int cpp_main(int argc, char* argv[])
 #   error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 # endif
   cout << "API is " << platform << endl;
-  cout << "initial_path is " << initial_path << endl;
-  fs::path ip = initial_path;
+  cout << "initial_path() is " << fs::initial_path() << endl;
+  fs::path ip = fs::initial_path();
 
   for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
   {
@@ -2172,7 +2049,7 @@ int cpp_main(int argc, char* argv[])
   }
   cout << endl;
 
-  dir = initial_path / temp_dir;
+  dir = fs::initial_path() / temp_dir;
 
   if (fs::exists(dir))
   {
@@ -2231,7 +2108,6 @@ int cpp_main(int argc, char* argv[])
     copy_symlink_tests(f1, d1);
     canonical_symlink_tests();
   }
-  copy_tests();
   iterator_status_tests();  // lots of cases by now, so a good time to test
 //  dump_tree(dir);
   recursive_directory_iterator_tests();
@@ -2252,23 +2128,10 @@ int cpp_main(int argc, char* argv[])
   if (cleanup)
   {
     cout << "post-test removal of " << dir << endl;
-    boost::uintmax_t removed = fs::remove_all(dir);
-    cout << "  removed " << removed << " files, including directories" << endl;
-    // The following was added just to simplify testing, but it ended up detecting
-    // a bug (failure to close an internal search handle).
-    BOOST_TEST(removed != 0);
-
-    // The following is failing itermittently with a permissions error. The error
-    // goes away if recursive_directory_iterator_tests() is not run, but directory
-    // search handles seem to be closed properly. Very perplexing. 8/8/2012.
-    //
-    //    BOOST_TEST(fs::remove_all(dir) == 0);   // removal eliminates problems
-    //
-    // The problem appears to be that the TortiseGit plug-in for Windows Explorer
-    // is the underlying cause; it seems to temporarily delay deletes. Some unrelated
-    // tests involving deletes also fail if TortiseGit (or TortoiseSvn) Windows
-    // explorer plug-ins are active. Failures disappear if Windows Explorer is closed.
-
+    BOOST_TEST(fs::remove_all(dir) != 0);
+    // above was added just to simplify testing, but it ended up detecting
+    // a bug (failure to close an internal search handle). 
+    cout << "post-test removal complete" << endl;
     BOOST_TEST(!fs::exists(dir));
   }
 

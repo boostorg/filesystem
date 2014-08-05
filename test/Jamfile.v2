@@ -8,7 +8,6 @@ project
     : requirements
       <library>/boost/filesystem//boost_filesystem
       <library>/boost/system//boost_system
-      <library>/boost/chrono//boost_chrono
       <library>/boost/test//boost_prg_exec_monitor
       <toolset>msvc:<asynch-exceptions>on
     ;

@@ -47,9 +47,9 @@ namespace
       "type_unknown"
     };
 
-  const char* file_type_c_str(BOOST_SCOPED_ENUM(file_type) t)
+  const char* file_type_c_str(enum file_type t)
   {
-    return file_type_tab[static_cast<int>(t)];
+    return file_type_tab[t];
   }
 
   void show_status(file_status s, boost::system::error_code ec)
@@ -68,7 +68,7 @@ namespace
     else
       cout << "clears ec.\n";
 
-    cout << "s.type() is " << static_cast<int>(s.type())
+    cout << "s.type() is " << s.type()
          << ", which is defined as \"" << file_type_c_str(s.type()) << "\"\n";
 
     cout << "exists(s) is " << (exists(s) ? "true" : "false") << "\n";

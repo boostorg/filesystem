@@ -34,7 +34,6 @@
 #include <boost/foreach.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/cstdint.hpp>
 
 #ifndef BOOST_LIGHTWEIGHT_MAIN
 #  include <boost/test/prg_exec_monitor.hpp>
@@ -49,7 +48,6 @@ using namespace boost::system;
 using std::cout;
 using std::endl;
 using std::string;
-using boost::int_least32_t;
 
 #define CHECK(x) check(x, __FILE__, __LINE__)
 
@@ -71,24 +69,14 @@ namespace
   {
     cout << "file_status test..." << endl;
 
-    file_status default_ctor;
-    BOOST_TEST(default_ctor.type() == file_type::none);
-    BOOST_TEST(default_ctor.permissions() == perms::unknown);
-    file_status one_arg_ctor(file_type::regular);
-    BOOST_TEST(one_arg_ctor.type() == file_type::regular);
-    BOOST_TEST(one_arg_ctor.permissions() ==  perms::unknown);
-    file_status two_arg_ctor(file_type::directory, perms::sticky_bit);
-    BOOST_TEST(two_arg_ctor.type() == file_type::directory);
-    BOOST_TEST(two_arg_ctor.permissions() ==  perms::sticky_bit);
-     
     file_status s = status(".");
-    int v = static_cast<int_least32_t>(s.permissions());
+    int v = s.permissions();
     cout << "  status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
 
     s = symlink_status(".");
-    v = static_cast<int_least32_t>(s.permissions());
+    v = s.permissions();
     cout << "  symlink_status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
@@ -105,7 +93,7 @@ namespace
     CHECK(file_size("no-such-file", ec) == static_cast<boost::uintmax_t>(-1));
     CHECK(ec == errc::no_such_file_or_directory);
 
-    CHECK(status("no-such-file") == file_status(file_type::not_found, perms::none));
+    CHECK(status("no-such-file") == file_status(file_not_found, no_perms));
 
     CHECK(exists("/"));
     CHECK(is_directory("/"));
@@ -124,10 +112,6 @@ namespace
     CHECK(!is_regular_file("/"));
     CHECK(!boost::filesystem::is_empty("/"));
     CHECK(!is_other("/"));
-    CHECK(!is_block_file("/"));
-    CHECK(!is_character_file("/"));
-    CHECK(!is_fifo("/"));
-    CHECK(!is_socket("/"));
   }
 
   //  directory_iterator_test  -----------------------------------------------//
@@ -272,8 +256,8 @@ namespace
     CHECK(equivalent("/", "/"));
     CHECK(!equivalent("/", "."));
 
-    file_time_type ft = last_write_time(".");
-//    ft = -1;
+    std::time_t ft = last_write_time(".");
+    ft = -1;
     last_write_time(".", ft, ec);
   }
 
@@ -284,12 +268,11 @@ namespace
     cout << "directory_entry test..." << endl;
 
     directory_entry de("foo.bar",
-      file_status(file_type::regular, perms::owner_all),
-      file_status(file_type::directory, perms::group_all));
+      file_status(regular_file, owner_all), file_status(directory_file, group_all));
 
     CHECK(de.path() == "foo.bar");
-    CHECK(de.status() == file_status(file_type::regular, perms::owner_all));
-    CHECK(de.symlink_status() == file_status(file_type::directory, perms::group_all));
+    CHECK(de.status() == file_status(regular_file, owner_all));
+    CHECK(de.symlink_status() == file_status(directory_file, group_all));
     CHECK(de < directory_entry("goo.bar"));
     CHECK(de == directory_entry("foo.bar"));
     CHECK(de != directory_entry("goo.bar"));

@@ -36,19 +36,6 @@
   </tr>
 </table>
 
-<h2>1.57.0</h2>
-<ul>
-  <li>The primary purpose of this release is to bring Boost.Filesystem into 
-  alignment with the C++ standard library's <i>File System Technical 
-  Specification</i> Draft, also known as the DTS. See <a href="#DTS">DTS 
-  significant and breaking changes</a> for details. The DTS is available in
-  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4099.html">
-  HTML</a> or
-  <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4100.pdf">
-  PDF</a> form. The PDF is paginated, and thus more suitable for printing than 
-  the HTML.</li>
-</ul>
-
 <h2>1.56.1</h2>
 <ul>
   <li>The Windows implementation now treats NTFS directory junctions (also known 
@@ -249,41 +236,9 @@
   fixing missing and broken links, and adding missing functions.</li>
   <li>Miscellaneous implementation code cleanup. </li>
 </ul>
-<h2><a name="DTS">DTS</a> significant and breaking changes</h2>
-<p>Synonyms and typedefs&nbsp;are provided by default to mitigate breaking name changes. 
-They can be 
-disabled by defining the macro <code>BOOST_FILESYSTEM_NO_DEPRECATED</code>.</p>
-<ul>
-  <li><code>enum file_type</code> changed to <code>enum class file_type</code>. 
-  Constant names and values have changed; synonyms provided.</li>
-  <li><code>enum perms</code> changed to <code>enum class perms</code>. Constant 
-  names and values have changed; synonyms provided.</li>
-  <li><code>enum class symlink_option</code> name changed to <code>enum class 
-  directory_option<u><span style="background-color: #A0FFA0">s</span></u></code>.&nbsp; <code>typedef directory_options symlink_option</code> 
-  provided. Constant names and values have changed; synonyms provided.</li>
-  <li><code>enum class copy_option</code> name changed to <code>enum class 
-  copy_option<u><span style="background-color: #A0FFA0">s</span></u></code>. <code>typedef 
-  copy_options copy_option</code> provided. Constant names and values have changed; 
-  synonyms provided.</li>
-  <li>Some class <code>recursive_directory_iterator</code> member function names 
-  have changed; synonyms provided. </li>
-  <li>Unless macro <code>BOOST_FILESYSTEM_USE_TIME_T</code> is defined, the time 
-  type used by several functions has changed from <code>std::time_t</code> to
-  <code>boost::chrono::system_clock::time_point</code>. A typedef <code>
-  file_time_type</code> has been added.</li>
-  <li>C++11 features specified in the DTS are used if compiler support is 
-  present:<ul>
-  <li>Move semantics.</li>
-  <li><code>noexcept</code>.</li>
-  <li><code>= default</code> on special member functions.</li>
-  <li><code>enum class</code>.</li>
-  <li><code>explicit</code> conversion operators.</li>
-</ul>
-  </li>
-</ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->31 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21121" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->25 July, 2014<!--webbot bot="Timestamp" endspan i-checksum="21128" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
