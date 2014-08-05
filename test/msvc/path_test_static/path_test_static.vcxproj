@@ -51,7 +51,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>BOOST_ALL_NO_LIB;BOOST_ALL_STATIC_LINK;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BOOST_CHRONO_HEADER_ONLY;BOOST_ALL_NO_LIB;BOOST_ALL_STATIC_LINK;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../../../..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -73,7 +73,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>BOOST_ALL_NO_LIB;BOOST_ALL_STATIC_LINK;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BOOST_CHRONO_HEADER_ONLY;BOOST_ALL_NO_LIB;BOOST_ALL_STATIC_LINK;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../../../..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
