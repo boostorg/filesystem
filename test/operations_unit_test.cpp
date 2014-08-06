@@ -34,13 +34,7 @@
 #include <boost/foreach.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/detail/lightweight_test.hpp>
-
-#ifndef BOOST_LIGHTWEIGHT_MAIN
-#  include <boost/test/prg_exec_monitor.hpp>
-#else
-#  include <boost/detail/lightweight_main.hpp>
-#endif
-
+#include <boost/detail/lightweight_main.hpp>
 #include <iostream>
 
 using namespace boost::filesystem;
