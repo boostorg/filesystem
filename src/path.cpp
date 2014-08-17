@@ -857,6 +857,9 @@ namespace
   // is really needed.
   {
     static std::locale loc(default_locale());
+#ifdef BOOST_FILESYSTEM_DEBUG
+    std::cout << "***** path_locale() called" << std::endl;
+#endif
     return loc;
   }
 }  // unnamed namespace
@@ -873,6 +876,9 @@ namespace filesystem
 
   const path::codecvt_type& path::codecvt()
   {
+#ifdef BOOST_FILESYSTEM_DEBUG
+    std::cout << "***** path::codecvt() called" << std::endl;
+#endif
     BOOST_ASSERT_MSG(&path_locale(), "boost::filesystem::path locale initialization error");
 //    boost::detail::lightweight_mutex::scoped_lock lock(locale_mutex);
     return std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
@@ -880,6 +886,9 @@ namespace filesystem
 
   std::locale path::imbue(const std::locale& loc)
   {
+#ifdef BOOST_FILESYSTEM_DEBUG
+    std::cout << "***** path::imbue() called" << std::endl;
+#endif
 //    boost::detail::lightweight_mutex::scoped_lock lock(locale_mutex);
     std::locale temp(path_locale());
     path_locale() = loc;
