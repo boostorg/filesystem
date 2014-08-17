@@ -148,7 +148,9 @@ namespace filesystem
     //    - A slight optimization for a common use case, particularly on POSIX since
     //      value_type is char and that is the most common useage.
     path(const value_type* s) : m_pathname(s) {}
-    path(const std::basic_string<value_type>& s) : m_pathname(s) {}
+    path(value_type* s) : m_pathname(s) {}
+    path(const string_type& s) : m_pathname(s) {}
+    path(string_type& s) : m_pathname(s) {}
 
     template <class Source>
     path(Source const& source, const codecvt_type& cvt)
@@ -187,12 +189,6 @@ namespace filesystem
       return *this;
     }
 
-    path& operator=(const value_type* ptr)  // required in case ptr overlaps *this
-    {
-      m_pathname = ptr;
-      return *this;
-    }
-
     template <class Source>
       typename boost::enable_if<path_traits::is_pathable<
         typename boost::decay<Source>::type>, path&>::type
@@ -203,12 +199,17 @@ namespace filesystem
       return *this;
     }
 
-    path& assign(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
-    {
-      m_pathname = ptr;
-      return *this;
-    }
+    //  value_type overloads. Same rationale as for constructors above
 
+    path& operator=(const value_type* ptr)  // required in case ptr overlaps *this
+                                          {m_pathname = ptr; return *this;}
+    path& operator=(value_type* ptr)  // required in case ptr overlaps *this
+                                          {m_pathname = ptr; return *this;}
+    path& operator=(const string_type& s) {m_pathname = s; return *this;}
+    path& operator=(string_type& s)       {m_pathname = s; return *this;}
+
+    path& assign(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
+                                          {m_pathname = ptr; return *this;}
     template <class Source>
     path& assign(Source const& source, const codecvt_type& cvt)
     {
@@ -238,11 +239,6 @@ namespace filesystem
 
     //  -----  concatenation  -----
 
-    path& operator+=(const path& p)         {m_pathname += p.m_pathname; return *this;}
-    path& operator+=(const string_type& s)  {m_pathname += s; return *this;}
-    path& operator+=(const value_type* ptr) {m_pathname += ptr; return *this;}
-    path& operator+=(value_type c)          {m_pathname += c; return *this;}
-
     template <class Source>
       typename boost::enable_if<path_traits::is_pathable<
         typename boost::decay<Source>::type>, path&>::type
@@ -250,6 +246,14 @@ namespace filesystem
     {
       return concat(source, codecvt());
     }
+
+    //  value_type overloads. Same rationale as for constructors above
+    path& operator+=(const path& p)         { m_pathname += p.m_pathname; return *this; }
+    path& operator+=(const value_type* ptr) { m_pathname += ptr; return *this; }
+    path& operator+=(value_type* ptr)       { m_pathname += ptr; return *this; }
+    path& operator+=(const string_type& s)  { m_pathname += s; return *this; }
+    path& operator+=(string_type& s)        { m_pathname += s; return *this; }
+    path& operator+=(value_type c)          { m_pathname += c; return *this; }
 
     template <class CharT>
       typename boost::enable_if<is_integral<CharT>, path&>::type
@@ -292,8 +296,6 @@ namespace filesystem
 
     path& operator/=(const path& p);
 
-    path& operator/=(const value_type* ptr);
-
     template <class Source>
       typename boost::enable_if<path_traits::is_pathable<
         typename boost::decay<Source>::type>, path&>::type
@@ -301,6 +303,14 @@ namespace filesystem
     {
       return append(source, codecvt());
     }
+
+    path& operator/=(const value_type* ptr);
+    path& operator/=(value_type* ptr)
+    {
+      return this->operator/=(const_cast<const value_type*>(ptr));
+    }
+    path& operator/=(const string_type& s) { return this->operator/=(path(s)); }
+    path& operator/=(string_type& s)       { return this->operator/=(path(s)); }
 
     path& append(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
     {

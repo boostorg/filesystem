@@ -213,6 +213,14 @@ namespace
     PATH_IS(x9, L"wstring");
     BOOST_TEST_EQ(x9.native().size(), 7U);
 
+    path x8nc(const_cast<char*>(s.c_str()));           // char* null terminated
+    PATH_IS(x8nc, L"string");
+    BOOST_TEST_EQ(x8nc.native().size(), 6U);
+
+    path x9nc(const_cast<wchar_t*>(ws.c_str()));       // wchar_t* null terminated
+    PATH_IS(x9nc, L"wstring");
+    BOOST_TEST_EQ(x9nc.native().size(), 7U);
+
     // non-contiguous containers
     path x10(l);                                       // std::list<char>
     PATH_IS(x10, L"string");
