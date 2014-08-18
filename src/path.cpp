@@ -27,10 +27,6 @@
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
-//#include <boost/detail/lightweight_mutex.hpp>
-//  fails on VC++ static builds because the runtime does not permit use of locks in
-//  staticly initialized code, and VC++ 2010 (and probably other versions) statically
-//  initializes some instances of class path.
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -810,8 +806,6 @@ namespace
   //  indicated the current code is roughly 9% slower than the previous code, and that
   //  seems a small price to pay for better code that is easier to use. 
 
-  //boost::detail::lightweight_mutex locale_mutex;
-
   inline std::locale default_locale()
   {
 # if defined(BOOST_WINDOWS_API)
@@ -880,7 +874,6 @@ namespace filesystem
     std::cout << "***** path::codecvt() called" << std::endl;
 #endif
     BOOST_ASSERT_MSG(&path_locale(), "boost::filesystem::path locale initialization error");
-//    boost::detail::lightweight_mutex::scoped_lock lock(locale_mutex);
     return std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
   }
 
@@ -889,7 +882,6 @@ namespace filesystem
 #ifdef BOOST_FILESYSTEM_DEBUG
     std::cout << "***** path::imbue() called" << std::endl;
 #endif
-//    boost::detail::lightweight_mutex::scoped_lock lock(locale_mutex);
     std::locale temp(path_locale());
     path_locale() = loc;
     return temp;
