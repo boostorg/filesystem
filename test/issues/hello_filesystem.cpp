@@ -16,10 +16,8 @@
 //--------------------------------------------------------------------------------------//
 
 #include <boost/config/warning_disable.hpp>
-
-#include <boost/filesystem.hpp>
-
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -33,6 +31,9 @@ int cpp_main(int argc, char* argv[])
 {
   cout << "Hello, filesystem world" << endl;
 
+  const char* p = ".";
+
+  BOOST_TEST(fs::exists(p));
   BOOST_TEST(fs::exists("."));
 
   return ::boost::report_errors();

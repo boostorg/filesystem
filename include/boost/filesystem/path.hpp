@@ -1,3 +1,11 @@
+/* TODO:
+
+  * What was the purpose of is_pathable? Is it still needed? If so, it needs to be generalized.
+    If Source is an iterator or container with a value_type of one of the encoded character types
+    then it is OK.  See C:\boost\trunk-ex\libs\interop\include\boost\interop\detail\iterator_value.hpp
+    for workarounds for some issues.
+
+*/
 //  filesystem path.hpp  ---------------------------------------------------------------//
 
 //  Copyright Beman Dawes 2002-2005, 2009
@@ -31,6 +39,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/functional/hash_fwd.hpp>
 #include <boost/type_traits/is_integral.hpp>
+#include <boost/type_traits/decay.hpp>
 #include <string>
 #include <iterator>
 #include <cstring>
@@ -39,6 +48,8 @@
 #include <cassert>
 #include <locale>
 #include <algorithm>
+
+#include <iostream>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -131,11 +142,15 @@ namespace filesystem
 
     path(const path& p) : m_pathname(p.m_pathname) {}
 
+#ifndef BOOST_FILESYSTEM_TS
+    //  ---  traditional signatures --
+
     template <class Source>
     path(Source const& source,
       typename boost::enable_if<path_traits::is_pathable<
         typename boost::decay<Source>::type> >::type* =0)
     {
+
       path_traits::dispatch(source, m_pathname, codecvt());
     }
 
@@ -180,7 +195,23 @@ namespace filesystem
         path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
       }
     }
+#else
+    //  ---  ISO Technical Specification signatures --
 
+    template <class Source>
+    path(const Source& source)
+    {
+      detail::append(source, m_pathname,
+        typename path_traits::source_tag<typename boost::decay<Source>::type>::type());
+    }
+
+    template <class InputIterator>
+    path(InputIterator first, InputIterator last)
+    {
+      detail::append(first, last, m_pathname);
+    }
+
+#endif
     //  -----  assignments  -----
 
     path& operator=(const path& p)
@@ -756,6 +787,33 @@ namespace filesystem
   template <> inline
   std::wstring path::generic_string<std::wstring>(const codecvt_type& cvt) const
     { return generic_wstring(cvt); }
+
+#ifdef BOOST_FILESYSTEM_TS
+namespace detail
+{
+  template <class Source>
+  void append(const Source& from, path::string_type& to, path_traits::iterator_source_tag)
+  {
+    std::cout << "*** append from iterator" << std::endl;
+  }
+
+  template <class Source>
+  void append(const Source& from, path::string_type& to, path_traits::container_source_tag)
+  {
+    std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
+    std::cout << "*** append from container" << std::endl;
+  }
+
+  template <class InputIterator>
+  void append(InputIterator first, InputIterator last, path::string_type& to)
+  {
+    std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
+    std::cout << "*** append from range" << std::endl;
+  }
+
+}  // namesapce detail
+
+#endif
 
 
 }  // namespace filesystem

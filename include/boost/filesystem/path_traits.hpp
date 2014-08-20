@@ -19,8 +19,8 @@
 #include <boost/filesystem/config.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_array.hpp>
-#include <boost/type_traits/decay.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/filesystem/detail/is_iterator.hpp>
 #include <cwchar>  // for mbstate_t
 #include <string>
 #include <vector>
@@ -227,6 +227,25 @@ namespace path_traits {
 #                endif
                  const codecvt_type&);
 
+//------------------------------------ TS helpers  -------------------------------------//
+
+#ifdef BOOST_FILESYSTEM_TS
+
+  struct iterator_source_tag {};
+  struct container_source_tag {};
+
+  template <class TorF>
+  struct source_tag_helper;
+  template<> struct source_tag_helper<boost::true_type> { typedef iterator_source_tag type; };
+  template<> struct source_tag_helper<boost::false_type> { typedef container_source_tag type; };
+  
+  template <class Source>
+  struct source_tag
+  { 
+    typedef typename source_tag_helper<typename boost::is_iterator<Source>::type>::type type;
+  };
+
+#endif
 
 }}} // namespace boost::filesystem::path_traits
 
