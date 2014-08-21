@@ -202,13 +202,15 @@ namespace filesystem
     path(const Source& source)
     {
       detail::append(source, m_pathname,
-        typename path_traits::source_tag<typename boost::decay<Source>::type>::type());
+        typename detail::source_tag<typename boost::decay<Source>::type>::type(),
+        typename detail::convert_tag<typename boost::decay<Source>::type>::type());
     }
 
     template <class InputIterator>
-    path(InputIterator first, InputIterator last)
+    path(InputIterator first, InputIterator las)
     {
-      detail::append(first, last, m_pathname);
+      detail::append(first, last, m_pathname,
+        typename detail::convert_tag<typename boost::decay<InputIterator>::type>::type());
     }
 
 #endif
@@ -789,26 +791,93 @@ namespace filesystem
     { return generic_wstring(cvt); }
 
 #ifdef BOOST_FILESYSTEM_TS
+
+  //--------------------------------------------------------------------------------------//
+  //                  class path detail::append implementation                            //
+  //--------------------------------------------------------------------------------------//
+
 namespace detail
 {
-  template <class Source>
-  void append(const Source& from, path::string_type& to, path_traits::iterator_source_tag)
-  {
-    std::cout << "*** append from iterator" << std::endl;
-  }
+
+  //  source_tag and its helpers
+
+  struct iterator_source_tag {};
+  struct container_source_tag {};
+
+  template <class IteratorTrueOrFalseT>
+  struct source_tag_helper;
+  template<> struct source_tag_helper<false_type> { typedef container_source_tag type; };
+  template<> struct source_tag_helper<true_type> { typedef iterator_source_tag type; };
 
   template <class Source>
-  void append(const Source& from, path::string_type& to, path_traits::container_source_tag)
+  struct source_tag
   {
-    std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
-    std::cout << "*** append from container" << std::endl;
+    typedef typename source_tag_helper<typename is_iterator<Source>::type>::type type;
+  };
+
+  //  convert_tag and its helpers
+
+  struct no_convert_tag {};
+  struct with_convert_tag {};
+
+  template <class ConversionNotNeededTrueOrFalseT>
+  struct convert_tag_helper;
+  template<> struct convert_tag_helper<false_type> { typedef with_convert_tag type; };
+  template<> struct convert_tag_helper<true_type> { typedef no_convert_tag type; };
+
+  template <class Source>
+  struct convert_tag
+  {
+    typedef typename convert_tag_helper<
+      typename is_same<typename source_value_type<Source>::type, path::value_type>::type>::type type;
+  };
+
+  //  detail::append overloads
+
+  template <class Source> inline
+  void append(const Source& from, path::string_type& to,
+    iterator_source_tag, no_convert_tag)
+  {
+    std::cout << "*** append iterator, no conversion" << std::endl;
   }
 
-  template <class InputIterator>
-  void append(InputIterator first, InputIterator last, path::string_type& to)
+  template <class Source> inline
+  void append(const Source& from, path::string_type& to,
+    iterator_source_tag, with_convert_tag)
+  {
+    std::cout << "*** append iterator, with conversion" << std::endl;
+  }
+
+  template <class Source> inline
+  void append(const Source& from, path::string_type& to,
+    container_source_tag, no_convert_tag)
   {
     std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
-    std::cout << "*** append from range" << std::endl;
+    std::cout << "*** append container, no conversion" << std::endl;
+  }
+
+  template <class Source> inline
+  void append(const Source& from, path::string_type& to,
+    container_source_tag, with_convert_tag)
+  {
+    std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
+    std::cout << "*** append container, with conversion" << std::endl;
+  }
+
+  template <class InputIterator> inline
+  void append(InputIterator first, InputIterator last, path::string_type& to,
+    no_convert_tag)
+  {
+    std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
+    std::cout << "*** append range, no conversion" << std::endl;
+  }
+
+  template <class InputIterator> inline
+  void append(InputIterator first, InputIterator last, path::string_type& to,
+    with_convert_tag)
+  {
+    std::cout << "***" << boost::is_iterator<Source>::value << std::endl;
+    std::cout << "*** append range, with conversion" << std::endl;
   }
 
 }  // namesapce detail
