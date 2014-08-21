@@ -199,7 +199,7 @@ namespace filesystem
     //  ---  ISO Technical Specification signatures --
 
     template <class Source>
-    path(const Source& source)
+    path(Source const& source)
     {
       detail::append(source, m_pathname,
         typename detail::source_tag<Source>::type(),
@@ -841,6 +841,8 @@ namespace detail
     iterator_source_tag, no_convert_tag)
   {
     std::cout << "*** append iterator, no conversion" << std::endl;
+    for (auto iter = from; *iter != path::value_type(); ++iter)
+      to += *iter;
   }
 
   template <class Source> inline
@@ -855,6 +857,7 @@ namespace detail
     container_source_tag, no_convert_tag)
   {
     std::cout << "*** append container, no conversion" << std::endl;
+    append(from.cbegin(), from.cend(), to, no_convert_tag());
   }
 
   template <class Source> inline
@@ -862,6 +865,7 @@ namespace detail
     container_source_tag, with_convert_tag)
   {
     std::cout << "*** append container, with conversion" << std::endl;
+    append(from.cbegin(), from.cend(), to, with_convert_tag());
   }
 
   template <class InputIterator> inline
@@ -869,6 +873,7 @@ namespace detail
     no_convert_tag)
   {
     std::cout << "*** append range, no conversion" << std::endl;
+    to.append(first, last);
   }
 
   template <class InputIterator> inline
