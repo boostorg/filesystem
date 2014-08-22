@@ -786,115 +786,81 @@ namespace filesystem
   std::wstring path::generic_string<std::wstring>(const codecvt_type& cvt) const
     { return generic_wstring(cvt); }
 
+
+
 #ifdef BOOST_FILESYSTEM_TS
 
   //--------------------------------------------------------------------------------------//
   //                  class path detail::append implementation                            //
   //--------------------------------------------------------------------------------------//
 
-namespace detail
-{
-
-  //  source_tag and its helpers
-
-  struct iterator_source_tag {};
-  struct container_source_tag {};
-
-  template <class IteratorTrueOrFalseT>
-  struct source_tag_helper;
-  template<> struct source_tag_helper<false_type> { typedef container_source_tag type; };
-  template<> struct source_tag_helper<true_type> { typedef iterator_source_tag type; };
-
-  template <class Source>
-  struct source_tag
+  namespace detail
   {
-    typedef typename source_tag_helper<
-      typename is_iterator<typename boost::decay<Source>::type>::type>::type type;
-  };
 
-  //  convert_tag and its helpers
+    //  detail::append overloads, same value_types
 
-  struct no_convert_tag {};
-  struct with_convert_tag {};
+    template <class Source> inline
+      void append(const Source& from, path::string_type& to,
+      iterator_source_tag, no_convert_tag)
+    {
+      std::cout << "*** append iterator, no conversion" << std::endl;
+      for (auto iter = from; *iter != path::value_type(); ++iter)
+        to += *iter;
+    }
 
-  template <class ConversionNotNeededTrueOrFalseT>
-  struct convert_tag_helper;
-  template<> struct convert_tag_helper<false_type> { typedef with_convert_tag type; };
-  template<> struct convert_tag_helper<true_type> { typedef no_convert_tag type; };
+    template <class Source> inline
+      void append(const Source& from, path::string_type& to,
+      container_source_tag, no_convert_tag)
+    {
+      std::cout << "*** append container, no conversion" << std::endl;
+      append(from.cbegin(), from.cend(), to, no_convert_tag());
+    }
 
-  template <class Source>
-  struct convert_tag
-  {
-    typedef typename convert_tag_helper<
-      typename is_same<typename source_value_type<typename boost::decay<Source>::type>::type,
-        path::value_type>::type>::type type;
-  };
+    template <class InputIterator> inline
+      void append(InputIterator first, InputIterator last, path::string_type& to,
+      no_convert_tag)
+    {
+      std::cout << "*** append range, no conversion" << std::endl;
+      to.append(first, last);
+    }
 
-  //  detail::append overloads, same value_types
+    //  detail::append overloads, different value_types so encoding conversion required
 
-  template <class Source> inline
-  void append(const Source& from, path::string_type& to,
-    iterator_source_tag, no_convert_tag)
-  {
-    std::cout << "*** append iterator, no conversion" << std::endl;
-    for (auto iter = from; *iter != path::value_type(); ++iter)
-      to += *iter;
-  }
-
-  template <class Source> inline
-  void append(const Source& from, path::string_type& to,
-    container_source_tag, no_convert_tag)
-  {
-    std::cout << "*** append container, no conversion" << std::endl;
-    append(from.cbegin(), from.cend(), to, no_convert_tag());
-  }
-
-  template <class InputIterator> inline
-  void append(InputIterator first, InputIterator last, path::string_type& to,
-    no_convert_tag)
-  {
-    std::cout << "*** append range, no conversion" << std::endl;
-    to.append(first, last);
-  }
-
-  //  detail::append overloads, different value_types so encoding conversion required
-
-  template <class Source> inline
-  void append(const Source& from, path::string_type& to,
-    iterator_source_tag, with_convert_tag)
-  {
-    std::cout << "*** append iterator, with conversion" << std::endl;
-    // path_traits::convert() requires a contiguous sequence, so create a temporary string
-    std::basic_string<typename source_value_type<typename boost::decay<Source>::type>::type> temp;
-    for (auto iter = from;
+    template <class Source> inline
+      void append(const Source& from, path::string_type& to,
+      iterator_source_tag, with_convert_tag)
+    {
+      std::cout << "*** append iterator, with conversion" << std::endl;
+      // path_traits::convert() requires a contiguous sequence, so create a temporary string
+      std::basic_string<typename source_value_type<typename boost::decay<Source>::type>::type> temp;
+      for (auto iter = from;
         *iter != typename source_value_type<typename boost::decay<Source>::type>::type(); ++iter)
-      temp += *iter;
-    path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
-  }
+        temp += *iter;
+      path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
+    }
 
-  template <class Source> inline
-  void append(const Source& from, path::string_type& to,
-    container_source_tag, with_convert_tag)
-  {
-    std::cout << "*** append container, with conversion" << std::endl;
-    append(from.cbegin(), from.cend(), to, with_convert_tag());
-  }
+    template <class Source> inline
+      void append(const Source& from, path::string_type& to,
+      container_source_tag, with_convert_tag)
+    {
+      std::cout << "*** append container, with conversion" << std::endl;
+      append(from.cbegin(), from.cend(), to, with_convert_tag());
+    }
 
-  template <class InputIterator> inline
-  void append(InputIterator first, InputIterator last, path::string_type& to,
-    with_convert_tag)
-  {
-    std::cout << "*** append range, with conversion" << std::endl;
-    // path_traits::convert() requires a contiguous sequence, so create a temporary string
-    std::basic_string<typename source_value_type<typename boost::decay<InputIterator>::type>::type>
-      temp(first, last);
-    path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
-  }
+    template <class InputIterator> inline
+      void append(InputIterator first, InputIterator last, path::string_type& to,
+      with_convert_tag)
+    {
+      std::cout << "*** append range, with conversion" << std::endl;
+      // path_traits::convert() requires a contiguous sequence, so create a temporary string
+      std::basic_string<typename source_value_type<typename boost::decay<InputIterator>::type>::type>
+        temp(first, last);
+      path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
+    }
 
-}  // namespace detail
+  }  // namespace detail
 
 #endif
-
 
 }  // namespace filesystem
 }  // namespace boost
