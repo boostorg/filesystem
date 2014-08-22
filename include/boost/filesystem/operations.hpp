@@ -673,7 +673,7 @@ public:
 
   // compiler generated copy constructor, copy assignment, and destructor apply
 
-  directory_entry() {}
+  directory_entry() BOOST_NOEXCEPT {}
   explicit directory_entry(const boost::filesystem::path& p,
     file_status st = file_status(), file_status symlink_st=file_status())
     : m_path(p), m_status(st), m_symlink_status(symlink_st)
@@ -698,18 +698,22 @@ public:
       { replace_filename(p, st, symlink_st); }
 # endif
 
-  const boost::filesystem::path&  path() const               {return m_path;}
-  file_status   status() const                               {return m_get_status();}
-  file_status   status(system::error_code& ec) const         {return m_get_status(&ec);}
-  file_status   symlink_status() const                       {return m_get_symlink_status();}
-  file_status   symlink_status(system::error_code& ec) const {return m_get_symlink_status(&ec);}
+  const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
+  operator const boost::filesystem::path&() const BOOST_NOEXCEPT
+                                                              {return m_path;}
+  file_status   status() const                                {return m_get_status();}
+  file_status   status(system::error_code& ec) const BOOST_NOEXCEPT
+                                                              {return m_get_status(&ec); }
+  file_status   symlink_status() const                        {return m_get_symlink_status();}
+  file_status   symlink_status(system::error_code& ec) const BOOST_NOEXCEPT
+                                                              {return m_get_symlink_status(&ec); }
 
-  bool operator==(const directory_entry& rhs) {return m_path == rhs.m_path;} 
-  bool operator!=(const directory_entry& rhs) {return m_path != rhs.m_path;} 
-  bool operator< (const directory_entry& rhs) {return m_path < rhs.m_path;} 
-  bool operator<=(const directory_entry& rhs) {return m_path <= rhs.m_path;} 
-  bool operator> (const directory_entry& rhs) {return m_path > rhs.m_path;} 
-  bool operator>=(const directory_entry& rhs) {return m_path >= rhs.m_path;} 
+  bool operator==(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path == rhs.m_path; }
+  bool operator!=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path != rhs.m_path;} 
+  bool operator< (const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path < rhs.m_path;} 
+  bool operator<=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path <= rhs.m_path;} 
+  bool operator> (const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path > rhs.m_path;} 
+  bool operator>=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path >= rhs.m_path;} 
 
 private:
   boost::filesystem::path   m_path;
