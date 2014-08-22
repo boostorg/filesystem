@@ -31,10 +31,17 @@ int cpp_main(int argc, char* argv[])
 {
   cout << "Hello, filesystem world" << endl;
 
-  const wchar_t* p = L".";
+  const wchar_t* wchar_t_p = L".";
+  const char* char_p = ".";
 
-  BOOST_TEST(fs::exists(p));
-//  BOOST_TEST(fs::exists(L"."));
+  BOOST_TEST(fs::exists(wchar_t_p));
+  cout << "test 1 complete" << endl;
+  BOOST_TEST(fs::exists(L"."));
+  cout << "test 2 complete" << endl;
+  BOOST_TEST(fs::exists(char_p));
+  cout << "test 3 complete" << endl;
+  BOOST_TEST(fs::exists("."));
+  cout << "test 4 complete" << endl;
 
   return ::boost::report_errors();
 } // cpp_main

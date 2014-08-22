@@ -1,11 +1,3 @@
-/* TODO:
-
-  * What was the purpose of is_pathable? Is it still needed? If so, it needs to be generalized.
-    If Source is an iterator or container with a value_type of one of the encoded character types
-    then it is OK.  See C:\boost\trunk-ex\libs\interop\include\boost\interop\detail\iterator_value.hpp
-    for workarounds for some issues.
-
-*/
 //  filesystem path.hpp  ---------------------------------------------------------------//
 
 //  Copyright Beman Dawes 2002-2005, 2009
@@ -834,7 +826,7 @@ namespace detail
         path::value_type>::type>::type type;
   };
 
-  //  detail::append overloads
+  //  detail::append overloads, same value_types
 
   template <class Source> inline
   void append(const Source& from, path::string_type& to,
@@ -847,17 +839,33 @@ namespace detail
 
   template <class Source> inline
   void append(const Source& from, path::string_type& to,
-    iterator_source_tag, with_convert_tag)
-  {
-    std::cout << "*** append iterator, with conversion" << std::endl;
-  }
-
-  template <class Source> inline
-  void append(const Source& from, path::string_type& to,
     container_source_tag, no_convert_tag)
   {
     std::cout << "*** append container, no conversion" << std::endl;
     append(from.cbegin(), from.cend(), to, no_convert_tag());
+  }
+
+  template <class InputIterator> inline
+  void append(InputIterator first, InputIterator last, path::string_type& to,
+    no_convert_tag)
+  {
+    std::cout << "*** append range, no conversion" << std::endl;
+    to.append(first, last);
+  }
+
+  //  detail::append overloads, different value_types so encoding conversion required
+
+  template <class Source> inline
+  void append(const Source& from, path::string_type& to,
+    iterator_source_tag, with_convert_tag)
+  {
+    std::cout << "*** append iterator, with conversion" << std::endl;
+    // path_traits::convert() requires a contiguous sequence, so create a temporary string
+    std::basic_string<typename source_value_type<typename boost::decay<Source>::type>::type> temp;
+    for (auto iter = from;
+        *iter != typename source_value_type<typename boost::decay<Source>::type>::type(); ++iter)
+      temp += *iter;
+    path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
   }
 
   template <class Source> inline
@@ -870,20 +878,16 @@ namespace detail
 
   template <class InputIterator> inline
   void append(InputIterator first, InputIterator last, path::string_type& to,
-    no_convert_tag)
-  {
-    std::cout << "*** append range, no conversion" << std::endl;
-    to.append(first, last);
-  }
-
-  template <class InputIterator> inline
-  void append(InputIterator first, InputIterator last, path::string_type& to,
     with_convert_tag)
   {
     std::cout << "*** append range, with conversion" << std::endl;
+    // path_traits::convert() requires a contiguous sequence, so create a temporary string
+    std::basic_string<typename source_value_type<typename boost::decay<InputIterator>::type>::type>
+      temp(first, last);
+    path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
   }
 
-}  // namesapce detail
+}  // namespace detail
 
 #endif
 
@@ -891,7 +895,7 @@ namespace detail
 }  // namespace filesystem
 }  // namespace boost
 
-//----------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------//
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 
