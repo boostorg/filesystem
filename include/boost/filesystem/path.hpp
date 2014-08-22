@@ -191,7 +191,7 @@ namespace filesystem
     //  ---  ISO Technical Specification signatures --
 
     template <class Source>
-    path(Source const& source)
+    path(const Source& source)
     {
       detail::append(source, m_pathname,
         typename detail::source_tag<Source>::type(),
@@ -591,6 +591,10 @@ namespace filesystem
     BOOST_FILESYSTEM_DECL
       int lex_compare(path::iterator first1, path::iterator last1,
         path::iterator first2, path::iterator last2);
+    BOOST_FILESYSTEM_DECL
+      const path&  dot_path();
+    BOOST_FILESYSTEM_DECL
+      const path&  dot_dot_path();
   }
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED

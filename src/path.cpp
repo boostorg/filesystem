@@ -85,8 +85,6 @@ namespace
   const wchar_t colon = L':';
   const wchar_t dot = L'.';
   const wchar_t questionmark = L'?';
-  const fs::path dot_path(L".");
-  const fs::path dot_dot_path(L"..");
 
   inline bool is_letter(wchar_t c)
   {
@@ -100,8 +98,6 @@ namespace
   const char* separator_string = "/";
   const char* preferred_separator_string = "/";
   const char dot = '.';
-  const fs::path dot_path(".");
-  const fs::path dot_dot_path("..");
 
 # endif
 
@@ -359,14 +355,14 @@ namespace filesystem
               && pos
               && is_separator(m_pathname[pos])
               && !is_root_separator(m_pathname, pos))
-      ? dot_path
+      ? detail::dot_path()
       : path(m_pathname.c_str() + pos);
   }
 
   path path::stem() const
   {
     path name(filename());
-    if (name == dot_path || name == dot_dot_path) return name;
+    if (name == detail::dot_path() || name == detail::dot_dot_path()) return name;
     size_type pos(name.m_pathname.rfind(dot));
     return pos == string_type::npos
       ? name
@@ -376,7 +372,7 @@ namespace filesystem
   path path::extension() const
   {
     path name(filename());
-    if (name == dot_path || name == dot_dot_path) return path();
+    if (name == detail::dot_path() || name == detail::dot_dot_path()) return path();
     size_type pos(name.m_pathname.rfind(dot));
     return pos == string_type::npos
       ? path()
@@ -437,7 +433,7 @@ namespace filesystem
 
           iterator next(itr);
           if (temp.empty() && ++next != stop
-            && next == last && *last == dot_path) temp /= dot_path;
+            && next == last && *last == detail::dot_path()) temp /= detail::dot_path();
           continue;
         }
       }
@@ -445,7 +441,7 @@ namespace filesystem
       temp /= *itr;
     };
 
-    if (temp.empty()) temp /= dot_path;
+    if (temp.empty()) temp /= detail::dot_path();
     m_pathname = temp.m_pathname;
     return *this;
   }
@@ -658,6 +654,28 @@ namespace filesystem
         return 0;
       return first1 == last1 ? -1 : 1;
     }
+
+    BOOST_FILESYSTEM_DECL
+    const path&  dot_path()
+    {
+#   ifdef BOOST_WINDOWS_API
+      static const fs::path dot(L".");
+#   else
+      static const fs::path dot(".");
+#   endif
+      return dot;
+    }
+
+    BOOST_FILESYSTEM_DECL
+    const path&  dot_dot_path()
+    {
+#   ifdef BOOST_WINDOWS_API
+      static const fs::path dot_dot(L"..");
+#   else
+      static const fs::path dot_dot("..");
+#   endif
+      return dot_dot;
+    }
   }
 
 //--------------------------------------------------------------------------------------//
@@ -733,7 +751,7 @@ namespace filesystem
         && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)) 
       {
         --it.m_pos;
-        it.m_element = dot_path;
+        it.m_element = detail::dot_path();
         return;
       }
     }
@@ -759,7 +777,7 @@ namespace filesystem
        )
     {
       --it.m_pos;
-      it.m_element = dot_path;
+      it.m_element = detail::dot_path();
       return;
     }
 
