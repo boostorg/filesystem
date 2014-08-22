@@ -106,6 +106,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "odr_test", "odr_test\odr_te
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello_filesystem", "hello_filesystem\hello_filesystem.vcxproj", "{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello_filesystem_static", "hello_filesystem_static\hello_filesystem_static.vcxproj", "{263E83A3-BF75-46F1-BC71-2FD916D996C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -232,6 +234,10 @@ Global
 		{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}.Debug|Win32.Build.0 = Debug|Win32
 		{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}.Release|Win32.ActiveCfg = Release|Win32
 		{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}.Release|Win32.Build.0 = Release|Win32
+		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Debug|Win32.Build.0 = Debug|Win32
+		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Release|Win32.ActiveCfg = Release|Win32
+		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
