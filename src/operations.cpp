@@ -69,8 +69,6 @@ using std::wstring;
 
 # ifdef BOOST_POSIX_API
 
-    const fs::path dot_path(".");
-    const fs::path dot_dot_path("..");
 #   include <sys/types.h>
 #   include <sys/stat.h>
 #   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__)
@@ -95,8 +93,6 @@ using std::wstring;
 
 # else // BOOST_WINDOW_API
 
-    const fs::path dot_path(L".");
-    const fs::path dot_dot_path(L"..");
 #   if (defined(__MINGW32__) || defined(__CYGWIN__)) && !defined(WINVER)
       // Versions of MinGW or Cygwin that support Filesystem V3 support at least WINVER 0x501.
       // See MinGW's windef.h
@@ -815,9 +811,9 @@ namespace detail
       result.clear();
       for (path::iterator itr = source.begin(); itr != source.end(); ++itr)
       {
-        if (*itr == dot_path)
+        if (*itr == dot_path())
           continue;
-        if (*itr == dot_dot_path)
+        if (*itr == dot_dot_path())
         {
           if (result != root)
             result.remove_filename();
