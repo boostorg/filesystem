@@ -267,8 +267,6 @@ namespace
     CHECK(de.path() == "foo.bar");
     CHECK(de.status() == file_status(regular_file, owner_all));
     CHECK(de.symlink_status() == file_status(directory_file, group_all));
-    de == de;
-    de < directory_entry(path("goo.bar"));
     CHECK(de < directory_entry(path("goo.bar")));
     CHECK(de < directory_entry("goo.bar"));
     CHECK(de == directory_entry("foo.bar"));
