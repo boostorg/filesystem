@@ -257,8 +257,8 @@ namespace boost
   {
   public:
              file_status()            : m_value(status_error), m_perms(perms_not_known) {}
-    explicit file_status(file_type v, perms prms = perms_not_known)
-                                      : m_value(v), m_perms(prms) {}
+    explicit file_status(file_type v) : m_value(v), m_perms(perms_not_known)  {}
+             file_status(file_type v, perms prms) : m_value(v), m_perms(prms) {}
 
     // observers
     file_type  type() const                       { return m_value; }
@@ -674,8 +674,11 @@ public:
   // compiler generated copy constructor, copy assignment, and destructor apply
 
   directory_entry() BOOST_NOEXCEPT {}
-  explicit directory_entry(const boost::filesystem::path& p,
-    file_status st = file_status(), file_status symlink_st=file_status())
+  explicit directory_entry(const boost::filesystem::path& p)
+    : m_path(p), m_status(file_status()), m_symlink_status(file_status())
+    {}
+  directory_entry(const boost::filesystem::path& p,
+    file_status st, file_status symlink_st = file_status())
     : m_path(p), m_status(st), m_symlink_status(symlink_st)
     {}
 
@@ -1033,14 +1036,27 @@ namespace filesystem
 
     recursive_directory_iterator(){}  // creates the "end" iterator
 
-    explicit recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM(symlink_option) opt = symlink_option::none)
+    explicit recursive_directory_iterator(const path& dir_path)
+      : m_imp(new detail::recur_dir_itr_imp)
+    {
+      m_imp->m_options = symlink_option::none;
+      m_imp->m_stack.push(directory_iterator(dir_path));
+      if (m_imp->m_stack.top() == directory_iterator())
+      {
+        m_imp.reset();
+      }
+    }
+
+    recursive_directory_iterator(const path& dir_path,
+      BOOST_SCOPED_ENUM(symlink_option) opt)
       : m_imp(new detail::recur_dir_itr_imp)
     {
       m_imp->m_options = opt;
       m_imp->m_stack.push(directory_iterator(dir_path));
       if (m_imp->m_stack.top() == directory_iterator())
-        { m_imp.reset (); }
+      {
+        m_imp.reset();
+      }
     }
 
     recursive_directory_iterator(const path& dir_path,
