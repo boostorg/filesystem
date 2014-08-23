@@ -824,6 +824,9 @@ namespace filesystem
       to.append(first, last);
     }
 
+    //  append(const directory_entry& dir_entry, ...), is implemented in operations.cpp
+    //  where directory_entry is a complete type
+
     //  detail::append overloads, different value_types so encoding conversion required
 
     template <class Source> inline

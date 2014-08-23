@@ -1891,6 +1891,17 @@ namespace path_traits
   }
 
 }  // namespace path_traits
+
+namespace detail
+{
+  void append(const directory_entry& dir_entry, path::string_type& to,
+    container_source_tag, no_convert_tag)
+  {
+    std::cout << "*** append directory_entry, no conversion" << std::endl;
+    append(dir_entry.path().native().cbegin(), dir_entry.path().native().cend(), to,
+      no_convert_tag());
+  }
+} // namespace detail
 } // namespace filesystem
 } // namespace boost
 

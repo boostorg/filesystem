@@ -242,6 +242,8 @@ namespace boost { namespace filesystem {
   //                              detail::append helpers                                  //
   //--------------------------------------------------------------------------------------//
 
+  class directory_entry;
+
   namespace detail
   {
 # ifdef BOOST_WINDOWS_API
@@ -305,6 +307,9 @@ namespace boost { namespace filesystem {
     template <class InputIterator> inline
     void append(InputIterator first, InputIterator last, string_type& to,
       no_convert_tag);
+
+    BOOST_FILESYSTEM_DECL void append(const directory_entry& dir_entry, string_type& to,
+      container_source_tag, no_convert_tag);  // implemented in src/operations.cpp
 
     //  detail::append overloads, different value_types so encoding conversion required
 

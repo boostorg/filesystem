@@ -670,6 +670,7 @@ namespace boost
 class BOOST_FILESYSTEM_DECL directory_entry
 {
 public:
+  typedef boost::filesystem::path::value_type value_type;   // enables class path ctor taking directory_entry
 
   // compiler generated copy constructor, copy assignment, and destructor apply
 
