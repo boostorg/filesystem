@@ -380,25 +380,29 @@ namespace filesystem
 
     //  -----  concatenation  -----
 
+    path& operator+=(const path& p)         { m_pathname += p.m_pathname; return *this; }
+
+#ifndef BOOST_FILESYSTEM_TS
+    //  ---  traditional signatures --
+
     template <class Source>
-      typename boost::enable_if<path_traits::is_pathable<
-        typename boost::decay<Source>::type>, path&>::type
-    operator+=(Source const& source)
+    typename boost::enable_if<path_traits::is_pathable<
+      typename boost::decay<Source>::type>, path&>::type
+      operator+=(Source const& source)
     {
       return concat(source, codecvt());
     }
 
     //  value_type overloads. Same rationale as for constructors above
-    path& operator+=(const path& p)         { m_pathname += p.m_pathname; return *this; }
     path& operator+=(const value_type* ptr) { m_pathname += ptr; return *this; }
-    path& operator+=(value_type* ptr)       { m_pathname += ptr; return *this; }
-    path& operator+=(const string_type& s)  { m_pathname += s; return *this; }
-    path& operator+=(string_type& s)        { m_pathname += s; return *this; }
-    path& operator+=(value_type c)          { m_pathname += c; return *this; }
+    path& operator+=(value_type* ptr) { m_pathname += ptr; return *this; }
+    path& operator+=(const string_type& s) { m_pathname += s; return *this; }
+    path& operator+=(string_type& s) { m_pathname += s; return *this; }
+    path& operator+=(value_type c) { m_pathname += c; return *this; }
 
     template <class CharT>
-      typename boost::enable_if<is_integral<CharT>, path&>::type
-    operator+=(CharT c)
+    typename boost::enable_if<is_integral<CharT>, path&>::type
+      operator+=(CharT c)
     {
       CharT tmp[2];
       tmp[0] = c;
@@ -415,13 +419,13 @@ namespace filesystem
 
     template <class InputIterator>
     path& concat(InputIterator begin, InputIterator end)
-    { 
+    {
       return concat(begin, end, codecvt());
     }
 
     template <class InputIterator>
     path& concat(InputIterator begin, InputIterator end, const codecvt_type& cvt)
-    { 
+    {
       if (begin == end)
         return *this;
       std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
@@ -429,6 +433,42 @@ namespace filesystem
       path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
       return *this;
     }
+#else
+    //  ---  ISO Technical Specification signatures --
+
+    template <class Source>
+    path& operator+=(const Source& source)
+    {
+      detail::append(source, m_pathname,
+        typename detail::source_tag<Source>::type(),
+        typename detail::convert_tag<Source>::type());
+      return *this;
+    }
+
+    template <class EcharT>
+    path& operator+=(EcharT x)
+    {
+      return concat(&x, &x+1);
+    }
+
+    template <class Source>
+    path& concat(const Source& source)
+    {
+      detail::append(source, m_pathname,
+        typename detail::source_tag<Source>::type(),
+        typename detail::convert_tag<Source>::type());
+      return *this;
+    }
+
+    template <class InputIterator>
+    path& concat(InputIterator first, InputIterator last)
+    {
+      detail::append(first, last, m_pathname,
+        typename detail::convert_tag<InputIterator>::type());
+      return *this;
+    }
+#endif
+
 
     //  -----  modifiers  -----
 
