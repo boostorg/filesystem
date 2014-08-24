@@ -130,9 +130,9 @@ namespace filesystem
 
     //  -----  constructors  -----
 
-    path(){}                                          
-
+    path() BOOST_NOEXCEPT {}                                          
     path(const path& p) : m_pathname(p.m_pathname) {}
+//    path(path&& p) BOOST_NOEXCEPT;
 
 #ifndef BOOST_FILESYSTEM_TS
     //  ---  traditional signatures --
@@ -206,6 +206,7 @@ namespace filesystem
     }
 
 #endif
+
     //  -----  assignments  -----
 
     path& operator=(const path& p)
@@ -213,11 +214,15 @@ namespace filesystem
       m_pathname = p.m_pathname;
       return *this;
     }
+//    path& operator=(path&& p) BOOST_NOEXCEPT;
+
+#ifndef BOOST_FILESYSTEM_TS
+    //  ---  traditional signatures --
 
     template <class Source>
-      typename boost::enable_if<path_traits::is_pathable<
-        typename boost::decay<Source>::type>, path&>::type
-    operator=(Source const& source)
+    typename boost::enable_if<path_traits::is_pathable<
+      typename boost::decay<Source>::type>, path&>::type
+      operator=(Source const& source)
     {
       m_pathname.clear();
       path_traits::dispatch(source, m_pathname, codecvt());
@@ -227,14 +232,20 @@ namespace filesystem
     //  value_type overloads. Same rationale as for constructors above
 
     path& operator=(const value_type* ptr)  // required in case ptr overlaps *this
-                                          {m_pathname = ptr; return *this;}
+    {
+      m_pathname = ptr; return *this;
+    }
     path& operator=(value_type* ptr)  // required in case ptr overlaps *this
-                                          {m_pathname = ptr; return *this;}
-    path& operator=(const string_type& s) {m_pathname = s; return *this;}
-    path& operator=(string_type& s)       {m_pathname = s; return *this;}
+    {
+      m_pathname = ptr; return *this;
+    }
+    path& operator=(const string_type& s) { m_pathname = s; return *this; }
+    path& operator=(string_type& s) { m_pathname = s; return *this; }
 
     path& assign(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
-                                          {m_pathname = ptr; return *this;}
+    {
+      m_pathname = ptr; return *this;
+    }
     template <class Source>
     path& assign(Source const& source, const codecvt_type& cvt)
     {
@@ -251,7 +262,7 @@ namespace filesystem
 
     template <class InputIterator>
     path& assign(InputIterator begin, InputIterator end, const codecvt_type& cvt)
-    { 
+    {
       m_pathname.clear();
       if (begin != end)
       {
@@ -261,6 +272,41 @@ namespace filesystem
       }
       return *this;
     }
+
+
+#else
+    //  ---  ISO Technical Specification signatures --
+    template <class Source>
+    path& operator=(const Source& source)
+    {
+      string_type temp;
+      detail::append(source, temp,
+        typename detail::source_tag<Source>::type(),
+        typename detail::convert_tag<Source>::type());
+      m_pathname.swap(temp);
+      return *this;
+    }
+    template <class Source>
+    path& assign(const Source& source)
+    {
+      string_type temp;
+      detail::append(source, temp,
+        typename detail::source_tag<Source>::type(),
+        typename detail::convert_tag<Source>::type());
+      m_pathname.swap(temp);
+        return *this;
+    }
+    template <class InputIterator>
+    path& assign(InputIterator first, InputIterator last)
+    {
+      string_type temp;
+      detail::append(first, last, temp,
+        typename detail::convert_tag<InputIterator>::type());
+      m_pathname.swap(temp);
+      return *this;
+    }
+#endif
+
 
     //  -----  concatenation  -----
 
