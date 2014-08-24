@@ -273,7 +273,6 @@ namespace filesystem
       return *this;
     }
 
-
 #else
     //  ---  ISO Technical Specification signatures --
     template <class Source>
@@ -306,6 +305,47 @@ namespace filesystem
       return *this;
     }
 #endif
+
+    //  -----  appends  -----
+
+    //  if a separator is added, it is the preferred separator for the platform;
+    //  slash for POSIX, backslash for Windows
+
+    path& operator/=(const path& p);
+
+    template <class Source>
+    typename boost::enable_if<path_traits::is_pathable<
+      typename boost::decay<Source>::type>, path&>::type
+      operator/=(Source const& source)
+    {
+      return append(source, codecvt());
+    }
+
+    path& operator/=(const value_type* ptr);
+    path& operator/=(value_type* ptr)
+    {
+      return this->operator/=(const_cast<const value_type*>(ptr));
+    }
+    path& operator/=(const string_type& s) { return this->operator/=(path(s)); }
+    path& operator/=(string_type& s) { return this->operator/=(path(s)); }
+
+    path& append(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
+    {
+      this->operator/=(ptr);
+      return *this;
+    }
+
+    template <class Source>
+    path& append(Source const& source, const codecvt_type& cvt);
+
+    template <class InputIterator>
+    path& append(InputIterator begin, InputIterator end)
+    {
+      return append(begin, end, codecvt());
+    }
+
+    template <class InputIterator>
+    path& append(InputIterator begin, InputIterator end, const codecvt_type& cvt);
 
 
     //  -----  concatenation  -----
@@ -359,47 +399,6 @@ namespace filesystem
       path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
       return *this;
     }
-
-    //  -----  appends  -----
-
-    //  if a separator is added, it is the preferred separator for the platform;
-    //  slash for POSIX, backslash for Windows
-
-    path& operator/=(const path& p);
-
-    template <class Source>
-      typename boost::enable_if<path_traits::is_pathable<
-        typename boost::decay<Source>::type>, path&>::type
-    operator/=(Source const& source)
-    {
-      return append(source, codecvt());
-    }
-
-    path& operator/=(const value_type* ptr);
-    path& operator/=(value_type* ptr)
-    {
-      return this->operator/=(const_cast<const value_type*>(ptr));
-    }
-    path& operator/=(const string_type& s) { return this->operator/=(path(s)); }
-    path& operator/=(string_type& s)       { return this->operator/=(path(s)); }
-
-    path& append(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
-    {
-      this->operator/=(ptr);
-      return *this;
-    }
-
-    template <class Source>
-    path& append(Source const& source, const codecvt_type& cvt);
-
-    template <class InputIterator>
-    path& append(InputIterator begin, InputIterator end)
-    { 
-      return append(begin, end, codecvt());
-    }
-
-    template <class InputIterator>
-    path& append(InputIterator begin, InputIterator end, const codecvt_type& cvt);
 
     //  -----  modifiers  -----
 
