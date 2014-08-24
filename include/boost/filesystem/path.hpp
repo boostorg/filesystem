@@ -204,7 +204,6 @@ namespace filesystem
       detail::append(first, last, m_pathname,
         typename detail::convert_tag<InputIterator>::type());
     }
-
 #endif
 
     //  -----  assignments  -----
@@ -311,6 +310,9 @@ namespace filesystem
     //  if a separator is added, it is the preferred separator for the platform;
     //  slash for POSIX, backslash for Windows
 
+#ifndef BOOST_FILESYSTEM_TS
+    //  ---  traditional signatures --
+
     path& operator/=(const path& p);
 
     template <class Source>
@@ -346,6 +348,34 @@ namespace filesystem
 
     template <class InputIterator>
     path& append(InputIterator begin, InputIterator end, const codecvt_type& cvt);
+
+#else
+    //  ---  ISO Technical Specification signatures --
+
+    path& operator/=(const path& p);
+
+    template <class Source>
+    path& operator/=(const Source& source)
+    {
+      path temp(source);
+      return this->operator/=(temp);
+    }
+    
+    template <class Source>
+    path& append(const Source& source)
+    {
+      path temp(source);
+      return this->operator/=(temp);
+    }
+
+    template <class InputIterator>
+    path& append(InputIterator first, InputIterator last)
+    {
+      path temp(first, last);
+      return this->operator/=(temp);
+    }
+
+#endif
 
 
     //  -----  concatenation  -----
@@ -769,6 +799,8 @@ namespace filesystem
 //                     class path member template implementation                        //
 //--------------------------------------------------------------------------------------//
 
+# ifndef BOOST_FILESYSTEM_TS
+
   template <class InputIterator>
   path& path::append(InputIterator begin, InputIterator end, const codecvt_type& cvt)
   { 
@@ -794,6 +826,7 @@ namespace filesystem
       m_erase_redundant_separator(sep_pos);
     return *this;
   }
+# endif
 
 //--------------------------------------------------------------------------------------//
 //                     class path member template specializations                       //

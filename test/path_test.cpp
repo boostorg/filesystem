@@ -1636,9 +1636,11 @@ namespace
     p /= p.c_str();
     PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");  
 
+# ifndef BOOST_FILESYSTEM_TS
     p = "snafubar";
     p.append(p.c_str(), path::codecvt());
     PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar"); 
+# endif
 
     p = "snafubar";
     PATH_TEST_EQ(p.append(p.c_str() + 5, p.c_str() + 7), "snafubar" BOOST_DIR_SEP "ba");

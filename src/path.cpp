@@ -163,6 +163,7 @@ namespace filesystem
     return *this;
   }
 
+# ifndef BOOST_FILESYSTEM_TS
   path& path::operator/=(const value_type* ptr)
   {
     if (!*ptr)
@@ -183,6 +184,7 @@ namespace filesystem
     }
     return *this;
   }
+# endif
 
   int path::compare(const path& p) const BOOST_NOEXCEPT
   {
