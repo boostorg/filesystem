@@ -445,11 +445,12 @@ namespace filesystem
       return *this;
     }
 
-    template <class EcharT>
-    path& operator+=(EcharT x)
-    {
-      return concat(&x, &x+1);
-    }
+    path& operator+=(char x)     { return concat(&x, &x+1); }
+    path& operator+=(wchar_t x)  { return concat(&x, &x+1); }
+# ifdef BOOST_FILESYSTEM_CHAR_16_32_T
+    path& operator+=(char16_t x) { return concat(&x, &x+1); }
+    path& operator+=(char32_t x) { return concat(&x, &x+1); }
+# endif
 
     template <class Source>
     path& concat(const Source& source)
