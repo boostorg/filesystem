@@ -27,8 +27,8 @@ project
        [ run operations_unit_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
        [ run path_test.cpp :  :  : <link>shared ]                  
        [ run path_test.cpp :  :  : <link>static : path_test_static ]                  
-       [ run path_unit_test.cpp :  :  : <link>shared ]                  
-       [ run path_unit_test.cpp :  :  : <link>static : path_unit_test_static ]                  
+       [ run path_unit_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]                  
+       [ run path_unit_test.cpp :  :  : <link>static <test-info>always_show_run_output : path_unit_test_static ]                  
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
 
