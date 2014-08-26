@@ -308,8 +308,8 @@ namespace boost { namespace filesystem {
     void append(InputIterator first, InputIterator last, string_type& to,
       no_convert_tag);
 
-    BOOST_FILESYSTEM_DECL void append(const directory_entry& dir_entry, string_type& to,
-      container_source_tag, no_convert_tag);  // implemented in src/operations.cpp
+    void append(const directory_entry& dir_entry, string_type& to,
+      container_source_tag, no_convert_tag);
 
     //  detail::append overloads, different value_types so encoding conversion required
 

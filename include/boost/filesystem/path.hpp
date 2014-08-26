@@ -41,7 +41,14 @@
 #include <locale>
 #include <algorithm>
 
-#include <iostream>
+#ifdef BOOST_FILESYSTEM_LOG_DETAIL_APPENDS
+# include <iostream>
+# define BOOST_FILESYSTEM_APPEND_MSG(X) std::cout << "   " << (X) << "   " << std::endl
+#else
+# define BOOST_FILESYSTEM_APPEND_MSG
+#endif
+
+
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -922,7 +929,7 @@ namespace filesystem
       void append(const Source& from, path::string_type& to,
       iterator_source_tag, no_convert_tag)
     {
-      std::cout << "*** append iterator, no conversion" << std::endl;
+       BOOST_FILESYSTEM_APPEND_MSG("append iterator, no conversion" );
       for (auto iter = from; *iter != path::value_type(); ++iter)
         to += *iter;
     }
@@ -931,7 +938,7 @@ namespace filesystem
       void append(const Source& from, path::string_type& to,
       container_source_tag, no_convert_tag)
     {
-      std::cout << "*** append container, no conversion" << std::endl;
+       BOOST_FILESYSTEM_APPEND_MSG("append container, no conversion" );
       append(from.cbegin(), from.cend(), to, no_convert_tag());
     }
 
@@ -939,7 +946,7 @@ namespace filesystem
       void append(InputIterator first, InputIterator last, path::string_type& to,
       no_convert_tag)
     {
-      std::cout << "*** append range, no conversion" << std::endl;
+       BOOST_FILESYSTEM_APPEND_MSG("append range, no conversion" );
       to.append(first, last);
     }
 
@@ -952,7 +959,7 @@ namespace filesystem
       void append(const Source& from, path::string_type& to,
       iterator_source_tag, with_convert_tag)
     {
-      std::cout << "*** append iterator, with conversion" << std::endl;
+       BOOST_FILESYSTEM_APPEND_MSG("append iterator, with conversion" );
       // path_traits::convert() requires a contiguous sequence, so create a temporary string
       std::basic_string<typename source_value_type<typename boost::decay<Source>::type>::type> temp;
       for (auto iter = from;
@@ -965,7 +972,7 @@ namespace filesystem
       void append(const Source& from, path::string_type& to,
       container_source_tag, with_convert_tag)
     {
-      std::cout << "*** append container, with conversion" << std::endl;
+       BOOST_FILESYSTEM_APPEND_MSG("append container, with conversion" );
       append(from.cbegin(), from.cend(), to, with_convert_tag());
     }
 
@@ -973,12 +980,24 @@ namespace filesystem
       void append(InputIterator first, InputIterator last, path::string_type& to,
       with_convert_tag)
     {
-      std::cout << "*** append range, with conversion" << std::endl;
+       BOOST_FILESYSTEM_APPEND_MSG("append range, with conversion" );
       // path_traits::convert() requires a contiguous sequence, so create a temporary string
       std::basic_string<typename source_value_type<typename boost::decay<InputIterator>::type>::type>
         temp(first, last);
       path_traits::convert(temp.c_str(), temp.c_str() + temp.size(), to, path::codecvt());
     }
+
+    BOOST_FILESYSTEM_DECL
+    void do_append(const directory_entry& dir_entry, path::string_type& to);  // see operations.cpp
+
+    inline
+    void append(const directory_entry& dir_entry, path::string_type& to,
+      container_source_tag, no_convert_tag)
+    {
+      BOOST_FILESYSTEM_APPEND_MSG("append directory_entry, no conversion");
+      do_append(dir_entry, to);
+    }
+
 
   }  // namespace detail
 

@@ -213,27 +213,33 @@ namespace
     PATH_IS(x6o, L"big array char");
     BOOST_TEST_EQ(x6o.native().size(), 14U);
 
+    cout << "array wchar_t, only partially full" << endl;
     wchar_t wchar_array[100];
     std::wcscpy(wchar_array, L"big array wchar_t");
-    path x7o(wchar_array);                             // array char, only partially full
+    path x7o(wchar_array);                             // array wchar_t, only partially full
     PATH_IS(x7o, L"big array wchar_t");
     BOOST_TEST_EQ(x7o.native().size(), 17U);
 
+    cout << "const char* null terminated" << endl;
     path x8(s.c_str());                                // const char* null terminated
     PATH_IS(x8, L"string");
     BOOST_TEST_EQ(x8.native().size(), 6U);
 
+    cout << "const wchar_t* null terminated" << endl;
     path x9(ws.c_str());                               // const wchar_t* null terminated
     PATH_IS(x9, L"wstring");
     BOOST_TEST_EQ(x9.native().size(), 7U);
 
+    cout << "char* null terminated" << endl;
     path x8nc(const_cast<char*>(s.c_str()));           // char* null terminated
     PATH_IS(x8nc, L"string");
     BOOST_TEST_EQ(x8nc.native().size(), 6U);
 
+    cout << "wchar_t* null terminated" << endl;
     path x9nc(const_cast<wchar_t*>(ws.c_str()));       // wchar_t* null terminated
     PATH_IS(x9nc, L"wstring");
     BOOST_TEST_EQ(x9nc.native().size(), 7U);
+    cout << "" << endl;
 
     // non-contiguous containers
 
