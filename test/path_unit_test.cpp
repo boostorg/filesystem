@@ -1122,6 +1122,11 @@ int cpp_main(int, char*[])
   cout << "BOOST_WINDOWS_API" << endl;
   BOOST_TEST(path::preferred_separator == '\\');
 #endif
+#ifdef BOOST_FILESYSTEM_TS
+  cout << "BOOST_FILESYSTEM_TS is defined" << endl;
+#else
+  cout << "BOOST_FILESYSTEM_TS is not defined" << endl;
+#endif
 
   l.push_back('s');
   l.push_back('t');
