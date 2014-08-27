@@ -108,6 +108,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello_filesystem", "hello_f
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello_filesystem_static", "hello_filesystem_static\hello_filesystem_static.vcxproj", "{263E83A3-BF75-46F1-BC71-2FD916D996C6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "header_inclusion", "header_inclusion\header_inclusion.vcxproj", "{6C544BA3-4C8D-4CAA-A5DD-23F8C00CD104}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -238,6 +240,10 @@ Global
 		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Debug|Win32.Build.0 = Debug|Win32
 		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Release|Win32.ActiveCfg = Release|Win32
 		{263E83A3-BF75-46F1-BC71-2FD916D996C6}.Release|Win32.Build.0 = Release|Win32
+		{6C544BA3-4C8D-4CAA-A5DD-23F8C00CD104}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6C544BA3-4C8D-4CAA-A5DD-23F8C00CD104}.Debug|Win32.Build.0 = Debug|Win32
+		{6C544BA3-4C8D-4CAA-A5DD-23F8C00CD104}.Release|Win32.ActiveCfg = Release|Win32
+		{6C544BA3-4C8D-4CAA-A5DD-23F8C00CD104}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
