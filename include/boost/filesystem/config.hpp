@@ -12,9 +12,7 @@
 #ifndef BOOST_FILESYSTEM3_CONFIG_HPP
 #define BOOST_FILESYSTEM3_CONFIG_HPP
 
-//  during initial development on a branch, defining BOOST_FILESYSTEM_TS here is fast and easy 
-#define BOOST_FILESYSTEM_TS
-
+#include <boost/filesystem/detail/version.hpp>
 
 # if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3
 #   error Compiling Filesystem version 3 file with BOOST_FILESYSTEM_VERSION defined != 3
