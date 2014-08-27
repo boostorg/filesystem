@@ -45,7 +45,7 @@
 # include <iostream>
 # define BOOST_FILESYSTEM_APPEND_MSG(X) std::cout << "   " << (X) << "   " << std::endl
 #else
-# define BOOST_FILESYSTEM_APPEND_MSG
+# define BOOST_FILESYSTEM_APPEND_MSG(X) ((void)0)
 #endif
 
 
