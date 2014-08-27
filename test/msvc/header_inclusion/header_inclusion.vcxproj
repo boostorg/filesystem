@@ -69,12 +69,13 @@
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\is_iterator.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\source_value_type.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\utf8_codecvt_facet.hpp" />
+    <ClInclude Include="..\..\..\include\boost\filesystem\detail\version.hpp" />
+    <ClInclude Include="..\..\..\include\boost\filesystem\detail\version_imp.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\exception.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\fstream.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\operations.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\path.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\path_traits.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\version_ts.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

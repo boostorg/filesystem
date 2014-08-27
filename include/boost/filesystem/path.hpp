@@ -141,7 +141,7 @@ namespace filesystem
     path(const path& p) : m_pathname(p.m_pathname) {}
 //    path(path&& p) BOOST_NOEXCEPT;
 
-#ifndef BOOST_FILESYSTEM_TS
+#ifdef BOOST_FILESYSTEM_DETAIL_V3 
     //  ---  traditional signatures --
 
     template <class Source>
@@ -222,7 +222,7 @@ namespace filesystem
     }
 //    path& operator=(path&& p) BOOST_NOEXCEPT;
 
-#ifndef BOOST_FILESYSTEM_TS
+#ifdef BOOST_FILESYSTEM_DETAIL_V3 
     //  ---  traditional signatures --
 
     template <class Source>
@@ -317,7 +317,7 @@ namespace filesystem
     //  if a separator is added, it is the preferred separator for the platform;
     //  slash for POSIX, backslash for Windows
 
-#ifndef BOOST_FILESYSTEM_TS
+#ifdef BOOST_FILESYSTEM_DETAIL_V3 
     //  ---  traditional signatures --
 
     path& operator/=(const path& p);
@@ -389,7 +389,7 @@ namespace filesystem
 
     path& operator+=(const path& p)         { m_pathname += p.m_pathname; return *this; }
 
-#ifndef BOOST_FILESYSTEM_TS
+#ifdef BOOST_FILESYSTEM_DETAIL_V3 
     //  ---  traditional signatures --
 
     template <class Source>
@@ -847,7 +847,7 @@ namespace filesystem
 //                     class path member template implementation                        //
 //--------------------------------------------------------------------------------------//
 
-# ifndef BOOST_FILESYSTEM_TS
+# ifdef BOOST_FILESYSTEM_DETAIL_V3 
 
   template <class InputIterator>
   path& path::append(InputIterator begin, InputIterator end, const codecvt_type& cvt)
@@ -914,7 +914,7 @@ namespace filesystem
 
 
 
-#ifdef BOOST_FILESYSTEM_TS
+#ifndef BOOST_FILESYSTEM_DETAIL_V3 
 
   //--------------------------------------------------------------------------------------//
   //                  class path detail::append implementation                            //

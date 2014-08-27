@@ -236,7 +236,7 @@ namespace boost { namespace filesystem {
       const codecvt_type&);
 
   }  // namespace path_traits
-#ifdef BOOST_FILESYSTEM_TS
+#ifndef BOOST_FILESYSTEM_DETAIL_V3 
 
   //--------------------------------------------------------------------------------------//
   //                              detail::append helpers                                  //

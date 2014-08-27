@@ -38,7 +38,7 @@
 #include <boost/smart_ptr.hpp>  // used constructor tests
 #include <boost/functional/hash.hpp>
 
-#ifdef BOOST_FILESYSTEM_TS
+#ifndef BOOST_FILESYSTEM_DETAIL_V3 
 #include <boost/utility/string_ref.hpp>
 #include <boost/container/string.hpp>
 #include <boost/container/vector.hpp>
@@ -821,7 +821,7 @@ namespace
 
   void test_codecvt_argument()
   {
-#ifndef BOOST_FILESYSTEM_TS
+#ifdef BOOST_FILESYSTEM_DETAIL_V3 
 
     std::cout << "testing codecvt arguments..." << std::endl;
 
@@ -1128,7 +1128,7 @@ int cpp_main(int, char*[])
   cout << "BOOST_WINDOWS_API" << endl;
   BOOST_TEST(path::preferred_separator == '\\');
 #endif
-#ifdef BOOST_FILESYSTEM_TS
+#ifndef BOOST_FILESYSTEM_DETAIL_V3 
   cout << "BOOST_FILESYSTEM_TS is defined" << endl;
 #else
   cout << "BOOST_FILESYSTEM_TS is not defined" << endl;

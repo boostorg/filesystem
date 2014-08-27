@@ -163,7 +163,7 @@ namespace filesystem
     return *this;
   }
 
-# ifndef BOOST_FILESYSTEM_TS
+# ifdef BOOST_FILESYSTEM_DETAIL_V3 
   path& path::operator/=(const value_type* ptr)
   {
     if (!*ptr)
