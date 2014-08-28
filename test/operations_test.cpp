@@ -18,6 +18,7 @@
 #endif
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/config_info.hpp>
 
 #include <boost/config.hpp>
 # if defined( BOOST_NO_STD_WSTRING )
@@ -1999,13 +2000,7 @@ namespace
 
 int cpp_main(int argc, char* argv[])
 {
-// document state of critical macros
-#ifdef BOOST_POSIX_API
-  cout << "BOOST_POSIX_API is defined\n";
-#endif
-#ifdef BOOST_WINDOWS_API
-  cout << "BOOST_WINDOWS_API is defined\n";
-#endif
+  cout << fs::config() << endl;  // document state of critical macros
 
   for (; argc > 1; --argc, ++argv)
   {

@@ -55,6 +55,7 @@
 # if defined( BOOST_NO_STD_WSTRING )
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
+#include <boost/filesystem/config_info.hpp>
 
 #include <boost/utility.hpp>
 #include <iostream>
@@ -66,6 +67,7 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
+using std::cout; using std::endl;
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
 using boost::next;
@@ -89,10 +91,10 @@ namespace
     if (source.string() == expected)
       return;
 
-    std::cout << file
+    cout << file
               << '(' << line << "): source: \"" << source.string()
               << "\" != expected: \"" << expected
-              << "\"" << std::endl;
+              << "\"" << endl;
 
     ++::boost::detail::test_errors();
   }
@@ -107,13 +109,13 @@ namespace
 
   void exception_tests()
   {
-    std::cout << "exception_tests..." << std::endl;
+    cout << "exception_tests..." << endl;
     const std::string str_1("string-1");
     boost::system::error_code ec(12345, boost::system::system_category());
     try { throw fs::filesystem_error(str_1, ec); }
     catch (const fs::filesystem_error & ex)
     {
-      //std::cout << ex.what() << "*" << std::endl;
+      //cout << ex.what() << "*" << endl;
       //BOOST_TEST(std::strcmp(ex.what(),
       //  "string-1: Unknown error") == 0);
       BOOST_TEST(ex.code() == ec);
@@ -122,7 +124,7 @@ namespace
     try { throw fs::filesystem_error(str_1, "p1", "p2", ec); }
     catch (const fs::filesystem_error & ex)
     {
-      //std::cout << ex.what() << "*" << std::endl;                    
+      //cout << ex.what() << "*" << endl;                    
       //BOOST_TEST(std::strcmp(ex.what(),
       //  "string-1: Unknown error: \"p1\", \"p2\"") == 0);
       BOOST_TEST(ex.code() == ec);
@@ -138,7 +140,7 @@ namespace
 
   void overload_tests()
   {
-    std::cout << "overload_tests..." << std::endl;
+    cout << "overload_tests..." << endl;
 
     fs::exists(p1);
     fs::exists("foo");
@@ -160,7 +162,7 @@ namespace
 
   void iterator_tests()
   {
-    std::cout << "iterator_tests..." << std::endl;
+    cout << "iterator_tests..." << endl;
 
     path itr_ck = "";
     path::const_iterator itr = itr_ck.begin();
@@ -434,7 +436,7 @@ namespace
 
   void non_member_tests()
   {
-    std::cout << "non_member_tests..." << std::endl;
+    cout << "non_member_tests..." << endl;
 
     // test non-member functions, particularly operator overloads
                                                                
@@ -666,7 +668,7 @@ namespace
 
     if (platform == "Windows")
     {
-      std::cout << "Windows relational tests..." << std::endl;
+      cout << "Windows relational tests..." << endl;
       path p10 ("c:\\file");
       path p11 ("c:/file");
       // check each overload
@@ -739,7 +741,7 @@ namespace
 
   void query_and_decomposition_tests()
   {
-    std::cout << "query_and_decomposition_tests..." << std::endl;
+    cout << "query_and_decomposition_tests..." << endl;
 
     // stem() tests not otherwise covered
     BOOST_TEST(path("b").stem() == "b");
@@ -1350,7 +1352,7 @@ namespace
 
   void composition_tests()
   {
-    std::cout << "composition_tests..." << std::endl;
+    cout << "composition_tests..." << endl;
 
   }
 
@@ -1358,7 +1360,7 @@ namespace
 
   void construction_tests()
   {
-    std::cout << "construction_tests..." << std::endl;
+    cout << "construction_tests..." << endl;
 
     PATH_TEST_EQ("", "");
 
@@ -1500,7 +1502,7 @@ namespace
 
   void append_tests()
   {
-    std::cout << "append_tests..." << std::endl;
+    cout << "append_tests..." << endl;
 
     // There are many control paths to be exercised, since empty paths and arguments,
     // paths with trailing separators, arguments with leading separators, with or without
@@ -1519,9 +1521,9 @@ namespace
     //for (int i = 0; i < sizeof(x)/sizeof(char*); ++i)
     //  for (int j = 0; j < sizeof(y)/sizeof(char*); ++j)
     //  {
-    //    std::cout << "\n    PATH_TEST_EQ(path(\"" << x[i] << "\") / \"" << y[j] << "\", \"" 
+    //    cout << "\n    PATH_TEST_EQ(path(\"" << x[i] << "\") / \"" << y[j] << "\", \"" 
     //              << path(x[i]) / y[j] << "\");\n";
-    //    std::cout << "    append_test_aux(\"" << x[i] << "\", \"" << y[j] << "\", \""
+    //    cout << "    append_test_aux(\"" << x[i] << "\", \"" << y[j] << "\", \""
     //              << path(x[i]) / y[j] << "\");\n";
     //  }
 
@@ -1605,7 +1607,7 @@ namespace
 
   void self_assign_and_append_tests()
   {
-    std::cout << "self_assign_and_append_tests..." << std::endl;
+    cout << "self_assign_and_append_tests..." << endl;
 
     path p;
 
@@ -1651,7 +1653,7 @@ namespace
 
   void name_function_tests()
   {
-    std::cout << "name_function_tests..." << std::endl;
+    cout << "name_function_tests..." << endl;
 
     BOOST_TEST(fs::portable_posix_name(std::string("x")));
     BOOST_TEST(fs::windows_name(std::string("x")));
@@ -1734,7 +1736,7 @@ namespace
 
   void replace_extension_tests()
   {
-    std::cout << "replace_extension_tests..." << std::endl;
+    cout << "replace_extension_tests..." << endl;
 
     BOOST_TEST(path().replace_extension().empty());
     BOOST_TEST(path().replace_extension("a") == ".a");
@@ -1766,7 +1768,7 @@ namespace
 
   void make_preferred_tests()
   {
-    std::cout << "make_preferred_tests..." << std::endl;
+    cout << "make_preferred_tests..." << endl;
 
     if (platform == "Windows")
     {
@@ -1794,13 +1796,15 @@ const boost::filesystem::path ticket_6690("test");  // #6690 another V++ static 
 
 int cpp_main(int, char*[])
 {
+  cout << fs::config() << endl;  // document state of critical macros
+
   // The choice of platform is make at runtime rather than compile-time
   // so that compile errors for all platforms will be detected even though
   // only the current platform is runtime tested.
   platform = (platform == "Win32" || platform == "Win64" || platform == "Cygwin")
                ? "Windows"
                : "POSIX";
-  std::cout << "Platform is " << platform << '\n';
+  cout << "Platform is " << platform << '\n';
 
   BOOST_TEST(p1.string() != p3.string());
   p3 = p2;
@@ -1865,13 +1869,13 @@ int cpp_main(int, char*[])
 
   // inserter and extractor tests
 # if !defined(BOOST_MSVC) || BOOST_MSVC > 1300 // bypass VC++ 7.0 and earlier
-  std::cout << "\nInserter and extractor test...";
+  cout << "\nInserter and extractor test...";
   std::stringstream ss;
-  ss << fs::path("foo/bar") << std::endl;
+  ss << fs::path("foo/bar") << endl;
   fs::path round_trip;
   ss >> round_trip;
   BOOST_TEST(round_trip.string() == "foo/bar");
-  std::cout << round_trip.string() << "..." << round_trip << " complete\n";
+  cout << round_trip.string() << "..." << round_trip << " complete\n";
 # endif
 
   return ::boost::report_errors();

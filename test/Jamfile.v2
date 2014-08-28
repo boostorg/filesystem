@@ -5,10 +5,11 @@
 # See www.boost.org/LICENSE_1_0.txt
 
 project 
-    : requirements
+    : requirements      # set requirements that apply to entire project
       <library>/boost/filesystem//boost_filesystem
       <library>/boost/system//boost_system
       <toolset>msvc:<asynch-exceptions>on
+      <test-info>always_show_run_output
     ;
     
 # Some tests are run both statically and as shared libraries since Filesystem
@@ -21,14 +22,14 @@ project
        [ run deprecated_test.cpp ]                  
        [ run fstream_test.cpp ]
        [ run large_file_support_test.cpp ]
-       [ run locale_info.cpp  : : : <test-info>always_show_run_output ]
-       [ run operations_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
+       [ run locale_info.cpp ]
+       [ run operations_test.cpp :  :  : <link>shared ]
        [ run operations_test.cpp :  :  : <link>static : operations_test_static ]
-       [ run operations_unit_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
+       [ run operations_unit_test.cpp :  :  : <link>shared ]
        [ run path_test.cpp :  :  : <link>shared ]                  
        [ run path_test.cpp :  :  : <link>static : path_test_static ]                  
-       [ run path_unit_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]                  
-       [ run path_unit_test.cpp :  :  : <link>static <test-info>always_show_run_output : path_unit_test_static ]                  
+       [ run path_unit_test.cpp :  :  : <link>shared ]                  
+       [ run path_unit_test.cpp :  :  : <link>static : path_unit_test_static ]                  
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
 

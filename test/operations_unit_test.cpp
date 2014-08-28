@@ -25,6 +25,7 @@
 #endif
 
 #include <boost/filesystem.hpp>   // make sure filesystem.hpp works
+#include <boost/filesystem/config_info.hpp>
 
 #include <boost/config.hpp>
 # if defined( BOOST_NO_STD_WSTRING )
@@ -323,16 +324,9 @@ namespace
 
 int cpp_main(int, char*[])
 {
-// document state of critical macros
-#ifdef BOOST_POSIX_API
-  cout << "BOOST_POSIX_API is defined\n";
-#endif
-#ifdef BOOST_WINDOWS_API
-  cout << "BOOST_WINDOWS_API is defined\n";
-#endif
-  cout << "BOOST_FILESYSTEM_DECL" << BOOST_STRINGIZE(=BOOST_FILESYSTEM_DECL) << "\n";
-  cout << "BOOST_SYMBOL_VISIBLE" << BOOST_STRINGIZE(=BOOST_SYMBOL_VISIBLE) << "\n";
-  
+  cout << config() << endl;  // document state of critical macros
+
+
   cout << "current_path() is " << current_path().string() << endl;
 
   file_status_test();

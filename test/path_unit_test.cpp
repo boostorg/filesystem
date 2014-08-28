@@ -33,6 +33,7 @@
 
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
+#include <boost/filesystem/config_info.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <boost/smart_ptr.hpp>  // used constructor tests
@@ -1119,20 +1120,7 @@ namespace
 
 int cpp_main(int, char*[])
 {
-// document state of critical macros
-#ifdef BOOST_POSIX_API
-  cout << "BOOST_POSIX_API" << endl;
-  BOOST_TEST(path::preferred_separator == '/');
-#endif
-#ifdef BOOST_WINDOWS_API
-  cout << "BOOST_WINDOWS_API" << endl;
-  BOOST_TEST(path::preferred_separator == '\\');
-#endif
-#ifndef BOOST_FILESYSTEM_DETAIL_V3 
-  cout << "BOOST_FILESYSTEM_TS is defined" << endl;
-#else
-  cout << "BOOST_FILESYSTEM_TS is not defined" << endl;
-#endif
+  cout << fs::config() << endl;  // document state of critical macros
 
   l.push_back('s');
   l.push_back('t');
