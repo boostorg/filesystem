@@ -18,6 +18,7 @@
 #include <boost/config/warning_disable.hpp>
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/config_info.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -30,18 +31,19 @@ namespace fs = boost::filesystem;
 int cpp_main(int argc, char* argv[])
 {
   cout << "Hello, filesystem world" << endl;
+  cout << fs::config() << endl;
 
-  const wchar_t* wchar_t_p = L".";
-  const char* char_p = ".";
+  //const wchar_t* wchar_t_p = L".";
+  //const char* char_p = ".";
 
-  BOOST_TEST(fs::exists(wchar_t_p));
-  cout << "test 1 complete" << endl;
-  BOOST_TEST(fs::exists(L"."));
-  cout << "test 2 complete" << endl;
-  BOOST_TEST(fs::exists(char_p));
-  cout << "test 3 complete" << endl;
-  BOOST_TEST(fs::exists("."));
-  cout << "test 4 complete" << endl;
+  //BOOST_TEST(fs::exists(wchar_t_p));
+  //cout << "test 1 complete" << endl;
+  //BOOST_TEST(fs::exists(L"."));
+  //cout << "test 2 complete" << endl;
+  //BOOST_TEST(fs::exists(char_p));
+  //cout << "test 3 complete" << endl;
+  //BOOST_TEST(fs::exists("."));
+  //cout << "test 4 complete" << endl;
 
   return ::boost::report_errors();
 } // cpp_main

@@ -7,11 +7,17 @@
 
 # Library home page: http://www.boost.org/libs/filesystem
 
+import os ;
+local fs_ver = [ os.environ BOOST_FILESYSTEM_VERSION ] ;
+ECHO $(fs_ver) ;
+
 project
-    : requirements
+    : requirements     # set requirements that apply to entire project                   
       <library>/boost/filesystem//boost_filesystem
       <library>/boost/system//boost_system
       <toolset>msvc:<asynch-exceptions>on
+      <test-info>always_show_run_output
+      <define>BOOST_FILESYSTEM_VERSION_REQUEST="$(fs_ver)"
       <link>static
     ;
     
@@ -19,14 +25,13 @@ project
 #       [ run 9054_static_const_codecvt_segfault_pre_main.cpp 
 #           :  :  : <link>shared : 9054_shared ]                  
 #       [ run 9054_static_const_codecvt_segfault_pre_main.cpp
-#           :  :  : <link>static : 9054_static ]                  
-       [ run hello_filesystem.cpp
-           :  :  : <link>shared : hello_shared ]                  
-       [ run hello_filesystem.cpp
-           :  :  : <link>static : hello_static ]                  
-       [ run 9219.cpp
-           :  :  : <link>shared : 9219_shared ]                  
-       [ run 9219.cpp
-           :  :  : <link>static : 9219_static ]                  
+#           :  :  : : 9054_static ]                  
+       [ run hello_filesystem.cpp :  :  : <link>shared : hello_shared ]                  
+#       [ run hello_filesystem.cpp :  :  : <link>static  : hello_static ]
+#                            
+#       [ run 9219.cpp
+#          :  :  : <link>shared : 9219_shared ]                  
+#      [ run 9219.cpp
+#          :  :  : <link>static : 9219_static ]                  
        ;
        
