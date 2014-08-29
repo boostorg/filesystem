@@ -563,19 +563,29 @@ namespace
     //  Reported as S/F bug [ 1259176 ]
     if (platform == "Windows")
     {
-      fs::path root_name_path(fs::current_path().root_name());
-      fs::directory_iterator it(root_name_path);
-      BOOST_TEST(it != fs::directory_iterator());
-//      BOOST_TEST(fs::exists((*it).path()));
-      BOOST_TEST(fs::exists(it->path()));
-      BOOST_TEST(it->path().parent_path() == root_name_path);
+      fs::path save(fs::current_path());  // save current path
+      fs::current_path(dir);              // set current path to the test directory
+      cout << "***" << fs::current_path() << endl;
+      fs::path root_name_path(fs::current_path().root_name()); // verify test conditions
+
+      // create iterator to the test directory, using only the drive letter
+      fs::directory_iterator it(root_name_path); 
+
+      BOOST_TEST(it != fs::directory_iterator());  // should not be empty
+      BOOST_TEST(fs::exists(it->path()));          // the path should exist
+      BOOST_TEST(it->path().parent_path() == root_name_path);  // and parent is root name
+
+      // verify that the directory being iterated over has the expected contents
       bool found(false);
-      do
+      do  // search directory
       {
-        if (it->path().filename() == temp_dir.filename())
+        cout <<  it->path().filename() << endl;
+        if (it->path().filename() == "d1")
           found = true;
       } while (++it != fs::directory_iterator());
       BOOST_TEST(found);
+
+      fs::current_path(save);  // restore current path
     }
 
     // there was an inital bug in directory_iterator that caused premature
@@ -1418,11 +1428,11 @@ namespace
 
     fs::path relative_dir(dir.filename());
     BOOST_TEST_EQ(fs::canonical(dir), dir);
-    BOOST_TEST_EQ(fs::canonical(relative_dir), dir);
+    BOOST_TEST_EQ(fs::canonical(relative_dir, dir.parent_path()), dir);
     BOOST_TEST_EQ(fs::canonical(dir / "f0"), dir / "f0");
-    BOOST_TEST_EQ(fs::canonical(relative_dir / "f0"), dir / "f0");
-    BOOST_TEST_EQ(fs::canonical(relative_dir / "./f0"), dir / "f0");
-    BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0"), dir / "f0");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "f0", dir.parent_path()), dir / "f0");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "./f0", dir.parent_path()), dir / "f0");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0", dir.parent_path()), dir / "f0");
 
     // treat parent of root as itself on both POSIX and Windows
     fs::path init(fs::initial_path());
@@ -1459,7 +1469,7 @@ namespace
 
     fs::path relative_dir(dir.filename());
     BOOST_TEST_EQ(fs::canonical(dir / "sym-d1/f2"), d1 / "f2");
-    BOOST_TEST_EQ(fs::canonical(relative_dir / "sym-d1/f2"), d1 / "f2");
+    BOOST_TEST_EQ(fs::canonical(relative_dir / "sym-d1/f2", dir.parent_path()), d1 / "f2");
   }
 
  //  copy_file_tests  ------------------------------------------------------------------//
@@ -2029,8 +2039,17 @@ int cpp_main(int argc, char* argv[])
 # endif
   cout << "API is " << platform << endl;
   cout << "initial_path() is " << fs::initial_path() << endl;
-  fs::path ip = fs::initial_path();
+  cout << "temp_dir is " << temp_dir << endl;
 
+#ifdef BOOST_FILESYSTEM_OPERATIONS_TEST_TEMP
+  dir = fs::path(BOOST_STRINGIZE(BOOST_FILESYSTEM_OPERATIONS_TEST_TEMP)) / temp_dir;
+#else
+  dir = fs::initial_path() / temp_dir;
+#endif
+  cout << "path for tests is " << dir << endl;
+
+  fs::path ip = dir;
+  cout << endl;
   for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
   {
     if (it != ip.begin())
@@ -2038,8 +2057,6 @@ int cpp_main(int argc, char* argv[])
     cout << *it;
   }
   cout << endl;
-
-  dir = fs::initial_path() / temp_dir;
 
   if (fs::exists(dir))
   {

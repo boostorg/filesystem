@@ -4,6 +4,10 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See www.boost.org/LICENSE_1_0.txt
 
+import os ;
+local op_test_temp = [ os.environ BOOST_FILESYSTEM_OPERATIONS_TEST_TEMP ] ;
+ECHO $(op_test_temp) ;
+
 project 
     : requirements      # set requirements that apply to entire project
       <library>/boost/filesystem//boost_filesystem
@@ -23,8 +27,10 @@ project
        [ run fstream_test.cpp ]
        [ run large_file_support_test.cpp ]
        [ run locale_info.cpp ]
-       [ run operations_test.cpp :  :  : <link>shared ]
-       [ run operations_test.cpp :  :  : <link>static : operations_test_static ]
+       [ run operations_test.cpp :  :  : <link>shared
+         <define>BOOST_FILESYSTEM_OPERATIONS_TEST_TEMP="$(op_test_temp)" ]
+       [ run operations_test.cpp :  :  : <link>static
+         <define>BOOST_FILESYSTEM_OPERATIONS_TEST_TEMP="$(op_test_temp)" : operations_test_static ]
        [ run operations_unit_test.cpp :  :  : <link>shared ]
        [ run path_test.cpp :  :  : <link>shared ]                  
        [ run path_test.cpp :  :  : <link>static : path_test_static ]                  
