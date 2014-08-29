@@ -15,7 +15,7 @@
 #ifndef BOOST_FILESYSTEM_CONFIG_INFO_HPP
 #define BOOST_FILESYSTEM_CONFIG_INFO_HPP
 
-#include <boost/config.hpp>
+#include <boost/filesystem/config.hpp>
 #include <string>
 #include <cstring>
 #include <ostream>
