@@ -7,9 +7,9 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-//  The sole purpose of this header is to define the default version of the library if
-//  not already defined.
+//  The sole purpose of this header is to define the default version of the library when
+//  BOOST_FILESYSTEM_DEFAULT_VERSION has not already been defined.
 
 #ifndef BOOST_FILESYSTEM_DEFAULT_VERSION
-#  define BOOST_FILESYSTEM_DEFAULT_VERSION 4
+#  define BOOST_FILESYSTEM_DEFAULT_VERSION 3
 #endif

@@ -39,7 +39,7 @@
 #include <boost/smart_ptr.hpp>  // used constructor tests
 #include <boost/functional/hash.hpp>
 
-#if BOOST_FILESYSTEM_VERSION == 4 
+#if BOOST_FILESYSTEM_VERSION > 3 
 #include <boost/utility/string_ref.hpp>
 #include <boost/container/string.hpp>
 #include <boost/container/vector.hpp>
@@ -149,6 +149,7 @@ namespace
   std::list<wchar_t> wl;  // see main() for initialization to w, s, t, r, i, n, g
   std::vector<char> v;      // see main() for initialization to f, u, z
   std::vector<wchar_t> wv;  // see main() for initialization to w, f, u, z
+#if BOOST_FILESYSTEM_VERSION > 3 
   boost::string_ref sr(s);
   boost::wstring_ref wsr(ws);
   boost::container::string bs("string");
@@ -157,6 +158,8 @@ namespace
   boost::container::list<wchar_t> wbl; // see main() for initialization to w, s, t, r, i, n, g
   boost::container::vector<char> bv; // see main() for initialization to f, u, z
   boost::container::vector<wchar_t> wbv; // see main() for initialization to w, f, u, z
+#endif
+
   class Base {};
   class Derived : public Base {};
   void fun(const boost::shared_ptr< Base >&) {}
@@ -248,52 +251,55 @@ namespace
     PATH_IS(x10, L"string");
     BOOST_TEST_EQ(x10.native().size(), 6U);
 
-    path x10a(sr);                                     // boost::string_ref
-    PATH_IS(x10a, L"string");
-    BOOST_TEST_EQ(x10a.native().size(), 6U);
-
     path xll(wl);                                      // std::list<wchar_t>
     PATH_IS(xll, L"wstring");
     BOOST_TEST_EQ(xll.native().size(), 7U);
 
-    path x11a(wsr); // boost::wstring_ref
+#if BOOST_FILESYSTEM_VERSION > 3 
+    path x10a(sr);                                     // boost::string_ref
+    PATH_IS(x10a, L"string");
+    BOOST_TEST_EQ(x10a.native().size(), 6U);
+
+    path x11a(wsr);                                    // boost::wstring_ref
     PATH_IS(x11a, L"wstring");
     BOOST_TEST_EQ(x11a.native().size(), 7U);
     
-    path x12(bs); // boost::string
+    path x12(bs);                                      // boost::string
     PATH_IS(x12, L"string");
     BOOST_TEST_EQ(x12.native().size(), 6U);
     
-    path x13(wbs); // boost::wstring
+    path x13(wbs);                                     // boost::wstring
     PATH_IS(x13, L"wstring");
     BOOST_TEST_EQ(x13.native().size(), 7U);
     
       
-    path x14(bv); // boost::container::vector<char>
+    path x14(bv);                                      // boost::container::vector<char>
     PATH_IS(x14, L"fuz");
     BOOST_TEST_EQ(x14.native().size(), 3U);
     
-    path x15(wbv); // boost::container::vector<wchar_t>
+    path x15(wbv);                                     // boost::container::vector<wchar_t>
     PATH_IS(x15, L"wfuz");
     BOOST_TEST_EQ(x15.native().size(), 4U);
+#endif
     
        // non-contiguous containers
-    path x16(l); // std::list<char>
+    path x16(l);                                       // std::list<char>
     PATH_IS(x16, L"string");
     BOOST_TEST_EQ(x16.native().size(), 6U);
     
-    path x17(wl); // std::list<wchar_t>
+    path x17(wl);                                      // std::list<wchar_t>
     PATH_IS(x17, L"wstring");
     BOOST_TEST_EQ(x17.native().size(), 7U);
     
-    path x18(bl); // std::list<char>
+#if BOOST_FILESYSTEM_VERSION > 3 
+    path x18(bl);                                      // boost::container::list<char>
     PATH_IS(x18, L"string");
     BOOST_TEST_EQ(x18.native().size(), 6U);
     
-    path x19(wbl); // std::list<wchar_t>
+    path x19(wbl);                                     // boost::container::list<wchar_t>
     PATH_IS(x19, L"wstring");
     BOOST_TEST_EQ(x19.native().size(), 7U);
-
+#endif
 
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK
@@ -328,21 +334,23 @@ namespace
 
     x = string("std::string");                         // container char
     PATH_IS(x, L"std::string");
+    
+    x = wstring(L"std::wstring");                      // container wchar_t
+    PATH_IS(x, L"std::wstring");
 
+#if BOOST_FILESYSTEM_VERSION > 3 
     x = boost::container::string("boost::container::string");
     PATH_IS(x, L"boost::container::string");
     
     x = boost::string_ref("boost::string_ref");
     PATH_IS(x, L"boost::string_ref");
-    
-    x = wstring(L"std::wstring");                      // container wchar_t
-    PATH_IS(x, L"std::wstring");
 
     x = boost::container::wstring(L"boost::container::wstring");
     PATH_IS(x, L"boost::container::wstring");
     
     x = boost::wstring_ref(L"boost::wstring_ref");
     PATH_IS(x, L"boost::wstring_ref");
+#endif
     
     x = "array char";                                  // array char
     PATH_IS(x, L"array char");
@@ -822,7 +830,7 @@ namespace
 
   void test_codecvt_argument()
   {
-#if  BOOST_FILESYSTEM_VERSION == 3 
+#if BOOST_FILESYSTEM_VERSION == 3 
 
     std::cout << "testing codecvt arguments..." << std::endl;
 
@@ -1146,6 +1154,7 @@ int cpp_main(int, char*[])
   wv.push_back(L'u');
   wv.push_back(L'z');
 
+#if BOOST_FILESYSTEM_VERSION > 3 
   // Boost containers
 
   bl.push_back('s');
@@ -1171,7 +1180,8 @@ int cpp_main(int, char*[])
   wbv.push_back(L'f');
   wbv.push_back(L'u');
   wbv.push_back(L'z');
-  
+#endif
+
   test_overloads();
   test_constructors();
   test_assignments();

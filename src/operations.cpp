@@ -1892,6 +1892,7 @@ namespace path_traits
 
 }  // namespace path_traits
 
+#if  BOOST_FILESYSTEM_VERSION > 3
 namespace detail
 {
   //  do_append() implemented here where directory_entry is a complete type
@@ -1901,6 +1902,8 @@ namespace detail
       no_convert_tag());
   }
 } // namespace detail
+#endif
+
 } // namespace filesystem
 } // namespace boost
 

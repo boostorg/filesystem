@@ -230,7 +230,7 @@ namespace boost { namespace filesystem {
       const codecvt_type&);
 
   }  // namespace path_traits
-#if  BOOST_FILESYSTEM_VERSION == 4 
+#if  BOOST_FILESYSTEM_VERSION > 3 
 
   //--------------------------------------------------------------------------------------//
   //                              detail::append helpers                                  //

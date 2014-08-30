@@ -914,7 +914,7 @@ namespace filesystem
 
 
 
-#if  BOOST_FILESYSTEM_VERSION == 4 
+#if  BOOST_FILESYSTEM_VERSION > 3 
 
   //--------------------------------------------------------------------------------------//
   //                  class path detail::append implementation                            //
