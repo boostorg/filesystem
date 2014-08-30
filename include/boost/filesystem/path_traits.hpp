@@ -10,12 +10,6 @@
 #ifndef BOOST_FILESYSTEM_PATH_TRAITS_HPP
 #define BOOST_FILESYSTEM_PATH_TRAITS_HPP
 
-#include <boost/config.hpp>
-
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
-
 #include <boost/filesystem/config.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/decay.hpp>
@@ -236,7 +230,7 @@ namespace boost { namespace filesystem {
       const codecvt_type&);
 
   }  // namespace path_traits
-#ifndef BOOST_FILESYSTEM_DETAIL_V3 
+#if  BOOST_FILESYSTEM_VERSION == 4 
 
   //--------------------------------------------------------------------------------------//
   //                              detail::append helpers                                  //

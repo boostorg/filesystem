@@ -1618,7 +1618,7 @@ namespace
     p = p.c_str();
     PATH_TEST_EQ(p, "snafubar");
 
-# ifdef BOOST_FILESYSTEM_DETAIL_V3 
+# if  BOOST_FILESYSTEM_VERSION == 3 
     p = "snafubar";
     p.assign(p.c_str(), path::codecvt());
     PATH_TEST_EQ(p, "snafubar");  
@@ -1638,7 +1638,7 @@ namespace
     p /= p.c_str();
     PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");  
 
-# ifdef BOOST_FILESYSTEM_DETAIL_V3 
+# if  BOOST_FILESYSTEM_VERSION == 3 
     p = "snafubar";
     p.append(p.c_str(), path::codecvt());
     PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar"); 

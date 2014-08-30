@@ -39,7 +39,7 @@
 #include <boost/smart_ptr.hpp>  // used constructor tests
 #include <boost/functional/hash.hpp>
 
-#ifndef BOOST_FILESYSTEM_DETAIL_V3 
+#if BOOST_FILESYSTEM_VERSION == 4 
 #include <boost/utility/string_ref.hpp>
 #include <boost/container/string.hpp>
 #include <boost/container/vector.hpp>
@@ -822,7 +822,7 @@ namespace
 
   void test_codecvt_argument()
   {
-#ifdef BOOST_FILESYSTEM_DETAIL_V3 
+#if  BOOST_FILESYSTEM_VERSION == 3 
 
     std::cout << "testing codecvt arguments..." << std::endl;
 

@@ -12,14 +12,22 @@
 #ifndef BOOST_FILESYSTEM3_CONFIG_HPP
 #define BOOST_FILESYSTEM3_CONFIG_HPP
 
-#include <boost/filesystem/detail/version.hpp>
 
-# if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3
-#   error Compiling Filesystem version 3 file with BOOST_FILESYSTEM_VERSION defined != 3
+#include <boost/filesystem/detail/version.hpp>  // for BOOST_FILESYSTEM_DEFAULT_VERSION
+
+// Reality check BOOST_FILESYSTEM_VERSION
+# if BOOST_FILESYSTEM_DEFAULT_VERSION != 3 && BOOST_FILESYSTEM_DEFAULT_VERSION != 4
+#   error "BOOST_FILESYSTEM_VERSION_DEFAULT" not defined as 3 or 4.
 # endif
 
+// Define BOOST_FILESYSTEM_VERSION if needed
 # if !defined(BOOST_FILESYSTEM_VERSION)
-#   define BOOST_FILESYSTEM_VERSION 3
+#   define BOOST_FILESYSTEM_VERSION BOOST_FILESYSTEM_DEFAULT_VERSION
+# endif
+
+// Reality check BOOST_FILESYSTEM_VERSION
+# if BOOST_FILESYSTEM_VERSION != 3 && BOOST_FILESYSTEM_VERSION != 4
+#   error "BOOST_FILESYSTEM_VERSION" not defined as 3 or 4.
 # endif
 
 #define BOOST_FILESYSTEM_I18N  // aid users wishing to compile several versions

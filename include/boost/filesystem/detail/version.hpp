@@ -7,10 +7,9 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-//  The sole purpose of this header is to specify the default version of the library.
+//  The sole purpose of this header is to define the default version of the library if
+//  not already defined.
 
-# if !defined(BOOST_FILESYSTEM_USE_TS) && !defined(BOOST_FILESYSTEM_USE_V3)
-#   define BOOST_FILESYSTEM_USE_TS
-# endif
-
-#include "version_imp.hpp"
+#ifndef BOOST_FILESYSTEM_DEFAULT_VERSION
+#  define BOOST_FILESYSTEM_DEFAULT_VERSION 4
+#endif
