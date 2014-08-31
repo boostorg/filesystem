@@ -40,7 +40,7 @@ namespace
       return "codecvt";
     }
 
-    std::string codecvt_error_cat::message(int ev) const
+    std::string message(int ev) const
     {
       std::string str;
       switch (ev)

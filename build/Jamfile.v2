@@ -20,13 +20,13 @@ SOURCES =
 	
 	
 	
-	utf8_codecvt_facet
 	windows_file_codecvt
 	;
 
 lib boost_filesystem
     : $(SOURCES).cpp
       v3_path v4_path 
+      v3_utf8_codecvt_facet v4_utf8_codecvt_facet 
       v3_codecvt_error_category v4_codecvt_error_category 
       v3_operations v4_operations 
       v3_path_traits v4_path_traits 
@@ -45,22 +45,53 @@ lib boost_filesystem
       <link>shared:<library>../../system/build//boost_system
     ;
 
- obj v3_path : path.cpp : <define>BOOST_FILESYSTEM_VERSION=3 ;
- obj v4_path : path.cpp : <define>BOOST_FILESYSTEM_VERSION=4 ;
+ obj v3_path : path.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_path : path.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
 
- obj v3_codecvt_error_category : codecvt_error_category.cpp : <define>BOOST_FILESYSTEM_VERSION=3 ;
- obj v4_codecvt_error_category : codecvt_error_category.cpp : <define>BOOST_FILESYSTEM_VERSION=4 ;
+ obj v3_utf8_codecvt_facet : utf8_codecvt_facet.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_utf8_codecvt_facet : utf8_codecvt_facet.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
 
- obj v3_operations : operations.cpp : <define>BOOST_FILESYSTEM_VERSION=3 ;
- obj v4_operations : operations.cpp : <define>BOOST_FILESYSTEM_VERSION=4 ;
+ obj v3_codecvt_error_category : codecvt_error_category.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_codecvt_error_category : codecvt_error_category.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
 
- obj v3_path_traits : path_traits.cpp : <define>BOOST_FILESYSTEM_VERSION=3 ;
- obj v4_path_traits : path_traits.cpp : <define>BOOST_FILESYSTEM_VERSION=4 ;
+ obj v3_operations : operations.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_operations : operations.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
 
- obj v3_portability : portability.cpp : <define>BOOST_FILESYSTEM_VERSION=3 ;
- obj v4_portability : portability.cpp : <define>BOOST_FILESYSTEM_VERSION=4 ;
+ obj v3_path_traits : path_traits.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_path_traits : path_traits.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
 
- obj v3_unique_path : unique_path.cpp : <define>BOOST_FILESYSTEM_VERSION=3 ;
- obj v4_unique_path : unique_path.cpp : <define>BOOST_FILESYSTEM_VERSION=4 ;
+ obj v3_portability : portability.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_portability : portability.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
+
+ obj v3_unique_path : unique_path.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=3 ;
+ obj v4_unique_path : unique_path.cpp : <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
+      <define>BOOST_FILESYSTEM_VERSION=4 ;
 
 boost-install boost_filesystem ;
