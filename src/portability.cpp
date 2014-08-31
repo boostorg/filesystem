@@ -32,15 +32,26 @@ namespace fs = boost::filesystem;
 
 namespace
 {
-  const char invalid_chars[] =
+  //------------------------------------------------------------------------------------//
+  //                                                                                    //
+  //                                HEADS UP!                                           //
+  //                                                                                    //
+  //  In C++03, names in the unnamed namespace have external linkage. That may cause    //
+  //  duplicate symbols if the same source is linked to twice, even though              //
+  //  BOOST_FILESYSTEM_NAMESPACE is different for the two compilations. The workaround  //
+  //  is to make the contents of the unnamed namespace static. Fixed in C++11.          //
+  //                                                                                    //
+  //------------------------------------------------------------------------------------//
+
+  static const char invalid_chars[] =
     "\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F"
     "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"
     "<>:\"/\\|";
   // note that the terminating '\0' is part of the string - thus the size below
   // is sizeof(invalid_chars) rather than sizeof(invalid_chars)-1.  I 
-  const std::string windows_invalid_chars(invalid_chars, sizeof(invalid_chars));
+  static const std::string windows_invalid_chars(invalid_chars, sizeof(invalid_chars));
 
-  const std::string valid_posix(
+  static const std::string valid_posix(
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-");
 
 } // unnamed namespace

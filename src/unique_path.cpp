@@ -29,8 +29,18 @@
 # endif
 
 namespace {
+  //------------------------------------------------------------------------------------//
+  //                                                                                    //
+  //                                HEADS UP!                                           //
+  //                                                                                    //
+  //  In C++03, names in the unnamed namespace have external linkage. That may cause    //
+  //  duplicate symbols if the same source is linked to twice, even though              //
+  //  BOOST_FILESYSTEM_NAMESPACE is different for the two compilations. The workaround  //
+  //  is to make the contents of the unnamed namespace static. Fixed in C++11.          //
+  //                                                                                    //
+  //------------------------------------------------------------------------------------//
 
-void fail(int err, boost::system::error_code* ec)
+static void fail(int err, boost::system::error_code* ec)
 {
   if (ec == 0)
     BOOST_FILESYSTEM_THROW( boost::system::system_error(err,
@@ -41,7 +51,7 @@ void fail(int err, boost::system::error_code* ec)
   return;
 }
 
-void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
+static void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 

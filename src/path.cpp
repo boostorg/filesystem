@@ -67,6 +67,17 @@ using boost::system::error_code;
 namespace
 {
   //------------------------------------------------------------------------------------//
+  //                                                                                    //
+  //                                HEADS UP!                                           //
+  //                                                                                    //
+  //  In C++03, names in the unnamed namespace have external linkage. That may cause    //
+  //  duplicate symbols if the same source is linked to twice, even though              //
+  //  BOOST_FILESYSTEM_NAMESPACE is different for the two compilations. The workaround  //
+  //  is to make the contents of the unnamed namespace static. Fixed in C++11.          //
+  //                                                                                    //
+  //------------------------------------------------------------------------------------//
+
+  //------------------------------------------------------------------------------------//
   //                        miscellaneous class path helpers                            //
   //------------------------------------------------------------------------------------//
 
@@ -74,34 +85,34 @@ namespace
   typedef path::string_type       string_type;
   typedef string_type::size_type  size_type;
 
-  const std::size_t default_codecvt_buf_size = BOOST_FILESYSTEM_CODECVT_BUF_SIZE;
+  static const std::size_t default_codecvt_buf_size = BOOST_FILESYSTEM_CODECVT_BUF_SIZE;
 
 # ifdef BOOST_WINDOWS_API
 
-  const wchar_t separator = L'/';
-  const wchar_t* const separators = L"/\\";
-  const wchar_t* separator_string = L"/";
-  const wchar_t* preferred_separator_string = L"\\";
-  const wchar_t colon = L':';
-  const wchar_t dot = L'.';
-  const wchar_t questionmark = L'?';
+  static const wchar_t separator = L'/';
+  static const wchar_t* const separators = L"/\\";
+  static const wchar_t* separator_string = L"/";
+  static const wchar_t* preferred_separator_string = L"\\";
+  static const wchar_t colon = L':';
+  static const wchar_t dot = L'.';
+  static const wchar_t questionmark = L'?';
 
-  inline bool is_letter(wchar_t c)
+  inline static bool is_letter(wchar_t c)
   {
     return (c >= L'a' && c <=L'z') || (c >= L'A' && c <=L'Z');
   }
 
 # else
 
-  const char separator = '/';
-  const char* const separators = "/";
-  const char* separator_string = "/";
-  const char* preferred_separator_string = "/";
-  const char dot = '.';
+  static const char separator = '/';
+  static const char* const separators = "/";
+  static const char* separator_string = "/";
+  static const char* preferred_separator_string = "/";
+  static const char dot = '.';
 
 # endif
 
-  inline bool is_separator(fs::path::value_type c)
+  inline static bool is_separator(fs::path::value_type c)
   {
     return c == separator
 #     ifdef BOOST_WINDOWS_API
@@ -110,17 +121,17 @@ namespace
       ;
   }
 
-  bool is_root_separator(const string_type& str, size_type pos);
+  static bool is_root_separator(const string_type& str, size_type pos);
     // pos is position of the separator
 
-  size_type filename_pos(const string_type& str,
+  static size_type filename_pos(const string_type& str,
                           size_type end_pos); // end_pos is past-the-end position
   //  Returns: 0 if str itself is filename (or empty)
 
-  size_type root_directory_start(const string_type& path, size_type size);
+  static size_type root_directory_start(const string_type& path, size_type size);
   //  Returns:  npos if no root_directory found
 
-  void first_element(
+  static void first_element(
       const string_type& src,
       size_type& element_pos,
       size_type& element_size,

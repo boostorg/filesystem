@@ -35,37 +35,34 @@ namespace
   {
   public:
     codecvt_error_cat(){}
-    const char*   name() const BOOST_SYSTEM_NOEXCEPT;
-    std::string    message(int ev) const;
-  };
-
-  const char* codecvt_error_cat::name() const BOOST_SYSTEM_NOEXCEPT
-  {
-    return "codecvt";
-  }
-
-  std::string codecvt_error_cat::message(int ev) const
-  {
-    std::string str;
-    switch (ev)
+    const char*   name() const BOOST_SYSTEM_NOEXCEPT
     {
-    case std::codecvt_base::ok:
-      str = "ok";
-      break;
-    case std::codecvt_base::partial:
-      str = "partial";
-      break;
-    case std::codecvt_base::error:
-      str = "error";
-      break;
-    case std::codecvt_base::noconv:
-      str = "noconv";
-      break;
-    default:
-      str = "unknown error";
+      return "codecvt";
     }
-    return str;
-  }
+
+    std::string codecvt_error_cat::message(int ev) const
+    {
+      std::string str;
+      switch (ev)
+      {
+      case std::codecvt_base::ok:
+        str = "ok";
+        break;
+      case std::codecvt_base::partial:
+        str = "partial";
+        break;
+      case std::codecvt_base::error:
+        str = "error";
+        break;
+      case std::codecvt_base::noconv:
+        str = "noconv";
+        break;
+      default:
+        str = "unknown error";
+      }
+      return str;
+    }
+  };
 
 } // unnamed namespace
 

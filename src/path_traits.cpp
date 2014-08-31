@@ -38,8 +38,18 @@ namespace bs = boost::system;
 #endif
 
 namespace {
+  //------------------------------------------------------------------------------------//
+  //                                                                                    //
+  //                                HEADS UP!                                           //
+  //                                                                                    //
+  //  In C++03, names in the unnamed namespace have external linkage. That may cause    //
+  //  duplicate symbols if the same source is linked to twice, even though              //
+  //  BOOST_FILESYSTEM_NAMESPACE is different for the two compilations. The workaround  //
+  //  is to make the contents of the unnamed namespace static. Fixed in C++11.          //
+  //                                                                                    //
+  //------------------------------------------------------------------------------------//
 
-  const std::size_t default_codecvt_buf_size = BOOST_FILESYSTEM_CODECVT_BUF_SIZE;
+  static const std::size_t default_codecvt_buf_size = BOOST_FILESYSTEM_CODECVT_BUF_SIZE;
 
 
 //--------------------------------------------------------------------------------------//
@@ -53,7 +63,7 @@ namespace {
 //                      convert_aux const char* to wstring                             //
 //--------------------------------------------------------------------------------------//
 
-  void convert_aux(
+  static void convert_aux(
                    const char* from,
                    const char* from_end,
                    wchar_t* to, wchar_t* to_end,
@@ -87,7 +97,7 @@ namespace {
 //                      convert_aux const wchar_t* to string                           //
 //--------------------------------------------------------------------------------------//
 
-  void convert_aux(
+  static void convert_aux(
                    const wchar_t* from,
                    const wchar_t* from_end,
                    char* to, char* to_end,

@@ -238,15 +238,25 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 namespace
 {
+  //------------------------------------------------------------------------------------//
+  //                                                                                    //
+  //                                HEADS UP!                                           //
+  //                                                                                    //
+  //  In C++03, names in the unnamed namespace have external linkage. That may cause    //
+  //  duplicate symbols if the same source is linked to twice, even though              //
+  //  BOOST_FILESYSTEM_NAMESPACE is different for the two compilations. The workaround  //
+  //  is to make the contents of the unnamed namespace static. Fixed in C++11.          //
+  //                                                                                    //
+  //------------------------------------------------------------------------------------//
 
-  fs::file_type query_file_type(const path& p, error_code* ec);
+  static fs::file_type query_file_type(const path& p, error_code* ec);
 
-  boost::filesystem::directory_iterator end_dir_itr;
+  static boost::filesystem::directory_iterator end_dir_itr;
 
-  const std::size_t buf_size(128);
-  const error_code ok;
+  static const std::size_t buf_size(128);
+  static const error_code ok;
 
-  bool error(bool was_error, error_code* ec, const string& message)
+  static bool error(bool was_error, error_code* ec, const string& message)
   {
     if (!was_error)
     {
@@ -263,7 +273,7 @@ namespace
     return was_error;
   }
 
-  bool error(bool was_error, const path& p, error_code* ec, const string& message)
+  static bool error(bool was_error, const path& p, error_code* ec, const string& message)
   {
     if (!was_error)
     {
@@ -280,7 +290,7 @@ namespace
     return was_error;
   }
 
-  bool error(bool was_error, const path& p1, const path& p2, error_code* ec,
+  static bool error(bool was_error, const path& p1, const path& p2, error_code* ec,
     const string& message)
   {
     if (!was_error)
@@ -298,7 +308,7 @@ namespace
     return was_error;
   }
 
-  bool error(bool was_error, const error_code& result,
+  static bool error(bool was_error, const error_code& result,
     const path& p, error_code* ec, const string& message)
     //  Overwrites ec if there has already been an error
   {
@@ -316,7 +326,7 @@ namespace
     return was_error;
   }
 
-  bool error(bool was_error, const error_code& result,
+  static bool error(bool was_error, const error_code& result,
     const path& p1, const path& p2, error_code* ec, const string& message)
     //  Overwrites ec if there has already been an error
   {
@@ -334,19 +344,19 @@ namespace
     return was_error;
   }
 
-  bool is_empty_directory(const path& p)
+  static bool is_empty_directory(const path& p)
   {
     return fs::directory_iterator(p)== end_dir_itr;
   }
 
-  bool remove_directory(const path& p) // true if succeeds
+  static bool remove_directory(const path& p) // true if succeeds
     { return BOOST_REMOVE_DIRECTORY(p.c_str()); }
   
-  bool remove_file(const path& p) // true if succeeds
+  static bool remove_file(const path& p) // true if succeeds
     { return BOOST_DELETE_FILE(p.c_str()); }
   
   // called by remove and remove_all_aux
-  bool remove_file_or_directory(const path& p, fs::file_type type, error_code* ec)
+  static bool remove_file_or_directory(const path& p, fs::file_type type, error_code* ec)
     // return true if file removed, false if not removed
   {
     if (type == fs::file_not_found)
@@ -372,7 +382,7 @@ namespace
     return true;
   }
 
-  boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
+  static boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
     error_code* ec)
   {
     boost::uintmax_t count = 1;
@@ -400,14 +410,14 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  const char dot = '.';
+  static const char dot = '.';
 
-  bool not_found_error(int errval)
+  static bool not_found_error(int errval)
   {
     return errno == ENOENT || errno == ENOTDIR;
   }
 
-  bool // true if ok
+  static bool // true if ok
   copy_file_api(const std::string& from_p,
     const std::string& to_p, bool fail_if_exists)
   {
@@ -465,7 +475,7 @@ namespace
     return sz_read >= 0;
   }
 
-  inline fs::file_type query_file_type(const path& p, error_code* ec)
+  static inline fs::file_type query_file_type(const path& p, error_code* ec)
   {
     return fs::detail::symlink_status(p, ec).type();
   }
@@ -478,9 +488,9 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  const wchar_t dot = L'.';
+  static const wchar_t dot = L'.';
 
-  bool not_found_error(int errval)
+  static bool not_found_error(int errval)
   {
     return errval == ERROR_FILE_NOT_FOUND
       || errval == ERROR_PATH_NOT_FOUND
@@ -515,7 +525,7 @@ namespace
   }
 
   // these constants come from inspecting some Microsoft sample code
-  std::time_t to_time_t(const FILETIME & ft)
+  static std::time_t to_time_t(const FILETIME & ft)
   {
     __int64 t = (static_cast<__int64>(ft.dwHighDateTime)<< 32)
       + ft.dwLowDateTime;
@@ -528,7 +538,7 @@ namespace
     return static_cast<std::time_t>(t);
   }
 
-  void to_FILETIME(std::time_t t, FILETIME & ft)
+  static void to_FILETIME(std::time_t t, FILETIME & ft)
   {
     __int64 temp = t;
     temp *= 10000000;
@@ -557,7 +567,7 @@ namespace
     }
   };
 
-  HANDLE create_file_handle(const path& p, DWORD dwDesiredAccess,
+  static HANDLE create_file_handle(const path& p, DWORD dwDesiredAccess,
     DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes,
     DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
@@ -567,7 +577,7 @@ namespace
       hTemplateFile);
   }
 
-  bool is_reparse_point_a_symlink(const path& p)
+  static bool is_reparse_point_a_symlink(const path& p)
   {
     handle_wrapper h(create_file_handle(p, FILE_READ_EA,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
@@ -596,14 +606,14 @@ namespace
         == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
   }
 
-  inline std::size_t get_full_path_name(
+  static inline std::size_t get_full_path_name(
     const path& src, std::size_t len, wchar_t* buf, wchar_t** p)
   {
     return static_cast<std::size_t>(
       ::GetFullPathNameW(src.c_str(), static_cast<DWORD>(len), buf, p));
   }
 
-  fs::file_status process_status_failure(const path& p, error_code* ec)
+  static fs::file_status process_status_failure(const path& p, error_code* ec)
   {
     int errval(::GetLastError());
     if (ec != 0)                             // always report errval, even though some
@@ -625,7 +635,7 @@ namespace
 
   //  differs from symlink_status() in that directory symlinks are reported as
   //  _detail_directory_symlink, as required on Windows by remove() and its helpers.
-  fs::file_type query_file_type(const path& p, error_code* ec)
+  static fs::file_type query_file_type(const path& p, error_code* ec)
   {
     DWORD attr(::GetFileAttributesW(p.c_str()));
     if (attr == 0xFFFFFFFF)
@@ -649,7 +659,7 @@ namespace
       : fs::regular_file;
   }
 
-  BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
+  static BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
   {
     HANDLE handle = CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
                                 FILE_ATTRIBUTE_NORMAL, 0);
@@ -670,7 +680,7 @@ namespace
     /*__reserved*/ LPSECURITY_ATTRIBUTES lpSecurityAttributes
    );
 
-  PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
+  static PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
     ::GetProcAddress(
       ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW"));
 
@@ -680,7 +690,7 @@ namespace
     /*__in*/ DWORD dwFlags
    );
 
-  PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
+  static PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
     ::GetProcAddress(
       ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
 
@@ -689,7 +699,7 @@ namespace
 //#ifdef BOOST_WINDOWS_API
 //
 //
-//  inline bool get_free_disk_space(const std::wstring& ph,
+//  static inline bool get_free_disk_space(const std::wstring& ph,
 //    PULARGE_INTEGER avail, PULARGE_INTEGER total, PULARGE_INTEGER free)
 //    { return ::GetDiskFreeSpaceExW(ph.c_str(), avail, total, free)!= 0; }
 //
