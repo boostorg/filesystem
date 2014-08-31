@@ -141,7 +141,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
   path& path::operator/=(const path& p)
   {
@@ -448,7 +448,7 @@ namespace filesystem
     return *this;
   }
 
-}  // namespace filesystem
+}  // namespace BOOST_FILESYSTEM_NAMESPACE
 }  // namespace boost
   
 //--------------------------------------------------------------------------------------//
@@ -636,7 +636,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
   namespace detail
   {
@@ -800,7 +800,7 @@ namespace filesystem
       it.m_element.m_pathname = separator_string;    // generic format; see docs 
   }
 
-}  // namespace filesystem
+}  // namespace BOOST_FILESYSTEM_NAMESPACE
 }  // namespace boost
 
 namespace
@@ -884,7 +884,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
   // See comments above
 
@@ -907,5 +907,5 @@ namespace filesystem
     return temp;
   }
 
-}  // namespace filesystem
+}  // namespace BOOST_FILESYSTEM_NAMESPACE
 }  // namespace boost

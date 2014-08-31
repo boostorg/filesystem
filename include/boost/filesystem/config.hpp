@@ -9,9 +9,8 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM3_CONFIG_HPP
-#define BOOST_FILESYSTEM3_CONFIG_HPP
-
+#ifndef BOOST_FILESYSTEM_CONFIG_HPP
+#define BOOST_FILESYSTEM_CONFIG_HPP
 
 #include <boost/filesystem/detail/version.hpp>  // for BOOST_FILESYSTEM_DEFAULT_VERSION
 
@@ -116,4 +115,20 @@
 #include <boost/config/auto_link.hpp>
 #endif  // auto-linking disabled
 
-#endif // BOOST_FILESYSTEM3_CONFIG_HPP
+//  set up the supported namespaces and alias  -----------------------------------------//
+//
+//  this is the mechanism that allows building multiple versions into a single object
+//  library, without name clashes.
+
+#define BOOST_FILESYSTEM_NAMESPACE BOOST_JOIN(filesystem, BOOST_FILESYSTEM_VERSION)
+
+namespace boost
+{
+  namespace filesystem3 {}
+  namespace filesystem4 {}
+
+  namespace filesystem = BOOST_FILESYSTEM_NAMESPACE;
+}
+
+
+#endif // BOOST_FILESYSTEM_CONFIG_HPP

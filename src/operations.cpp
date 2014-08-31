@@ -706,7 +706,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
 
   BOOST_FILESYSTEM_DECL
@@ -1904,7 +1904,7 @@ namespace detail
 } // namespace detail
 #endif
 
-} // namespace filesystem
+} // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost
 
 //--------------------------------------------------------------------------------------//
@@ -2127,7 +2127,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
 
 namespace detail
@@ -2247,5 +2247,5 @@ namespace detail
     }
   }
 }  // namespace detail
-} // namespace filesystem
+} // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost

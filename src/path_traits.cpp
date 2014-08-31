@@ -123,7 +123,7 @@ namespace {
 //                                   path_traits                                        //
 //--------------------------------------------------------------------------------------//
 
-namespace boost { namespace filesystem { namespace path_traits {
+namespace boost { namespace BOOST_FILESYSTEM_NAMESPACE { namespace path_traits {
 
 //--------------------------------------------------------------------------------------//
 //                          convert const char* to wstring                             //

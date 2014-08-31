@@ -11,7 +11,7 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace BOOST_FILESYSTEM_NAMESPACE
   {
     void tu2() {}
   }

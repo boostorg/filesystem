@@ -29,7 +29,7 @@
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
-namespace boost { namespace filesystem {
+namespace boost { namespace BOOST_FILESYSTEM_NAMESPACE {
 
   BOOST_FILESYSTEM_DECL const system::error_category& codecvt_error_category();
   //  uses std::codecvt_base::result used for error codes:
@@ -230,6 +230,7 @@ namespace boost { namespace filesystem {
       const codecvt_type&);
 
   }  // namespace path_traits
+
 #if  BOOST_FILESYSTEM_VERSION > 3 
 
   //--------------------------------------------------------------------------------------//
@@ -323,7 +324,8 @@ namespace boost { namespace filesystem {
 
 #endif
 
-}} // namespace boost::filesystem
+}  // namespace BOOST_FILESYSTEM_NAMESPACE
+} // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 

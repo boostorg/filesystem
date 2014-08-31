@@ -26,7 +26,7 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace BOOST_FILESYSTEM_NAMESPACE
   {
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
@@ -51,7 +51,7 @@ namespace boost
 # endif
 
 
-  } // namespace filesystem
+  } // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas

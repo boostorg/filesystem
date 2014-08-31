@@ -1055,7 +1055,7 @@ namespace
 
 namespace boost
 {
-namespace filesystem
+BOOST_FILESYSTEM_NAMESPACE
 {
   namespace path_traits
   {
@@ -1096,7 +1096,7 @@ namespace filesystem
       return temp;
     }
   }  // namespace path_traits
-}  // namespace filesystem
+}  // BOOST_FILESYSTEM_NAMESPACE
 }  // namespace boost
 
 namespace

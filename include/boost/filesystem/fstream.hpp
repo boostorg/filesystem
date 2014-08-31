@@ -36,7 +36,7 @@
 
 namespace boost
 {
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
 
 //--------------------------------------------------------------------------------------//
@@ -175,7 +175,7 @@ namespace filesystem
   typedef basic_ofstream<wchar_t> wofstream;
   typedef basic_fstream<wchar_t> wfstream;
   
-} // namespace filesystem
+} // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas

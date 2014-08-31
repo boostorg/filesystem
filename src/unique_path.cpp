@@ -106,7 +106,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 }  // unnamed namespace
 
-namespace boost { namespace filesystem { namespace detail {
+namespace boost { namespace BOOST_FILESYSTEM_NAMESPACE { namespace detail {
 
 BOOST_FILESYSTEM_DECL
 path unique_path(const path& model, system::error_code* ec)

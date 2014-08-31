@@ -16,7 +16,7 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace BOOST_FILESYSTEM_NAMESPACE
   {
     namespace detail
     {
@@ -42,7 +42,7 @@ namespace boost
       };
 
     } // namespace detail
-  } // namespace filesystem
+  } // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost
 
 

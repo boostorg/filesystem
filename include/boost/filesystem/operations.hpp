@@ -52,7 +52,7 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace BOOST_FILESYSTEM_NAMESPACE
   {
 
     //--------------------------------------------------------------------------------------//
@@ -858,7 +858,7 @@ namespace detail
   directory_iterator range_begin(const directory_iterator& iter) {return iter;}
   inline
   directory_iterator range_end(const directory_iterator&) {return directory_iterator();}
-  }  // namespace filesystem
+  }  // namespace BOOST_FILESYSTEM_NAMESPACE
 
   //  namespace boost template specializations
   template<>
@@ -868,7 +868,7 @@ namespace detail
   struct range_const_iterator <boost::filesystem::directory_iterator>
     { typedef boost::filesystem::directory_iterator type; };
 
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
 
 //--------------------------------------------------------------------------------------//
@@ -1198,7 +1198,7 @@ namespace filesystem
   inline
   recursive_directory_iterator range_end(const recursive_directory_iterator&)
                                                   {return recursive_directory_iterator();}
-  }  // namespace filesystem
+  }  // namespace BOOST_FILESYSTEM_NAMESPACE
 
   //  namespace boost template specializations
   template<>
@@ -1208,7 +1208,7 @@ namespace filesystem
   struct range_const_iterator <boost::filesystem::recursive_directory_iterator>
                         { typedef boost::filesystem::recursive_directory_iterator type; };
 
-namespace filesystem
+namespace BOOST_FILESYSTEM_NAMESPACE
 {
 
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
@@ -1226,7 +1226,7 @@ namespace filesystem
     BOOST_FILESYSTEM_DECL bool possible_large_file_size_support();
   }
 
-  } // namespace filesystem
+  } // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas

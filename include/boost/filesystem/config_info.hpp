@@ -25,7 +25,7 @@
 
 namespace boost
 {
-  namespace filesystem
+  namespace BOOST_FILESYSTEM_NAMESPACE
   {
     namespace detail
     {
@@ -69,7 +69,8 @@ namespace boost
         << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_MSVC) << '\n'
         << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_DEFAULT_VERSION) << '\n'
         << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_VERSION) << '\n'
-        << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_STATIC_LINK) << '\n' 
+        << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_NAMESPACE) << '\n'
+        << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_STATIC_LINK) << '\n'
         << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_DYN_LINK) << '\n'
         << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_NO_DEPRECATED) << '\n'
         << BOOST_FILESYSTEM_SHOW_MACRO(BOOST_FILESYSTEM_DECL) << '\n'
@@ -79,6 +80,6 @@ namespace boost
       return os;
     }
   }  // namespace boost
-}  // namespace filesystem
+}  // namespace BOOST_FILESYSTEM_NAMESPACE
 
 #endif  // BOOST_FILESYSTEM_CONFIG_INFO_HPP

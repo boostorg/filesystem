@@ -47,7 +47,7 @@ namespace
 
 namespace boost
 {
-  namespace filesystem
+  namespace BOOST_FILESYSTEM_NAMESPACE
   {
 
     //  name_check functions  ----------------------------------------------//
@@ -115,5 +115,5 @@ namespace boost
         ;
     }
 
-  } // namespace filesystem
+  } // namespace BOOST_FILESYSTEM_NAMESPACE
 } // namespace boost
