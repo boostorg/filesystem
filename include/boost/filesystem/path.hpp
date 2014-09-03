@@ -939,7 +939,7 @@ namespace BOOST_FILESYSTEM_NAMESPACE
       container_source_tag, no_convert_tag)
     {
        BOOST_FILESYSTEM_APPEND_MSG("append container, no conversion" );
-      append(from.cbegin(), from.cend(), to, no_convert_tag());
+      append(from.begin(), from.end(), to, no_convert_tag());  // cbegin/cend not available in C++03
     }
 
     template <class InputIterator> inline
@@ -973,7 +973,7 @@ namespace BOOST_FILESYSTEM_NAMESPACE
       container_source_tag, with_convert_tag)
     {
        BOOST_FILESYSTEM_APPEND_MSG("append container, with conversion" );
-      append(from.cbegin(), from.cend(), to, with_convert_tag());
+       append(from.begin(), from.end(), to, with_convert_tag());  // cbegin/cend not available in C++03
     }
 
     template <class InputIterator> inline
