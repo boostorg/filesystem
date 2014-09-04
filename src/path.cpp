@@ -54,10 +54,6 @@ using std::wstring;
 
 using boost::system::error_code;
 
-#ifndef BOOST_FILESYSTEM_CODECVT_BUF_SIZE
-# define BOOST_FILESYSTEM_CODECVT_BUF_SIZE 256
-#endif
-
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                                class path helpers                                    //
@@ -73,8 +69,6 @@ namespace
   typedef path::value_type        value_type;
   typedef path::string_type       string_type;
   typedef string_type::size_type  size_type;
-
-  const std::size_t default_codecvt_buf_size = BOOST_FILESYSTEM_CODECVT_BUF_SIZE;
 
 # ifdef BOOST_WINDOWS_API
 
