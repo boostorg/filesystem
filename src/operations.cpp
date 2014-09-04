@@ -243,7 +243,6 @@ namespace
 
   boost::filesystem::directory_iterator end_dir_itr;
 
-  const std::size_t buf_size(128);
   const error_code ok;
 
   bool error(bool was_error, error_code* ec, const string& message)
@@ -477,6 +476,8 @@ namespace
 //                            Windows-specific helpers                                  //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
+
+  const std::size_t buf_size=128;
 
   const wchar_t dot = L'.';
 
