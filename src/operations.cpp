@@ -875,7 +875,7 @@ namespace detail
     }
     else if(is_regular_file(s))
     {
-      copy_file(from, to, copy_option::fail_if_exists, *ec);
+      copy_file(from, to, fs::copy_option::fail_if_exists, *ec);
     }
     else
     {
@@ -897,9 +897,7 @@ namespace detail
   }
 
   BOOST_FILESYSTEM_DECL
-  void copy_file(const path& from, const path& to,
-                  BOOST_SCOPED_ENUM(copy_option)option,
-                  error_code* ec)
+  void copy_file(const path& from, const path& to, copy_option option, error_code* ec)
   {
     error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
       option == copy_option::fail_if_exists),
