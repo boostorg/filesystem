@@ -900,7 +900,7 @@ namespace detail
   void copy_file(const path& from, const path& to, copy_option option, error_code* ec)
   {
     error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
-      option == copy_option::fail_if_exists),
+      option == fail_if_exists),
         from, to, ec, "boost::filesystem::copy_file");
   }
 

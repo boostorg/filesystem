@@ -499,7 +499,7 @@ namespace boost
   inline
   void copy_file(const path& from, const path& to)
   {
-    detail::copy_file(from, to, detail::copy_option::fail_if_exists);
+    detail::copy_file(from, to, detail::fail_if_exists);
   }
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
@@ -510,7 +510,7 @@ namespace boost
   inline
   void copy_file(const path& from, const path& to, system::error_code& ec)
   {
-    detail::copy_file(from, to, detail::copy_option::fail_if_exists, &ec);
+    detail::copy_file(from, to, detail::fail_if_exists, &ec);
   }
   inline
   void copy_symlink(const path& existing_symlink,
