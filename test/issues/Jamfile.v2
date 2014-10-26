@@ -20,13 +20,15 @@ project
 #           :  :  : <link>shared : 9054_shared ]                  
 #       [ run 9054_static_const_codecvt_segfault_pre_main.cpp
 #           :  :  : <link>static : 9054_static ]                  
-       [ run hello_filesystem.cpp
-           :  :  : <link>shared : hello_shared ]                  
-       [ run hello_filesystem.cpp
-           :  :  : <link>static : hello_static ]                  
-       [ run 9219.cpp
-           :  :  : <link>shared : 9219_shared ]                  
-       [ run 9219.cpp
-           :  :  : <link>static : 9219_static ]                  
+#       [ run hello_filesystem.cpp
+#           :  :  : <link>shared : hello_shared ]                  
+#       [ run hello_filesystem.cpp
+#           :  :  : <link>static : hello_static ]                  
+#       [ run 9219.cpp
+#           :  :  : <link>shared : 9219_shared ]                  
+#       [ run 9219.cpp
+#           :  :  : <link>static : 9219_static ]                  
+       [ run 10485.cpp
+           :  :  : <link>shared <test-info>always_show_run_output ]                  
        ;
        
