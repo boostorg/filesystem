@@ -1880,15 +1880,25 @@ namespace path_traits
 {
   void dispatch(const directory_entry & de,
 #                ifdef BOOST_WINDOWS_API
-                 std::wstring& to,
+    std::wstring& to,
 #                else   
-                 std::string& to,
+    std::string& to,
 #                endif
-                 const codecvt_type &)
+    const codecvt_type &)
   {
     to = de.path().native();
   }
 
+  void dispatch(const directory_entry & de,
+#                ifdef BOOST_WINDOWS_API
+    std::wstring& to
+#                else   
+    std::string& to
+#                endif
+    )
+  {
+    to = de.path().native();
+  }
 }  // namespace path_traits
 } // namespace filesystem
 } // namespace boost

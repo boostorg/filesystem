@@ -38,13 +38,20 @@
 
 <h2>1.57.0</h2>
 <ul>
-  <li>Rework path locale and codecvt implementation for increased reliability. 
-  This is SVN revision 83021, which should have gone into 1.56.0 but 
+  <li>Rework class <code>path</code> locale and codecvt implementation for increased reliability. 
+  This change was SVN revision 83021, which should have gone into 1.56.0 but 
   unfortunately the merge didn't happen until too late.</li>
-  <li>Fix tickets <a href="https://svn.boost.org/trac/boost/ticket/9054">#9054</a>,
+  <li>Fix tickets <a href="https://svn.boost.org/trac/boost/ticket/8930">#8930</a>, <a href="https://svn.boost.org/trac/boost/ticket/9054">#9054</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/9214">#9219</a>,
-  <a href="https://svn.boost.org/trac/boost/ticket/10228">#10228</a>, all 
+  <a href="https://svn.boost.org/trac/boost/ticket/10228">#10228</a>, and
+  <a href="https://svn.boost.org/trac/boost/ticket/10641">#10641</a>, all 
   related to locales and codecvt facets.</li>
+  <li>The net effect of the above changes and fixes should be to eliminate 
+  spurious &quot;locale::facet::_S_create_c_locale name not valid&quot; errors on Linux 
+  and other non-BSD POSIX-like systems. The error will continue to occur, as it 
+  should, when a path encoding conversion char-to-wchar_t or wchar_t-to-char is 
+  attempted in an environment without a valid C locale (for example, if the LANG 
+  environment variable is invalid or not defined).</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/6124">#6124</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/6779">#6779</a>, and
   <a href="https://svn.boost.org/trac/boost/ticket/10038">#10038</a> - an 
@@ -252,7 +259,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 October, 2014<!--webbot bot="Timestamp" endspan i-checksum="38747" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->29 October, 2014<!--webbot bot="Timestamp" endspan i-checksum="38757" --></p>
 <p>© Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
