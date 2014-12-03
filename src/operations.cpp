@@ -71,7 +71,7 @@ using std::wstring;
 
 #   include <sys/types.h>
 #   include <sys/stat.h>
-#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__)
+#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
@@ -81,7 +81,13 @@ using std::wstring;
 #     elif defined(__ANDROID__)
 #     include <sys/vfs.h>
 #     endif
+
+#     if defined(__VXWORKS__)
+#     include <sys/stat.h>
+#     else
 #     include <sys/mount.h>
+#     endif
+
 #     define BOOST_STATVFS statfs
 #     define BOOST_STATVFS_F_FRSIZE static_cast<boost::uintmax_t>(vfs.f_bsize)
 #   endif
