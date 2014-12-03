@@ -82,9 +82,7 @@ using std::wstring;
 #     include <sys/vfs.h>
 #     endif
 
-#     if defined(__VXWORKS__)
-#     include <sys/stat.h>
-#     else
+#     if !defined(__VXWORKS__)
 #     include <sys/mount.h>
 #     endif
 
