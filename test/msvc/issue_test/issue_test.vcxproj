@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5FFA4555-E967-4632-A3E6-ED8826E9FDED}</ProjectGuid>
+    <ProjectGuid>{3B1AF12C-25AB-44F7-A80B-8BBA0D3D08CE}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>headers</RootNamespace>
+    <RootNamespace>issue_test</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -34,9 +34,11 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\common.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\common.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -78,15 +80,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\boost\filesystem.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\config.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\convenience.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\detail\utf8_codecvt_facet.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\exception.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\fstream.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\operations.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\path.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\path_traits.hpp" />
+    <ProjectReference Include="..\filesystem_dll\filesystem_dll.vcxproj">
+      <Project>{ffd738f7-96f0-445c-81ea-551665ef53d1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\system_dll\system_dll.vcxproj">
+      <Project>{f94ccadd-a90b-480c-a304-c19d015d36b1}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
