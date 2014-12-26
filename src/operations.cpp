@@ -444,25 +444,33 @@ namespace
 
     ssize_t sz, sz_read=1, sz_write;
     while (sz_read > 0
-      && (sz_read = ::read(infile, buf.get(), buf_sz))> 0)
+      && (sz_read = ::read(infile, buf.get(), buf_sz)) > 0)
     {
       // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
       // Marc Rochkind, Addison-Wesley, 2004, page 94
       sz_write = 0;
       do
       {
+        BOOST_ASSERT(sz_read - sz_write > 0);  // #1
+          // ticket 4438 claimed possible infinite loop if write returns 0. My analysis
+          // is that POSIX specifies 0 return only if 3rd arg is 0, and that will never
+          // happen due to loop entry and coninuation conditions. BOOST_ASSERT #1 above
+          // and #2 below added to verify that analysis.
         if ((sz = ::write(outfile, buf.get() + sz_write,
-          sz_read - sz_write))< 0)
+          sz_read - sz_write)) < 0)
         { 
           sz_read = sz; // cause read loop termination
-          break;        //  and error to be thrown after closes
+          break;        //  and error reported after closes
         }
+        BOOST_ASSERT(sz > 0);                  // #2
         sz_write += sz;
       } while (sz_write < sz_read);
     }
 
-    if (::close(infile)< 0)sz_read = -1;
-    if (::close(outfile)< 0)sz_read = -1;
+    if (::close(infile)< 0)
+      sz_read = -1;
+    if (::close(outfile)< 0)
+      sz_read = -1;
 
     return sz_read >= 0;
   }
