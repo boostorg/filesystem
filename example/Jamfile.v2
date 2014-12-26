@@ -24,5 +24,3 @@ exe tut5 : tut5.cpp ;
 exe path_info : path_info.cpp ;
 exe file_status : file_status.cpp ;
 exe file_size : file_size.cpp ;
-
-install bin : file_status file_size ;    #invoke via "bjam", not "bjam install"
