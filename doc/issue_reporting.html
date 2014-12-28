@@ -1,0 +1,85 @@
+<html>
+
+<head>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Filesystem issue reporting</title>
+<link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
+  <tr>
+    <td width="277">
+<a href="../../../index.htm">
+<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
+    <td align="middle">
+    <font size="7">Issue Reporting</font>
+    </td>
+  </tr>
+</table>
+
+<p>Boost.Filesystem issues such as bug reports or feature requests can be 
+reported via a <a href="https://svn.boost.org/trac/boost/newticket">Boost Trac 
+Ticket</a>.</p>
+<p><a href="https://github.com/boostorg/filesystem/pulls">GitHub pull requests</a> 
+are encouraged, too, although for anything beyond really trivial fixes a trac 
+ticket mentioning the pull request should also be submitted.</p>
+<h3>Bug reports</h3>
+<p>A quick response to your bug report is much more likely if <b>the problem can 
+be immediately reproduced without any guesswork</b>.</p>
+<p>By far the most productive way to do that is to:</p>
+<ol>
+  <li>Provide a simple test program 
+that automatically yields an unambiguous pass or fail result.</li>
+  <li>Describe the compiler, standard library, platform, and Boost version you 
+  used to build and run your test program.</li>
+  <li>Describe how a library maintainer can build and run the test program. 
+  </li>
+  <li>Supply a copy or screen shot of the output you get when you run the test 
+  program.</li>
+</ol>
+<h3>Bug reporting boilerplate</h3>
+<p>The header <code>&lt;boost/detail/lightweight_test_config.hpp&gt;</code> supplies 
+boilerplate code that automatically supplies most of the information requested 
+in (1) and (2).</p>
+<h4>Example</h4>
+<blockquote>
+  <pre>#include &lt;boost/detail/lightweight_test_config.hpp&gt;
+
+int test_main(int, char*[])
+{
+  BOOST_TEST(2+2 == 6);
+  BOOST_TEST_EQ(2+2, 6);
+  return ::boost::report_errors();
+}
+</pre>
+</blockquote>
+<p>The output will look something like this:</p>
+
+
+<pre>Microsoft Visual C++ version 14.0
+Dinkumware standard library version 610
+Win32
+Boost version 1.58.0
+Command line: ...lightweight_test_report_example.exe
+...lightweight_test_report_example.cpp(5):
+ test '2 + 2 == 6' failed in function 'int __cdecl test_main(int,char *[])'
+...lightweight_test_report_example.cpp(6):
+ test '2 + 2 == 6' failed in function 'int __cdecl test_main(int,char *[])': '4' != '6'
+2 errors detected.
+</pre>
+<hr>
+<p>Revised
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 December, 2014<!--webbot bot="Timestamp" endspan i-checksum="38648" --></p>
+<p>© Copyright Beman Dawes, 2014</p>
+<p> Distributed under the Boost Software 
+License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
+www.boost.org/LICENSE_1_0.txt</a></p>
+
+
+</body>
+
+</html>
