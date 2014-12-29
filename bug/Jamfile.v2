@@ -13,7 +13,7 @@ project
       <toolset>msvc:<asynch-exceptions>on
     ;
     
-exe bug_test : bug_test.cpp ;
+exe bug : bug.cpp : <link>static ;
 
-# install in current-directory/bin
-install bin : bug_test ;    #invoke via "b2", not "b2 install"
+# install in ./bin; invoke via "b2", not "b2 install"
+install bin : bug ;

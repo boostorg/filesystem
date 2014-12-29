@@ -227,7 +227,7 @@ namespace boost
     set_gid_on_exe = 02000, // S_ISGID, Set-group-ID on execution
     sticky_bit     = 01000, // S_ISVTX,
                             // (POSIX XSI) On directories, restricted deletion flag 
-	                          // (V7) 'sticky bit': save swapped text even after use 
+                            // (V7) 'sticky bit': save swapped text even after use 
                             // (SunOS) On non-directories: don't cache this file
                             // (SVID-v4.2) On directories: restricted deletion flag
                             // Also see http://en.wikipedia.org/wiki/Sticky_bit

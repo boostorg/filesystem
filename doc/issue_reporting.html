@@ -45,8 +45,7 @@ ticket.</p>
 <h3>Bug reports</h3>
 <p>A quick response to your bug report is much more likely if <b>the problem can 
 be immediately reproduced without any guesswork</b>.</p>
-<p>The library maintainer gets off to a strong start if you provide the 
-following:</p>
+<p>You need to provide this:</p>
 <ol>
   <li>A simple test program 
 that automatically yields an unambiguous pass or fail result.</li>
@@ -57,23 +56,25 @@ that automatically yields an unambiguous pass or fail result.</li>
   <li>A copy of the output from the test 
   program.</li>
 </ol>
-<p>For a super easy way to do this, read on!</p>
-<h3>Bug reporting boilerplate</h3>
-<p>The directory <code>&lt;boost-root&gt;/libs/filesystem/bug&gt;</code> provides a bug test program (<a href="bug.cpp"><code>bug.cpp</code></a>) 
-and a build file (<code>Jamfile.v2</code>). You need to:</p>
+<p>For a mostly automatic way to provide the above, read on!</p>
+<h3>Bug reporting framework</h3>
+<p>The directory <code>&lt;boost-root&gt;/libs/filesystem/bug&gt;</code> provides a bug test program (<code><a href="#bug-cpp">bug.cpp</a></code>) 
+and a build file (<code>Jamfile.v2</code>). Here is what you need to do:</p>
 <ol>
-  <li>Add one or more test cases to <code><a href="bug.cpp">bug.cpp</a></code> 
+  <li>Add one or more test cases to <code><a href="#bug-cpp">bug.cpp</a></code> 
   using any text or program editor.</li>
   <li><a href="#Build-and-test">Build and test</a>.</li>
   <li>Attach copies of the <a href="#Test-output">Test output</a> and test 
   program to the <a href="https://svn.boost.org/trac/boost/newticket">Trac 
   ticket</a>.</li>
 </ol>
-<p>The output includes all of the basic information about the compiler, std 
-library, platform, Boost version, and command line, so you don't have to bother 
-about that in your ticket write up.</p>
-<h4 dir="ltr"><a name="bug-cpp"><code>bug.cpp</code></a></h4>
-<p dir="ltr">Here is <code>bug.cpp</code> as supplied. To report a real bug, use
+<p>That&#39;s it! When you complete those steps, you will be done!</p>
+<p>The test output supplies all of the basic information about the compiler, std 
+library, platform, Boost version, and command line, and the test cases you have 
+added should make it easy for the library maintainer to reproduce the problem. </p>
+<h3>Using the framework</h3>
+<h4><a name="bug-cpp"><code>bug.cpp</code></a></h4>
+<p>Here is <code>bug.cpp</code> as supplied. To report a real bug, use
 <code>BOOST_TEST</code> and <code>BOOST_TEST_EQ</code> macros to build your own 
 test cases. You can delete the three tests already in <code>bug.cpp</code>:</p>
 <blockquote>
@@ -112,7 +113,7 @@ bin\bug</pre>
 <h4><a name="Test-output">Test output</a></h4>
 
 
-<p>Running on Windows produced this test output:</p>
+<p>Running the test on Windows produced this test output:</p>
 
 
 <blockquote>
@@ -123,24 +124,34 @@ Dinkumware standard library version 610
 Win32
 Boost version 1.58.0
 Command line: bin\bug
-bug.cpp(10): test '2 + 2 == 5' failed in function 'int __cdecl test_main(int,char *[])'
-bug.cpp(11): test '4 + 4 == 9' failed in function 'int __cdecl test_main(int,char *[])': '8' != '9'
+bug.cpp(10): test '2 + 2 == 5' failed in function
+  'int __cdecl test_main(int,char *[])'
+bug.cpp(11): test '4 + 4 == 9' failed in function
+  'int __cdecl test_main(int,char *[])': '8' != '9'
 2 errors detected.</pre>
 </blockquote>
+<p>The test framework runs <code>test_main()</code> from a <code>try</code> 
+block with a <code>catch</code> block that reports exceptions via <code>
+std::exception what()</code>. So the output will differ if an exception is 
+thrown.</p>
+<h2>Background information</h2>
+<p>You should now have enough information to file an easy-to-reproduce bug 
+report. So you can skip reading the rest of this page unless you need to do 
+something a bit out of the ordinary.</p>
 <h3><a name="b2-command-line-options"><code>b2</code> command line</a></h3>
-<p dir="ltr"><code>b2</code> (formerly <code>bjam</code>) usage:&nbsp; <code>b2 
+<p><code>b2</code> (formerly <code>bjam</code>) usage:&nbsp; <code>b2 
 [options] [properties] [target]</code></p>
 <p>Boost.Build b2 has many options, properties, and targets, but you will not 
 need most of them for bug reporting. Here are a few you might find helpful:</p>
 <p><b>Options</b></p>
 <blockquote>
-  <p dir="ltr"><code>-a</code>&nbsp;&nbsp;&nbsp; Rebuild everything rather than 
+  <p><code>-a</code>&nbsp;&nbsp;&nbsp; Rebuild everything rather than 
   just out-of-date targets. Used in the example build above to ensure libraries 
   are built with the same setup as the test program.</p>
 </blockquote>
-<p dir="ltr"><b>Properties</b></p>
+<p><b>Properties</b></p>
 <blockquote>
-  <p dir="ltr"><code>address-model=<i>n&nbsp; n</i></code> is 32 or 64. 
+  <p><code>address-model=<i>n&nbsp; n</i></code> is 32 or 64. 
   Explicitly request either 32-bit or 64-bit code generation. This typically 
   requires that your compiler is appropriately configured.</p>
   <p><code>variant=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; string </i>is
@@ -148,11 +159,11 @@ need most of them for bug reporting. Here are a few you might find helpful:</p>
   <p><code>toolset=</code><i>string</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The C++ 
   compiler to use. For example, <code>gcc-4.9</code>, <code>clang-3.3</code>,
   <code>or msvc-14.0</code>.</p>
-  <p dir="ltr"><code>include=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
+  <p><code>include=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
   Additional include paths for C and C++ compilers.</p>
-  <p dir="ltr"><code>cxxflags=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
+  <p><code>cxxflags=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
   Custom options to pass to the C++ compiler.</p>
-  <p dir="ltr"><code>define=</code><i>string</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  <p><code>define=</code><i>string</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
   Additional macro definitions for C and C++ compilers. <i>string</i> should be 
   either <code class="computeroutput">SYMBOL</code> or
   <code class="computeroutput">SYMBOL=VALUE</code></p>
