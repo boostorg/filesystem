@@ -16,64 +16,150 @@
 <a href="../../../index.htm">
 <img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
     <td align="middle">
-    <font size="7">Issue Reporting</font>
+    <font size="7">Filesystem Bug Reporting</font>
     </td>
   </tr>
 </table>
 
-<p>Boost.Filesystem issues such as bug reports or feature requests can be 
-reported via a <a href="https://svn.boost.org/trac/boost/newticket">Boost Trac 
-Ticket</a>.</p>
+<table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
+ bordercolor="#111111" bgcolor="#D7EEFF" width="100%">
+  <tr>
+    <td><a href="index.htm">Home</a> &nbsp;&nbsp;
+    <a href="tutorial.html">Tutorial</a> &nbsp;&nbsp;
+    <a href="reference.html">Reference</a> &nbsp;&nbsp;
+    <a href="faq.htm">FAQ</a> &nbsp;&nbsp;
+    <a href="release_history.html">Releases</a> &nbsp;&nbsp;
+    <a href="portability_guide.htm">Portability</a> &nbsp;&nbsp;
+    <a href="v3.html">V3 Intro</a> &nbsp;&nbsp;
+    <a href="v3_design.html">V3 Design</a> &nbsp;&nbsp;
+    <a href="deprecated.html">Deprecated</a> &nbsp;&nbsp;
+    <a href="issue_reporting.html">Bug Reports </a>&nbsp;&nbsp;
+    </td>
+</table>
+
+<p>Boost.Filesystem issues such as bug reports or feature requests should be 
+reported via a <a href="https://svn.boost.org/trac/boost/newticket">Boost Trac ticket</a>.</p>
 <p><a href="https://github.com/boostorg/filesystem/pulls">GitHub pull requests</a> 
-are encouraged, too, although for anything beyond really trivial fixes a trac 
-ticket mentioning the pull request should also be submitted.</p>
+are encouraged, too, although anything beyond really trivial fixes needs a trac 
+ticket.</p>
 <h3>Bug reports</h3>
 <p>A quick response to your bug report is much more likely if <b>the problem can 
 be immediately reproduced without any guesswork</b>.</p>
-<p>By far the most productive way to do that is to:</p>
+<p>The library maintainer gets off to a strong start if you provide the 
+following:</p>
 <ol>
-  <li>Provide a simple test program 
+  <li>A simple test program 
 that automatically yields an unambiguous pass or fail result.</li>
-  <li>Describe the compiler, standard library, platform, and Boost version you 
+  <li>The compiler, standard library, platform, and Boost version you 
   used to build and run your test program.</li>
-  <li>Describe how a library maintainer can build and run the test program. 
+  <li>A description of how to build and run the test program. 
   </li>
-  <li>Supply a copy or screen shot of the output you get when you run the test 
+  <li>A copy of the output from the test 
   program.</li>
 </ol>
+<p>For a super easy way to do this, read on!</p>
 <h3>Bug reporting boilerplate</h3>
-<p>The header <code>&lt;boost/detail/lightweight_test_config.hpp&gt;</code> supplies 
-boilerplate code that automatically supplies most of the information requested 
-in (1) and (2).</p>
-<h4>Example</h4>
+<p>The directory <code>&lt;boost-root&gt;/libs/filesystem/bug&gt;</code> provides a bug test program (<a href="bug.cpp"><code>bug.cpp</code></a>) 
+and a build file (<code>Jamfile.v2</code>). You need to:</p>
+<ol>
+  <li>Add one or more test cases to <code><a href="bug.cpp">bug.cpp</a></code> 
+  using any text or program editor.</li>
+  <li><a href="#Build-and-test">Build and test</a>.</li>
+  <li>Attach copies of the <a href="#Test-output">Test output</a> and test 
+  program to the <a href="https://svn.boost.org/trac/boost/newticket">Trac 
+  ticket</a>.</li>
+</ol>
+<p>The output includes all of the basic information about the compiler, std 
+library, platform, Boost version, and command line, so you don't have to bother 
+about that in your ticket write up.</p>
+<h4 dir="ltr"><a name="bug-cpp"><code>bug.cpp</code></a></h4>
+<p dir="ltr">Here is <code>bug.cpp</code> as supplied. To report a real bug, use
+<code>BOOST_TEST</code> and <code>BOOST_TEST_EQ</code> macros to build your own 
+test cases. You can delete the three tests already in <code>bug.cpp</code>:</p>
 <blockquote>
-  <pre>#include &lt;boost/detail/lightweight_test_config.hpp&gt;
+  <pre>#include &lt;boost/detail/lightweight_test_report.hpp&gt;
+#include &lt;boost/filesystem.hpp&gt;
 
-int test_main(int, char*[])
+namespace fs = boost::filesystem;
+
+int test_main(int, char*[])     // note name
 {
-  BOOST_TEST(2+2 == 6);
-  BOOST_TEST_EQ(2+2, 6);
-  return ::boost::report_errors();
+  BOOST_TEST(2 + 2 == 5);       // one convertible-to-bool argument
+  BOOST_TEST_EQ(4 + 4, 9);      // two EqualityComparible arguments
+  BOOST_TEST(fs::exists("."));  // should pass, so nothing should be reported
+
+  return ::boost::report_errors();   // required
 }
 </pre>
 </blockquote>
-<p>The output will look something like this:</p>
+<h4><a name="Build-and-test">Build and test</a></h4>
+
+
+<p>POSIX-like systems:</p>
+
+
+<blockquote>
+  <pre>cd &lt;boost-root&gt;/libs/filesystem/bug
+../../../b2 -a
+bin/bug</pre>
+</blockquote>
+<p>Windows:</p>
+<blockquote>
+  <pre>cd &lt;boost-root&gt;\libs\filesystem\bug
+..\..\..\b2 -a
+bin\bug</pre>
+</blockquote>
+<h4><a name="Test-output">Test output</a></h4>
+
+
+<p>Running on Windows produced this test output:</p>
+
+
+<blockquote>
 
 
 <pre>Microsoft Visual C++ version 14.0
 Dinkumware standard library version 610
 Win32
 Boost version 1.58.0
-Command line: ...lightweight_test_report_example.exe
-...lightweight_test_report_example.cpp(5):
- test '2 + 2 == 6' failed in function 'int __cdecl test_main(int,char *[])'
-...lightweight_test_report_example.cpp(6):
- test '2 + 2 == 6' failed in function 'int __cdecl test_main(int,char *[])': '4' != '6'
-2 errors detected.
-</pre>
+Command line: bin\bug
+bug.cpp(10): test '2 + 2 == 5' failed in function 'int __cdecl test_main(int,char *[])'
+bug.cpp(11): test '4 + 4 == 9' failed in function 'int __cdecl test_main(int,char *[])': '8' != '9'
+2 errors detected.</pre>
+</blockquote>
+<h3><a name="b2-command-line-options"><code>b2</code> command line</a></h3>
+<p dir="ltr"><code>b2</code> (formerly <code>bjam</code>) usage:&nbsp; <code>b2 
+[options] [properties] [target]</code></p>
+<p>Boost.Build b2 has many options, properties, and targets, but you will not 
+need most of them for bug reporting. Here are a few you might find helpful:</p>
+<p><b>Options</b></p>
+<blockquote>
+  <p dir="ltr"><code>-a</code>&nbsp;&nbsp;&nbsp; Rebuild everything rather than 
+  just out-of-date targets. Used in the example build above to ensure libraries 
+  are built with the same setup as the test program.</p>
+</blockquote>
+<p dir="ltr"><b>Properties</b></p>
+<blockquote>
+  <p dir="ltr"><code>address-model=<i>n&nbsp; n</i></code> is 32 or 64. 
+  Explicitly request either 32-bit or 64-bit code generation. This typically 
+  requires that your compiler is appropriately configured.</p>
+  <p><code>variant=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; string </i>is
+  <code>debug</code> or <code>release</code>.</p>
+  <p><code>toolset=</code><i>string</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The C++ 
+  compiler to use. For example, <code>gcc-4.9</code>, <code>clang-3.3</code>,
+  <code>or msvc-14.0</code>.</p>
+  <p dir="ltr"><code>include=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
+  Additional include paths for C and C++ compilers.</p>
+  <p dir="ltr"><code>cxxflags=</code><i>string&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
+  Custom options to pass to the C++ compiler.</p>
+  <p dir="ltr"><code>define=</code><i>string</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  Additional macro definitions for C and C++ compilers. <i>string</i> should be 
+  either <code class="computeroutput">SYMBOL</code> or
+  <code class="computeroutput">SYMBOL=VALUE</code></p>
+</blockquote>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->27 December, 2014<!--webbot bot="Timestamp" endspan i-checksum="38648" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->29 December, 2014<!--webbot bot="Timestamp" endspan i-checksum="38652" --></p>
 <p>© Copyright Beman Dawes, 2014</p>
 <p> Distributed under the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
