@@ -1567,13 +1567,14 @@ namespace
     PATH_TEST_EQ(path("foo/") / "bar", "foo/bar");
     append_test_aux("foo/", "bar", "foo/bar");
 
-    PATH_TEST_EQ(path("foo/") / "/bar", "foo//bar");
-    append_test_aux("foo/", "/bar", "foo//bar");
 
     if (platform == "Windows")
     {
       PATH_TEST_EQ(path("foo") / "bar", "foo\\bar");
       append_test_aux("foo", "bar", "foo\\bar");
+
+      PATH_TEST_EQ(path("foo\\") / "\\bar", "foo\\\\bar");
+      append_test_aux("foo\\", "\\bar", "foo\\\\bar");
 
       // hand created test case specific to Windows
       PATH_TEST_EQ(path("c:") / "bar", "c:bar");
