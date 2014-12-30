@@ -56,19 +56,25 @@ inline std::wstring convert(const char* c)
    return std::wstring(s.begin(), s.end());
 }
 
-inline int setenv(const char* name, const fs::path::value_type* val, int) 
+//  Note: these three setenv* functions are not general solutions for the missing
+//  setenv* problem on Windows. See Microsoft's _putenv for that need, and ticker #7018
+//  for discussion and rationale for returning void for this test program, which needs
+//  to work for both the MSVC Runtime and the Windows Runtime (which does not support
+//  _putenv).
+
+inline void setenv(const char* name, const fs::path::value_type* val, int) 
 {
-  return SetEnvironmentVariableW(convert(name).c_str(), val); 
+  SetEnvironmentVariableW(convert(name).c_str(), val); 
 }
 
-inline int setenv(const char* name, const char* val, int) 
+inline void setenv(const char* name, const char* val, int) 
 {
-  return SetEnvironmentVariableW(convert(name).c_str(), convert(val).c_str()); 
+  SetEnvironmentVariableW(convert(name).c_str(), convert(val).c_str()); 
 }
 
-inline int unsetenv(const char* name) 
+inline void unsetenv(const char* name) 
 { 
-  return SetEnvironmentVariableW(convert(name).c_str(), 0); 
+  SetEnvironmentVariableW(convert(name).c_str(), 0); 
 }
 
 #else
@@ -1828,7 +1834,7 @@ namespace
       bool        m_empty;
       
       previous_value(const char* name)
-      : m_string(name)
+      : m_name(name)
       , m_empty (true)
       {
         if(const char* value = getenv(name))
