@@ -663,14 +663,13 @@ namespace
 
   BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
   {
-    HANDLE handle = CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
-                                FILE_ATTRIBUTE_NORMAL, 0);
+    handle_wrapper h(CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
+                                FILE_ATTRIBUTE_NORMAL, 0));
     LARGE_INTEGER sz;
     sz.QuadPart = size;
-    return handle != INVALID_HANDLE_VALUE
-      && ::SetFilePointerEx(handle, sz, 0, FILE_BEGIN)
-      && ::SetEndOfFile(handle)
-      && ::CloseHandle(handle);
+    return h.handle != INVALID_HANDLE_VALUE
+      && ::SetFilePointerEx(h.handle, sz, 0, FILE_BEGIN)
+      && ::SetEndOfFile(h.handle);
   }
 
   //  Windows kernel32.dll functions that may or may not be present
