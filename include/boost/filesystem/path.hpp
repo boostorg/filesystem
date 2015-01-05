@@ -158,8 +158,8 @@ namespace filesystem
       {
         // convert requires contiguous string, so copy
         std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-          s(begin, end);
-        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname);
+          seq(begin, end);
+        path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname);
       }
     }
 
@@ -170,8 +170,8 @@ namespace filesystem
       {
         // convert requires contiguous string, so copy
         std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-          s(begin, end);
-        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
+          seq(begin, end);
+        path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname, cvt);
       }
     }
 
@@ -219,8 +219,8 @@ namespace filesystem
       if (begin != end)
       {
         std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-          s(begin, end);
-        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname);
+          seq(begin, end);
+        path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname);
       }
       return *this;
     }
@@ -232,8 +232,8 @@ namespace filesystem
       if (begin != end)
       {
         std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-          s(begin, end);
-        path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
+          seq(begin, end);
+        path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname, cvt);
       }
       return *this;
     }
@@ -286,8 +286,8 @@ namespace filesystem
       if (begin == end)
         return *this;
       std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-        s(begin, end);
-      path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname);
+        seq(begin, end);
+      path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname);
       return *this;
     }
 
@@ -297,8 +297,8 @@ namespace filesystem
       if (begin == end)
         return *this;
       std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-        s(begin, end);
-      path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
+        seq(begin, end);
+      path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname, cvt);
       return *this;
     }
 
@@ -739,8 +739,8 @@ namespace filesystem
       return *this;
     string_type::size_type sep_pos(m_append_separator_if_needed());
     std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-      s(begin, end);
-    path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname);
+      seq(begin, end);
+    path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname);
     if (sep_pos)
       m_erase_redundant_separator(sep_pos);
     return *this;
@@ -753,8 +753,8 @@ namespace filesystem
       return *this;
     string_type::size_type sep_pos(m_append_separator_if_needed());
     std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
-      s(begin, end);
-    path_traits::convert(s.c_str(), s.c_str()+s.size(), m_pathname, cvt);
+      seq(begin, end);
+    path_traits::convert(seq.c_str(), seq.c_str()+seq.size(), m_pathname, cvt);
     if (sep_pos)
       m_erase_redundant_separator(sep_pos);
     return *this;

@@ -660,11 +660,11 @@ namespace filesystem
     const path&  dot_path()
     {
 #   ifdef BOOST_WINDOWS_API
-      static const fs::path dot(L".");
+      static const fs::path dot_pth(L".");
 #   else
-      static const fs::path dot(".");
+      static const fs::path dot_pth(".");
 #   endif
-      return dot;
+      return dot_pth;
     }
 
     BOOST_FILESYSTEM_DECL
