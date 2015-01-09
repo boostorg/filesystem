@@ -111,7 +111,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
   if (!errval)
   {
-    BOOL gen_ok = ::CryptGenRandom(handle, len, static_cast<unsigned char*>(buf));
+    BOOL gen_ok = ::CryptGenRandom(handle, static_cast<DWORD>(len), static_cast<unsigned char*>(buf));
     if (!gen_ok)
       errval = ::GetLastError();
     ::CryptReleaseContext(handle, 0);
