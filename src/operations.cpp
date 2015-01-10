@@ -1798,10 +1798,9 @@ namespace detail
         return path();
       }
           
-      buf.pop_back();
-      
-      path p(buf.begin(), buf.end());
-          
+      path p(&*buf.begin());  // ticket #10388; note C++03 vector must be contiguous
+      p.remove_trailing_separator();   // remove trailing backslash
+
       if ((ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
       {
         ::SetLastError(ENOTDIR);

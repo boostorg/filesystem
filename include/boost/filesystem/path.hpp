@@ -359,6 +359,7 @@ namespace filesystem
       ;  // change slashes to backslashes
 #   endif
     path&  remove_filename();
+    path&  remove_trailing_separator();
     path&  replace_extension(const path& new_extension = path());
     void   swap(path& rhs)     { m_pathname.swap(rhs.m_pathname); }
 
