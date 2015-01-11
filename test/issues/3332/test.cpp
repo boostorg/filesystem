@@ -19,7 +19,7 @@ int main(void) {
 
   fs::recursive_directory_iterator end;
   fs::recursive_directory_iterator iter
-    ("C:/boost/modular/develop/libs/filesystem/test/issues/3332/test_folder");
+    ("C:/boost/test-files/utf-8");
 
   while (iter != end)
   {
