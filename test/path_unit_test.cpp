@@ -33,8 +33,7 @@
 
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
 #include "test_codecvt.hpp"                                // for codecvt arg tests
-#include <boost/detail/lightweight_test.hpp>
-#include <boost/detail/lightweight_main.hpp>
+#include <boost/detail/lightweight_test_report.hpp>
 #include <boost/smart_ptr.hpp>  // used constructor tests
 #include <boost/functional/hash.hpp>
 
@@ -126,9 +125,9 @@ namespace
                << L"\"\n" ;
   }
 
-  void check(bool ok, const char* file, int line)
+  void check(bool ok_, const char* file, int line)
   {
-    if (ok) return;
+    if (ok_) return;
 
     ++::boost::detail::test_errors();
 
@@ -827,17 +826,17 @@ namespace
   void test_overloads()
   {
     std::cout << "testing overloads..." << std::endl;
-    std::string s("hello");
+    std::string sto("hello");
     const char a[] = "goodbye";
-    path p1(s);
-    path p2(s.c_str());
+    path p1(sto);
+    path p2(sto.c_str());
     path p3(a);
     path p4("foo");
 
-    std::wstring ws(L"hello");
+    std::wstring wsto(L"hello");
     const wchar_t wa[] = L"goodbye";
-    path wp1(ws);
-    path wp2(ws.c_str());
+    path wp1(wsto);
+    path wp2(wsto.c_str());
     path wp3(wa);
     path wp4(L"foo");
   }
@@ -1038,7 +1037,7 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-int cpp_main(int, char*[])
+int test_main(int, char*[])
 {
 // document state of critical macros
 #ifdef BOOST_POSIX_API

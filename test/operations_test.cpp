@@ -56,19 +56,25 @@ inline std::wstring convert(const char* c)
    return std::wstring(s.begin(), s.end());
 }
 
-inline int setenv(const char* name, const fs::path::value_type* val, int) 
+//  Note: these three setenv* functions are not general solutions for the missing
+//  setenv* problem on Windows. See Microsoft's _putenv for that need, and ticker #7018
+//  for discussion and rationale for returning void for this test program, which needs
+//  to work for both the MSVC Runtime and the Windows Runtime (which does not support
+//  _putenv).
+
+inline void setenv(const char* name, const fs::path::value_type* val, int) 
 {
-  return SetEnvironmentVariableW(convert(name).c_str(), val); 
+  SetEnvironmentVariableW(convert(name).c_str(), val); 
 }
 
-inline int setenv(const char* name, const char* val, int) 
+inline void setenv(const char* name, const char* val, int) 
 {
-  return SetEnvironmentVariableW(convert(name).c_str(), convert(val).c_str()); 
+  SetEnvironmentVariableW(convert(name).c_str(), convert(val).c_str()); 
 }
 
-inline int unsetenv(const char* name) 
+inline void unsetenv(const char* name) 
 { 
-  return SetEnvironmentVariableW(convert(name).c_str(), 0); 
+  SetEnvironmentVariableW(convert(name).c_str(), 0); 
 }
 
 #else
@@ -447,21 +453,21 @@ namespace
     BOOST_TEST(ec);
 
     dir_itr_exception = false;
-    try { fs::directory_iterator it("nosuchdirectory"); }
+    try { fs::directory_iterator itx("nosuchdirectory"); }
     catch (const fs::filesystem_error &) { dir_itr_exception = true; }
     BOOST_TEST(dir_itr_exception);
 
     ec.clear();
-    fs::directory_iterator it2("nosuchdirectory", ec);
+    fs::directory_iterator it2x("nosuchdirectory", ec);
     BOOST_TEST(ec);
 
     dir_itr_exception = false;
     try
     {
-      error_code ec;
-      fs::directory_iterator it("nosuchdirectory", ec);
-      BOOST_TEST(ec);
-      BOOST_TEST(ec == boost::system::errc::no_such_file_or_directory);
+      error_code ecx;
+      fs::directory_iterator itx("nosuchdirectory", ecx);
+      BOOST_TEST(ecx);
+      BOOST_TEST(ecx == boost::system::errc::no_such_file_or_directory);
     }
     catch (const fs::filesystem_error &) { dir_itr_exception = true; }
     BOOST_TEST(!dir_itr_exception);
@@ -547,14 +553,14 @@ namespace
       BOOST_TEST(dir_itr->path() != p);
 
       // test case reported in comment to SourceForge bug tracker [937606]
-      fs::directory_iterator it(dir);
-      const fs::path p1 = (*it++).path();
-      BOOST_TEST(it != fs::directory_iterator());
-      const fs::path p2 = (*it++).path();
+      fs::directory_iterator itx(dir);
+      const fs::path p1 = (*itx++).path();
+      BOOST_TEST(itx != fs::directory_iterator());
+      const fs::path p2 = (*itx++).path();
       BOOST_TEST(p1 != p2);
-      ++it;
-      ++it;
-      BOOST_TEST(it == fs::directory_iterator());
+      ++itx;
+      ++itx;
+      BOOST_TEST(itx == fs::directory_iterator());
     }
 
     //  Windows has a tricky special case when just the root-name is given,
@@ -563,17 +569,17 @@ namespace
     if (platform == "Windows")
     {
       fs::path root_name_path(fs::current_path().root_name());
-      fs::directory_iterator it(root_name_path);
-      BOOST_TEST(it != fs::directory_iterator());
-//      BOOST_TEST(fs::exists((*it).path()));
-      BOOST_TEST(fs::exists(it->path()));
-      BOOST_TEST(it->path().parent_path() == root_name_path);
+      fs::directory_iterator itx(root_name_path);
+      BOOST_TEST(itx != fs::directory_iterator());
+//      BOOST_TEST(fs::exists((*itx).path()));
+      BOOST_TEST(fs::exists(itx->path()));
+      BOOST_TEST(itx->path().parent_path() == root_name_path);
       bool found(false);
       do
       {
-        if (it->path().filename() == temp_dir.filename())
+        if (itx->path().filename() == temp_dir.filename())
           found = true;
-      } while (++it != fs::directory_iterator());
+      } while (++itx != fs::directory_iterator());
       BOOST_TEST(found);
     }
 
@@ -594,7 +600,7 @@ namespace
 
   int walk_tree(bool recursive)
   {
-    cout << "    walk_tree" << endl;
+//    cout << "    walk_tree" << endl;
     error_code ec;
     int d1f1_count = 0;
     for (fs::recursive_directory_iterator it (dir,
@@ -602,7 +608,7 @@ namespace
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
-      cout << "      " << it->path() << endl;
+//      cout << "      " << it->path() << endl;
       if (it->path().filename() == "d1f1")
         ++d1f1_count;
     }
@@ -718,12 +724,12 @@ namespace
     cout << "create_hard_link_tests..." << endl;
 
     fs::path from_ph(dir / "f3");
-    fs::path f1(dir / "f1");
+    fs::path f1x(dir / "f1");
 
     BOOST_TEST(!fs::exists(from_ph));
-    BOOST_TEST(fs::exists(f1));
+    BOOST_TEST(fs::exists(f1x));
     bool create_hard_link_ok(true);
-    try { fs::create_hard_link(f1, from_ph); }
+    try { fs::create_hard_link(f1x, from_ph); }
     catch (const fs::filesystem_error & ex)
     {
       create_hard_link_ok = false;
@@ -740,10 +746,10 @@ namespace
         << "     *** For information only ***\n"
            "     create_hard_link() succeeded\n";
       BOOST_TEST(fs::exists(from_ph));
-      BOOST_TEST(fs::exists(f1));
-      BOOST_TEST(fs::equivalent(from_ph, f1));
+      BOOST_TEST(fs::exists(f1x));
+      BOOST_TEST(fs::equivalent(from_ph, f1x));
       BOOST_TEST(fs::hard_link_count(from_ph) == 2);
-      BOOST_TEST(fs::hard_link_count(f1) == 2);
+      BOOST_TEST(fs::hard_link_count(f1x) == 2);
     }
 
     //  Although tests may be running on a FAT or other file system that does
@@ -764,10 +770,10 @@ namespace
     cout << "create_symlink_tests..." << endl;
 
     fs::path from_ph(dir / "f4");
-    fs::path f1(dir / "f1");
+    fs::path f1x(dir / "f1");
     BOOST_TEST(!fs::exists(from_ph));
-    BOOST_TEST(fs::exists(f1));
-    try { fs::create_symlink(f1, from_ph); }
+    BOOST_TEST(fs::exists(f1x));
+    try { fs::create_symlink(f1x, from_ph); }
     catch (const fs::filesystem_error & ex)
     {
       create_symlink_ok = false;
@@ -785,9 +791,9 @@ namespace
            "     create_symlink() succeeded\n";
       BOOST_TEST(fs::exists(from_ph));
       BOOST_TEST(fs::is_symlink(from_ph));
-      BOOST_TEST(fs::exists(f1));
-      BOOST_TEST(fs::equivalent(from_ph, f1));
-      BOOST_TEST(fs::read_symlink(from_ph) == f1);
+      BOOST_TEST(fs::exists(f1x));
+      BOOST_TEST(fs::equivalent(from_ph, f1x));
+      BOOST_TEST(fs::read_symlink(from_ph) == f1x);
 
       fs::file_status stat = fs::symlink_status(from_ph);
       BOOST_TEST(fs::exists(stat));
@@ -880,8 +886,8 @@ namespace
   {
     cout << "rename_tests..." << endl;
 
-    fs::path f1(dir / "f1");
-    BOOST_TEST(fs::exists(f1));
+    fs::path f1x(dir / "f1");
+    BOOST_TEST(fs::exists(f1x));
 
     // error: rename a non-existent old file
     BOOST_TEST(!fs::exists(d1 / "f99"));
@@ -892,7 +898,7 @@ namespace
     BOOST_TEST(CHECK_EXCEPTION(n1b, ENOENT));
 
     // error: rename an existing file to ""
-    renamer n2(f1, "");
+    renamer n2(f1x, "");
     BOOST_TEST(CHECK_EXCEPTION(n2, ENOENT));
 
     // rename an existing file to an existent file
@@ -1217,32 +1223,32 @@ namespace
 
   //  remove_tests  --------------------------------------------------------------------//
 
-  void remove_tests(const fs::path& dir)
+  void remove_tests(const fs::path& dirx)
   {
     cout << "remove_tests..." << endl;
 
     // remove() file
-    fs::path f1 = dir / "shortlife";
-    BOOST_TEST(!fs::exists(f1));
-    create_file(f1, "");
-    BOOST_TEST(fs::exists(f1));
-    BOOST_TEST(!fs::is_directory(f1));
-    BOOST_TEST(fs::remove(f1));
-    BOOST_TEST(!fs::exists(f1));
+    fs::path f1x = dirx / "shortlife";
+    BOOST_TEST(!fs::exists(f1x));
+    create_file(f1x, "");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(!fs::is_directory(f1x));
+    BOOST_TEST(fs::remove(f1x));
+    BOOST_TEST(!fs::exists(f1x));
     BOOST_TEST(!fs::remove("no-such-file"));
     BOOST_TEST(!fs::remove("no-such-directory/no-such-file"));
 
     // remove() directory
-    fs::path d1 = dir / "shortlife_dir";
-    BOOST_TEST(!fs::exists(d1));
-    fs::create_directory(d1);
-    BOOST_TEST(fs::exists(d1));
-    BOOST_TEST(fs::is_directory(d1));
-    BOOST_TEST(fs::is_empty(d1));
-    bad_remove_dir = dir;
+    fs::path d1x = dirx / "shortlife_dir";
+    BOOST_TEST(!fs::exists(d1x));
+    fs::create_directory(d1x);
+    BOOST_TEST(fs::exists(d1x));
+    BOOST_TEST(fs::is_directory(d1x));
+    BOOST_TEST(fs::is_empty(d1x));
+    bad_remove_dir = dirx;
     BOOST_TEST(CHECK_EXCEPTION(bad_remove, ENOTEMPTY));
-    BOOST_TEST(fs::remove(d1));
-    BOOST_TEST(!fs::exists(d1));
+    BOOST_TEST(fs::remove(d1x));
+    BOOST_TEST(!fs::exists(d1x));
   }
 
   //  remove_symlink_tests  ------------------------------------------------------------//
@@ -1288,25 +1294,25 @@ namespace
     BOOST_TEST(!fs::is_symlink(link));
 
     // remove() symbolic link to file
-    fs::path f1 = "link_target";
-    fs::remove(f1);  // remove any residue from past tests
-    BOOST_TEST(!fs::exists(f1));
-    create_file(f1, "");
-    BOOST_TEST(fs::exists(f1));
-    BOOST_TEST(!fs::is_directory(f1));
-    BOOST_TEST(fs::is_regular_file(f1));
+    fs::path f1x = "link_target";
+    fs::remove(f1x);  // remove any residue from past tests
+    BOOST_TEST(!fs::exists(f1x));
+    create_file(f1x, "");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(!fs::is_directory(f1x));
+    BOOST_TEST(fs::is_regular_file(f1x));
     link = "non_dangling_link";
-    fs::create_symlink(f1, link);
+    fs::create_symlink(f1x, link);
     BOOST_TEST(fs::exists(link));
     BOOST_TEST(!fs::is_directory(link));
     BOOST_TEST(fs::is_regular_file(link));
     BOOST_TEST(fs::is_symlink(link));
     BOOST_TEST(fs::remove(link));
-    BOOST_TEST(fs::exists(f1));
+    BOOST_TEST(fs::exists(f1x));
     BOOST_TEST(!fs::exists(link));
     BOOST_TEST(!fs::is_symlink(link));
-    BOOST_TEST(fs::remove(f1));
-    BOOST_TEST(!fs::exists(f1));
+    BOOST_TEST(fs::remove(f1x));
+    BOOST_TEST(!fs::exists(f1x));
   }
 
   //  absolute_tests  -----------------------------------------------------------------//
@@ -1463,40 +1469,40 @@ namespace
 
  //  copy_file_tests  ------------------------------------------------------------------//
 
-  void copy_file_tests(const fs::path& f1, const fs::path& d1)
+  void copy_file_tests(const fs::path& f1x, const fs::path& d1x)
   {
     cout << "copy_file_tests..." << endl;
 
-    BOOST_TEST(fs::exists(f1));
-    fs::remove(d1 / "f2");  // remove possible residue from prior testing
-    BOOST_TEST(fs::exists(d1));
-    BOOST_TEST(!fs::exists(d1 / "f2"));
-    cout << " copy " << f1 << " to " << d1 / "f2" << endl;
-    fs::copy_file(f1, d1 / "f2");
+    BOOST_TEST(fs::exists(f1x));
+    fs::remove(d1x / "f2");  // remove possible residue from prior testing
+    BOOST_TEST(fs::exists(d1x));
+    BOOST_TEST(!fs::exists(d1x / "f2"));
+    cout << " copy " << f1x << " to " << d1x / "f2" << endl;
+    fs::copy_file(f1x, d1x / "f2");
     cout << " copy complete" << endl;
-    BOOST_TEST(fs::exists(f1));
-    BOOST_TEST(fs::exists(d1 / "f2"));
-    BOOST_TEST(!fs::is_directory(d1 / "f2"));
-    verify_file(d1 / "f2", "file-f1");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(fs::exists(d1x / "f2"));
+    BOOST_TEST(!fs::is_directory(d1x / "f2"));
+    verify_file(d1x / "f2", "file-f1");
 
     bool copy_ex_ok = false;
-    try { fs::copy_file(f1, d1 / "f2"); }
+    try { fs::copy_file(f1x, d1x / "f2"); }
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
 
     copy_ex_ok = false;
-    try { fs::copy_file(f1, d1 / "f2", fs::copy_option::fail_if_exists); }
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_option::fail_if_exists); }
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
 
-    create_file(d1 / "f2", "1234567890");
-    BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 10U);
+    create_file(d1x / "f2", "1234567890");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
     copy_ex_ok = true;
-    try { fs::copy_file(f1, d1 / "f2", fs::copy_option::overwrite_if_exists); }
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_option::overwrite_if_exists); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
-    BOOST_TEST_EQ(fs::file_size(d1 / "f2"), 7U);
-    verify_file(d1 / "f2", "file-f1");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 7U);
+    verify_file(d1x / "f2", "file-f1");
   }
 
  //  symlink_status_tests  -------------------------------------------------------------//
@@ -1563,22 +1569,22 @@ namespace
 
  //  copy_symlink_tests  ---------------------------------------------------------------//
 
-  void copy_symlink_tests(const fs::path& f1, const fs::path& d1)
+  void copy_symlink_tests(const fs::path& f1x, const fs::path& d1x)
   {
     cout << "copy_symlink_tests..." << endl;
 
-    BOOST_TEST(fs::exists(f1));
-    BOOST_TEST(fs::exists(d1));
-    fs::path sym1(d1 / "symlink1");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(fs::exists(d1x));
+    fs::path sym1(d1x / "symlink1");
     fs::remove(sym1);  // remove possible residue from prior testing
-    fs::create_symlink(f1, sym1);
+    fs::create_symlink(f1x, sym1);
     BOOST_TEST(fs::exists(sym1));
     BOOST_TEST(fs::is_symlink(sym1));
-    fs::path sym2(d1 / "symlink2");
+    fs::path sym2(d1x / "symlink2");
     fs::copy_symlink(sym1, sym2);
     BOOST_TEST(fs::exists(sym2));
     BOOST_TEST(fs::is_symlink(sym2));
-    //fs::path sym3(d1 / "symlink3");
+    //fs::path sym3(d1x / "symlink3");
     //fs::copy(sym1, sym3);
     //BOOST_TEST(fs::exists(sym3));
     //BOOST_TEST(fs::is_symlink(sym3));
@@ -1589,30 +1595,30 @@ namespace
     BOOST_TEST(copy_ex_ok);
 
     copy_ex_ok = false;
-    try { fs::copy_symlink(f1, "new-symlink2"); } // should fail; f1 not symlink
+    try { fs::copy_symlink(f1x, "new-symlink2"); } // should fail; f1x not symlink
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
   }
 
   //  write_time_tests  ----------------------------------------------------------------//
 
-  void write_time_tests(const fs::path& dir)
+  void write_time_tests(const fs::path& dirx)
   {    
     cout << "write_time_tests..." << endl;
 
-    fs::path f1 = dir / "foobar2";
-    create_file(f1, "foobar2");
-    BOOST_TEST(fs::exists(f1));
-    BOOST_TEST(!fs::is_directory(f1));
-    BOOST_TEST(fs::is_regular_file(f1));
-    BOOST_TEST(fs::file_size(f1) == 7);
-    verify_file(f1, "foobar2");
+    fs::path f1x = dirx / "foobar2";
+    create_file(f1x, "foobar2");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(!fs::is_directory(f1x));
+    BOOST_TEST(fs::is_regular_file(f1x));
+    BOOST_TEST(fs::file_size(f1x) == 7);
+    verify_file(f1x, "foobar2");
 
     // Some file system report last write time as local (FAT), while
     // others (NTFS) report it as UTC. The C standard does not specify
     // if time_t is local or UTC. 
 
-    std::time_t ft = fs::last_write_time(f1);
+    std::time_t ft = fs::last_write_time(f1x);
     cout << "\n  UTC last_write_time() for a file just created is "
       << std::asctime(std::gmtime(&ft)) << endl;
 
@@ -1620,15 +1626,15 @@ namespace
     cout << "\n  Year is " << tmp->tm_year << endl;
     --tmp->tm_year;
     cout << "  Change year to " << tmp->tm_year << endl;
-    fs::last_write_time(f1, std::mktime(tmp));
-    std::time_t ft2 = fs::last_write_time(f1);
+    fs::last_write_time(f1x, std::mktime(tmp));
+    std::time_t ft2 = fs::last_write_time(f1x);
     cout << "  last_write_time() for the file is now "
       << std::asctime(std::gmtime(&ft2)) << endl;
-    BOOST_TEST(ft != fs::last_write_time(f1));
+    BOOST_TEST(ft != fs::last_write_time(f1x));
 
     cout << "\n  Reset to current time" << endl;
-    fs::last_write_time(f1, ft);
-    double time_diff = std::difftime(ft, fs::last_write_time(f1));
+    fs::last_write_time(f1x, ft);
+    double time_diff = std::difftime(ft, fs::last_write_time(f1x));
     cout 
       << "  original last_write_time() - current last_write_time() is "
       << time_diff << " seconds" << endl;
@@ -1800,20 +1806,20 @@ namespace
 
   //  equivalent_tests  ----------------------------------------------------------------//
 
-  void equivalent_tests(const fs::path& f1)
+  void equivalent_tests(const fs::path& f1x)
   {
     cout << "equivalent_tests..." << endl;
 
     BOOST_TEST(CHECK_EXCEPTION(bad_equivalent, ENOENT));
-    BOOST_TEST(fs::equivalent(f1, dir / "f1"));
+    BOOST_TEST(fs::equivalent(f1x, dir / "f1"));
     BOOST_TEST(fs::equivalent(dir, d1 / ".."));
-    BOOST_TEST(!fs::equivalent(f1, dir));
-    BOOST_TEST(!fs::equivalent(dir, f1));
+    BOOST_TEST(!fs::equivalent(f1x, dir));
+    BOOST_TEST(!fs::equivalent(dir, f1x));
     BOOST_TEST(!fs::equivalent(d1, d2));
     BOOST_TEST(!fs::equivalent(dir, ng));
     BOOST_TEST(!fs::equivalent(ng, dir));
-    BOOST_TEST(!fs::equivalent(f1, ng));
-    BOOST_TEST(!fs::equivalent(ng, f1));
+    BOOST_TEST(!fs::equivalent(f1x, ng));
+    BOOST_TEST(!fs::equivalent(ng, f1x));
   }
 
   //  temp_directory_path_tests  -------------------------------------------------------//
@@ -1828,7 +1834,7 @@ namespace
       bool        m_empty;
       
       previous_value(const char* name)
-      : m_string(name)
+      : m_name(name)
       , m_empty (true)
       {
         if(const char* value = getenv(name))

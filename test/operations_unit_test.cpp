@@ -31,7 +31,6 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/foreach.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
@@ -160,10 +159,10 @@ namespace
     }
 #endif
 
-    BOOST_FOREACH(directory_entry& x, directory_iterator("."))
+    for (directory_iterator itr("."); itr != directory_iterator(); ++itr)
     {
-      CHECK(!x.path().empty());
-      //cout << "  " << x.path() << "\n";
+      CHECK(!itr->path().empty());
+      //cout << "  " << itr->path() << "\n";
     }
 
     cout << "directory_iterator_test complete" << endl;
@@ -221,10 +220,11 @@ namespace
     }
 #endif
 
-    BOOST_FOREACH(directory_entry& x, recursive_directory_iterator(".."))
+    for (recursive_directory_iterator itr("..");
+      itr != recursive_directory_iterator(); ++itr)
     {
-      CHECK(!x.path().empty());
-      //cout << "  " << x.path() << "\n";
+      CHECK(!itr->path().empty());
+      //cout << "  " << itr->path() << "\n";
     }
 
     cout << "recursive_directory_iterator_test complete" << endl;

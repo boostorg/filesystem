@@ -71,17 +71,20 @@ using std::wstring;
 
 #   include <sys/types.h>
 #   include <sys/stat.h>
-#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__)
+#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) \
+ && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
 #   else
 #     ifdef __OpenBSD__
-#     include <sys/param.h>
+#       include <sys/param.h>
 #     elif defined(__ANDROID__)
-#     include <sys/vfs.h>
+#       include <sys/vfs.h>
 #     endif
-#     include <sys/mount.h>
+#     if !defined(__VXWORKS__)
+#       include <sys/mount.h>
+#     endif
 #     define BOOST_STATVFS statfs
 #     define BOOST_STATVFS_F_FRSIZE static_cast<boost::uintmax_t>(vfs.f_bsize)
 #   endif
@@ -441,25 +444,33 @@ namespace
 
     ssize_t sz, sz_read=1, sz_write;
     while (sz_read > 0
-      && (sz_read = ::read(infile, buf.get(), buf_sz))> 0)
+      && (sz_read = ::read(infile, buf.get(), buf_sz)) > 0)
     {
       // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
       // Marc Rochkind, Addison-Wesley, 2004, page 94
       sz_write = 0;
       do
       {
+        BOOST_ASSERT(sz_read - sz_write > 0);  // #1
+          // ticket 4438 claimed possible infinite loop if write returns 0. My analysis
+          // is that POSIX specifies 0 return only if 3rd arg is 0, and that will never
+          // happen due to loop entry and coninuation conditions. BOOST_ASSERT #1 above
+          // and #2 below added to verify that analysis.
         if ((sz = ::write(outfile, buf.get() + sz_write,
-          sz_read - sz_write))< 0)
+          sz_read - sz_write)) < 0)
         { 
           sz_read = sz; // cause read loop termination
-          break;        //  and error to be thrown after closes
+          break;        //  and error reported after closes
         }
+        BOOST_ASSERT(sz > 0);                  // #2
         sz_write += sz;
       } while (sz_write < sz_read);
     }
 
-    if (::close(infile)< 0)sz_read = -1;
-    if (::close(outfile)< 0)sz_read = -1;
+    if (::close(infile)< 0)
+      sz_read = -1;
+    if (::close(outfile)< 0)
+      sz_read = -1;
 
     return sz_read >= 0;
   }
@@ -652,14 +663,13 @@ namespace
 
   BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
   {
-    HANDLE handle = CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
-                                FILE_ATTRIBUTE_NORMAL, 0);
+    handle_wrapper h(CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
+                                FILE_ATTRIBUTE_NORMAL, 0));
     LARGE_INTEGER sz;
     sz.QuadPart = size;
-    return handle != INVALID_HANDLE_VALUE
-      && ::SetFilePointerEx(handle, sz, 0, FILE_BEGIN)
-      && ::SetEndOfFile(handle)
-      && ::CloseHandle(handle);
+    return h.handle != INVALID_HANDLE_VALUE
+      && ::SetFilePointerEx(h.handle, sz, 0, FILE_BEGIN)
+      && ::SetEndOfFile(h.handle);
   }
 
   //  Windows kernel32.dll functions that may or may not be present
@@ -1788,10 +1798,9 @@ namespace detail
         return path();
       }
           
-      buf.pop_back();
-      
-      path p(buf.begin(), buf.end());
-          
+      path p(&*buf.begin());  // ticket #10388; note C++03 vector must be contiguous
+      p.remove_trailing_separator();   // remove trailing backslash
+
       if ((ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
       {
         ::SetLastError(ENOTDIR);

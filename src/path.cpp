@@ -254,6 +254,13 @@ namespace filesystem
     return *this;
   }
 
+  path&  path::remove_trailing_separator()
+  {
+    if (!m_pathname.empty() && is_separator(m_pathname[m_pathname.size() - 1]))
+      m_pathname.erase(m_pathname.size() - 1);
+    return *this;
+  }
+
   path& path::replace_extension(const path& new_extension)
   {
     // erase existing extension, including the dot, if any
@@ -660,11 +667,11 @@ namespace filesystem
     const path&  dot_path()
     {
 #   ifdef BOOST_WINDOWS_API
-      static const fs::path dot(L".");
+      static const fs::path dot_pth(L".");
 #   else
-      static const fs::path dot(".");
+      static const fs::path dot_pth(".");
 #   endif
-      return dot;
+      return dot_pth;
     }
 
     BOOST_FILESYSTEM_DECL

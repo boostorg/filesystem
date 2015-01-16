@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.30626.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.22310.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "path_unit_test", "path_unit_test\path_unit_test.vcxproj", "{3C77F610-2E31-4087-9DF2-7CD45198A02D}"
 EndProject
@@ -105,6 +105,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "odr_test", "odr_test\odr_test.vcxproj", "{1F1C209D-105B-4C8A-8DFC-ABCC4D9A0014}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello_filesystem", "hello_filesystem\hello_filesystem.vcxproj", "{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "issue_test", "issue_test\issue_test.vcxproj", "{3B1AF12C-25AB-44F7-A80B-8BBA0D3D08CE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "headers", "headers\headers.vcxproj", "{5FFA4555-E967-4632-A3E6-ED8826E9FDED}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bug-reporting", "bug-reporting\bug-reporting.vcxproj", "{534B6F8A-B899-4C68-A10C-BB98FFCB35D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -232,6 +238,16 @@ Global
 		{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}.Debug|Win32.Build.0 = Debug|Win32
 		{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}.Release|Win32.ActiveCfg = Release|Win32
 		{3D74D9C5-31B1-4D5B-B49C-8725E26CF768}.Release|Win32.Build.0 = Release|Win32
+		{3B1AF12C-25AB-44F7-A80B-8BBA0D3D08CE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3B1AF12C-25AB-44F7-A80B-8BBA0D3D08CE}.Debug|Win32.Build.0 = Debug|Win32
+		{3B1AF12C-25AB-44F7-A80B-8BBA0D3D08CE}.Release|Win32.ActiveCfg = Release|Win32
+		{3B1AF12C-25AB-44F7-A80B-8BBA0D3D08CE}.Release|Win32.Build.0 = Release|Win32
+		{5FFA4555-E967-4632-A3E6-ED8826E9FDED}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5FFA4555-E967-4632-A3E6-ED8826E9FDED}.Release|Win32.ActiveCfg = Release|Win32
+		{534B6F8A-B899-4C68-A10C-BB98FFCB35D6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{534B6F8A-B899-4C68-A10C-BB98FFCB35D6}.Debug|Win32.Build.0 = Debug|Win32
+		{534B6F8A-B899-4C68-A10C-BB98FFCB35D6}.Release|Win32.ActiveCfg = Release|Win32
+		{534B6F8A-B899-4C68-A10C-BB98FFCB35D6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

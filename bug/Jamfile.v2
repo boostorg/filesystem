@@ -1,7 +1,6 @@
-# Boost Filesystem Library Example Jamfile
+# Boost Filesystem Library Bug report Jamfile
  
-# (C) Copyright Vladimir Prus 2003
-
+# Copyright Beman Dawes 2014
 # Distributed under the Boost Software License, Version 1.0.
 # See www.boost.org/LICENSE_1_0.txt
 
@@ -12,15 +11,9 @@ project
       <library>/boost/filesystem//boost_filesystem
       <library>/boost/system//boost_system
       <toolset>msvc:<asynch-exceptions>on
-      <link>static
     ;
     
-exe tut0 : tut0.cpp ;
-exe tut1 : tut1.cpp ;
-exe tut2 : tut2.cpp ;
-exe tut3 : tut3.cpp ;
-exe tut4 : tut4.cpp ;
-exe tut5 : tut5.cpp ;
-exe path_info : path_info.cpp ;
-exe file_status : file_status.cpp ;
-exe file_size : file_size.cpp ;
+exe bug : bug.cpp : <link>static ;
+
+# install in ./bin; invoke via "b2", not "b2 install"
+install bin : bug ;
