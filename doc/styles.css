@@ -2,6 +2,7 @@ body
 {
   font-family: sans-serif;
   max-width: 6.5in;
+  margin: 0px auto;
   font-size: 85%;
 }
  ins  {background-color: #CCFFCC;}
