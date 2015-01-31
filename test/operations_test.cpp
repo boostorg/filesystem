@@ -1867,7 +1867,22 @@ namespace
   {
     {
       cout << "temp_directory_path_tests..." << endl;
+#if defined BOOST_WINDOWS_API
+      //  // test ticket #5300 temp_directory_path failure on Windows with path length > 130
+      //  {
+      //    const wchar_t long_path[] =
+      //      L"/12345678901234567890123456789012345678901234567890"
+      //      L"12345678901234567890123456789012345678901234567890"
+      //      L"12345678901234567890123456789012345678901234567890#"   // total 152 chars
+      //      ;
+      //    guarded_env_var tmp_guard("tmp", long_path);
 
+      //    error_code ec;
+      //    fs::path tmp_path = fs::temp_directory_path(ec);
+      //    BOOST_TEST(ec.value() != 0); // should be path not found or similar error
+      //    cout << "temp_directory_path() returned " << tmp_path << endl;
+      //  }
+#endif
       BOOST_TEST(!fs::temp_directory_path().empty());
       BOOST_TEST(exists(fs::temp_directory_path()));
       fs::path ph = fs::temp_directory_path()/"temp_directory_path_test.txt";
@@ -1935,55 +1950,54 @@ namespace
 #endif
 
 #if defined BOOST_WINDOWS_API
+
+    struct guarded_tmp_vars
     {
-      struct guarded_tmp_vars
-      {
-        guarded_env_var m_tmp        ;
-        guarded_env_var m_temp       ;
-        guarded_env_var m_userprofile;
+      guarded_env_var m_tmp        ;
+      guarded_env_var m_temp       ;
+      guarded_env_var m_userprofile;
 
-        guarded_tmp_vars
-        ( const fs::path::value_type* tmp    
-        , const fs::path::value_type* temp   
-        , const fs::path::value_type* userprofile
-        )
-        : m_tmp        ("TMP"        , tmp        )
-        , m_temp       ("TEMP"       , temp       )
-        , m_userprofile("USERPROFILE", userprofile)
-        {}                
-      };
+      guarded_tmp_vars
+      ( const fs::path::value_type* tmp    
+      , const fs::path::value_type* temp   
+      , const fs::path::value_type* userprofile
+      )
+      : m_tmp        ("TMP"        , tmp        )
+      , m_temp       ("TEMP"       , temp       )
+      , m_userprofile("USERPROFILE", userprofile)
+      {}                
+    };
 
-      // should NEVER throw - the windows directory or current_path always exists
-      {
-        guarded_tmp_vars vars(0, 0, 0);
-        fs::path ph = fs::temp_directory_path();
+    // should NEVER throw - the windows directory or current_path always exists
+    {
+      guarded_tmp_vars vars(0, 0, 0);
+      fs::path ph = fs::temp_directory_path();
         
-        BOOST_TEST(test_temp_dir != ph); 
-      }
+      BOOST_TEST(test_temp_dir != ph); 
+    }
 
-      // should NEVER fail - the windows directory or current_path always exists
-      {
-          guarded_tmp_vars vars(0, 0, 0);
-          error_code ec;
-          fs::path ph = fs::temp_directory_path(ec);
-          BOOST_TEST(!ec); 
-      }
+    // should NEVER fail - the windows directory or current_path always exists
+    {
+        guarded_tmp_vars vars(0, 0, 0);
+        error_code ec;
+        fs::path ph = fs::temp_directory_path(ec);
+        BOOST_TEST(!ec); 
+    }
 
-      {
-        guarded_tmp_vars vars(test_temp_dir.c_str(), 0, 0);
-        fs::path ph = fs::temp_directory_path();
-        BOOST_TEST(equivalent(test_temp_dir, ph));
-      }
-      {
-        guarded_tmp_vars vars(0, test_temp_dir.c_str(), 0);
-        fs::path ph = fs::temp_directory_path();
-        BOOST_TEST(equivalent(test_temp_dir, ph));
-      }
-      {
-        guarded_tmp_vars vars(0, 0, test_temp_dir.c_str());
-        fs::path ph = fs::temp_directory_path();
-        BOOST_TEST(equivalent(test_temp_dir, ph));
-      }
+    {
+      guarded_tmp_vars vars(test_temp_dir.c_str(), 0, 0);
+      fs::path ph = fs::temp_directory_path();
+      BOOST_TEST(equivalent(test_temp_dir, ph));
+    }
+    {
+      guarded_tmp_vars vars(0, test_temp_dir.c_str(), 0);
+      fs::path ph = fs::temp_directory_path();
+      BOOST_TEST(equivalent(test_temp_dir, ph));
+    }
+    {
+      guarded_tmp_vars vars(0, 0, test_temp_dir.c_str());
+      fs::path ph = fs::temp_directory_path();
+      BOOST_TEST(equivalent(test_temp_dir, ph));
     }
 #endif    
   }
