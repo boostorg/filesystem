@@ -195,7 +195,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 # if defined(BOOST_POSIX_API)
 
-typedef int error_t;
+typedef int err_t;
 
 //  POSIX uses a 0 return to indicate success
 #   define BOOST_ERRNO    errno 
@@ -216,7 +216,7 @@ typedef int error_t;
 
 # else  // BOOST_WINDOWS_API
 
-typedef DWORD error_t;
+typedef DWORD err_t;
 
 //  Windows uses a non-0 return to indicate success
 #   define BOOST_ERRNO    ::GetLastError()
@@ -252,9 +252,9 @@ namespace
 
   //  error handling helpers  ----------------------------------------------------------//
 
-  bool error(error_t error_num, error_code* ec, const string& message);
-  bool error(error_t error_num, const path& p, error_code* ec, const string& message);
-  bool error(error_t error_num, const path& p1, const path& p2, error_code* ec,
+  bool error(err_t error_num, error_code* ec, const string& message);
+  bool error(err_t error_num, const path& p, error_code* ec, const string& message);
+  bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
     const string& message);
 
   const error_code ok;
@@ -263,7 +263,7 @@ namespace
   //  Interface changed 30 Jan 15 to have caller supply error_num as ::SetLastError()
   //  values were apparently getting cleared before they could be retrieved by error().
 
-  bool error(error_t error_num, error_code* ec, const string& message)
+  bool error(err_t error_num, error_code* ec, const string& message)
   {
     if (!error_num)
     {
@@ -280,7 +280,7 @@ namespace
     return error_num != 0;
   }
 
-  bool error(error_t error_num, const path& p, error_code* ec, const string& message)
+  bool error(err_t error_num, const path& p, error_code* ec, const string& message)
   {
     if (!error_num)
     {
@@ -297,7 +297,7 @@ namespace
     return error_num != 0;
   }
 
-  bool error(error_t error_num, const path& p1, const path& p2, error_code* ec,
+  bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
     const string& message)
   {
     if (!error_num)
@@ -988,7 +988,7 @@ namespace detail
   {
 #   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
 
-    error(true, error_code(BOOST_ERROR_NOT_SUPPORTED, system_category()), to, from, ec,
+    error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
       "boost::filesystem::create_directory_symlink");
 #   else
 
@@ -1767,7 +1767,8 @@ namespace detail
 
       std::vector<path::value_type> buf(GetTempPathW(0, NULL));
 
-      if (buf.empty() || GetTempPathW(buf.size(), &buf[0])==0)
+      if (buf.empty()
+        || GetTempPathW(static_cast<DWORD>(buf.size()), &buf[0])==0)
       {
         if(!buf.empty())
           ::SetLastError(ENOTDIR);
