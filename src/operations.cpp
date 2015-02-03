@@ -172,6 +172,17 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define IO_REPARSE_TAG_SYMLINK (0xA000000CL)       
 # endif
 
+inline std::wstring wgetenv(const wchar_t* name)
+{
+  // use vector since for C++03 basic_string is not required to be contiguous
+  std::vector<wchar_t> buf(::GetEnvironmentVariableW(name, NULL, 0));
+
+  // C++03 vector does not have data() so use &buf[0]
+  return (buf.empty()
+    || ::GetEnvironmentVariableW(name, &buf[0], static_cast<DWORD>(buf.size())) == 0)
+    ? std::wstring() : std::wstring(&buf[0]);
+}
+
 # endif  // BOOST_WINDOWS_API
 
 //  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
@@ -1765,27 +1776,45 @@ namespace detail
       
 #   else  // Windows
 
-      std::vector<path::value_type> buf(GetTempPathW(0, NULL));
+      const wchar_t* tmp_env = L"TMP";
+      const wchar_t* temp_env = L"TEMP";
+      const wchar_t* localappdata_env = L"LOCALAPPDATA";
+      const wchar_t* userprofile_env = L"USERPROFILE";
+      const wchar_t* env_list[]
+        = {tmp_env, temp_env, localappdata_env, userprofile_env, 0};
 
-      if (buf.empty()
-        || GetTempPathW(static_cast<DWORD>(buf.size()), &buf[0])==0)
+      path p;
+      for (int i = 0; env_list[i]; ++i)
       {
-        if(!buf.empty())
-          ::SetLastError(ENOTDIR);
-        error(::GetLastError(), ec, "boost::filesystem::temp_directory_path");
-        return path();
+        std::wstring env = wgetenv(env_list[i]);
+        if (!env.empty())
+        {
+          p = env;
+          if (i >= 2)
+            p /= L"Temp";
+          error_code lcl_ec;
+          if (exists(p, lcl_ec) && !lcl_ec && is_directory(p, lcl_ec) && !lcl_ec)
+            break;
+          p.clear();
+        }
       }
-          
-      path p(&*buf.begin());  // ticket #10388; note C++03 vector must be contiguous
-      p.remove_trailing_separator();   // remove trailing backslash
 
-      if ((ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
+      if (p.empty())
       {
-        error(ENOTDIR, p, ec, "boost::filesystem::temp_directory_path");
-        return path();
+        // use vector since in C++03 a string is not required to be contiguous
+        std::vector<wchar_t> buf(::GetWindowsDirectoryW(NULL, 0));
+
+        if (buf.empty()
+          || ::GetWindowsDirectoryW(&buf[0], static_cast<UINT>(buf.size())) == 0)
+        {
+          error(::GetLastError(), ec, "boost::filesystem::temp_directory_path");
+          return path();
+        }
+        p = &*buf.begin();  // do not depend on buf.size(); see ticket #10388
+        p /= L"Temp";
       }
-      
       return p;
+
 #   endif
   }
   
