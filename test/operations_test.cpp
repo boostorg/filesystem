@@ -171,20 +171,23 @@ namespace
 
   // compile-only two argument "do-the-right-thing" tests
   //   verifies that all overload combinations compile without error
-  void do_not_call()
+  void do_the_right_thing_tests(bool call_ = false)
   {
-    fs::path p;
-    std::string s;
-    const char* a = 0;
-    fs::copy_file(p, p);
-    fs::copy_file(s, p);
-    fs::copy_file(a, p);
-    fs::copy_file(p, s);
-    fs::copy_file(p, a);
-    fs::copy_file(s, s);
-    fs::copy_file(a, s);
-    fs::copy_file(s, a);
-    fs::copy_file(a, a);
+    if (call_)
+    {
+      fs::path p;
+      std::string s;
+      const char* a = 0;
+      fs::copy_file(p, p);
+      fs::copy_file(s, p);
+      fs::copy_file(a, p);
+      fs::copy_file(p, s);
+      fs::copy_file(p, a);
+      fs::copy_file(s, s);
+      fs::copy_file(a, s);
+      fs::copy_file(s, a);
+      fs::copy_file(a, a);
+    }
   }
 
   void bad_file_size()
@@ -230,42 +233,42 @@ namespace
 
   //------------------------------ debugging aids --------------------------------------//
 
-  std::ostream& operator<<(std::ostream& os, const fs::file_status& s)
-  {
-    if (s.type() == fs::status_error)        { os << "status_error"; }
-    else if (s.type() == fs::file_not_found) { os << "file_not_found"; }
-    else if (s.type() == fs::regular_file)   { os << "regular_file"; }
-    else if (s.type() == fs::directory_file) { os << "directory_file"; }
-    else if (s.type() == fs::symlink_file)   { os << "symlink_file"; }
-    else if (s.type() == fs::block_file)     { os << "block_file"; }
-    else if (s.type() == fs::character_file) { os << "character_file"; }
-    else if (s.type() == fs::fifo_file)      { os << "fifo_file"; }
-    else if (s.type() == fs::socket_file)    { os << "socket_file"; }
-    else if (s.type() == fs::reparse_file)   { os << "reparse_file"; }
-    else if (s.type() == fs::type_unknown)   { os << "type_unknown"; }
-    else                                     { os << "_detail_directory_symlink"; }
-    return os;
-  }
+  //std::ostream& operator<<(std::ostream& os, const fs::file_status& s)
+  //{
+  //  if (s.type() == fs::status_error)        { os << "status_error"; }
+  //  else if (s.type() == fs::file_not_found) { os << "file_not_found"; }
+  //  else if (s.type() == fs::regular_file)   { os << "regular_file"; }
+  //  else if (s.type() == fs::directory_file) { os << "directory_file"; }
+  //  else if (s.type() == fs::symlink_file)   { os << "symlink_file"; }
+  //  else if (s.type() == fs::block_file)     { os << "block_file"; }
+  //  else if (s.type() == fs::character_file) { os << "character_file"; }
+  //  else if (s.type() == fs::fifo_file)      { os << "fifo_file"; }
+  //  else if (s.type() == fs::socket_file)    { os << "socket_file"; }
+  //  else if (s.type() == fs::reparse_file)   { os << "reparse_file"; }
+  //  else if (s.type() == fs::type_unknown)   { os << "type_unknown"; }
+  //  else                                     { os << "_detail_directory_symlink"; }
+  //  return os;
+  //}
 
-  void dump_tree(const fs::path & root)
-  {
-    cout << "dumping tree rooted at " << root << endl;
-    for (fs::recursive_directory_iterator it (root, fs::symlink_option::recurse);
-         it != fs::recursive_directory_iterator();
-         ++it)
-    {
-      for (int i = 0; i <= it.level(); ++i)
-        cout << "  ";
+  //void dump_tree(const fs::path & root)
+  //{
+  //  cout << "dumping tree rooted at " << root << endl;
+  //  for (fs::recursive_directory_iterator it (root, fs::symlink_option::recurse);
+  //       it != fs::recursive_directory_iterator();
+  //       ++it)
+  //  {
+  //    for (int i = 0; i <= it.level(); ++i)
+  //      cout << "  ";
 
-      cout << it->path();
-      if (fs::is_symlink(it->path()))
-      {
-        cout << " [symlink]" << endl;
-      }
-      else
-        cout << endl;
-    }
-  }
+  //    cout << it->path();
+  //    if (fs::is_symlink(it->path()))
+  //    {
+  //      cout << " [symlink]" << endl;
+  //    }
+  //    else
+  //      cout << endl;
+  //  }
+  //}
 
   //  exception_tests()  ---------------------------------------------------------------//
 
@@ -1867,21 +1870,40 @@ namespace
   {
     {
       cout << "temp_directory_path_tests..." << endl;
-#if defined BOOST_WINDOWS_API
-      //  // test ticket #5300 temp_directory_path failure on Windows with path length > 130
-      //  {
-      //    const wchar_t long_path[] =
-      //      L"/12345678901234567890123456789012345678901234567890"
-      //      L"12345678901234567890123456789012345678901234567890"
-      //      L"12345678901234567890123456789012345678901234567890#"   // total 152 chars
-      //      ;
-      //    guarded_env_var tmp_guard("tmp", long_path);
 
-      //    error_code ec;
-      //    fs::path tmp_path = fs::temp_directory_path(ec);
-      //    BOOST_TEST(ec.value() != 0); // should be path not found or similar error
-      //    cout << "temp_directory_path() returned " << tmp_path << endl;
-      //  }
+#if defined BOOST_WINDOWS_API
+
+      // Test ticket #5300, temp_directory_path failure on Windows with path length > 130.
+      // (This test failed prior to the fix being applied.) 
+      {
+        const wchar_t long_name[] =
+          L"12345678901234567890123456789012345678901234567890"
+          L"12345678901234567890123456789012345678901234567890"
+          L"12345678901234567890123456789012345678901234567890#"   // total 151 chars
+          ;
+        fs::path p (temp_dir);
+        p /= long_name;
+        fs::create_directory(p);
+
+        guarded_env_var tmp_guard("TMP", p.wstring().c_str());
+        error_code ec;
+        fs::path tmp_path = fs::temp_directory_path(ec);
+        cout << "#5300, temp_directory_path() returned " << tmp_path << endl;
+        BOOST_TEST(!ec);
+        BOOST_TEST(p == tmp_path);
+        fs::remove(p);
+      }
+
+      // Test ticket #10388, null character at end of filesystem::temp_directory_path path
+      {
+        guarded_env_var tmp_guard("TMP", fs::initial_path().wstring().c_str());
+
+        error_code ec;
+        fs::path tmp_path = fs::temp_directory_path(ec);
+        cout << "#10388, temp_directory_path() returned " << tmp_path << endl;
+        BOOST_TEST(tmp_path == fs::initial_path()); 
+      }
+
 #endif
       BOOST_TEST(!fs::temp_directory_path().empty());
       BOOST_TEST(exists(fs::temp_directory_path()));
@@ -1902,7 +1924,7 @@ namespace
       BOOST_TEST(!exists(ph));
     }
     
-    fs::path test_temp_dir = fs::initial_path();
+    fs::path test_temp_dir = temp_dir;
 
 #if defined BOOST_POSIX_API
     {
@@ -1955,59 +1977,64 @@ namespace
     {
       guarded_env_var m_tmp        ;
       guarded_env_var m_temp       ;
+      guarded_env_var m_localappdata;
       guarded_env_var m_userprofile;
 
       guarded_tmp_vars
       ( const fs::path::value_type* tmp    
-      , const fs::path::value_type* temp   
+      , const fs::path::value_type* temp
+      , const fs::path::value_type* localappdata
       , const fs::path::value_type* userprofile
       )
-      : m_tmp        ("TMP"        , tmp        )
-      , m_temp       ("TEMP"       , temp       )
-      , m_userprofile("USERPROFILE", userprofile)
+      : m_tmp          ("TMP"           , tmp         )
+      , m_temp         ("TEMP"          , temp        )
+      , m_localappdata ("LOCALAPPDATA"  , localappdata)
+      , m_userprofile  ("USERPROFILE"   , userprofile )
       {}                
     };
 
-    // should NEVER throw - the windows directory or current_path always exists
+    // test the GetWindowsDirectoryW()/Temp fallback
     {
-      guarded_tmp_vars vars(0, 0, 0);
-      fs::path ph = fs::temp_directory_path();
-        
-      BOOST_TEST(test_temp_dir != ph); 
-    }
-
-    // should NEVER fail - the windows directory or current_path always exists
-    {
-        guarded_tmp_vars vars(0, 0, 0);
-        error_code ec;
-        fs::path ph = fs::temp_directory_path(ec);
-        BOOST_TEST(!ec); 
+      guarded_tmp_vars vars(0, 0, 0, 0);
+      error_code ec;
+      fs::path ph = fs::temp_directory_path(ec);
+      BOOST_TEST(!ec);
+      cout << "Fallback test, temp_directory_path() returned " << ph << endl;
     }
 
     {
-      guarded_tmp_vars vars(test_temp_dir.c_str(), 0, 0);
+      guarded_tmp_vars vars(test_temp_dir.c_str(), 0, 0, 0);
       fs::path ph = fs::temp_directory_path();
       BOOST_TEST(equivalent(test_temp_dir, ph));
     }
     {
-      guarded_tmp_vars vars(0, test_temp_dir.c_str(), 0);
+      guarded_tmp_vars vars(0, test_temp_dir.c_str(), 0, 0);
       fs::path ph = fs::temp_directory_path();
       BOOST_TEST(equivalent(test_temp_dir, ph));
     }
+
+    fs::create_directory(test_temp_dir / L"Temp");
     {
-      guarded_tmp_vars vars(0, 0, test_temp_dir.c_str());
+      guarded_tmp_vars vars(0, 0, test_temp_dir.c_str(), 0);
       fs::path ph = fs::temp_directory_path();
-      BOOST_TEST(equivalent(test_temp_dir, ph));
+      BOOST_TEST(equivalent(test_temp_dir/L"Temp", ph));
+      cout << "temp_directory_path() returned " << ph << endl;
+    }
+    {
+      guarded_tmp_vars vars(0, 0, 0, test_temp_dir.c_str());
+      fs::path ph = fs::temp_directory_path();
+      BOOST_TEST(equivalent(test_temp_dir/L"Temp", ph));
+      cout << "temp_directory_path() returned " << ph << endl;
     }
 #endif    
   }
 
   //  _tests  --------------------------------------------------------------------------//
 
-  void _tests()
-  {
-    cout << "_tests..." << endl;
-  }
+  //void _tests()
+  //{
+  //  cout << "_tests..." << endl;
+  //}
   
 } // unnamed namespace
 
@@ -2055,6 +2082,7 @@ int cpp_main(int argc, char* argv[])
   cout << "API is " << platform << endl;
   cout << "initial_path() is " << fs::initial_path() << endl;
   fs::path ip = fs::initial_path();
+  do_the_right_thing_tests(); // compile-only tests, but call anyhow to suppress warnings
 
   for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
   {
@@ -2147,7 +2175,7 @@ int cpp_main(int argc, char* argv[])
     // above was added just to simplify testing, but it ended up detecting
     // a bug (failure to close an internal search handle). 
     cout << "post-test removal complete" << endl;
-    BOOST_TEST(!fs::exists(dir));
+//    BOOST_TEST(!fs::exists(dir));  // nice test, but doesn't play well with TortoiseGit cache
   }
 
   cout << "returning from main()" << endl;

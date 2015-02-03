@@ -38,6 +38,22 @@
     </td>
 </table>
 
+<h2>1.58.0</h2>
+<ul>
+  <li>Rewrite Windows implementation of temp_directory_path() to (1) avoid 
+  GetTempPath() failure if path length &gt; 130 (ticket #5300) and (2) provide a 
+  more sensible sequence of directories than provided by GetTempPath(), per 
+  boost list discussion &quot;[filesystem] temp_directory_path() behavior on 
+  Windows&quot;. The new sequence is:<ol>
+    <li><i><code>%TMP%</code></i></li>
+    <li><i><code>%TEMP%</code></i></li>
+    <li><code><i>%LOCALAPPDATA%</i>/Temp</code></li>
+    <li><code><i>%USERPROFILE%</i>/Temp</code></li>
+    <li><code><i>GetWindowsDirectoryW()</i>/Temp</code></li>
+  </ol>
+  </li>
+</ul>
+
 <h2>1.57.0</h2>
 <ul>
   <li>Rework class <code>path</code> locale and codecvt implementation for increased reliability. 
@@ -90,7 +106,7 @@
   Solaris 10. (Chris Stylianou)</li>
   <li>Minor fixes and code cleanup.</li>
   <li>Update IDE projects to Visual Studio 2013.</li>
-  <li>Remove unused <code>const char colon</code> to clear clang warning. (Jürgen 
+  <li>Remove unused <code>const char colon</code> to clear clang warning. (J?gen 
   Hunold)</li>
   <li>Add BOOST_NOEXCEPT to <code>class filesystem_error</code>.</li>
   <li>Change <code>perms::all_all</code> and <code>perms::perms_mask</code> to 
@@ -261,7 +277,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->29 December, 2014<!--webbot bot="Timestamp" endspan i-checksum="38652" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 February, 2015<!--webbot bot="Timestamp" endspan i-checksum="40532" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
