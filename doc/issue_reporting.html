@@ -43,20 +43,30 @@ reported via a <a href="https://svn.boost.org/trac/boost/newticket">Boost Trac t
 are encouraged, too, although anything beyond really trivial fixes needs a trac 
 ticket.</p>
 <h3>Bug reports</h3>
-<p>A quick response to your bug report is much more likely if <b>the problem can 
-be immediately reproduced without any guesswork</b>.</p>
-<p>You need to provide this:</p>
+<p>A timely response to your bug report is much more likely if <b>the problem can 
+be immediately reproduced without  guesswork and regression tests can be easily 
+created</b>. </p>
+<p>You need to provide the following:</p>
 <ol>
   <li>A simple test program 
-that automatically yields an unambiguous pass or fail result.</li>
+that:<ul>
+    <li>Illustrates the problem, and</li>
+    <li>Automatically yields an unambiguous pass or fail result - returning zero 
+    for pass and non-zero for fail is preferred, and </li>
+    <li>Can be used as the basis for adding tests to Boost.Filesystem&#39;s 
+    regression test suite.</li>
+  </ul>
+  </li>
   <li>The compiler, standard library, platform, and Boost version you 
   used to build and run your test program.</li>
   <li>A description of how to build and run the test program. 
   </li>
   <li>A copy of the output from the test 
-  program.</li>
+  program, if any.</li>
+  <li>An email address for follow-up questions.</li>
 </ol>
-<p>For a mostly automatic way to provide the above, read on!</p>
+<p>See <a href="#Rationale">Rationale</a> to find out why the above is needed.</p>
+<p>For a mostly automatic framework to provide the above, read on!</p>
 <h3>Bug reporting framework</h3>
 <p>The directory <code>&lt;boost-root&gt;/libs/filesystem/bug&gt;</code> provides a bug test program (<code><a href="#bug-cpp">bug.cpp</a></code>) 
 and a build file (<code>Jamfile.v2</code>). Here is what you need to do:</p>
@@ -85,8 +95,8 @@ namespace fs = boost::filesystem;
 
 int test_main(int, char*[])     // note name
 {
-  BOOST_TEST(2 + 2 == 5);       // one convertible-to-bool argument
-  BOOST_TEST_EQ(4 + 4, 9);      // two EqualityComparible arguments
+  BOOST_TEST(2 + 2 == 5);       // one convertible-to-bool argument; this one fails!
+  BOOST_TEST_EQ(4 + 4, 9);      // two EqualityComparible arguments; this one fails!
   BOOST_TEST(fs::exists("."));  // should pass, so nothing should be reported
 
   return ::boost::report_errors();   // required
@@ -168,9 +178,41 @@ need most of them for bug reporting. Here are a few you might find helpful:</p>
   either <code class="computeroutput">SYMBOL</code> or
   <code class="computeroutput">SYMBOL=VALUE</code></p>
 </blockquote>
+<h3><a name="Rationale">Rationale</a></h3>
+<p>Here is the request list again, with rationale added:</p>
+<ol>
+  <li>A simple test program 
+that:<ul>
+    <li dir="ltr">
+    <p dir="ltr">Illustrates the problem <b>[Code communicates more clearly than 
+    prose. If it looks like it will it will take some time to figure out exactly what the 
+    problem is, or worse yet, might result in a wild-goose chase, the bug report 
+    gets set aside to be worked on later and then is often forgotten.] </b>and</li>
+    <li>Automatically yields an unambiguous pass or fail result - returning zero 
+    for pass and non-zero for fail is preferred <b>[Prevents 
+    miscommunications and allows use in automatic regression tests.]</b>, and </li>
+    <li>Can be used as the basis for adding tests to Boost.Filesystem&#39;s 
+    regression test suite <b>[With good test cases fixes come easier and 
+    regressions become less likely]</b>.</li>
+  </ul>
+  </li>
+  <li>The compiler, standard library, platform, and Boost version you 
+  used to build and run your test program. <b>[The implementation includes much 
+  platform dependent code, and also depends on the other factors mentioned. Know 
+  these things upfront brings the bug report into focus without having to ask 
+  for more information. ]</b></li>
+  <li>A description of how to build and run the test program. <b>[If b2 
+  (formerly known as bjam) is used as the build engine, this is not a concern, 
+  but otherwise much more information is needed.]</b></li>
+  <li>A copy of the output from the test 
+  program, if any. <b>[Avoids misinterpreting results.]</b></li>
+  <li>An email address for follow-up questions.<b> [Trac comments are the 
+  primary means of response, but it is disheartening when a trac question is not 
+  answered and there is no email address attached for followup.]</b></li>
+</ol>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->29 December, 2014<!--webbot bot="Timestamp" endspan i-checksum="38652" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 January, 2015<!--webbot bot="Timestamp" endspan i-checksum="38902" --></p>
 <p>&copy; Copyright Beman Dawes, 2014</p>
 <p> Distributed under the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
