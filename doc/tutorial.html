@@ -542,7 +542,7 @@ boost::filesystem::status: The device is not ready: &quot;e:\&quot;</pre>
   
         for (vec::const_iterator it (v.begin()); it != v.end(); ++it)
         {
-          cout &lt;&lt; &quot;   &quot; &lt;&lt; *it &lt;&lt; '\n';
+          cout &lt;&lt; &quot;   &quot; &lt;&lt; it-&gt;filename() &lt;&lt; '\n';
         }
       }
 
@@ -572,8 +572,7 @@ boost::filesystem::status: The device is not ready: &quot;e:\&quot;</pre>
     </blockquote>
     <p>to:</p>
     <blockquote>
-      <pre>path fn = it-&gt;path().filename();   // extract the filename from the path
-v.push_back(fn);                   // push into vector for later sorting</pre>
+      <pre>cout &lt;&lt; &quot;   &quot; &lt;&lt; it-&gt;filename() &lt;&lt; '\n';</pre>
     </blockquote>
     <p><code><a href="reference.html#directory_entry-observers">path()</a></code> 
     is a <code>directory_entry</code> observer function. <code>
