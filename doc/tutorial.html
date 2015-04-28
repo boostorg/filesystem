@@ -565,27 +565,11 @@ boost::filesystem::status: The device is not ready: &quot;e:\&quot;</pre>
   </tr>
 </table>
 
-    <p>The key difference between <code>tut3.cpp</code> and <code>tut4.cpp</code> is 
-    what happens in the directory iteration loop. We changed:</p>
-    <blockquote>
-      <pre>cout &lt;&lt; &quot; &quot; &lt;&lt; *it &lt;&lt; '\n';   // *it returns a <a href="reference.html#Class-directory_entry">directory_entry</a>,</pre>
-    </blockquote>
-    <p>to:</p>
-    <blockquote>
-      <pre>cout &lt;&lt; &quot;   &quot; &lt;&lt; it-&gt;filename() &lt;&lt; '\n';</pre>
-    </blockquote>
-    <p><code><a href="reference.html#directory_entry-observers">path()</a></code> 
-    is a <code>directory_entry</code> observer function. <code>
-    <a href="reference.html#path-filename">filename()</a></code> is one of 
+    <p><code><a href="reference.html#path-filename">filename()</a></code> is one of 
     several path decomposition functions. It extracts the filename portion (<code>&quot;index.html&quot;</code>) 
     from a path (<code>&quot;/home/beman/boost/trunk/index.html&quot;</code>). These decomposition functions are 
     more fully explored in the <a href="#Class path-iterators-etc">Path iterators, observers, 
     composition, decomposition and query</a> portion of this tutorial.</p>
-    <p>The above was written as two lines of code for clarity. It could have 
-    been written more concisely as:</p>
-    <blockquote>
-      <pre>v.push_back(it-&gt;path().filename()); // we only care about the filename</pre>
-    </blockquote>
     <p>Here is the output from a test of <code><a href="../example/tut4.cpp">tut4.cpp</a></code>:</p>
 
   <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
