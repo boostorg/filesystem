@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
         for (vec::const_iterator it(v.begin()), it_end(v.end()); it != it_end; ++it)
         {
-          cout << "   " << *it << '\n';
+          cout << "   " << it->filename() << '\n';
         }
       }
       else
