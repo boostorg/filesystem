@@ -537,6 +537,12 @@ namespace
       && is_separator(path[2])) return 2;
 #   endif
 
+#   ifdef _VX_CPU
+    // case "host:" - VxWorks simulator
+    if (size > 5
+        && path[4] == colon) return 5;
+#   endif
+
     // case "//"
     if (size == 2
       && is_separator(path[0])
