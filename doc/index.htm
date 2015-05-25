@@ -19,9 +19,7 @@
 <img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle"
  width="300" height="86" border="0"></a></td>
     <td align="middle">
-    <font size="7">Filesystem Library<br>
-    Version 3</font>
-    </td>
+    <font size="7">Filesystem Library</font></td>
   </tr>
 </table>
 
@@ -41,6 +39,8 @@
     </td>
 </table>
 
+<p></p>
+
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
  bordercolor="#111111" align="right">
   <tr>
@@ -50,6 +50,7 @@
   <tr>
     <td width="100%" bgcolor="#E8F5FF">
     <a href="#Introduction">Introduction</a><br>
+    <a href="#Version-4-transition">Version 4 transition</a><br>
     <a href="#Documentation">Documentation</a><br>
     <a href="#Using">Using the library</a><br>
     <a href="#Coding-guidelines">Coding guidelines</a><br>
@@ -64,20 +65,8 @@
 &nbsp; with acknowledgements</a></td>
   </tr>
   </table>
+  
 <p></p>
-<div align="center">
-  <center>
-  <table border="1" cellpadding="10" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
-    <tr>
-      <td>
-      <p align="left">This is Version 3 of the Filesystem library. Version 2 is 
-      not longer supported. 1.49.0 was the last release of Boost to supply 
-      Version 2</p>
-      </td>
-    </tr>
-  </table>
-  </center>
-</div>
 
 <h2><a name="Introduction">Introduction</a></h2>
 <p>The Boost.Filesystem library provides facilities to manipulate files and directories, 
@@ -137,11 +126,30 @@ throwing exceptions.</p>
   </li>
 </ul>
 
-<p>A proposal,
+<p><span style="background-color: #FFFF00">A proposal, </span>
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1975.html">
-N1975</a>, to include Boost.Filesystem in Technical Report 2 has been accepted 
+<span style="background-color: #FFFF00">N1975</span></a><span style="background-color: #FFFF00">, to include 
+</span><span style="background-color: #FFFF00">Boost.Filesystem</span><span style="background-color: #FFFF00"> in Technical Report 2 has been accepted 
 by the C++ Standards Committee. That proposal was based on version 2 of 
-Boost.Filesystem; presumably the final TR2 form will be based on version 3.</p>
+</span><span style="background-color: #FFFF00">Boost.Filesystem</span><span style="background-color: #FFFF00">; presumably the final TR2 form will be based on version 3.</span></p>
+
+<h2><a name="Version-4-transition">Version 4 transition</a></h2>
+
+<p>The library is in transition from version 3 to version 4. The versions are 
+very similar, but version 4 brings the library into alignment with the ISO C++ 
+Filesystem Technical Specification.</p>
+
+<p><span style="background-color: #FFFF00">Create and link to a &quot;Differences 
+between V3 and V4&quot; section or separate page.</span></p>
+
+<p>Both versions are currently supported by the same headers and the compiled 
+object library. To use version 3, define macro BOOST_FILESYSTEM_VERSION=3. To 
+use version 4, define macro BOOST_FILESYSTEM_VERSION=4.</p>
+
+<p>The default for <span style="background-color: #FFFF00">this Boost release</span> 
+is version 3. Three Boost releases from now the default will be changed to 
+version 4. The recommendation is that for the next year you transition existing 
+code to version 4 and also use version 4 for new code.</p>
 
 <h2><a name="Documentation">Documentation</a></h2>
 
@@ -463,7 +471,7 @@ version 1.31.0.&nbsp;</p>
 
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->10 January, 2015<!--webbot bot="Timestamp" endspan i-checksum="38885" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 May, 2015<!--webbot bot="Timestamp" endspan i-checksum="14000" --></p>
 
 <p>&copy; Copyright Beman Dawes, 2002-2005</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
