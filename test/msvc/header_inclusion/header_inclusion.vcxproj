@@ -65,12 +65,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\boost\filesystem\config.hpp" />
+    <ClInclude Include="..\..\..\include\boost\filesystem\config_info.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\convenience.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\is_iterator.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\source_value_type.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\utf8_codecvt_facet.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\detail\version.hpp" />
-    <ClInclude Include="..\..\..\include\boost\filesystem\detail\version_imp.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\exception.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\fstream.hpp" />
     <ClInclude Include="..\..\..\include\boost\filesystem\operations.hpp" />

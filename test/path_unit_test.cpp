@@ -63,6 +63,12 @@ using std::endl;
 using std::string;
 using std::wstring;
 
+#ifdef BOOST_FILESYSTEM_CHAR16_CHAR32
+using std::u16string;
+using std::u32string;
+#endif
+
+
 #define CHECK(x) check(x, __FILE__, __LINE__)
 #define PATH_IS(a, b) check_path(a, b, __FILE__, __LINE__)
 #define NATIVE_IS(p, s, ws) check_native(p, s, ws, __FILE__, __LINE__)
@@ -158,6 +164,14 @@ namespace
   boost::container::list<wchar_t> wbl; // see main() for initialization to w, s, t, r, i, n, g
   boost::container::vector<char> bv; // see main() for initialization to f, u, z
   boost::container::vector<wchar_t> wbv; // see main() for initialization to w, f, u, z
+#endif
+
+#ifdef BOOST_FILESYSTEM_CHAR16_CHAR32
+  const char16_t u16a[] = {'u', '1', '6', 's', 't', 'r', 'i', 'n', 'g', '\0'};
+  const char32_t u32a[] = {'u', '3', '2', 's', 't', 'r', 'i', 'n', 'g', '\0'};
+  u16string u16s(u16a);
+  u32string u32s(u32a);
+
 #endif
 
   class Base {};
@@ -300,6 +314,25 @@ namespace
     PATH_IS(x19, L"wstring");
     BOOST_TEST_EQ(x19.native().size(), 7U);
 #endif
+
+#ifdef BOOST_FILESYSTEM_CHAR16_CHAR32
+
+    {
+      path x1(u32a);
+      PATH_IS(x1, L"u32string");
+      BOOST_TEST_EQ(x1.native().size(), 9U);
+
+      path x2(u32s);
+      PATH_IS(x2, L"u32string");
+      BOOST_TEST_EQ(x2.native().size(), 9U);
+
+      path x3(&u32a[0], &u32a[8]);
+      PATH_IS(x3, L"u32string");
+      BOOST_TEST_EQ(x3.native().size(), 9U);
+    }
+
+#endif
+
 
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK

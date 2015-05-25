@@ -38,11 +38,21 @@
 #include <boost/system/api_config.hpp>  // for BOOST_POSIX_API or BOOST_WINDOWS_API
 #include <boost/detail/workaround.hpp> 
 
-//  BOOST_FILESYSTEM_DEPRECATED needed for source compiles -----------------------------//
+//  BOOST_FILESYSTEM_DEPRECATED needed for source compiles
 
 # ifdef BOOST_FILESYSTEM_SOURCE
 #   define BOOST_FILESYSTEM_DEPRECATED
 # endif
+
+//  Support for C++11 char16_t and char32_t paths requires both character type (or
+//  equivalent typedef) support and header <codecvt> support. 
+
+# if BOOST_FILESYSTEM_VERSION > 3 \
+     && !defined(BOOST_NO_CXX11_HDR_CODECVT) \
+     && ((!defined(BOOST_NO_CXX11_CHAR16_T) && (!defined(BOOST_NO_CXX11_CHAR32_T)) \
+          || (defined(_MSC_VER) && _MSC_VER >= 1600)))
+#   define BOOST_FILESYSTEM_CHAR16_CHAR32
+#endif
 
 //  throw an exception  ----------------------------------------------------------------//
 //

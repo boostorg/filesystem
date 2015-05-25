@@ -22,14 +22,39 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
+#include <boost/utility/string_ref.hpp>
+
 using std::cout;
 using std::endl;
 namespace fs = boost::filesystem;
+using boost::basic_string_ref;
+using boost::string_ref;
+using boost::wstring_ref;
+
+void f1(const string_ref&)
+{
+  cout << "narrow" << endl;
+}
+void f1(const wstring_ref&)
+{
+  cout << "wide" << endl;
+}
+
+template <class T>
+void foo(const T& from)
+{
+  f1(basic_string_ref<typename T::value_type>(from));
+}
 
 //------------------------------------  cpp_main  --------------------------------------//
 
 int cpp_main(int argc, char* argv[])
 {
+  foo(std::string("string"));
+  //foo<char>(std::string("string"));
+  //foo<char, std::char_traits<char>>("string");
+
+
   cout << "Hello, filesystem world" << endl;
   cout << fs::config() << endl;
 

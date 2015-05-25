@@ -124,6 +124,40 @@ namespace boost { namespace BOOST_FILESYSTEM_NAMESPACE {
       convert(from, 0, to, cvt);
     }
 
+# ifdef BOOST_FILESYSTEM_CHAR16_CHAR32
+
+    BOOST_FILESYSTEM_DECL
+      void convert(const char32_t* from,
+      const char32_t* from_end,    // 0 for null terminated MBCS
+      std::wstring & to,
+      const codecvt_type&);
+
+    //BOOST_FILESYSTEM_DECL
+    //  void convert(const char32_t* from,
+    //  const char32_t* from_end,  // 0 for null terminated MBCS
+    //  std::string & to,
+    //  const codecvt_type& cvt);
+
+    //inline
+    //  void convert(const char32_t* from,
+    //  std::wstring & to,
+    //  const codecvt_type& cvt)
+    //{
+    //  BOOST_ASSERT(from);
+    //  convert(from, 0, to, cvt);
+    //}
+
+    //inline
+    //  void convert(const wchar_t* from,
+    //  std::string & to,
+    //  const codecvt_type& cvt)
+    //{
+    //  BOOST_ASSERT(from);
+    //  convert(from, 0, to, cvt);
+    //}
+
+# endif
+
     // value types same  -----------------------------------------------------------------//
 
     // char
