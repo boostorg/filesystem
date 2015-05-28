@@ -829,7 +829,15 @@ namespace detail
 
         bool is_sym (is_symlink(detail::symlink_status(result, ec)));
         if (ec && *ec)
-          return path();
+        {
+            if (result == &path::preferred_separator && source != &path::preferred_separator)
+            {
+                ec->clear();
+                continue;
+            }
+
+            return path();
+        }
 
         if (is_sym)
         {
