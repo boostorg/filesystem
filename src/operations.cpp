@@ -397,6 +397,7 @@ namespace
 //--------------------------------------------------------------------------------------//
 
   const char dot = '.';
+  const char* preferred_separator_string = "/";
 
   bool not_found_error(int errval)
   {
@@ -485,6 +486,7 @@ namespace
   const std::size_t buf_size=128;
 
   const wchar_t dot = L'.';
+  const wchar_t* preferred_separator_string = L"\\";
 
   bool not_found_error(int errval)
   {
@@ -829,7 +831,15 @@ namespace detail
 
         bool is_sym (is_symlink(detail::symlink_status(result, ec)));
         if (ec && *ec)
-          return path();
+        {
+            if (result == preferred_separator_string && source != preferred_separator_string)
+            {
+                ec->clear();
+                continue;
+            }
+
+            return path();
+        }
 
         if (is_sym)
         {
