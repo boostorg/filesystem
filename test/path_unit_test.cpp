@@ -140,9 +140,9 @@ namespace
                << L"\"\n" ;
   }
 
-  void check(bool ok, const char* file, int line)
+  void check(bool ok_, const char* file, int line)
   {
-    if (ok) return;
+    if (ok_) return;
 
     ++::boost::detail::test_errors();
 
@@ -318,17 +318,17 @@ namespace
 #ifdef BOOST_FILESYSTEM_CHAR16_CHAR32
 
     {
-      path x1(u32a);
-      PATH_IS(x1, L"u32string");
-      BOOST_TEST_EQ(x1.native().size(), 9U);
+      path x1_32(u32a);
+      PATH_IS(x1_32, L"u32string");
+      BOOST_TEST_EQ(x1_32.native().size(), 9U);
 
-      path x2(u32s);
-      PATH_IS(x2, L"u32string");
-      BOOST_TEST_EQ(x2.native().size(), 9U);
+      path x2_32(u32s);
+      PATH_IS(x2_32, L"u32string");
+      BOOST_TEST_EQ(x2_32.native().size(), 9U);
 
-      path x3(&u32a[0], &u32a[8]);
-      PATH_IS(x3, L"u32string");
-      BOOST_TEST_EQ(x3.native().size(), 9U);
+      path x3_32(&u32a[0], &u32a[8]);
+      PATH_IS(x3_32, L"u32string");
+      BOOST_TEST_EQ(x3_32.native().size(), 9U);
     }
 
 #endif
@@ -948,17 +948,17 @@ namespace
   void test_overloads()
   {
     std::cout << "testing overloads..." << std::endl;
-    std::string s("hello");
+    std::string shello("hello");
     const char a[] = "goodbye";
-    path p1(s);
-    path p2(s.c_str());
+    path p1(shello);
+    path p2(shello.c_str());
     path p3(a);
     path p4("foo");
 
-    std::wstring ws(L"hello");
+    std::wstring wshello(L"hello");
     const wchar_t wa[] = L"goodbye";
-    path wp1(ws);
-    path wp2(ws.c_str());
+    path wp1(wshello);
+    path wp2(wshello.c_str());
     path wp3(wa);
     path wp4(L"foo");
   }
