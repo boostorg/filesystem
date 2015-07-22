@@ -232,7 +232,7 @@ and directories.</p>
     <td width="35%" align="left">
     New character types</td>
     <td width="65%" align="left">
-    <p dir="ltr">The <code>boost::filesystem</code> interface doesn't use the 
+    <p>The <code>boost::filesystem</code> interface doesn't use the 
     new types directly. It does use <code>u16string</code> and <code>u32string</code> 
     in namespace <code>boost</code>. These are typedefs to <code>std::u16string</code> 
     and <code>std::u32string</code> for C++11, or to <code>
@@ -1046,9 +1046,9 @@ because of unrelated problems with the Microsoft compiler; for static linking
 the runtime tries to do the initialization before main() starts, but doesn't 
 permit operating system lock calls at that time.&nbsp; <i>—end note</i>]</p>
 
-<h4 dir="ltr">POSIX concerns</h4>
+<h4>POSIX concerns</h4>
 
-<p dir="ltr">Filesystem library initialization may throw an exception on POSIX 
+<p>Filesystem library initialization may throw an exception on POSIX 
 systems (e.g. Linux, but not Mac OS X) that use environmental variables to 
 determine the encoding of paths. This happens when <code>std::locale(&quot;&quot;)</code> 
 throws because an environmental variable such as LANG is set to an invalid 
@@ -3077,7 +3077,8 @@ path temp_directory_path(system::error_code&amp; ec);</pre>
   determined are implementation defined. An error shall be reported if<code> !exists(p) 
   || !is_directory(p)</code>, where <code>p</code> is the path to be returned.</p>
   <p>ISO/IEC 9945: The path supplied by the first environment variable found in the 
-  list TMPDIR, TMP, TEMP, TEMPDIR. If none of these are found, <code>&quot;/tmp&quot;</code>.</p>
+  list TMPDIR, TMP, TEMP, TEMPDIR. If none of these are found, <code>&quot;/tmp&quot;</code>, 
+  or, if macro <code>__ANDROID__ </code>is defined, <code>&quot;/data/local/tmp&quot;</code>.</p>
   <p><i>Windows:</i> The path reported by the <i>Windows</i> <code>GetTempPath</code> API function.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
   <p>[<i>Note: </i>The <code>temp_directory_path()</code> name was chosen to emphasize that the return is a 
