@@ -1764,7 +1764,12 @@ namespace detail
       (val = std::getenv("TEMP"   )) ||
       (val = std::getenv("TEMPDIR"));
       
-      path p((val!=0) ? val : "/tmp");
+#     ifdef __ANDROID__
+        const char* defaultTmp = "/data/local/tmp";
+#     else
+        const char* defaultTmp = "/tmp";
+#     endif
+      path p((val!=0) ? val : defaultTmp);
       
       if (p.empty() || (ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
       {
