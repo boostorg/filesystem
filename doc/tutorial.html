@@ -83,20 +83,29 @@ locate or build the Boost library binaries.</b></p>
 </blockquote>
 <p>Fire up your command line interpreter, and type the following commands:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ cd <i><b>boost-root</b></i>/libs/filesystem/example/test
 $ ./setup
 $ ./bld
 $ ./tut1
 Usage: tut1 path</pre>
       </td>
-      <td style="font-size: 10pt">
+    </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
+    <td style="font-size: 10pt">
       <pre>&gt;cd <i><b>boost-root</b></i>\libs\filesystem\example\test
 &gt;setup
 &gt;bld
@@ -130,7 +139,7 @@ tutorial progresses. Just invoke the <code>bld</code> script again to rebuild.</
 <p>Let's get started. One of the simplest things we can do is report the size of 
 a file.</p>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <pre><a href="../example/tut1.cpp">tut1.cpp</a></pre>
@@ -170,18 +179,28 @@ the tutorial.)</p>
 file that is known to exist, such as <code>tut1.cpp</code>. Here is what the 
 results look like on two different operating systems:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
+      <td style="font-size: 10pt" valign="top">
       <pre>$ ./tut1 tut1.cpp
 tut1.cpp 569</pre>
       <pre>$ ls -l tut1.cpp
 -rwxrwxrwx 1 root root 569 2010-02-01 07:31 tut1.cpp</pre>
       </td>
+    </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
+ 
       <td style="font-size: 10pt" valign="top">
       <pre>&gt;tut1 tut1.cpp
 tut1.cpp 592
@@ -198,14 +217,13 @@ the Linux tests used <code>&quot;\n&quot;</code> line endings, while the Windows
 used <code>&quot;\r\n&quot;</code> line endings.</p>
   <p>Now try again, but give a path that doesn't exist:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0"
-    style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0"
+    style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
+      <td style="font-size: 10pt" valign="top">
       <pre>$ ./tut1 foo
 terminate called after throwing an instance of 'boost::exception_detail::
 clone_impl&lt;boost::exception_detail::error_info_injector&lt;boost::
@@ -213,6 +231,17 @@ filesystem::filesystem_error&gt; &gt;'
   what(): boost::filesystem::file_size: No such file or directory: &quot;foo&quot;
 Aborted</pre>
       </td>
+    </tr>
+  </table>
+
+&nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0"
+    style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt" valign="top">
       <pre>&gt;tut1 foo</pre>
       <p><b><i>An exception is thrown; the exact form of the response depends on 
@@ -225,13 +254,12 @@ Aborted</pre>
 exception is thrown.</p>
   <p>Try this:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ ./tut1 .
 terminate called after throwing an instance of 'boost::exception_detail::
 clone_impl&lt;boost::exception_detail::error_info_injector&lt;boost::
@@ -239,6 +267,16 @@ filesystem::filesystem_error&gt; &gt;'
   what(): boost::filesystem::file_size: Operation not permitted &quot;.&quot;
 Aborted</pre>
       </td>
+    </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt" valign="top">
       <pre>&gt;tut1 .</pre>
       <p><b><i>An exception is thrown; the exact form of the response depends on 
@@ -247,7 +285,7 @@ Aborted</pre>
   </table>
 
   <p>The current directory exists, but <code>file_size()</code> works on regular 
-  files, not directories, so again, an exception is thrown.</p>
+  files, not directories, so again an exception is thrown.</p>
 
   <p>We'll deal with those situations in <code>tut2.cpp</code>.</p>
 
@@ -265,7 +303,7 @@ of the path argument can't be found.</p>
 <p>tut2.cpp uses several of the status query functions to cope with non-existent 
 files and with different kinds of files:</p>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <pre><a href="../example/tut2.cpp">tut2.cpp</a></pre>
@@ -297,13 +335,12 @@ files and with different kinds of files:</p>
 
 <p>Give it a try:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
+      <td style="font-size: 10pt" valign="top">
       <pre>$ ./tut2 tut2.cpp
 tut2 size is cpp 1037
 $ ./tut2 foo
@@ -311,7 +348,17 @@ foo does not exist
 $ ./tut2 .
 . is a directory</pre>
       </td>
-      <td style="font-size: 10pt" valign="top">
+    </tr>
+  </table>
+
+&nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
+       <td style="font-size: 10pt" valign="top">
       <pre>&gt;tut2 tut2.cpp
 tut2.cpp size is 1079
 
@@ -330,13 +377,12 @@ we will see how to iterate over directories.</p>
 
 <p>But first, let's try one more test:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
+      <td style="font-size: 10pt" valign="top">
       <pre>$ ls /home/jane/foo
 ls: cannot access /home/jane/foo: Permission denied
 $ ./tut2 /home/jane/foo
@@ -347,6 +393,16 @@ filesystem::filesystem_error&gt; &gt;'
      &quot;/home/jane/foo&quot;
 Aborted</pre>
       </td>
+     </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt" valign="top">
       <pre>&gt;dir e:\
 The device is not ready.
@@ -383,7 +439,7 @@ errors that can affect file system operations. We could do that at the level of
 each call to a Boost.Filesystem function (see <a href="#Error-reporting">Error 
 reporting</a>), but it is easier to supply an overall try/catch block.</p>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <pre><a href="../example/tut3.cpp">tut3.cpp</a></pre>
@@ -432,13 +488,12 @@ reporting</a>), but it is easier to supply an overall try/catch block.</p>
 Here is a run on a checkout of the Boost Subversion trunk, followed by a repeat 
 of the test cases that caused exceptions on Linux and Windows:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
+      <td style="font-size: 10pt" valign="top">
       <pre>$ ./tut3 ~/boost/trunk
 /home/beman/boost/trunk is a directory containing:
   /home/beman/boost/trunk/tools
@@ -463,7 +518,18 @@ of the test cases that caused exceptions on Linux and Windows:</p>
   /home/beman/boost/trunk/index.htm
   /home/beman/boost/trunk/status
   /home/beman/boost/trunk/CMakeLists.txt</pre>
-      </td>
+    </td>
+     </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+       <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
+ 
       <td style="font-size: 10pt" valign="top">
       <pre>&gt;tut3 c:\boost\trunk
 c:\boost\trunk is a directory containing:
@@ -512,7 +578,7 @@ boost::filesystem::status: The device is not ready: &quot;e:\&quot;</pre>
 
 <h2><a name="Using-path-decomposition">Using path decomposition, plus sorting results</a> - (<a href="../example/tut4.cpp">tut4.cpp</a>)</h2>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <pre><a href="../example/tut4.cpp">tut4.cpp</a></pre>
@@ -589,13 +655,12 @@ v.push_back(fn);                   // push into vector for later sorting</pre>
     </blockquote>
     <p>Here is the output from a test of <code><a href="../example/tut4.cpp">tut4.cpp</a></code>:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ ./tut4 ~/boost/trunk
 /home/beman/boost/trunk is a directory containing:
   .svn
@@ -620,6 +685,16 @@ v.push_back(fn);                   // push into vector for later sorting</pre>
   tools
   wiki</pre>
       </td>
+    </tr>
+  </table>
+
+&nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt">
       <pre>C:\v3d&gt;tut4 c:\boost\trunk
 c:\boost\trunk is a directory containing:
@@ -692,7 +767,7 @@ are the constructors that take sources:</p>
 both narrow and wide characters in C-style strings, C++ strings, and via C++ 
 iterators:</p>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <pre><a href="../example/tut4.cpp">tut5.cpp</a></pre>
@@ -747,17 +822,26 @@ int main()
 
 <p>Testing <code>tut5</code>:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt" valign="top">
+      <td style="font-size: 10pt" valign="top">
       <pre>$ ./tut5
 $ ls smile*
 smile smile&#9786; smile2 smile2&#9786; smile3 smile3&#9786; smile4 smile4&#9786;</pre>
       </td>
+    </tr>
+  </table>
+
+&nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt" valign="top">
       <pre>&gt;tut5
 &gt;dir /b smile*
@@ -797,29 +881,29 @@ international character sets than command line interpreters.</p>
 
 <h2><a name="Class-path-formats">Class path: Generic format vs. Native format</a></h2>
 
-<p dir="ltr">Class <code>path</code> deals with two different pathname 
+<p>Class <code>path</code> deals with two different pathname 
 formats - generic format and native format. For POSIX-like 
 file systems, these formats are the same. But for users of Windows and 
 other non-POSIX file systems, the distinction is important. Even 
 programmers writing for POSIX-like systems need to understand the distinction if 
 they want their code to be portable to non-POSIX systems.</p>
 
-<p dir="ltr">The <b>generic format</b> is the familiar <code>/my_directory/my_file.txt</code> format used by POSIX-like 
+<p>The <b>generic format</b> is the familiar <code>/my_directory/my_file.txt</code> format used by POSIX-like 
 operating systems such as the Unix variants, Linux, and Mac OS X. Windows also 
 recognizes the generic format, and it is the basis for the familiar Internet URL 
 format. The directory 
 separator character is always one or more slash characters.</p>
 
-<p dir="ltr">The <b>native format</b> is the format as defined by the particular 
+<p>The <b>native format</b> is the format as defined by the particular 
 operating system. For Windows, either the slash or the backslash can be used as 
 the directory separator character, so <code>/my_directory\my_file.txt</code> 
 would work fine. Of course, if you write that in a C++ string literal, it 
 becomes <code>&quot;/my_directory\\my_file.txt&quot;</code>.</p>
 
-<p dir="ltr">If a drive specifier or a backslash appears 
+<p>If a drive specifier or a backslash appears 
 in a pathname on a Windows system, it is always treated as the native format.</p>
 
-<p dir="ltr">Class <code>path</code> has observer functions that allow you to 
+<p>Class <code>path</code> has observer functions that allow you to 
 obtain the string representation of a path object in either the native format 
 or the generic format. See the <a href="#Class path-iterators-etc">next section</a> 
 for how that plays out.</p>
@@ -851,13 +935,13 @@ invoked. We will only show the output lines we are interested in at each step.</
 <p>First we'll look at iteration over the elements of a path, and then use 
 iteration to illustrate the difference between generic and native format paths.</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
       <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ ./path_info /foo/bar/baa.txt
 ...
 elements:
@@ -883,7 +967,7 @@ is seen as having four elements.</p>
 
 <p>Here is the code that produced the above listing:</p>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <blockquote style="font-size: 10pt">
@@ -898,16 +982,15 @@ for (path::iterator it = p.begin(); it != p.end(); ++it)
 <p><code>path::iterator::value_type</code> is <code>path::string_type</code>, 
 and iteration treats <code>path</code> as a container of filenames.</p>
 
-<p dir="ltr">Let's look at some of the output from a slightly different 
+<p>Let's look at some of the output from a slightly different 
 example:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ ./path_info /foo/bar/baa.txt
 
 composed path:
@@ -924,6 +1007,16 @@ observers, generic format:
   generic_string()-----: /foo/bar/baa.txt
   generic_wstring()----: /foo/bar/baa.txt</pre>
       </td>
+    </tr>
+  </table>
+
+&nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt">
       <pre>&gt;path_info /foo/bar\baa.txt
 
@@ -944,27 +1037,26 @@ observers, generic format:
     </tr>
   </table>
 
-<p dir="ltr">Native format observers should be used when interacting with the 
+<p>Native format observers should be used when interacting with the 
 operating system or with users; that's what they expect.</p>
 
-<p dir="ltr">Generic format observers should be used when the results need to be 
+<p>Generic format observers should be used when the results need to be 
 portable and uniform regardless of the operating system.</p>
 
-<p dir="ltr"><code>path</code> objects always hold pathnames in the native 
+<p><code>path</code> objects always hold pathnames in the native 
 format, but otherwise leave them unchanged from their source. The
 <a href="reference.html#preferred">preferred()</a> function will convert to the 
 preferred form, if the native format has several forms. Thus on Windows, it will 
 convert slashes to backslashes.</p>
 
-<p dir="ltr">Let's move on to decomposition and query functions:</p>
+<p>Let's move on to decomposition and query functions:</p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ ./path_info /foo/bar/baa.txt
 ...
 decomposition:
@@ -989,6 +1081,16 @@ query:
   has_stem()-----------: true
   has_extension()------: true</pre>
       </td>
+    </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt">
       <pre>&gt;path_info /foo/bar/baa.txt
 ...
@@ -1017,12 +1119,12 @@ query:
     </tr>
   </table>
 
-<p dir="ltr">These are pretty self-evident, but do note the difference in the 
+<p>These are pretty self-evident, but do note the difference in the 
 result of <code>is_absolute()</code> between Linux and Windows. Because there is 
 no root name (i.e. drive specifier or network name), a lone slash (or backslash) 
 is a relative path on Windows. </p>
 
-<p dir="ltr">On to composition!</p>
+<p>On to composition!</p>
 
 <p>Class <code>path</code> uses <code>/</code> and <code>/=</code> operators to 
 append elements. That's a reminder 
@@ -1035,7 +1137,7 @@ Windows-like systems.</p>
 composes a path by appending each of the command line elements to an initially 
 empty path:</p>
 
-<table align="center" border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td style="font-size: 10pt">
     <blockquote>
@@ -1054,19 +1156,29 @@ cout &lt;&lt; &quot; preferred()----------: &quot; &lt;&lt; p.preferred() &lt;&l
 
 <p>Let's give this code a try: </p>
 
-  <table align="center" border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF" width="90%">
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
     <tr>
-      <td align="center" width="50%" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+      <td align="center" style="font-size: 10pt"><i><b>Ubuntu Linux </b></i></td>
     </tr>
     <tr>
-      <td width="50%" style="font-size: 10pt">
+      <td style="font-size: 10pt">
       <pre>$ ./path_info / foo/bar baa.txt
 
 composed path:
   cout &lt;&lt; -------------: /foo/bar/baa.txt
   preferred()----------: /foo/bar/baa.txt</pre>
       </td>
+ 
+    </tr>
+  </table>
+  
+  &nbsp;
+
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+    <tr>
+      <td align="center" style="font-size: 10pt"><i><b>Microsoft Windows</b></i></td>
+    </tr>
+    <tr>
       <td style="font-size: 10pt">
       <pre>&gt;path_info / foo/bar baa.txt
 
@@ -1123,7 +1235,7 @@ It has a
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->29 December 2014<!--webbot bot="Timestamp" endspan i-checksum="39176" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->23 July 2015<!--webbot bot="Timestamp" endspan i-checksum="18806" --></p>
 
 </body>
 
