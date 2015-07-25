@@ -121,29 +121,26 @@ is well. A set of tutorial programs has been copied (by <code>setup</code>) to
 and then built. You are encouraged to modify and experiment with them as the 
 tutorial progresses. Just invoke the <code>bld</code> script again to rebuild.</p>
 
-<p>If something didn't work right, here are troubleshooting suggestions:</p>
+<p>If something didn't work right, here are some troubleshooting suggestions:</p>
 
   <ul>
-    <li>The <code>bjam</code> program executable isn't being found. 
-    Check your path environmental variable if it should have been found, 
-    otherwise see
+    <li>If the <code>b2</code> program executable isn't being found, check your path environmental variable 
+    or see
     <a href="http://www.boost.org/more/getting_started/windows.html">Boost 
     Getting Started</a>.<br>
 &nbsp;</li>
-    <li>Look at <code>bjam.log</code> to try to spot an indication of the 
+    <li>Look at <code>b2.log</code> to try to spot an indication of the 
     problem.</li>
   </ul>
 
 <h2><a name="Reporting-size">Reporting the size of a file</a> - (<a href="../example/tut1.cpp">tut1.cpp</a>)</h2>
 
-<p>Let's get started. One of the simplest things we can do is report the size of 
+<p>Let's get started. Our first example program, <a href="../example/tut1.cpp">tut1.cpp</a>, reports the size of 
 a file.</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-    <pre><a href="../example/tut1.cpp">tut1.cpp</a></pre>
-    <blockquote>
       <pre>#include &lt;iostream&gt;
 #include &lt;boost/filesystem.hpp&gt;
 using namespace boost::filesystem;
@@ -158,7 +155,6 @@ int main(int argc, char* argv[])
   std::cout &lt;&lt; argv[1] &lt;&lt; &quot; &quot; &lt;&lt; file_size(argv[1]) &lt;&lt; '\n';
   return 0;
 }</pre>
-    </blockquote>
     </td>
   </tr>
 </table>
@@ -244,7 +240,8 @@ Aborted</pre>
     <tr>
       <td valign="top">
       <pre>&gt;tut1 foo</pre>
-      <p><b><i>An exception is thrown; the exact form of the response depends on 
+      <p><b><i>An exception is thrown;<br>
+      the exact form of the response depends on 
       Windows system options.</i></b></td>
     </tr>
   </table>
@@ -279,8 +276,8 @@ Aborted</pre>
     <tr>
       <td valign="top">
       <pre>&gt;tut1 .</pre>
-      <p><b><i>An exception is thrown; the exact form of the response depends on 
-      Windows system options.</i></b></td>
+      <p><b><i>An exception is thrown;<br>
+      the exact form of the response depends on Windows system options.</i></b></td>
     </tr>
   </table>
 
@@ -300,14 +297,12 @@ described by their name is met. Otherwise they return <code>false</code>,
 including when any element 
 of the path argument can't be found.</p>
 
-<p>tut2.cpp uses several of the status query functions to cope with non-existent 
+<p><a href="../example/tut2.cpp">tut2.cpp</a> uses several of the status query functions to cope with non-existent 
 files and with different kinds of files:</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-    <pre><a href="../example/tut2.cpp">tut2.cpp</a></pre>
-    <blockquote>
       <pre>int main(int argc, char* argv[])
 {
   <a href="reference.html#class-path">path</a> p (argv[1]);   // p reads clearer than argv[1] in the following code
@@ -328,7 +323,6 @@ files and with different kinds of files:</p>
 
   return 0;
 }</pre>
-    </blockquote>
     </td>
   </tr>
 </table>
@@ -407,7 +401,8 @@ Aborted</pre>
       <pre>&gt;dir e:\
 The device is not ready.
 &gt;tut2 e:\</pre>
-      <p><b><i>An exception is thrown; the exact form of the response depends on 
+      <p dir="ltr"><b><i>An exception is thrown;<br>
+      the exact form of the response depends on 
       Windows system options.</i></b></td>
     </tr>
   </table>
@@ -429,7 +424,7 @@ acts as the end iterator.</p>
 
 <p>The value type of <code>directory_iterator</code> is <code>
 <a href="reference.html#directory_entry">directory_entry</a></code>. A <code>
-directory_entry</code> object contains a <code>path</code> and <code><a href="reference.html#file_status">file_status</a></code> 
+directory_entry</code> object contains <code>path</code> and <code><a href="reference.html#file_status">file_status</a></code> 
 information.&nbsp; A <code>
 directory_entry</code> object 
 can be used directly, but can also be passed to <code>path</code> arguments in function calls.</p>
@@ -437,13 +432,12 @@ can be used directly, but can also be passed to <code>path</code> arguments in f
 <p>The other need is increased robustness in the face of the many kinds of 
 errors that can affect file system operations. We could do that at the level of 
 each call to a Boost.Filesystem function (see <a href="#Error-reporting">Error 
-reporting</a>), but it is easier to supply an overall try/catch block.</p>
+reporting</a>), but for simplicity <a href="../example/tut3.cpp">tut3.cpp</a> 
+uses an overall try/catch block.</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-    <pre><a href="../example/tut3.cpp">tut3.cpp</a></pre>
-    <blockquote>
       <pre>int main(int argc, char* argv[])
 {
   <a href="reference.html#class-path">path</a> p (argv[1]);   // p reads clearer than argv[1] in the following code
@@ -479,7 +473,6 @@ reporting</a>), but it is easier to supply an overall try/catch block.</p>
 
   return 0;
 }</pre>
-    </blockquote>
     </td>
   </tr>
 </table>
@@ -574,9 +567,13 @@ boost::filesystem::status: The device is not ready: &quot;e:\&quot;</pre>
       results ourselves. </li>
     </ul>
 
-<p>Move on to <code>tut4.cpp</code> to see how those changes play out!</p>
+<p>The next sections show how how those changes play out, so read on!</p>
 
 <h2><a name="Using-path-decomposition">Using path decomposition, plus sorting results</a> - (<a href="../example/tut4.cpp">tut4.cpp</a>)</h2>
+
+<p>For directories, <a href="../example/tut4.cpp">tut4.cpp</a> builds a <code>
+std::vector</code> of all the entries and then sorts it before writing to <code>
+cout</code>.</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
@@ -598,7 +595,7 @@ boost::filesystem::status: The device is not ready: &quot;e:\&quot;</pre>
       {
         cout &lt;&lt; p &lt;&lt; &quot; is a directory containing:\n&quot;;
 
-        typedef vector&lt;path&gt; vec;             // store paths,
+        typedef std::vector&lt;path&gt; vec;             // store paths,
         vec v;                                // so we can sort them later
 
         copy(directory_iterator(p), directory_iterator(), back_inserter(v));
@@ -1235,7 +1232,7 @@ It has a
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->23 July 2015<!--webbot bot="Timestamp" endspan i-checksum="18806" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 July 2015<!--webbot bot="Timestamp" endspan i-checksum="18808" --></p>
 
 </body>
 

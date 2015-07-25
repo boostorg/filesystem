@@ -7,6 +7,9 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\..\..\..\..</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\..\..\..\..\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
 </Project>
