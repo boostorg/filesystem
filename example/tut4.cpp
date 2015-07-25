@@ -8,7 +8,6 @@
 //  Library home page: http://www.boost.org/libs/filesystem
 
 #include <iostream>
-#include <iterator>
 #include <vector>
 #include <algorithm>
 #include <boost/filesystem.hpp>

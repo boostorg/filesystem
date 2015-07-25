@@ -8,8 +8,6 @@
 //  Library home page: http://www.boost.org/libs/filesystem
 
 #include <iostream>
-#include <iterator>
-#include <algorithm>
 #include <boost/filesystem.hpp>
 using std::cout;
 using namespace boost::filesystem;

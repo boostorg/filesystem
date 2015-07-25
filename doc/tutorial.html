@@ -135,13 +135,13 @@ tutorial progresses. Just invoke the <code>bld</code> script again to rebuild.</
 
 <h2><a name="Reporting-size">Reporting the size of a file</a> - (<a href="../example/tut1.cpp">tut1.cpp</a>)</h2>
 
-<p>Let's get started. Our first example program, <a href="../example/tut1.cpp">tut1.cpp</a>, reports the size of 
-a file.</p>
+<p>Let's get started. Our first example program, <a href="../example/tut1.cpp">tut1.cpp</a>, 
+reports the size of a file:</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-      <pre>#include &lt;iostream&gt;
+      <pre><!-- include file "../example/tut1.cpp" -->#include &lt;iostream&gt;
 #include &lt;boost/filesystem.hpp&gt;
 using namespace boost::filesystem;
 
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
   }
   std::cout &lt;&lt; argv[1] &lt;&lt; &quot; &quot; &lt;&lt; file_size(argv[1]) &lt;&lt; '\n';
   return 0;
-}</pre>
+}<!-- end include file --></pre>
     </td>
   </tr>
 </table>
@@ -165,10 +165,10 @@ containing the size of the file named by the argument. The declaration looks
 like this:</p>
 
 <blockquote>
-  <pre><span style="background-color: #FFFFFF; ">uintmax_t</span> file_size(const path&amp; p);</pre>
+  <code>uintmax_t file_size(const path&amp; p);</code>
 </blockquote>
-<p>For now, all you need to know is that class path has constructors that take
-<code>const char *</code> and many other useful types. (If you can't wait to 
+<p>For now, all you need to know is that <code>class path</code> has constructors that take
+<code>const char *</code> and other string types. (If you can't wait to 
 find out more, skip ahead to the <a href="#Class-path-Constructors">class path</a> section of 
 the tutorial.)</p>
 <p>Please take a minute to try out <code>tut1</code> on your system, using a 
@@ -303,26 +303,37 @@ files and with different kinds of files:</p>
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-      <pre>int main(int argc, char* argv[])
+      <pre><!-- include file "../example/tut2.cpp" -->#include &lt;iostream&gt;
+#include &lt;boost/filesystem.hpp&gt;
+using namespace std;
+using namespace boost::filesystem;
+
+int main(int argc, char* argv[])
 {
-  <a href="reference.html#class-path">path</a> p (argv[1]);   // p reads clearer than argv[1] in the following code
-
-  if (<a href="reference.html#exists-path">exists</a>(p))    // does p actually exist?
+  if (argc &lt; 2)
   {
-    if (<a href="reference.html#is_regular_file-path">is_regular_file</a>(p))        // is p a regular file?   
-      cout &lt;&lt; p &lt;&lt; &quot; size is &quot; &lt;&lt; <a href="reference.html#file_size">file_size</a>(p) &lt;&lt; '\n';
+    cout &lt;&lt; &quot;Usage: tut2 path\n&quot;;
+    return 1;
+  }
 
-    else if (<a href="reference.html#is_directory-path">is_directory</a>(p))      // is p a directory?
-      cout &lt;&lt; p &lt;&lt; &quot;is a directory\n&quot;;
+  path p(argv[1]);  // avoid repeated path construction below
+
+  if (exists(p))    // does path p actually exist?
+  {
+    if (is_regular_file(p))        // is path p a regular file?
+      cout &lt;&lt; p &lt;&lt; &quot; size is &quot; &lt;&lt; file_size(p) &lt;&lt; '\n';
+
+    else if (is_directory(p))      // is path p a directory?
+      cout &lt;&lt; p &lt;&lt; &quot; is a directory\n&quot;;
 
     else
-      cout &lt;&lt; p &lt;&lt; &quot;exists, but is neither a regular file nor a directory\n&quot;;
+      cout &lt;&lt; p &lt;&lt; &quot; exists, but is not a regular file or directory\n&quot;;
   }
   else
-    cout &lt;&lt; p &lt;&lt; &quot;does not exist\n&quot;;
+    cout &lt;&lt; p &lt;&lt; &quot; does not exist\n&quot;;
 
   return 0;
-}</pre>
+}<!-- end include file --></pre>
     </td>
   </tr>
 </table>
@@ -438,29 +449,37 @@ uses an overall try/catch block.</p>
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-      <pre>int main(int argc, char* argv[])
+      <pre><!-- include file "../example/tut3.cpp" -->#include &lt;iostream&gt;
+#include &lt;boost/filesystem.hpp&gt;
+using std::cout;
+using namespace boost::filesystem;
+
+int main(int argc, char* argv[])
 {
-  <a href="reference.html#class-path">path</a> p (argv[1]);   // p reads clearer than argv[1] in the following code
+  if (argc &lt; 2)
+  {
+    cout &lt;&lt; &quot;Usage: tut3 path\n&quot;;
+    return 1;
+  }
+
+  path p (argv[1]);
 
   try
   {
-    if (<a href="reference.html#exists-path">exists</a>(p))    // does p actually exist?
+    if (exists(p))
     {
-      if (<a href="reference.html#is_regular_file-path">is_regular_file</a>(p))        // is p a regular file?   
-        cout &lt;&lt; p &lt;&lt; &quot; size is &quot; &lt;&lt; <a href="reference.html#file_size">file_size</a>(p) &lt;&lt; '\n';
+      if (is_regular_file(p))
+        cout &lt;&lt; p &lt;&lt; &quot; size is &quot; &lt;&lt; file_size(p) &lt;&lt; '\n';
 
-      else if (<a href="reference.html#is_directory-path">is_directory</a>(p))      // is p a directory?
+      else if (is_directory(p))
       {
         cout &lt;&lt; p &lt;&lt; &quot; is a directory containing:\n&quot;;
 
-        copy(directory_iterator(p), directory_iterator(), // directory_iterator::value_type
-          ostream_iterator&lt;directory_entry&gt;(cout, &quot;\n&quot;)); // is directory_entry, which is
-                                                          // converted to a path by the
-                                                          // path stream inserter
+        for (directory_entry&amp; x : directory_iterator(p))
+          cout &lt;&lt; x.path() &lt;&lt; '\n'; 
       }
-
       else
-        cout &lt;&lt; p &lt;&lt; &quot; exists, but is neither a regular file nor a directory\n&quot;;
+        cout &lt;&lt; p &lt;&lt; &quot; exists, but is not a regular file or directory\n&quot;;
     }
     else
       cout &lt;&lt; p &lt;&lt; &quot; does not exist\n&quot;;
@@ -472,7 +491,7 @@ uses an overall try/catch block.</p>
   }
 
   return 0;
-}</pre>
+}<!-- end include file --></pre>
     </td>
   </tr>
 </table>
@@ -578,39 +597,46 @@ cout</code>.</p>
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-    <pre><a href="../example/tut4.cpp">tut4.cpp</a></pre>
-    <blockquote>
-      <pre>int main(int argc, char* argv[])
+    <pre><!-- include file "../example/tut4.cpp" -->#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;boost/filesystem.hpp&gt;
+using std::cout;
+using namespace boost::filesystem;
+
+int main(int argc, char* argv[])
 {
-  <a href="reference.html#class-path">path</a> p (argv[1]);   // p reads clearer than argv[1] in the following code
+  if (argc &lt; 2)
+  {
+    cout &lt;&lt; &quot;Usage: tut4 path\n&quot;;
+    return 1;
+  }
+
+  path p (argv[1]);
 
   try
   {
-    if (<a href="reference.html#exists-path">exists</a>(p))    // does p actually exist?
+    if (exists(p))
     {
-      if (<a href="reference.html#is_regular_file-path">is_regular_file</a>(p))        // is p a regular file?   
-        cout &lt;&lt; p &lt;&lt; &quot; size is &quot; &lt;&lt; <a href="reference.html#file_size">file_size</a>(p) &lt;&lt; '\n';
+      if (is_regular_file(p))
+        cout &lt;&lt; p &lt;&lt; &quot; size is &quot; &lt;&lt; file_size(p) &lt;&lt; '\n';
 
-      else if (<a href="reference.html#is_directory-path">is_directory</a>(p))      // is p a directory?
+      else if (is_directory(p))
       {
         cout &lt;&lt; p &lt;&lt; &quot; is a directory containing:\n&quot;;
 
-        typedef std::vector&lt;path&gt; vec;             // store paths,
-        vec v;                                // so we can sort them later
+        std::vector&lt;std::string&gt; v;
 
-        copy(directory_iterator(p), directory_iterator(), back_inserter(v));
+        for (auto&amp;&amp; x : directory_iterator(p))
+          v.push_back(x.path().filename().string()); 
 
-        sort(v.begin(), v.end());             // sort, since directory iteration
-                                              // is not ordered on some file systems
-  
-        for (vec::const_iterator it (v.begin()); it != v.end(); ++it)
-        {
-          cout &lt;&lt; &quot;   &quot; &lt;&lt; *it &lt;&lt; '\n';
-        }
+        std::sort(v.begin(), v.end());  
+
+        for (auto&amp;&amp; x : v)
+          cout &lt;&lt; x &lt;&lt; '\n';
       }
-
       else
-        cout &lt;&lt; p &lt;&lt; &quot; exists, but is neither a regular file nor a directory\n&quot;;
+        cout &lt;&lt; p &lt;&lt; &quot; exists, but is not a regular file or directory\n&quot;;
     }
     else
       cout &lt;&lt; p &lt;&lt; &quot; does not exist\n&quot;;
@@ -622,8 +648,8 @@ cout</code>.</p>
   }
 
   return 0;
-}</pre>
-    </blockquote>
+}<!-- end include file --></pre>
+   </blockquote>
     </td>
   </tr>
 </table>
@@ -1232,7 +1258,7 @@ It has a
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 July 2015<!--webbot bot="Timestamp" endspan i-checksum="18808" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->25 July 2015<!--webbot bot="Timestamp" endspan i-checksum="18810" --></p>
 
 </body>
 
