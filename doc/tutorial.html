@@ -995,19 +995,17 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  path p;  //  compose a path from the command line arguments
-
+  path p;
   for (; argc &gt; 1; --argc, ++argv)
-    p /= argv[1];
+    p /= argv[1];  // compose path p from the command line arguments
 
   cout  &lt;&lt;  &quot;\ncomposed path:\n&quot;;
   cout  &lt;&lt;  &quot;  operator&lt;&lt;()---------: &quot; &lt;&lt; p &lt;&lt; &quot;\n&quot;;
   cout  &lt;&lt;  &quot;  make_preferred()-----: &quot; &lt;&lt; p.make_preferred() &lt;&lt; &quot;\n&quot;;
 
   cout &lt;&lt; &quot;\nelements:\n&quot;;
-
-  for (path::iterator it(p.begin()), it_end(p.end()); it != it_end; ++it)
-    cout &lt;&lt; &quot;  &quot; &lt;&lt; *it &lt;&lt; '\n';
+  for (auto element : p)
+    cout &lt;&lt; &quot;  &quot; &lt;&lt; element &lt;&lt; '\n';
 
   cout  &lt;&lt;  &quot;\nobservers, native format:&quot; &lt;&lt; endl;
 # ifdef BOOST_POSIX_API
@@ -1082,10 +1080,10 @@ operator&lt;&lt;()---------: &quot;\foo\bar\baa.txt&quot;
 make_preferred()-----: &quot;\foo\bar\baa.txt&quot;
 
 elements:
-&quot;/&quot;
-&quot;foo&quot;
-&quot;bar&quot;
-&quot;baa.txt&quot;
+  &quot;/&quot;
+  &quot;foo&quot;
+  &quot;bar&quot;
+  &quot;baa.txt&quot;
 
 observers, native format:
 native()-------------: \foo\bar\baa.txt
@@ -1122,110 +1120,77 @@ has_extension()------: true</pre>
     </tr>
   </table>
 
-<p>First we'll look at iteration over the elements of a path, and then use 
-iteration to illustrate the difference between generic and native format paths.</p>
+<p>We will go through the above code in detail to gain a better 
+understanding of what is going on.</p>
 
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Ubuntu Linux </b></i></td>
-      <td align="center"><i><b>Microsoft Windows</b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>$ ./path_info /foo/bar/baa.txt
-...
-elements:
-  /
-  foo
-  bar
-  baa.txt</pre>
-      </td>
-      <td>
-      <pre>&gt;path_info /foo/bar/baa.txt
-...
-elements:
-  /
-  foo
-  bar
-  baa.txt</pre>
-      </td>
-    </tr>
-  </table>
+<p dir="ltr">A common need is to compose a path from its constituent 
+directories. Class <code>path</code> uses <code>/</code> and <code>/=</code> operators to 
+append elements. That's a reminder 
+that these operations append the operating system's preferred directory 
+separator if needed. The preferred 
+directory separator is a slash on POSIX-like systems, and a backslash on 
+Windows-like systems.</p>
 
-<p>Thus on both POSIX and Windows based systems the path <code>&quot;/foo/bar/baa.txt&quot;</code> 
-is seen as having four elements.</p>
+<p dir="ltr">That&#39;s what this code does before displaying the resulting <code>
+path p</code> using the <code>class path</code> stream inserter: </p>
 
-<p>Here is the code that produced the above listing:</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-    <blockquote>
-    <pre>cout &lt;&lt; &quot;\nelements:\n&quot;;
+      <pre><!-- include file "../example/path_info.cpp" -->  path p;
+  for (; argc &gt; 1; --argc, ++argv)
+    p /= argv[1];  // compose path p from the command line arguments
 
-for (path::iterator it = p.begin(); it != p.end(); ++it)
-  cout &lt;&lt; &quot; &quot; &lt;&lt; *it &lt;&lt; '\n';</pre>
-    </blockquote>
+  cout  &lt;&lt;  &quot;\ncomposed path:\n&quot;;
+  cout  &lt;&lt;  &quot;  operator&lt;&lt;()---------: &quot; &lt;&lt; p &lt;&lt; &quot;\n&quot;;
+  cout  &lt;&lt;  &quot;  make_preferred()-----: &quot; &lt;&lt; p.make_preferred() &lt;&lt; &quot;\n&quot;;</pre>
     </td>
   </tr>
 </table>
-<p><code>path::iterator::value_type</code> is <code>path::string_type</code>, 
-and iteration treats <code>path</code> as a container of filenames.</p>
 
-<p>Let's look at some of the output from a slightly different 
-example:</p>
 
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Ubuntu Linux </b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>$ ./path_info /foo/bar/baa.txt
+<p>One abstraction for thinking about a path is as a sequence of elements, where 
+the elements are directory and file names. To support this abstraction, class
+<code>path</code> provides STL-like&nbsp; iterators and also <code>begin()</code> 
+and <code>end()</code> functions.</p>
 
-composed path:
-  cout &lt;&lt; -------------: /foo/bar/baa.txt
-  preferred()----------: /foo/bar/baa.txt
-...
-observers, native format:
-  native()-------------: /foo/bar/baa.txt
-  c_str()--------------: /foo/bar/baa.txt
-  string()-------------: /foo/bar/baa.txt
-  wstring()------------: /foo/bar/baa.txt
+<p>Here is the code that produced the list of elements in the above output listing:</p>
 
-observers, generic format:
-  generic_string()-----: /foo/bar/baa.txt
-  generic_wstring()----: /foo/bar/baa.txt</pre>
-      </td>
-    </tr>
-  </table>
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+  <tr>
+    <td>
+    <pre>cout &lt;&lt; &quot;\nelements:\n&quot;;
+for (auto element : p)
+  cout &lt;&lt; &quot; &quot; &lt;&lt; element &lt;&lt; &#39;\n&#39;;</pre>
+    </td>
+  </tr>
+</table>
 
-&nbsp;
+<p>Let&#39;s look at class path observer functions:</p>
 
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Microsoft Windows</b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>&gt;path_info /foo/bar\baa.txt
 
-composed path:
-  cout &lt;&lt; -------------: /foo/bar/baa.txt
-  preferred()----------: \foo\bar\baa.txt
-...
-observers, native format:
-  native()-------------: /foo/bar\baa.txt
-  c_str()--------------: /foo/bar\baa.txt
-  string()-------------: /foo/bar\baa.txt
-  wstring()------------: /foo/bar\baa.txt
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+  <tr>
+    <td>
+      <pre><!-- include file "../example/path_info.cpp" -->  cout  &lt;&lt;  &quot;\nobservers, native format:&quot; &lt;&lt; endl;
+# ifdef BOOST_POSIX_API
+  cout  &lt;&lt;  &quot;  native()-------------: &quot; &lt;&lt; p.native() &lt;&lt; endl;
+  cout  &lt;&lt;  &quot;  c_str()--------------: &quot; &lt;&lt; p.c_str() &lt;&lt; endl;
+# else  // BOOST_WINDOWS_API
+  wcout &lt;&lt; L&quot;  native()-------------: &quot; &lt;&lt; p.native() &lt;&lt; endl;
+  wcout &lt;&lt; L&quot;  c_str()--------------: &quot; &lt;&lt; p.c_str() &lt;&lt; endl;
+# endif
+  cout  &lt;&lt;  &quot;  string()-------------: &quot; &lt;&lt; p.string() &lt;&lt; endl;
+  wcout &lt;&lt; L&quot;  wstring()------------: &quot; &lt;&lt; p.wstring() &lt;&lt; endl;
 
-observers, generic format:
-  generic_string()-----: /foo/bar/baa.txt
-  generic_wstring()----: /foo/bar/baa.txt</pre>
-      </td>
-    </tr>
-  </table>
+  cout  &lt;&lt;  &quot;\nobservers, generic format:\n&quot;;
+  cout  &lt;&lt;  &quot;  generic_string()-----: &quot; &lt;&lt; p.generic_string() &lt;&lt; endl;
+  wcout &lt;&lt; L&quot;  generic_wstring()----: &quot; &lt;&lt; p.generic_wstring() &lt;&lt; endl;</pre>
+    </td>
+  </tr>
+</table>
+
 
 <p>Native format observers should be used when interacting with the 
 operating system or with users; that's what they expect.</p>
@@ -1239,149 +1204,58 @@ format, but otherwise leave them unchanged from their source. The
 preferred form, if the native format has several forms. Thus on Windows, it will 
 convert slashes to backslashes.</p>
 
-<p>Let's move on to decomposition and query functions:</p>
+<p>Moving on to decomposition:</p>
 
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Ubuntu Linux </b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>$ ./path_info /foo/bar/baa.txt
-...
-decomposition:
-  root_name()----------:
-  root_directory()-----: /
-  root_path()----------: /
-  relative_path()------: foo/bar/baa.txt
-  parent_path()--------: /foo/bar
-  filename()-----------: baa.txt
-  stem()---------------: baa
-  extension()----------: .txt
-
-query:
-  empty()--------------: false
-  <span style="background-color: #FFFF00">is_absolute<span style="background-color: #FFFF00">()--------: true
-  has_root_name()------: false
-  has_root_directory()-: true
-  has_root_path()------: true
-  has_relative_path()--: true
-  has_parent_path()----: true
-  has_filename()-------: true
-  has_stem()-----------: true
-  has_extension()------: true</pre>
-      </td>
-    </tr>
-  </table>
-  
-  &nbsp;
-
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Microsoft Windows</b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>&gt;path_info /foo/bar/baa.txt
-...
-decomposition:
-  root_name()----------:
-  root_directory()-----: /
-  root_path()----------: /
-  relative_path()------: foo/bar/baa.txt
-  parent_path()--------: /foo/bar
-  filename()-----------: baa.txt
-  stem()---------------: baa
-  extension()----------: .txt
-
-query:
-  empty()--------------: false
-  <span style="background-color: #FFFF00">is_absolute<span style="background-color: #FFFF00">()--------: false
-  has_root_name()------: false
-  has_root_directory()-: true
-  has_root_path()------: true
-  has_relative_path()--: true
-  has_parent_path()----: true
-  has_filename()-------: true
-  has_stem()-----------: true
-  has_extension()------: true</pre>
-      </td>
-    </tr>
-  </table>
-
-<p>These are pretty self-evident, but do note the difference in the 
-result of <code>is_absolute()</code> between Linux and Windows. Because there is 
-no root name (i.e. drive specifier or network name), a lone slash (or backslash) 
-is a relative path on Windows. </p>
-
-<p>On to composition!</p>
-
-<p>Class <code>path</code> uses <code>/</code> and <code>/=</code> operators to 
-append elements. That's a reminder 
-that these operations append the operating system's preferred directory 
-separator if needed. The preferred 
-directory separator is a slash on POSIX-like systems, and a backslash on 
-Windows-like systems.</p>
-
-<p><a href="../example/path_info.cpp"><code>path_info.cpp</code></a> 
-composes a path by appending each of the command line elements to an initially 
-empty path:</p>
 
 <table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
   <tr>
     <td>
-    <blockquote>
-    <pre>path p;  // compose a path from the command line arguments
-
-for (; argc &gt; 1; --argc, ++argv)
-  p /= argv[1];
-
-cout &lt;&lt; &quot;\ncomposed path:\n&quot;;
-cout &lt;&lt; &quot; cout &lt;&lt; -------------: &quot; &lt;&lt; p &lt;&lt; &quot;\n&quot;;
-cout &lt;&lt; &quot; preferred()----------: &quot; &lt;&lt; p.preferred() &lt;&lt; &quot;\n&quot;;</pre>
-    </blockquote>
+      <pre><!-- include file "../example/path_info.cpp" -->  cout  &lt;&lt;  &quot;\ndecomposition:\n&quot;;
+  cout  &lt;&lt;  &quot;  root_name()----------: &quot; &lt;&lt; p.root_name() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  root_directory()-----: &quot; &lt;&lt; p.root_directory() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  root_path()----------: &quot; &lt;&lt; p.root_path() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  relative_path()------: &quot; &lt;&lt; p.relative_path() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  parent_path()--------: &quot; &lt;&lt; p.parent_path() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  filename()-----------: &quot; &lt;&lt; p.filename() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  stem()---------------: &quot; &lt;&lt; p.stem() &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  extension()----------: &quot; &lt;&lt; p.extension() &lt;&lt; '\n';</pre>
     </td>
   </tr>
 </table>
 
-<p>Let's give this code a try: </p>
 
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Ubuntu Linux </b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>$ ./path_info / foo/bar baa.txt
+<p>&nbsp;And, finally, query functions:</p>
 
-composed path:
-  cout &lt;&lt; -------------: /foo/bar/baa.txt
-  preferred()----------: /foo/bar/baa.txt</pre>
-      </td>
- 
-    </tr>
-  </table>
-  
-  &nbsp;
 
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
-    <tr>
-      <td align="center"><i><b>Microsoft Windows</b></i></td>
-    </tr>
-    <tr>
-      <td>
-      <pre>&gt;path_info / foo/bar baa.txt
+<table border="1" cellpadding="3" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
+  <tr>
+    <td>
+      <pre><!-- include file "../example/path_info.cpp" -->  cout  &lt;&lt;  &quot;\nquery:\n&quot;;
+  cout  &lt;&lt;  &quot;  empty()--------------: &quot; &lt;&lt; say_what(p.empty()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  is_absolute()--------: &quot; &lt;&lt; say_what(p.is_absolute()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_root_name()------: &quot; &lt;&lt; say_what(p.has_root_name()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_root_directory()-: &quot; &lt;&lt; say_what(p.has_root_directory()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_root_path()------: &quot; &lt;&lt; say_what(p.has_root_path()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_relative_path()--: &quot; &lt;&lt; say_what(p.has_relative_path()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_parent_path()----: &quot; &lt;&lt; say_what(p.has_parent_path()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_filename()-------: &quot; &lt;&lt; say_what(p.has_filename()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_stem()-----------: &quot; &lt;&lt; say_what(p.has_stem()) &lt;&lt; '\n';
+  cout  &lt;&lt;  &quot;  has_extension()------: &quot; &lt;&lt; say_what(p.has_extension()) &lt;&lt; '\n';</pre>
+    </td>
+  </tr>
+</table>
 
-composed path:
-  cout &lt;&lt; -------------: /foo/bar\baa.txt
-  preferred()----------: \foo\bar\baa.txt</pre>
-      </td>
-    </tr>
-  </table>
+
+<p>These are pretty self-evident, but do note the difference in the 
+result of <code>is_absolute()</code> between Linux and Windows. Because there is 
+no root name (i.e. drive specifier or network name), a lone slash (or backslash) 
+is a relative path on Windows but an absolute path on POSIX-like operating 
+systems. </p>
 
   <h2><a name="Error-reporting">Error reporting</a></h2>
 
-  <p>The Boost.Filesystem <code>file_size</code> function has two overloads:</p>
+  <p>The Boost.Filesystem <code>file_size</code> function, like many of the 
+  operational functions, has two overloads:</p>
 
   <blockquote>
   <pre>uintmax_t <a name="file_size">file_size</a>(const path&amp; p);
