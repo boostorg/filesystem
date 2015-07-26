@@ -18,12 +18,13 @@ int main(int argc, char* argv[])
 {
   if (argc < 2)
   {
-    cout << "Usage: path_info path-portion...\n"
-             "Example: path_info foo/bar baz\n"
+    cout << "Usage: path_info path-element [path-element...]\n"
+            "Composes a path via operator/= from one or more path-element arguments\n"
+            "Example: path_info foo/bar baz\n"
 #            ifdef BOOST_POSIX_API
-             "         would report info about the composed path foo/bar/baz\n";
+            "         would report info about the composed path foo/bar/baz\n";
 #            else  // BOOST_WINDOWS_API
-             "         would report info about the composed path foo/bar\\baz\n";
+            "         would report info about the composed path foo/bar\\baz\n";
 #            endif
     return 1;
   }
@@ -34,8 +35,8 @@ int main(int argc, char* argv[])
     p /= argv[1];
 
   cout  <<  "\ncomposed path:\n";
-  cout  <<  "  cout << -------------: " << p << "\n";
-  cout  <<  "  make_preferred()----------: " << path(p).make_preferred() << "\n";
+  cout  <<  "  operator<<()---------: " << p << "\n";
+  cout  <<  "  make_preferred()-----: " << p.make_preferred() << "\n";
 
   cout << "\nelements:\n";
 

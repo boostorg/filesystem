@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
         cout << p << " is a directory containing:\n";
 
         for (directory_entry& x : directory_iterator(p))
-          cout << x.path() << '\n'; 
+          cout << "    " << x.path() << '\n'; 
       }
       else
         cout << p << " exists, but is not a regular file or directory\n";

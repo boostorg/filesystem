@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         std::sort(v.begin(), v.end());  
 
         for (auto&& x : v)
-          cout << x << '\n';
+          cout << "    " << x << '\n';
       }
       else
         cout << p << " exists, but is not a regular file or directory\n";
