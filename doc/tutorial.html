@@ -195,7 +195,7 @@ results look like on two different operating systems:</p>
       <pre>$ ./tut1 tut1.cpp
 tut1.cpp 569</pre>
       <pre>$ ls -l tut1.cpp
--rwxrwxrwx 1 root root 569 2010-02-01 07:31 tut1.cpp</pre>
+-rw-rw-r-- 1 beman beman 569 Jul 26 12:04 tut1.cpp</pre>
       </td>
     </tr>
   </table>
@@ -234,11 +234,9 @@ from the above if changes have been made to <code>tut1.cpp</code>.</p>
     <tr>
       <td valign="top">
       <pre>$ ./tut1 foo
-terminate called after throwing an instance of 'boost::exception_detail::
-clone_impl&lt;boost::exception_detail::error_info_injector&lt;boost::
-filesystem::filesystem_error&gt; &gt;'
-  what(): boost::filesystem::file_size: No such file or directory: &quot;foo&quot;
-Aborted</pre>
+terminate called after throwing an instance of &#39;boost::filesystem::filesystem_error&#39;
+what(): boost::filesystem::file_size: No such file or directory: &quot;foo&quot;
+Aborted (core dumped)</pre>
       </td>
     </tr>
   </table>
@@ -260,8 +258,9 @@ Aborted</pre>
   </table>
 
   <p>What happens?
-  There's no file named <code>foo</code> in the current directory, so an 
-exception is thrown.</p>
+  There's no file named <code>foo</code> in the current directory, so by default an 
+exception is thrown. See <a href="#Error-reporting">Error reporting</a> to learn 
+  about error reporting via error codes rather than exceptions.</p>
   <p>Try this:</p>
 
   <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" bgcolor="#D7EEFF">
@@ -271,11 +270,9 @@ exception is thrown.</p>
     <tr>
       <td>
       <pre>$ ./tut1 .
-terminate called after throwing an instance of 'boost::exception_detail::
-clone_impl&lt;boost::exception_detail::error_info_injector&lt;boost::
-filesystem::filesystem_error&gt; &gt;'
-  what(): boost::filesystem::file_size: Operation not permitted &quot;.&quot;
-Aborted</pre>
+terminate called after throwing an instance of &#39;boost::filesystem::filesystem_error&#39;
+what(): boost::filesystem::file_size: Operation not permitted: &quot;.&quot;
+Aborted (core dumped)</pre>
       </td>
     </tr>
   </table>
@@ -360,11 +357,13 @@ int main(int argc, char* argv[])
     <tr>
       <td valign="top">
       <pre>$ ./tut2 tut2.cpp
-tut2 size is cpp 1037
+&quot;tut2.cpp&quot; size is 997
+
 $ ./tut2 foo
 &quot;foo&quot; does not exist
+
 $ ./tut2 .
-. is a directory</pre>
+&quot;.&quot; is a directory</pre>
       </td>
     </tr>
   </table>
@@ -402,12 +401,11 @@ we will see how to iterate over directories.</p>
     <tr>
       <td valign="top">
       <pre>$ ls /home/jane/foo
-ls: cannot access /home/jane/foo: Permission denied
+ls: cannot access /home/jane/foo: No such file or directory
 
 $ ./tut2 /home/jane/foo
-terminate called after throwing an instance of 'boost::exception_detail::
-clone_impl&lt;boost::exception_detail::error_info_injector&lt;boost::
-filesystem::filesystem_error&gt; &gt;'
+terminate called after throwing an instance of 'boost::
+filesystem::filesystem_error&gt;'
    what(): boost::filesystem::status: Permission denied:
      &quot;/home/jane/foo&quot;
 Aborted</pre>
@@ -521,30 +519,38 @@ of the test cases that caused exceptions on Linux and Windows:</p>
     </tr>
     <tr>
       <td valign="top">
-      <pre>$ ./tut3 ~/boost/trunk
-/home/beman/boost/trunk is a directory containing:
-  /home/beman/boost/trunk/tools
-  /home/beman/boost/trunk/boost-build.jam
-  /home/beman/boost/trunk/dist
-  /home/beman/boost/trunk/doc
-  /home/beman/boost/trunk/bootstrap.sh
-  /home/beman/boost/trunk/index.html
-  /home/beman/boost/trunk/bootstrap.bat
-  /home/beman/boost/trunk/boost.css
-  /home/beman/boost/trunk/INSTALL
-  /home/beman/boost/trunk/rst.css
-  /home/beman/boost/trunk/boost
-  /home/beman/boost/trunk/people
-  /home/beman/boost/trunk/wiki
-  /home/beman/boost/trunk/boost.png
-  /home/beman/boost/trunk/LICENSE_1_0.txt
-  /home/beman/boost/trunk/more
-  /home/beman/boost/trunk/Jamroot
-  /home/beman/boost/trunk/.svn
-  /home/beman/boost/trunk/libs
-  /home/beman/boost/trunk/index.htm
-  /home/beman/boost/trunk/status
-  /home/beman/boost/trunk/CMakeLists.txt</pre>
+      <pre>$ ./tut3 ~/boost/develop
+    &quot;/home/beman/boost/develop&quot; is a directory containing:
+    &quot;/home/beman/boost/develop/rst.css&quot;
+    &quot;/home/beman/boost/develop/boost&quot;
+    &quot;/home/beman/boost/develop/boost.png&quot;
+    &quot;/home/beman/boost/develop/libs&quot;
+    &quot;/home/beman/boost/develop/doc&quot;
+    &quot;/home/beman/boost/develop/project-config.jam.2&quot;
+    &quot;/home/beman/boost/develop/.gitmodules&quot;
+    &quot;/home/beman/boost/develop/boostcpp.py&quot;
+    &quot;/home/beman/boost/develop/.travis.yml&quot;
+    &quot;/home/beman/boost/develop/.gitattributes&quot;
+    &quot;/home/beman/boost/develop/index.htm&quot;
+    &quot;/home/beman/boost/develop/index.html&quot;
+    &quot;/home/beman/boost/develop/bjam&quot;
+    &quot;/home/beman/boost/develop/project-config.jam.1&quot;
+    &quot;/home/beman/boost/develop/LICENSE_1_0.txt&quot;
+    &quot;/home/beman/boost/develop/.git&quot;
+    &quot;/home/beman/boost/develop/tools&quot;
+    &quot;/home/beman/boost/develop/stage&quot;
+    &quot;/home/beman/boost/develop/boostcpp.jam&quot;
+    &quot;/home/beman/boost/develop/Jamroot&quot;
+    &quot;/home/beman/boost/develop/.gitignore&quot;
+    &quot;/home/beman/boost/develop/INSTALL&quot;
+    &quot;/home/beman/boost/develop/more&quot;
+    &quot;/home/beman/boost/develop/bin.v2&quot;
+    &quot;/home/beman/boost/develop/project-config.jam&quot;
+    &quot;/home/beman/boost/develop/boost-build.jam&quot;
+    &quot;/home/beman/boost/develop/bootstrap.bat&quot;
+    &quot;/home/beman/boost/develop/bootstrap.sh&quot;
+    &quot;/home/beman/boost/develop/status&quot;
+    &quot;/home/beman/boost/develop/boost.css&quot;</pre>
     </td>
      </tr>
   </table>
@@ -703,29 +709,7 @@ v.push_back(fn);                   // push into vector for later sorting</pre>
     </tr>
     <tr>
       <td>
-      <pre>$ ./tut4 ~/boost/trunk
-/home/beman/boost/trunk is a directory containing:
-  .svn
-  CMakeLists.txt
-  INSTALL
-  Jamroot
-  LICENSE_1_0.txt
-  boost
-  boost-build.jam
-  boost.css
-  boost.png
-  bootstrap.bat
-  bootstrap.sh
-  doc
-  index.htm
-  index.html
-  libs
-  more
-  people
-  rst.css
-  status
-  tools
-  wiki</pre>
+      <pre>$ ./tut4  v</pre>
       </td>
     </tr>
   </table>
@@ -738,8 +722,8 @@ v.push_back(fn);                   // push into vector for later sorting</pre>
     </tr>
     <tr>
       <td>
-      <pre>&gt;tut4 \boost\develop
-"\boost\develop" is a directory containing:
+      <pre>$ ./tut4 ~/boost/develop
+"/home/beman/boost/develop" is a directory containing:
     .git
     .gitattributes
     .gitignore
@@ -763,6 +747,8 @@ v.push_back(fn);                   // push into vector for later sorting</pre>
     libs
     more
     project-config.jam
+    project-config.jam.1
+    project-config.jam.2
     rst.css
     stage
     status
@@ -1060,7 +1046,49 @@ as we go along. Here is the invocation we will talk about in detail:</p>
     </tr>
     <tr>
       <td>
-      <pre>&nbsp;</pre>
+      <pre>$ ./path_info /foo bar baa.txt
+
+composed path:
+  operator<<()---------: "/foo/bar/baa.txt"
+  make_preferred()-----: "/foo/bar/baa.txt"
+
+elements:
+  "/"
+  "foo"
+  "bar"
+  "baa.txt"
+
+observers, native format:
+  native()-------------: /foo/bar/baa.txt
+  c_str()--------------: /foo/bar/baa.txt
+  string()-------------: /foo/bar/baa.txt
+  wstring()------------: /foo/bar/baa.txt
+
+observers, generic format:
+  generic_string()-----: /foo/bar/baa.txt
+  generic_wstring()----: /foo/bar/baa.txt
+
+decomposition:
+  root_name()----------: ""
+  root_directory()-----: "/"
+  root_path()----------: "/"
+  relative_path()------: "foo/bar/baa.txt"
+  parent_path()--------: "/foo/bar"
+  filename()-----------: "baa.txt"
+  stem()---------------: "baa"
+  extension()----------: ".txt"
+
+query:
+  empty()--------------: false
+  is_absolute()--------: true
+  has_root_name()------: false
+  has_root_directory()-: true
+  has_root_path()------: true
+  has_relative_path()--: true
+  has_parent_path()----: true
+  has_filename()-------: true
+  has_stem()-----------: true
+  has_extension()------: true</pre>
       </td>
     </tr>
   </table>
