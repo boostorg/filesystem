@@ -666,7 +666,7 @@ namespace
 
     if (platform == "Windows")
     {
-      std::cout << "Windows relational tests..." << std::endl;
+      std::cout << "  Windows relational tests..." << std::endl;
       path p10 ("c:\\file");
       path p11 ("c:/file");
       // check each overload
@@ -729,6 +729,22 @@ namespace
       BOOST_TEST(!(L"c:/file" > p10));
       BOOST_TEST(!(L"c:\\file" > p11));
       BOOST_TEST(!(L"c:/file" > p11));
+    }
+
+    // relative
+
+    BOOST_TEST(fs::relative("/abc/def", "/abc") == path("def"));
+    BOOST_TEST(fs::relative("abc/def", "abc") == path("def"));
+    BOOST_TEST(fs::relative("/abc/xyz/def", "/abc") == path("xyz/def"));
+    BOOST_TEST(fs::relative("abc/xyz/def", "abc") == path("xyz/def"));
+
+    if (platform == "Windows")
+    {
+      std::cout << "  Windows relatie tests..." << std::endl;
+      BOOST_TEST(fs::relative("\\abc\\xyz\\def", "/abc") == path("xyz/def"));
+      std::cout << "    fs::relative(\"/abc/xyz/def\", \"/abc\") is "
+        << fs::relative("/abc/xyz/def", "/abc") << std::endl;
+      BOOST_TEST(fs::relative("abc\\xyz\\def", "abc") == path("xyz/def"));
     }
   }
 

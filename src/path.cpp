@@ -24,6 +24,7 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>  // for filesystem_error
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
@@ -804,6 +805,50 @@ namespace filesystem
     it.m_element = it.m_path_ptr->m_pathname.substr(it.m_pos, end_pos - it.m_pos);
     if (it.m_element.m_pathname == preferred_separator_string) // needed for Windows, harmless on POSIX 
       it.m_element.m_pathname = separator_string;    // generic format; see docs 
+  }
+
+  //--------------------------------------------------------------------------------------//
+  //                                                                                      //
+  //                    class path non-member functions implementation                    //
+  //                                                                                      //
+  //--------------------------------------------------------------------------------------//
+
+  namespace detail
+  {
+    // C++14 provide a mismatch algorithm with four iterator arguments(), but earlier
+    // standard libraries didn't, so provide the needed functionality here in detail.
+    inline
+    std::pair<path::iterator, path::iterator> mismatch(path::iterator it1,
+      path::iterator it1end, path::iterator it2, path::iterator it2end)
+    {
+      for (; it1 != it1end && it2 != it2end && *it1 == *it2;)
+      {
+        ++it1;
+        ++it2;
+      }
+      return std::make_pair(it1, it2);
+    }
+  }
+
+  BOOST_FILESYSTEM_DECL
+  path lexically_relative(const path& p, const path& base)
+  {
+    std::pair<path::iterator, path::iterator> mm
+      = detail::mismatch(p.begin(), p.end(), base.begin(), base.end());
+    if (mm.first == p.end()
+      || mm.second != base.end())
+    {
+      throw filesystem_error(
+        "lexically_relative: p does not begin with base, so can not be made relative to base",
+        p, base, boost::system::error_code(boost::system::errc::invalid_argument,
+          boost::system::generic_category()));
+    }
+    path tmp(*mm.first++);
+    for (; mm.first != p.end(); ++mm.first)
+    {
+      tmp /= *mm.first;
+    }
+    return tmp;
   }
 
 }  // namespace filesystem

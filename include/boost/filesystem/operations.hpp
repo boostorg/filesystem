@@ -640,6 +640,26 @@ namespace boost
   inline
   void resize_file(const path& p, uintmax_t size, system::error_code& ec)
                                        {detail::resize_file(p, size, &ec);}
+  // TODO: Add error handling
+  // TODO: The returned path needs to be normalized. That currently is implied by
+  //       any existing (and thus canonical) portion, but not by the non-existing portion. 
+  inline
+  path semi_canonical(const path& p)
+  {
+    if (exists(p))
+      return canonical(p);
+    return p.parent_path().empty() ? p : semi_canonical(p.parent_path()) / p.filename();
+  }
+  
+  // TODO: Add error handling
+  inline
+  path relative(const path& p, const path& base)
+  // [Note: If either p or base is_relative(), user may wish to wrap the call to that
+  // argument in a call to absolute(). -- end note]
+  {
+    return lexically_relative(semi_canonical(p), semi_canonical(base));
+  }
+
   inline
   space_info space(const path& p)      {return detail::space(p);} 
 
