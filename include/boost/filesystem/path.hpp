@@ -501,6 +501,12 @@ namespace filesystem
     }
     bool is_relative() const         { return !is_absolute(); } 
 
+    //  -----  lexical operations  -----
+
+    path  relative(const path& p) const;
+    // TODO: document dangers of lack of symlink following, no normalization,
+    // difference of "symlink/.." handling between Windows and POSIX 
+
     //  -----  iterators  -----
 
     class iterator;
@@ -694,9 +700,6 @@ namespace filesystem
   inline void swap(path& lhs, path& rhs)                   { lhs.swap(rhs); }
 
   inline path operator/(const path& lhs, const path& rhs)  { return path(lhs) /= rhs; }
-
-  BOOST_FILESYSTEM_DECL
-  path lexically_relative(const path& p, const path& base);
 
   //  inserters and extractors
   //    use boost::io::quoted() to handle spaces in paths

@@ -657,7 +657,7 @@ namespace boost
   // [Note: If either p or base is_relative(), user may wish to wrap the call to that
   // argument in a call to absolute(). -- end note]
   {
-    return lexically_relative(semi_canonical(p), semi_canonical(base));
+    return semi_canonical(p).relative(semi_canonical(base));
   }
 
   inline
