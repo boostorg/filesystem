@@ -654,10 +654,8 @@ namespace boost
   // TODO: Add error handling
   inline
   path relative(const path& p, const path& base)
-  // [Note: If either p or base is_relative(), user may wish to wrap the call to that
-  // argument in a call to absolute(). -- end note]
   {
-    return semi_canonical(p).relative(semi_canonical(base));
+    return semi_canonical(p).relative_to(semi_canonical(base));
   }
 
   inline
