@@ -405,9 +405,9 @@ namespace filesystem
       }
       return std::make_pair(it1, it2);
     }
-  } // namespace detail
+  }
 
-  path path::relative_to(const path& base) const
+  path path::relative(const path& base) const
   {
     std::pair<path::iterator, path::iterator> mm
       = detail::mismatch(begin(), end(), base.begin(), base.end());
