@@ -657,7 +657,7 @@ namespace boost
   inline
   path relative(const path& p, const path& base)
   {
-    return weak_canonical(p).relative_to(weak_canonical(base));
+    return weak_canonical(p).relative(weak_canonical(base));
   }
 
   inline
