@@ -434,6 +434,7 @@ namespace
     CHECK(p.string() == "abc\\def/ghi");
     CHECK(p.wstring() == L"abc\\def/ghi");
 
+    CHECK(p.generic().string() == "abc/def/ghi");
     CHECK(p.generic_string() == "abc/def/ghi");
     CHECK(p.generic_wstring() == L"abc/def/ghi");
 
@@ -450,6 +451,7 @@ namespace
     CHECK(p.string() == "abc\\def/ghi");
     CHECK(p.wstring() == L"abc\\def/ghi");
 
+    CHECK(p.generic().string() == "abc\\def/ghi");
     CHECK(p.generic_string() == "abc\\def/ghi");
     CHECK(p.generic_wstring() == L"abc\\def/ghi");
 

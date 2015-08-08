@@ -441,6 +441,21 @@ namespace filesystem
 
     //  -----  generic format observers  -----
 
+    //  Experimental generic function returning generic formatted path (i.e. separators
+    //  are forward slashes). Motivation: simpler than a family of generic_*string
+    //  functions.
+    path generic() const
+    {
+#   ifdef BOOST_WINDOWS_API
+      path tmp;
+      std::replace_copy(m_pathname.begin(), m_pathname.end(),
+        std::back_inserter(tmp.m_pathname), L'\\', L'/');
+      return tmp;
+#   else
+      return path(*this);
+#   endif
+    }
+
     template <class String>
     String generic_string() const;
 
