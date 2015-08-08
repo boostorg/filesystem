@@ -642,22 +642,22 @@ namespace boost
                                        {detail::resize_file(p, size, &ec);}
   // TODO: Add error handling
   // TODO: The returned path needs to be normalized. That currently is implied by
-  //       any existing (and thus canonical) portion, but not by the non-existing portion. 
+  //       any existing (and thus canonical) portion, but not by the non-existing portion.
+  // TODO: Replace tail-recursion with iteration.
+  // Note: a good alternate name might be weak_canonical() or weakly_canonical().
   inline
-  path semi_canonical(const path& p)
+  path weak_canonical(const path& p)
   {
     if (exists(p))
       return canonical(p);
-    return p.parent_path().empty() ? p : semi_canonical(p.parent_path()) / p.filename();
+    return p.parent_path().empty() ? p : weak_canonical(p.parent_path()) / p.filename();
   }
   
   // TODO: Add error handling
   inline
   path relative(const path& p, const path& base)
-  // [Note: If either p or base is_relative(), user may wish to wrap the call to that
-  // argument in a call to absolute(). -- end note]
   {
-    return semi_canonical(p).relative(semi_canonical(base));
+    return weak_canonical(p).relative_to(weak_canonical(base));
   }
 
   inline
