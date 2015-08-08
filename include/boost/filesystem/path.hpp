@@ -506,6 +506,7 @@ namespace filesystem
     bool has_filename() const        { return !m_pathname.empty(); }
     bool has_stem() const            { return !stem().empty(); }
     bool has_extension() const       { return !extension().empty(); }
+    bool is_relative() const         { return !is_absolute(); } 
     bool is_absolute() const
     {
 #     ifdef BOOST_WINDOWS_API
@@ -514,10 +515,10 @@ namespace filesystem
       return has_root_directory();
 #     endif
     }
-    bool is_relative() const         { return !is_absolute(); } 
 
     //  -----  lexical operations  -----
 
+    path  normal() const;
     path  relative(const path& p) const;
     // TODO: document dangers of lack of symlink following, no normalization,
     // difference of "symlink/.." handling between Windows and POSIX 
@@ -543,7 +544,11 @@ namespace filesystem
 
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
-    path&  normalize()              { return m_normalize(); }
+    path&  normalize()              { 
+                                      path tmp(normal());  // lvalue for swap required
+                                      m_pathname.swap(tmp.m_pathname);
+                                      return *this;
+                                    }
     path&  remove_leaf()            { return remove_filename(); }
     path   leaf() const             { return filename(); }
     path   branch_path() const      { return parent_path(); }

@@ -1793,6 +1793,122 @@ namespace
     }
   }
 
+  //  normal_tests  --------------------------------------------------------------------//
+
+  void normal_tests()
+  {
+    std::cout << "normal_tests..." << std::endl;
+
+    //  Note: path::normal() uses /= to build up some results, so these results will
+    //  have the platform's preferred separator. Since that is immaterial to the correct
+    //  functioning of normal(), the test results are converted to generic form, and
+    //  the expected results are also given in generic form. Otherwise many of the tests
+    //  would incorrectly be reported as failing on Windows.
+
+    PATH_TEST_EQ(path("").normal().generic(), "");
+    PATH_TEST_EQ(path("/").normal().generic(), "/");
+    PATH_TEST_EQ(path("//").normal().generic(), "//");
+    PATH_TEST_EQ(path("///").normal().generic(), "/");
+    PATH_TEST_EQ(path("f").normal().generic(), "f");
+    PATH_TEST_EQ(path("foo").normal().generic(), "foo");
+    PATH_TEST_EQ(path("foo/").normal().generic(), "foo/.");
+    PATH_TEST_EQ(path("f/").normal().generic(), "f/.");
+    PATH_TEST_EQ(path("/foo").normal().generic(), "/foo");
+    PATH_TEST_EQ(path("foo/bar").normal().generic(), "foo/bar");
+    PATH_TEST_EQ(path("..").normal().generic(), "..");
+    PATH_TEST_EQ(path("../..").normal().generic(), "../..");
+    PATH_TEST_EQ(path("/..").normal().generic(), "/..");
+    PATH_TEST_EQ(path("/../..").normal().generic(), "/../..");
+    PATH_TEST_EQ(path("../foo").normal().generic(), "../foo");
+    PATH_TEST_EQ(path("foo/..").normal().generic(), ".");
+    PATH_TEST_EQ(path("foo/../").normal().generic(), "./.");
+    PATH_TEST_EQ((path("foo") / "..").normal().generic() , ".");
+    PATH_TEST_EQ(path("foo/...").normal().generic(), "foo/...");
+    PATH_TEST_EQ(path("foo/.../").normal().generic(), "foo/.../.");
+    PATH_TEST_EQ(path("foo/..bar").normal().generic(), "foo/..bar");
+    PATH_TEST_EQ(path("../f").normal().generic(), "../f");
+    PATH_TEST_EQ(path("/../f").normal().generic(), "/../f");
+    PATH_TEST_EQ(path("f/..").normal().generic(), ".");
+    PATH_TEST_EQ((path("f") / "..").normal().generic() , ".");
+    PATH_TEST_EQ(path("foo/../..").normal().generic(), "..");
+    PATH_TEST_EQ(path("foo/../../").normal().generic(), "../.");
+    PATH_TEST_EQ(path("foo/../../..").normal().generic(), "../..");
+    PATH_TEST_EQ(path("foo/../../../").normal().generic(), "../../.");
+    PATH_TEST_EQ(path("foo/../bar").normal().generic(), "bar");
+    PATH_TEST_EQ(path("foo/../bar/").normal().generic(), "bar/.");
+    PATH_TEST_EQ(path("foo/bar/..").normal().generic(), "foo");
+    PATH_TEST_EQ(path("foo/bar/../").normal().generic(), "foo/.");
+    PATH_TEST_EQ(path("foo/bar/../..").normal().generic(), ".");
+    PATH_TEST_EQ(path("foo/bar/../../").normal().generic(), "./.");
+    PATH_TEST_EQ(path("foo/bar/../blah").normal().generic(), "foo/blah");
+    PATH_TEST_EQ(path("f/../b").normal().generic(), "b");
+    PATH_TEST_EQ(path("f/b/..").normal().generic(), "f");
+    PATH_TEST_EQ(path("f/b/../").normal().generic(), "f/.");
+    PATH_TEST_EQ(path("f/b/../a").normal().generic(), "f/a");
+    PATH_TEST_EQ(path("foo/bar/blah/../..").normal().generic(), "foo");
+    PATH_TEST_EQ(path("foo/bar/blah/../../bletch").normal().generic(), "foo/bletch");
+    PATH_TEST_EQ(path("//net").normal().generic(), "//net");
+    PATH_TEST_EQ(path("//net/").normal().generic(), "//net/");
+    PATH_TEST_EQ(path("//..net").normal().generic(), "//..net");
+    PATH_TEST_EQ(path("//net/..").normal().generic(), "//net/..");
+    PATH_TEST_EQ(path("//net/foo").normal().generic(), "//net/foo");
+    PATH_TEST_EQ(path("//net/foo/").normal().generic(), "//net/foo/.");
+    PATH_TEST_EQ(path("//net/foo/..").normal().generic(), "//net/");
+    PATH_TEST_EQ(path("//net/foo/../").normal().generic(), "//net/.");
+
+    PATH_TEST_EQ(path("/net/foo/bar").normal().generic(), "/net/foo/bar");
+    PATH_TEST_EQ(path("/net/foo/bar/").normal().generic(), "/net/foo/bar/.");
+    PATH_TEST_EQ(path("/net/foo/..").normal().generic(), "/net");
+    PATH_TEST_EQ(path("/net/foo/../").normal().generic(), "/net/.");
+
+    PATH_TEST_EQ(path("//net//foo//bar").normal().generic(), "//net/foo/bar");
+    PATH_TEST_EQ(path("//net//foo//bar//").normal().generic(), "//net/foo/bar/.");
+    PATH_TEST_EQ(path("//net//foo//..").normal().generic(), "//net/");
+    PATH_TEST_EQ(path("//net//foo//..//").normal().generic(), "//net/.");
+
+    PATH_TEST_EQ(path("///net///foo///bar").normal().generic(), "/net/foo/bar");
+    PATH_TEST_EQ(path("///net///foo///bar///").normal().generic(), "/net/foo/bar/.");
+    PATH_TEST_EQ(path("///net///foo///..").normal().generic(), "/net");
+    PATH_TEST_EQ(path("///net///foo///..///").normal().generic(), "/net/.");
+
+    if (platform == "Windows")
+    {
+      PATH_TEST_EQ(path("c:..").normal().generic(), "c:..");
+      PATH_TEST_EQ(path("c:foo/..").normal().generic(), "c:");
+
+      PATH_TEST_EQ(path("c:foo/../").normal().generic(), "c:.");
+
+      PATH_TEST_EQ(path("c:/foo/..").normal().generic(), "c:/");
+      PATH_TEST_EQ(path("c:/foo/../").normal().generic(), "c:/.");
+      PATH_TEST_EQ(path("c:/..").normal().generic(), "c:/..");
+      PATH_TEST_EQ(path("c:/../").normal().generic(), "c:/../.");
+      PATH_TEST_EQ(path("c:/../..").normal().generic(), "c:/../..");
+      PATH_TEST_EQ(path("c:/../../").normal().generic(), "c:/../../.");
+      PATH_TEST_EQ(path("c:/../foo").normal().generic(), "c:/../foo");
+      PATH_TEST_EQ(path("c:/../foo/").normal().generic(), "c:/../foo/.");
+      PATH_TEST_EQ(path("c:/../../foo").normal().generic(), "c:/../../foo");
+      PATH_TEST_EQ(path("c:/../../foo/").normal().generic(), "c:/../../foo/.");
+      PATH_TEST_EQ(path("c:/..foo").normal().generic(), "c:/..foo");
+    }
+    else // POSIX
+    {
+      PATH_TEST_EQ(path("c:..").normal(), "c:..");
+      PATH_TEST_EQ(path("c:foo/..").normal(), ".");
+      PATH_TEST_EQ(path("c:foo/../").normal(), "./.");
+      PATH_TEST_EQ(path("c:/foo/..").normal(), "c:");
+      PATH_TEST_EQ(path("c:/foo/../").normal(), "c:/.");
+      PATH_TEST_EQ(path("c:/..").normal(), ".");
+      PATH_TEST_EQ(path("c:/../").normal(), "./.");
+      PATH_TEST_EQ(path("c:/../..").normal(), "..");
+      PATH_TEST_EQ(path("c:/../../").normal(), "../.");
+      PATH_TEST_EQ(path("c:/../foo").normal(), "foo");
+      PATH_TEST_EQ(path("c:/../foo/").normal(), "foo/.");
+      PATH_TEST_EQ(path("c:/../../foo").normal(), "../foo");
+      PATH_TEST_EQ(path("c:/../../foo/").normal(), "../foo/.");
+      PATH_TEST_EQ(path("c:/..foo").normal(), "c:/..foo");
+    }
+  }
+
 } // unnamed namespace
 
 static boost::filesystem::path ticket_6737 = "FilePath";  // #6737 reported this crashed
@@ -1836,6 +1952,7 @@ int cpp_main(int, char*[])
   name_function_tests();
   replace_extension_tests();
   make_preferred_tests();
+  normal_tests();
 
   // verify deprecated names still available
 

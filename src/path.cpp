@@ -423,11 +423,12 @@ namespace filesystem
     return tmp;
   }
 
-  //  m_normalize  ---------------------------------------------------------------------//
+  //  normal  --------------------------------------------------------------------------//
 
-  path& path::m_normalize()
+  path path::normal() const
   {
-    if (m_pathname.empty()) return *this;
+    if (m_pathname.empty())
+      return *this;
       
     path temp;
     iterator start(begin());
@@ -472,12 +473,17 @@ namespace filesystem
               root_directory_start(temp.m_pathname, temp.m_pathname.size()));
             if (rds == string_type::npos
               || rds != temp.m_pathname.size()-1) 
-              { temp.m_pathname.erase(temp.m_pathname.size()-1); }
+            {
+              temp.m_pathname.erase(temp.m_pathname.size()-1);
+            }
           }
 
           iterator next(itr);
           if (temp.empty() && ++next != stop
-            && next == last && *last == detail::dot_path()) temp /= detail::dot_path();
+            && next == last && *last == detail::dot_path())
+          {
+            temp /= detail::dot_path();
+          }
           continue;
         }
       }
@@ -485,9 +491,9 @@ namespace filesystem
       temp /= *itr;
     };
 
-    if (temp.empty()) temp /= detail::dot_path();
-    m_pathname = temp.m_pathname;
-    return *this;
+    if (temp.empty())
+      temp /= detail::dot_path();
+    return temp;
   }
 
 }  // namespace filesystem
