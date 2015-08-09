@@ -641,16 +641,20 @@ namespace boost
   void resize_file(const path& p, uintmax_t size, system::error_code& ec)
                                        {detail::resize_file(p, size, &ec);}
   // TODO: Add error handling
-  // TODO: The returned path needs to be normalized. That currently is implied by
-  //       any existing (and thus canonical) portion, but not by the non-existing portion.
-  // TODO: Replace tail-recursion with iteration.
-  // Note: a good alternate name might be weak_canonical() or weakly_canonical().
   inline
   path weak_canonical(const path& p)
   {
-    if (exists(p))
-      return canonical(p);
-    return p.parent_path().empty() ? p : weak_canonical(p.parent_path()) / p.filename();
+    path head(p);
+    path tail;
+    path::iterator itr = p.end();
+
+    for (; !head.empty() && !exists(head); --itr)
+      head.remove_filename();
+
+    for (; itr != p.end(); ++itr)
+      tail /= *itr;
+
+    return head.empty() ? p : (tail.empty() ? canonical(head) : canonical(head) / tail);
   }
   
   // TODO: Add error handling
