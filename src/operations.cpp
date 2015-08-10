@@ -1879,10 +1879,10 @@ namespace detail
     for (; !head.empty(); --itr)
     {
       file_status head_status = status(head, tmp_ec);
-      if (error(head_status.type() == file_type::status_error,
+      if (error(head_status.type() == fs::status_error,
         head, ec, "boost::filesystem::weakly_canonical"))
         return path();
-      if (head_status.type() != file_type::file_not_found)
+      if (head_status.type() != fs::file_not_found)
         break;
       head.remove_filename();
     }
