@@ -366,7 +366,8 @@ namespace boost
     BOOST_FILESYSTEM_DECL
     path read_symlink(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
-      // For standardization, if the committee doesn't like "remove", consider "eliminate"
+    path relative(const path& p, const path& base, system::error_code* ec = 0);
+    BOOST_FILESYSTEM_DECL
     bool remove(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     boost::uintmax_t remove_all(const path& p, system::error_code* ec=0);
@@ -382,7 +383,9 @@ namespace boost
     path temp_directory_path(system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     path unique_path(const path& p, system::error_code* ec=0);
-  }  // namespace detail
+    BOOST_FILESYSTEM_DECL
+    path weakly_canonical(const path& p, system::error_code* ec = 0);
+  }  // namespace detail             
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -640,30 +643,15 @@ namespace boost
   inline
   void resize_file(const path& p, uintmax_t size, system::error_code& ec)
                                        {detail::resize_file(p, size, &ec);}
-  // TODO: Add error handling
   inline
-  path weak_canonical(const path& p)
-  {
-    path head(p);
-    path tail;
-    path::iterator itr = p.end();
-
-    for (; !head.empty() && !exists(head); --itr)
-      head.remove_filename();
-
-    for (; itr != p.end(); ++itr)
-      tail /= *itr;
-
-    return head.empty() ? p : (tail.empty() ? canonical(head) : canonical(head) / tail);
-  }
-  
-  // TODO: Add error handling
+  path relative(const path& p, const path& base=current_path())
+                                       {return detail::relative(p, base);}
   inline
-  path relative(const path& p, const path& base)
-  {
-    return weak_canonical(p).relative(weak_canonical(base));
-  }
-
+  path relative(const path& p, system::error_code& ec)
+                                       {return detail::relative(p, current_path(), &ec);}
+  inline
+  path relative(const path& p, const path& base, system::error_code& ec)
+                                       {return detail::relative(p, base, &ec);}
   inline
   space_info space(const path& p)      {return detail::space(p);} 
 
@@ -689,10 +677,16 @@ namespace boost
                                        {return detail::temp_directory_path(&ec);}
   inline
   path unique_path(const path& p="%%%%-%%%%-%%%%-%%%%")
-                                       { return detail::unique_path(p); }
+                                       {return detail::unique_path(p);}
   inline
   path unique_path(const path& p, system::error_code& ec)
-                                       { return detail::unique_path(p, &ec); }
+                                       {return detail::unique_path(p, &ec);}
+  inline
+  path weakly_canonical(const path& p)   {return detail::weakly_canonical(p);}
+ 
+  inline
+  path weakly_canonical(const path& p, system::error_code& ec)
+                                       {return detail::weakly_canonical(p, &ec);}
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //

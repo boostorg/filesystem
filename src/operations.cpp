@@ -1517,6 +1517,19 @@ namespace detail
 #     endif
     return symlink_path;
   }
+
+  BOOST_FILESYSTEM_DECL
+  path relative(const path& p, const path& base, error_code* ec)
+  {
+    error_code tmp_ec;
+    path wc_base = weakly_canonical(base, &tmp_ec);
+    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
+      return path();
+    path wc_p = weakly_canonical(p, &tmp_ec);
+    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
+      return path();
+    return wc_p.relative(wc_base);
+  }
   
   BOOST_FILESYSTEM_DECL
   bool remove(const path& p, error_code* ec)
@@ -1855,6 +1868,36 @@ namespace detail
 #   endif
   }
 
+  BOOST_FILESYSTEM_DECL
+  path weakly_canonical(const path& p, system::error_code* ec)
+  {
+    path head(p);
+    path tail;
+    system::error_code tmp_ec;
+    path::iterator itr = p.end();
+
+    for (; !head.empty(); --itr)
+    {
+      file_status head_status = status(head, tmp_ec);
+      if (error(head_status.type() == file_type::status_error,
+        head, ec, "boost::filesystem::weakly_canonical"))
+        return path();
+      if (head_status.type() != file_type::file_not_found)
+        break;
+      head.remove_filename();
+    }
+
+    for (; itr != p.end(); ++itr)
+      tail /= *itr;
+    
+//    return head.empty() ? p : (tail.empty() ? canonical(head) : canonical(head) / tail);
+    if (head.empty())
+      return p;
+    head = canonical(head, tmp_ec);
+    if (error(tmp_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
+      return path();
+    return tail.empty() ? head : head / tail;
+  }
 }  // namespace detail
 
 //--------------------------------------------------------------------------------------//
