@@ -83,11 +83,18 @@ int test_main(int, char*[])
   BOOST_TEST(path("a/b/c").relative("x") == path());
   BOOST_TEST(path("a/b/c").relative("x/y") == path());
   BOOST_TEST(path("a/b/c").relative("x/y/z") == path());
+  
+  // TODO: add some Windows-only test cases that probe presence or absence of
+  // drive specifier-and root-directory
 
   //  Some tests from Jamie Allsop's paper
   BOOST_TEST(path("/a/d").relative("/a/b/c") == path("../../d"));
   BOOST_TEST(path("/a/b/c").relative("/a/d") == path("../b/c"));
+#ifdef BOOST_WINDOWS_API  
   BOOST_TEST(path("c:\\y").relative("c:\\x") == path("../y"));
+#else
+  BOOST_TEST(path("c:\\y").relative("c:\\x") == path(""));
+#endif  
   BOOST_TEST(path("d:\\y").relative("c:\\x") == path(""));
 
   //  From issue #1976
