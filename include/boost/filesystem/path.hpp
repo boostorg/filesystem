@@ -519,7 +519,7 @@ namespace filesystem
     //  -----  lexical operations  -----
 
     path  normal() const;
-    path  relative(const path& p) const;
+    path  relative(const path& base) const;
     // TODO: document dangers of lack of symlink following, no normalization,
     // difference of "symlink/.." handling between Windows and POSIX 
 

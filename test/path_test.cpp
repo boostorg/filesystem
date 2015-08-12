@@ -1837,7 +1837,11 @@ namespace
     PATH_TEST_EQ(path("foo/../bar").normal().generic(), "bar");
     PATH_TEST_EQ(path("foo/../bar/").normal().generic(), "bar/.");
     PATH_TEST_EQ(path("foo/bar/..").normal().generic(), "foo");
+    PATH_TEST_EQ(path("foo/./bar/..").normal().generic(), "foo");
+    std::cout << path("foo/./bar/..").normal() << std::endl;  // outputs "foo"
     PATH_TEST_EQ(path("foo/bar/../").normal().generic(), "foo/.");
+    PATH_TEST_EQ(path("foo/./bar/../").normal().generic(), "foo/.");
+    std::cout << path("foo/./bar/../").normal() << std::endl;  // POSIX: "foo/.", Windows: "foo\." 
     PATH_TEST_EQ(path("foo/bar/../..").normal().generic(), ".");
     PATH_TEST_EQ(path("foo/bar/../../").normal().generic(), "./.");
     PATH_TEST_EQ(path("foo/bar/../blah").normal().generic(), "foo/blah");

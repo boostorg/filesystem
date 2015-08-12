@@ -1522,10 +1522,10 @@ namespace detail
   path relative(const path& p, const path& base, error_code* ec)
   {
     error_code tmp_ec;
-    path wc_base = weakly_canonical(base, &tmp_ec);
+    path wc_base(weakly_canonical(base, &tmp_ec));
     if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
       return path();
-    path wc_p = weakly_canonical(p, &tmp_ec);
+    path wc_p(weakly_canonical(p, &tmp_ec));
     if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
       return path();
     return wc_p.relative(wc_base);
