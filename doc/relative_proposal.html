@@ -62,11 +62,11 @@ would otherwise be empty, a path containing a single current (<i>dot</i>)
 directory is returned.</p>
 <p><i>Remarks:</i> Uses <code>operator/=</code> to compose the returned path.</p>
 <p>[<i>Example:</i></p>
-<p><code>assert(path(&quot;foo/./bar/..&quot;).normal() == path(&quot;foo&quot;);<br>
-assert(path(&quot;foo/./bar/../&quot;).normal() == path(&quot;foo/.&quot;);</code></p>
-<p dir="ltr">All of the above asserts would succeed.<i> </i>On Windows, the 
-returned path&#39;s separators would be backslashes rather than slashes, but that 
-does not affect equality.<i> —end example</i>]</p>
+<p><code>assert(path(&quot;foo/./bar/..&quot;).normal() == &quot;foo&quot;);<br>
+assert(path(&quot;foo/./bar/../&quot;).normal() == &quot;foo/.&quot;);</code></p>
+<p dir="ltr">All of the above assertions will succeed.<i> </i>On Windows, the 
+returned path&#39;s separators will be backslashes rather than slashes, but that 
+does not affect <code>path</code> equality.<i> —end example</i>]</p>
 </blockquote>
 
 <pre>path relative(const path&amp; base) const;</pre>
@@ -106,14 +106,14 @@ does not affect equality.<i> —end example</i>]</p>
   <p dir="ltr">[<i>Note:</i> Use the <code>normal</code> function to preprocess . <i>—end note</i>]</p>
   
 <p>[<i>Example:</i></p>
-<p><code>assert(path(&quot;/a/d&quot;).relative(&quot;/a/b/c&quot;) == path(&quot;../../d&quot;));<br>
-assert(path(&quot;/a/b/c&quot;).relative(&quot;/a/d&quot;) == path(&quot;../b/c&quot;));<br>
-assert(path(&quot;a/b/c&quot;).relative(&quot;a&quot;) == path(&quot;b/c&quot;));<br>
-assert(path(&quot;a/b/c&quot;).relative(&quot;a/b/c/x/y&quot;) == path(&quot;../..&quot;));<br>
-assert(path(&quot;a/b/c&quot;).relative(&quot;a/b/c&quot;) == path(&quot;.&quot;));</code></p>
-<p dir="ltr">All of the above asserts would succeed.<i> </i>On Windows, the 
-returned path&#39;s separators would be backslashes rather than slashes, but that 
-does not affect equality.<i> —end example</i>]</p>
+<p><code>assert(path(&quot;/a/d&quot;).relative(&quot;/a/b/c&quot;) ==  &quot;../../d&quot;);<br>
+assert(path(&quot;/a/b/c&quot;).relative(&quot;/a/d&quot;) ==  &quot;../b/c&quot;);<br>
+assert(path(&quot;a/b/c&quot;).relative(&quot;a&quot;) == &quot;b/c&quot;);<br>
+assert(path(&quot;a/b/c&quot;).relative(&quot;a/b/c/x/y&quot;) ==  &quot;../..&quot;);<br>
+assert(path(&quot;a/b/c&quot;).relative(&quot;a/b/c&quot;) ==  &quot;.&quot;);</code></p>
+<p dir="ltr">All of the above assertions will succeed.<i> </i>On Windows, the 
+returned path&#39;s separators will be backslashes rather than slashes, but that 
+does not affect <code>path</code> equality.<i> —end example</i>]</p>
   
 </blockquote>
 <h3>New operational functions</h3>
@@ -159,7 +159,7 @@ path()</span></code> if an error occurs.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->12 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31417" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->13 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31419" --></p>
 
 </body>
 
