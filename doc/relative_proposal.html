@@ -42,64 +42,81 @@
       Introduction</h2>
 
 <p>
-      The request for new functionality seems simple - given two paths with a 
-      common prefix, return the non-common suffix portion of one of the paths 
-      such that it is relative to the other path.</p>
+      There have been requests for a Filesystem library relative function for at 
+      least ten years.</p>
+
+<p>
+      The requested functionality seems simple - given two paths with a common 
+      prefix, return the non-common suffix portion of one of the paths such that 
+      it is relative to the other path.</p>
 
 <p>
       In terms of the Filesystem library,</p>
 
 <blockquote>
-  <pre>path p(&quot;/a/b/c/d&quot;);
+  <pre>path p(&quot;/a/b/c&quot;);
 path base(&quot;/a/b&quot;);
-path rel = relative(p, base);      // relative is the requested function
-assert(absolute(rel, base) == p); </pre>
+path rel = relative(p, base);  // the requested function
+cout &lt;&lt; rel &lt;&lt; endl;           // outputs &quot;c&quot;
+assert(absolute(rel, base) == p);</pre>
 </blockquote>
-<p>If it were that simple, the Filesystem library would have had a <code>
-relative</code> function right from the start.</p>
-<p>Considerations include:</p>
-<ul>
-  <li>Some uses require symlinks be followed; i.e. the path must be resolved in 
-  the actual file system.</li>
-  <li>Some uses require symlinks not be followed; i.e. the path must not be 
-  resolved in the actual file system.</li>
-  <li>Some uses require removing redundant current directory (<i>dot</i>) 
-  or parent directory (<i>dot-dot</i>) placeholders.</li>
-  <li>Some uses require not removing redundant current directory (<i>dot</i>) 
-  or parent directory (<i>dot-dot</i>) placeholders.</li>
-  <li>Some uses never have redundant current directory (<i>dot</i>) 
+<p>If that was all there was too it, the Filesystem library would have had a
+<code>relative</code> function years ago.</p>
+<blockquote>
+<p>Critical issues: Clashing requirements, symlinks, directory placeholders (<i>dot</i>,
+<i>dot-dot</i>), user-expectations, corner cases.</p>
+</blockquote>
+<h3>Acknowledgement</h3>
+<p>A paper by Jamie Allsop, <i>Additions to Filesystem supporting Relative Paths</i>, 
+is what broke my mental logjam. Much of what follows is based directly on 
+Jamie&#39;s analysis and proposal. The <code>weakly_canonical</code> function and 
+aspects of the semantic specifications are my contributions. Mistakes, of 
+course, are mine.</p>
+<h3>Preliminary implementation</h3>
+<p>A preliminary implementation is available in the
+<a href="https://github.com/boostorg/filesystem/tree/feature/relative2">
+feature/relative2</a> branch of the Boost Filesystem Git repository. See
+<a href="https://github.com/boostorg/filesystem/tree/feature/relative2">
+github.com/boostorg/filesystem/tree/feature/relative2</a></p>
+<h2 dir="ltr">Requirements</h2>
+<b><a name="Requirement-1">Requirement 1</a>:</b> Some uses require symlinks be followed; i.e. the path must be resolved in 
+  the actual file system.<p><b><a name="Requirement-2">Requirement 2</a>: </b>Some uses require symlinks not be followed; i.e. the path must not be 
+  resolved in the actual file system.</p>
+<b><a name="Requirement-3">Requirement 3</a>: </b>Some uses require removing redundant current directory (<i>dot</i>) 
+  or parent directory (<i>dot-dot</i>) placeholders.<p><b>
+<a name="Requirement-4">Requirement 4</a>: </b>Some uses require not removing redundant current directory (<i>dot</i>) 
+  or parent directory (<i>dot-dot</i>) placeholders.</p>
+<b><a name="Requirement-5">Requirement 5</a>: </b>Some uses never have redundant current directory (<i>dot</i>) 
   or parent directory (<i>dot-dot</i>) placeholders, so a removal operation 
-  would be an unnecessary expense although otherwise harmless.</li>
-  <li>In some uses <code>p</code> and <code>base</code> are themselves relative.</li>
-  <li>What happens if there is no common prefix? Is this an error, the whole of
-  <code>p</code> is relative to <code>base</code>, or something else?</li>
-  <li>What happens if <code>p</code>, <code>base</code>, or both are empty?</li>
-  <li>What happens if <code>p</code> and <code>base</code> are the same?</li>
-  <li>How is the &quot;common prefix&quot; determined?</li>
-  <li>What happens if portions of <code>p</code> or <code>base</code> exist but 
-  the entire path does not exist and yet symlinks need to be followed?</li>
-  <li>What happens when a symlink in the existing portion of a path is affected 
+  would be an unnecessary expense although otherwise harmless.<h2>Issues</h2>
+<p dir="ltr"><b><a name="Issue-1">Issue 1</a>:</b> What happens if <code>p</code> 
+and <code>base</code> are themselves relative?</p>
+<b><a name="Issue-2">Issue 2</a>:</b> What happens if there is no common prefix? Is this an error, the whole of
+  <code>p</code> is relative to <code>base</code>, or something else?<p><b>
+<a name="Issue-3">Issue 3</a>:</b> What happens if <code>p</code>, <code>base</code>, or both are empty?</p>
+<b><a name="Issue-4">Issue 4</a>:</b> What happens if <code>p</code> and <code>base</code> are the same?<p>
+<b><a name="Issue-5">Issue 5</a>:</b> How is the &quot;common prefix&quot; determined?</p>
+<b><a name="Issue-6">Issue 6</a>:</b> What happens if portions of <code>p</code> or <code>base</code> exist but 
+  the entire path does not exist and yet symlinks need to be followed?<p><b>
+<a name="Issue-7">Issue 7</a>:</b> What happens when a symlink in the existing portion of a path is affected 
   by a directory (<i>dot-dot</i>) placeholder in a later non-existent portion of 
-  the path?</li>
-</ul>
-
-<h2>
-      Design</h2>
+  the path?</p>
+<p><b><a name="Issue-8">Issue 8</a>:</b> Overly complex semantics (and thus 
+specifications) in preliminary designs made reasoning about uses difficult.</p>
 
 <h2>
       Design decisions</h2>
-
-<h4>
-      Provide<b> a set of functions that &quot;just work&quot;</b></h4>
-
-<p>
-      &nbsp;</p>
 
 <h4 dir="ltr" align="left">
       Provide<b> separate <a href="#lex-relative">lexically </a></b><code>
       <a href="#lex-relative">relative</a></code><b> and <a href="#op-relative">
       operationally </a></b><code><a href="#op-relative">relative</a></code><b> 
       functions</b></h4>
+
+<p dir="ltr" align="left">
+      Resolves the conflict between <a href="#Requirement-1">requirement 1</a> 
+      and <a href="#Requirement-2">requirement 2</a> and ensures both 
+      requirements are met.</p>
 
 <p>
       A purely lexical function is needed by users working with directory 
@@ -112,7 +129,12 @@ relative</code> function right from the start.</p>
 
 <h4>
       Provide<b> </b>a class path member function <code><a href="#normal">normal</a></code> returning a 
-      <a href="#normal-form">normalized</a> path</h4>
+      <a href="#normal-form">normal form</a> path</h4>
+
+<p>
+      Enables resolution of <a href="#Requirement-3">requirement 3</a> and
+      <a href="#Requirement-4">requirement 4</a> in a way that allows users to 
+      meet <a href="#Requirement-5">requirement 5</a>.</p>
 
 <p>
       &quot;Normalization&quot; is the process of removing redundant current directory (<i>dot</i>) and parent 
@@ -138,13 +160,14 @@ relative</code> function right from the start.</p>
 <h4>
       Provide<b> </b>a <code><a href="#weakly_canonical">weakly_canonical</a></code> operational function</h4>
 
-<p>
-      The weakly (i.e. weakened requirements) canonical operational function
+<p dir="ltr">
+      The operational function
       <code>weakly_canonical(p)</code> returns a path composed of <code>
       canonical(x)/y</code>, where <code>x</code> is a path composed of the 
-      longest leading sequence of elements in <code>p</code> that exists, and
-      <code>y</code> is a path composed of the remaining trailing elements of
-      <code>p</code> if any.</p>
+      longest leading sequence of elements in <code>p</code> that exist, and
+      <code>y</code> is a path composed of the remaining trailing non-existent elements of
+      <code>p</code> if any. &quot;<code>weakly</code>&quot; refers to weakened existence 
+      requirements compared to the existing canonical function.</p>
 
 <ul>
   <li>Having <code>weakly_canonical</code> as a separate function, and then 
@@ -315,7 +338,7 @@ path()</span></code> if an error occurs.</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->15 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31423" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->17 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31427" --></p>
 
 </body>
 
