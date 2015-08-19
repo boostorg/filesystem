@@ -1887,16 +1887,27 @@ namespace detail
       head.remove_filename();
     }
 
+    bool tail_has_dots = false;
     for (; itr != p.end(); ++itr)
+    { 
       tail /= *itr;
+      // for a later optimization, track if any dot or dot-dot elements are present
+      if (itr->native().size() <= 2
+        && itr->native()[0] == dot
+        && (itr->native().size() == 1 || itr->native()[1] == dot))
+        tail_has_dots = true;
+    }
     
-//    return head.empty() ? p : (tail.empty() ? canonical(head) : canonical(head) / tail);
     if (head.empty())
-      return p;
+      return p.normal();
     head = canonical(head, tmp_ec);
     if (error(tmp_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
       return path();
-    return tail.empty() ? head : head / tail;
+    return tail.empty()
+      ? head
+      : (tail_has_dots  // optimization: only normalize if tail had dot or dot-dot element
+          ? (head/tail).normal()  
+          : head/tail);
   }
 }  // namespace detail
 
