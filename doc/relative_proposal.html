@@ -384,19 +384,15 @@ path weakly_canonical(const path&amp; p, system::error_code&amp; ec);</pre>
 <i>Overview:</i> Returns <code>p</code> with symlinks resolved and the result 
 normalized.<p>
 <i>Returns: </i>
-</p>
-<p><code>exists(p)<br>
-&nbsp; ? canonical(p)<br>
-&nbsp; : (p.parent_path().empty()<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-? p<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-: <a href="#weakly_canonical">weakly_canonical</a>(p.parent_path())/p.filename()</code>.</p>
+A path composed of the result of calling the <code>canonical</code> function on 
+a path composed of the leading elements of <code>p</code> that exist, if any, 
+followed by the elements of <code>p</code> that do not exist, if any.</p>
 <p><i>Postcondition:</i> The returned path is in <a href="#normal">normal form</a>.</p>
-<p><i>Remarks:</i> Implementations are permitted to use iteration 
-rather than recursion. Implementations are encouraged to avoid unnecessary 
+<p><i>Remarks:</i> Uses <code>operator/=</code> to compose the returned path. 
+Uses the <code>status</code> function to determine existence.</p>
+<p><i>Remarks:</i> Implementations are encouraged to avoid unnecessary 
 normalization such as when <code>canonical</code> has already been called on the 
-entire returned path.</p>
+entirety of <code>p</code>.</p>
 <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>
 </blockquote>
 <pre>path <a name="op-relative">relative</a>(const path&amp; p, system::error_code&amp; ec);</pre>
@@ -422,7 +418,7 @@ path relative(const path&amp; p, const path&amp; base, system::error_code&amp; e
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->19 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31431" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->22 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31418" --></p>
 
 </body>
 
