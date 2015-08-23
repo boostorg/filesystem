@@ -46,6 +46,10 @@ namespace boost
 {
 namespace filesystem
 {
+  // forward declarations
+  class BOOST_FILESYSTEM_DECL path;
+  BOOST_FILESYSTEM_DECL path lexically_normal(const path& p);  
+
   //------------------------------------------------------------------------------------//
   //                                                                                    //
   //                                    class path                                      //
@@ -516,13 +520,6 @@ namespace filesystem
 #     endif
     }
 
-    //  -----  lexical operations  -----
-
-    path  normal() const;
-    path  relative(const path& base) const;
-    // TODO: document dangers of lack of symlink following, no normalization,
-    // difference of "symlink/.." handling between Windows and POSIX 
-
     //  -----  iterators  -----
 
     class iterator;
@@ -545,7 +542,7 @@ namespace filesystem
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
     path&  normalize()              { 
-                                      path tmp(normal());  // lvalue for swap required
+                                      path tmp(lexically_normal(*this));
                                       m_pathname.swap(tmp.m_pathname);
                                       return *this;
                                     }
@@ -720,6 +717,17 @@ namespace filesystem
   inline void swap(path& lhs, path& rhs)                   { lhs.swap(rhs); }
 
   inline path operator/(const path& lhs, const path& rhs)  { return path(lhs) /= rhs; }
+
+  //  -----  lexical operations  -----
+  //
+  //  naming convention: prefix with "lexically_" to alert users that these functions
+  //  have purely lexical semantics and, when necesssary, to disambiguate from 
+  //  operational functions with the same name.
+
+  BOOST_FILESYSTEM_DECL
+    path  lexically_normal(const path& p);
+  BOOST_FILESYSTEM_DECL
+    path  lexically_relative(const path& p, const path& base);
 
   //  inserters and extractors
   //    use boost::io::quoted() to handle spaces in paths

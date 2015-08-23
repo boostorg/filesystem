@@ -407,34 +407,34 @@ namespace filesystem
     }
   }
 
-  path path::relative(const path& base) const
+  path lexically_relative(const path& p, const path& base)
   {
     std::pair<path::iterator, path::iterator> mm
-      = detail::mismatch(begin(), end(), base.begin(), base.end());
-    if (mm.first == begin() && mm.second == base.begin())
+      = detail::mismatch(p.begin(), p.end(), base.begin(), base.end());
+    if (mm.first == p.begin() && mm.second == base.begin())
       return path();
-    if (mm.first == end() && mm.second == base.end())
+    if (mm.first == p.end() && mm.second == base.end())
       return detail::dot_path();
     path tmp;
     for (; mm.second != base.end(); ++mm.second)
       tmp /= detail::dot_dot_path();
-    for (; mm.first != end(); ++mm.first)
+    for (; mm.first != p.end(); ++mm.first)
       tmp /= *mm.first;
     return tmp;
   }
 
   //  normal  --------------------------------------------------------------------------//
 
-  path path::normal() const
+  path lexically_normal(const path& p)
   {
-    if (m_pathname.empty())
-      return *this;
+    if (p.empty())
+      return p;
       
     path temp;
-    iterator start(begin());
-    iterator last(end());
-    iterator stop(last--);
-    for (iterator itr(start); itr != stop; ++itr)
+    path::iterator start(p.begin());
+    path::iterator last(p.end());
+    path::iterator stop(last--);
+    for (path::iterator itr(start); itr != stop; ++itr)
     {
       // ignore "." except at start and last
       if (itr->native().size() == 1
@@ -464,21 +464,21 @@ namespace filesystem
           )
         {
           temp.remove_filename();
-          // if not root directory, must also remove "/" if any
-          if (temp.m_pathname.size() > 0
-            && temp.m_pathname[temp.m_pathname.size()-1]
-              == separator)
-          {
-            string_type::size_type rds(
-              root_directory_start(temp.m_pathname, temp.m_pathname.size()));
-            if (rds == string_type::npos
-              || rds != temp.m_pathname.size()-1) 
-            {
-              temp.m_pathname.erase(temp.m_pathname.size()-1);
-            }
-          }
+          //// if not root directory, must also remove "/" if any
+          //if (temp.native().size() > 0
+          //  && temp.native()[temp.native().size()-1]
+          //    == separator)
+          //{
+          //  string_type::size_type rds(
+          //    root_directory_start(temp.native(), temp.native().size()));
+          //  if (rds == string_type::npos
+          //    || rds != temp.native().size()-1) 
+          //  {
+          //    temp.m_pathname.erase(temp.native().size()-1);
+          //  }
+          //}
 
-          iterator next(itr);
+          path::iterator next(itr);
           if (temp.empty() && ++next != stop
             && next == last && *last == detail::dot_path())
           {

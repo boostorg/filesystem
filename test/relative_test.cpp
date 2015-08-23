@@ -18,8 +18,8 @@
 #include <boost/detail/lightweight_test_report.hpp>
 #include <iostream>
 
-namespace fs = boost::filesystem;
 using boost::filesystem::path;
+using boost::filesystem::lexically_relative;
 using std::cout;
 using std::endl;
 
@@ -41,50 +41,52 @@ int test_main(int, char*[])
 
   //  Given p and base are objects of class path; if !p.empty() && !base.empty() &&
   //  *p.begin() == *base.begin() then return a path such that
-  //  p == base / p.relative(base) otherwise return path(). However, if all elements of
-  //  p are equal to the corresponding element of base, return path(".").
+  //  p == base / lexically_relative(p, base) otherwise return path(). However, if all
+  //  elements of p are equal to the corresponding element of base, return path(".").
 
-  BOOST_TEST(path("").relative("") == "");
-  BOOST_TEST(path("").relative("/foo") == "");
-  BOOST_TEST(path("/foo").relative("") == "");
-  BOOST_TEST(path("/foo").relative("/foo") == ".");
-  BOOST_TEST(path("").relative("foo") == "");
-  BOOST_TEST(path("foo").relative("") == "");
-  BOOST_TEST(path("foo").relative("foo") == ".");
+  BOOST_TEST(lexically_relative("", "") == "");
+  BOOST_TEST(lexically_relative("", "/foo") == "");
+  BOOST_TEST(lexically_relative("/foo", "") == "");
+  BOOST_TEST(lexically_relative("/foo", "/foo") == ".");
+  BOOST_TEST(lexically_relative("", "foo") == "");
+  BOOST_TEST(lexically_relative("foo", "") == "");
+  BOOST_TEST(lexically_relative("foo", "foo") == ".");
 
-  BOOST_TEST(path("a/b/c").relative("a") == "b/c");
-  BOOST_TEST(path("a/b/c").relative("a/b") == "c");
-  BOOST_TEST(path("a/b/c").relative("a/b/c") == ".");
-  BOOST_TEST(path("a/b/c").relative("a/b/c/x") == "..");
-  BOOST_TEST(path("a/b/c").relative("a/b/c/x/y") == "../..");
-  BOOST_TEST(path("a/b/c").relative("a/x") == "../b/c");
-  BOOST_TEST(path("a/b/c").relative("a/b/x") == "../c");
-  BOOST_TEST(path("a/b/c").relative("a/x/y") == "../../b/c");
-  BOOST_TEST(path("a/b/c").relative("a/b/x/y") == "../../c");
-  BOOST_TEST(path("a/b/c").relative("a/b/c/x/y/z") == "../../..");
+  BOOST_TEST(lexically_relative("a/b/c", "a") == "b/c");
+  BOOST_TEST(lexically_relative("a//b//c", "a") == "b/c");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b") == "c");
+  BOOST_TEST(lexically_relative("a///b//c", "a//b") == "c");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b/c") == ".");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x") == "..");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x/y") == "../..");
+  BOOST_TEST(lexically_relative("a/b/c", "a/x") == "../b/c");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b/x") == "../c");
+  BOOST_TEST(lexically_relative("a/b/c", "a/x/y") == "../../b/c");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b/x/y") == "../../c");
+  BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x/y/z") == "../../..");
  
-  BOOST_TEST(path("a/b/c").relative("x") == "");
-  BOOST_TEST(path("a/b/c").relative("x/y") == "");
-  BOOST_TEST(path("a/b/c").relative("x/y/z") == "");
-  BOOST_TEST(path("a/b/c").relative("x") == "");
-  BOOST_TEST(path("a/b/c").relative("x/y") == "");
-  BOOST_TEST(path("a/b/c").relative("x/y/z") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "x") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "x/y") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "x/y/z") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "x") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "x/y") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "x/y/z") == "");
   
   // TODO: add some Windows-only test cases that probe presence or absence of
   // drive specifier-and root-directory
 
   //  Some tests from Jamie Allsop's paper
-  BOOST_TEST(path("/a/d").relative("/a/b/c") == "../../d");
-  BOOST_TEST(path("/a/b/c").relative("/a/d") == "../b/c");
+  BOOST_TEST(lexically_relative("/a/d", "/a/b/c") == "../../d");
+  BOOST_TEST(lexically_relative("/a/b/c", "/a/d") == "../b/c");
 #ifdef BOOST_WINDOWS_API  
-  BOOST_TEST(path("c:\\y").relative("c:\\x") == "../y");
+  BOOST_TEST(lexically_relative("c:\\y", "c:\\x") == "../y");
 #else
-  BOOST_TEST(path("c:\\y").relative("c:\\x") == "");
+  BOOST_TEST(lexically_relative("c:\\y", "c:\\x") == "");
 #endif  
-  BOOST_TEST(path("d:\\y").relative("c:\\x") == "");
+  BOOST_TEST(lexically_relative("d:\\y", "c:\\x") == "");
 
   //  From issue #1976
-  BOOST_TEST(path("/foo/new").relative("/foo/bar") == "../new");
+  BOOST_TEST(lexically_relative("/foo/new", "/foo/bar") == "../new");
 
   return ::boost::report_errors();
 }

@@ -575,10 +575,6 @@ namespace
 
     CHECK(p1 == "bar");
     CHECK(p2 == "foo");
-
-    CHECK(path("").remove_filename() == "");
-    CHECK(path("foo").remove_filename() == "");
-    CHECK(path("foo/bar").remove_filename() == "foo");
   }
 
 //  //  test_modifiers  ------------------------------------------------------------------//
@@ -622,6 +618,18 @@ namespace
   void test_modifiers()
   {
     std::cout << "testing modifiers..." << std::endl;
+
+    CHECK(path("").remove_filename() == "");
+    CHECK(path("foo").remove_filename() == "");
+    CHECK(path("/foo").remove_filename() == "/");
+    CHECK(path("foo/bar").remove_filename() == "foo");
+    BOOST_TEST_EQ(path("foo/bar/").remove_filename(), path("foo/bar"));
+    BOOST_TEST_EQ(path(".").remove_filename(), path(""));
+    BOOST_TEST_EQ(path("./.").remove_filename(), path("."));
+    BOOST_TEST_EQ(path("/.").remove_filename(), path("/"));
+    BOOST_TEST_EQ(path("..").remove_filename(), path(""));
+    BOOST_TEST_EQ(path("../..").remove_filename(), path(".."));
+    BOOST_TEST_EQ(path("/..").remove_filename(), path("/"));
 
   }
 
