@@ -65,7 +65,8 @@ Add lexical functions as non-members rather than <code>path</code> members</a><b
       relative</code></a><br>
 <a href="#Proposed-wording">Proposed wording</a><br>
 &nbsp;&nbsp;&nbsp;<a href="#Define-normal-form">Define <i>normal form</i></a><br>
-&nbsp;&nbsp;&nbsp;<a href="#path-member-functions">New non-member functions</a><br>
+&nbsp;&nbsp;&nbsp;<a href="#Synopsis">Synopsis of new functions</a><br>
+&nbsp;&nbsp; <a href="#path-member-functions">New non-member functions</a><br>
 &nbsp;&nbsp;&nbsp;<a href="#operational-functions">New operational functions</a><br>
 </p>
 
@@ -156,6 +157,14 @@ specifications) in preliminary designs made reasoning about uses difficult.</p>
       An operational function that queries the current file system for existence 
       and follows symlinks is needed by users working with actual existing 
       directory hierarchies.</p>
+
+<h4>
+      Provide separate lexical and operational proximate functions</h4>
+
+<p>
+      Although not the only possibility, a likely fallback when the relative 
+      functions return an empty path is to return the path being relativized. As 
+      a convenience, the <code>proximate</code> functions do just that.</p>
 
 <h4>
       <a name="Add-lexical-functions-as-non-members">Add lexical functions as 
@@ -255,7 +264,7 @@ specifications) in preliminary designs made reasoning about uses difficult.</p>
       requiring an exception or error code.</p>
 
 <h4>
-      Specify <a href="#lex-relative"><code>lexical relative</code></a> in terms 
+      Specify <a href="#lex-proximate"><code>lexical relative</code></a> in terms 
       of <code>std::<a name="mismatch">mismatch</a></code></h4>
 
 <p>
@@ -263,7 +272,7 @@ specifications) in preliminary designs made reasoning about uses difficult.</p>
       resolution of <a href="#Issue-8">issue 8</a>.</p>
 
 <h4>
-      <a name="Specify-op-rel-weakly">Specify</a> <a href="#op-relative">operational <code>relative</code></a> in terms of <code>
+      <a name="Specify-op-rel-weakly">Specify</a> <a href="#op-proximate">operational <code>relative</code></a> in terms of <code>
       <a href="#weakly_canonical">weakly_canonical</a></code></h4>
 
 <p>
@@ -276,8 +285,8 @@ specifications) in preliminary designs made reasoning about uses difficult.</p>
 </ul>
 
 <h4>
-      <a name="Specify-op-rel-lex-rel">Specify</a> <a href="#op-relative">operational <code>relative</code></a> in terms of 
-      <a href="#lex-relative"><code>lexical
+      <a name="Specify-op-rel-lex-rel">Specify</a> <a href="#op-proximate">operational <code>relative</code></a> in terms of 
+      <a href="#lex-proximate"><code>lexical
       relative</code></a></h4>
 
 <p>
@@ -313,6 +322,21 @@ elements. The normal form for an empty path is an empty path. The normal form
 for a path ending in a <i>directory-separator</i> that is not the root directory 
 is the same path with a current directory (<i>dot</i>) element appended.</p>
 
+<h3><a name="Synopsis">Synopsis</a> of new functions</h3>
+
+<pre>path lexically_normal(const path&amp; p);
+path lexically_relative(const path&amp; p, const path&amp; base);
+path lexically_proximate(const path&amp; p, const path&amp; base);
+
+path weakly_canonical(const path&amp; p);
+path weakly_canonical(const path&amp; p, system::error_code&amp; ec);
+path relative(const path&amp; p, system::error_code&amp; ec);
+path relative(const path&amp; p, const path&amp; base=current_path());
+path relative(const path&amp; p, const path&amp; base, system::error_code&amp; ec);
+path proximate(const path&amp; p, system::error_code&amp; ec);
+path proximate(const path&amp; p, const path&amp; base=current_path());
+path proximate(const path&amp; p, const path&amp; base, system::error_code&amp; ec);
+</pre>
 <h3>New non-<a name="path-member-functions">member functions</a></h3>
 
 <pre>path lexically_<a name="normal">normal</a>(const path&amp; p);</pre>
@@ -375,13 +399,28 @@ forward slashes, but that
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
   
   <p>[<i>Note:</i> If symlink following semantics are desired, use the  operational function <code>
-  <a href="#op-relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
+  <a href="#op-proximate">relative</a></code>&nbsp; <i>—end note</i>]</p>
   
-  <p>[<i>Note:</i> Call <code><a href="#normal">lexically_normal()</a></code> 
-  first on
-  <code>p</code>, <code>base</code>, 
-  or both, if <a href="#normal">normalization</a> is needed to ensure consistent matching of 
-  elements. <i>—end note</i>]</p>
+  <p>[<i>Note:</i> If <a href="#normal">normalization</a> is needed to ensure 
+  consistent matching of elements, wrap
+  <code>p</code>, <code>base</code>, or both in calls <code><a href="#normal">lexically_normal()</a></code>. <i>—end note</i>]</p>
+  
+</blockquote>
+
+
+<pre>path <a name="lex-proximate">lexically_proximate</a>(const path&amp; p, const path&amp; base);</pre>
+
+  <blockquote>
+  
+  <p><i>Returns:</i> If the value of <code>lexically_relative(p, base)</code> is 
+  not an empty path, return it. Otherwise return <code>p</code>.</p>
+  
+  <p>[<i>Note:</i> If symlink following semantics are desired, use the  operational function
+  <code><a href="#op-proximate">proximate</a></code>&nbsp; <i>—end note</i>]</p>
+  
+  <p>[<i>Note:</i> If <a href="#normal">normalization</a> is needed to ensure 
+  consistent matching of elements, wrap
+  <code>p</code>, <code>base</code>, or both in calls <code><a href="#normal">lexically_normal()</a></code>. <i>—end note</i>]</p>
   
 </blockquote>
 <h3>New <a name="operational-functions">operational functions</a></h3>
@@ -416,7 +455,21 @@ path relative(const path&amp; p, const path&amp; base, system::error_code&amp; e
   Resolves symlinks and normalizes both <code>p</code> and <code>base</code> 
   before other processing.</p>
 
-<p><i>Returns:</i> <code>l<a href="#lex-relative">exically_relative</a>(<a href="#weakly_canonical">weakly_canonical</a>(p), <a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
+<p><i>Returns:</i> <code>l<a href="#lex-proximate">exically_relative</a>(<a href="#weakly_canonical">weakly_canonical</a>(p), <a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
+  <p><i>Throws:</i> As specified in Error reporting.</p>
+</blockquote>
+
+<pre>path <a name="op-proximate">proximate</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+<blockquote>
+<p><i>Returns:</i> <code>proximate(p, current_path(), ec)</code>.</p>
+  <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>
+  
+  </blockquote>
+<pre>path proximate(const path&amp; p, const path&amp; base=current_path());
+path proximate(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
+<blockquote>
+
+<p><i>Returns:</i> <code>l<a href="#lex-proximate">exically_proximate</a>(<a href="#weakly_canonical">weakly_canonical</a>(p), <a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
   <p><i>Throws:</i> As specified in Error reporting.</p>
 </blockquote>
 
@@ -425,7 +478,7 @@ path relative(const path&amp; p, const path&amp; base, system::error_code&amp; e
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31422" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->25 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31424" --></p>
 
 </body>
 

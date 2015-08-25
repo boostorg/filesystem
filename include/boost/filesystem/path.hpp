@@ -725,9 +725,15 @@ namespace filesystem
   //  operational functions with the same name.
 
   BOOST_FILESYSTEM_DECL
-    path  lexically_normal(const path& p);
+  path  lexically_normal(const path& p);
   BOOST_FILESYSTEM_DECL
-    path  lexically_relative(const path& p, const path& base);
+  path  lexically_relative(const path& p, const path& base);
+  inline
+  path  lexically_proximate(const path& p, const path& base)
+  {
+    path tmp(lexically_relative(p, base));
+    return tmp.empty() ? p : tmp;
+  } 
 
   //  inserters and extractors
   //    use boost::io::quoted() to handle spaces in paths
