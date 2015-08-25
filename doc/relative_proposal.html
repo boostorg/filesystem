@@ -367,18 +367,20 @@ does not affect <code>path</code> equality.<i> —end example</i>]</p>
 assert(lexically_relative(&quot;/a/b/c&quot;, &quot;/a/d&quot;) ==  &quot;../b/c&quot;);<br>
 assert(lexically_relative(&quot;a/b/c&quot;, &quot;a&quot;) == &quot;b/c&quot;);<br>
 assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c/x/y&quot;) ==  &quot;../..&quot;);<br>
-assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c&quot;) ==  &quot;.&quot;);</code></p>
+assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c&quot;) ==  &quot;.&quot;);<br>
+assert(lexically_relative(&quot;a/b&quot;, &quot;c/d&quot;) ==  &quot;&quot;);</code></p>
 <p>All of the above assertions will succeed.<i> </i>On Windows, the 
 returned path&#39;s <i>directory-separator</i>s will be backslashes rather than 
 forward slashes, but that 
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
   
-  <p>[<i>Note:</i> If symlink following semantics are desired, use the non-member operational function <code>
+  <p>[<i>Note:</i> If symlink following semantics are desired, use the  operational function <code>
   <a href="#op-relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
   
-  <p>[<i>Note:</i> Call <code><a href="#normal">lexically_normal()</a></code> on
+  <p>[<i>Note:</i> Call <code><a href="#normal">lexically_normal()</a></code> 
+  first on
   <code>p</code>, <code>base</code>, 
-  or both, first if <a href="#normal">normalization</a> is needed to ensure consistent matching of 
+  or both, if <a href="#normal">normalization</a> is needed to ensure consistent matching of 
   elements. <i>—end note</i>]</p>
   
 </blockquote>
@@ -423,7 +425,7 @@ path relative(const path&amp; p, const path&amp; base, system::error_code&amp; e
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->22 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31418" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->24 August 2015<!--webbot bot="Timestamp" endspan i-checksum="31422" --></p>
 
 </body>
 

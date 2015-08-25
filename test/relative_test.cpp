@@ -39,11 +39,6 @@ int test_main(int, char*[])
   cout << "BOOST_WINDOWS_API" << endl;
 #endif
 
-  //  Given p and base are objects of class path; if !p.empty() && !base.empty() &&
-  //  *p.begin() == *base.begin() then return a path such that
-  //  p == base / lexically_relative(p, base) otherwise return path(). However, if all
-  //  elements of p are equal to the corresponding element of base, return path(".").
-
   BOOST_TEST(lexically_relative("", "") == "");
   BOOST_TEST(lexically_relative("", "/foo") == "");
   BOOST_TEST(lexically_relative("/foo", "") == "");
@@ -65,12 +60,19 @@ int test_main(int, char*[])
   BOOST_TEST(lexically_relative("a/b/c", "a/b/x/y") == "../../c");
   BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x/y/z") == "../../..");
  
+  // paths unrelated except first element, and first element is root directory
+  BOOST_TEST(lexically_relative("/a/b/c", "/x") == "../a/b/c");
+  BOOST_TEST(lexically_relative("/a/b/c", "/x/y") == "../../a/b/c");
+  BOOST_TEST(lexically_relative("/a/b/c", "/x/y/z") == "../../../a/b/c");
+ 
+  // paths unrelated
   BOOST_TEST(lexically_relative("a/b/c", "x") == "");
   BOOST_TEST(lexically_relative("a/b/c", "x/y") == "");
   BOOST_TEST(lexically_relative("a/b/c", "x/y/z") == "");
-  BOOST_TEST(lexically_relative("a/b/c", "x") == "");
-  BOOST_TEST(lexically_relative("a/b/c", "x/y") == "");
-  BOOST_TEST(lexically_relative("a/b/c", "x/y/z") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "/x") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "/x/y") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "/x/y/z") == "");
+  BOOST_TEST(lexically_relative("a/b/c", "/a/b/c") == "");
   
   // TODO: add some Windows-only test cases that probe presence or absence of
   // drive specifier-and root-directory
