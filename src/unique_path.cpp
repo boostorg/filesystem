@@ -41,6 +41,33 @@ void fail(int err, boost::system::error_code* ec)
   return;
 }
 
+#ifdef BOOST_WINDOWS_API
+
+int acquire_crypt_handle(HCRYPTPROV& handle)
+{
+  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+    return 0;
+
+  int errval = ::GetLastError();
+  if (errval != NTE_BAD_KEYSET)
+    return errval;
+
+  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET | CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+    return 0;
+
+  errval = ::GetLastError();
+  // Another thread could have attempted to create the keyset at the same time.
+  if (errval != NTE_EXISTS)
+    return errval;
+
+  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+    return 0;
+
+  return ::GetLastError();
+}
+
+#endif
+
 void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
@@ -75,20 +102,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 # else // BOOST_WINDOWS_API
 
   HCRYPTPROV handle;
-  int errval = 0;
-
-  if (!::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, 0))
-  {
-    errval = ::GetLastError();
-    if (errval == NTE_BAD_KEYSET)
-    {
-      if (!::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET))
-      {
-        errval = ::GetLastError();
-      }
-      else errval = 0;
-    }
-  }
+  int errval = acquire_crypt_handle(handle);
 
   if (!errval)
   {
