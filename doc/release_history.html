@@ -44,8 +44,11 @@
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
   <a href="unique_path%20Fails%20on%20Windows%20for%20Temporary%20User%20Profiles">
-  #5706</a>, <code>unique_path</code> Fails on Windows for Temporary User 
-  Profiles</li>
+  #5706</a>, <i><code>unique_path</code> Fails on Windows for Temporary User 
+  Profiles</i>.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/10591">#10591</a>, <i>
+  boost::filesystem does not build on iOS 8</i>, by applying a patch submitted 
+  by Daniel Seither.</li>
 </ul>
 
 <h2>1.59.0</h2>
@@ -59,8 +62,8 @@
     <li>Fix spacing and other HTML presentation issues.</li>
   </ul>
   </li>
-  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/11491">#11491</a>,
-  <code>temp_directory_path()</code> doesn&#39;t return valid temp path on Android.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/11491">#11491</a>, <i>
+  <code>temp_directory_path()</code> doesn&#39;t return valid temp path on Android</i>.</li>
 </ul>
 
 <h2>1.58.0</h2>
@@ -149,8 +152,8 @@
 
 <h2>1.52.0</h2>
 <ul>
-  <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/7239">#7239</a>, Stack 
-  overflow when calling <code>create_directories(&quot;:D&quot;)</code>. The reported 
+  <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/7239">#7239</a>, <i>Stack 
+  overflow when calling <code>create_directories(&quot;:D&quot;)</code></i>. The reported 
   problem was a symptom of an internal bug that caused <code>path::filename()</code> 
   and <code>path::parent_path()</code> to fail on Windows for <code>path(&quot;:&quot;)</code>, 
   and that in turn caused other functions that depend on <code>filename()</code> 
@@ -171,8 +174,8 @@
   <li>Fix a Linux fchmodat problem affecting symlink permissions reported during 
   discussion of <a href="https://svn.boost.org/trac/boost/ticket/6659">#6659</a>.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/6659">#6659</a> and
-  <a href="https://svn.boost.org/trac/boost/ticket/7051">#7051</a>, fchmodat 
-  supported only on Solaris 11. Fix for both Sun and GCC compilers. </li>
+  <a href="https://svn.boost.org/trac/boost/ticket/7051">#7051</a>, <i>fchmodat 
+  supported only on Solaris 11</i>. Fix for both Sun and GCC compilers. </li>
 </ul>
 
 <h2>1.50.0</h2>
@@ -181,18 +184,18 @@
   only distributed version. Those still using V2 are urged to migrate to V3 as 
   soon as possible.</li>
   <li>Add <code>constexpr value_type preferred_separator</code> to class path.</li>
-  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5118">#5118</a>,
-  <code>replace_extension</code> doesn't work as specified in documentation. The 
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5118">#5118</a>, <i>
+  <code>replace_extension</code> doesn't work as specified in documentation</i>. The 
   documentation, implementation, and test cases have all had fixes applied. The 
   documentation had failed to mention that any existing extension is removed. 
   The behavior for simple cases has been reverted to the Version 2 behavior, but 
   with corrections so that complex replacements now work. Two test cases from 
   #5118 have been added.</li>
   <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/3737">#3737</a>, 
-  Boost.Filesystem does not compile on Windows Mobile. On Windows, &lt;sys/stat.h&gt; 
+  <i>Boost.Filesystem does not compile on Windows Mobile</i>. On Windows, &lt;sys/stat.h&gt; 
   is no longer included.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/4065">#4065</a>, 
-  Boost Filesystem lexicographic path comparison inconsistent. This required 
+  <i>Boost Filesystem lexicographic path comparison inconsistent</i>. This required 
   multiple source code bug fixes and code cleanup, correcting problems not 
   related to lexicographical issues.</li>
   <li>Add class path member function <code>compare</code> for consistency with 
@@ -210,14 +213,14 @@
   <li>Add path::operator+= and concat functions to tack on things like suffixes 
   or numbers. Suggested by Ed Smith-Rowland and others.</li>
   <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/6809">#6809</a>, 
-  Implementation of filesystem::rename() method for MS Windows is wrong, by 
+  <i>Implementation of filesystem::rename() method for MS Windows is wrong</i>, by 
   adding MOVEFILE_COPY_ALLOWED to deal with renames across drives, volumes, file 
   systems. Fix has no effect on non-Windows systems.</li>
   <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/6819">#6819</a>, A path operand with a source that was a one character array was 
   treated as empty, even if it wasn't empty. Such arrays can occur in unions or 
   in code using C variable length array idioms.</li>
   <li>Fix <a href="http://svn.boost.org/trac/boost/ticket/6932">#6932</a>, 
-  create_directories throws exception even if error_code is specified.</li>
+  <i>create_directories throws exception even if error_code is specified</i>.</li>
 </ul>
 
 <h2>1.49.0</h2>
@@ -226,25 +229,24 @@
   Added test cases and fixes for class path errors when assignment or append 
   used self or portion of self as source. </li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/4889">#4889</a>, 
-  <a href="https://svn.boost.org/trac/boost/ticket/6320">#6320</a>, Locale codecvt_facet not thread safe on Windows. Move 
+  <a href="https://svn.boost.org/trac/boost/ticket/6320">#6320</a>, <i>Locale codecvt_facet not thread safe on Windows</i>. Move 
   Windows, Mac OS X, locale and codecvt facet back to namespace scope. POSIX 
   except OS X uses local static initialization (IE lazy) to ensure exceptions 
   are catchable if environmental variables are misconfigured and to avoid use of 
   locale(&quot;&quot;) if not actually used.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5652">#5652</a>, 
-  recursive_directory_iterator fails on cyclic symbolic links. Thanks to Daniel 
-  Aarno for the patch.</li>
+  <i>recursive_directory_iterator fails on cyclic symbolic links</i>. Thanks to Daniel Aarno for the patch.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5653">#5653</a>, 
-  recursive_directory_iterator(error_code) can still throw filesystem_error.</li>
-  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900">#5900</a>, directory_iterator 
-  access violation on Windows if error is thrown. Thanks to Andreas Eckleder for the patch.</li>
+  <i>recursive_directory_iterator(error_code) can still throw filesystem_error</i>.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900">#5900</a>, <i>directory_iterator 
+  access violation on Windows if error is thrown</i>. Thanks to Andreas Eckleder for the patch.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900#comment:2">#5900 
   comment 2</a>, a bug in director_iterator construction with error_code argument that 
   caused increment to be called without the ec argument being passed.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5900">#5989</a> by cleaning up test suite path_test.cpp code even 
   though the ticket itself was not a defect, and clarifying docs; iteration over a path yields 
   generic format.</li>
-  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5592">#5592</a>, Change Windows codecvt processing from CP_THREAD_ACP to CP_ACP.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/5592">#5592</a>, <i>Change Windows codecvt processing from CP_THREAD_ACP to CP_ACP</i>.</li>
   <li>Operations function fixes for PGI compiler, thanks to Noel Belcourt.</li>
   <li>Relax permissions test to reflect reality, particularly on the Sandia test 
   platforms.</li>
