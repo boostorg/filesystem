@@ -38,6 +38,16 @@
     </td>
 </table>
 
+<h2>1.60.0</h2>
+<ul>
+  <li>Fix a race condition <code>unique_path</code> by applying
+  <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
+  from Sebastian Redl. Also fixes
+  <a href="unique_path%20Fails%20on%20Windows%20for%20Temporary%20User%20Profiles">
+  #5706</a>, <code>unique_path</code> Fails on Windows for Temporary User 
+  Profiles</li>
+</ul>
+
 <h2>1.59.0</h2>
 <ul>
   <li>Update the Tutorial:<ul>
@@ -55,9 +65,9 @@
 
 <h2>1.58.0</h2>
 <ul>
-  <li>Rewrite Windows implementation of temp_directory_path() to (1) avoid 
-  GetTempPath() failure if path length &gt; 130 (ticket #5300) and (2) provide a 
-  more sensible sequence of directories than provided by GetTempPath(), per 
+  <li>Rewrite Windows implementation of <code>temp_directory_path()</code> to (1) avoid
+  <code>GetTempPath()</code> failure if path length &gt; 130 (ticket #5300) and (2) provide a 
+  more sensible sequence of directories than provided by <code>GetTempPath()</code>, per 
   boost list discussion &quot;[filesystem] temp_directory_path() behavior on 
   Windows&quot;. The new sequence is:<ol>
     <li><i><code>%TMP%</code></i></li>
@@ -292,7 +302,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 July, 2015<!--webbot bot="Timestamp" endspan i-checksum="21146" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 August, 2015<!--webbot bot="Timestamp" endspan i-checksum="34646" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
