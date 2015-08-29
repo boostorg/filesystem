@@ -36,7 +36,7 @@
 # include "windows_file_codecvt.hpp"
 # include <windows.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) \
- || defined(__FreeBSD__) || defined(__OPEN_BSD__) || defined(__HAIKU__)
+ || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__)
 # include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #endif
 
