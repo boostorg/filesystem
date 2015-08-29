@@ -33,6 +33,7 @@
 
 # ifdef BOOST_FILESYSTEM_SOURCE
 #   define BOOST_FILESYSTEM_DEPRECATED
+#   undef BOOST_FILESYSTEM_NO_DEPRECATED   // fixes #9454, src bld fails if NO_DEP defined
 # endif
 
 //  throw an exception  ----------------------------------------------------------------//
