@@ -263,8 +263,8 @@ namespace
 
   //  error handling helpers  ----------------------------------------------------------//
 
-  bool error(err_t error_num, error_code* ec, const string& message);
-  bool error(err_t error_num, const path& p, error_code* ec, const string& message);
+  bool error(err_t error_num, error_code* ec, const char* message);
+  bool error(err_t error_num, const path& p, error_code* ec, const char* message);
   bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
     const string& message);
 
@@ -274,7 +274,7 @@ namespace
   //  Interface changed 30 Jan 15 to have caller supply error_num as ::SetLastError()
   //  values were apparently getting cleared before they could be retrieved by error().
 
-  bool error(err_t error_num, error_code* ec, const string& message)
+  bool error(err_t error_num, error_code* ec, const char* message)
   {
     if (!error_num)
     {
@@ -291,7 +291,7 @@ namespace
     return error_num != 0;
   }
 
-  bool error(err_t error_num, const path& p, error_code* ec, const string& message)
+  bool error(err_t error_num, const path& p, error_code* ec, const char* message)
   {
     if (!error_num)
     {
@@ -309,7 +309,7 @@ namespace
   }
 
   bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
-    const string& message)
+    const char* message)
   {
     if (!error_num)
     {
