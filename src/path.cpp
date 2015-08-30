@@ -832,7 +832,7 @@ namespace
   //  indicated the current code is roughly 9% slower than the previous code, and that
   //  seems a small price to pay for better code that is easier to use. 
 
-  inline std::locale default_locale()
+  std::locale default_locale()
   {
 # if defined(BOOST_WINDOWS_API)
     std::locale global_loc = std::locale();
@@ -867,7 +867,7 @@ namespace
 # endif
   }
 
-  inline std::locale& path_locale()
+  std::locale& path_locale()
   // std::locale("") construction, needed on non-Apple POSIX systems, can throw
   // (if environmental variables LC_MESSAGES or LANG are wrong, for example), so
   // path_locale() provides lazy initialization via a local static to ensure that any 
@@ -900,6 +900,7 @@ namespace filesystem
     std::cout << "***** path::codecvt() called" << std::endl;
 #endif
     BOOST_ASSERT_MSG(&path_locale(), "boost::filesystem::path locale initialization error");
+
     return std::use_facet<std::codecvt<wchar_t, char, std::mbstate_t> >(path_locale());
   }
 

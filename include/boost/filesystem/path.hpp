@@ -511,8 +511,8 @@ namespace filesystem
 
     //  -----  static member functions  -----
 
-    static std::locale  imbue(const std::locale& loc);
-    static const        codecvt_type& codecvt();
+    static std::locale          imbue(const std::locale& loc);
+    static const codecvt_type&  codecvt();
 
     //  -----  deprecated functions  -----
 
@@ -557,6 +557,7 @@ namespace filesystem
 //--------------------------------------------------------------------------------------//
 
   private:
+
 #   if defined(_MSC_VER)
 #     pragma warning(push) // Save warning settings
 #     pragma warning(disable : 4251) // disable warning: class 'std::basic_string<_Elem,_Traits,_Ax>'
