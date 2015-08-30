@@ -876,6 +876,10 @@ namespace
   // actually called, ensuring that an exception will only be thrown if std::locale("")
   // is really needed.
   {
+    // [locale] paragraph 6: Once a facet reference is obtained from a locale object by
+    // calling use_facet<>, that reference remains usable, and the results from member
+    // functions of it may be cached and re-used, as long as some locale object refers
+    // to that facet.
     static std::locale loc(default_locale());
 #ifdef BOOST_FILESYSTEM_DEBUG
     std::cout << "***** path_locale() called" << std::endl;
