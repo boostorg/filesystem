@@ -333,11 +333,21 @@ namespace
     return fs::directory_iterator(p)== end_dir_itr;
   }
 
-  bool remove_directory(const path& p) // true if succeeds
-    { return BOOST_REMOVE_DIRECTORY(p.c_str()); }
+  bool not_found_error(int errval); // forward declaration
+
+  // only called if directory exists
+  bool remove_directory(const path& p) // true if succeeds or not found
+  { 
+    return BOOST_REMOVE_DIRECTORY(p.c_str())
+      || not_found_error(BOOST_ERRNO);  // mitigate possible file system race. See #11166
+  }
   
-  bool remove_file(const path& p) // true if succeeds
-    { return BOOST_DELETE_FILE(p.c_str()); }
+  // only called if file exists
+  bool remove_file(const path& p) // true if succeeds or not found
+  {
+    return BOOST_DELETE_FILE(p.c_str())
+      || not_found_error(BOOST_ERRNO);  // mitigate possible file system race. See #11166
+  }
   
   // called by remove and remove_all_aux
   bool remove_file_or_directory(const path& p, fs::file_type type, error_code* ec)
@@ -1534,7 +1544,7 @@ namespace detail
     // Since POSIX remove() is specified to work with either files or directories, in a
     // perfect world it could just be called. But some important real-world operating
     // systems (Windows, Mac OS X, for example) don't implement the POSIX spec. So
-    // remove_file_or_directory() is always called to kep it simple.
+    // remove_file_or_directory() is always called to keep it simple.
     return remove_file_or_directory(p, type, ec);
   }
 
