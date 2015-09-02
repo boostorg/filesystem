@@ -65,7 +65,11 @@
   could be used with exceptions disabled.</li>
   <li>Resolve <a href="https://svn.boost.org/trac/boost/ticket/11175">#11166</a> 
   by mitigating (i.e. reducing the likelihood of) a possible external file 
-  system race in <code>remove()</code>.<br>
+  system race in <code>remove()</code>.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>, <i>
+  <code>create_directories</code> returns false if the path ends with a slash</i>. 
+  Also fix related issues if path contains <i>dot</i> or <i>dot-dot</i> 
+  elements, and added test cases to the test suite.<br>
 &nbsp;</li>
 </ul>
 

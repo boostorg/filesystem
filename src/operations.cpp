@@ -937,6 +937,12 @@ namespace detail
  BOOST_FILESYSTEM_DECL
   bool create_directories(const path& p, system::error_code* ec)
   {
+    path filename(p.filename());
+    if ((filename.native().size() == 1 && filename.native()[0] == dot)
+      || (filename.native().size() == 2
+        && filename.native()[0] == dot && filename.native()[1] == dot))
+      return create_directories(p.parent_path(), ec);
+
     error_code local_ec;
     file_status p_status = status(p, local_ec);
 
