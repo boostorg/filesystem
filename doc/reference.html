@@ -10,35 +10,8 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>
-
-  Filesystem Reference
-  </title>
-<style type="text/css">
-/*
-
-  &copy; Copyright Beman Dawes, 2007
-
-  Distributed under the Boost Software License, Version 1.0.
-  See www.boost.org/LICENSE_1_0.txt
-  
-*/
-
-body  {
-        font-family: sans-serif;
-        margin: 1em;
-        max-width : 8.5in;
-      }
-
-table { margin: 0.5em; }
-
-pre   { background-color:#D7EEFF }
-
-ins   { background-color:#A0FFA0 }
-del   { background-color:#FFA0A0 }
-
-/*** end ***/
-</style>
+<link href="styles.css" rel="stylesheet">
+<title>Filesystem Reference</title>
 </head>
 
 <body>
@@ -481,110 +454,148 @@ specifications for operating systems that use the ISO/IEC 9945  or Windows&reg; 
 (APIs).<sup>[footnote1]</sup></p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
-    <td><b>Feature</b></td>
-    <td><b>Section</b></td>
-    <td><b>ISO/IEC 9945 API</b></td>
-    <td><b>Windows</b>&reg;<b> API</b></td>
-    <td><b>Notes</b></td>
+    <td valign="top" align="center"><b>Feature</b></td>
+    <td valign="top" align="center"><b>Section</b></td>
+    <td valign="top" align="center"><b>ISO/IEC 9945<br>
+&nbsp;POSIX</b>&reg;<b> API</b></td>
+    <td valign="top" align="center"><b>Windows</b>&reg;<b> API</b></td>
+    <td valign="top" align="center"><b>Notes</b></td>
   </tr>
   <tr>
-    <td><code>path::value_type</code></td>
-    <td>[<a href="#class-path">class.path</a>]</td>
-    <td><code>char</code></td>
-    <td><code>wchar_t</code></td>
-    <td>&nbsp;</td>
+    <td valign="top"><code>path<br>
+&nbsp;::value_type</code></td>
+    <td valign="top">[<a href="#class-path">class.path</a>]</td>
+    <td valign="top"><code>char</code></td>
+    <td valign="top"><code>wchar_t</code></td>
+    <td valign="top">&nbsp;</td>
   </tr>
   <tr>
-    <td><code>path::preferred_separator</code></td>
-    <td>[<a href="#class-path">class.path</a>]</td>
-    <td><code>'/'</code></td>
-    <td><code>L'\\'</code> (single backslash)</td>
-    <td>&nbsp;</td>
+    <td valign="top"><code>path::preferred<br>
+&nbsp;_separator</code></td>
+    <td valign="top">[<a href="#class-path">class.path</a>]</td>
+    <td valign="top"><code>'/'</code></td>
+    <td valign="top"><code>L'\\'</code> (single backslash)</td>
+    <td valign="top">&nbsp;</td>
   </tr>
   <tr>
-    <td><code>path(&quot;/&quot;).is_absolute()<br>
-    path(&quot;c:/&quot;).is_absolute()</code></td>
-    <td>[<a href="#path-query">path.query</a>]</td>
-    <td><code>true<br>
+    <td valign="top"><code>path(&quot;/&quot;)<br>
+&nbsp;.is_absolute()<br>
+    path(&quot;c:/&quot;)<br>
+&nbsp;.is_absolute()</code></td>
+    <td valign="top">[<a href="#path-query">path</a><br>
+&nbsp;<a href="#path-query">.query</a>]</td>
+    <td valign="top"><code><br>
+    true<br>
+    <br>
     false</code></td>
-    <td><code>false<br>
+    <td valign="top"><code><br>
+    false<br>
+    <br>
     true</code></td>
-    <td>&nbsp;</td>
+    <td valign="top">&nbsp;</td>
   </tr>
   <tr>
-    <td><code>path</code> argument disambiguation between generic format and 
+    <td valign="top"><code>path</code> argument disambiguation between generic format and 
     native format</td>
-    <td>[<a href="#path-Conversions-to-native-format">path.arg.fmt.cvt</a>]</td>
-    <td>Not required</td>
-    <td>Not required</td>
-    <td>There is no need to distinguish between the generic format and native 
+    <td valign="top">[<a href="#path-Conversions-to-native-format">path.arg</a><br>
+&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</td>
+    <td valign="top">Not required</td>
+    <td valign="top">Not required</td>
+    <td valign="top">There is no need to distinguish between the generic format and native 
     format for these operating systems.</td>
   </tr>
   <tr>
-    <td><code>path</code> argument format conversion</td>
-    <td>[<a href="#path-Conversions-to-native-format">path.arg.fmt.cvt</a>]</td>
-    <td>No conversion performed</td>
-    <td>No conversion performed</td>
-    <td>The generic format is already acceptable to the native API of these operating systems.</td>
+    <td valign="top"><code>path</code> argument format conversion</td>
+    <td valign="top">[<a href="#path-Conversions-to-native-format">path.arg</a><br>
+&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</td>
+    <td valign="top">No conversion performed</td>
+    <td valign="top">No conversion performed</td>
+    <td valign="top">The generic format is already acceptable to the native API of these operating systems.</td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>path(&quot;/cats/jane&quot;).c_str()<br>
-    path(&quot;/cats/jane/&quot;).c_str()</code></td>
-    <td>[<a href="#path-Conversions-to-native-format">path.arg.fmt.cvt</a>]</td>
-    <td valign="top"> <code>&quot;/cats/jane&quot;<br>
+    <p><code>path<br>
+&nbsp;(&quot;/cats/jane&quot;)<br>
+&nbsp;.c_str()<br>
+    path|<br>
+&nbsp;(&quot;/cats/jane/&quot;)<br>
+&nbsp;.c_str()</code></td>
+    <td valign="top">[<a href="#path-Conversions-to-native-format">path.arg</a><br>
+&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</td>
+    <td valign="top"> 
+    <p dir="ltr"> <code><br>
+    <br>
+    &quot;/cats/jane&quot;<br>
+    <br>
+    <br>
     &quot;/cats/jane/&quot;</code></td>
     <td valign="top">
-    <p><code>L&quot;/cats/jane&quot;<br>
+    <p><code><br>
+    <br>
+    L&quot;/cats/jane&quot;<br>
+    <br>
+    <br>
     L&quot;/cats/jane/&quot;</code></td>
-    <td>These operating systems accept the same native separator between 
+    <td valign="top">These operating systems accept the same native separator between 
     directory names and a final file name, so no format conversion is performed. 
     Other operating systems might require conversion.</td>
   </tr>
   <tr>
-    <td>Format conversion by <code>path</code> native format observers</td>
-    <td>[<a href="#path-native-format-observers">path.native.obs</a>]</td>
-    <td>No conversion performed</td>
-    <td>No conversion performed</td>
-    <td>For efficiency, <code>path</code> objects are required to store pathnames in the native 
+    <td valign="top">Format conversion by <code>path</code> native format observers</td>
+    <td valign="top">[<a href="#path-native-format-observers">path.native</a><br>
+&nbsp;<a href="#path-native-format-observers">.obs</a>]</td>
+    <td valign="top">No conversion performed</td>
+    <td valign="top">No conversion performed</td>
+    <td valign="top">For efficiency, <code>path</code> objects are required to store pathnames in the native 
     format regardless of operating system.</td>
   </tr>
   <tr>
-    <td>
+    <td valign="top">
     <p>Format conversion by <code>path</code> generic format observers</td>
-    <td>[<a href="#path-generic-format-observers">path.generic.obs</a>]</td>
-    <td>No conversion performed</td>
-    <td>Backslashes converted to slashes</td>
-    <td>&nbsp;</td>
+    <td valign="top">[<a href="#path-generic-format-observers">path</a><br>
+&nbsp;<a href="#path-generic-format-observers">.generic</a><br>
+&nbsp;<a href="#path-generic-format-observers">.obs</a>]</td>
+    <td valign="top">No conversion performed</td>
+    <td valign="top">Backslashes converted to slashes</td>
+    <td valign="top">&nbsp;</td>
   </tr>
   <tr>
-    <td><code>p.make_preferred()</code></td>
-    <td>[<a href="#path-modifiers">fs.path.modifiers</a>]</td>
-    <td>No change</td>
-    <td>Slashes converted to backslashes</td>
-    <td>&nbsp;</td>
+    <td valign="top">
+    <p dir="ltr"><code>p.<br>
+&nbsp;make_preferred()</code></td>
+    <td valign="top">[<a href="#path-modifiers">fs.path</a><br>
+&nbsp;<a href="#path-modifiers">.modifiers</a>]</td>
+    <td valign="top">No change</td>
+    <td valign="top">Slashes converted to backslashes</td>
+    <td valign="top">&nbsp;</td>
   </tr>
   <tr>
-    <td>Characters prohibited in filenames</td>
-    <td>[<a href="#filename">fs.def.filename</a>]</td>
-    <td>0x00, <code>'/'</code></td>
-    <td>0x00-0x1F, <code>'&quot;'</code>, <code>'*'</code>,<code>&nbsp;'*'</code>, 
+    <td valign="top">Characters prohibited in filenames</td>
+    <td valign="top">[<a href="#filename">fs.def</a><br>
+&nbsp;<a href="#filename">.filename</a>]</td>
+    <td valign="top">0x00, <code>'/'</code></td>
+    <td valign="top">0x00-0x1F, <code>'&quot;'</code>, <code>'*'</code>,<code>&nbsp;'*'</code>, 
     <code>'&lt;'</code>, 
     <code>'&gt;'</code>, <code>'?'</code>, <code>'\\'</code> (single backslash), 
     <code>'/'</code>, <code>'|'</code></td>
-    <td>Many operating systems prohibit the ASCII control characters (0x00-0x1F) 
+    <td valign="top">Many operating systems prohibit the ASCII control characters (0x00-0x1F) 
     in filenames.</td>
   </tr>
   <tr>
-    <td>Initial imbued <code>path</code> locale</td>
-    <td>[<a href="#path-imbued-locale">path.imbued.locale</a>]</td>
-    <td> <code>std::locale(&quot;&quot;)<br>
+    <td valign="top">Initial imbued <code>path</code> locale</td>
+    <td valign="top">[<a href="#path-imbued-locale">path</a><br>
+&nbsp;<a href="#path-imbued-locale">.imbued</a><br>
+&nbsp;<a href="#path-imbued-locale">.locale</a>]</td>
+    <td valign="top"> <code>std::<br>
+&nbsp; locale(&quot;&quot;)<br>
     </code><sup>[footnote 2]</sup></td>
-    <td>Implementation supplied locale using <code>MultiByteToWideChar</code> 
-    and <code>WideCharToMultiByte</code> with a codepage of <code>CP_ACP</code> 
-    if <code>AreFileApisANSI()</code>is true, otherwise codepage <code>CP_OEMCP</code>.<sup>[footnote 
+    <td valign="top">Implementation supplied locale using <code>MultiByte<br>
+&nbsp; ToWideChar</code> 
+    and <code>WideChar<br>
+&nbsp; ToMultiByte</code> with a codepage of <code>CP_ACP</code> 
+    if <code>AreFileApisANSI</code> is true, otherwise codepage <code>CP_OEMCP</code>.<sup>[footnote 
     3]</sup></td>
-    <td>Apple OS X&reg;:&nbsp; Implementation supplied locale providing UTF-8 <code>codecvt</code> 
+    <td valign="top">Apple OS X&reg;:&nbsp; Implementation supplied locale providing UTF-8 <code>codecvt</code> 
     facet.<sup>[footnote 4]</sup></td>
   </tr>
 </table>
@@ -647,14 +658,19 @@ nothing else.&quot;</p>
 class <a href="#Class-recursive_directory_iterator">recursive_directory_iterator</a>;
 
     // enable c++11 range-based for statements
-    const recursive_directory_iterator&amp; <a href="#recursive_directory_iterator-non-member-functions">begin</a>(const recursive_directory_iterator&amp; iter);
-    recursive_directory_iterator <a href="#recursive_directory_iterator-non-member-functions">end</a>(const recursive_directory_iterator&amp;);
+    const recursive_directory_iterator&amp;
+      <a href="#recursive_directory_iterator-non-member-functions">begin</a>(const recursive_directory_iterator&amp; iter);
+    recursive_directory_iterator
+      <a href="#recursive_directory_iterator-non-member-functions">end</a>(const recursive_directory_iterator&amp;);
 
 
     // enable BOOST_FOREACH
-    recursive_directory_iterator&amp; range_begin(recursive_directory_iterator&amp; iter);
-    recursive_directory_iterator range_begin(const recursive_directory_iterator&amp; iter);
-    recursive_directory_iterator range_end(const recursive_directory_iterator&amp;);
+    recursive_directory_iterator&amp;
+      range_begin(recursive_directory_iterator&amp; iter);
+    recursive_directory_iterator
+      range_begin(const recursive_directory_iterator&amp; iter);
+    recursive_directory_iterator
+      range_end(const recursive_directory_iterator&amp;);
 
 enum <a name="file_type" href="#Enum-file_type">file_type</a>
     {
@@ -680,7 +696,7 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
     {
       uintmax_t capacity;
       uintmax_t free; 
-      uintmax_t available; // free space available to a non-privileged process
+      uintmax_t available; // free space available to non-privileged process
     };
 
     enum class <a name="copy_option">copy_option</a>
@@ -703,33 +719,41 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
 
     path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
     path         <a href="#canonical">canonical</a>(const path&amp; p, system::error_code&amp; ec);
-    path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base, system::error_code&amp; ec);
+    path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base,
+                   system::error_code&amp; ec);
 
     void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to);
-    void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to,
+                   system::error_code&amp; ec);
 
     void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
-    void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to,
+                   system::error_code&amp; ec);
 
     void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option,
-                           system::error_code&amp; ec);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+                   system::error_code&amp; ec);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+                   <a href="#copy_option">copy_option</a> option);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+                   <a href="#copy_option">copy_option</a> option, system::error_code&amp; ec);
 
-    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
-    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink,
-                              system::error_code&amp; ec);
+    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink,
+                   const path&amp; new_symlink);
+    void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink,
+                   const path&amp; new_symlink, system::error_code&amp; ec);
 
     bool         <a href="#create_directories">create_directories</a>(const path&amp; p);
-    bool         <a href="#create_directories">create_directories</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#create_directories">create_directories</a>(const path&amp; p,
+                   system::error_code&amp; ec);
 
     bool         <a href="#create_directory">create_directory</a>(const path&amp; p);
     bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
 
-    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink);
-    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to, const path&amp; new_symlink,
-                                          system::error_code&amp; ec);
+    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to,
+                   const path&amp; new_symlink);
+    void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to,
+                   const path&amp; new_symlink, system::error_code&amp; ec);
 
     void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link);
     void         <a href="#create_hard_link">create_hard_link</a>(const path&amp; to, const path&amp; new_hard_link,
@@ -749,7 +773,8 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
     bool         <a href="#exists">exists</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
     bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2);
-    bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);
+    bool         <a href="#equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2,
+                   system::error_code&amp; ec);
 
     uintmax_t    <a href="#file_size">file_size</a>(const path&amp; p);
     uintmax_t    <a href="#file_size">file_size</a>(const path&amp; p, system::error_code&amp; ec);
@@ -762,7 +787,8 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
 
     bool         <a href="#is_directory">is_directory</a>(file_status s) noexcept;
     bool         <a href="#is_directory2">is_directory</a>(const path&amp; p);
-    bool         <a href="#is_directory2">is_directory</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
+    bool         <a href="#is_directory2">is_directory</a>(const path&amp; p,
+                   system::error_code&amp; ec) noexcept;
 
     bool         <a href="#is_empty">is_empty</a>(const path&amp; p);
     bool         <a href="#is_empty">is_empty</a>(const path&amp; p, system::error_code&amp; ec);
@@ -773,7 +799,8 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
 
     bool         <a href="#is_regular_file">is_regular_file</a>(file_status s) noexcept; 
     bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p);
-    bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
+    bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p,
+                   system::error_code&amp; ec) noexcept;
 
     bool         <a href="#is_symlink">is_symlink</a>(file_status s noexcept);
     bool         <a href="#is_symlink2">is_symlink</a>(const path&amp; p);
@@ -795,10 +822,12 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
     uintmax_t    <a href="#remove_all">remove_all</a>(const path&amp; p, system::error_code&amp; ec);
 
     void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to);
-    void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to, system::error_code&amp; ec);
+    void         <a href="#rename">rename</a>(const path&amp; from, const path&amp; to,
+                   system::error_code&amp; ec);
 
     void         <a href="#resize_file">resize_file</a>(const path&amp; p, uintmax_t size);
-    void         <a href="#resize_file2">resize_file</a>(const path&amp; p, uintmax_t size, system::error_code&amp; ec);
+    void         <a href="#resize_file2">resize_file</a>(const path&amp; p, uintmax_t size,
+                   system::error_code&amp; ec);
 
     <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p);
     <a href="#space_info">space_info</a>   <a href="#space">space</a>(const path&amp; p, system::error_code&amp; ec);
@@ -809,7 +838,8 @@ enum <a name="file_type" href="#Enum-file_type">file_type</a>
     bool         <a href="#status_known">status_known</a>(file_status s) noexcept;
 
     <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p);
-    <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
+    <a href="#file_status">file_status</a>  <a href="#symlink_status">symlink_status</a>(const path&amp; p,
+                   system::error_code&amp; ec) noexcept;
 
     path         <a href="#system_complete">system_complete</a>(const path&amp; p);
     path         <a href="#system_complete">system_complete</a>(const path&amp; p, system::error_code&amp; ec);
@@ -894,7 +924,8 @@ system or for a particular file system.</p>
           path(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());
 
         template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-          path(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
+          path(InputIterator begin, InputIterator end,
+            const codecvt_type&amp; cvt=codecvt());
 
        ~path();
 
@@ -909,7 +940,8 @@ system or for a particular file system.</p>
           path&amp; assign(Source const&amp; source, const codecvt_type&amp; cvt)
 
         template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-          path&amp; assign(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
+          path&amp; assign(InputIterator begin, InputIterator end,
+            const codecvt_type&amp; cvt=codecvt());
 
         // <a href="#path-appends">appends</a>
         path&amp; operator/=(const path&amp; p);
@@ -921,7 +953,8 @@ system or for a particular file system.</p>
           path&amp; append(Source const&amp; source, const codecvt_type&amp; cvt);
 
         template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
-          path&amp; append(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());
+          path&amp; append(InputIterator begin, InputIterator end,
+            const codecvt_type&amp; cvt=codecvt());
 
         // <a href="#path-concatenation">concatenation</a>
         path&amp; operator+=(const path&amp; x);
@@ -937,7 +970,8 @@ system or for a particular file system.</p>
         template &lt;class InputIterator&gt;
           path&amp; concat(InputIterator begin, InputIterator end);
         template &lt;class InputIterator&gt;
-          path&amp; concat(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt);
+          path&amp; concat(InputIterator begin, InputIterator end,
+            const codecvt_type&amp; cvt);
         
         // <a href="#path-modifiers">modifiers</a>
         void  <a href="#path-clear">clear</a>();
@@ -947,30 +981,29 @@ system or for a particular file system.</p>
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
         // <a href="#path-native-format-observers">native format observers</a>
-        const string_type&amp;  <a href="#native">native</a>() const noexcept;  // native format, encoding
-        const value_type*   <a href="#c_str">c_str</a>() const noexcept;   // native().c_str()
+        const string_type&amp;  <a href="#native">native</a>() const noexcept; // native format, encoding
+        const value_type*   <a href="#c_str">c_str</a>() const noexcept;  // native().c_str()
 
         template &lt;class String&gt;
-          String  <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;   // native format
-
-        string    <a href="#string">string</a>(const codecvt_type&amp; cvt=codecvt()) const;   // native format
-        wstring   <a href="#wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;  // native format
-        u16string <a href="#u16string">u16string</a>() const;                                 // native format
-        u32string <a href="#u32wstring">u32string</a>() const;                                 // native format
+          String  <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
+        string    <a href="#string">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
+        wstring   <a href="#wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
+        u16string <a href="#u16string">u16string</a>() const;
+        u32string <a href="#u32wstring">u32string</a>() const;
 
         // <a href="#path-generic-format-observers">generic format observers</a>
         template &lt;class String&gt;
           String  <a href="#generic_string-template">generic_string</a>() const;
 
-        string    <a href="#generic_string">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;   // generic format
-        wstring   <a href="#generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;  // generic format
-        u16string <a href="#generic_u16string">generic_u16string</a>() const;                                 // generic format
-        u32string <a href="#generic_u32wstring">generic_u32string</a>() const;                                 // generic format
+        string    <a href="#generic_string">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const; 
+        wstring   <a href="#generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
+        u16string <a href="#generic_u16string">generic_u16string</a>()
+        u32string <a href="#generic_u32wstring">generic_u32string</a>()
 
         // <a href="#path-compare">compare</a>
-        int                 <a href="#path-compare">compare</a>(const path&amp; p) const noexcept;
-        int                 <a href="#path-compare">compare</a>(const std::string&amp; s) const;
-        int                 <a href="#path-compare">compare</a>(const value_type* s) const;
+        int   <a href="#path-compare">compare</a>(const path&amp; p) const noexcept;
+        int   <a href="#path-compare">compare</a>(const std::string&amp; s) const;
+        int   <a href="#path-compare">compare</a>(const value_type* s) const;
 
         // <a href="#path-decomposition">decomposition</a>
         path  <a href="#path-root_name">root_name</a>() const;
@@ -2469,20 +2502,29 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>—end not
   <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
     <tr>
       <td align="center">&nbsp;</td>
-      <td align="center"><b><code>p.has_root_directory()</code></b></td>
+      <td align="center"><b><code>p.<br>
+      has_root_directory()</code></b></td>
       <td align="center"><b><code>!p.has_root_directory()</code></b></td>
     </tr>
     <tr>
       <td align="center"><b><code>p.has_root_name()</code></b></td>
-      <td align="center"><code>return p</code></td>
-      <td align="center"><code>return p.root_name() / absolute(base).root_directory()<br>
-      / absolute(base).relative_path() / p.relative_path()</code></td>
+      <td align="left"><code>return p</code></td>
+      <td align="left"><code>return<br>
+&nbsp;p.root_name()<br>
+&nbsp;/ absolute(base)<br>
+&nbsp;&nbsp;&nbsp; .root_directory()<br>
+      &nbsp;/ absolute(base)<br>
+&nbsp;&nbsp;&nbsp; .relative_path()<br>
+&nbsp;/ p.relative_path()</code></td>
     </tr>
     <tr>
       <td align="center"><b><code>!p.has_root_name()</code></b></td>
-      <td align="center"><code>return absolute(base).root_name()<br>
-      / p</code></td>
-      <td align="center"><code>return absolute(base) / p</code></td>
+      <td align="left"><code>return<br>
+&nbsp;absolute(base)<br>
+&nbsp; .root_name()<br>
+      &nbsp;/ p</code></td>
+      <td align="left"><code>return absolute(base)<br>
+&nbsp;/ p</code></td>
     </tr>
   </table>
   <p>[<i>Note:</i> For the returned path, <code>rp,</code> <code>rp.is_absolute()</code> is true. <i>—end note</i>]</p>
@@ -3733,13 +3775,12 @@ multiple string types. His idea became the basis for the version 3 path design.<
   </tr>
 </table>
 <hr>
->
 <p><font size="2">&copy; Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</font></p>
 <p><font size="2">Distributed under the Boost Software License, Version 1.0. See
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->22 July 2015<!--webbot bot="Timestamp" endspan i-checksum="18804" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->03 September 2015<!--webbot bot="Timestamp" endspan i-checksum="39624" --></font></p>
 
 
 </body></html>
