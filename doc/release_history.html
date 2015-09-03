@@ -66,11 +66,23 @@
   <li>Resolve <a href="https://svn.boost.org/trac/boost/ticket/11175">#11166</a> 
   by mitigating (i.e. reducing the likelihood of) a possible external file 
   system race in <code>remove()</code>.</li>
-  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>, <i>
-  <code>create_directories</code> returns false if the path ends with a slash</i>. 
+  <li dir="ltr">
+  <p dir="ltr">Fix <a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>,
+  <i><code>create_directories</code> returns false if the path ends with a slash</i>. 
   Also fix related issues if path contains <i>dot</i> or <i>dot-dot</i> 
-  elements, and added test cases to the test suite.<br>
-&nbsp;</li>
+  elements, and added test cases to the test suite.</li>
+  <li dir="ltr">
+  <p dir="ltr">Reference docs editorial cleanups: Use same style sheet as the 
+  rest of the documentation. Tweak tab font size. Fix excessively long lines in 
+  tables, synopsis.</li>
+  <li dir="ltr">Resolve <a href="https://svn.boost.org/trac/boost/ticket/10766">
+  #10766</a>, <i>parent_path() with redundant separator returns wrong value</i>, 
+  by adding examples and notes to the reference documentation to show why the 
+  returned value is in fact correct, and to provide rationale for that behavior. 
+  See <a href="reference.html#path-iterators">[path.itr]</a>, and
+  <a href="reference.html#path-decomposition">[path.decompose]</a> <code>
+  parent_path()</code> and <code>filename()</code> sections of the reference 
+  docs.</li>
 </ul>
 
 <h2>1.59.0</h2>

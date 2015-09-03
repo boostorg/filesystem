@@ -741,6 +741,20 @@ namespace
   {
     std::cout << "query_and_decomposition_tests..." << std::endl;
 
+    // these are the examples given in reference docs, so check they work
+    BOOST_TEST(path("/foo/bar.txt").parent_path() == "/foo");
+    BOOST_TEST(path("/foo/bar").parent_path() == "/foo");    
+    BOOST_TEST(path("/foo/bar/").parent_path() == "/foo/bar");   
+    BOOST_TEST(path("/").parent_path() == "");           
+    BOOST_TEST(path(".").parent_path() == "");           
+    BOOST_TEST(path("..").parent_path() == "");
+    BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
+    BOOST_TEST(path("/foo/bar").filename() == "bar");    
+    BOOST_TEST(path("/foo/bar/").filename() == ".");   
+    BOOST_TEST(path("/").filename() == "/");           
+    BOOST_TEST(path(".").filename() == ".");           
+    BOOST_TEST(path("..").filename() == "..");
+
     // stem() tests not otherwise covered
     BOOST_TEST(path("b").stem() == "b");
     BOOST_TEST(path("a/b.txt").stem() == "b");
