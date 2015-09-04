@@ -40,6 +40,8 @@
 
 <h2>1.60.0</h2>
 <ul>
+  <li><b>New feature:</b> Class <code>path</code> now has <code>reverse_iterator</code>,
+  <code>const_reverse_iterator</code>, <code>rbegin()</code>, and <code>rend()</code>. </li>
   <li>Fix a race condition in <code>unique_path</code> by applying
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
@@ -89,6 +91,12 @@
   should not infer an invisible &quot;.&quot; at the end of a path that ends with a slash;
   </i><a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/10766">#10766</a></li>
+  <li><a href="https://svn.boost.org/trac/boost/ticket/11061">#11061</a>, <i>
+  impossible to traverse the path of the reverse iterator</i>, is effectively 
+  resolved by the addition of the class <code>path</code> reverse iteration 
+  feature. The reference documentation has also been updated with
+  <a href="reference.html#path-iterators">a note</a> warning about the 
+  limitations of class <code>path</code> iterators.</li>
 </ul>
 
   </li>

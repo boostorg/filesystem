@@ -615,6 +615,34 @@ namespace
     CHECK(++it == p3.end());
   }
 
+  //  test_reverse_iterators  ----------------------------------------------------------//
+
+  void test_reverse_iterators()
+  {
+    std::cout << "testing reverse_iterators..." << std::endl;
+
+    path p1;
+    CHECK(p1.rbegin() == p1.rend());
+
+    path p2("/");
+    CHECK(p2.rbegin() != p2.rend());
+    CHECK(*p2.rbegin() == "/");
+    CHECK(++p2.rbegin() == p2.rend());
+
+    path p3("foo/bar/baz");
+
+    path::reverse_iterator it(p3.rbegin());
+    CHECK(p3.rbegin() != p3.rend());
+    CHECK(*it == "baz");
+    CHECK(*++it == "bar");
+    CHECK(*++it == "foo");
+    CHECK(*--it == "bar");
+    CHECK(*--it == "baz");
+    CHECK(*++it == "bar");
+    CHECK(*++it == "foo");
+    CHECK(++it == p3.rend());
+  }
+
   //  test_modifiers  ------------------------------------------------------------------//
 
   void test_modifiers()
@@ -1084,6 +1112,7 @@ int test_main(int, char*[])
   test_inserter_and_extractor();
   test_other_non_members();
   test_iterators();
+  test_reverse_iterators();
   test_decompositions();
   test_queries();
   test_imbue_locale();
