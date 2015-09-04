@@ -56,8 +56,8 @@
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/11447">#11447</a>, <i>
   __OpenBSD__ macro name misspelled</i>, by applying a patch submitted by Jasper 
   Lievisse Adriaanse.</li>
-  <li dir="ltr">
-  <p dir="ltr">Fix <a href="https://svn.boost.org/trac/boost/ticket/11288">#11288</a>, <i>
+  <li>
+  <p>Fix <a href="https://svn.boost.org/trac/boost/ticket/11288">#11288</a>, <i>
   <font face="Arial">A patch to avoid redundant string allocations</font></i>, 
   by applying a patch submitted by Yevhen Ivannikov.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/11175">#11175</a>, 
@@ -66,16 +66,16 @@
   <li>Resolve <a href="https://svn.boost.org/trac/boost/ticket/11175">#11166</a> 
   by mitigating (i.e. reducing the likelihood of) a possible external file 
   system race in <code>remove()</code>.</li>
-  <li dir="ltr">
-  <p dir="ltr">Fix <a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>,
+  <li>
+  <p>Fix <a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>,
   <i><code>create_directories</code> returns false if the path ends with a slash</i>. 
   Also fix related issues if path contains <i>dot</i> or <i>dot-dot</i> 
   elements, and added test cases to the test suite.</li>
-  <li dir="ltr">
-  <p dir="ltr">Reference docs editorial cleanups: Use same style sheet as the 
+  <li>
+  <p>Reference docs editorial cleanups: Use same style sheet as the 
   rest of the documentation. Tweak tab font size. Fix excessively long lines in 
   tables, synopsis.</li>
-  <li dir="ltr">Resolve <a href="https://svn.boost.org/trac/boost/ticket/10766">
+  <li>Resolve <a href="https://svn.boost.org/trac/boost/ticket/10766">
   #10766</a>, <i>parent_path() with redundant separator returns wrong value</i>, 
   by adding examples and notes to the reference documentation to show why the 
   returned value is in fact correct, and to provide rationale for that behavior. 
@@ -83,6 +83,15 @@
   <a href="reference.html#path-decomposition">[path.decompose]</a> <code>
   parent_path()</code> and <code>filename()</code> sections of the reference 
   docs.</li>
+  <li>Closed several tickets as duplicates or otherwise fixed by the 
+  above changes:<ul>
+  <li><a href="https://svn.boost.org/trac/boost/ticket/7607">#7607</a>, <i>path 
+  should not infer an invisible &quot;.&quot; at the end of a path that ends with a slash;
+  </i><a href="https://svn.boost.org/trac/boost/ticket/7258">#7258</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/10766">#10766</a></li>
+</ul>
+
+  </li>
 </ul>
 
 <h2>1.59.0</h2>
@@ -338,7 +347,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39338" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39344" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
