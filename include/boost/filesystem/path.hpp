@@ -505,9 +505,13 @@ namespace filesystem
 
     class iterator;
     typedef iterator const_iterator;
+    class reverse_iterator;
+    typedef reverse_iterator const_reverse_iterator;
 
     iterator begin() const;
     iterator end() const;
+    reverse_iterator rbegin() const;
+    reverse_iterator rend() const;
 
     //  -----  static member functions  -----
 
@@ -624,6 +628,7 @@ namespace filesystem
   private:
     friend class boost::iterator_core_access;
     friend class boost::filesystem::path;
+    friend class boost::filesystem::path::reverse_iterator;
     friend void m_path_iterator_increment(path::iterator & it);
     friend void m_path_iterator_decrement(path::iterator & it);
 
@@ -648,6 +653,53 @@ namespace filesystem
                                          // end() iterator is indicated by 
                                          // m_pos == m_path_ptr->m_pathname.size()
   }; // path::iterator
+
+  //------------------------------------------------------------------------------------//
+  //                             class path::reverse_iterator                                   //
+  //------------------------------------------------------------------------------------//
+ 
+  class path::reverse_iterator
+    : public boost::iterator_facade<
+      path::reverse_iterator,
+      path const,
+      boost::bidirectional_traversal_tag >
+  {
+  public:
+
+    explicit reverse_iterator(iterator itr) : m_itr(itr)
+    {
+      if (itr != itr.m_path_ptr->begin())
+        m_element = *--itr;
+    }
+  private:
+    friend class boost::iterator_core_access;
+    friend class boost::filesystem::path;
+
+    const path& dereference() const { return m_element; }
+    bool equal(const reverse_iterator& rhs) const { return m_itr == rhs.m_itr; }
+    void increment()
+    { 
+      --m_itr;
+      if (m_itr != m_itr.m_path_ptr->begin())
+      {
+        iterator tmp = m_itr;
+        m_element = *--tmp;
+      }
+    }
+    void decrement()
+    {
+      m_element = *m_itr;
+      ++m_itr;
+    }
+
+    iterator m_itr;
+    path     m_element;
+
+  }; // path::reverse_iterator
+
+  inline path::reverse_iterator path::rbegin() const { return reverse_iterator(end()); }
+  inline path::reverse_iterator path::rend() const   { return reverse_iterator(begin()); }
+
 
   //------------------------------------------------------------------------------------//
   //                                                                                    //

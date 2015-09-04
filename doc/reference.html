@@ -1102,9 +1102,13 @@ system or for a particular file system.</p>
         // <a href="#path-iterators">iterators</a>
         class iterator;
         typedef iterator const_iterator;
+        class reverse_iterator;
+        typedef reverse_iterator const_reverse_iterator;
 
         iterator begin() const;
         iterator end() const;
+        reverse_iterator rbegin() const;
+        reverse_iterator rend() const;
         
         // <a href="#path-imbued-locale">imbued locale</a>
         static std::locale <a href="#path-imbue">imbue</a>(const std::locale&amp; loc);
@@ -1671,10 +1675,19 @@ for (; !p.extension().empty(); p = p.stem())
 </blockquote>
 <h3 dir="ltr"> <a name="path-iterators"> <code>
 <font size="4">path</font></code> iterators</a> [path.itr]</h3>
-<p dir="ltr"> Path iterators iterate over the elements of the stored pathname.</p>
-<p dir="ltr"> A <code>path::iterator</code> is a constant iterator satisfying all 
+<p dir="ltr"> Path iterators <code>iterator</code>, <code>const_iterator</code>,
+<code>reverse_iterator</code>, and <code>const_reverse_iterator</code> iterate over the elements of the stored pathname.</p>
+<p dir="ltr"> Path iterators are constant iterators satisfying  
 the requirements of a bidirectional iterator (C++ Std, 24.1.4 Bidirectional 
-iterators [lib.bidirectional.iterators]). Its <code>value_type</code> is <code>path</code>.</p>
+iterators [lib.bidirectional.iterators]). The <code>value_type</code>&nbsp; of 
+an iterator is <code>path</code>.</p>
+  <blockquote>
+<p dir="ltr"> [<i>Note:</i> Path iterators store their value objects internally 
+and when dereferenced return references to those internal objects. They cannot 
+be used with iterator adaptors such as <code>std::reverse_iterator</code> that 
+assume references obtained by dereferencing an iterator point to objects that 
+out-live the iterator itself. <i>—end note</i>] </p>
+</blockquote>
   <p dir="ltr">Calling any non-const member function of a <code>path</code> object 
   invalidates all iterators referring to elements of that object.</p>
 <p dir="ltr"> The forward traversal order is as follows:</p>
@@ -1697,10 +1710,19 @@ iterators [lib.bidirectional.iterators]). Its <code>value_type</code> is <code>p
   <p>The backward traversal order is the reverse of forward traversal.</p>
   <pre>iterator begin() const;</pre>
 <blockquote>
-  <p><i>Returns:</i> An iterator for the first present element in the traversal 
-  list above. If no elements are present, the end iterator.</p>
+  <p><i>Returns:</i> An iterator for the first  element in forward traversal 
+  order. If no elements are present, the end iterator.</p>
 </blockquote>
 <pre>iterator end() const;</pre>
+<blockquote>
+  <p><i>Returns:</i> The end iterator.</p>
+</blockquote>
+  <pre>reverse_iterator rbegin() const;</pre>
+<blockquote>
+  <p><i>Returns:</i> An iterator for the first element in backward traversal 
+  order. If no elements are present, the end iterator.</p>
+</blockquote>
+<pre>reverse_iterator rend() const;</pre>
 <blockquote>
   <p><i>Returns:</i> The end iterator.</p>
 </blockquote>
@@ -3987,7 +4009,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->03 September 2015<!--webbot bot="Timestamp" endspan i-checksum="39624" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->04 September 2015<!--webbot bot="Timestamp" endspan i-checksum="39626" --></font></p>
 
 
 </body></html>
