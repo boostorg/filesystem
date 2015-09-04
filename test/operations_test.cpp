@@ -2034,6 +2034,28 @@ namespace
 #endif    
   }
 
+  //  weakly_canonical_tests  ----------------------------------------------------------//
+
+  void weakly_canonical_tests()
+  {
+    cout << "weakly_canonical_tests..." << endl;
+    cout << "  dir is " << dir << endl;
+
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), "no-such/foo/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), "no-such/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical(dir), dir);
+    BOOST_TEST_EQ(fs::weakly_canonical(dir/"no-such/foo/bar"), dir/"no-such/foo/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical(dir/"no-such/foo/../bar"), dir/"no-such/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical(dir/"../no-such/foo/../bar"),
+      dir.parent_path()/"no-such/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), "c:/no-such/foo/bar");
+
+    fs::create_directory_symlink(dir / "d1", dir / "sld1");
+    BOOST_TEST_EQ(fs::weakly_canonical(dir / "sld1/foo/bar"), dir / "d1/foo/bar");
+
+    BOOST_TEST_EQ(relative(dir / "sld1/foo/bar/baz", dir / "d1/foo"), "bar/baz");
+  }
+
   //  _tests  --------------------------------------------------------------------------//
 
   //void _tests()
@@ -2155,6 +2177,7 @@ int cpp_main(int argc, char* argv[])
     symlink_status_tests();
     copy_symlink_tests(f1, d1);
     canonical_symlink_tests();
+    weakly_canonical_tests();
   }
   iterator_status_tests();  // lots of cases by now, so a good time to test
 //  dump_tree(dir);

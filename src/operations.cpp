@@ -1537,6 +1537,19 @@ namespace detail
 #     endif
     return symlink_path;
   }
+
+  BOOST_FILESYSTEM_DECL
+  path relative(const path& p, const path& base, error_code* ec)
+  {
+    error_code tmp_ec;
+    path wc_base(weakly_canonical(base, &tmp_ec));
+    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
+      return path();
+    path wc_p(weakly_canonical(p, &tmp_ec));
+    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
+      return path();
+    return lexically_relative(wc_p, wc_base);
+  }
   
   BOOST_FILESYSTEM_DECL
   bool remove(const path& p, error_code* ec)
@@ -1875,6 +1888,47 @@ namespace detail
 #   endif
   }
 
+  BOOST_FILESYSTEM_DECL
+  path weakly_canonical(const path& p, system::error_code* ec)
+  {
+    path head(p);
+    path tail;
+    system::error_code tmp_ec;
+    path::iterator itr = p.end();
+
+    for (; !head.empty(); --itr)
+    {
+      file_status head_status = status(head, tmp_ec);
+      if (error(head_status.type() == fs::status_error,
+        head, ec, "boost::filesystem::weakly_canonical"))
+        return path();
+      if (head_status.type() != fs::file_not_found)
+        break;
+      head.remove_filename();
+    }
+
+    bool tail_has_dots = false;
+    for (; itr != p.end(); ++itr)
+    { 
+      tail /= *itr;
+      // for a later optimization, track if any dot or dot-dot elements are present
+      if (itr->native().size() <= 2
+        && itr->native()[0] == dot
+        && (itr->native().size() == 1 || itr->native()[1] == dot))
+        tail_has_dots = true;
+    }
+    
+    if (head.empty())
+      return lexically_normal(p);
+    head = canonical(head, tmp_ec);
+    if (error(tmp_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
+      return path();
+    return tail.empty()
+      ? head
+      : (tail_has_dots  // optimization: only normalize if tail had dot or dot-dot element
+          ? lexically_normal(head/tail)  
+          : head/tail);
+  }
 }  // namespace detail
 
 //--------------------------------------------------------------------------------------//

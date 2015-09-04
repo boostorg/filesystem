@@ -46,6 +46,10 @@ namespace boost
 {
 namespace filesystem
 {
+  // forward declarations
+  class BOOST_FILESYSTEM_DECL path;
+  BOOST_FILESYSTEM_DECL path lexically_normal(const path& p);  
+
   //------------------------------------------------------------------------------------//
   //                                                                                    //
   //                                    class path                                      //
@@ -441,6 +445,21 @@ namespace filesystem
 
     //  -----  generic format observers  -----
 
+    //  Experimental generic function returning generic formatted path (i.e. separators
+    //  are forward slashes). Motivation: simpler than a family of generic_*string
+    //  functions.
+    path generic() const
+    {
+#   ifdef BOOST_WINDOWS_API
+      path tmp;
+      std::replace_copy(m_pathname.begin(), m_pathname.end(),
+        std::back_inserter(tmp.m_pathname), L'\\', L'/');
+      return tmp;
+#   else
+      return path(*this);
+#   endif
+    }
+
     template <class String>
     String generic_string() const;
 
@@ -491,6 +510,7 @@ namespace filesystem
     bool has_filename() const        { return !m_pathname.empty(); }
     bool has_stem() const            { return !stem().empty(); }
     bool has_extension() const       { return !extension().empty(); }
+    bool is_relative() const         { return !is_absolute(); } 
     bool is_absolute() const
     {
 #     ifdef BOOST_WINDOWS_API
@@ -499,7 +519,6 @@ namespace filesystem
       return has_root_directory();
 #     endif
     }
-    bool is_relative() const         { return !is_absolute(); } 
 
     //  -----  iterators  -----
 
@@ -526,7 +545,11 @@ namespace filesystem
 
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
-    path&  normalize()              { return m_normalize(); }
+    path&  normalize()              { 
+                                      path tmp(lexically_normal(*this));
+                                      m_pathname.swap(tmp.m_pathname);
+                                      return *this;
+                                    }
     path&  remove_leaf()            { return remove_filename(); }
     path   leaf() const             { return filename(); }
     path   branch_path() const      { return parent_path(); }
@@ -747,6 +770,23 @@ namespace filesystem
   inline void swap(path& lhs, path& rhs)                   { lhs.swap(rhs); }
 
   inline path operator/(const path& lhs, const path& rhs)  { return path(lhs) /= rhs; }
+
+  //  -----  lexical operations  -----
+  //
+  //  naming convention: prefix with "lexically_" to alert users that these functions
+  //  have purely lexical semantics and, when necesssary, to disambiguate from 
+  //  operational functions with the same name.
+
+  BOOST_FILESYSTEM_DECL
+  path  lexically_normal(const path& p);
+  BOOST_FILESYSTEM_DECL
+  path  lexically_relative(const path& p, const path& base);
+  inline
+  path  lexically_proximate(const path& p, const path& base)
+  {
+    path tmp(lexically_relative(p, base));
+    return tmp.empty() ? p : tmp;
+  } 
 
   //  inserters and extractors
   //    use boost::io::quoted() to handle spaces in paths

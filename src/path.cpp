@@ -24,6 +24,7 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>  // for filesystem_error
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
@@ -387,17 +388,53 @@ namespace filesystem
       : path(name.m_pathname.c_str() + pos);
   }
 
-  // m_normalize  ----------------------------------------------------------------------//
+  //  lexical operations  --------------------------------------------------------------//
 
-  path& path::m_normalize()
+  namespace detail
   {
-    if (m_pathname.empty()) return *this;
+    // C++14 provide a mismatch algorithm with four iterator arguments(), but earlier
+    // standard libraries didn't, so provide this needed functionality.
+    inline
+    std::pair<path::iterator, path::iterator> mismatch(path::iterator it1,
+      path::iterator it1end, path::iterator it2, path::iterator it2end)
+    {
+      for (; it1 != it1end && it2 != it2end && *it1 == *it2;)
+      {
+        ++it1;
+        ++it2;
+      }
+      return std::make_pair(it1, it2);
+    }
+  }
+
+  path lexically_relative(const path& p, const path& base)
+  {
+    std::pair<path::iterator, path::iterator> mm
+      = detail::mismatch(p.begin(), p.end(), base.begin(), base.end());
+    if (mm.first == p.begin() && mm.second == base.begin())
+      return path();
+    if (mm.first == p.end() && mm.second == base.end())
+      return detail::dot_path();
+    path tmp;
+    for (; mm.second != base.end(); ++mm.second)
+      tmp /= detail::dot_dot_path();
+    for (; mm.first != p.end(); ++mm.first)
+      tmp /= *mm.first;
+    return tmp;
+  }
+
+  //  normal  --------------------------------------------------------------------------//
+
+  path lexically_normal(const path& p)
+  {
+    if (p.empty())
+      return p;
       
     path temp;
-    iterator start(begin());
-    iterator last(end());
-    iterator stop(last--);
-    for (iterator itr(start); itr != stop; ++itr)
+    path::iterator start(p.begin());
+    path::iterator last(p.end());
+    path::iterator stop(last--);
+    for (path::iterator itr(start); itr != stop; ++itr)
     {
       // ignore "." except at start and last
       if (itr->native().size() == 1
@@ -427,21 +464,26 @@ namespace filesystem
           )
         {
           temp.remove_filename();
-          // if not root directory, must also remove "/" if any
-          if (temp.m_pathname.size() > 0
-            && temp.m_pathname[temp.m_pathname.size()-1]
-              == separator)
-          {
-            string_type::size_type rds(
-              root_directory_start(temp.m_pathname, temp.m_pathname.size()));
-            if (rds == string_type::npos
-              || rds != temp.m_pathname.size()-1) 
-              { temp.m_pathname.erase(temp.m_pathname.size()-1); }
-          }
+          //// if not root directory, must also remove "/" if any
+          //if (temp.native().size() > 0
+          //  && temp.native()[temp.native().size()-1]
+          //    == separator)
+          //{
+          //  string_type::size_type rds(
+          //    root_directory_start(temp.native(), temp.native().size()));
+          //  if (rds == string_type::npos
+          //    || rds != temp.native().size()-1) 
+          //  {
+          //    temp.m_pathname.erase(temp.native().size()-1);
+          //  }
+          //}
 
-          iterator next(itr);
+          path::iterator next(itr);
           if (temp.empty() && ++next != stop
-            && next == last && *last == detail::dot_path()) temp /= detail::dot_path();
+            && next == last && *last == detail::dot_path())
+          {
+            temp /= detail::dot_path();
+          }
           continue;
         }
       }
@@ -449,9 +491,9 @@ namespace filesystem
       temp /= *itr;
     };
 
-    if (temp.empty()) temp /= detail::dot_path();
-    m_pathname = temp.m_pathname;
-    return *this;
+    if (temp.empty())
+      temp /= detail::dot_path();
+    return temp;
   }
 
 }  // namespace filesystem
