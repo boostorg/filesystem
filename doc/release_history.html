@@ -40,6 +40,10 @@
 
 <h2>1.60.0</h2>
 <ul>
+  <li><b>New feature:</b> Added functions <code>lexically_normal</code>, <code>
+  lexically_relative</code>, <code>relative</code>, and <code>weakly_canonical</code>. 
+  Many thanks to Jamie Allsop for his help and perseverance. Closes tickets
+  <a href="https://svn.boost.org/trac/boost/ticket/1976">#1976</a></li>
   <li><b>New feature:</b> Class <code>path</code> now has <code>reverse_iterator</code>,
   <code>const_reverse_iterator</code>, <code>rbegin()</code>, and <code>rend()</code>. </li>
   <li>Fix a race condition in <code>unique_path</code> by applying
@@ -85,7 +89,7 @@
   <a href="reference.html#path-decomposition">[path.decompose]</a> <code>
   parent_path()</code> and <code>filename()</code> sections of the reference 
   docs.</li>
-  <li>Closed several tickets as duplicates or otherwise fixed by the 
+  <li>Closed several tickets as duplicates or otherwise resolved by the 
   above changes:<ul>
   <li><a href="https://svn.boost.org/trac/boost/ticket/7607">#7607</a>, <i>path 
   should not infer an invisible &quot;.&quot; at the end of a path that ends with a slash;
