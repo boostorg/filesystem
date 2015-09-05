@@ -132,9 +132,11 @@ namespace filesystem
 
     //  -----  constructors  -----
 
-    path(){}                                          
-
+    path() BOOST_NOEXCEPT {}                                          
     path(const path& p) : m_pathname(p.m_pathname) {}
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES	
+    path(path&& p) BOOST_NOEXCEPT;
+#endif
 
     template <class Source>
     path(Source const& source,
@@ -186,6 +188,9 @@ namespace filesystem
       m_pathname = p.m_pathname;
       return *this;
     }
+#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES	
+    path& operator=(path&& p) BOOST_NOEXCEPT;
+#endif
 
     template <class Source>
       typename boost::enable_if<path_traits::is_pathable<
@@ -355,7 +360,7 @@ namespace filesystem
 
     //  -----  modifiers  -----
 
-    void   clear()             { m_pathname.clear(); }
+    void   clear() BOOST_NOEXCEPT             { m_pathname.clear(); }
     path&  make_preferred()
 #   ifdef BOOST_POSIX_API
       { return *this; }  // POSIX no effect
@@ -365,7 +370,7 @@ namespace filesystem
     path&  remove_filename();
     path&  remove_trailing_separator();
     path&  replace_extension(const path& new_extension = path());
-    void   swap(path& rhs)     { m_pathname.swap(rhs.m_pathname); }
+    void   swap(path& rhs) BOOST_NOEXCEPT     { m_pathname.swap(rhs.m_pathname); }
 
     //  -----  observers  -----
   
@@ -388,8 +393,8 @@ namespace filesystem
 
     //  -----  native format observers  -----
 
-    const string_type&  native() const { return m_pathname; }          // Throws: nothing
-    const value_type*   c_str() const  { return m_pathname.c_str(); }  // Throws: nothing
+    const string_type&  native() const BOOST_NOEXCEPT { return m_pathname; }
+    const value_type*   c_str() const BOOST_NOEXCEPT  { return m_pathname.c_str(); }
 
     template <class String>
     String string() const;
@@ -501,7 +506,7 @@ namespace filesystem
 
     //  -----  query  -----
 
-    bool empty() const               { return m_pathname.empty(); } // name consistent with std containers
+    bool empty() const BOOST_NOEXCEPT{ return m_pathname.empty(); }
     bool has_root_path() const       { return has_root_directory() || has_root_name(); }
     bool has_root_name() const       { return !root_name().empty(); }
     bool has_root_directory() const  { return !root_directory().empty(); }
@@ -678,7 +683,7 @@ namespace filesystem
   }; // path::iterator
 
   //------------------------------------------------------------------------------------//
-  //                             class path::reverse_iterator                                   //
+  //                         class path::reverse_iterator                               //
   //------------------------------------------------------------------------------------//
  
   class path::reverse_iterator
