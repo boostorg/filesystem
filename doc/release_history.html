@@ -40,12 +40,18 @@
 
 <h2>1.60.0</h2>
 <ul>
-  <li><b>New feature:</b> Added functions <code>lexically_normal</code>, <code>
-  lexically_relative</code>, <code>relative</code>, and <code>weakly_canonical</code>. 
-  Many thanks to Jamie Allsop for his help and perseverance. Closes tickets
-  <a href="https://svn.boost.org/trac/boost/ticket/1976">#1976</a></li>
-  <li><b>New feature:</b> Class <code>path</code> now has <code>reverse_iterator</code>,
-  <code>const_reverse_iterator</code>, <code>rbegin()</code>, and <code>rend()</code>. </li>
+  <li><b>New feature:</b> Added functions <code><a href="reference.html#normal">
+  lexically_normal</a></code>, <code><a href="reference.html#lex-relative">
+  lexically_relative</a></code>, <code><a href="reference.html#op-relative">
+  relative</a></code>, and <code><a href="reference.html#weakly_canonical">
+  weakly_canonical</a></code>. Many thanks to Jamie Allsop for his help and 
+  perseverance. Closes tickets
+  <a href="https://svn.boost.org/trac/boost/ticket/1976">#1976</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/5897">#5897</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/6249">#6249</a></li>
+  <li><b>New feature:</b> Class <code>path</code> now has
+  <a href="reference.html#path-iterators"> <code>reverse_iterator</code>,
+  <code>const_reverse_iterator</code>, <code>rbegin()</code>, and <code>rend()</code></a>. </li>
   <li>Fix a race condition in <code>unique_path</code> by applying
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
