@@ -40,7 +40,7 @@
 
 <h2>1.60.0</h2>
 <ul>
-  <li><b>New feature:</b> Added functions <code><a href="reference.html#normal">
+  <li><b>New:</b> Added functions <code><a href="reference.html#normal">
   lexically_normal</a></code>, <code><a href="reference.html#lex-relative">
   lexically_relative</a></code>, <code><a href="reference.html#op-relative">
   relative</a></code>, and <code><a href="reference.html#weakly_canonical">
@@ -49,9 +49,15 @@
   <a href="https://svn.boost.org/trac/boost/ticket/1976">#1976</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/5897">#5897</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/6249">#6249</a></li>
-  <li><b>New feature:</b> Class <code>path</code> now has
+  <li><b>New:</b> Class <code>path</code> now has
   <a href="reference.html#path-iterators"> <code>reverse_iterator</code>,
   <code>const_reverse_iterator</code>, <code>rbegin()</code>, and <code>rend()</code></a>. </li>
+  <li><b>New:</b> C++11 <code>noexcept</code> used where applicable if supported 
+  by the compiler.</li>
+  <li><b>New:</b> C++11 move constructors and move assignments used as specified 
+  in the Filesystem TS if supported by the compiler.</li>
+  <li><b>New:</b> Existing functions whose names changed in the Filesystem TS 
+  are now supported under both the old and new names.</li>
   <li>Fix a race condition in <code>unique_path</code> by applying
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
@@ -365,7 +371,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->04 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39344" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39348" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

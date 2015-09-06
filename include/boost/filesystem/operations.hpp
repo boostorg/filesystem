@@ -849,9 +849,9 @@ namespace detail
         : m_imp(new detail::dir_itr_imp)
           { detail::directory_iterator_construct(*this, p, &ec); }
 
-   ~directory_iterator() BOOST_NOEXCEPT {}
+   ~directory_iterator() {}
 
-    directory_iterator& increment(system::error_code& ec)
+    directory_iterator& increment(system::error_code& ec) BOOST_NOEXCEPT
     { 
       detail::directory_iterator_increment(*this, &ec);
       return *this;
@@ -892,18 +892,23 @@ namespace detail
   //  auto - thus the top-level const is stripped - so returning const is harmless and
   //  emphasizes begin() is just a pass through.
   inline
-  const directory_iterator& begin(const directory_iterator& iter)  {return iter;}
+  const directory_iterator& begin(const directory_iterator& iter) BOOST_NOEXCEPT
+    {return iter;}
   inline
-  directory_iterator end(const directory_iterator&)  {return directory_iterator();}
+  directory_iterator end(const directory_iterator&) BOOST_NOEXCEPT
+    {return directory_iterator();}
 
   //  enable directory_iterator BOOST_FOREACH  -----------------------------------------//
 
   inline
-  directory_iterator& range_begin(directory_iterator& iter) {return iter;}
+  directory_iterator& range_begin(directory_iterator& iter) BOOST_NOEXCEPT
+    {return iter;}
   inline
-  directory_iterator range_begin(const directory_iterator& iter) {return iter;}
+  directory_iterator range_begin(const directory_iterator& iter) BOOST_NOEXCEPT
+    {return iter;}
   inline
-  directory_iterator range_end(const directory_iterator&) {return directory_iterator();}
+  directory_iterator range_end(const directory_iterator&) BOOST_NOEXCEPT
+    {return directory_iterator();}
   }  // namespace filesystem
 
   //  namespace boost template specializations
@@ -1095,7 +1100,7 @@ namespace filesystem
 
     recursive_directory_iterator(const path& dir_path,
       BOOST_SCOPED_ENUM(symlink_option) opt,
-      system::error_code & ec)
+      system::error_code & ec) BOOST_NOEXCEPT
     : m_imp(new detail::recur_dir_itr_imp)
     {
       m_imp->m_options = opt;
@@ -1105,7 +1110,7 @@ namespace filesystem
     }
 
     recursive_directory_iterator(const path& dir_path,
-      system::error_code & ec)
+      system::error_code & ec) BOOST_NOEXCEPT
     : m_imp(new detail::recur_dir_itr_imp)
     {
       m_imp->m_options = symlink_option::none;
@@ -1114,7 +1119,7 @@ namespace filesystem
         { m_imp.reset (); }
     }
 
-    recursive_directory_iterator& increment(system::error_code& ec)
+    recursive_directory_iterator& increment(system::error_code& ec) BOOST_NOEXCEPT
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "increment() on end recursive_directory_iterator");
@@ -1124,23 +1129,27 @@ namespace filesystem
       return *this;
     }
 
-    int level() const
+    int depth() const BOOST_NOEXCEPT
     { 
       BOOST_ASSERT_MSG(m_imp.get(),
-        "level() on end recursive_directory_iterator");
+        "depth() on end recursive_directory_iterator");
       return m_imp->m_level;
     }
+	
+	int level() const BOOST_NOEXCEPT { return depth(); }
 
-    bool no_push_pending() const
+    bool recursion_pending() const BOOST_NOEXCEPT
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "is_no_push_requested() on end recursive_directory_iterator");
       return (m_imp->m_options & symlink_option::_detail_no_push)
         == symlink_option::_detail_no_push;
     }
+	
+	bool no_push_pending() const BOOST_NOEXCEPT { return recursion_pending(); }
 
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    bool no_push_request() const { return no_push_pending(); }
+    bool no_push_request() const BOOST_NOEXCEPT { return no_push_pending(); }
 #   endif
 
     void pop()
@@ -1151,7 +1160,7 @@ namespace filesystem
       if (m_imp->m_stack.empty()) m_imp.reset(); // done, so make end iterator
     }
 
-    void no_push(bool value=true)
+    void disable_recursion_pending(bool value=true) BOOST_NOEXCEPT
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "no_push() on end recursive_directory_iterator");
@@ -1160,6 +1169,8 @@ namespace filesystem
       else
         m_imp->m_options &= ~symlink_option::_detail_no_push;
     }
+	
+	void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }
 
     file_status status() const
     {
@@ -1214,22 +1225,25 @@ namespace filesystem
   //  auto - thus the top-level const is stripped - so returning const is harmless and
   //  emphasizes begin() is just a pass through.
   inline
-  const recursive_directory_iterator& begin(const recursive_directory_iterator& iter)
-                                                                            {return iter;}
+  const recursive_directory_iterator&
+    begin(const recursive_directory_iterator& iter) BOOST_NOEXCEPT
+                                                  {return iter;}
   inline
-  recursive_directory_iterator end(const recursive_directory_iterator&)
+  recursive_directory_iterator end(const recursive_directory_iterator&) BOOST_NOEXCEPT
                                                   {return recursive_directory_iterator();}
 
   //  enable recursive directory iterator BOOST_FOREACH  -------------------------------//
 
   inline
-  recursive_directory_iterator& range_begin(recursive_directory_iterator& iter)
-                                                                            {return iter;}
+  recursive_directory_iterator& 
+    range_begin(recursive_directory_iterator& iter) BOOST_NOEXCEPT
+                                                   {return iter;}
   inline
-  recursive_directory_iterator range_begin(const recursive_directory_iterator& iter)
-                                                                            {return iter;}
+  recursive_directory_iterator
+    range_begin(const recursive_directory_iterator& iter) BOOST_NOEXCEPT
+                                                   {return iter;}
   inline
-  recursive_directory_iterator range_end(const recursive_directory_iterator&)
+  recursive_directory_iterator range_end(const recursive_directory_iterator&) BOOST_NOEXCEPT
                                                   {return recursive_directory_iterator();}
   }  // namespace filesystem
 
