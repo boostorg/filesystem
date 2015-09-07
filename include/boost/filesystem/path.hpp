@@ -134,9 +134,6 @@ namespace filesystem
 
     path() BOOST_NOEXCEPT {}                                          
     path(const path& p) : m_pathname(p.m_pathname) {}
-//#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES	
-//    path(path&& p) BOOST_NOEXCEPT;
-//#endif
 
     template <class Source>
     path(Source const& source,
@@ -150,6 +147,18 @@ namespace filesystem
     path(value_type* s) : m_pathname(s) {}
     path(const string_type& s) : m_pathname(s) {}
     path(string_type& s) : m_pathname(s) {}
+
+# if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
+    path(path&&) BOOST_NOEXCEPT = default;
+    path& operator=(path&&) BOOST_NOEXCEPT = default;
+#  else
+    path(path&& p) BOOST_NOEXCEPT
+      { m_pathname = std::move(p.m_pathname); }
+    path& operator=(path&& p) BOOST_NOEXCEPT
+      { m_pathname = std::move(p.m_pathname); return *this; }
+#  endif
+# endif
 
     template <class Source>
     path(Source const& source, const codecvt_type& cvt)
@@ -188,9 +197,6 @@ namespace filesystem
       m_pathname = p.m_pathname;
       return *this;
     }
-//#ifndef BOOST_NO_CXX11_RVALUE_REFERENCES	
-//    path& operator=(path&& p) BOOST_NOEXCEPT;
-//#endif
 
     template <class Source>
       typename boost::enable_if<path_traits::is_pathable<

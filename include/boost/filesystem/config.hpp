@@ -27,7 +27,14 @@
 
 #include <boost/config.hpp>
 #include <boost/system/api_config.hpp>  // for BOOST_POSIX_API or BOOST_WINDOWS_API
-#include <boost/detail/workaround.hpp> 
+#include <boost/detail/workaround.hpp>
+
+//  BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS  -----------------------------------//
+
+# if defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) \
+     || (defined(_MSC_VER) && _MSC_VER==1800) // =default fails for msvc 14.0 rvalue refs
+#   define BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS
+# endif
 
 //  BOOST_FILESYSTEM_DEPRECATED needed for source compiles -----------------------------//
 

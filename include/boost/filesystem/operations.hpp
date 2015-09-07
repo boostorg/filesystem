@@ -256,9 +256,34 @@ namespace boost
   class BOOST_FILESYSTEM_DECL file_status
   {
   public:
-             file_status()            : m_value(status_error), m_perms(perms_not_known) {}
+    file_status() BOOST_NOEXCEPT : m_value(status_error), m_perms(perms_not_known) {}
     explicit file_status(file_type v, perms prms = perms_not_known) BOOST_NOEXCEPT
                                       : m_value(v), m_perms(prms) {}
+
+# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    file_status(const file_status&) BOOST_NOEXCEPT = default;
+    file_status& operator=(const file_status&) BOOST_NOEXCEPT = default;
+# endif
+
+# if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
+    file_status(file_status&&) BOOST_NOEXCEPT = default;
+    file_status& operator=(file_status&&) BOOST_NOEXCEPT = default;
+#  else
+    file_status(file_status&& rhs) BOOST_NOEXCEPT
+    {
+      m_value = std::move(rhs.m_value);
+      m_perms = std::move(rhs.m_perms);
+    }
+    file_status& operator=(file_status&& rhs) BOOST_NOEXCEPT
+    { 
+      m_value = std::move(rhs.m_value);
+      m_perms = std::move(rhs.m_perms);
+      return *this;
+    }
+#  endif
+# endif
+
 
     // observers
     file_type  type() const BOOST_NOEXCEPT            { return m_value; }
@@ -340,9 +365,8 @@ namespace boost
     BOOST_FILESYSTEM_DECL
     void copy_directory(const path& from, const path& to, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
-    void copy_file(const path& from, const path& to,
-                    BOOST_SCOPED_ENUM(copy_option) option,  // See ticket #2925
-                    system::error_code* ec=0);
+    void copy_file(const path& from, const path& to,  // See ticket #2925
+                    detail::copy_option option, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -727,6 +751,33 @@ public:
     file_status st, file_status symlink_st = file_status())
     : m_path(p), m_status(st), m_symlink_status(symlink_st)
     {}
+
+#ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+  directory_entry(const directory_entry&) = default;
+  directory_entry& operator=(const directory_entry&) = default;
+#endif
+
+
+# if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
+    directory_entry(directory_entry&&) BOOST_NOEXCEPT = default;
+    directory_entry& operator=(directory_entry&&) BOOST_NOEXCEPT = default;
+#  else
+    directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
+    {
+      m_path = std::move(rhs.m_path);
+      m_status = std::move(rhs.m_status);
+      m_symlink_status = std::move(rhs.m_symlink_status);
+    }
+    directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
+    { 
+      m_path = std::move(rhs.m_path);
+      m_status = std::move(rhs.m_status);
+      m_symlink_status = std::move(rhs.m_symlink_status);
+      return *this;
+    }
+#  endif
+# endif
 
   void assign(const boost::filesystem::path& p,
     file_status st = file_status(), file_status symlink_st = file_status())

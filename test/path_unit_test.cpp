@@ -279,6 +279,30 @@ namespace
     PATH_IS(x, L"wstring");
    }
 
+  //  test_move_construction_and_assignment  -------------------------------------------//
+
+  void test_move_construction_and_assignment()
+  {
+    std::cout << "testing move_construction_and_assignment..." << std::endl;
+
+# if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    path from("long enough to avoid small object optimization");
+    path to(std::move(from));
+    BOOST_TEST(from.empty());
+    BOOST_TEST(to == "long enough to avoid small object optimization");
+
+    path from2("long enough to avoid small object optimization");
+    path to2;
+    to2 = std::move(from2);
+    BOOST_TEST(from2.empty());
+    BOOST_TEST(to2 == "long enough to avoid small object optimization");
+# else
+    std::cout << 
+      "Test skipped because compiler does not support move semantics" << std::endl;
+# endif
+
+  }
+
   //  test_appends  --------------------------------------------------------------------//
 
   void test_appends()
@@ -1114,6 +1138,7 @@ int test_main(int, char*[])
   test_overloads();
   test_constructors();
   test_assignments();
+  test_move_construction_and_assignment();
   test_appends();
   test_concats();
   test_modifiers();

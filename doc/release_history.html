@@ -45,17 +45,18 @@
   lexically_relative</a></code>, <code><a href="reference.html#op-relative">
   relative</a></code>, and <code><a href="reference.html#weakly_canonical">
   weakly_canonical</a></code>. Many thanks to Jamie Allsop for his help and 
-  perseverance. Closes tickets
+  perseverance. Resoves tickets
   <a href="https://svn.boost.org/trac/boost/ticket/1976">#1976</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/5897">#5897</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/6249">#6249</a></li>
   <li><b>New:</b> Class <code>path</code> now has
   <a href="reference.html#path-iterators"> <code>reverse_iterator</code>,
   <code>const_reverse_iterator</code>, <code>rbegin()</code>, and <code>rend()</code></a>. </li>
-  <li><b>New:</b> C++11 <code>noexcept</code> used where applicable if supported 
-  by the compiler.</li>
-  <li><b>New:</b> C++11 move constructors and move assignments used as specified 
-  in the Filesystem TS if supported by the compiler.</li>
+  <li><b>New:</b> C++11 <code>noexcept</code> supplied as specified in the 
+  Filesystem TS if supported by the compiler.</li>
+  <li><b>New:</b> C++11 move constructors and move assignments supplied as 
+  specified in the Filesystem TS if supported by the compiler. Resolves
+  <a href="https://svn.boost.org/trac/boost/ticket/10291">#10291</a>.</li>
   <li><b>New:</b> Existing functions whose names changed in the Filesystem TS 
   are now supported under both the old and new names.</li>
   <li>Fix a race condition in <code>unique_path</code> by applying
