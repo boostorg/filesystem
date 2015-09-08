@@ -1869,9 +1869,9 @@ namespace
     guarded_env_var(const char* name, const char* value) 
     : m_previous_value(name) 
     {
-      std::cout << name << " old value is \"" << getenv(name) << "\"" << std::endl;
+//      std::cout << name << " old value is \"" << getenv(name) << "\"" << std::endl;
       value ? setenv(name, value, 1) : unsetenv(name);
-      std::cout << name << " new value is \"" << getenv(name) << "\"" << std::endl;
+//      std::cout << name << " new value is \"" << getenv(name) << "\"" << std::endl;
     }
   };
 
