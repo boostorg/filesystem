@@ -399,8 +399,9 @@ namespace filesystem
 
     //  -----  native format observers  -----
 
-    const string_type&  native() const BOOST_NOEXCEPT { return m_pathname; }
-    const value_type*   c_str() const BOOST_NOEXCEPT  { return m_pathname.c_str(); }
+    const string_type&  native() const BOOST_NOEXCEPT  { return m_pathname; }
+    const value_type*   c_str() const BOOST_NOEXCEPT   { return m_pathname.c_str(); }
+    string_type::size_type size() const BOOST_NOEXCEPT { return m_pathname.size(); }
 
     template <class String>
     String string() const;

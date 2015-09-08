@@ -446,10 +446,15 @@ namespace
     path p0("abc");
 
     CHECK(p0.native().size() == 3);
+    CHECK(p0.size() == 3);
     CHECK(p0.string() == "abc");
     CHECK(p0.string().size() == 3);
     CHECK(p0.wstring() == L"abc");
     CHECK(p0.wstring().size() == 3);
+
+    p0 = "";
+    CHECK(p0.native().size() == 0);
+    CHECK(p0.size() == 0);
 
 # ifdef BOOST_WINDOWS_API
 

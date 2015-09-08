@@ -59,6 +59,10 @@
   <a href="https://svn.boost.org/trac/boost/ticket/10291">#10291</a>.</li>
   <li><b>New:</b> Existing functions whose names changed in the Filesystem TS 
   are now supported under both the old and new names.</li>
+  <li><b>New: </b>Added <code><a href="reference.html#path-size">size</a>()</code> 
+  function to class <code>path</code>. Resolves
+  <a href="https://svn.boost.org/trac/boost/ticket/6874">#6874</a>, <i>Path 
+  should have a size() member function</i>.</li>
   <li>Fix a race condition in <code>unique_path</code> by applying
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
@@ -372,7 +376,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->06 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39348" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39352" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

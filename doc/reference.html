@@ -1079,8 +1079,9 @@ system or for a particular file system.</p>
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
         // <a href="#path-native-format-observers">native format observers</a>
-        const string_type&amp;  <a href="#native">native</a>() const noexcept; // native format, encoding
-        const value_type*   <a href="#c_str">c_str</a>() const noexcept;  // native().c_str()
+        const string_type&amp;  <a href="#native">native</a>() const noexcept;  // native format, encoding
+        const value_type*   <a href="#c_str">c_str</a>() const noexcept;   // native().c_str()
+        <ins>string_type::size_type <a href="#path-size">size</a>() const noexcept; // native().size()</ins>
 
         template &lt;class String&gt;
           String  <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
@@ -1443,6 +1444,12 @@ path</code> modifiers</a> [path.modifiers]</h3>
 
 <blockquote>
 <p><i>Returns:</i> <code>pathname.c_str()</code>.</p>
+</blockquote>
+
+<pre><ins>string_type::size_type <a name="path-size">size</a>() const noexcept;</ins></pre>
+
+<blockquote>
+<p><i>Returns:</i> <code>pathname.size()</code>.</p>
 </blockquote>
 
 <pre>template &lt;class String&gt;
@@ -4148,7 +4155,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->05 September 2015<!--webbot bot="Timestamp" endspan i-checksum="39628" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->08 September 2015<!--webbot bot="Timestamp" endspan i-checksum="39634" --></font></p>
 
 
 </body></html>
