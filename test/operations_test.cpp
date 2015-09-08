@@ -56,8 +56,9 @@ inline std::wstring convert(const char* c)
    return std::wstring(s.begin(), s.end());
 }
 
+#if defined(_MSC_VER) || defined(__GXX_EXPERIMENTAL_CXX0X__)
 //  Note: these three setenv* functions are not general solutions for the missing
-//  setenv* problem on Windows. See Microsoft's _putenv for that need, and ticker #7018
+//  setenv* problem on VC++. See Microsoft's _putenv for that need, and ticker #7018
 //  for discussion and rationale for returning void for this test program, which needs
 //  to work for both the MSVC Runtime and the Windows Runtime (which does not support
 //  _putenv).
@@ -76,6 +77,7 @@ inline void unsetenv(const char* name)
 { 
   SetEnvironmentVariableW(convert(name).c_str(), 0); 
 }
+#endif
 
 #else
 
@@ -1864,10 +1866,12 @@ namespace
   
     previous_value m_previous_value;
     
-    guarded_env_var(const char* name, const fs::path::value_type* value) 
+    guarded_env_var(const char* name, const char* value) 
     : m_previous_value(name) 
     {
-      value? setenv(name, value, 1) : unsetenv(name);
+      std::cout << name << " old value is \"" << getenv(name) << "\"" << std::endl;
+      value ? setenv(name, value, 1) : unsetenv(name);
+      std::cout << name << " new value is \"" << getenv(name) << "\"" << std::endl;
     }
   };
 
@@ -1876,8 +1880,18 @@ namespace
     {
       cout << "temp_directory_path_tests..." << endl;
 
-#if defined BOOST_WINDOWS_API
+#if defined(BOOST_WINDOWS_API)
 
+//**************************************************************************************//
+//   Bug in GCC 4.9 getenv() when !defined(__GXX_EXPERIMENTAL_CXX0X__) makes these
+//   tests meaningless, so skip them 
+//**************************************************************************************//
+
+#if defined(__CYGWIN__) && !defined(__GXX_EXPERIMENTAL_CXX0X__) && __GNUC__ == 4
+      cout << "Bug in GCC 4.9 getenv() when !defined(__GXX_EXPERIMENTAL_CXX0X__) makes these"
+        "tests meaningless, so skip them" << endl;
+      return;
+#endif
       // Test ticket #5300, temp_directory_path failure on Windows with path length > 130.
       // (This test failed prior to the fix being applied.) 
       {
@@ -1890,23 +1904,21 @@ namespace
         p /= long_name;
         fs::create_directory(p);
 
-        guarded_env_var tmp_guard("TMP", p.wstring().c_str());
+        guarded_env_var tmp_guard("TMP", p.string().c_str());
         error_code ec;
         fs::path tmp_path = fs::temp_directory_path(ec);
-        cout << "#5300, temp_directory_path() returned " << tmp_path << endl;
         BOOST_TEST(!ec);
-        BOOST_TEST(p == tmp_path);
+        BOOST_TEST_EQ(p, tmp_path);
         fs::remove(p);
       }
 
       // Test ticket #10388, null character at end of filesystem::temp_directory_path path
       {
-        guarded_env_var tmp_guard("TMP", fs::initial_path().wstring().c_str());
+        guarded_env_var tmp_guard("TMP", fs::initial_path().string().c_str());
 
         error_code ec;
         fs::path tmp_path = fs::temp_directory_path(ec);
-        cout << "#10388, temp_directory_path() returned " << tmp_path << endl;
-        BOOST_TEST(tmp_path == fs::initial_path()); 
+        BOOST_TEST_EQ(tmp_path, fs::initial_path()); 
       }
 
 #endif
@@ -1931,7 +1943,7 @@ namespace
     
     fs::path test_temp_dir = temp_dir;
 
-#if defined BOOST_POSIX_API
+#if defined(BOOST_POSIX_API)
     {
       struct guarded_tmp_vars
       {
@@ -1976,7 +1988,7 @@ namespace
     }
 #endif
 
-#if defined BOOST_WINDOWS_API
+#if defined(BOOST_WINDOWS_API)
 
     struct guarded_tmp_vars
     {
@@ -1986,10 +1998,10 @@ namespace
       guarded_env_var m_userprofile;
 
       guarded_tmp_vars
-      ( const fs::path::value_type* tmp    
-      , const fs::path::value_type* temp
-      , const fs::path::value_type* localappdata
-      , const fs::path::value_type* userprofile
+      ( const char* tmp    
+      , const char* temp
+      , const char* localappdata
+      , const char* userprofile
       )
       : m_tmp          ("TMP"           , tmp         )
       , m_temp         ("TEMP"          , temp        )
@@ -2008,25 +2020,25 @@ namespace
     }
 
     {
-      guarded_tmp_vars vars(test_temp_dir.c_str(), 0, 0, 0);
+      guarded_tmp_vars vars(test_temp_dir.string().c_str(), 0, 0, 0);
       fs::path ph = fs::temp_directory_path();
       BOOST_TEST(equivalent(test_temp_dir, ph));
     }
     {
-      guarded_tmp_vars vars(0, test_temp_dir.c_str(), 0, 0);
+      guarded_tmp_vars vars(0, test_temp_dir.string().c_str(), 0, 0);
       fs::path ph = fs::temp_directory_path();
       BOOST_TEST(equivalent(test_temp_dir, ph));
     }
 
     fs::create_directory(test_temp_dir / L"Temp");
     {
-      guarded_tmp_vars vars(0, 0, test_temp_dir.c_str(), 0);
+      guarded_tmp_vars vars(0, 0, test_temp_dir.string().c_str(), 0);
       fs::path ph = fs::temp_directory_path();
       BOOST_TEST(equivalent(test_temp_dir/L"Temp", ph));
       cout << "temp_directory_path() returned " << ph << endl;
     }
     {
-      guarded_tmp_vars vars(0, 0, 0, test_temp_dir.c_str());
+      guarded_tmp_vars vars(0, 0, 0, test_temp_dir.string().c_str());
       fs::path ph = fs::temp_directory_path();
       BOOST_TEST(equivalent(test_temp_dir/L"Temp", ph));
       cout << "temp_directory_path() returned " << ph << endl;
