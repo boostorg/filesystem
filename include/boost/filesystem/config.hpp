@@ -9,8 +9,8 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM3_CONFIG_HPP
-#define BOOST_FILESYSTEM3_CONFIG_HPP
+#ifndef BOOST_FILESYSTEM_CONFIG_HPP
+#define BOOST_FILESYSTEM_CONFIG_HPP
 
 # if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3
 #   error Compiling Filesystem version 3 file with BOOST_FILESYSTEM_VERSION defined != 3
@@ -42,6 +42,16 @@
 #   define BOOST_FILESYSTEM_DEPRECATED
 #   undef BOOST_FILESYSTEM_NO_DEPRECATED   // fixes #9454, src bld fails if NO_DEP defined
 # endif
+
+//  Support for C++11 char16_t and char32_t paths requires both character type (or
+//  equivalent typedef) support and header <codecvt> support. 
+
+# if BOOST_FILESYSTEM_VERSION > 3 \
+     && !defined(BOOST_NO_CXX11_HDR_CODECVT) \
+     && ((!defined(BOOST_NO_CXX11_CHAR16_T) && (!defined(BOOST_NO_CXX11_CHAR32_T)) \
+          || (defined(_MSC_VER) && _MSC_VER >= 1600)))
+#   define BOOST_FILESYSTEM_CHAR16_CHAR32
+#endif
 
 //  throw an exception  ----------------------------------------------------------------//
 //
