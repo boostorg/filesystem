@@ -32,7 +32,8 @@
 //  BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS  -----------------------------------//
 
 # if defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) \
-     || (defined(_MSC_VER) && _MSC_VER==1800) // =default fails for msvc 14.0 rvalue refs
+     || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ <= 4 && \
+          defined(__GXX_EXPERIMENTAL_CXX0X__)) || (defined(_MSC_VER) && _MSC_VER==1800)
 #   define BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS
 # endif
 
