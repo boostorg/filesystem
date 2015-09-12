@@ -69,6 +69,10 @@
   <a href="unique_path%20Fails%20on%20Windows%20for%20Temporary%20User%20Profiles">
   #5706</a>, <i><code>unique_path</code> Fails on Windows for Temporary User 
   Profiles</i>.</li>
+  <li>Fix bug in <i><code>file_status</code></i> and <i><code>
+  recursive_directory_iterator</code></i>: C++ turns an explicit constructor 
+  with all arguments except first defaulted into non-explicit single argument 
+  constructor.</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/10591">#10591</a>, <i>
   boost::filesystem does not build on iOS 8</i>, by applying a patch submitted 
   by Daniel Seither.</li>
@@ -377,7 +381,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39352" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->12 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39341" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
