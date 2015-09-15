@@ -30,10 +30,16 @@
 #include <boost/detail/workaround.hpp>
 
 //  BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS  -----------------------------------//
+//
+//  Both GCC and Microsoft shipped compiler versions that supported defaulted functions
+//  but they did not work as expected for rvalue references. GCC was particularly
+//  problematic because some versions worked on some platforms but not others; FreeBSD
+//  was failing as recently as GCC 4.8.5.
 
-# if defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) \
-     || (defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ <= 4 && \
-          defined(__GXX_EXPERIMENTAL_CXX0X__)) || (defined(_MSC_VER) && _MSC_VER==1800)
+# if (defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) \
+      && !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)) \
+     || (defined(__GNUC__) && __GNUC__ <= 4) \
+     || (defined(_MSC_VER) && _MSC_VER==1800)
 #   define BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS
 # endif
 
