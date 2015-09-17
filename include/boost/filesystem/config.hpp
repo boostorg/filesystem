@@ -27,12 +27,27 @@
 
 #include <boost/config.hpp>
 #include <boost/system/api_config.hpp>  // for BOOST_POSIX_API or BOOST_WINDOWS_API
-#include <boost/detail/workaround.hpp> 
+#include <boost/detail/workaround.hpp>
+
+//  BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS  -----------------------------------//
+//
+//  Both GCC and Microsoft shipped compiler versions that supported defaulted functions
+//  but they did not work as expected for rvalue references. GCC was particularly
+//  problematic because some versions worked on some platforms but not others; FreeBSD
+//  was failing as recently as GCC 4.8.5.
+
+# if (defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) \
+      && !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)) \
+     || (defined(__GNUC__) && __GNUC__ <= 4) \
+     || (defined(_MSC_VER) && _MSC_VER==1800)
+#   define BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS
+# endif
 
 //  BOOST_FILESYSTEM_DEPRECATED needed for source compiles -----------------------------//
 
 # ifdef BOOST_FILESYSTEM_SOURCE
 #   define BOOST_FILESYSTEM_DEPRECATED
+#   undef BOOST_FILESYSTEM_NO_DEPRECATED   // fixes #9454, src bld fails if NO_DEP defined
 # endif
 
 //  throw an exception  ----------------------------------------------------------------//
