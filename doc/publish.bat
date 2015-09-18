@@ -1,12 +1,11 @@
 @echo off
 copy /y styles.css ..\..\..\..\filesystem-gh-pages
 copy /y deprecated.html ..\..\..\..\filesystem-gh-pages
-copy /y design.html ..\..\..\..\filesystem-gh-pages
-copy /y faq.html ..\..\..\..\filesystem-gh-pages
+copy /y design.htm ..\..\..\..\filesystem-gh-pages
+copy /y faq.htm ..\..\..\..\filesystem-gh-pages
 copy /y index.htm ..\..\..\..\filesystem-gh-pages
 copy /y issue_reporting.html ..\..\..\..\filesystem-gh-pages
-copy /y path_table.html ..\..\..\..\filesystem-gh-pages
-copy /y portability_guide.html ..\..\..\..\filesystem-gh-pages
+copy /y portability_guide.htm ..\..\..\..\filesystem-gh-pages
 copy /y reference.html ..\..\..\..\filesystem-gh-pages
 copy /y relative_proposal.html ..\..\..\..\filesystem-gh-pages
 copy /y release_history.html ..\..\..\..\filesystem-gh-pages
