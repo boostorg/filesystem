@@ -150,8 +150,8 @@ namespace filesystem
 
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    path(path&&) BOOST_NOEXCEPT = default;
-    path& operator=(path&&) BOOST_NOEXCEPT = default;
+    path(path&&) = default;
+    path& operator=(path&&) = default;
 #  else
     path(path&& p) BOOST_NOEXCEPT
       { m_pathname = std::move(p.m_pathname); }
