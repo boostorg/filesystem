@@ -2301,7 +2301,7 @@ namespace
         && dirpath[dirpath.size()-1] != L':'))? L"\\*" : L"*";
 
     WIN32_FIND_DATAW data;
-    if ((handle = ::FindFirstFileW(dirpath.c_str(), &data))
+    if ((handle = ::FindFirstFileExW(dirpath.c_str(), FindExInfoBasic, &data, FindExSearchNameMatch, NULL, 0))
       == INVALID_HANDLE_VALUE)
     { 
       handle = 0;  // signal eof
