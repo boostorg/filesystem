@@ -620,6 +620,20 @@ namespace
       hTemplateFile);
   }
 
+  DWORD get_file_attributes(const wchar_t* p)
+  {
+#   if BOOST_PLAT_WINDOWS_DESKTOP
+    return ::GetFileAttributesW(p);
+#   else
+    WIN32_FILE_ATTRIBUTE_DATA fad;
+    if (!::GetFileAttributesExW(p, ::GetFileExInfoStandard, &fad))
+    {
+      return 0xffffffff;
+    }
+    return fad.dwFileAttributes;
+#   endif
+  }
+
   bool is_reparse_point_a_symlink(const path& p)
   {
     handle_wrapper h(create_file_handle(p, FILE_READ_EA,
@@ -680,7 +694,7 @@ namespace
   //  _detail_directory_symlink, as required on Windows by remove() and its helpers.
   fs::file_type query_file_type(const path& p, error_code* ec)
   {
-    DWORD attr(::GetFileAttributesW(p.c_str()));
+    DWORD attr(get_file_attributes(p.c_str()));
     if (attr == 0xFFFFFFFF)
     {
       return process_status_failure(p, ec).type();
@@ -1523,7 +1537,7 @@ namespace detail
       || (prms & (owner_write|group_write|others_write))))
       return;
 
-    DWORD attr = ::GetFileAttributesW(p.c_str());
+    DWORD attr = get_file_attributes(p.c_str());
 
     if (error(attr == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::permissions"))
       return;
@@ -1750,7 +1764,7 @@ namespace detail
 
 #   else  // Windows
 
-    DWORD attr(::GetFileAttributesW(p.c_str()));
+    DWORD attr(get_file_attributes(p.c_str()));
     if (attr == 0xFFFFFFFF)
     {
       return process_status_failure(p, ec);
@@ -1834,7 +1848,7 @@ namespace detail
 
 #   else  // Windows
 
-    DWORD attr(::GetFileAttributesW(p.c_str()));
+    DWORD attr(get_file_attributes(p.c_str()));
     if (attr == 0xFFFFFFFF)
     {
       return process_status_failure(p, ec);
