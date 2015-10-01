@@ -116,6 +116,13 @@ using std::wstring;
 #     include <sys/utime.h>
 #   endif
 
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+#     include <windows.storage.h>
+#     include <wrl/client.h>
+#     include <wrl/wrappers/corewrappers.h>
+#     pragma comment(lib, "RuntimeObject.lib")
+#   endif
+
 //  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the 
 //  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
 //  here. See http://msdn.microsoft.com/en-us/library/ms791514.aspx
@@ -1809,6 +1816,56 @@ namespace detail
 #   endif
   }
 
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+
+HRESULT get_tempfolderpath(std::wstring& path)
+{
+  HRESULT hr;
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::IApplicationDataStatics> applicationDataStatics;
+
+  hr = Windows::Foundation::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Storage_ApplicationData).Get(), &applicationDataStatics);
+  if (FAILED(hr))
+  {
+    return hr;
+  }
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::IApplicationData> applicationData;
+  hr = applicationDataStatics->get_Current(&applicationData);
+  if (FAILED(hr))
+  {
+    return hr;
+  }
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::IStorageFolder> storageFolder;
+  hr = applicationData->get_TemporaryFolder(&storageFolder);
+  if (FAILED(hr))
+  {
+    return hr;
+  }
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Storage::IStorageItem> storageItem;
+  hr = storageFolder.As(&storageItem);
+  if (FAILED(hr))
+  {
+    return hr;
+  }
+
+  HSTRING folderName;
+  hr = storageItem->get_Path(&folderName);
+  if (FAILED(hr))
+  {
+    return hr;
+  }
+
+  UINT32 length;
+  PCWSTR value = WindowsGetStringRawBuffer(folderName, &length);
+  path = value;
+  WindowsDeleteString(folderName);
+  return S_OK;
+}
+
+#   endif
+
    // contributed by Jeff Flinn
   BOOST_FILESYSTEM_DECL
   path temp_directory_path(system::error_code* ec)
@@ -1836,6 +1893,20 @@ namespace detail
         
       return p;
       
+#   elif BOOST_PLAT_WINDOWS_RUNTIME
+
+      std::wstring ws;
+      HRESULT hr = get_tempfolderpath(ws);
+      if (FAILED(hr)) {
+        // boost.system doesnt have a error category for HRESULT
+        // therefore we just pick ANY error because I cannot find
+        // a generic win32 error code
+        error(ERROR_INVALID_PARAMETER, ec, "boost::filesystem::temp_directory_path");
+        return path{};
+      }
+
+      return path{ws};
+
 #   else  // Windows
 
       const wchar_t* tmp_env = L"TMP";
