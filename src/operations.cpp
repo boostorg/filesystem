@@ -244,7 +244,14 @@ typedef DWORD err_t;
 #   define BOOST_CREATE_SYMBOLIC_LINK(F,T,Flag)(create_symbolic_link_api(F, T, Flag)!= 0)
 #   define BOOST_REMOVE_DIRECTORY(P)(::RemoveDirectoryW(P)!= 0)
 #   define BOOST_DELETE_FILE(P)(::DeleteFileW(P)!= 0)
+#  if BOOST_PLAT_WINDOWS_DESKTOP
 #   define BOOST_COPY_DIRECTORY(F,T)(::CreateDirectoryExW(F, T, 0)!= 0)
+#  else
+   // CreateDirectoryEx is not supported in store apps, therefore
+   // we just use CreateDirectory, this will ignore any attributes
+   // I am unsure how to fix this
+#   define BOOST_COPY_DIRECTORY(F,T)(::CreateDirectoryW(T, 0)!= 0)
+#  endif
 #   define BOOST_COPY_FILE(F,T,FailIfExistsBool)(::CopyFileW(F, T, FailIfExistsBool)!= 0)
 #   define BOOST_MOVE_FILE(OLD,NEW)(::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
@@ -941,9 +948,20 @@ namespace detail
   BOOST_FILESYSTEM_DECL
   void copy_file(const path& from, const path& to, copy_option option, error_code* ec)
   {
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+    COPYFILE2_EXTENDED_PARAMETERS cep;
+    cep.dwSize = sizeof(COPYFILE2_EXTENDED_PARAMETERS);
+    cep.dwCopyFlags = option == fail_if_exists ? COPY_FILE_FAIL_IF_EXISTS : 0;
+    cep.pfCancel = NULL;
+    cep.pProgressRoutine = NULL;
+    cep.pvCallbackContext = NULL;
+
+    CopyFile2(from.c_str(), to.c_str(), &cep);
+#   else
     error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
       option == fail_if_exists) ? BOOST_ERRNO : 0,
         from, to, ec, "boost::filesystem::copy_file");
+#   endif
   }
 
   BOOST_FILESYSTEM_DECL
