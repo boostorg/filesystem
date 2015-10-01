@@ -26,9 +26,13 @@
 #      include <unistd.h>
 #   endif
 # else // BOOST_WINDOWS_API
-#   include <windows.h>
-#   include <wincrypt.h>
-#   pragma comment(lib, "Advapi32.lib")
+#   if BOOST_PLAT_WINDOWS_DESKTOP
+#      include <windows.h>
+#      include <wincrypt.h>
+#      pragma comment(lib, "Advapi32.lib")
+#   else
+#      include <random>
+#   endif
 # endif
 
 namespace {
@@ -44,7 +48,7 @@ void fail(int err, boost::system::error_code* ec)
   return;
 }
 
-#ifdef BOOST_WINDOWS_API
+#if BOOST_PLAT_WINDOWS_DESKTOP
 
 int acquire_crypt_handle(HCRYPTPROV& handle)
 {
@@ -104,6 +108,8 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 # else // BOOST_WINDOWS_API
 
+#  if BOOST_PLAT_WINDOWS_DESKTOP
+
   HCRYPTPROV handle;
   int errval = acquire_crypt_handle(handle);
 
@@ -118,6 +124,29 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   if (!errval) return;
 
   fail(errval, ec);
+
+#  else
+
+  std::independent_bits_engine<std::default_random_engine, 32, std::uint32_t> eng;
+
+  while (len > sizeof(std::uint32_t)) {
+    std::uint32_t current = eng();
+
+    std::memcpy(buf, &current, sizeof(std::uint32_t));
+
+    buf = static_cast<char*>(buf) + sizeof(std::uint32_t);
+    len -= sizeof(std::uint32_t);
+  }
+
+  // write remainder
+  if (len != 0) {
+    std::uint32_t last = eng();
+
+    std::memcpy(buf, &last, len);
+  }
+
+#  endif
+
 # endif
 }
 
