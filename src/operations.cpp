@@ -634,6 +634,7 @@ namespace
 #   endif
   }
 
+#   if BOOST_PLAT_WINDOWS_DESKTOP
   bool is_reparse_point_a_symlink(const path& p)
   {
     handle_wrapper h(create_file_handle(p, FILE_READ_EA,
@@ -662,6 +663,7 @@ namespace
       || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
         == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
   }
+#   endif
 
   inline std::size_t get_full_path_name(
     const path& src, std::size_t len, wchar_t* buf, wchar_t** p)
@@ -702,6 +704,7 @@ namespace
 
     if (ec != 0) ec->clear();
 
+#   if BOOST_PLAT_WINDOWS_DESKTOP
     if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
     {
       if (is_reparse_point_a_symlink(p))
@@ -710,6 +713,7 @@ namespace
           : fs::symlink_file;
       return fs::reparse_file;
     }
+#   endif
 
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
       ? fs::directory_file
@@ -727,6 +731,7 @@ namespace
       && ::SetEndOfFile(h.handle);
   }
 
+# if BOOST_PLAT_WINDOWS_DESKTOP
   //  Windows kernel32.dll functions that may or may not be present
   //  must be accessed through pointers
 
@@ -749,6 +754,7 @@ namespace
   PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
     ::GetProcAddress(
       ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
+# endif
 
 #endif
 
@@ -1075,7 +1081,8 @@ namespace detail
   void create_directory_symlink(const path& to, const path& from,
                                  system::error_code* ec)
   {
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
+#   if defined(BOOST_WINDOWS_API) && (_WIN32_WINNT < 0x0600 || !BOOST_PLAT_WINDOWS_DESKTOP)
+    // SDK earlier than Vista and Server 2008 or universal
 
     error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
       "boost::filesystem::create_directory_symlink");
@@ -1098,7 +1105,8 @@ namespace detail
   void create_hard_link(const path& to, const path& from, error_code* ec)
   {
 
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0500  // SDK earlier than Win 2K
+#   if defined(BOOST_WINDOWS_API) && (_WIN32_WINNT < 0x0500 || !BOOST_PLAT_WINDOWS_DESKTOP)
+    // SDK earlier than Win 2K or universal
 
     error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
       "boost::filesystem::create_hard_link");
@@ -1119,7 +1127,8 @@ namespace detail
   BOOST_FILESYSTEM_DECL
   void create_symlink(const path& to, const path& from, error_code* ec)
   {
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
+#   if defined(BOOST_WINDOWS_API) && (_WIN32_WINNT < 0x0600 || !BOOST_PLAT_WINDOWS_DESKTOP)
+    // SDK earlier than Vista and Server 2008
     error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
       "boost::filesystem::create_directory_symlink");
 #   else
@@ -1343,7 +1352,11 @@ namespace detail
            : static_cast<boost::uintmax_t>(path_stat.st_nlink);
 
 #   else // Windows
+#    if !BOOST_PLAT_WINDOWS_DESKTOP
 
+    return 0;
+
+#    else
     // Link count info is only available through GetFileInformationByHandle
     BY_HANDLE_FILE_INFORMATION info;
     handle_wrapper h(
@@ -1357,6 +1370,7 @@ namespace detail
                  p, ec, "boost::filesystem::hard_link_count")
            ? info.nNumberOfLinks
            : 0;
+#    endif
 #   endif
   }
 
@@ -1589,6 +1603,11 @@ namespace detail
 #   elif _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
     error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
           "boost::filesystem::read_symlink");
+
+#   elif BOOST_PLAT_WINDOWS_RUNTIME
+    error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
+          "boost::filesystem::read_symlink");
+
 #   else  // Vista and Server 2008 SDK, or later
 
     union info_t
@@ -1770,6 +1789,7 @@ namespace detail
       return process_status_failure(p, ec);
     }
 
+#   if BOOST_PLAT_WINDOWS_DESKTOP
     //  reparse point handling;
     //    since GetFileAttributesW does not resolve symlinks, try to open a file
     //    handle to discover if the file exists
@@ -1793,6 +1813,7 @@ namespace detail
       if (!is_reparse_point_a_symlink(p))
         return file_status(reparse_file, make_permissions(p, attr));
     }
+#   endif
 
     if (ec != 0) ec->clear();
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
@@ -1856,10 +1877,12 @@ namespace detail
 
     if (ec != 0) ec->clear();
 
+#   if BOOST_PLAT_WINDOWS_DESKTOP
     if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
       return is_reparse_point_a_symlink(p)
              ? file_status(symlink_file, make_permissions(p, attr))
              : file_status(reparse_file, make_permissions(p, attr));
+#   endif
 
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
       ? file_status(directory_file, make_permissions(p, attr))
