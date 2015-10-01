@@ -1236,6 +1236,24 @@ namespace detail
 
     // at this point, both handles are known to be valid
 
+#    if BOOST_PLAT_WINDOWS_RUNTIME
+
+    FILE_ID_INFO info1, info2;
+
+    if (error(!::GetFileInformationByHandleEx(h1.handle, ::FileIdInfo, &info1, sizeof(info1)) ? BOOST_ERRNO : 0,
+      p1, p2, ec, "boost::filesystem::equivalent"))
+        return false;
+
+    if (error(!::GetFileInformationByHandleEx(h2.handle, ::FileIdInfo, &info2, sizeof(info2)) ? BOOST_ERRNO : 0,
+      p1, p2, ec, "boost::filesystem::equivalent"))
+        return false;
+
+    return
+      info1.VolumeSerialNumber == info2.VolumeSerialNumber
+      && !std::memcmp(info1.FileId.Identifier, info2.FileId.Identifier, 16);
+
+#    else
+
     BY_HANDLE_FILE_INFORMATION info1, info2;
 
     if (error(!::GetFileInformationByHandle(h1.handle, &info1) ? BOOST_ERRNO : 0,
@@ -1259,7 +1277,7 @@ namespace detail
           == info2.ftLastWriteTime.dwLowDateTime
         && info1.ftLastWriteTime.dwHighDateTime
           == info2.ftLastWriteTime.dwHighDateTime;
-
+#    endif
 #   endif
   }
 
