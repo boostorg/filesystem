@@ -573,13 +573,34 @@ namespace
     }
   };
 
-  HANDLE create_file_handle(const path& p, DWORD dwDesiredAccess,
+  HANDLE create_file_handle(const wchar_t* p, DWORD dwDesiredAccess,
     DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-    DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
+    DWORD dwCreationDisposition, DWORD dwFlags, DWORD dwFileAttributes,
     HANDLE hTemplateFile)
   {
-    return ::CreateFileW(p.c_str(), dwDesiredAccess, dwShareMode,
-      lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes,
+#   if BOOST_PLAT_WINDOWS_DESKTOP
+    return ::CreateFileW(p, dwDesiredAccess, dwShareMode,
+      lpSecurityAttributes, dwCreationDisposition, dwFlags | dwFileAttributes,
+      hTemplateFile);
+#   else
+    CREATEFILE2_EXTENDED_PARAMETERS cep;
+    cep.dwSize = sizeof(cep);
+    cep.dwFileAttributes = dwFileAttributes;
+    cep.dwFileFlags = dwFlags;
+    cep.dwSecurityQosFlags = 0;
+    cep.hTemplateFile = NULL;
+    cep.lpSecurityAttributes = NULL;
+    return CreateFile2(p, dwDesiredAccess, dwShareMode, dwCreationDisposition, &cep);
+#   endif
+  }
+
+  HANDLE create_file_handle(const path& p, DWORD dwDesiredAccess,
+    DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+    DWORD dwCreationDisposition, DWORD dwFlags, DWORD dwFileAttributes,
+    HANDLE hTemplateFile)
+  {
+    return create_file_handle(p.c_str(), dwDesiredAccess, dwShareMode,
+      lpSecurityAttributes, dwCreationDisposition, dwFlags, dwFileAttributes,
       hTemplateFile);
   }
 
@@ -587,7 +608,7 @@ namespace
   {
     handle_wrapper h(create_file_handle(p, FILE_READ_EA,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
-      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL));
+      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0, NULL));
     if (h.handle == INVALID_HANDLE_VALUE)
       return false;
 
@@ -667,8 +688,8 @@ namespace
 
   BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
   {
-    handle_wrapper h(CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
-                                FILE_ATTRIBUTE_NORMAL, 0));
+    handle_wrapper h(create_file_handle(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
+                                        0, FILE_ATTRIBUTE_NORMAL, 0));
     LARGE_INTEGER sz;
     sz.QuadPart = size;
     return h.handle != INVALID_HANDLE_VALUE
@@ -1163,6 +1184,7 @@ namespace detail
           0,
           OPEN_EXISTING,
           FILE_FLAG_BACKUP_SEMANTICS,
+          0,
           0));
 
     handle_wrapper h1(
@@ -1173,6 +1195,7 @@ namespace detail
           0,
           OPEN_EXISTING,
           FILE_FLAG_BACKUP_SEMANTICS,
+          0,
           0));
 
     if (h1.handle == INVALID_HANDLE_VALUE
@@ -1267,7 +1290,7 @@ namespace detail
     handle_wrapper h(
       create_file_handle(p.c_str(), 0,
           FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
-          OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+          OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0, 0));
     return
       !error(h.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
               p, ec, "boost::filesystem::hard_link_count")
@@ -1331,7 +1354,7 @@ namespace detail
     handle_wrapper hw(
       create_file_handle(p.c_str(), 0,
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
-        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0, 0));
 
     if (error(hw.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::last_write_time"))
@@ -1368,7 +1391,7 @@ namespace detail
     handle_wrapper hw(
       create_file_handle(p.c_str(), FILE_WRITE_ATTRIBUTES,
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
-        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0, 0));
 
     if (error(hw.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::last_write_time"))
@@ -1517,7 +1540,7 @@ namespace detail
 
     handle_wrapper h(
       create_file_handle(p.c_str(), GENERIC_READ, 0, 0, OPEN_EXISTING,
-        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0));
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0, 0));
 
     if (error(h.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::read_symlink"))
@@ -1701,6 +1724,7 @@ namespace detail
             0,  // lpSecurityAttributes
             OPEN_EXISTING,
             FILE_FLAG_BACKUP_SEMANTICS,
+            0,
             0)); // hTemplateFile
       if (h.handle == INVALID_HANDLE_VALUE)
       {
