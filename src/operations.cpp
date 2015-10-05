@@ -44,6 +44,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/predef.h>
 #include <vector> 
 #include <cstdlib>     // for malloc, free
 #include <cstring>

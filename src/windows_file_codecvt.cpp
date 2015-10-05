@@ -17,6 +17,7 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
+#include <boost/predef.h>
 #include <boost/filesystem/config.hpp>
 #include <cwchar>  // for mbstate_t
 
