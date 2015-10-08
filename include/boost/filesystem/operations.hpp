@@ -263,14 +263,14 @@ namespace boost
                : m_value(v), m_perms(prms) {}
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    file_status(const file_status&) BOOST_NOEXCEPT = default;
-    file_status& operator=(const file_status&) BOOST_NOEXCEPT = default;
+    file_status(const file_status&) = default;
+    file_status& operator=(const file_status&) = default;
 # endif
 
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    file_status(file_status&&) BOOST_NOEXCEPT = default;
-    file_status& operator=(file_status&&) BOOST_NOEXCEPT = default;
+    file_status(file_status&&) = default;
+    file_status& operator=(file_status&&) = default;
 #  else
     file_status(file_status&& rhs) BOOST_NOEXCEPT
     {
@@ -762,8 +762,8 @@ public:
 
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
 #  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    directory_entry(directory_entry&&) BOOST_NOEXCEPT = default;
-    directory_entry& operator=(directory_entry&&) BOOST_NOEXCEPT = default;
+    directory_entry(directory_entry&&) = default;
+    directory_entry& operator=(directory_entry&&) = default;
 #  else
     directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
     {
