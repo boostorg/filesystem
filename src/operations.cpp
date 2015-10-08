@@ -266,7 +266,7 @@ namespace
   bool error(err_t error_num, error_code* ec, const char* message);
   bool error(err_t error_num, const path& p, error_code* ec, const char* message);
   bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
-    const string& message);
+    const char* message);
 
   const error_code ok;
 
