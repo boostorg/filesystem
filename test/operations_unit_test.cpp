@@ -324,7 +324,7 @@ namespace
     path p(temp_dir / "string_file");
     save_string_file(p, contents);
     save_string_file(p, contents);
-    BOOST_TEST_EQ(file_size(p), 10);
+    BOOST_TEST_EQ(file_size(p), 10u);
     std::string round_trip;
     load_string_file(p, round_trip);
     BOOST_TEST_EQ(contents, round_trip);
