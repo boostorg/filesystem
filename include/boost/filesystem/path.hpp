@@ -148,16 +148,14 @@ namespace filesystem
     path(const string_type& s) : m_pathname(s) {}
     path(string_type& s) : m_pathname(s) {}
 
+  //  As of October 2015 the interaction between noexcept and =default is so troublesome
+  //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
+  //  functions. GCC is not even consistent for the same release on different platforms.
+
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    path(path&&) BOOST_NOEXCEPT = default;
-    path& operator=(path&&) BOOST_NOEXCEPT = default;
-#  else
-    path(path&& p) BOOST_NOEXCEPT
-      { m_pathname = std::move(p.m_pathname); }
+    path(path&& p) BOOST_NOEXCEPT { m_pathname = std::move(p.m_pathname); }
     path& operator=(path&& p) BOOST_NOEXCEPT
       { m_pathname = std::move(p.m_pathname); return *this; }
-#  endif
 # endif
 
     template <class Source>

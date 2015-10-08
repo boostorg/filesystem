@@ -262,16 +262,20 @@ namespace boost
              file_status(file_type v, perms prms) BOOST_NOEXCEPT
                : m_value(v), m_perms(prms) {}
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    file_status(const file_status&) BOOST_NOEXCEPT = default;
-    file_status& operator=(const file_status&) BOOST_NOEXCEPT = default;
-# endif
+  //  As of October 2015 the interaction between noexcept and =default is so troublesome
+  //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
+  //  functions. GCC is not even consistent for the same release on different platforms.
+
+    file_status(const file_status& rhs) BOOST_NOEXCEPT
+      : m_value(rhs.m_value), m_perms(rhs.m_perms) {}
+    file_status& operator=(const file_status& rhs) BOOST_NOEXCEPT
+    {
+      m_value = rhs.m_value;
+      m_perms = rhs.m_perms;
+      return *this;
+    }
 
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    file_status(file_status&&) BOOST_NOEXCEPT = default;
-    file_status& operator=(file_status&&) BOOST_NOEXCEPT = default;
-#  else
     file_status(file_status&& rhs) BOOST_NOEXCEPT
     {
       m_value = std::move(rhs.m_value);
@@ -283,7 +287,6 @@ namespace boost
       m_perms = std::move(rhs.m_perms);
       return *this;
     }
-#  endif
 # endif
 
 
@@ -743,43 +746,44 @@ class BOOST_FILESYSTEM_DECL directory_entry
 public:
   typedef boost::filesystem::path::value_type value_type;   // enables class path ctor taking directory_entry
 
-  // compiler generated copy constructor, copy assignment, and destructor apply
-
   directory_entry() BOOST_NOEXCEPT {}
   explicit directory_entry(const boost::filesystem::path& p)
     : m_path(p), m_status(file_status()), m_symlink_status(file_status())
     {}
   directory_entry(const boost::filesystem::path& p,
     file_status st, file_status symlink_st = file_status())
-    : m_path(p), m_status(st), m_symlink_status(symlink_st)
-    {}
+    : m_path(p), m_status(st), m_symlink_status(symlink_st) {}
 
-#ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-  directory_entry(const directory_entry&) = default;
-  directory_entry& operator=(const directory_entry&) = default;
+  directory_entry(const directory_entry& rhs)
+    : m_path(rhs.m_path), m_status(rhs.m_status), m_symlink_status(rhs.m_symlink_status){}
+
+  directory_entry& operator=(const directory_entry& rhs)
+  {
+    m_path = rhs.m_path;
+    m_status = rhs.m_status;
+    m_symlink_status = rhs.m_symlink_status;
+    return *this;
+  }
+
+  //  As of October 2015 the interaction between noexcept and =default is so troublesome
+  //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
+  //  functions. GCC is not even consistent for the same release on different platforms.
+
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+  directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
+  {
+    m_path = std::move(rhs.m_path);
+    m_status = std::move(rhs.m_status);
+    m_symlink_status = std::move(rhs.m_symlink_status);
+  }
+  directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
+  { 
+    m_path = std::move(rhs.m_path);
+    m_status = std::move(rhs.m_status);
+    m_symlink_status = std::move(rhs.m_symlink_status);
+    return *this;
+  }
 #endif
-
-
-# if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    directory_entry(directory_entry&&) BOOST_NOEXCEPT = default;
-    directory_entry& operator=(directory_entry&&) BOOST_NOEXCEPT = default;
-#  else
-    directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
-    {
-      m_path = std::move(rhs.m_path);
-      m_status = std::move(rhs.m_status);
-      m_symlink_status = std::move(rhs.m_symlink_status);
-    }
-    directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
-    { 
-      m_path = std::move(rhs.m_path);
-      m_status = std::move(rhs.m_status);
-      m_symlink_status = std::move(rhs.m_symlink_status);
-      return *this;
-    }
-#  endif
-# endif
 
   void assign(const boost::filesystem::path& p,
     file_status st = file_status(), file_status symlink_st = file_status())
