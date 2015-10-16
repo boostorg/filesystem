@@ -64,6 +64,9 @@
   <a href="https://svn.boost.org/trac/boost/ticket/6874">#6874</a>, <i>Path 
   should have a size() member function</i>.</li>
   <li>Clear several spurious GCC warnings.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/11733">#11733</a>, <i>
+  Missing unistd.h include in boost/libs/filesystem/src/unique_path.cpp</i> by 
+  apply a patch from Idar Tollefsen.</li>
   <li>Fix a race condition in <code>unique_path</code> by applying
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
@@ -384,7 +387,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->08 October, 2015<!--webbot bot="Timestamp" endspan i-checksum="38881" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 October, 2015<!--webbot bot="Timestamp" endspan i-checksum="38878" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

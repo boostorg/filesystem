@@ -22,6 +22,9 @@
 
 # ifdef BOOST_POSIX_API
 #   include <fcntl.h>
+#   ifdef BOOST_HAS_UNISTD_H
+#      include <unistd.h>
+#   endif
 # else // BOOST_WINDOWS_API
 #   include <windows.h>
 #   include <wincrypt.h>
