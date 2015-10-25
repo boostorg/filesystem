@@ -19,8 +19,6 @@
 #include <iostream>
 
 using boost::filesystem::path;
-using boost::filesystem::lexically_relative;
-using boost::filesystem::lexically_proximate;
 using std::cout;
 using std::endl;
 
@@ -30,63 +28,63 @@ namespace
   {
     cout << "lexically_relative_test..." << endl;
 
-    BOOST_TEST(lexically_relative("", "") == "");
-    BOOST_TEST(lexically_relative("", "/foo") == "");
-    BOOST_TEST(lexically_relative("/foo", "") == "");
-    BOOST_TEST(lexically_relative("/foo", "/foo") == ".");
-    BOOST_TEST(lexically_relative("", "foo") == "");
-    BOOST_TEST(lexically_relative("foo", "") == "");
-    BOOST_TEST(lexically_relative("foo", "foo") == ".");
+    BOOST_TEST(path("").lexically_relative("") == "");
+    BOOST_TEST(path("").lexically_relative("/foo") == "");
+    BOOST_TEST(path("/foo").lexically_relative("") == "");
+    BOOST_TEST(path("/foo").lexically_relative("/foo") == ".");
+    BOOST_TEST(path("").lexically_relative("foo") == "");
+    BOOST_TEST(path("foo").lexically_relative("") == "");
+    BOOST_TEST(path("foo").lexically_relative("foo") == ".");
 
-    BOOST_TEST(lexically_relative("a/b/c", "a") == "b/c");
-    BOOST_TEST(lexically_relative("a//b//c", "a") == "b/c");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b") == "c");
-    BOOST_TEST(lexically_relative("a///b//c", "a//b") == "c");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b/c") == ".");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x") == "..");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x/y") == "../..");
-    BOOST_TEST(lexically_relative("a/b/c", "a/x") == "../b/c");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b/x") == "../c");
-    BOOST_TEST(lexically_relative("a/b/c", "a/x/y") == "../../b/c");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b/x/y") == "../../c");
-    BOOST_TEST(lexically_relative("a/b/c", "a/b/c/x/y/z") == "../../..");
+    BOOST_TEST(path("a/b/c").lexically_relative("a") == "b/c");
+    BOOST_TEST(path("a//b//c").lexically_relative("a") == "b/c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b") == "c");
+    BOOST_TEST(path("a///b//c").lexically_relative("a//b") == "c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/c") == ".");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/c/x") == "..");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/c/x/y") == "../..");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/x") == "../b/c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/x") == "../c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/x/y") == "../../b/c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/x/y") == "../../c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/c/x/y/z") == "../../..");
  
     // paths unrelated except first element, and first element is root directory
-    BOOST_TEST(lexically_relative("/a/b/c", "/x") == "../a/b/c");
-    BOOST_TEST(lexically_relative("/a/b/c", "/x/y") == "../../a/b/c");
-    BOOST_TEST(lexically_relative("/a/b/c", "/x/y/z") == "../../../a/b/c");
+    BOOST_TEST(path("/a/b/c").lexically_relative("/x") == "../a/b/c");
+    BOOST_TEST(path("/a/b/c").lexically_relative("/x/y") == "../../a/b/c");
+    BOOST_TEST(path("/a/b/c").lexically_relative("/x/y/z") == "../../../a/b/c");
  
     // paths unrelated
-    BOOST_TEST(lexically_relative("a/b/c", "x") == "");
-    BOOST_TEST(lexically_relative("a/b/c", "x/y") == "");
-    BOOST_TEST(lexically_relative("a/b/c", "x/y/z") == "");
-    BOOST_TEST(lexically_relative("a/b/c", "/x") == "");
-    BOOST_TEST(lexically_relative("a/b/c", "/x/y") == "");
-    BOOST_TEST(lexically_relative("a/b/c", "/x/y/z") == "");
-    BOOST_TEST(lexically_relative("a/b/c", "/a/b/c") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("x") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("x/y") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("x/y/z") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("/x") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("/x/y") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("/x/y/z") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("/a/b/c") == "");
   
     // TODO: add some Windows-only test cases that probe presence or absence of
     // drive specifier-and root-directory
 
     //  Some tests from Jamie Allsop's paper
-    BOOST_TEST(lexically_relative("/a/d", "/a/b/c") == "../../d");
-    BOOST_TEST(lexically_relative("/a/b/c", "/a/d") == "../b/c");
+    BOOST_TEST(path("/a/d").lexically_relative("/a/b/c") == "../../d");
+    BOOST_TEST(path("/a/b/c").lexically_relative("/a/d") == "../b/c");
   #ifdef BOOST_WINDOWS_API  
-    BOOST_TEST(lexically_relative("c:\\y", "c:\\x") == "../y");
+    BOOST_TEST(path("c:\\y").lexically_relative("c:\\x") == "../y");
   #else
-    BOOST_TEST(lexically_relative("c:\\y", "c:\\x") == "");
+    BOOST_TEST(path("c:\\y").lexically_relative("c:\\x") == "");
   #endif  
-    BOOST_TEST(lexically_relative("d:\\y", "c:\\x") == "");
+    BOOST_TEST(path("d:\\y").lexically_relative("c:\\x") == "");
 
     //  From issue #1976
-    BOOST_TEST(lexically_relative("/foo/new", "/foo/bar") == "../new");
+    BOOST_TEST(path("/foo/new").lexically_relative("/foo/bar") == "../new");
   }
 
   void lexically_proximate_test()
   {
     cout << "lexically_proximate_test..." << endl;
     // paths unrelated
-    BOOST_TEST(lexically_proximate("a/b/c", "x") == "a/b/c");
+    BOOST_TEST(path("a/b/c").lexically_proximate("x") == "a/b/c");
   }
 }  // unnamed namespace
 

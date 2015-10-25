@@ -1548,7 +1548,7 @@ namespace detail
     path wc_p(weakly_canonical(p, &tmp_ec));
     if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
       return path();
-    return lexically_relative(wc_p, wc_base);
+    return wc_p.lexically_relative(wc_base);
   }
   
   BOOST_FILESYSTEM_DECL
@@ -1919,14 +1919,14 @@ namespace detail
     }
     
     if (head.empty())
-      return lexically_normal(p);
+      return p.lexically_normal();
     head = canonical(head, tmp_ec);
     if (error(tmp_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
       return path();
     return tail.empty()
       ? head
       : (tail_has_dots  // optimization: only normalize if tail had dot or dot-dot element
-          ? lexically_normal(head/tail)  
+          ? (head/tail).lexically_normal()  
           : head/tail);
   }
 }  // namespace detail

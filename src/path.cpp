@@ -407,34 +407,34 @@ namespace filesystem
     }
   }
 
-  path lexically_relative(const path& p, const path& base)
+  path path::lexically_relative(const path& base) const
   {
     std::pair<path::iterator, path::iterator> mm
-      = detail::mismatch(p.begin(), p.end(), base.begin(), base.end());
-    if (mm.first == p.begin() && mm.second == base.begin())
+      = detail::mismatch(begin(), end(), base.begin(), base.end());
+    if (mm.first == begin() && mm.second == base.begin())
       return path();
-    if (mm.first == p.end() && mm.second == base.end())
+    if (mm.first == end() && mm.second == base.end())
       return detail::dot_path();
     path tmp;
     for (; mm.second != base.end(); ++mm.second)
       tmp /= detail::dot_dot_path();
-    for (; mm.first != p.end(); ++mm.first)
+    for (; mm.first != end(); ++mm.first)
       tmp /= *mm.first;
     return tmp;
   }
 
   //  normal  --------------------------------------------------------------------------//
 
-  path lexically_normal(const path& p)
+  path path::lexically_normal() const
   {
-    if (p.empty())
-      return p;
+    if (m_pathname.empty())
+      return *this;
       
     path temp;
-    path::iterator start(p.begin());
-    path::iterator last(p.end());
-    path::iterator stop(last--);
-    for (path::iterator itr(start); itr != stop; ++itr)
+    iterator start(begin());
+    iterator last(end());
+    iterator stop(last--);
+    for (iterator itr(start); itr != stop; ++itr)
     {
       // ignore "." except at start and last
       if (itr->native().size() == 1
@@ -478,7 +478,7 @@ namespace filesystem
           //  }
           //}
 
-          path::iterator next(itr);
+          iterator next(itr);
           if (temp.empty() && ++next != stop
             && next == last && *last == detail::dot_path())
           {

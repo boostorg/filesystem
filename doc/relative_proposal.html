@@ -51,8 +51,7 @@
       operational <code>relative</code> functions</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Provide-separate-proximate">Provide 
 separate lexical and operational <code>proximate</code> functions</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#Add-lexical-functions-as-path-members">
-Add lexical functions as <code>path</code> member functions</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#Add-lexical-functions">Add lexical functions as <code>path</code> member functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Provide-normal">Provide a non-member function
 <code>lexically_normal</code> returning a 
       normal form path</a><br>
@@ -63,7 +62,7 @@ Add lexical functions as <code>path</code> member functions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Specify-op-rel-weakly">Specify operational <code>relative</code> in terms of <code>
       weakly_canonical</code></a><br>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#Specify-op-rel-lex-rel">Specify operational <code>relative</code> in terms of 
-      <code>lexical
+      <code>lexically
       relative</code></a><br>
 <a href="#Proposed-wording">Proposed wording</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#Define-normal-form">Define <i>normal form</i></a><br>
@@ -346,7 +345,7 @@ path lexically_proximate(const path&amp; base) const;</pre>
 <h4><a name="Specification-path">Specification</a></h4>
 
 
-<pre>path lexically_<a name="normal">normal</a>() const;</pre>
+<pre>path <a name="lex-normal">lexically_normal</a>() const;</pre>
 <blockquote>
 <p><i>Overview:</i> Returns <code>*this</code> with redundant current directory 
 (<i>dot</i>), parent directory (<i>dot-dot</i>), and <i>directory-separator</i> elements removed.</p>
@@ -360,7 +359,7 @@ returned path&#39;s <i>directory-separator</i> characters will be backslashes ra
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
 </blockquote>
 
-<pre>path lexically_<a name="lex-relative">relative</a>(const path&amp; base) const;</pre>
+<pre>path <a name="lex-relative">lexically_relative</a>(const path&amp; base) const;</pre>
   <blockquote>
   <p><i>Overview:</i> Returns <code>*this</code> made relative to <code>base</code>. 
   Treats empty or identical paths as corner cases, not errors. Does not resolve 
@@ -481,7 +480,7 @@ path relative(const path&amp; p, const path&amp; base, system::error_code&amp; e
   Resolves symlinks and normalizes both <code>p</code> and <code>base</code> 
   before other processing.</p>
 
-<p><i>Returns:</i> <code>l<a href="#lex-proximate">exically_relative</a>(<a href="#weakly_canonical">weakly_canonical</a>(p), <a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
+<p><i>Returns:</i> <code><a href="#weakly_canonical">weakly_canonical</a>(p).l<a href="#lex-proximate">exically_relative</a>(<a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
   <p><i>Throws:</i> As specified in Error reporting.</p>
 </blockquote>
 
@@ -495,7 +494,7 @@ path relative(const path&amp; p, const path&amp; base, system::error_code&amp; e
 path proximate(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
 <blockquote>
 
-<p><i>Returns:</i> <code>l<a href="#lex-proximate">exically_proximate</a>(<a href="#weakly_canonical">weakly_canonical</a>(p), <a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
+<p><i>Returns:</i> <code><a href="#weakly_canonical">weakly_canonical</a>(p).l<a href="#lex-proximate">exically_proximate</a>(<a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> if an error occurs.</p>
   <p><i>Throws:</i> As specified in Error reporting.</p>
 </blockquote>
 

@@ -299,10 +299,10 @@ namespace boost
     void       permissions(perms prms) BOOST_NOEXCEPT { m_perms = prms; }
 
     bool operator==(const file_status& rhs) const BOOST_NOEXCEPT
-	  { return type() == rhs.type() && 
+      { return type() == rhs.type() && 
         permissions() == rhs.permissions(); }
     bool operator!=(const file_status& rhs) const BOOST_NOEXCEPT
-	  { return !(*this == rhs); }
+      { return !(*this == rhs); }
 
   private:
     file_type   m_value;
@@ -1201,8 +1201,8 @@ namespace filesystem
         "depth() on end recursive_directory_iterator");
       return m_imp->m_level;
     }
-	
-	int level() const BOOST_NOEXCEPT { return depth(); }
+  
+    int level() const BOOST_NOEXCEPT { return depth(); }
 
     bool recursion_pending() const BOOST_NOEXCEPT
     {
@@ -1211,8 +1211,8 @@ namespace filesystem
       return (m_imp->m_options & symlink_option::_detail_no_push)
         == symlink_option::_detail_no_push;
     }
-	
-	bool no_push_pending() const BOOST_NOEXCEPT { return recursion_pending(); }
+  
+    bool no_push_pending() const BOOST_NOEXCEPT { return recursion_pending(); }
 
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     bool no_push_request() const BOOST_NOEXCEPT { return no_push_pending(); }
@@ -1235,8 +1235,8 @@ namespace filesystem
       else
         m_imp->m_options &= ~symlink_option::_detail_no_push;
     }
-	
-	void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }
+  
+    void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }
 
     file_status status() const
     {
