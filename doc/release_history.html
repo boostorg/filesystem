@@ -151,6 +151,12 @@
 
 <h2>1.58.0</h2>
 <ul>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/6124">#6124</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/6779">#6779</a>, and
+  <a href="https://svn.boost.org/trac/boost/ticket/10038">#10038</a>. Cannot 
+  pass a BOOST_SCOPED_ENUM to a compiled function because it will result in an 
+  undefined reference if the library is compiled with -std=c++0x but the use is 
+  compiled in C++03 mode, or visa versa.</li>
   <li>Rewrite Windows implementation of <code>temp_directory_path()</code> to (1) avoid
   <code>GetTempPath()</code> failure if path length &gt; 130 (ticket #5300) and (2) provide a 
   more sensible sequence of directories than provided by <code>GetTempPath()</code>, per 
@@ -387,7 +393,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->16 October, 2015<!--webbot bot="Timestamp" endspan i-checksum="38878" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->19 October, 2015<!--webbot bot="Timestamp" endspan i-checksum="38884" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
