@@ -160,7 +160,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#weakly_canonical"><ins>weakly_canonical</ins></a><br></code>
     <a href="#File-streams">File streams</a><br>
-<a href="#Path-decomposition-table">Path decomposition table</a><br>
+<a href="#path-decomposition-table">Path decomposition table</a><br>
     <a href="#long-path-warning">Warning: Long paths on Windows and the 
     extended-length <b>\\?\ </b>prefix</a><br>
 <a href="#Acknowledgements">Acknowledgements</a><br>
@@ -290,7 +290,7 @@ supported by the host operating system. <i>—end example</i>]</p>
 <p>The behavior of functions described in this 
 reference 
 may differ from their specification in 
-the presence of <a href="#Race-condition">file system races</a>. No diagnostic is required.</p>
+the presence of <a href="#file-system-race">file system races</a>. No diagnostic is required.</p>
 <p>If the possibility of a file system race would make it unreliable for a program to 
 test for a precondition before calling a function described in this reference documentation, <i>
 Requires</i> is not specified for the condition. Instead, the condition is 
@@ -357,7 +357,7 @@ and <code>&quot;..&quot;</code>&nbsp; have special meaning. The follow character
 <p>A sequence of elements that identify 
 the location of a file within a filesystem. The elements are the <i>root-name<sub>opt</sub></i>, <i>
 root-directory<sub>opt</sub></i>, and an optional sequence of filenames. [<i>Note:</i> 
-A <a href="#Pathname">pathname</a> is the concrete representation of a path. <i>—end note</i>]</p>
+A <a href="#pathname">pathname</a> is the concrete representation of a path. <i>—end note</i>]</p>
 
 <h3><a name="Absolute-path">absolute path</a> [fs.def.absolute-path]</h3>
 <p>A path that 
@@ -377,14 +377,14 @@ Paths <code>&quot;.&quot;</code> and <code>&quot;..&quot;</code> are relative pa
 <h3><a name="canonical-path">canonical path</a> [fs.def.cannonical-path]</h3>
 <p>An absolute path that has 
 no elements that are symbolic links, and no <code>&quot;.&quot;</code> or <code>&quot;..&quot;</code> elements.</p>
-<h3>pathname [fs.def.pathname]</h3>
+<h3><a name="pathname">pathname</a> [fs.def.pathname]</h3>
 <p>A character string that represents 
 the name of a 
 path. Pathnames are formatted according to the generic pathname grammar or an 
 operating system dependent 
 native pathname format.</p>
 
-<h3>native pathname format [fs.def.native]</h3>
+<h3><a name="native-pathname-format">native pathname format</a> [fs.def.native]</h3>
 <p>The operating system dependent pathname format accepted by the host operating system.</p>
 <h3><ins><a name="normal-form">normal form</a> path [fs.def.normal]</ins></h3>
 <p>A path with no redundant current directory (<i>dot</i>) or parent directory (<i>dot-dot</i>) 
@@ -417,7 +417,7 @@ If the file pointed to does not exist, the symbolic link is said to be a
 when multiple threads, processes, or computers interleave access and 
 modification of 
 the same object within a file system.</p>
-<h2><a name="Generic-pathname-grammar">Generic pathname format</a> [path.generic]</h2>
+<h2><a name="generic-pathname-format">Generic pathname format</a> [path.generic]</h2>
 <p><i>pathname:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; root-name<sub>opt</sub> 
 root-directory<sub>opt</sub> relative-path<sub>opt</sub></i></p>
@@ -711,9 +711,6 @@ nothing else.&quot;</p>
 
     path operator/ (const path&amp; lhs, const path&amp; rhs);
     
-<ins>    path lexically_normal(const path&amp; p);
-    path lexically_relative(const path&amp; p, const path&amp; base);</ins>
-
     std::ostream&amp;  operator&lt;&lt;( std::ostream&amp; os, const path&amp; p );
     std::wostream&amp; operator&lt;&lt;( std::wostream&amp; os, const path&amp; p );
     std::istream&amp;  operator&gt;&gt;( std::istream&amp; is, path&amp; p );
@@ -894,10 +891,10 @@ nothing else.&quot;</p>
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p);
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p, system::error_code&amp; ec);
     
-<ins>    path         relative(const path&amp; p, system::error_code&amp; ec);
-    path         relative(const path&amp; p, const path&amp; base=current_path());
-    path         relative(const path&amp; p,
-                     const path&amp; base, system::error_code&amp; ec);</ins>
+    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span>
+    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, const path&amp; base=</span><span style="background-color: #E8FFE8">current_path</span><span style="background-color: #E8FFE8">());</span>
+    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p,</span>
+                     <span style="background-color: #E8FFE8">const path&amp; base, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span>
 
     bool         <a href="#remove">remove</a>(const path&amp; p);
     bool         <a href="#remove">remove</a>(const path&amp; p, system::error_code&amp; ec);
@@ -934,8 +931,8 @@ nothing else.&quot;</p>
     path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
     path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
 
-<ins>    path         weakly_canonical(const path&amp; p);
-    path         weakly_canonical(const path&amp; p, system::error_code&amp; ec);</ins>
+    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">weakly_canonical(const</span><span style="background-color: #E8FFE8"> path&amp; p);</span>
+    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">weakly_canonical(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span>
 
   }  // namespace filesystem
 }  // namespace boost</pre>
@@ -995,8 +992,8 @@ errors are truly exceptional and indicate a serious failure. Throwing an
   17.6.4.10 [res.on.exception.handling].</li>
 </ul>
 <h2><a name="class-path">Class <code>path</code> [class.path]</a></h2>
-<p>An object of class <code>path</code> represents a <a href="#Path">path</a>, 
-and contains a <a href="#Pathname">pathname</a> Such an object is concerned only with the lexical and syntactic aspects 
+<p>An object of class <code>path</code> represents a <a href="#path">path</a>, 
+and contains a <a href="#pathname">pathname</a> Such an object is concerned only with the lexical and syntactic aspects 
 of a path. The path does not necessarily exist in external storage, and the 
 pathname is not necessarily valid for the current operating 
 system or for a particular file system.</p>
@@ -1078,10 +1075,14 @@ system or for a particular file system.</p>
         path&amp; <a href="#path-replace_extension">replace_extension</a>(const path&amp; new_extension = path());
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
+        // lexical operations
+        <span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">lexically_normal</span><span style="background-color: #E8FFE8">() const;</span>
+        <span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">lexically_relative(const</span><span style="background-color: #E8FFE8"> path&amp; base) const;</span>
+
         // <a href="#path-native-format-observers">native format observers</a>
         const string_type&amp;  <a href="#native">native</a>() const noexcept;  // native format, encoding
         const value_type*   <a href="#c_str">c_str</a>() const noexcept;   // native().c_str()
-        <ins>string_type::size_type <a href="#path-size">size</a>() const noexcept; // native().size()</ins>
+        <span style="background-color: #E8FFE8">string_type::size_type</span><span style="background-color: #E8FFE8"> </span><a href="#path-size"><span style="background-color: #E8FFE8">size</span></a><span style="background-color: #E8FFE8">() const noexcept; // </span><span style="background-color: #E8FFE8">native().size</span><span style="background-color: #E8FFE8">()</span>
 
         template &lt;class String&gt;
           String  <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
@@ -1430,6 +1431,75 @@ path</code> modifiers</a> [path.modifiers]</h3>
   <p><i>Complexity: </i>constant time.</p>
 </blockquote>
 
+  <h3><a name="path-lexical-operations"><code>path</code> lexical operations</a> 
+  [path.lex.ops]</h3>
+  <pre><span style="background-color: #E8FFE8">path </span><a name="lexically_normal"><span style="background-color: #E8FFE8">lexically_normal</span></a><span style="background-color: #E8FFE8">() const;</span></pre>
+<blockquote>
+<p><i>Overview:</i> Returns <code>*this</code> with redundant current directory 
+(<i>dot</i>), parent directory (<i>dot-dot</i>), and <i>directory-separator</i> elements removed.</p>
+<p><i>Returns:</i> <code>*this</code> in <a href="#normal-form">normal form</a>.</p>
+<p><i>Remarks:</i> Uses <code>operator/=</code> to compose the returned path.</p>
+<p>[<i>Example:</i></p>
+<p><code>assert(path(&quot;foo/./bar/..&quot;).lexically_normal() == &quot;foo&quot;);<br>
+assert(path(&quot;foo/.///bar/../&quot;).lexically_normal() == &quot;foo/.&quot;);</code></p>
+<p>The above assertions will succeed.<i> </i>On Windows, the 
+returned path&#39;s <i>directory-separator</i> characters will be backslashes rather than slashes, but that 
+does not affect <code>path</code> equality.<i> —end example</i>]</p>
+</blockquote>
+
+<pre><span style="background-color: #E8FFE8">path </span><a name="lexically-relative"><span style="background-color: #E8FFE8">lexically_relative</span></a><span style="background-color: #E8FFE8">(const</span><span style="background-color: #E8FFE8"> path&amp; base) const;</span></pre>
+  <blockquote>
+  <p><i>Overview:</i> Returns <code>*this</code> made relative to <code>base</code>. 
+  Treats empty or identical paths as corner cases, not errors. Does not resolve 
+  symlinks. Does not first normalize <code>*this</code> or <code>base</code>.</p>
+
+  <p><i>Remarks:</i> Uses <code>std::mismatch(begin(), end(), base.begin(), base.end())</code>, to determine the first mismatched element of
+  <code>*this</code> and <code>base</code>. Uses <code>operator==</code> to 
+  determine if elements match. </p>
+  
+  <p><i>Returns:</i> </p>
+  
+  <ul>
+    <li>
+  <code>path()</code> if the first mismatched element of <code>*this</code> is equal to <code>
+  begin()</code> or the first mismatched element 
+  of <code>base</code> is equal to <code>base.begin()</code>, or<br>&nbsp;
+    </li>
+    <li>
+  <code>path(&quot;.&quot;)</code> if the first mismatched element of <code>
+  *this</code> is equal to <code>
+  end()</code> and the first mismatched element 
+  of <code>base</code> is equal to <code>base.end()</code>, or<br>&nbsp;
+    </li>
+    <li>An object of class <code>path</code> composed via application of <code>
+    operator/= path(&quot;..&quot;)</code> for each element in the half-open 
+    range [first 
+    mismatched element of <code>base</code>, <code>base.end()</code>), and then 
+    application of <code>operator/=</code> for each element in the half-open 
+    range 
+    [first mismatched element of <code>*this</code>, <code>end()</code>).
+    </li>
+</ul>
+  
+<p>[<i>Example:</i></p>
+<p><code>assert(path(&quot;/a/d&quot;).lexically_relative(&quot;/a/b/c&quot;) ==  &quot;../../d&quot;);<br>
+assert(path(&quot;/a/b/c&quot;).lexically_relative(&quot;/a/d&quot;) ==  &quot;../b/c&quot;);<br>
+assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a&quot;) == &quot;b/c&quot;);<br>
+assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a/b/c/x/y&quot;) ==  &quot;../..&quot;);<br>
+assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a/b/c&quot;) ==  &quot;.&quot;);<br>
+assert(path(&quot;a/b&quot;).lexically_relative(&quot;c/d&quot;) ==  &quot;&quot;);</code></p>
+<p>The above assertions will succeed.<i> </i>On Windows, the 
+returned path&#39;s <i>directory-separator</i>s will be backslashes rather than 
+forward slashes, but that 
+does not affect <code>path</code> equality.<i> —end example</i>]</p>
+  
+  <p>[<i>Note:</i> If symlink following semantics are desired, use the  operational function <code>
+  <a href="#op-proximate">relative</a></code>&nbsp; <i>—end note</i>]</p>
+  
+  <p>[<i>Note:</i> If <a href="#lexically_normal">normalization</a> is needed to ensure 
+  consistent matching of elements, apply <code><a href="#lexically_normal">lexically_normal()</a></code> 
+  to <code>*this</code>, <code>base</code>, or both. <i>—end note</i>]</p>
+
 <h3> <a name="path-native-format-observers"><code><font size="4">path</font></code> native format observers</a> 
 [path.native.obs]</h3>
 <p>The string returned by all native format observers is in the <a href="#native-pathname-format">native pathname format</a>.</p>
@@ -1519,7 +1589,7 @@ function's return type, conversion is performed by <code>cvt</code>.</p>
 </blockquote>
 <h3> <a name="path-decomposition"> <code><font size="4">path</font></code> decomposition</a> 
 [path.decompose]</h3>
-<p><span style="background-color: #E0E0E0"><i>See the <a href="#Path-decomposition-table">Path decomposition table</a> for examples 
+<p><span style="background-color: #E0E0E0"><i>See the <a href="#path-decomposition-table">Path decomposition table</a> for examples 
 for values returned by decomposition functions. The <a href="tutorial.html#Using-path-decomposition">Tutorial</a> may also be 
 helpful.</i></span></p>
 
@@ -1827,14 +1897,14 @@ const string_type  external_directory_string() const { return native(); }</pre>
   <p>[<i>Note:</i> A <code>path</code> aware <code>lexicographical_compare</code> algorithm is provided for historical reasons. <i>—end note</i>]</p>
 </blockquote>
 
-  <pre><ins>path lexically_<a name="normal">normal</a>(const path&amp; p);</ins></pre>
+  <pre><ins>path lexically_<a name="lex-normal">normal</a>(const path&amp; p);</ins></pre>
 
 <blockquote>
   <p><i>Overview:</i> Returns <code>p</code> with redundant current 
   directory (<i>dot</i>), parent directory (<i>dot-dot</i>), and <i>
   directory-separator</i> elements removed.</p>
   <p><i>Returns:</i> <code>p</code> in
-  <a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#normal-form">
+  <a href="#normal-form">
   normal form</a>.</p>
   <p><i>Remarks:</i> Uses <code>operator/=</code> to compose the 
   returned path.</p>
@@ -1890,13 +1960,11 @@ const string_type  external_directory_string() const { return native(); }</pre>
   example</i>]</p>
   <p>[<i>Note:</i> If symlink following semantics are desired, use the 
   operational function <code>
-  <a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#op-proximate">
+  <a href="#op-relative">
   relative</a></code>&nbsp; <i>—end note</i>]</p>
-  <p>[<i>Note:</i> If
-  <a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#normal">
-  normalization</a> is needed to ensure consistent matching of elements, wrap
+  <p>[<i>Note:</i> If <a href="#normal-form">normalization</a> is needed to ensure consistent matching of elements, wrap
   <code>p</code>, <code>base</code>, or both in calls <code>
-  <a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#normal">
+  <a href="#lex-normal">
   lexically_normal()</a></code>. <i>—end note</i>]</p>
 </blockquote>
 <pre>void swap( path&amp; lhs, path&amp; rhs )</pre>
@@ -1932,7 +2000,7 @@ const string_type  external_directory_string() const { return native(); }</pre>
   equivalence have different semantics.</p>
   <p>Equality is determined by the <code>path</code> non-member <code>operator==</code>, which considers the two path's lexical 
   representations only. Thus <code>path(&quot;foo&quot;) == &quot;bar&quot;</code> is never <code>true</code>.</p>
-  <p>Equivalence is determined by the <a href="#equivalent"><code>equivalent()</code></a> non-member function, which determines if two paths <a href="#Path">resolve</a> to the same file system entity. 
+  <p>Equivalence is determined by the <a href="#equivalent"><code>equivalent()</code></a> non-member function, which determines if two paths <a href="#path">resolve</a> to the same file system entity. 
   Thus <code>equivalent(&quot;foo&quot;, &quot;bar&quot;)</code> will be <code>true</code> when both paths resolve to the same file.</p>
   <p>Programmers wishing to determine if two paths are &quot;the same&quot; must decide if 
   &quot;the same&quot; means &quot;the same representation&quot; or &quot;resolve to the same actual 
@@ -2827,7 +2895,7 @@ storage.</p>
 <p>Operational functions access a file by resolving an 
 object of class <code>path</code> to a particular file in a file hierarchy. The 
 path is resolved as if by the ISO/IEC 9945 <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap04.html#tag_04_11">Pathname Resolution</a> mechanism.</p>
-<p>[<i>Note: </i>Because hardware failures, network failures, <a href="#Race-condition">file system races</a>, and many 
+<p>[<i>Note: </i>Because hardware failures, network failures, <a href="#file-system-race">file system races</a>, and many 
 other kinds of errors occur frequently in file system operations, users should be aware 
 that any filesystem operational function, no matter how apparently innocuous, may encounter 
 an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>—end note</i>]</p>
@@ -2874,7 +2942,7 @@ path canonical(const path&amp; p, const path&amp; base, system::error_code&amp; 
 <p><i>Overview:</i> Converts <code>p</code>, which must exist, to an absolute 
 path that has no symbolic link, <a href="#Dot">dot</a>, 
 or <a href="#Dot">dot-dot</a> elements. </p>
-<p><i>Returns:</i> A <a href="#Canonical-path">canonical path</a> that refers to 
+<p><i>Returns:</i> A <a href="#canonical-path">canonical path</a> that refers to 
 the same file system object as <code>absolute(p,base)</code>. For the overload 
 without a <code>base</code> argument, <code>base</code> is <code>current_path()</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in <a href="#Error-reporting">Error reporting</a>.</p>
@@ -3241,21 +3309,19 @@ path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>. [<i>Note:</i> It is an error if <code>p</code> does not 
   resolve to a symbolic link. <i>—end note</i>]</p>
 </blockquote>
-<pre>path <a name="op-relative">relative</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+<pre><span style="background-color: #E8FFE8">path </span><a name="op-relative"><span style="background-color: #E8FFE8">relative</span></a><span style="background-color: #E8FFE8">(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span></pre>
 <blockquote>
   <p><i>Returns:</i> <code>relative(p, current_path(), ec)</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>
 </blockquote>
-<pre>path relative(const path&amp; p, const path&amp; base=current_path());
-path relative(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
+<pre><span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, const path&amp; base=</span><span style="background-color: #E8FFE8">current_path</span><span style="background-color: #E8FFE8">());</span>
+<span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, const path&amp; base, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span></pre>
 <blockquote>
   <p><i>Overview:</i> Returns <code>p</code> made relative to <code>base</code>. 
   Treats empty or identical paths as corner cases, not errors. Resolves symlinks 
   and normalizes both <code>p</code> and <code>base</code> before other 
   processing.</p>
-  <p><i>Returns:</i> <code>l<a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#lex-proximate">exically_relative</a>(<a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#weakly_canonical">weakly_canonical</a>(p),
-  <a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#weakly_canonical">
-  weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> 
+  <p><i>Returns:</i> <code><a href="#weakly_canonical">weakly_canonical</a>(p).<a href="#lex-relative">lexically_relative</a>(<a href="#weakly_canonical">weakly_canonical</a>(base))</code>. The second form returns <code>path()</code> 
   if an error occurs.</p>
   <p><i>Throws:</i> As specified in Error reporting.</p>
 </blockquote>
@@ -3500,8 +3566,8 @@ path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
   provided by the operating system. [<i>Note</i>: Such generators may block 
   until sufficient entropy develops. <i>—end note</i>]</p>
 </blockquote>
-<pre>path <a name="weakly_canonical">weakly_canonical</a>(const path&amp; p);
-path weakly_canonical(const path&amp; p, system::error_code&amp; ec);</pre>
+<pre><span style="background-color: #E8FFE8">path </span><a name="weakly_canonical"><span style="background-color: #E8FFE8">weakly_canonical</span></a><span style="background-color: #E8FFE8">(const</span><span style="background-color: #E8FFE8"> path&amp; p);</span>
+<span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">weakly_canonical(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span></pre>
 <blockquote>
   <p><i>Overview:</i> Returns <code>p</code> with symlinks resolved and the 
   result normalized.</p>
@@ -3510,7 +3576,7 @@ path weakly_canonical(const path&amp; p, system::error_code&amp; ec);</pre>
   p</code> that exist, if any, followed by the elements of <code>p</code> that 
   do not exist, if any.</p>
   <p><i>Postcondition:</i> The returned path is in
-  <a href="file:///C:/boost/develop/libs/filesystem/doc/relative_proposal.html#normal">
+  <a href="#normal-form">
   normal form</a>.</p>
   <p><i>Remarks:</i> Uses <code>operator/=</code> to compose the returned path. 
   Uses the <code>status</code> function to determine existence.</p>
@@ -3588,7 +3654,7 @@ semantics.</p>
 
 
 
-<h2><a name="Path-decomposition-table">Path decomposition table</a></h2>
+<h2><a name="path-decomposition-table">Path decomposition table</a></h2>
 <p>The table is generated by a program compiled with the Boost implementation.</p>
 <p>Shaded entries indicate cases where ISO/IEC 9945 (POSIX) and Windows implementations yield different results. The top value is the
 ISO/IEC 9945 result and the bottom value is the Windows result. <br>
@@ -4155,7 +4221,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </font>
 <a href="http://www.boost.org/LICENSE_1_0.txt"><font size="2">www.boost.org/LICENSE_1_0.txt</font></a></p>
 <p><font size="2">Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->08 September 2015<!--webbot bot="Timestamp" endspan i-checksum="39634" --></font></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B %Y" startspan -->25 October 2015<!--webbot bot="Timestamp" endspan i-checksum="32445" --></font></p>
 
 
 </body></html>

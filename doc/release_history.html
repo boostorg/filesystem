@@ -40,12 +40,13 @@
 
 <h2>1.60.0</h2>
 <ul>
-  <li><b>New:</b> Added functions <code><a href="reference.html#normal">
-  lexically_normal</a></code>, <code><a href="reference.html#lex-relative">
-  lexically_relative</a></code>, <code><a href="reference.html#op-relative">
-  relative</a></code>, and <code><a href="reference.html#weakly_canonical">
-  weakly_canonical</a></code>. Many thanks to Jamie Allsop for his help and 
-  perseverance. Resoves tickets
+  <li dir="ltr">
+  <p dir="ltr"><b>New:</b> Added functions <code>
+  <a href="reference.html#lex-normal">lexically_normal</a></code>, <code>
+  <a href="reference.html#lex-relative">lexically_relative</a></code>, <code>
+  <a href="reference.html#op-relative">relative</a></code>, and <code>
+  <a href="reference.html#weakly_canonical">weakly_canonical</a></code>. Many thanks to Jamie Allsop for his help and 
+  perseverance. Resolves tickets
   <a href="https://svn.boost.org/trac/boost/ticket/1976">#1976</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/5897">#5897</a>,
   <a href="https://svn.boost.org/trac/boost/ticket/6249">#6249</a></li>
@@ -63,6 +64,10 @@
   function to class <code>path</code>. Resolves
   <a href="https://svn.boost.org/trac/boost/ticket/6874">#6874</a>, <i>Path 
   should have a size() member function</i>.</li>
+  <li>Clear several spurious GCC warnings.</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/11733">#11733</a>, <i>
+  Missing unistd.h include in boost/libs/filesystem/src/unique_path.cpp</i> by 
+  apply a patch from Idar Tollefsen.</li>
   <li>Fix a race condition in <code>unique_path</code> by applying
   <a href="https://github.com/boostorg/filesystem/pull/15">pull request #15</a> 
   from Sebastian Redl. Also fixes
@@ -147,6 +152,12 @@
 
 <h2>1.58.0</h2>
 <ul>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/6124">#6124</a>,
+  <a href="https://svn.boost.org/trac/boost/ticket/6779">#6779</a>, and
+  <a href="https://svn.boost.org/trac/boost/ticket/10038">#10038</a>. Cannot 
+  pass a BOOST_SCOPED_ENUM to a compiled function because it will result in an 
+  undefined reference if the library is compiled with -std=c++0x but the use is 
+  compiled in C++03 mode, or visa versa.</li>
   <li>Rewrite Windows implementation of <code>temp_directory_path()</code> to (1) avoid
   <code>GetTempPath()</code> failure if path length &gt; 130 (ticket #5300) and (2) provide a 
   more sensible sequence of directories than provided by <code>GetTempPath()</code>, per 
@@ -383,7 +394,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->17 September, 2015<!--webbot bot="Timestamp" endspan i-checksum="39351" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->25 October, 2015<!--webbot bot="Timestamp" endspan i-checksum="38877" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

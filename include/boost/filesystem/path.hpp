@@ -46,9 +46,6 @@ namespace boost
 {
 namespace filesystem
 {
-  // forward declarations
-  class BOOST_FILESYSTEM_DECL path;
-  BOOST_FILESYSTEM_DECL path lexically_normal(const path& p);  
 
   //------------------------------------------------------------------------------------//
   //                                                                                    //
@@ -148,16 +145,14 @@ namespace filesystem
     path(const string_type& s) : m_pathname(s) {}
     path(string_type& s) : m_pathname(s) {}
 
+  //  As of October 2015 the interaction between noexcept and =default is so troublesome
+  //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
+  //  functions. GCC is not even consistent for the same release on different platforms.
+
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#  if !defined(BOOST_FILESYSTEM_NO_CXX11_DEFAULTED_RVALUE_REFS)
-    path(path&&) BOOST_NOEXCEPT = default;
-    path& operator=(path&&) BOOST_NOEXCEPT = default;
-#  else
-    path(path&& p) BOOST_NOEXCEPT
-      { m_pathname = std::move(p.m_pathname); }
+    path(path&& p) BOOST_NOEXCEPT { m_pathname = std::move(p.m_pathname); }
     path& operator=(path&& p) BOOST_NOEXCEPT
       { m_pathname = std::move(p.m_pathname); return *this; }
-#  endif
 # endif
 
     template <class Source>
@@ -532,6 +527,16 @@ namespace filesystem
 #     endif
     }
 
+    //  -----  lexical operations  -----
+
+    path  lexically_normal() const;
+    path  lexically_relative(const path& base) const;
+    path  lexically_proximate(const path& base) const
+    {
+      path tmp(lexically_relative(base));
+      return tmp.empty() ? *this : tmp;
+    }
+
     //  -----  iterators  -----
 
     class iterator;
@@ -558,7 +563,7 @@ namespace filesystem
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
     path&  normalize()              { 
-                                      path tmp(lexically_normal(*this));
+                                      path tmp(lexically_normal());
                                       m_pathname.swap(tmp.m_pathname);
                                       return *this;
                                     }
@@ -782,23 +787,6 @@ namespace filesystem
   inline void swap(path& lhs, path& rhs)                   { lhs.swap(rhs); }
 
   inline path operator/(const path& lhs, const path& rhs)  { return path(lhs) /= rhs; }
-
-  //  -----  lexical operations  -----
-  //
-  //  naming convention: prefix with "lexically_" to alert users that these functions
-  //  have purely lexical semantics and, when necesssary, to disambiguate from 
-  //  operational functions with the same name.
-
-  BOOST_FILESYSTEM_DECL
-  path  lexically_normal(const path& p);
-  BOOST_FILESYSTEM_DECL
-  path  lexically_relative(const path& p, const path& base);
-  inline
-  path  lexically_proximate(const path& p, const path& base)
-  {
-    path tmp(lexically_relative(p, base));
-    return tmp.empty() ? p : tmp;
-  } 
 
   //  inserters and extractors
   //    use boost::io::quoted() to handle spaces in paths
