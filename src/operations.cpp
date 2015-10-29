@@ -172,6 +172,8 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define IO_REPARSE_TAG_SYMLINK (0xA000000CL)       
 # endif
 
+// Windows CE has no environment variables
+#if !defined(UNDER_CE)
 inline std::wstring wgetenv(const wchar_t* name)
 {
   // use vector since for C++03 basic_string is not required to be contiguous
@@ -182,6 +184,7 @@ inline std::wstring wgetenv(const wchar_t* name)
     || ::GetEnvironmentVariableW(name, &buf[0], static_cast<DWORD>(buf.size())) == 0)
     ? std::wstring() : std::wstring(&buf[0]);
 }
+#endif
 
 # endif  // BOOST_WINDOWS_API
 
@@ -1809,6 +1812,31 @@ namespace detail
         
       return p;
       
+#   elif defined(UNDER_CE) // Windows CE
+
+      // Windows CE has no environment variables, so the same code as used for
+      // regular Windows, below, doesn't work.
+
+      std::vector<wchar_t> buf(::GetTempPathW(0, NULL));
+
+      if (buf.empty()
+        || GetTempPathW(static_cast<DWORD>(buf.size()), &buf[0]) == 0)
+      {
+        error(::GetLastError(), ec, "boost::filesystem::temp_directory_path");
+        return path();
+      }
+
+      path p(&*buf.begin());
+      p.remove_trailing_separator();
+
+      if ((ec && !is_directory(p, *ec)) || (!ec && !is_directory(p)))
+      {
+        error(ENOTDIR, p, ec, "boost::filesystem::temp_directory_path");
+        return path();
+      }
+
+      return p;
+
 #   else  // Windows
 
       const wchar_t* tmp_env = L"TMP";
