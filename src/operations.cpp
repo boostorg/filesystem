@@ -1101,6 +1101,9 @@ namespace detail
     }
     return cur;
 
+#   elif defined(UNDER_CE)
+    // Windows CE has no current directory, so everything's relative to the root of the directory tree
+    return L"\\";
 #   else
     DWORD sz;
     if ((sz = ::GetCurrentDirectoryW(0, NULL)) == 0)sz = 1;
@@ -1115,8 +1118,13 @@ namespace detail
   BOOST_FILESYSTEM_DECL
   void current_path(const path& p, system::error_code* ec)
   {
+#   ifdef UNDER_CE
+    error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
+      "boost::filesystem::current_path");
+#   else
     error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::current_path");
+#   endif
   }
 
   BOOST_FILESYSTEM_DECL
