@@ -17,6 +17,7 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <cassert>
 
@@ -29,7 +30,11 @@
 #   include <windows.h>
 #   include <wincrypt.h>
 #   ifdef _MSC_VER
-#      pragma comment(lib, "Advapi32.lib")
+#      if !defined(BOOST_FILESYSTEM_NO_LIB)
+#         define BOOST_LIB_NAME "advapi32"
+#         define BOOST_AUTO_LINK_NOMANGLE
+#         include <boost/config/auto_link.hpp>
+#      endif
 #   endif
 # endif
 
