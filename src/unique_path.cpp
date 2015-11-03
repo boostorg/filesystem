@@ -7,13 +7,13 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-//--------------------------------------------------------------------------------------// 
+//--------------------------------------------------------------------------------------//
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
-#define BOOST_FILESYSTEM_SOURCE 
+#define BOOST_FILESYSTEM_SOURCE
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -27,8 +27,13 @@
 #   endif
 # else // BOOST_WINDOWS_API
 #   include <windows.h>
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// wincrypt.h is not supported on Windows Phone, see
+	// http://stackoverflow.com/questions/24426815/c-c-function-for-cryptographically-secure-random-numbers-in-winrt
+#else
 #   include <wincrypt.h>
 #   pragma comment(lib, "Advapi32.lib")
+#endif	/* BOOST_PLAT_WINDOWS_RUNTIME */
 # endif
 
 namespace {
@@ -44,7 +49,7 @@ void fail(int err, boost::system::error_code* ec)
   return;
 }
 
-#ifdef BOOST_WINDOWS_API
+#if defined (BOOST_WINDOWS_API) && !defined (BOOST_PLAT_WINDOWS_RUNTIME)
 
 int acquire_crypt_handle(HCRYPTPROV& handle)
 {
@@ -104,6 +109,10 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 # else // BOOST_WINDOWS_API
 
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+    // wincrypt.h is not supported on Windows Phone, see
+    // http://stackoverflow.com/questions/24426815/c-c-function-for-cryptographically-secure-random-numbers-in-winrt
+#   else
   HCRYPTPROV handle;
   int errval = acquire_crypt_handle(handle);
 
@@ -118,6 +127,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   if (!errval) return;
 
   fail(errval, ec);
+#   endif	/* BOOST_PLAT_WINDOWS_RUNTIME */
 # endif
 }
 

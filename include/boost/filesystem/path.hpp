@@ -63,11 +63,11 @@ namespace filesystem
 # ifdef BOOST_WINDOWS_API
     typedef wchar_t                        value_type;
     BOOST_STATIC_CONSTEXPR value_type      preferred_separator = L'\\';
-# else 
+# else
     typedef char                           value_type;
     BOOST_STATIC_CONSTEXPR value_type      preferred_separator = '/';
 # endif
-    typedef std::basic_string<value_type>  string_type;  
+    typedef std::basic_string<value_type>  string_type;
     typedef std::codecvt<wchar_t, char,
                          std::mbstate_t>   codecvt_type;
 
@@ -90,7 +90,7 @@ namespace filesystem
     //
     //  The path locale, which is global to the thread, can be changed by the
     //  imbue() function. It is initialized to an implementation defined locale.
-    //  
+    //
     //  For Windows, wchar_t strings do not undergo conversion. char strings
     //  are converted using the "ANSI" or "OEM" code pages, as determined by
     //  the AreFileApisANSI() function, or, if a conversion argument is given,
@@ -99,7 +99,7 @@ namespace filesystem
     //  See m_pathname comments for further important rationale.
 
     //  TODO: rules needed for operating systems that use / or .
-    //  differently, or format directory paths differently from file paths. 
+    //  differently, or format directory paths differently from file paths.
     //
     //  **********************************************************************************
     //
@@ -125,11 +125,11 @@ namespace filesystem
     //  "const codecvt_type& cvt=codecvt()" default arguments are not used because this
     //  limits the impact of locale("") initialization failures on POSIX systems to programs
     //  that actually depend on locale(""). It further ensures that exceptions thrown
-    //  as a result of such failues occur after main() has started, so can be caught. 
+    //  as a result of such failues occur after main() has started, so can be caught.
 
     //  -----  constructors  -----
 
-    path() BOOST_NOEXCEPT {}                                          
+    path() BOOST_NOEXCEPT {}
     path(const path& p) : m_pathname(p.m_pathname) {}
 
     template <class Source>
@@ -163,7 +163,7 @@ namespace filesystem
 
     template <class InputIterator>
     path(InputIterator begin, InputIterator end)
-    { 
+    {
       if (begin != end)
       {
         // convert requires contiguous string, so copy
@@ -175,7 +175,7 @@ namespace filesystem
 
     template <class InputIterator>
     path(InputIterator begin, InputIterator end, const codecvt_type& cvt)
-    { 
+    {
       if (begin != end)
       {
         // convert requires contiguous string, so copy
@@ -237,7 +237,7 @@ namespace filesystem
 
     template <class InputIterator>
     path& assign(InputIterator begin, InputIterator end, const codecvt_type& cvt)
-    { 
+    {
       m_pathname.clear();
       if (begin != end)
       {
@@ -292,7 +292,7 @@ namespace filesystem
 
     template <class InputIterator>
     path& concat(InputIterator begin, InputIterator end)
-    { 
+    {
       if (begin == end)
         return *this;
       std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
@@ -303,7 +303,7 @@ namespace filesystem
 
     template <class InputIterator>
     path& concat(InputIterator begin, InputIterator end, const codecvt_type& cvt)
-    { 
+    {
       if (begin == end)
         return *this;
       std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
@@ -374,7 +374,7 @@ namespace filesystem
     void   swap(path& rhs) BOOST_NOEXCEPT     { m_pathname.swap(rhs.m_pathname); }
 
     //  -----  observers  -----
-  
+
     //  For operating systems that format file paths differently than directory
     //  paths, return values from observers are formatted as file names unless there
     //  is a trailing separator, in which case returns are formatted as directory
@@ -414,14 +414,14 @@ namespace filesystem
       return tmp;
     }
     const std::string string(const codecvt_type& cvt) const
-    { 
+    {
       std::string tmp;
       if (!m_pathname.empty())
         path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
           tmp, cvt);
       return tmp;
     }
-    
+
     //  string_type is std::wstring, so there is no conversion
     const std::wstring&  wstring() const { return m_pathname; }
     const std::wstring&  wstring(const codecvt_type&) const { return m_pathname; }
@@ -440,7 +440,7 @@ namespace filesystem
       return tmp;
     }
     const std::wstring  wstring(const codecvt_type& cvt) const
-    { 
+    {
       std::wstring tmp;
       if (!m_pathname.empty())
         path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
@@ -452,6 +452,7 @@ namespace filesystem
 
     //  -----  generic format observers  -----
 
+#if !defined(BOOST_PLAT_WINDOWS_RUNTIME)
     //  Experimental generic function returning generic formatted path (i.e. separators
     //  are forward slashes). Motivation: simpler than a family of generic_*string
     //  functions.
@@ -466,6 +467,7 @@ namespace filesystem
       return path(*this);
 #   endif
     }
+#endif
 
     template <class String>
     String generic_string() const;
@@ -474,8 +476,8 @@ namespace filesystem
     String generic_string(const codecvt_type& cvt) const;
 
 #   ifdef BOOST_WINDOWS_API
-    const std::string   generic_string() const; 
-    const std::string   generic_string(const codecvt_type& cvt) const; 
+    const std::string   generic_string() const;
+    const std::string   generic_string(const codecvt_type& cvt) const;
     const std::wstring  generic_wstring() const;
     const std::wstring  generic_wstring(const codecvt_type&) const { return generic_wstring(); };
 
@@ -496,7 +498,7 @@ namespace filesystem
 
     //  -----  decomposition  -----
 
-    path  root_path() const; 
+    path  root_path() const;
     path  root_name() const;         // returns 0 or 1 element path
                                      // even on POSIX, root_name() is non-empty() for network paths
     path  root_directory() const;    // returns 0 or 1 element path
@@ -517,7 +519,7 @@ namespace filesystem
     bool has_filename() const        { return !m_pathname.empty(); }
     bool has_stem() const            { return !stem().empty(); }
     bool has_extension() const       { return !extension().empty(); }
-    bool is_relative() const         { return !is_absolute(); } 
+    bool is_relative() const         { return !is_absolute(); }
     bool is_absolute() const
     {
 #     ifdef BOOST_WINDOWS_API
@@ -562,7 +564,7 @@ namespace filesystem
 
 # if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
-    path&  normalize()              { 
+    path&  normalize()              {
                                       path tmp(lexically_normal());
                                       m_pathname.swap(tmp.m_pathname);
                                       return *this;
@@ -577,7 +579,7 @@ namespace filesystem
 
 # if defined(BOOST_FILESYSTEM_DEPRECATED)
     //  deprecated functions with enough signature or semantic changes that they are
-    //  not supplied by default 
+    //  not supplied by default
     const std::string file_string() const               { return string(); }
     const std::string directory_string() const          { return string(); }
     const std::string native_file_string() const        { return string(); }
@@ -590,7 +592,7 @@ namespace filesystem
     //basic_path(const string_type& str, name_check) { operator/=(str); }
     //basic_path(const typename string_type::value_type* s, name_check)
     //  { operator/=(s);}
-    //static bool default_name_check_writable() { return false; } 
+    //static bool default_name_check_writable() { return false; }
     //static void default_name_check(name_check) {}
     //static name_check default_name_check() { return 0; }
     //basic_path& canonize();
@@ -618,7 +620,7 @@ namespace filesystem
                               // slashes NOT converted to backslashes
 #   if defined(_MSC_VER)
 #     pragma warning(pop) // restore warning settings.
-#   endif 
+#   endif
 
     string_type::size_type m_append_separator_if_needed();
     //  Returns: If separator is to be appended, m_pathname.size() before append. Otherwise 0.
@@ -630,7 +632,7 @@ namespace filesystem
     path& m_normalize();
 
     // Was qualified; como433beta8 reports:
-    //    warning #427-D: qualified name is not allowed in member declaration 
+    //    warning #427-D: qualified name is not allowed in member declaration
     friend class iterator;
     friend bool operator<(const path& lhs, const path& rhs);
 
@@ -658,7 +660,7 @@ namespace filesystem
   //------------------------------------------------------------------------------------//
   //                             class path::iterator                                   //
   //------------------------------------------------------------------------------------//
- 
+
   class path::iterator
     : public boost::iterator_facade<
       path::iterator,
@@ -690,14 +692,14 @@ namespace filesystem
                                          // m_path_ptr->m_pathname.
                                          // if m_element is implicit dot, m_pos is the
                                          // position of the last separator in the path.
-                                         // end() iterator is indicated by 
+                                         // end() iterator is indicated by
                                          // m_pos == m_path_ptr->m_pathname.size()
   }; // path::iterator
 
   //------------------------------------------------------------------------------------//
   //                         class path::reverse_iterator                               //
   //------------------------------------------------------------------------------------//
- 
+
   class path::reverse_iterator
     : public boost::iterator_facade<
       path::reverse_iterator,
@@ -718,7 +720,7 @@ namespace filesystem
     const path& dereference() const { return m_element; }
     bool equal(const reverse_iterator& rhs) const { return m_itr == rhs.m_itr; }
     void increment()
-    { 
+    {
       --m_itr;
       if (m_itr != m_itr.m_path_ptr->begin())
       {
@@ -752,15 +754,15 @@ namespace filesystem
   inline bool lexicographical_compare(path::iterator first1, path::iterator last1,
     path::iterator first2, path::iterator last2)
     { return detail::lex_compare(first1, last1, first2, last2) < 0; }
-  
+
   inline bool operator==(const path& lhs, const path& rhs)              {return lhs.compare(rhs) == 0;}
-  inline bool operator==(const path& lhs, const path::string_type& rhs) {return lhs.compare(rhs) == 0;} 
+  inline bool operator==(const path& lhs, const path::string_type& rhs) {return lhs.compare(rhs) == 0;}
   inline bool operator==(const path::string_type& lhs, const path& rhs) {return rhs.compare(lhs) == 0;}
   inline bool operator==(const path& lhs, const path::value_type* rhs)  {return lhs.compare(rhs) == 0;}
   inline bool operator==(const path::value_type* lhs, const path& rhs)  {return rhs.compare(lhs) == 0;}
-  
+
   inline bool operator!=(const path& lhs, const path& rhs)              {return lhs.compare(rhs) != 0;}
-  inline bool operator!=(const path& lhs, const path::string_type& rhs) {return lhs.compare(rhs) != 0;} 
+  inline bool operator!=(const path& lhs, const path::string_type& rhs) {return lhs.compare(rhs) != 0;}
   inline bool operator!=(const path::string_type& lhs, const path& rhs) {return rhs.compare(lhs) != 0;}
   inline bool operator!=(const path& lhs, const path::value_type* rhs)  {return lhs.compare(rhs) != 0;}
   inline bool operator!=(const path::value_type* lhs, const path& rhs)  {return rhs.compare(lhs) != 0;}
@@ -799,7 +801,7 @@ namespace filesystem
     return os
       << boost::io::quoted(p.template string<std::basic_string<Char> >(), static_cast<Char>('&'));
   }
-  
+
   template <class Char, class Traits>
   inline std::basic_istream<Char, Traits>&
   operator>>(std::basic_istream<Char, Traits>& is, path& p)
@@ -809,7 +811,7 @@ namespace filesystem
     p = str;
     return is;
   }
-  
+
   //  name_checks
 
   //  These functions are holdovers from version 1. It isn't clear they have much
@@ -821,7 +823,7 @@ namespace filesystem
   BOOST_FILESYSTEM_DECL bool portable_directory_name(const std::string & name);
   BOOST_FILESYSTEM_DECL bool portable_file_name(const std::string & name);
   BOOST_FILESYSTEM_DECL bool native(const std::string & name);
- 
+
 //--------------------------------------------------------------------------------------//
 //                     class path member template implementation                        //
 //--------------------------------------------------------------------------------------//

@@ -8,17 +8,17 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-//--------------------------------------------------------------------------------------// 
+//--------------------------------------------------------------------------------------//
 
-//  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
+//  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355)
 #if !(defined(__HP_aCC) && defined(_ILP32) && !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #endif
 #if !defined(__PGI)
 #define __USE_FILE_OFFSET64 // but that is harmless on Windows and on POSIX
-      // 64-bit systems or on 32-bit systems which don't have files larger 
-      // than can be represented by a traditional POSIX/UNIX off_t type. 
-      // OTOH, defining them should kick in 64-bit off_t's (and thus 
+      // 64-bit systems or on 32-bit systems which don't have files larger
+      // than can be represented by a traditional POSIX/UNIX off_t type.
+      // OTOH, defining them should kick in 64-bit off_t's (and thus
       // st_size)on 32-bit systems that provide the Large File
       // Support (LFS)interface, such as Linux, Solaris, and IRIX.
       // The defines are given before any headers are included to
@@ -31,9 +31,9 @@
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
-#define BOOST_FILESYSTEM_SOURCE 
+#define BOOST_FILESYSTEM_SOURCE
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -44,14 +44,19 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
-#include <vector> 
+#include <vector>
 #include <cstdlib>     // for malloc, free
 #include <cstring>
 #include <cstdio>      // for remove, rename
-#if defined(__QNXNTO__)  // see ticket #5355 
+#if defined(__QNXNTO__)  // see ticket #5355
 # include <stdio.h>
 #endif
 #include <cerrno>
+
+#if BOOST_PLAT_WINDOWS_RUNTIME
+#include <windows.h>
+DWORD GetEnvironmentVariableW(LPCWSTR lpName, LPWSTR lpBuffer, DWORD nSize);
+#endif
 
 #ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 # include <iostream>
@@ -116,7 +121,7 @@ using std::wstring;
 #     include <sys/utime.h>
 #   endif
 
-//  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the 
+//  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the
 //  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
 //  here. See http://msdn.microsoft.com/en-us/library/ms791514.aspx
 
@@ -169,7 +174,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 # endif
 
 # ifndef IO_REPARSE_TAG_SYMLINK
-#   define IO_REPARSE_TAG_SYMLINK (0xA000000CL)       
+#   define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
 # endif
 
 inline std::wstring wgetenv(const wchar_t* name)
@@ -209,7 +214,7 @@ inline std::wstring wgetenv(const wchar_t* name)
 typedef int err_t;
 
 //  POSIX uses a 0 return to indicate success
-#   define BOOST_ERRNO    errno 
+#   define BOOST_ERRNO    errno
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::chdir(P)== 0)
 #   define BOOST_CREATE_DIRECTORY(P)(::mkdir(P, S_IRWXU|S_IRWXG|S_IRWXO)== 0)
 #   define BOOST_CREATE_HARD_LINK(F,T)(::link(T, F)== 0)
@@ -237,8 +242,6 @@ typedef DWORD err_t;
 #   define BOOST_CREATE_SYMBOLIC_LINK(F,T,Flag)(create_symbolic_link_api(F, T, Flag)!= 0)
 #   define BOOST_REMOVE_DIRECTORY(P)(::RemoveDirectoryW(P)!= 0)
 #   define BOOST_DELETE_FILE(P)(::DeleteFileW(P)!= 0)
-#   define BOOST_COPY_DIRECTORY(F,T)(::CreateDirectoryExW(F, T, 0)!= 0)
-#   define BOOST_COPY_FILE(F,T,FailIfExistsBool)(::CopyFileW(F, T, FailIfExistsBool)!= 0)
 #   define BOOST_MOVE_FILE(OLD,NEW)(::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
@@ -246,7 +249,37 @@ typedef DWORD err_t;
 #   define BOOST_ERROR_ALREADY_EXISTS ERROR_ALREADY_EXISTS
 #   define BOOST_ERROR_NOT_SUPPORTED ERROR_NOT_SUPPORTED
 
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+#     define BOOST_COPY_FILE(F,T,FailIfExistsBool) (BoostCopyFile(F,T,FailIfExistsBool) == S_OK)
+#   else
+#     define BOOST_COPY_DIRECTORY(F,T)(::CreateDirectoryExW(F, T, 0)!= 0)
+#     define BOOST_COPY_FILE(F,T,FailIfExistsBool)(::CopyFileW(F, T, FailIfExistsBool)!= 0)
+#   endif
+
 # endif
+
+#if BOOST_PLAT_WINDOWS_RUNTIME
+HRESULT BoostCopyFile(PCWSTR from, PCWSTR to, bool FailIfExistsBool)
+{
+	// The <from> and <to> parameters hold the file system absolute path to the from/to
+	// files, respectively.
+	//
+	// Example:
+	//
+	//		<from> = "c:\\Data\\Users\\Public\\Pictures\\test.jpg"
+	//		<to>   = "c:\\Data\\Users\\Public\\Pictures\\test.2.jpg"
+    COPYFILE2_EXTENDED_PARAMETERS parms = { 0 };
+
+    parms.dwSize = sizeof(COPYFILE2_EXTENDED_PARAMETERS);
+    if (FailIfExistsBool)
+    {
+        parms.dwCopyFlags = COPY_FILE_FAIL_IF_EXISTS;
+    }
+
+    HRESULT hr = ::CopyFile2(from, to, &parms);
+    return hr;
+}
+#endif	/*BOOST_PLAT_WINDOWS_RUNTIME*/
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -280,7 +313,7 @@ namespace
     {
       if (ec != 0) ec->clear();
     }
-    else  
+    else
     { //  error
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error(message,
@@ -297,7 +330,7 @@ namespace
     {
       if (ec != 0) ec->clear();
     }
-    else  
+    else
     { //  error
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error(message,
@@ -315,7 +348,7 @@ namespace
     {
       if (ec != 0) ec->clear();
     }
-    else  
+    else
     { //  error
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error(message,
@@ -337,18 +370,18 @@ namespace
 
   // only called if directory exists
   bool remove_directory(const path& p) // true if succeeds or not found
-  { 
+  {
     return BOOST_REMOVE_DIRECTORY(p.c_str())
       || not_found_error(BOOST_ERRNO);  // mitigate possible file system race. See #11166
   }
-  
+
   // only called if file exists
   bool remove_file(const path& p) // true if succeeds or not found
   {
     return BOOST_DELETE_FILE(p.c_str())
       || not_found_error(BOOST_ERRNO);  // mitigate possible file system race. See #11166
   }
-  
+
   // called by remove and remove_all_aux
   bool remove_file_or_directory(const path& p, fs::file_type type, error_code* ec)
     // return true if file removed, false if not removed
@@ -429,7 +462,7 @@ namespace
 
     struct stat from_stat;
     if (::stat(from_p.c_str(), &from_stat)!= 0)
-    { 
+    {
       ::close(infile);
       return false;
     }
@@ -462,7 +495,7 @@ namespace
           // and #2 below added to verify that analysis.
         if ((sz = ::write(outfile, buf.get() + sz_write,
           sz_read - sz_write)) < 0)
-        { 
+        {
           sz_read = sz; // cause read loop termination
           break;        //  and error reported after closes
         }
@@ -558,7 +591,7 @@ namespace
   }
 
   // Thanks to Jeremy Maitin-Shepard for much help and for permission to
-  // base the equivalent()implementation on portions of his 
+  // base the equivalent()implementation on portions of his
   // file-equivalence-win32.cpp experimental code.
 
   struct handle_wrapper
@@ -578,21 +611,42 @@ namespace
     DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
     HANDLE hTemplateFile)
   {
+#if BOOST_PLAT_WINDOWS_RUNTIME
+		CREATEFILE2_EXTENDED_PARAMETERS parms;
+
+		parms.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
+		parms.dwFileAttributes = dwFlagsAndAttributes & 0x0000ffff;
+		parms.dwFileFlags = dwFlagsAndAttributes & 0xffff0000;
+		parms.dwSecurityQosFlags = 0;
+		parms.lpSecurityAttributes = lpSecurityAttributes;
+		parms.hTemplateFile = hTemplateFile;
+
+		return ::CreateFile2(p.c_str(),
+			dwDesiredAccess,
+			dwShareMode,
+			dwCreationDisposition,
+			&parms);
+#else
     return ::CreateFileW(p.c_str(), dwDesiredAccess, dwShareMode,
       lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes,
       hTemplateFile);
+#endif // BOOST_PLAT_WINDOWS_RUNTIME
   }
 
   bool is_reparse_point_a_symlink(const path& p)
   {
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// Not relevant for WinRT
+	return false;
+#else
     handle_wrapper h(create_file_handle(p, FILE_READ_EA,
       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
       FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL));
     if (h.handle == INVALID_HANDLE_VALUE)
       return false;
 
-    boost::scoped_array<char> buf(new char [MAXIMUM_REPARSE_DATA_BUFFER_SIZE]);    
- 
+    boost::scoped_array<char> buf(new char [MAXIMUM_REPARSE_DATA_BUFFER_SIZE]);
+
     // Query the reparse data
     DWORD dwRetLen;
     BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(),
@@ -610,13 +664,20 @@ namespace
         // with "mklink /j junction-name target-path".
       || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
         == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
   }
 
   inline std::size_t get_full_path_name(
     const path& src, std::size_t len, wchar_t* buf, wchar_t** p)
   {
     return static_cast<std::size_t>(
+#if BOOST_PLAT_WINDOWS_RUNTIME
+      // Not relevant for WinRT
+	  0
+#else
       ::GetFullPathNameW(src.c_str(), static_cast<DWORD>(len), buf, p));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
+	 );
   }
 
   fs::file_status process_status_failure(const path& p, error_code* ec)
@@ -643,7 +704,17 @@ namespace
   //  _detail_directory_symlink, as required on Windows by remove() and its helpers.
   fs::file_type query_file_type(const path& p, error_code* ec)
   {
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	DWORD attr(0xFFFFFFFF);
+	WIN32_FILE_ATTRIBUTE_DATA data;
+
+	if (GetFileAttributesExW(p.c_str(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &data))
+	{
+		attr = data.dwFileAttributes;
+	}
+#else
     DWORD attr(::GetFileAttributesW(p.c_str()));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
     if (attr == 0xFFFFFFFF)
     {
       return process_status_failure(p, ec).type();
@@ -667,8 +738,21 @@ namespace
 
   BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
   {
+#if BOOST_PLAT_WINDOWS_RUNTIME
+    CREATEFILE2_EXTENDED_PARAMETERS parms;
+
+    parms.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
+    parms.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+    parms.dwFileFlags = 0;
+    parms.dwSecurityQosFlags = 0;
+    parms.lpSecurityAttributes = 0;
+    parms.hTemplateFile = 0;
+
+    handle_wrapper h(CreateFile2(p, GENERIC_WRITE, 0, OPEN_EXISTING, &parms));
+#else
     handle_wrapper h(CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING,
                                 FILE_ATTRIBUTE_NORMAL, 0));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
     LARGE_INTEGER sz;
     sz.QuadPart = size;
     return h.handle != INVALID_HANDLE_VALUE
@@ -686,8 +770,13 @@ namespace
    );
 
   PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
+#if BOOST_PLAT_WINDOWS_RUNTIME
+    // Not relevant for WinRT
+	0);
+#else
     ::GetProcAddress(
-      ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW"));
+		::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW"));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 
   typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
@@ -697,7 +786,13 @@ namespace
 
   PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
     ::GetProcAddress(
-      ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
+#if BOOST_PLAT_WINDOWS_RUNTIME
+      // Not relevant for WinRT
+	  NULL
+#else
+	  ::GetModuleHandle(TEXT("kernel32.dll"))
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
+	  , "CreateSymbolicLinkW"));
 
 #endif
 
@@ -906,8 +1001,14 @@ namespace detail
 #   ifdef BOOST_POSIX_API
     struct stat from_stat;
 #   endif
-    error(!BOOST_COPY_DIRECTORY(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0,
-      from, to, ec, "boost::filesystem::copy_directory");
+	error(
+#if BOOST_PLAT_WINDOWS_RUNTIME
+      // This functionality is irrelevant for WinRT
+	  !(0)
+#else
+	  !BOOST_COPY_DIRECTORY(from.c_str(), to.c_str())
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
+	  , from, to, ec, "boost::filesystem::copy_directory");
   }
 
   BOOST_FILESYSTEM_DECL
@@ -926,7 +1027,7 @@ namespace detail
     error(BOOST_ERROR_NOT_SUPPORTED, new_symlink, existing_symlink, ec,
       "boost::filesystem::copy_symlink");
 
-# else  // modern Windows or BOOST_POSIX_API 
+# else  // modern Windows or BOOST_POSIX_API
     path p(read_symlink(existing_symlink, ec));
     if (ec != 0 && *ec) return;
     create_symlink(p, new_symlink, ec);
@@ -1026,9 +1127,14 @@ namespace detail
           return;
 #     endif
 
-    error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(),
-      SYMBOLIC_LINK_FLAG_DIRECTORY) ? BOOST_ERRNO : 0,
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// Symbolic links are not relevant for WinRT
+	error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), 0x01),
       to, from, ec, "boost::filesystem::create_directory_symlink");
+#else
+    error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY),
+      to, from, ec, "boost::filesystem::create_directory_symlink");
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 #   endif
   }
 
@@ -1086,7 +1192,7 @@ namespace detail
       if (::getcwd(buf.get(), static_cast<std::size_t>(path_max))== 0)
       {
         if (error(errno != ERANGE ? errno : 0
-      // bug in some versions of the Metrowerks C lib on the Mac: wrong errno set 
+      // bug in some versions of the Metrowerks C lib on the Mac: wrong errno set
 #         if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
           && errno != 0
 #         endif
@@ -1105,21 +1211,33 @@ namespace detail
     return cur;
 
 #   else
+#    if BOOST_PLAT_WINDOWS_RUNTIME
+	 // The concept of a current directory is not relevant in WinRT.
+	 path cur;
+	 *ec = boost::system::errc::make_error_code(boost::system::errc::function_not_supported);
+	 return cur;
+#    else
     DWORD sz;
     if ((sz = ::GetCurrentDirectoryW(0, NULL)) == 0)sz = 1;
     boost::scoped_array<path::value_type> buf(new path::value_type[sz]);
     error(::GetCurrentDirectoryW(sz, buf.get()) == 0 ? BOOST_ERRNO : 0, ec,
       "boost::filesystem::current_path");
     return path(buf.get());
+#    endif	// BOOST_PLAT_WINDOWS_RUNTIME
 #   endif
   }
-
 
   BOOST_FILESYSTEM_DECL
   void current_path(const path& p, system::error_code* ec)
   {
-    error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0,
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// The concept of a current directory is not relevant in WinRT.
+	*ec = boost::system::errc::make_error_code(boost::system::errc::function_not_supported);
+	return;
+#else
+    error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()),
       p, ec, "boost::filesystem::current_path");
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
   }
 
   BOOST_FILESYSTEM_DECL
@@ -1188,6 +1306,50 @@ namespace detail
 
     // at this point, both handles are known to be valid
 
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	FILE_ID_BOTH_DIR_INFO bothDirInfo1, bothDirInfo2;
+	FILE_ID_INFO          info1, info2;
+
+	if (error(!::GetFileInformationByHandleEx(h1.handle, FileIdBothDirectoryInfo, &bothDirInfo1, sizeof(FILE_ID_BOTH_DIR_INFO)),
+		p1, p2, ec, "boost::filesystem::equivalent"))
+		return  false;
+
+	if (error(!::GetFileInformationByHandleEx(h1.handle, FileIdInfo, &info1, sizeof(FILE_ID_INFO)),
+		p1, p2, ec, "boost::filesystem::equivalent"))
+		return  false;
+
+	if (error(!::GetFileInformationByHandleEx(h2.handle, FileIdBothDirectoryInfo, &bothDirInfo2, sizeof(FILE_ID_BOTH_DIR_INFO)),
+		p1, p2, ec, "boost::filesystem::equivalent"))
+		return  false;
+
+	if (error(!::GetFileInformationByHandleEx(h2.handle, FileIdInfo, &info2, sizeof(FILE_ID_INFO)),
+		p1, p2, ec, "boost::filesystem::equivalent"))
+		return  false;
+
+	// In theory, volume serial numbers are sufficient to distinguish between
+	// devices, but in practice VSN's are sometimes duplicated, so last write
+	// time and file size are also checked.
+	bool isFileIdEquivalent = true;
+
+	for (int i = 0; i < 16; ++i)
+	{
+		if (info1.FileId.Identifier[i] != info2.FileId.Identifier[i])
+		{
+			isFileIdEquivalent = false;
+			break;
+		}
+	}
+
+	return
+		info1.VolumeSerialNumber == info2.VolumeSerialNumber
+		&&
+		isFileIdEquivalent
+		&&
+		bothDirInfo1.AllocationSize.QuadPart == bothDirInfo2.AllocationSize.QuadPart
+		&&
+		bothDirInfo1.LastWriteTime.QuadPart == bothDirInfo2.LastWriteTime.QuadPart
+		;
+#else
     BY_HANDLE_FILE_INFORMATION info1, info2;
 
     if (error(!::GetFileInformationByHandle(h1.handle, &info1) ? BOOST_ERRNO : 0,
@@ -1201,7 +1363,7 @@ namespace detail
     // In theory, volume serial numbers are sufficient to distinguish between
     // devices, but in practice VSN's are sometimes duplicated, so last write
     // time and file size are also checked.
-      return 
+      return
         info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber
         && info1.nFileIndexHigh == info2.nFileIndexHigh
         && info1.nFileIndexLow == info2.nFileIndexLow
@@ -1211,6 +1373,7 @@ namespace detail
           == info2.ftLastWriteTime.dwLowDateTime
         && info1.ftLastWriteTime.dwHighDateTime
           == info2.ftLastWriteTime.dwHighDateTime;
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 
 #   endif
   }
@@ -1263,11 +1426,24 @@ namespace detail
 #   else // Windows
 
     // Link count info is only available through GetFileInformationByHandle
-    BY_HANDLE_FILE_INFORMATION info;
     handle_wrapper h(
       create_file_handle(p.c_str(), 0,
           FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
           OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// Link count info is only available through GetFileInformationByHandle
+	FILE_STANDARD_INFO info;
+
+	return
+		!error(h.handle == INVALID_HANDLE_VALUE, p, ec, "boost::filesystem::hard_link_count")
+		&&
+		!error(::GetFileInformationByHandleEx(h.handle, FileStandardInfo, &info, sizeof(FILE_STANDARD_INFO)) == 0, p, ec, "boost::filesystem::hard_link_count")
+		?
+		info.NumberOfLinks : 0;
+#else
+	// Link count info is only available through GetFileInformationByHandle
+	BY_HANDLE_FILE_INFORMATION info;
     return
       !error(h.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
               p, ec, "boost::filesystem::hard_link_count")
@@ -1275,6 +1451,7 @@ namespace detail
                  p, ec, "boost::filesystem::hard_link_count")
            ? info.nNumberOfLinks
            : 0;
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 #   endif
   }
 
@@ -1296,7 +1473,7 @@ namespace detail
     struct stat path_stat;
     if (error(::stat(p.c_str(), &path_stat)!= 0,
         p, ec, "boost::filesystem::is_empty"))
-      return false;        
+      return false;
     return S_ISDIR(path_stat.st_mode)
       ? is_empty_directory(p)
       : path_stat.st_size == 0;
@@ -1308,7 +1485,7 @@ namespace detail
         return false;
 
     if (ec != 0) ec->clear();
-    return 
+    return
       (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         ? is_empty_directory(p)
         : (!fad.nFileSizeHigh && !fad.nFileSizeLow);
@@ -1339,9 +1516,20 @@ namespace detail
 
     FILETIME lwt;
 
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	FILE_BASIC_INFO info;
+
+	if (error(!::GetFileInformationByHandleEx(hw.handle, FileBasicInfo, &info, sizeof(FILE_BASIC_INFO)),
+		p, ec, "boost::filesystem::last_write_time"))
+		return std::time_t(-1);
+
+	lwt.dwHighDateTime = info.LastWriteTime.HighPart;
+	lwt.dwLowDateTime = info.LastWriteTime.LowPart;
+#else
     if (error(::GetFileTime(hw.handle, 0, 0, &lwt)== 0 ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::last_write_time"))
         return std::time_t(-1);
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 
     return to_time_t(lwt);
 #   endif
@@ -1377,8 +1565,12 @@ namespace detail
     FILETIME lwt;
     to_FILETIME(new_time, lwt);
 
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// SetFileTime() not supported
+#else
     error(::SetFileTime(hw.handle, 0, 0, &lwt)== 0 ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::last_write_time");
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 #   endif
   }
 
@@ -1455,7 +1647,18 @@ namespace detail
       || (prms & (owner_write|group_write|others_write))))
       return;
 
-    DWORD attr = ::GetFileAttributesW(p.c_str());
+	DWORD attr = 0;
+
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	WIN32_FILE_ATTRIBUTE_DATA data;
+
+	if (GetFileAttributesExW(p.c_str(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &data))
+	{
+		attr = data.dwFileAttributes;
+	}
+#else
+		attr = ::GetFileAttributesW(p.c_str());
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 
     if (error(attr == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::permissions"))
       return;
@@ -1508,13 +1711,6 @@ namespace detail
     error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
           "boost::filesystem::read_symlink");
 #   else  // Vista and Server 2008 SDK, or later
-
-    union info_t
-    {
-      char buf[REPARSE_DATA_BUFFER_HEADER_SIZE+MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-      REPARSE_DATA_BUFFER rdb;
-    } info;
-
     handle_wrapper h(
       create_file_handle(p.c_str(), GENERIC_READ, 0, 0, OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0));
@@ -1522,6 +1718,17 @@ namespace detail
     if (error(h.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::read_symlink"))
         return symlink_path;
+
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// DeviceIoControl() not supported
+#else
+    union info_t
+    {
+      char buf[REPARSE_DATA_BUFFER_HEADER_SIZE+MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+      REPARSE_DATA_BUFFER rdb;
+    } info;
+
+
 
     DWORD sz;
 
@@ -1534,23 +1741,11 @@ namespace detail
         static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
         + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(wchar_t)
         + info.rdb.SymbolicLinkReparseBuffer.PrintNameLength/sizeof(wchar_t));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
 #     endif
     return symlink_path;
   }
 
-  BOOST_FILESYSTEM_DECL
-  path relative(const path& p, const path& base, error_code* ec)
-  {
-    error_code tmp_ec;
-    path wc_base(weakly_canonical(base, &tmp_ec));
-    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
-      return path();
-    path wc_p(weakly_canonical(p, &tmp_ec));
-    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
-      return path();
-    return wc_p.lexically_relative(wc_base);
-  }
-  
   BOOST_FILESYSTEM_DECL
   bool remove(const path& p, error_code* ec)
   {
@@ -1604,9 +1799,9 @@ namespace detail
     if (!error(::BOOST_STATVFS(p.c_str(), &vfs)!= 0,
       p, ec, "boost::filesystem::space"))
     {
-      info.capacity 
+      info.capacity
         = static_cast<boost::uintmax_t>(vfs.f_blocks)* BOOST_STATVFS_F_FRSIZE;
-      info.free 
+      info.free
         = static_cast<boost::uintmax_t>(vfs.f_bfree)* BOOST_STATVFS_F_FRSIZE;
       info.available
         = static_cast<boost::uintmax_t>(vfs.f_bavail)* BOOST_STATVFS_F_FRSIZE;
@@ -1682,7 +1877,20 @@ namespace detail
 
 #   else  // Windows
 
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	WIN32_FILE_ATTRIBUTE_DATA data;
+	DWORD attr(0xFFFFFFFF);
+
+	if (GetFileAttributesExW(p.c_str(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &data))
+	{
+		// GetFileAttributes() succeeded
+		attr = data.dwFileAttributes;
+	}
+
+#else
     DWORD attr(::GetFileAttributesW(p.c_str()));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
+
     if (attr == 0xFFFFFFFF)
     {
       return process_status_failure(p, ec);
@@ -1765,7 +1973,18 @@ namespace detail
 
 #   else  // Windows
 
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	DWORD attr(0xFFFFFFFF);
+	WIN32_FILE_ATTRIBUTE_DATA data;
+
+	if (GetFileAttributesExW(p.c_str(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, &data))
+	{
+		attr = data.dwFileAttributes;
+	}
+#else
     DWORD attr(::GetFileAttributesW(p.c_str()));
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
+
     if (attr == 0xFFFFFFFF)
     {
       return process_status_failure(p, ec);
@@ -1791,29 +2010,39 @@ namespace detail
   {
 #   ifdef BOOST_POSIX_API
       const char* val = 0;
-      
+
       (val = std::getenv("TMPDIR" )) ||
       (val = std::getenv("TMP"    )) ||
       (val = std::getenv("TEMP"   )) ||
       (val = std::getenv("TEMPDIR"));
-      
+
 #     ifdef __ANDROID__
         const char* default_tmp = "/data/local/tmp";
 #     else
         const char* default_tmp = "/tmp";
 #     endif
       path p((val!=0) ? val : default_tmp);
-       
+
       if (p.empty() || (ec&&!is_directory(p, *ec))||(!ec&&!is_directory(p)))
       {
         error(ENOTDIR, p, ec, "boost::filesystem::temp_directory_path");
         return p;
       }
-        
-      return p;
-      
-#   else  // Windows
 
+      return p;
+
+#   else  // Windows
+      path p;
+
+#     if BOOST_PLAT_WINDOWS_RUNTIME
+        LPCWSTR widePath = Windows::Storage::ApplicationData::Current->TemporaryFolder->Path->Data();
+        if ((widePath == 0) || (wcslen (widePath) == 0))
+        {
+          error(::GetLastError(), ec, "boost::filesystem::temp_directory_path");
+          return path();
+        }
+        p = widePath;
+#     else
       const wchar_t* tmp_env = L"TMP";
       const wchar_t* temp_env = L"TEMP";
       const wchar_t* localappdata_env = L"LOCALAPPDATA";
@@ -1821,7 +2050,6 @@ namespace detail
       const wchar_t* env_list[]
         = {tmp_env, temp_env, localappdata_env, userprofile_env, 0};
 
-      path p;
       for (int i = 0; env_list[i]; ++i)
       {
         std::wstring env = wgetenv(env_list[i]);
@@ -1851,11 +2079,12 @@ namespace detail
         p = &*buf.begin();  // do not depend on buf.size(); see ticket #10388
         p /= L"Temp";
       }
+ #    endif	// BOOST_PLAT_WINDOWS_RUNTIME
       return p;
 
 #   endif
   }
-  
+
   BOOST_FILESYSTEM_DECL
   path system_complete(const path& p, system::error_code* ec)
   {
@@ -1887,48 +2116,6 @@ namespace detail
       : path(big_buf.get());
 #   endif
   }
-
-  BOOST_FILESYSTEM_DECL
-  path weakly_canonical(const path& p, system::error_code* ec)
-  {
-    path head(p);
-    path tail;
-    system::error_code tmp_ec;
-    path::iterator itr = p.end();
-
-    for (; !head.empty(); --itr)
-    {
-      file_status head_status = status(head, tmp_ec);
-      if (error(head_status.type() == fs::status_error,
-        head, ec, "boost::filesystem::weakly_canonical"))
-        return path();
-      if (head_status.type() != fs::file_not_found)
-        break;
-      head.remove_filename();
-    }
-
-    bool tail_has_dots = false;
-    for (; itr != p.end(); ++itr)
-    { 
-      tail /= *itr;
-      // for a later optimization, track if any dot or dot-dot elements are present
-      if (itr->native().size() <= 2
-        && itr->native()[0] == dot
-        && (itr->native().size() == 1 || itr->native()[1] == dot))
-        tail_has_dots = true;
-    }
-    
-    if (head.empty())
-      return p.lexically_normal();
-    head = canonical(head, tmp_ec);
-    if (error(tmp_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
-      return path();
-    return tail.empty()
-      ? head
-      : (tail_has_dots  // optimization: only normalize if tail had dot or dot-dot element
-          ? (head/tail).lexically_normal()  
-          : head/tail);
-  }
 }  // namespace detail
 
 //--------------------------------------------------------------------------------------//
@@ -1947,7 +2134,7 @@ namespace detail
       // symlink status to the regular status.
       if (status_known(m_symlink_status)
         && !is_symlink(m_symlink_status))
-      { 
+      {
         m_status = m_symlink_status;
         if (ec != 0) ec->clear();
       }
@@ -1966,7 +2153,7 @@ namespace detail
     return m_symlink_status;
   }
 
-//  dispatch directory_entry supplied here rather than in 
+//  dispatch directory_entry supplied here rather than in
 //  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
 //  test cases are in operations_unit_test.cpp
 
@@ -1975,7 +2162,7 @@ namespace path_traits
   void dispatch(const directory_entry & de,
 #                ifdef BOOST_WINDOWS_API
     std::wstring& to,
-#                else   
+#                else
     std::string& to,
 #                endif
     const codecvt_type &)
@@ -1986,7 +2173,7 @@ namespace path_traits
   void dispatch(const directory_entry & de,
 #                ifdef BOOST_WINDOWS_API
     std::wstring& to
-#                else   
+#                else
     std::string& to
 #                endif
     )
@@ -2052,7 +2239,7 @@ namespace
     buffer = std::malloc((sizeof(dirent) - sizeof(de.d_name))
       +  path_size + 1); // + 1 for "/0"
     return ok;
-  }  
+  }
 
   // warning: the only dirent member updated is d_name
   inline int readdir_r_simulator(DIR * dirp, struct dirent * entry,
@@ -2131,13 +2318,19 @@ namespace
         && dirpath[dirpath.size()-1] != L':'))? L"\\*" : L"*";
 
     WIN32_FIND_DATAW data;
-    if ((handle = ::FindFirstFileW(dirpath.c_str(), &data))
-      == INVALID_HANDLE_VALUE)
-    { 
+
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	handle = ::FindFirstFileExW(dirpath.c_str(), FindExInfoStandard, &data, FindExSearchNameMatch, NULL, 0);
+#else
+	handle = ::FindFirstFileW(dirpath.c_str(), &data);
+#endif	// BOOST_PLAT_WINDOWS_RUNTIME
+
+	if (handle == INVALID_HANDLE_VALUE)
+    {
       handle = 0;  // signal eof
       return error_code( (::GetLastError() == ERROR_FILE_NOT_FOUND
-                       // Windows Mobile returns ERROR_NO_MORE_FILES; see ticket #3551                                           
-                       || ::GetLastError() == ERROR_NO_MORE_FILES) 
+                       // Windows Mobile returns ERROR_NO_MORE_FILES; see ticket #3551
+                       || ::GetLastError() == ERROR_NO_MORE_FILES)
         ? 0 : ::GetLastError(), system_category() );
     }
     target = data.cFileName;
@@ -2209,7 +2402,7 @@ namespace
 #     ifdef BOOST_WINDOWS_API
         ERROR_PATH_NOT_FOUND
 #     else
-        ENOENT 
+        ENOENT
 #     endif
         , system_category());
 
@@ -2222,7 +2415,7 @@ namespace filesystem
 
 namespace detail
 {
-  //  dir_itr_close is called both from the ~dir_itr_imp()destructor 
+  //  dir_itr_close is called both from the ~dir_itr_imp()destructor
   //  and dir_itr_increment()
   BOOST_FILESYSTEM_DECL
   system::error_code dir_itr_close( // never throws
@@ -2252,7 +2445,7 @@ namespace detail
   }
 
   void directory_iterator_construct(directory_iterator& it,
-    const path& p, system::error_code* ec)    
+    const path& p, system::error_code* ec)
   {
     if (error(p.empty() ? not_found_error_code.value() : 0, p, ec,
               "boost::filesystem::directory_iterator::construct"))
@@ -2273,7 +2466,7 @@ namespace detail
         ec, "boost::filesystem::directory_iterator::construct");
       return;
     }
-    
+
     if (it.m_imp->handle == 0)
       it.m_imp.reset(); // eof, so make end iterator
     else // not eof
@@ -2292,7 +2485,7 @@ namespace detail
   {
     BOOST_ASSERT_MSG(it.m_imp.get(), "attempt to increment end iterator");
     BOOST_ASSERT_MSG(it.m_imp->handle != 0, "internal program error");
-    
+
     path::string_type filename;
     file_status file_stat, symlink_file_stat;
     system::error_code temp_ec;
