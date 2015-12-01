@@ -73,12 +73,10 @@ namespace
 
 # ifdef BOOST_WINDOWS_API
 
-  const wchar_t separator = L'/';
   const wchar_t* const separators = L"/\\";
   const wchar_t* separator_string = L"/";
   const wchar_t* preferred_separator_string = L"\\";
   const wchar_t colon = L':';
-  const wchar_t dot = L'.';
   const wchar_t questionmark = L'?';
 
   inline bool is_letter(wchar_t c)
@@ -88,11 +86,9 @@ namespace
 
 # else
 
-  const char separator = '/';
   const char* const separators = "/";
   const char* separator_string = "/";
   const char* preferred_separator_string = "/";
-  const char dot = '.';
 
 # endif
 
