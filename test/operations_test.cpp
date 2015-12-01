@@ -1108,6 +1108,7 @@ namespace
     // trailing "/.", "/./..", and "/" in the above elements test ticket #7258 and
     // related issues
 
+    cout << "    p is " << p << endl;
     BOOST_TEST(!fs::exists(p));
     BOOST_TEST(fs::create_directories(p));
     BOOST_TEST(fs::exists(p));
