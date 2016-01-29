@@ -813,6 +813,13 @@ public:
   file_status   symlink_status() const                        {return m_get_symlink_status();}
   file_status   symlink_status(system::error_code& ec) const BOOST_NOEXCEPT
                                                               {return m_get_symlink_status(&ec); }
+  // Return the same value as symlink_status().type(), but can be optimized in
+  // some cases avoiding a system call. E.g. on Linux the type is known from when
+  // iterating a directory, but the mode is not. Thus symlink_status causes a lstat
+  // that can be omitted if the filesystem supports it with symlink_type.
+  file_type     symlink_type() const                          {return m_get_symlink_type();}
+  file_type     symlink_type(system::error_code& ec) const BOOST_NOEXCEPT
+                                                              {return m_get_symlink_type(&ec); }
 
   bool operator==(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path == rhs.m_path; }
   bool operator!=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path != rhs.m_path;} 
@@ -828,6 +835,7 @@ private:
 
   file_status m_get_status(system::error_code* ec=0) const;
   file_status m_get_symlink_status(system::error_code* ec=0) const;
+  file_type   m_get_symlink_type(system::error_code* ec=0) const;
 }; // directory_entry
 
 //--------------------------------------------------------------------------------------//

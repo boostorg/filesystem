@@ -1963,6 +1963,15 @@ namespace detail
     return m_symlink_status;
   }
 
+  file_type
+  directory_entry::m_get_symlink_type(system::error_code* ec) const
+  {
+    if (!type_present(m_symlink_status))
+      m_symlink_status = detail::symlink_status(m_path, ec);
+    else if (ec != 0) ec->clear();
+    return m_symlink_status.type();
+  }
+
 //  dispatch directory_entry supplied here rather than in 
 //  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
 //  test cases are in operations_unit_test.cpp
