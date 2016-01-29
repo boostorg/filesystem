@@ -2490,6 +2490,8 @@ and permissions of a file.</p>
         file_status  status(system::error_code&amp; ec) const;
         file_status  symlink_status() const;
         file_status  symlink_status(system::error_code&amp; ec) const;
+        file_type    symlink_type() const;
+        file_type    symlink_type(system::error_code& ec) const;
 
         bool operator&lt; (const directory_entry&amp; rhs);
         bool operator==(const directory_entry&amp; rhs); 
@@ -2649,7 +2651,21 @@ file_status  symlink_status(system::error_code&amp; ec) const;</pre>
   <p><i>Returns:</i> <code>m_symlink_status</code></p>
   
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
+</blockquote>
+  <pre>file_type  symlink_type() const;
+file_type  symlink_type(system::error_code&amp; ec) const;</pre>
+<blockquote>
+<p>
+  <i>Effects:</i> As if,</p>
+  <blockquote>
+    <pre>if ( !type_present( m_symlink_status ) )
+{
+  m_symlink_status = symlink_status(m_path<i>[, ec]</i>);
+}</pre>
+  </blockquote>
+  <p><i>Returns:</i> <code>m_symlink_status.type()</code></p>
   
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre>bool operator==(const directory_entry&amp; rhs);</pre>
 <blockquote>
