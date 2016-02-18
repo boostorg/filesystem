@@ -287,6 +287,23 @@ namespace
     path p(*it);
   }
 
+  //  directory_entry_cache_test  ---------------------------------------------------//
+
+  void directory_entry_cache_test()
+  {
+    cout << "directory_entry cache test..." << endl;
+
+    for (directory_iterator itr("."); itr != directory_iterator(); ++itr)
+    {
+      if (is_regular_file(*itr))
+      {
+        cout << "  " << itr->path() << " " << file_size(itr->path()) << " "
+                                           << file_size(*itr) << "\n";
+        BOOST_TEST_EQ(file_size(itr->path()), file_size(*itr));
+      }
+    }
+  }
+
   //  error_handling_test  -------------------------------------------------------------//
 
   void error_handling_test()
@@ -361,6 +378,7 @@ int cpp_main(int, char*[])
   operations_test();
   directory_entry_test();
   directory_entry_overload_test();
+  directory_entry_cache_test();
   error_handling_test();
   string_file_tests();
 
