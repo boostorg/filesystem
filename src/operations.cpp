@@ -1962,35 +1962,35 @@ namespace detail
 //    else if (ec != 0) ec->clear();
 //    return m_symlink_status;
 //  }
-//
-////  dispatch directory_entry supplied here rather than in 
-////  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
-////  test cases are in operations_unit_test.cpp
-//
-//namespace path_traits
-//{
-//  void dispatch(const directory_entry & de,
-//#                ifdef BOOST_WINDOWS_API
-//    std::wstring& to,
-//#                else   
-//    std::string& to,
-//#                endif
-//    const codecvt_type &)
-//  {
-//    to = de.path().native();
-//  }
-//
-//  void dispatch(const directory_entry & de,
-//#                ifdef BOOST_WINDOWS_API
-//    std::wstring& to
-//#                else   
-//    std::string& to
-//#                endif
-//    )
-//  {
-//    to = de.path().native();
-//  }
-//}  // namespace path_traits
+
+//  dispatch directory_entry supplied here rather than in 
+//  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
+//  test cases are in operations_unit_test.cpp
+
+namespace path_traits
+{
+  void dispatch(const directory_entry & de,
+#                ifdef BOOST_WINDOWS_API
+    std::wstring& to,
+#                else   
+    std::string& to,
+#                endif
+    const codecvt_type &)
+  {
+    to = de.path().native();
+  }
+
+  void dispatch(const directory_entry & de,
+#                ifdef BOOST_WINDOWS_API
+    std::wstring& to
+#                else   
+    std::string& to
+#                endif
+    )
+  {
+    to = de.path().native();
+  }
+}  // namespace path_traits
 } // namespace filesystem
 } // namespace boost
 
@@ -2338,15 +2338,13 @@ namespace detail
         return;
       }
 
+      // keep looping to bypass dot or dot-dot filename
+      path::string_type filename = it.m_imp->dir_entry.path().filename().native();
       if (!(filename[0] == dot // !(dot or dot-dot)
-        && (filename.size()== 1
-          || (filename[1] == dot
-            && filename.size()== 2))))
-      {
-        it.m_imp->dir_entry.replace_filename(
-          filename, file_stat, symlink_file_stat);
+        && (filename.size() == 1
+          || (filename.size() == 2
+            && filename[1] == dot))))
         return;
-      }
     }
   }
 }  // namespace detail

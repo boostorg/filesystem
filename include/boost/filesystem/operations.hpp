@@ -737,18 +737,27 @@ namespace boost
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  class BOOST_FILESYSTEM_DECL directory_entry;
+  ...
 
-  namespace detail
-  {
-    BOOST_FILESYSTEM_DECL
-    boost::system::error_code open_directory(void *& handle, const path& dir,
-      directory_entry& dir_entry);
+  // TODO:
+  //
+  //  Add a void refresh(); function that refreshes any cached elements for path().
+  //  Then a constructor directory_entry(const path&) is specified to call refresh()
+  //  on the newly constructed object. Ditto operator=. refresh() can also be called
+  //  manually if the user is concerned the entry has become stale.
 
-    BOOST_FILESYSTEM_DECL
-    boost::system::error_code  read_directory(void *& handle, directory_entry& dir_entry);
+  //class BOOST_FILESYSTEM_DECL directory_entry;
 
-  }  // namespace detail
+  //namespace detail
+  //{
+  //  BOOST_FILESYSTEM_DECL
+  //  boost::system::error_code open_directory(void *& handle, const path& dir,
+  //    directory_entry& dir_entry);
+
+  //  BOOST_FILESYSTEM_DECL
+  //  boost::system::error_code  read_directory(void *& handle, directory_entry& dir_entry);
+
+  //}  // namespace detail
 
 //  GCC has a problem with a member function named path within a namespace or 
 //  sub-namespace that also has a class named path. The workaround is to always
