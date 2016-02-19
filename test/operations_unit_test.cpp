@@ -258,24 +258,24 @@ namespace
     last_write_time(".", ft, ec);
   }
 
-  //  directory_entry_test  ------------------------------------------------------------//
+  ////  directory_entry_test  ------------------------------------------------------------//
 
-  void directory_entry_test()
-  {
-    cout << "directory_entry test..." << endl;
+  //void directory_entry_test()
+  //{
+  //  cout << "directory_entry test..." << endl;
 
-    directory_entry de("foo.bar",
-      file_status(regular_file, owner_all), file_status(directory_file, group_all));
+  //  directory_entry de("foo.bar",
+  //    file_status(regular_file, owner_all), file_status(directory_file, group_all));
 
-    CHECK(de.path() == "foo.bar");
-    CHECK(de.status() == file_status(regular_file, owner_all));
-    CHECK(de.symlink_status() == file_status(directory_file, group_all));
-    CHECK(de < directory_entry("goo.bar"));
-    CHECK(de == directory_entry("foo.bar"));
-    CHECK(de != directory_entry("goo.bar"));
-    de.replace_filename("bar.foo");
-    CHECK(de.path() == "bar.foo");
-  }
+  //  CHECK(de.path() == "foo.bar");
+  //  CHECK(de.status() == file_status(regular_file, owner_all));
+  //  CHECK(de.symlink_status() == file_status(directory_file, group_all));
+  //  CHECK(de < directory_entry("goo.bar"));
+  //  CHECK(de == directory_entry("foo.bar"));
+  //  CHECK(de != directory_entry("goo.bar"));
+  //  de.replace_filename("bar.foo");
+  //  CHECK(de.path() == "bar.foo");
+  //}
 
   //  directory_entry_overload_test  ---------------------------------------------------//
 
@@ -376,7 +376,7 @@ int cpp_main(int, char*[])
   directory_iterator_test();
   recursive_directory_iterator_test();
   operations_test();
-  directory_entry_test();
+  //directory_entry_test();
   directory_entry_overload_test();
   directory_entry_cache_test();
   error_handling_test();
