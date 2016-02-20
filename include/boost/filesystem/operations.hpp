@@ -345,9 +345,7 @@ namespace boost
   BOOST_SCOPED_ENUM_END
 
 //--------------------------------------------------------------------------------------//
-//                                                                                      //
 //                                 directory_entry                                      //
-//                                                                                      //
 //--------------------------------------------------------------------------------------//
 
 //  TODO: is this really a GCC problem or is it a MSVC 2-phase lookup problem?
@@ -379,7 +377,8 @@ public:
     m_status = std::move(rhs.m_status);
     m_symlink_status = std::move(rhs.m_symlink_status);
 #  ifdef BOOST_WINDOWS_API
-    m_last_write_time = std::move(rhs.m_last_write_time);
+    m_file_size = std::move(rhs.m_file_size);
+//    m_last_write_time = std::move(rhs.m_last_write_time);
 #  endif
   }
   directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
@@ -388,7 +387,8 @@ public:
     m_status = std::move(rhs.m_status);
     m_symlink_status = std::move(rhs.m_symlink_status);
 #  ifdef BOOST_WINDOWS_API
-    m_last_write_time = std::move(rhs.m_last_write_time);
+    m_file_size = std::move(rhs.m_file_size);
+//    m_last_write_time = std::move(rhs.m_last_write_time);
 #  endif
     return *this;
   }
@@ -407,21 +407,6 @@ public:
                   // TODO: Document that refresh() uses operational functions (i.e.
                   // may be slow and may encounter errors and throw.)
 
-  //void replace_filename(const boost::filesystem::path& p,
-  //  file_status st = file_status(), file_status symlink_st = file_status())
-  //{
-  //  m_path.remove_filename();
-  //  m_path /= p;
-  //  m_status = st;
-  //  m_symlink_status = symlink_st;
-  //}
-
-//# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-//  void replace_leaf(const boost::filesystem::path& p,
-//    file_status st, file_status symlink_st)
-//      { replace_filename(p, st, symlink_st); }
-//# endif
-
   const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
 
   // automatic conversion to const path& allow users to take advantage of any caching
@@ -429,10 +414,10 @@ public:
   // functions, which know if any data is cached for the current platform.
   operator const boost::filesystem::path&() const BOOST_NOEXCEPT
                                                               {return m_path;}
-//# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   file_status   status() const BOOST_NOEXCEPT                 {return m_status;}
   file_status   symlink_status() const BOOST_NOEXCEPT         {return m_symlink_status;}
-//# endif
+# endif
 
   bool operator==(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path == rhs.m_path; }
   bool operator!=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path != rhs.m_path;} 
@@ -448,9 +433,9 @@ public:
 
   // platform specific cache set by directory iteration or refresh()
 # ifdef BOOST_WINDOWS_API
-  file_status  m_status;           // stat()-like
-  file_status  m_symlink_status;   // lstat()-like
-  std::time_t  m_last_write_time;  // last write time
+  file_status       m_status;           // stat()-like
+  file_status       m_symlink_status;   // lstat()-like
+  boost::uintmax_t  m_file_size;        // file size
 
   //  befriend the operational functions that will use cache
   // TODO
@@ -552,11 +537,21 @@ public:
   inline 
   file_status status(const path& p, system::error_code& ec)
                                        {return detail::status(p, &ec);}
+  inline
+  file_status status(const directory_entry& d) {return d.m_status;}
+  inline
+  file_status status(const directory_entry& d, system::error_code& ec)
+                                       {ec.clear(); return d.m_status;}
   inline 
   file_status symlink_status(const path& p) {return detail::symlink_status(p);}
   inline
   file_status symlink_status(const path& p, system::error_code& ec)
                                        {return detail::symlink_status(p, &ec);}
+  inline
+  file_status symlink_status(const directory_entry& d) {return d.m_symlink_status;}
+  inline
+  file_status symlink_status(const directory_entry& d, system::error_code& ec)
+                                       {ec.clear(); return d.m_symlink_status;}
   inline 
   bool exists(const path& p)           {return exists(detail::status(p));}
   inline 
@@ -729,8 +724,7 @@ public:
   boost::uintmax_t file_size(const path& p) {return detail::file_size(p);}
 
   inline
-  boost::uintmax_t file_size(const directory_entry& x)
-                                       {return detail::file_size(x.path());}
+  boost::uintmax_t file_size(const directory_entry& x) {return x.m_file_size;}
 
   inline
   boost::uintmax_t file_size(const path& p, system::error_code& ec) BOOST_NOEXCEPT
@@ -1065,8 +1059,7 @@ namespace filesystem
 
         if ((m_options & symlink_option::recurse) != symlink_option::recurse)
         {
-//          symlink_stat = m_stack.top()->symlink_status(ec);
-          symlink_stat = m_stack.top()->symlink_status();    //DODO: FIX THIS!
+          symlink_stat = symlink_status(*m_stack.top(), ec);
           if (ec)
             return false;
         }
@@ -1074,8 +1067,7 @@ namespace filesystem
         if ((m_options & symlink_option::recurse) == symlink_option::recurse
           || !is_symlink(symlink_stat))
         {
-          //file_status stat = m_stack.top()->status(ec);
-          file_status stat = m_stack.top()->status();      //DODO: FIX THIS!
+          file_status stat = status(*m_stack.top(), ec);
           if (ec || !is_directory(stat))
             return false;
 
@@ -1260,19 +1252,19 @@ namespace filesystem
   
     void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }
 
-    file_status status() const
-    {
-      BOOST_ASSERT_MSG(m_imp.get(),
-        "status() on end recursive_directory_iterator");
-      return m_imp->m_stack.top()->status();
-    }
+    //file_status status() const
+    //{
+    //  BOOST_ASSERT_MSG(m_imp.get(),
+    //    "status() on end recursive_directory_iterator");
+    //  return m_imp->m_stack.top()->status();
+    //}
 
-    file_status symlink_status() const
-    {
-      BOOST_ASSERT_MSG(m_imp.get(),
-        "symlink_status() on end recursive_directory_iterator");
-      return m_imp->m_stack.top()->symlink_status();
-    }
+    //file_status symlink_status() const
+    //{
+    //  BOOST_ASSERT_MSG(m_imp.get(),
+    //    "symlink_status() on end recursive_directory_iterator");
+    //  return m_imp->m_stack.top()->symlink_status();
+    //}
 
   private:
 

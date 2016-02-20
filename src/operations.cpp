@@ -2150,7 +2150,9 @@ namespace
     }
 
     dir_entry.m_path = data.cFileName;
-    dir_entry.m_last_write_time = to_time_t(data.ftLastWriteTime);
+    dir_entry.m_file_size =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
+              << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
+    //dir_entry.m_last_write_time = to_time_t(data.ftLastWriteTime);
 
     if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
       // TODO: This no longer works:
@@ -2184,15 +2186,18 @@ namespace
   error_code  read_directory(void *& handle, fs::directory_entry& dir_entry)
   {
     WIN32_FIND_DATAW data;
-    if (::FindNextFileW(handle, &data)== 0)// fails
+    if (::FindNextFileW(handle, &data) == 0)  // fails
     {
       int error = ::GetLastError();
       fs::detail::close_directory(handle);
       return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
     }
 
-    dir_entry.m_path = data.cFileName;
-    dir_entry.m_last_write_time = to_time_t(data.ftLastWriteTime);
+    dir_entry.m_path.remove_filename();
+    dir_entry.m_path /= data.cFileName;
+    dir_entry.m_file_size =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
+              << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
+    //dir_entry.m_last_write_time = to_time_t(data.ftLastWriteTime);
 
     if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
       // TODO: This no longer works:
