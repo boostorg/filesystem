@@ -332,6 +332,10 @@ namespace boost
   inline bool is_regular(file_status f) BOOST_NOEXCEPT { return f.type() == regular_file; }
 # endif
 
+//--------------------------------------------------------------------------------------//
+//                                    space_info                                        //
+//--------------------------------------------------------------------------------------//
+
   struct space_info
   {
     // all values are byte counts
