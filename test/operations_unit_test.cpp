@@ -122,24 +122,31 @@ namespace
 
     CHECK(!it->path().empty());
 
-    // TODO: fix these:
-    //if (is_regular_file(it->status()))
-    //{
-    //  CHECK(is_regular_file(it->symlink_status()));
-    //  CHECK(!is_directory(it->status()));
-    //  CHECK(!is_symlink(it->status()));
-    //  CHECK(!is_directory(it->symlink_status()));
-    //  CHECK(!is_symlink(it->symlink_status()));
-    //}
-    //else
-    //{
-    //  CHECK(is_directory(it->status()));
-    //  CHECK(is_directory(it->symlink_status()));
-    //  CHECK(!is_regular_file(it->status()));
-    //  CHECK(!is_regular_file(it->symlink_status()));
-    //  CHECK(!is_symlink(it->status()));
-    //  CHECK(!is_symlink(it->symlink_status()));
-    //}
+    if (is_regular_file(it->path()))
+    {
+      CHECK(is_regular_file(*it));
+      CHECK(is_regular_file(status(*it)));
+      CHECK(is_regular_file(symlink_status(*it)));
+      CHECK(!is_directory(status(*it)));
+      CHECK(!is_symlink(status(*it)));
+      CHECK(!is_directory(symlink_status(*it)));
+      CHECK(!is_symlink(symlink_status(*it)));
+    }
+    else
+    {
+      CHECK(is_directory(*it));
+      CHECK(!is_regular_file(*it));
+      CHECK(!is_symlink(*it));
+      CHECK(is_directory(status(*it)));
+      CHECK(is_directory(symlink_status(*it)));
+      CHECK(!is_regular_file(status(*it)));
+      CHECK(!is_regular_file(symlink_status(*it)));
+      CHECK(!is_symlink(status(*it)));
+      CHECK(!is_symlink(symlink_status(*it)));
+      CHECK(is_directory(*it));
+      CHECK(!is_regular_file(*it));
+      CHECK(!is_symlink(*it));
+    }
 
     for (; it != end; ++it)
     {

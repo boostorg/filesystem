@@ -352,6 +352,13 @@ namespace boost
 //                                 directory_entry                                      //
 //--------------------------------------------------------------------------------------//
 
+#ifdef BOOST_WINDOWS_API
+# define BOOST_FILESYSTEM_CACHE_STATUS
+# define BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+# define BOOST_FILESYSTEM_CACHE_FILESIZE
+#else
+#endif
+
 //  TODO: is this really a GCC problem or is it a MSVC 2-phase lookup problem?
 //  GCC has a problem with a member function named path within a namespace or 
 //  sub-namespace that also has a class named path. The workaround is to always
@@ -541,21 +548,11 @@ public:
   inline 
   file_status status(const path& p, system::error_code& ec)
                                        {return detail::status(p, &ec);}
-  inline
-  file_status status(const directory_entry& d) {return d.m_status;}
-  inline
-  file_status status(const directory_entry& d, system::error_code& ec)
-                                       {ec.clear(); return d.m_status;}
   inline 
   file_status symlink_status(const path& p) {return detail::symlink_status(p);}
   inline
   file_status symlink_status(const path& p, system::error_code& ec)
                                        {return detail::symlink_status(p, &ec);}
-  inline
-  file_status symlink_status(const directory_entry& d) {return d.m_symlink_status;}
-  inline
-  file_status symlink_status(const directory_entry& d, system::error_code& ec)
-                                       {ec.clear(); return d.m_symlink_status;}
   inline 
   bool exists(const path& p)           {return exists(detail::status(p));}
   inline 
@@ -594,6 +591,25 @@ public:
   inline
   bool is_empty(const path& p, system::error_code& ec)
                                        {return detail::is_empty(p, &ec);}
+
+#ifdef BOOST_FILESYSTEM_CACHE_STATUS
+  inline
+  file_status status(const directory_entry& d)   {return d.m_status;}
+  inline 
+  bool exists(const directory_entry& d)          {return exists(d.m_status);}
+  inline 
+  bool is_directory(const directory_entry& d)    {return is_directory(d.m_status);}
+  inline 
+  bool is_regular_file(const directory_entry& d) {return is_regular_file(d.m_status);}
+  inline 
+  bool is_other(const directory_entry& d)        {return is_other(d.m_status);}
+#endif
+#ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+  inline
+  file_status symlink_status(const directory_entry& d) {return d.m_symlink_status;}
+  inline
+  bool is_symlink(const directory_entry& d)       {return is_symlink(d.m_symlink_status);}
+#endif
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -728,11 +744,13 @@ public:
   boost::uintmax_t file_size(const path& p) {return detail::file_size(p);}
 
   inline
-  boost::uintmax_t file_size(const directory_entry& x) {return x.m_file_size;}
-
-  inline
   boost::uintmax_t file_size(const path& p, system::error_code& ec) BOOST_NOEXCEPT
                                        {return detail::file_size(p, &ec);}
+#ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+  inline
+  boost::uintmax_t file_size(const directory_entry& x) {return x.m_file_size;}
+#endif
+
   inline
   boost::uintmax_t hard_link_count(const path& p) {return detail::hard_link_count(p);}
 
