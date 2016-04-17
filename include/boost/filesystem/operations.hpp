@@ -348,9 +348,13 @@ namespace boost
     {none=0, fail_if_exists = none, overwrite_if_exists};
   BOOST_SCOPED_ENUM_END
 
-//--------------------------------------------------------------------------------------//
-//                                 directory_entry                                      //
-//--------------------------------------------------------------------------------------//
+  //--------------------------------------------------------------------------------------//
+  //                                 directory_entry                                      //
+  //--------------------------------------------------------------------------------------//
+  
+  file_status status(const path& p);
+  file_status symlink_status(const path& p);
+  boost::uintmax_t file_size(const path& p);
 
 #ifdef BOOST_WINDOWS_API
 # define BOOST_FILESYSTEM_CACHE_STATUS
@@ -412,11 +416,28 @@ public:
     return *this;
   }
 
-  void refresh(); // TODO: error_code version?
-                  // refresh() can be called if the user is concerned
-                  // the cache has become stale.
-                  // TODO: Document that refresh() uses operational functions (i.e.
-                  // may be slow and may encounter errors and throw.)
+  // TODO: Document that refresh() uses operational functions (i.e.
+  // may be slow and may encounter errors and throw.)
+
+  void refresh()   //  user can call to refresh stale cache
+  {
+    // minimal conforming implementation; we can do much better that this on systems
+    // like Windows with APIs that obtain all the needed info via a single API call
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+    m_status = boost::filesystem::status(path());
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+    m_symlink_status  = boost::filesystem::symlink_status(path());
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+    // note: all systems that suppost BOOST_FILESYSTEM_CACHE_FILESIZE supply m_status
+    if (is_regular_file(m_status))
+      m_file_size = file_size(path());
+    else
+      m_file_size = static_cast<boost::uintmax_t>(-1);
+# endif
+  }
+  void refresh(system::error_code& ec);
 
   const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
 

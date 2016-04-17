@@ -191,24 +191,31 @@ namespace
 
     CHECK(!it->path().empty());
 
-    // TODO: fix these:
-    //if (is_regular_file(it->status()))
-    //{
-    //  CHECK(is_regular_file(it->symlink_status()));
-    //  CHECK(!is_directory(it->status()));
-    //  CHECK(!is_symlink(it->status()));
-    //  CHECK(!is_directory(it->symlink_status()));
-    //  CHECK(!is_symlink(it->symlink_status()));
-    //}
-    //else
-    //{
-    //  CHECK(is_directory(it->status()));
-    //  CHECK(is_directory(it->symlink_status()));
-    //  CHECK(!is_regular_file(it->status()));
-    //  CHECK(!is_regular_file(it->symlink_status()));
-    //  CHECK(!is_symlink(it->status()));
-    //  CHECK(!is_symlink(it->symlink_status()));
-    //}
+    if (is_regular_file(it->path()))
+    {
+      CHECK(is_regular_file(*it));
+      CHECK(is_regular_file(status(*it)));
+      CHECK(is_regular_file(symlink_status(*it)));
+      CHECK(!is_directory(status(*it)));
+      CHECK(!is_symlink(status(*it)));
+      CHECK(!is_directory(symlink_status(*it)));
+      CHECK(!is_symlink(symlink_status(*it)));
+    }
+    else
+    {
+      CHECK(is_directory(*it));
+      CHECK(!is_regular_file(*it));
+      CHECK(!is_symlink(*it));
+      CHECK(is_directory(status(*it)));
+      CHECK(is_directory(symlink_status(*it)));
+      CHECK(!is_regular_file(status(*it)));
+      CHECK(!is_regular_file(symlink_status(*it)));
+      CHECK(!is_symlink(status(*it)));
+      CHECK(!is_symlink(symlink_status(*it)));
+      CHECK(is_directory(*it));
+      CHECK(!is_regular_file(*it));
+      CHECK(!is_symlink(*it));
+    }
 
     for (; it != end; ++it)
     {
@@ -267,24 +274,19 @@ namespace
     last_write_time(".", ft, ec);
   }
 
-  ////  directory_entry_test  ------------------------------------------------------------//
+  //  directory_entry_test  ------------------------------------------------------------//
 
-  //void directory_entry_test()
-  //{
-  //  cout << "directory_entry test..." << endl;
+  void directory_entry_test()
+  {
+    cout << "directory_entry test..." << endl;
 
-  //  directory_entry de("foo.bar",
-  //    file_status(regular_file, owner_all), file_status(directory_file, group_all));
+    directory_entry de("foo.bar");
 
-  //  CHECK(de.path() == "foo.bar");
-  //  CHECK(de.status() == file_status(regular_file, owner_all));
-  //  CHECK(de.symlink_status() == file_status(directory_file, group_all));
-  //  CHECK(de < directory_entry("goo.bar"));
-  //  CHECK(de == directory_entry("foo.bar"));
-  //  CHECK(de != directory_entry("goo.bar"));
-  //  de.replace_filename("bar.foo");
-  //  CHECK(de.path() == "bar.foo");
-  //}
+    CHECK(de.path() == "foo.bar");
+    CHECK(de < directory_entry("goo.bar"));
+    CHECK(de == directory_entry("foo.bar"));
+    CHECK(de != directory_entry("goo.bar"));
+  }
 
   //  directory_entry_overload_test  ---------------------------------------------------//
 
@@ -383,9 +385,9 @@ int cpp_main(int, char*[])
   file_status_test();
   query_test();
   directory_iterator_test();
-  //recursive_directory_iterator_test();
+  recursive_directory_iterator_test();
   operations_test();
-  //directory_entry_test();
+  directory_entry_test();
   directory_entry_overload_test();
   directory_entry_cache_test();
   error_handling_test();

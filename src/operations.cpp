@@ -1934,11 +1934,6 @@ namespace detail
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  void directory_entry::refresh()
-  {
-    // TODO: implement!
-  }
-
 //  file_status
 //  directory_entry::m_get_status(system::error_code* ec) const
 //  {
