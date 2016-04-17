@@ -424,6 +424,9 @@ namespace boost
     path unique_path(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     path weakly_canonical(const path& p, system::error_code* ec = 0);
+
+    struct deacc;
+
   }  // namespace detail             
 
 //--------------------------------------------------------------------------------------//
@@ -804,7 +807,7 @@ public:
 # ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
     // note: all systems that suppost BOOST_FILESYSTEM_CACHE_FILESIZE supply m_status
     if (is_regular_file(m_status))
-      m_file_size = file_size(path());
+      m_file_size = boost::filesystem::file_size(path());
     else
       m_file_size = static_cast<boost::uintmax_t>(-1);
 # endif
@@ -815,46 +818,42 @@ public:
   const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
   operator const boost::filesystem::path&() const BOOST_NOEXCEPT {return m_path;}
 
-  file_status status() const
-  {
-#   ifdef BOOST_FILESYSTEM_CACHE_STATUS
-    return m_status;
-#   else 
-    return boost::filesystem::status(m_path);
-#   endif
-  }
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+  file_status status() const { return m_status; }
+  file_status status(system::error_code& ec) const { ec.clear(); return m_status; }
+# else 
+  file_status status() const { return boost::filesystem::status(m_path); }
+  file_status status(system::error_code& ec) const
+    { return boost::filesystem::status(m_path, ec); }
+# endif
 
-  //file_status   status(system::error_code& ec) const BOOST_NOEXCEPT
-  //                                                            {return m_get_status(&ec); }
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+  file_status symlink_status() const { return m_symlink_status; }
+  file_status symlink_status(system::error_code& ec) const
+    { ec.clear(); return m_symlink_status; }
+# else 
+  file_status symlink_status() const { return boost::filesystem::symlink_status(m_path); }
+  file_status symlink_status(system::error_code& ec) const
+    { return boost::filesystem::symlink_status(m_path, ec); }
+# endif
 
-  file_status symlink_status() const
-  {
-#   ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
-    return m_symlink_status;
-#   else 
-    return boost::filesystem::symlink_status(m_path);
-#   endif
-  }
-  //file_status   symlink_status(system::error_code& ec) const BOOST_NOEXCEPT
-  //                                                            {return m_get_symlink_status(&ec); }
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+  boost::uintmax_t file_size() const { return m_file_size; }
+  boost::uintmax_t file_size(system::error_code& ec) const { ec.clear(); return m_file_size; }
+# else 
+  boost::uintmax_t file_size() const { return boost::filesystem::file_size(m_path); }
+  boost::uintmax_t file_size(system::error_code& ec) const
+    { return boost::filesystem::file_size(m_path, ec); }
+# endif
 
-  boost::uintmax_t file_size() const
-  {
-#   ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
-    return m_file_size;
-#   else 
-    return boost::filesystem::file_size(m_path);
-#   endif
-  }
-
-  std::time_t last_write_time() const
-  {
-#   ifdef BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
-    return m_last_write_time;
-#   else 
-    return boost::filesystem::last_write_time(m_path);
-#   endif
-  }
+# ifdef BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+  std::time_t last_write_time() const { return m_last_write_time; }
+  std::time_t last_write_time(system::error_code& ec) const { ec.clear(); return m_last_write_time; }
+# else 
+  std::time_t last_write_time() const { return boost::filesystem::last_write_time(m_path); }
+  std::time_t last_write_time(system::error_code& ec) const
+    { return boost::filesystem::last_write_time(m_path, ec); }
+# endif
 
   bool operator==(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path == rhs.m_path; }
   bool operator!=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path != rhs.m_path;} 
@@ -864,6 +863,8 @@ public:
   bool operator>=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path >= rhs.m_path;} 
 
 private:
+  friend struct detail::deacc;
+
   boost::filesystem::path   m_path;
 
   // platform specific cache; set by directory iteration or refresh()

@@ -264,8 +264,7 @@ namespace
   {
     cout << "directory_entry test..." << endl;
 
-    directory_entry de("foo.bar",
-      file_status(regular_file, owner_all), file_status(directory_file, group_all));
+    directory_entry de("foo.bar");
 
     CHECK(de.path() == "foo.bar");
     CHECK(de.status() == file_status(regular_file, owner_all));
@@ -273,8 +272,6 @@ namespace
     CHECK(de < directory_entry("goo.bar"));
     CHECK(de == directory_entry("foo.bar"));
     CHECK(de != directory_entry("goo.bar"));
-    de.replace_filename("bar.foo");
-    CHECK(de.path() == "bar.foo");
   }
 
   //  directory_entry_overload_test  ---------------------------------------------------//

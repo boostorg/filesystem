@@ -1926,8 +1926,54 @@ namespace detail
           ? (head/tail).lexically_normal()  
           : head/tail);
   }
+
+  //  directory_entry private access
+  struct deacc
+  {
+    static path& path(directory_entry& x) { return x.m_path; }
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+    static file_status status(directory_entry& x) { return x.m_status; }
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+    static file_status symlink_status(directory_entry& x) { return x.m_symlink_status; }
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+    static boost::uintmax_t& file_size(directory_entry& x) { return x.m_file_size; }
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+    static std::time_t& last_write_time(directory_entry& x) { return x.m_last_write_time; }
+# endif
+  };
 }  // namespace detail
 
+//  dispatch directory_entry supplied here rather than in 
+//  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
+//  test cases are in operations_unit_test.cpp
+
+namespace path_traits
+{
+  void dispatch(const directory_entry & de,
+#                ifdef BOOST_WINDOWS_API
+    std::wstring& to,
+#                else   
+    std::string& to,
+#                endif
+    const codecvt_type &)
+  {
+    to = de.path().native();
+  }
+
+  void dispatch(const directory_entry & de,
+#                ifdef BOOST_WINDOWS_API
+    std::wstring& to
+#                else   
+    std::string& to
+#                endif
+    )
+  {
+    to = de.path().native();
+  }
+}  // namespace path_traits
 } // namespace filesystem
 } // namespace boost
 
@@ -1970,7 +2016,7 @@ namespace
 #define dirent dirent64
 #endif
 
-  error_code dir_itr_first(void *& handle, void *& buffer,
+  error_code open_directory(void *& handle, void *& buffer,
     const char* dir, string& target,
     fs::file_status &, fs::file_status &)
   {
@@ -2013,7 +2059,7 @@ namespace
     return 0;
   }
 
-  error_code dir_itr_increment(void *& handle, void *& buffer,
+  error_code read_directory(void *& handle, void *& buffer,
     string& target, fs::file_status & sf, fs::file_status & symlink_sf)
   {
     BOOST_ASSERT(buffer != 0);
@@ -2023,7 +2069,7 @@ namespace
     if ((return_code = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result))!= 0)
       return error_code(errno, system_category());
     if (result == 0)
-      return fs::detail::dir_itr_close(handle, buffer);
+      return fs::detail::close_directory(handle, buffer);
     target = entry->d_name;
 #   ifdef BOOST_FILESYSTEM_STATUS_CACHE
     if (entry->d_type == DT_UNKNOWN) // filesystem does not supply d_type value
@@ -2051,8 +2097,8 @@ namespace
 
 # else // BOOST_WINDOWS_API
 
-  error_code dir_itr_first(void *& handle, const fs::path& dir,
-    wstring& target, fs::file_status & sf, fs::file_status & symlink_sf)
+  error_code open_directory(void *& handle, const fs::path& dir,
+    fs::directory_entry& dir_entry)
   // Note: an empty root directory has no "." or ".." entries, so this
   // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
   // error. It is treated as eof instead.
@@ -2074,66 +2120,70 @@ namespace
                        || ::GetLastError() == ERROR_NO_MORE_FILES) 
         ? 0 : ::GetLastError(), system_category() );
     }
-    target = data.cFileName;
+    fs::detail::deacc::path(dir_entry) = data.cFileName;
+    fs::detail::deacc::file_size(dir_entry) =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
+              << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
     if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
     // reparse points are complex, so don't try to handle them here; instead just mark
     // them as status_error which causes directory_entry caching to call status()
     // and symlink_status() which do handle reparse points fully
     {
-      sf.type(fs::status_error);
-      symlink_sf.type(fs::status_error);
+      //dir_entry.m_status.type(fs::status_error);
+      //dir_entry.m_symlink_status.type(fs::status_error);
     }
     else
     {
       if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
       {
-        sf.type(fs::directory_file);
-        symlink_sf.type(fs::directory_file);
+        fs::detail::deacc::status(dir_entry).type(fs::directory_file);
+        fs::detail::deacc::symlink_status(dir_entry).type(fs::directory_file);
       }
       else
       {
-        sf.type(fs::regular_file);
-        symlink_sf.type(fs::regular_file);
+        fs::detail::deacc::status(dir_entry).type(fs::regular_file);
+        fs::detail::deacc::symlink_status(dir_entry).type(fs::regular_file);
       }
-      sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-      symlink_sf.permissions(sf.permissions());
+      fs::detail::deacc::status(dir_entry).permissions(make_permissions(data.cFileName, data.dwFileAttributes));
+      fs::detail::deacc::symlink_status(dir_entry).permissions(fs::detail::deacc::status(dir_entry).permissions());
     }
     return error_code();
   }
 
-  error_code  dir_itr_increment(void *& handle, wstring& target,
-    fs::file_status & sf, fs::file_status & symlink_sf)
+  error_code  read_directory(void *& handle, fs::directory_entry& dir_entry)
   {
     WIN32_FIND_DATAW data;
     if (::FindNextFileW(handle, &data)== 0)// fails
     {
       int error = ::GetLastError();
-      fs::detail::dir_itr_close(handle);
+      fs::detail::close_directory(handle);
       return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
     }
-    target = data.cFileName;
+    fs::detail::deacc::path(dir_entry).remove_filename();
+    fs::detail::deacc::path(dir_entry) /= data.cFileName;
+    fs::detail::deacc::file_size(dir_entry) =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
+              << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
     if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
     // reparse points are complex, so don't try to handle them here; instead just mark
     // them as status_error which causes directory_entry caching to call status()
     // and symlink_status() which do handle reparse points fully
     {
-      sf.type(fs::status_error);
-      symlink_sf.type(fs::status_error);
+      //dir_entry.m_status.type(fs::status_error);
+      //dir_entry.m_symlink_status.type(fs::status_error);
     }
     else
     {
       if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
       {
-        sf.type(fs::directory_file);
-        symlink_sf.type(fs::directory_file);
+        fs::detail::deacc::status(dir_entry).type(fs::directory_file);
+        fs::detail::deacc::symlink_status(dir_entry).type(fs::directory_file);
       }
       else
       {
-        sf.type(fs::regular_file);
-        symlink_sf.type(fs::regular_file);
+        fs::detail::deacc::status(dir_entry).type(fs::regular_file);
+        fs::detail::deacc::symlink_status(dir_entry).type(fs::regular_file);
       }
-      sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-      symlink_sf.permissions(sf.permissions());
+      fs::detail::deacc::status(dir_entry).permissions(make_permissions(data.cFileName, data.dwFileAttributes));
+      fs::detail::deacc::symlink_status(dir_entry).permissions(fs::detail::deacc::status(dir_entry).permissions());
     }
     return error_code();
   }
@@ -2159,7 +2209,7 @@ namespace detail
   //  dir_itr_close is called both from the ~dir_itr_imp()destructor 
   //  and dir_itr_increment()
   BOOST_FILESYSTEM_DECL
-  system::error_code dir_itr_close( // never throws
+  system::error_code close_directory( // never throws
     void *& handle
 #   if defined(BOOST_POSIX_API)
     , void *& buffer
@@ -2188,17 +2238,18 @@ namespace detail
   void directory_iterator_construct(directory_iterator& it,
     const path& p, system::error_code* ec)    
   {
+    BOOST_ASSERT(it.m_imp->handle == 0);               // internal error
+    BOOST_ASSERT(it.m_imp->dir_entry.path().empty());  // internal error
     if (error(p.empty() ? not_found_error_code.value() : 0, p, ec,
               "boost::filesystem::directory_iterator::construct"))
       return;
 
-    path::string_type filename;
-    file_status file_stat, symlink_file_stat;
-    error_code result = dir_itr_first(it.m_imp->handle,
+    // open the directory and read the first entry
+    error_code result = open_directory(it.m_imp->handle,
 #     if defined(BOOST_POSIX_API)
       it.m_imp->buffer,
 #     endif
-      p.c_str(), filename, file_stat, symlink_file_stat);
+      p.c_str(), it.m_imp->dir_entry);
 
     if (result)
     {
@@ -2212,11 +2263,10 @@ namespace detail
       it.m_imp.reset(); // eof, so make end iterator
     else // not eof
     {
-      it.m_imp->dir_entry.assign(p / filename, file_stat, symlink_file_stat);
-      if (filename[0] == dot // dot or dot-dot
-        && (filename.size()== 1
-          || (filename[1] == dot
-            && filename.size()== 2)))
+      if (it.m_imp->dir_entry.path().c_str()[0] == dot // dot or dot-dot
+        && (it.m_imp->dir_entry.path().size()== 1
+          || (it.m_imp->dir_entry.path().c_str()[1] == dot
+            && it.m_imp->dir_entry.path().size()== 2)))
         {  it.increment(*ec); }
     }
   }
@@ -2227,17 +2277,15 @@ namespace detail
     BOOST_ASSERT_MSG(it.m_imp.get(), "attempt to increment end iterator");
     BOOST_ASSERT_MSG(it.m_imp->handle != 0, "internal program error");
     
-    path::string_type filename;
-    file_status file_stat, symlink_file_stat;
     system::error_code temp_ec;
 
     for (;;)
     {
-      temp_ec = dir_itr_increment(it.m_imp->handle,
+      temp_ec = read_directory(it.m_imp->handle,
 #       if defined(BOOST_POSIX_API)
         it.m_imp->buffer,
 #       endif
-        filename, file_stat, symlink_file_stat);
+        it.m_imp->dir_entry);
 
       if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
       {
@@ -2259,15 +2307,12 @@ namespace detail
         return;
       }
 
+      path::string_type filename = it.m_imp->dir_entry.path().filename().native();
       if (!(filename[0] == dot // !(dot or dot-dot)
         && (filename.size()== 1
-          || (filename[1] == dot
-            && filename.size()== 2))))
-      {
-        it.m_imp->dir_entry.replace_filename(
-          filename, file_stat, symlink_file_stat);
+          || (filename.size() == 2
+            && filename[1] == dot))))
         return;
-      }
     }
   }
 }  // namespace detail
