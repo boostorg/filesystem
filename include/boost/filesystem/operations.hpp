@@ -737,82 +737,124 @@ namespace boost
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+//  TODO: is this really a GCC problem or is it a MSVC 2-phase lookup problem?
 //  GCC has a problem with a member function named path within a namespace or 
 //  sub-namespace that also has a class named path. The workaround is to always
 //  fully qualify the name path when it refers to the class name.
 
+#ifdef BOOST_WINDOWS_API
+# define BOOST_FILESYSTEM_CACHE_STATUS
+# define BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+# define BOOST_FILESYSTEM_CACHE_FILESIZE
+# define BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+#else
+#endif
+
 class BOOST_FILESYSTEM_DECL directory_entry
 {
 public:
-  typedef boost::filesystem::path::value_type value_type;   // enables class path ctor taking directory_entry
+  // enable class path ctor taking directory_entry
+  typedef boost::filesystem::path::value_type value_type;   
 
   directory_entry() BOOST_NOEXCEPT {}
+
   explicit directory_entry(const boost::filesystem::path& p)
-    : m_path(p), m_status(file_status()), m_symlink_status(file_status())
-    {}
-  directory_entry(const boost::filesystem::path& p,
-    file_status st, file_status symlink_st = file_status())
-    : m_path(p), m_status(st), m_symlink_status(symlink_st) {}
+    : m_path(p) { refresh(); }
 
-  directory_entry(const directory_entry& rhs)
-    : m_path(rhs.m_path), m_status(rhs.m_status), m_symlink_status(rhs.m_symlink_status){}
-
-  directory_entry& operator=(const directory_entry& rhs)
-  {
-    m_path = rhs.m_path;
-    m_status = rhs.m_status;
-    m_symlink_status = rhs.m_symlink_status;
-    return *this;
-  }
+  // compiler generated copy constructor, copy assignment, and destructor apply
 
   //  As of October 2015 the interaction between noexcept and =default is so troublesome
   //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
   //  functions. GCC is not even consistent for the same release on different platforms.
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-  directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
+  // TODO:
+//#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+//  directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
+//  {
+//    m_path = std::move(rhs.m_path);
+//    m_status = std::move(rhs.m_status);
+//    m_symlink_status = std::move(rhs.m_symlink_status);
+//  }
+//  directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
+//  { 
+//    m_path = std::move(rhs.m_path);
+//    m_status = std::move(rhs.m_status);
+//    m_symlink_status = std::move(rhs.m_symlink_status);
+//    return *this;
+//  }
+//#endif
+
+  directory_entry& operator=(const boost::filesystem::path& p) // TODO: error_code version?
   {
-    m_path = std::move(rhs.m_path);
-    m_status = std::move(rhs.m_status);
-    m_symlink_status = std::move(rhs.m_symlink_status);
-  }
-  directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
-  { 
-    m_path = std::move(rhs.m_path);
-    m_status = std::move(rhs.m_status);
-    m_symlink_status = std::move(rhs.m_symlink_status);
+    m_path = p;
+    refresh();
     return *this;
   }
-#endif
 
-  void assign(const boost::filesystem::path& p,
-    file_status st = file_status(), file_status symlink_st = file_status())
-    { m_path = p; m_status = st; m_symlink_status = symlink_st; }
-
-  void replace_filename(const boost::filesystem::path& p,
-    file_status st = file_status(), file_status symlink_st = file_status())
+  void refresh()   //  refresh cache
   {
-    m_path.remove_filename();
-    m_path /= p;
-    m_status = st;
-    m_symlink_status = symlink_st;
+    // TODO: minimal conforming implementation; we can do much better that this on systems
+    // like Windows with APIs that obtain all the needed info via a single API call
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+    m_status = boost::filesystem::status(path());
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+    m_symlink_status  = boost::filesystem::symlink_status(path());
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+    // note: all systems that suppost BOOST_FILESYSTEM_CACHE_FILESIZE supply m_status
+    if (is_regular_file(m_status))
+      m_file_size = file_size(path());
+    else
+      m_file_size = static_cast<boost::uintmax_t>(-1);
+# endif
   }
 
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-  void replace_leaf(const boost::filesystem::path& p,
-    file_status st, file_status symlink_st)
-      { replace_filename(p, st, symlink_st); }
-# endif
+  void refresh(system::error_code& ec);  // TODO?
 
   const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
-  operator const boost::filesystem::path&() const BOOST_NOEXCEPT
-                                                              {return m_path;}
-  file_status   status() const                                {return m_get_status();}
-  file_status   status(system::error_code& ec) const BOOST_NOEXCEPT
-                                                              {return m_get_status(&ec); }
-  file_status   symlink_status() const                        {return m_get_symlink_status();}
-  file_status   symlink_status(system::error_code& ec) const BOOST_NOEXCEPT
-                                                              {return m_get_symlink_status(&ec); }
+  operator const boost::filesystem::path&() const BOOST_NOEXCEPT {return m_path;}
+
+  file_status status() const
+  {
+#   ifdef BOOST_FILESYSTEM_CACHE_STATUS
+    return m_status;
+#   else 
+    return boost::filesystem::status(m_path);
+#   endif
+  }
+
+  //file_status   status(system::error_code& ec) const BOOST_NOEXCEPT
+  //                                                            {return m_get_status(&ec); }
+
+  file_status symlink_status() const
+  {
+#   ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+    return m_symlink_status;
+#   else 
+    return boost::filesystem::symlink_status(m_path);
+#   endif
+  }
+  //file_status   symlink_status(system::error_code& ec) const BOOST_NOEXCEPT
+  //                                                            {return m_get_symlink_status(&ec); }
+
+  boost::uintmax_t file_size() const
+  {
+#   ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+    return m_file_size;
+#   else 
+    return boost::filesystem::file_size(m_path);
+#   endif
+  }
+
+  std::time_t last_write_time() const
+  {
+#   ifdef BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+    return m_last_write_time;
+#   else 
+    return boost::filesystem::last_write_time(m_path);
+#   endif
+  }
 
   bool operator==(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path == rhs.m_path; }
   bool operator!=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path != rhs.m_path;} 
@@ -823,11 +865,21 @@ public:
 
 private:
   boost::filesystem::path   m_path;
-  mutable file_status       m_status;           // stat()-like
-  mutable file_status       m_symlink_status;   // lstat()-like
 
-  file_status m_get_status(system::error_code* ec=0) const;
-  file_status m_get_symlink_status(system::error_code* ec=0) const;
+  // platform specific cache; set by directory iteration or refresh()
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+  file_status       m_status;           // stat()-like
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+  file_status       m_symlink_status;   // lstat()-like
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+  boost::uintmax_t  m_file_size;        
+# endif
+# ifdef  BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+  std::time_t       m_last_write_time;
+# endif
+
 }; // directory_entry
 
 //--------------------------------------------------------------------------------------//
@@ -841,7 +893,7 @@ class directory_iterator;
 namespace detail
 {
   BOOST_FILESYSTEM_DECL
-    system::error_code dir_itr_close(// never throws()
+    system::error_code close_directory(// never throws()
     void *& handle
 #   if     defined(BOOST_POSIX_API)
     , void *& buffer
@@ -865,7 +917,7 @@ namespace detail
 
     ~dir_itr_imp() // never throws
     {
-      dir_itr_close(handle
+      close_directory(handle
 #       if defined(BOOST_POSIX_API)
          , buffer
 #       endif

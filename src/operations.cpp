@@ -1928,69 +1928,6 @@ namespace detail
   }
 }  // namespace detail
 
-//--------------------------------------------------------------------------------------//
-//                                                                                      //
-//                                 directory_entry                                      //
-//                                                                                      //
-//--------------------------------------------------------------------------------------//
-
-  file_status
-  directory_entry::m_get_status(system::error_code* ec) const
-  {
-    if (!status_known(m_status))
-    {
-      // optimization: if the symlink status is known, and it isn't a symlink,
-      // then status and symlink_status are identical so just copy the
-      // symlink status to the regular status.
-      if (status_known(m_symlink_status)
-        && !is_symlink(m_symlink_status))
-      { 
-        m_status = m_symlink_status;
-        if (ec != 0) ec->clear();
-      }
-      else m_status = detail::status(m_path, ec);
-    }
-    else if (ec != 0) ec->clear();
-    return m_status;
-  }
-
-  file_status
-  directory_entry::m_get_symlink_status(system::error_code* ec) const
-  {
-    if (!status_known(m_symlink_status))
-      m_symlink_status = detail::symlink_status(m_path, ec);
-    else if (ec != 0) ec->clear();
-    return m_symlink_status;
-  }
-
-//  dispatch directory_entry supplied here rather than in 
-//  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
-//  test cases are in operations_unit_test.cpp
-
-namespace path_traits
-{
-  void dispatch(const directory_entry & de,
-#                ifdef BOOST_WINDOWS_API
-    std::wstring& to,
-#                else   
-    std::string& to,
-#                endif
-    const codecvt_type &)
-  {
-    to = de.path().native();
-  }
-
-  void dispatch(const directory_entry & de,
-#                ifdef BOOST_WINDOWS_API
-    std::wstring& to
-#                else   
-    std::string& to
-#                endif
-    )
-  {
-    to = de.path().native();
-  }
-}  // namespace path_traits
 } // namespace filesystem
 } // namespace boost
 
