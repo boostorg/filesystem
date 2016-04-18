@@ -1159,7 +1159,7 @@ namespace filesystem
         else
         {
           BOOST_FILESYSTEM_THROW(filesystem_error(
-            "filesystem::recursive_directory_iterator directory error",
+            "filesystem::recursive_directory_iterator increment error",
             ec_push_directory));
         }
       }

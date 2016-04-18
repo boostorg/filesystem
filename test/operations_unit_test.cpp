@@ -203,7 +203,7 @@ namespace
 
     for (; it != end; ++it)
     {
-      //cout << "  " << it->path() << "\n";
+      cout << "  " << it->path() << "\n";
     }
 
     CHECK(recursive_directory_iterator("..") != recursive_directory_iterator());
