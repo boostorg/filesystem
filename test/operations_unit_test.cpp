@@ -142,7 +142,7 @@ namespace
 
     for (; it != end; ++it)
     {
-      //cout << "  " << it->path() << "\n";
+      cout << "  " << it->path() << "\n";
     }
 
     CHECK(directory_iterator(".") != directory_iterator());

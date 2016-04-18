@@ -1932,10 +1932,10 @@ namespace detail
   {
     static path& path(directory_entry& x) { return x.m_path; }
 # ifdef BOOST_FILESYSTEM_CACHE_STATUS
-    static file_status status(directory_entry& x) { return x.m_status; }
+    static file_status& status(directory_entry& x) { return x.m_status; }
 # endif
 # ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
-    static file_status symlink_status(directory_entry& x) { return x.m_symlink_status; }
+    static file_status& symlink_status(directory_entry& x) { return x.m_symlink_status; }
 # endif
 # ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
     static boost::uintmax_t& file_size(directory_entry& x) { return x.m_file_size; }
@@ -2098,7 +2098,7 @@ namespace
 # else // BOOST_WINDOWS_API
 
   error_code open_directory(void *& handle, const fs::path& dir,
-    fs::directory_entry& dir_entry)
+    wstring& target, fs::directory_entry& dir_entry)
   // Note: an empty root directory has no "." or ".." entries, so this
   // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
   // error. It is treated as eof instead.
@@ -2120,9 +2120,10 @@ namespace
                        || ::GetLastError() == ERROR_NO_MORE_FILES) 
         ? 0 : ::GetLastError(), system_category() );
     }
-    fs::detail::deacc::path(dir_entry) = data.cFileName;
+    target = data.cFileName;
     fs::detail::deacc::file_size(dir_entry) =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
               << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
+			  
     if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
     // reparse points are complex, so don't try to handle them here; instead just mark
     // them as status_error which causes directory_entry caching to call status()
@@ -2143,13 +2144,16 @@ namespace
         fs::detail::deacc::status(dir_entry).type(fs::regular_file);
         fs::detail::deacc::symlink_status(dir_entry).type(fs::regular_file);
       }
-      fs::detail::deacc::status(dir_entry).permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-      fs::detail::deacc::symlink_status(dir_entry).permissions(fs::detail::deacc::status(dir_entry).permissions());
+      fs::detail::deacc::status(dir_entry).permissions(
+        make_permissions(data.cFileName, data.dwFileAttributes));
+      fs::detail::deacc::symlink_status(dir_entry).permissions(
+        fs::detail::deacc::status(dir_entry).permissions());
     }
     return error_code();
   }
 
-  error_code  read_directory(void *& handle, fs::directory_entry& dir_entry)
+  error_code  read_directory(void *& handle,
+    wstring& target, fs::directory_entry& dir_entry)
   {
     WIN32_FIND_DATAW data;
     if (::FindNextFileW(handle, &data)== 0)// fails
@@ -2158,10 +2162,10 @@ namespace
       fs::detail::close_directory(handle);
       return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
     }
-    fs::detail::deacc::path(dir_entry).remove_filename();
-    fs::detail::deacc::path(dir_entry) /= data.cFileName;
+    target = data.cFileName;
     fs::detail::deacc::file_size(dir_entry) =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
               << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
+			  
     if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
     // reparse points are complex, so don't try to handle them here; instead just mark
     // them as status_error which causes directory_entry caching to call status()
@@ -2244,12 +2248,13 @@ namespace detail
               "boost::filesystem::directory_iterator::construct"))
       return;
 
-    // open the directory and read the first entry
+    // open the directory and read the first entry into filename
+    path::string_type filename;
     error_code result = open_directory(it.m_imp->handle,
 #     if defined(BOOST_POSIX_API)
       it.m_imp->buffer,
 #     endif
-      p.c_str(), it.m_imp->dir_entry);
+      p.c_str(), filename, it.m_imp->dir_entry);
 
     if (result)
     {
@@ -2263,10 +2268,11 @@ namespace detail
       it.m_imp.reset(); // eof, so make end iterator
     else // not eof
     {
-      if (it.m_imp->dir_entry.path().c_str()[0] == dot // dot or dot-dot
-        && (it.m_imp->dir_entry.path().size()== 1
-          || (it.m_imp->dir_entry.path().c_str()[1] == dot
-            && it.m_imp->dir_entry.path().size()== 2)))
+      fs::detail::deacc::path(it.m_imp->dir_entry) = p / filename;
+      if (filename[0] == dot // dot or dot-dot
+        && (filename.size() == 1
+          || (filename[1] == dot
+            && filename.size() == 2)))
         {  it.increment(*ec); }
     }
   }
@@ -2281,15 +2287,17 @@ namespace detail
 
     for (;;)
     {
-      temp_ec = read_directory(it.m_imp->handle,
+      path::string_type filename;
+		  temp_ec = read_directory(it.m_imp->handle,
 #       if defined(BOOST_POSIX_API)
         it.m_imp->buffer,
 #       endif
-        it.m_imp->dir_entry);
+        filename, it.m_imp->dir_entry);
 
       if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
       {
-        path error_path(it.m_imp->dir_entry.path().parent_path());  // fix ticket #5900
+        path error_path(fs::detail::deacc::path(
+          it.m_imp->dir_entry).parent_path());  // fix ticket #5900
         it.m_imp.reset();
         if (ec == 0)
           BOOST_FILESYSTEM_THROW(
@@ -2307,12 +2315,15 @@ namespace detail
         return;
       }
 
-      path::string_type filename = it.m_imp->dir_entry.path().filename().native();
       if (!(filename[0] == dot // !(dot or dot-dot)
         && (filename.size()== 1
-          || (filename.size() == 2
-            && filename[1] == dot))))
+          || (filename[1] == dot
+            && filename.size()== 2))))
+      {
+        fs::detail::deacc::path(it.m_imp->dir_entry).remove_filename();
+        fs::detail::deacc::path(it.m_imp->dir_entry) /= filename;
         return;
+      }
     }
   }
 }  // namespace detail
