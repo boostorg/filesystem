@@ -1636,6 +1636,16 @@ namespace detail
     return info;
   }
 
+  inline
+  file_status status_helper(const path& p, DWORD attr)
+  {
+    if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) && !is_reparse_point_a_symlink(p))
+      return file_status(reparse_file, make_permissions(p, attr));
+    return (attr & FILE_ATTRIBUTE_DIRECTORY)
+      ? file_status(directory_file, make_permissions(p, attr))
+      : file_status(regular_file, make_permissions(p, attr));
+  }
+
   BOOST_FILESYSTEM_DECL
   file_status status(const path& p, error_code* ec)
   {
@@ -1703,17 +1713,25 @@ namespace detail
       {
         return process_status_failure(p, ec);
       }
-
-      if (!is_reparse_point_a_symlink(p))
-        return file_status(reparse_file, make_permissions(p, attr));
     }
+    if (ec != 0)
+      ec->clear();
+    return status_helper(p, attr);
 
-    if (ec != 0) ec->clear();
+#   endif
+  }
+
+  inline
+  file_status symlink_status_helper(const path& p, DWORD attr)
+  {
+    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+      return is_reparse_point_a_symlink(p)
+             ? file_status(symlink_file, make_permissions(p, attr))
+             : file_status(reparse_file, make_permissions(p, attr));
+
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
       ? file_status(directory_file, make_permissions(p, attr))
       : file_status(regular_file, make_permissions(p, attr));
-
-#   endif
   }
 
   BOOST_FILESYSTEM_DECL
@@ -1764,20 +1782,10 @@ namespace detail
 
     DWORD attr(::GetFileAttributesW(p.c_str()));
     if (attr == 0xFFFFFFFF)
-    {
       return process_status_failure(p, ec);
-    }
-
-    if (ec != 0) ec->clear();
-
-    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
-      return is_reparse_point_a_symlink(p)
-             ? file_status(symlink_file, make_permissions(p, attr))
-             : file_status(reparse_file, make_permissions(p, attr));
-
-    return (attr & FILE_ATTRIBUTE_DIRECTORY)
-      ? file_status(directory_file, make_permissions(p, attr))
-      : file_status(regular_file, make_permissions(p, attr));
+    if (ec != 0)
+      ec->clear();
+    return symlink_status_helper(p, attr);
 
 #   endif
   }
@@ -2121,34 +2129,14 @@ namespace
         ? 0 : ::GetLastError(), system_category() );
     }
     target = data.cFileName;
-    fs::detail::deacc::file_size(dir_entry) =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
-              << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
-			  
-    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-    // reparse points are complex, so don't try to handle them here; instead just mark
-    // them as status_error which causes directory_entry caching to call status()
-    // and symlink_status() which do handle reparse points fully
-    {
-      //dir_entry.m_status.type(fs::status_error);
-      //dir_entry.m_symlink_status.type(fs::status_error);
-    }
-    else
-    {
-      if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-      {
-        fs::detail::deacc::status(dir_entry).type(fs::directory_file);
-        fs::detail::deacc::symlink_status(dir_entry).type(fs::directory_file);
-      }
-      else
-      {
-        fs::detail::deacc::status(dir_entry).type(fs::regular_file);
-        fs::detail::deacc::symlink_status(dir_entry).type(fs::regular_file);
-      }
-      fs::detail::deacc::status(dir_entry).permissions(
-        make_permissions(data.cFileName, data.dwFileAttributes));
-      fs::detail::deacc::symlink_status(dir_entry).permissions(
-        fs::detail::deacc::status(dir_entry).permissions());
-    }
+    fs::detail::deacc::path(dir_entry) = dir / data.cFileName;
+    fs::detail::deacc::file_size(dir_entry)
+      = (static_cast<boost::uintmax_t>(data.nFileSizeHigh)
+          << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
+    fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
+      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
+    fs::detail::deacc::symlink_status(dir_entry) = fs::detail::symlink_status_helper(
+      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
     return error_code();
   }
 
@@ -2163,32 +2151,15 @@ namespace
       return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
     }
     target = data.cFileName;
-    fs::detail::deacc::file_size(dir_entry) =(static_cast<boost::uintmax_t>(data.nFileSizeHigh)
-              << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
-			  
-    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-    // reparse points are complex, so don't try to handle them here; instead just mark
-    // them as status_error which causes directory_entry caching to call status()
-    // and symlink_status() which do handle reparse points fully
-    {
-      //dir_entry.m_status.type(fs::status_error);
-      //dir_entry.m_symlink_status.type(fs::status_error);
-    }
-    else
-    {
-      if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-      {
-        fs::detail::deacc::status(dir_entry).type(fs::directory_file);
-        fs::detail::deacc::symlink_status(dir_entry).type(fs::directory_file);
-      }
-      else
-      {
-        fs::detail::deacc::status(dir_entry).type(fs::regular_file);
-        fs::detail::deacc::symlink_status(dir_entry).type(fs::regular_file);
-      }
-      fs::detail::deacc::status(dir_entry).permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-      fs::detail::deacc::symlink_status(dir_entry).permissions(fs::detail::deacc::status(dir_entry).permissions());
-    }
+    fs::detail::deacc::path(dir_entry).remove_filename();
+    fs::detail::deacc::path(dir_entry) /= data.cFileName;
+    fs::detail::deacc::file_size(dir_entry)
+      = (static_cast<boost::uintmax_t>(data.nFileSizeHigh)
+          << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
+    fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
+      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
+    fs::detail::deacc::symlink_status(dir_entry) = fs::detail::symlink_status_helper(
+      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
     return error_code();
   }
 #endif
@@ -2254,7 +2225,7 @@ namespace detail
 #     if defined(BOOST_POSIX_API)
       it.m_imp->buffer,
 #     endif
-      p.c_str(), filename, it.m_imp->dir_entry);
+      p, filename, it.m_imp->dir_entry);
 
     if (result)
     {
@@ -2268,7 +2239,6 @@ namespace detail
       it.m_imp.reset(); // eof, so make end iterator
     else // not eof
     {
-      fs::detail::deacc::path(it.m_imp->dir_entry) = p / filename;
       if (filename[0] == dot // dot or dot-dot
         && (filename.size() == 1
           || (filename[1] == dot
@@ -2320,8 +2290,6 @@ namespace detail
           || (filename[1] == dot
             && filename.size()== 2))))
       {
-        fs::detail::deacc::path(it.m_imp->dir_entry).remove_filename();
-        fs::detail::deacc::path(it.m_imp->dir_entry) /= filename;
         return;
       }
     }

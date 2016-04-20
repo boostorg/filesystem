@@ -203,7 +203,25 @@ namespace
 
     for (; it != end; ++it)
     {
-      cout << "  " << it->path() << "\n";
+      CHECK(!it->path().empty());
+      CHECK(it->path().filename() != ".");
+      CHECK(it->path().filename() != "..");
+      CHECK(it->status() == status(it->path()));
+      CHECK(it->symlink_status() == symlink_status(it->path()));
+      if (it->status().type() == file_type::regular_file
+        && it->path().extension() != ".log")
+        CHECK(it->file_size() == file_size(it->path()));
+
+      if (it->path().empty()
+        || it->path().filename() == "."
+        || it->path().filename() == ".."
+        || it->status() != status(it->path())
+        || it->symlink_status() != symlink_status(it->path())
+        || (it->status().type() == file_type::regular_file
+            && it->path().extension() != ".log"
+            && it->file_size() != file_size(it->path()))
+        )
+      cout << "  " << it->path() << '\n';
     }
 
     CHECK(recursive_directory_iterator("..") != recursive_directory_iterator());
@@ -222,13 +240,6 @@ namespace
       //cout << "  " << x.path() << "\n";
     }
 #endif
-
-    for (recursive_directory_iterator itr("..");
-      itr != recursive_directory_iterator(); ++itr)
-    {
-      CHECK(!itr->path().empty());
-      //cout << "  " << itr->path() << "\n";
-    }
 
     cout << "recursive_directory_iterator_test complete" << endl;
   }
@@ -267,8 +278,8 @@ namespace
     directory_entry de("foo.bar");
 
     CHECK(de.path() == "foo.bar");
-    CHECK(de.status() == file_status(regular_file, owner_all));
-    CHECK(de.symlink_status() == file_status(directory_file, group_all));
+    CHECK(de.status().type() == file_type::file_not_found);
+    CHECK(de.symlink_status().type() == file_type::file_not_found);
     CHECK(de < directory_entry("goo.bar"));
     CHECK(de == directory_entry("foo.bar"));
     CHECK(de != directory_entry("goo.bar"));
@@ -279,7 +290,6 @@ namespace
   void directory_entry_overload_test()
   {
     cout << "directory_entry overload test..." << endl;
-
     directory_iterator it(".");
     path p(*it);
   }
