@@ -583,6 +583,19 @@ namespace
       hTemplateFile);
   }
 
+  inline bool is_reparse_tag_a_symlink(DWORD tag)
+  {
+    return tag == IO_REPARSE_TAG_SYMLINK
+        // Issue 9016 asked that NTFS directory junctions be recognized as directories.
+        // That is equivalent to recognizing them as symlinks, and then the normal symlink
+        // mechanism will take care of recognizing them as directories.
+        //
+        // Directory junctions are very similar to symlinks, but have some performance
+        // and other advantages over symlinks. They can be created from the command line
+        // with "mklink /j junction-name target-path".
+      || tag == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
+  }
+
   bool is_reparse_point_a_symlink(const path& p)
   {
     handle_wrapper h(create_file_handle(p, FILE_READ_EA,
@@ -599,17 +612,8 @@ namespace
       MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
     if (!result) return false;
 
-    return reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
-        == IO_REPARSE_TAG_SYMLINK
-        // Issue 9016 asked that NTFS directory junctions be recognized as directories.
-        // That is equivalent to recognizing them as symlinks, and then the normal symlink
-        // mechanism will take care of recognizing them as directories.
-        //
-        // Directory junctions are very similar to symlinks, but have some performance
-        // and other advantages over symlinks. They can be created from the command line
-        // with "mklink /j junction-name target-path".
-      || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
-        == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
+    return is_reparse_tag_a_symlink(
+      reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag);
   }
 
   inline std::size_t get_full_path_name(
@@ -1637,9 +1641,9 @@ namespace detail
   }
 
   inline
-  file_status status_helper(const path& p, DWORD attr)
+  file_status status_helper(const path& p, DWORD attr, bool is_symlink)
   {
-    if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) && !is_reparse_point_a_symlink(p))
+    if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) && !is_symlink)
       return file_status(reparse_file, make_permissions(p, attr));
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
       ? file_status(directory_file, make_permissions(p, attr))
@@ -1695,10 +1699,10 @@ namespace detail
       return process_status_failure(p, ec);
     }
 
+    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
     //  reparse point handling;
     //    since GetFileAttributesW does not resolve symlinks, try to open a file
     //    handle to discover if the file exists
-    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
     {
       handle_wrapper h(
         create_file_handle(
@@ -1716,7 +1720,7 @@ namespace detail
     }
     if (ec != 0)
       ec->clear();
-    return status_helper(p, attr);
+    return status_helper(p, attr, is_reparse_point_a_symlink(p));
 
 #   endif
   }
@@ -2133,10 +2137,16 @@ namespace
     fs::detail::deacc::file_size(dir_entry)
       = (static_cast<boost::uintmax_t>(data.nFileSizeHigh)
           << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
-    fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
-      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
     fs::detail::deacc::symlink_status(dir_entry) = fs::detail::symlink_status_helper(
       fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
+
+    if ((data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+        && is_reparse_tag_a_symlink(data.dwReserved0))
+      fs::detail::deacc::status(dir_entry)
+        = fs::status(fs::detail::deacc::path(dir_entry));
+    else
+      fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
+        fs::detail::deacc::path(dir_entry), data.dwFileAttributes, false);
     return error_code();
   }
 
@@ -2156,10 +2166,16 @@ namespace
     fs::detail::deacc::file_size(dir_entry)
       = (static_cast<boost::uintmax_t>(data.nFileSizeHigh)
           << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
-    fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
-      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
     fs::detail::deacc::symlink_status(dir_entry) = fs::detail::symlink_status_helper(
       fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
+
+    if ((data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+        && is_reparse_tag_a_symlink(data.dwReserved0))
+      fs::detail::deacc::status(dir_entry)
+        = fs::status(fs::detail::deacc::path(dir_entry));
+    else
+      fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
+        fs::detail::deacc::path(dir_entry), data.dwFileAttributes, false);
     return error_code();
   }
 #endif

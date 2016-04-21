@@ -142,7 +142,7 @@ namespace
 
     for (; it != end; ++it)
     {
-      cout << "  " << it->path() << "\n";
+      //cout << "  " << it->path() << "\n";
     }
 
     CHECK(directory_iterator(".") != directory_iterator());
@@ -218,10 +218,14 @@ namespace
         || it->status() != status(it->path())
         || it->symlink_status() != symlink_status(it->path())
         || (it->status().type() == file_type::regular_file
-            && it->path().extension() != ".log"
-            && it->file_size() != file_size(it->path()))
+          && it->path().extension() != ".log"
+          && it->file_size() != file_size(it->path()))
         )
-      cout << "  " << it->path() << '\n';
+      {
+        cout << "  " << it->path() << '\n';
+        cout << it->status().type() << " " << status(it->path()).type() << '\n';
+        cout << it->symlink_status().type() << " " << symlink_status(it->path()).type() << '\n';
+      }
     }
 
     CHECK(recursive_directory_iterator("..") != recursive_directory_iterator());
