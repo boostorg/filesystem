@@ -459,7 +459,7 @@ namespace filesystem
     //  Experimental generic function returning generic formatted path (i.e. separators
     //  are forward slashes). Motivation: simpler than a family of generic_*string
     //  functions.
-    path generic() const
+    path generic_path() const
     {
 #   ifdef BOOST_WINDOWS_API
       path tmp;
