@@ -146,8 +146,12 @@ namespace filesystem
 
     path(const value_type* s) : m_pathname(s) {}
     path(value_type* s) : m_pathname(s) {}
-    path(const string_type& s) : m_pathname(s) {}
-    path(string_type& s) : m_pathname(s) {}
+    path(const string_type& s) : m_pathname(s) {
+	BOOST_ASSERT( s.size() == std::char_traits<value_type>::length(s.data()) );
+    }
+    path(string_type& s) : m_pathname(s) {
+	BOOST_ASSERT( s.size() == std::char_traits<value_type>::length(s.data()) );
+    }
 
   //  As of October 2015 the interaction between noexcept and =default is so troublesome
   //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
@@ -213,8 +217,14 @@ namespace filesystem
                                           {m_pathname = ptr; return *this;}
     path& operator=(value_type* ptr)  // required in case ptr overlaps *this
                                           {m_pathname = ptr; return *this;}
-    path& operator=(const string_type& s) {m_pathname = s; return *this;}
-    path& operator=(string_type& s)       {m_pathname = s; return *this;}
+    path& operator=(const string_type& s) {
+	BOOST_ASSERT( s.size() == std::char_traits<value_type>::length(s.data()) );
+        m_pathname = s; return *this;
+    }
+    path& operator=(string_type& s) {
+	BOOST_ASSERT( s.size() == std::char_traits<value_type>::length(s.data()) );
+        m_pathname = s; return *this;
+    }
 
     path& assign(const value_type* ptr, const codecvt_type&)  // required in case ptr overlaps *this
                                           {m_pathname = ptr; return *this;}
@@ -266,8 +276,14 @@ namespace filesystem
     path& operator+=(const path& p)         { m_pathname += p.m_pathname; return *this; }
     path& operator+=(const value_type* ptr) { m_pathname += ptr; return *this; }
     path& operator+=(value_type* ptr)       { m_pathname += ptr; return *this; }
-    path& operator+=(const string_type& s)  { m_pathname += s; return *this; }
-    path& operator+=(string_type& s)        { m_pathname += s; return *this; }
+    path& operator+=(const string_type& s) {
+	BOOST_ASSERT( s.size() == std::char_traits<value_type>::length(s.data()) );
+        m_pathname += s; return *this;
+    }
+    path& operator+=(string_type& s) {
+	BOOST_ASSERT( s.size() == std::char_traits<value_type>::length(s.data()) );
+        m_pathname += s; return *this;
+    }
     path& operator+=(value_type c)          { m_pathname += c; return *this; }
 
     template <class CharT>
