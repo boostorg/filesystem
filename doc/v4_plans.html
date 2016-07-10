@@ -1,0 +1,59 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Filesystem V4 Plans</title>
+<link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+
+<h1>Boost Filesystem V4 Plans</h1>
+<p>The objectives of Boost Filesystem Version 4:</p>
+<ul>
+  <li>Bring Boost.Filesystem into much closer conformance with the C++17 
+  standard library&#39;s section 27.10, File systems [filesystems].</li>
+  <li>Preserve as much existing Boost.Filesystem user code as possible without 
+  compromising the other objectives.</li>
+  <li>Document breaking changes.</li>
+  <li>Where existing user code will be broken, provide tools to aid user 
+  migration.</li>
+  <li>Modernize the library&#39;s codebase.</li>
+  <li>Close lots of bug reports in the process.</li>
+</ul>
+<p>Whether or not there will be a configuration macro to continue support for 
+version 3 for several more releases is still undecided. Doing that during the V2 
+to V3 transition was not a pleasant experience and greatly slowed development. 
+OTOH, there should be much less breakage going from V3 to V4.</p>
+<p>&nbsp;</p>
+<h2>Modernizing the library&#39;s codebase</h2>
+<p>There are two aspects of this:</p>
+<ol>
+  <li>Refactor some of the implementation code. Should not impact those who use 
+  Boost.Build to build the library.</li>
+  <li>Use widely available C++11 features. This impacts users of older 
+  compilers.</li>
+</ol>
+<h3>C++11 features that may be used</h3>
+<ul>
+  <li>auto, decltype, class enums, lambdas, rvalue references.</li>
+</ul>
+<p>That implies that the following and earlier compiler versions will no longer 
+be supported:</p>
+<ul>
+  <li>VC++ 2010 (i.e. 10.0)</li>
+  <li>GCC&nbsp; ???</li>
+  <li>Clang ???</li>
+</ul>
+<h3>C++11 features that may be used if available</h3>
+<ul>
+  <li>explicit conversion operators, new character types, Unicode string 
+  literals, raw string literals</li>
+</ul>
+
+</body>
+
+</html>
