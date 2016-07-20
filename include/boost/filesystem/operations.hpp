@@ -40,6 +40,7 @@
 #include <ctime>
 #include <vector>
 #include <stack>
+#include <iosfwd>
 
 #ifdef BOOST_WINDOWS_API
 #  include <fstream>
@@ -168,27 +169,56 @@ namespace boost
 //                                     file_type                                        //
 //--------------------------------------------------------------------------------------//
 
-  enum file_type
+  enum class file_type
   { 
-    status_error,
-#   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    status_unknown = status_error,
-#   endif
-    file_not_found,
-    regular_file,
-    directory_file,
+    none,
+    not_found,
+    regular,
+    directory,
     // the following may not apply to some operating systems or file systems
-    symlink_file,
-    block_file,
-    character_file,
-    fifo_file,
-    socket_file,
-    reparse_file,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
-    type_unknown,  // file does exist, but isn't one of the above types or
-                   // we don't have strong enough permission to find its type
+    symlink,
+    block,
+    character,
+    fifo,
+    socket,
+    reparse,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
+    unknown,  // file exists, but isn't one of the above types or
+              //   we don't have permission to find its type
 
+#   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    status_error = none,
+    status_unknown = none,
+    file_not_found = not_found,
+    regular_file = regular,
+    directory_file = directory,
+    symlink_file = symlink,
+    block_file = block,
+    character_file = character,
+    fifo_file = fifo,
+    socket_file = socket,
+    reparse_file = reparse,
+    type_unknown = unknown,  // file does exist, but isn't one of the above types or
+                      // we don't have strong enough permission to find its type
+#   endif
     _detail_directory_symlink  // internal use only; never exposed to users
   };
+
+  template <class Char, class Traits>
+  inline std::basic_ostream<Char, Traits>&
+  operator<<(std::basic_ostream<Char, Traits>& os, file_type x)
+  {
+    return os << static_cast<int>(x);
+  }
+  
+  template <class Char, class Traits>
+  inline std::basic_istream<Char, Traits>&
+  operator>>(std::basic_istream<Char, Traits>& is, file_type& x)
+  {
+    int tmp;
+    is >> tmp;
+    x = static_cast<file_type>(tmp);
+    return is;
+  }
 
 //--------------------------------------------------------------------------------------//
 //                                       perms                                          //
@@ -256,7 +286,7 @@ namespace boost
   {
   public:
              file_status() BOOST_NOEXCEPT
-               : m_value(status_error), m_perms(perms_not_known) {}
+               : m_value(file_type::none), m_perms(perms_not_known) {}
     explicit file_status(file_type v) BOOST_NOEXCEPT
                : m_value(v), m_perms(perms_not_known)  {}
              file_status(file_type v, perms prms) BOOST_NOEXCEPT
@@ -310,26 +340,26 @@ namespace boost
   };
 
   inline bool type_present(file_status f) BOOST_NOEXCEPT
-                                          { return f.type() != status_error; }
+                                          { return f.type() != file_type::none; }
   inline bool permissions_present(file_status f) BOOST_NOEXCEPT
                                           {return f.permissions() != perms_not_known;}
   inline bool status_known(file_status f) BOOST_NOEXCEPT
                                           { return type_present(f) && permissions_present(f); }
   inline bool exists(file_status f) BOOST_NOEXCEPT
-                                          { return f.type() != status_error
-                                                && f.type() != file_not_found; }
+                                          { return f.type() != file_type::none
+                                                && f.type() != file_type::not_found; }
   inline bool is_regular_file(file_status f) BOOST_NOEXCEPT
-                                          { return f.type() == regular_file; }
+                                          { return f.type() == file_type::regular; }
   inline bool is_directory(file_status f) BOOST_NOEXCEPT
-                                          { return f.type() == directory_file; }
+                                          { return f.type() == file_type::directory; }
   inline bool is_symlink(file_status f) BOOST_NOEXCEPT
-                                          { return f.type() == symlink_file; }
+                                          { return f.type() == file_type::symlink; }
   inline bool is_other(file_status f) BOOST_NOEXCEPT
                                           { return exists(f) && !is_regular_file(f)
                                                 && !is_directory(f) && !is_symlink(f); }
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-  inline bool is_regular(file_status f) BOOST_NOEXCEPT { return f.type() == regular_file; }
+  inline bool is_regular(file_status f) BOOST_NOEXCEPT { return f.type() == file_type::regular; }
 # endif
 
   struct space_info

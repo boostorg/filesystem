@@ -42,9 +42,9 @@ namespace
       "type_unknown"
     };
 
-  const char* file_type_c_str(enum file_type t)
+  const char* file_type_c_str(file_type t)
   {
-    return file_type_tab[t];
+    return file_type_tab[static_cast<int>(t)];
   }
 
   void show_status(file_status s, boost::system::error_code ec)

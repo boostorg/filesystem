@@ -353,15 +353,15 @@ namespace
   bool remove_file_or_directory(const path& p, fs::file_type type, error_code* ec)
     // return true if file removed, false if not removed
   {
-    if (type == fs::file_not_found)
+    if (type == fs::file_type::not_found)
     {
       if (ec != 0) ec->clear();
       return false;
     }
 
-    if (type == fs::directory_file
+    if (type == fs::file_type::directory
 #     ifdef BOOST_WINDOWS_API
-        || type == fs::_detail_directory_symlink
+        || type == fs::file_type::_detail_directory_symlink
 #     endif
       )
     {
@@ -383,7 +383,7 @@ namespace
   {
     boost::uintmax_t count = 1;
 
-    if (type == fs::directory_file)  // but not a directory symlink
+    if (type == fs::file_type::directory)  // but not a directory symlink
     {
       for (fs::directory_iterator itr(p);
             itr != end_dir_itr; ++itr)
@@ -627,16 +627,16 @@ namespace
 
     if (not_found_error(errval))
     {
-      return fs::file_status(fs::file_not_found, fs::no_perms);
+      return fs::file_status(fs::file_type::not_found, fs::no_perms);
     }
     else if ((errval == ERROR_SHARING_VIOLATION))
     {
-      return fs::file_status(fs::type_unknown);
+      return fs::file_status(fs::file_type::unknown);
     }
     if (ec == 0)
       BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status",
         p, error_code(errval, system_category())));
-    return fs::file_status(fs::status_error);
+    return fs::file_status(fs::file_type::none);
   }
 
   //  differs from symlink_status() in that directory symlinks are reported as
@@ -655,14 +655,14 @@ namespace
     {
       if (is_reparse_point_a_symlink(p))
         return (attr & FILE_ATTRIBUTE_DIRECTORY)
-          ? fs::_detail_directory_symlink
-          : fs::symlink_file;
-      return fs::reparse_file;
+          ? fs::file_type::_detail_directory_symlink
+          : fs::file_type::symlink;
+      return fs::file_type::reparse_file;
     }
 
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
-      ? fs::directory_file
-      : fs::regular_file;
+      ? fs::file_type::directory
+      : fs::file_type::regular;
   }
 
   BOOL resize_file_api(const wchar_t* p, boost::uintmax_t size)
@@ -801,7 +801,7 @@ namespace detail
     system::error_code local_ec;
     file_status stat (status(source, local_ec));
 
-    if (stat.type() == fs::file_not_found)
+    if (stat.type() == fs::file_type::not_found)
     {
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error(
@@ -943,7 +943,7 @@ namespace detail
     error_code local_ec;
     file_status p_status = status(p, local_ec);
 
-    if (p_status.type() == directory_file)
+    if (p_status.type() == file_type::directory)
     {
       if (ec != 0)
         ec->clear();
@@ -958,7 +958,7 @@ namespace detail
       file_status parent_status = status(parent, local_ec);
 
       // if the parent does not exist, create the parent
-      if (parent_status.type() == file_not_found)
+      if (parent_status.type() == file_type::not_found)
       {
         create_directories(parent, local_ec);
         if (local_ec)
@@ -1553,7 +1553,7 @@ namespace detail
   {
     error_code tmp_ec;
     file_type type = query_file_type(p, &tmp_ec);
-    if (error(type == status_error ? tmp_ec.value() : 0, p, ec,
+    if (error(type == file_type::none ? tmp_ec.value() : 0, p, ec,
         "boost::filesystem::remove"))
       return false;
 
@@ -1569,11 +1569,11 @@ namespace detail
   {
     error_code tmp_ec;
     file_type type = query_file_type(p, &tmp_ec);
-    if (error(type == status_error ? tmp_ec.value() : 0, p, ec,
+    if (error(type == file_type::none ? tmp_ec.value() : 0, p, ec,
       "boost::filesystem::remove_all"))
       return 0;
 
-    return (type != status_error && type != file_not_found) // exists
+    return (type != file_type::none && type != file_type::not_found) // exists
       ? remove_all_aux(p, type, ec)
       : 0;
   }
@@ -1649,19 +1649,19 @@ namespace detail
 
       if (not_found_error(errno))
       {
-        return fs::file_status(fs::file_not_found, fs::no_perms);
+        return fs::file_status(fs::file_type::not_found, fs::no_perms);
       }
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status",
           p, error_code(errno, system_category())));
-      return fs::file_status(fs::status_error);
+      return fs::file_status(fs::file_type::none);
     }
     if (ec != 0) ec->clear();;
     if (S_ISDIR(path_stat.st_mode))
-      return fs::file_status(fs::directory_file,
+      return fs::file_status(fs::file_type::directory,
         static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
     if (S_ISREG(path_stat.st_mode))
-      return fs::file_status(fs::regular_file,
+      return fs::file_status(fs::file_type::regular,
         static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
     if (S_ISBLK(path_stat.st_mode))
       return fs::file_status(fs::block_file,
@@ -1705,13 +1705,13 @@ namespace detail
       }
 
       if (!is_reparse_point_a_symlink(p))
-        return file_status(reparse_file, make_permissions(p, attr));
+        return file_status(file_type::reparse_file, make_permissions(p, attr));
     }
 
     if (ec != 0) ec->clear();
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
-      ? file_status(directory_file, make_permissions(p, attr))
-      : file_status(regular_file, make_permissions(p, attr));
+      ? file_status(file_type::directory, make_permissions(p, attr))
+      : file_status(file_type::regular, make_permissions(p, attr));
 
 #   endif
   }
@@ -1729,22 +1729,22 @@ namespace detail
 
       if (errno == ENOENT || errno == ENOTDIR) // these are not errors
       {
-        return fs::file_status(fs::file_not_found, fs::no_perms);
+        return fs::file_status(fs::file_type::not_found, fs::no_perms);
       }
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status",
           p, error_code(errno, system_category())));
-      return fs::file_status(fs::status_error);
+      return fs::file_status(fs::file_type::none);
     }
     if (ec != 0) ec->clear();
     if (S_ISREG(path_stat.st_mode))
-      return fs::file_status(fs::regular_file,
+      return fs::file_status(fs::file_type::regular,
         static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
     if (S_ISDIR(path_stat.st_mode))
-      return fs::file_status(fs::directory_file,
+      return fs::file_status(fs::file_type::directory,
         static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
     if (S_ISLNK(path_stat.st_mode))
-      return fs::file_status(fs::symlink_file,
+      return fs::file_status(fs::file_type::symlink,
         static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
     if (S_ISBLK(path_stat.st_mode))
       return fs::file_status(fs::block_file,
@@ -1772,12 +1772,12 @@ namespace detail
 
     if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
       return is_reparse_point_a_symlink(p)
-             ? file_status(symlink_file, make_permissions(p, attr))
-             : file_status(reparse_file, make_permissions(p, attr));
+             ? file_status(file_type::symlink, make_permissions(p, attr))
+             : file_status(file_type::reparse_file, make_permissions(p, attr));
 
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
-      ? file_status(directory_file, make_permissions(p, attr))
-      : file_status(regular_file, make_permissions(p, attr));
+      ? file_status(file_type::directory, make_permissions(p, attr))
+      : file_status(file_type::regular, make_permissions(p, attr));
 
 #   endif
   }
@@ -1896,10 +1896,10 @@ namespace detail
     for (; !head.empty(); --itr)
     {
       file_status head_status = status(head, tmp_ec);
-      if (error(head_status.type() == fs::status_error,
+      if (error(head_status.type() == fs::file_type::none,
         head, ec, "boost::filesystem::weakly_canonical"))
         return path();
-      if (head_status.type() != fs::file_not_found)
+      if (head_status.type() != fs::file_type::not_found)
         break;
       head.remove_filename();
     }
@@ -2091,23 +2091,23 @@ namespace
 #   ifdef BOOST_FILESYSTEM_STATUS_CACHE
     if (entry->d_type == DT_UNKNOWN) // filesystem does not supply d_type value
     {
-      sf = symlink_sf = fs::file_status(fs::status_error);
+      sf = symlink_sf = fs::file_status(fs::file_type::none);
     }
     else  // filesystem supplies d_type value
     {
       if (entry->d_type == DT_DIR)
-        sf = symlink_sf = fs::file_status(fs::directory_file);
+        sf = symlink_sf = fs::file_status(fs::file_type::directory);
       else if (entry->d_type == DT_REG)
-        sf = symlink_sf = fs::file_status(fs::regular_file);
+        sf = symlink_sf = fs::file_status(fs::file_type::regular);
       else if (entry->d_type == DT_LNK)
       {
-        sf = fs::file_status(fs::status_error);
-        symlink_sf = fs::file_status(fs::symlink_file);
+        sf = fs::file_status(fs::file_type::none);
+        symlink_sf = fs::file_status(fs::file_type::symlink);
       }
-      else sf = symlink_sf = fs::file_status(fs::status_error);
+      else sf = symlink_sf = fs::file_status(fs::file_type::none);
     }
 #   else
-    sf = symlink_sf = fs::file_status(fs::status_error);
+    sf = symlink_sf = fs::file_status(fs::file_type::none);
 #    endif
     return ok;
   }
@@ -2143,20 +2143,20 @@ namespace
     // them as status_error which causes directory_entry caching to call status()
     // and symlink_status() which do handle reparse points fully
     {
-      sf.type(fs::status_error);
-      symlink_sf.type(fs::status_error);
+      sf.type(fs::file_type::none);
+      symlink_sf.type(fs::file_type::none);
     }
     else
     {
       if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
       {
-        sf.type(fs::directory_file);
-        symlink_sf.type(fs::directory_file);
+        sf.type(fs::file_type::directory);
+        symlink_sf.type(fs::file_type::directory);
       }
       else
       {
-        sf.type(fs::regular_file);
-        symlink_sf.type(fs::regular_file);
+        sf.type(fs::file_type::regular);
+        symlink_sf.type(fs::file_type::regular);
       }
       sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
       symlink_sf.permissions(sf.permissions());
@@ -2180,20 +2180,20 @@ namespace
     // them as status_error which causes directory_entry caching to call status()
     // and symlink_status() which do handle reparse points fully
     {
-      sf.type(fs::status_error);
-      symlink_sf.type(fs::status_error);
+      sf.type(fs::file_type::none);
+      symlink_sf.type(fs::file_type::none);
     }
     else
     {
       if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
       {
-        sf.type(fs::directory_file);
-        symlink_sf.type(fs::directory_file);
+        sf.type(fs::file_type::directory);
+        symlink_sf.type(fs::file_type::directory);
       }
       else
       {
-        sf.type(fs::regular_file);
-        symlink_sf.type(fs::regular_file);
+        sf.type(fs::file_type::regular);
+        symlink_sf.type(fs::file_type::regular);
       }
       sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
       symlink_sf.permissions(sf.permissions());
