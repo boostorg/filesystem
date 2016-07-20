@@ -1,4 +1,4 @@
-//  boost/filesystem/v3/config.hpp  ----------------------------------------------------//
+//  boost/filesystem/config.hpp  -------------------------------------------------------//
 
 //  Copyright Beman Dawes 2003
 
@@ -9,32 +9,32 @@
 
 //--------------------------------------------------------------------------------------// 
 
-#ifndef BOOST_FILESYSTEM3_CONFIG_HPP
-#define BOOST_FILESYSTEM3_CONFIG_HPP
+#ifndef BOOST_FILESYSTEM_CONFIG_HPP
+#define BOOST_FILESYSTEM_CONFIG_HPP
 
-# if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3
-#   error Compiling Filesystem version 3 file with BOOST_FILESYSTEM_VERSION defined != 3
-# endif
-
+// Define BOOST_FILESYSTEM_VERSION if needed
 # if !defined(BOOST_FILESYSTEM_VERSION)
-#   define BOOST_FILESYSTEM_VERSION 3
+#   define BOOST_FILESYSTEM_VERSION 4
+# elif BOOST_FILESYSTEM_VERSION != 3
+#   error "BOOST_FILESYSTEM_VERSION" not defined as 3 or 4 
 # endif
-
-#define BOOST_FILESYSTEM_I18N  // aid users wishing to compile several versions
 
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
 
 #include <boost/config.hpp>
 #include <boost/system/api_config.hpp>  // for BOOST_POSIX_API or BOOST_WINDOWS_API
-#include <boost/detail/workaround.hpp>
 
 //  BOOST_FILESYSTEM_DEPRECATED needed for source compiles -----------------------------//
-
 # ifdef BOOST_FILESYSTEM_SOURCE
 #   define BOOST_FILESYSTEM_DEPRECATED
 #   undef BOOST_FILESYSTEM_NO_DEPRECATED   // fixes #9454, src bld fails if NO_DEP defined
 # endif
+
+# if  (defined(BOOST_NO_CXX11_CHAR16_T) || defined(BOOST_NO_CXX11_CHAR32_T)) \
+          && !(defined(_MSC_VER) && _MSC_VER >= 1600)
+#   define BOOST_FILESYSTEM_NO_CHAR16_CHAR32
+#endif
 
 //  throw an exception  ----------------------------------------------------------------//
 //
@@ -107,4 +107,4 @@
 #include <boost/config/auto_link.hpp>
 #endif  // auto-linking disabled
 
-#endif // BOOST_FILESYSTEM3_CONFIG_HPP
+#endif // BOOST_FILESYSTEM_CONFIG_HPP
