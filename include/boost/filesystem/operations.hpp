@@ -169,7 +169,7 @@ namespace boost
 //                                     file_type                                        //
 //--------------------------------------------------------------------------------------//
 
-  enum class file_type
+  BOOST_SCOPED_ENUM_DECLARE_BEGIN(file_type)
   { 
     none,
     not_found,
@@ -201,7 +201,8 @@ namespace boost
                       // we don't have strong enough permission to find its type
 #   endif
     _detail_directory_symlink  // internal use only; never exposed to users
-  };
+  }
+  BOOST_SCOPED_ENUM_DECLARE_END(file_type)
 
   template <class Char, class Traits>
   inline std::basic_ostream<Char, Traits>&
