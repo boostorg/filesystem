@@ -24,7 +24,7 @@
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <boost/detail/scoped_enum_emulation.hpp>
+#include <boost/core/scoped_enum.hpp>
 #include <boost/detail/bitmask.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
@@ -370,9 +370,9 @@ namespace boost
     boost::uintmax_t available; // <= free
   };
 
-  BOOST_SCOPED_ENUM_START(copy_option)
+  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_option)
     {none=0, fail_if_exists = none, overwrite_if_exists};
-  BOOST_SCOPED_ENUM_END
+  BOOST_SCOPED_ENUM_DECLARE_END2()
 
 //--------------------------------------------------------------------------------------//
 //                             implementation details                                   //
@@ -380,7 +380,7 @@ namespace boost
 
   namespace detail
   {
-    //  We cannot pass a BOOST_SCOPED_ENUM to a compled function because it will result
+    //  We cannot pass a BOOST_SCOPED_ENUM_NATIVE to a compled function because it will result
     //  in an undefined reference if the library is compled with -std=c++0x but the use
     //  is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
     enum copy_option {none=0, fail_if_exists = none, overwrite_if_exists};
@@ -564,7 +564,7 @@ namespace boost
                                        {detail::copy_directory(from, to, &ec);}
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM(copy_option) option)
+                 BOOST_SCOPED_ENUM_NATIVE(copy_option) option)
   {
     detail::copy_file(from, to, static_cast<detail::copy_option>(option));
   }
@@ -575,7 +575,7 @@ namespace boost
   }
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM(copy_option) option, system::error_code& ec) BOOST_NOEXCEPT
+                 BOOST_SCOPED_ENUM_NATIVE(copy_option) option, system::error_code& ec) BOOST_NOEXCEPT
   {
     detail::copy_file(from, to, static_cast<detail::copy_option>(option), &ec);
   }
@@ -1015,16 +1015,16 @@ namespace filesystem
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  BOOST_SCOPED_ENUM_START(symlink_option)
+  BOOST_SCOPED_ENUM_DECLARE_BEGIN(symlink_option)
   {
     none,
     no_recurse = none,         // don't follow directory symlinks (default behavior)
     recurse,                   // follow directory symlinks
     _detail_no_push = recurse << 1  // internal use only
   };
-  BOOST_SCOPED_ENUM_END
+  BOOST_SCOPED_ENUM_DECLARE_END2()
 
-  BOOST_BITMASK(BOOST_SCOPED_ENUM(symlink_option))
+  BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(symlink_option))
 
   namespace detail
   {
@@ -1033,7 +1033,7 @@ namespace filesystem
       typedef directory_iterator element_type;
       std::stack< element_type, std::vector< element_type > > m_stack;
       int  m_level;
-      BOOST_SCOPED_ENUM(symlink_option) m_options;
+      BOOST_SCOPED_ENUM_NATIVE(symlink_option) m_options;
 
       recur_dir_itr_imp() : m_level(0), m_options(symlink_option::none) {}
 
@@ -1187,7 +1187,7 @@ namespace filesystem
     }
 
     recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM(symlink_option) opt)  // throws if !exists()
+      BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt)  // throws if !exists()
       : m_imp(new detail::recur_dir_itr_imp)
     {
       m_imp->m_options = opt;
@@ -1197,7 +1197,7 @@ namespace filesystem
     }
 
     recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM(symlink_option) opt,
+      BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt,
       system::error_code & ec) BOOST_NOEXCEPT
     : m_imp(new detail::recur_dir_itr_imp)
     {
