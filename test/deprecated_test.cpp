@@ -184,6 +184,15 @@ namespace
     }
   }
 
+  //  file_type_test -------------------------------------------------------------------//
+
+  void file_type_test()
+  {
+    fs::file_status s = fs::status(".");
+    BOOST_TEST(s.type() == fs::file_type::directory_file);
+    BOOST_TEST(s.type() == fs::directory_file);
+  }
+
 } // unnamed namespace
 
 
@@ -217,6 +226,7 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
   misc_test();
   path_rename_test();
   normalize_test();
+  file_type_test();
  
 // extension() tests ---------------------------------------------------------//
 

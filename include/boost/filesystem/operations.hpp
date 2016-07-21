@@ -197,12 +197,27 @@ namespace boost
     fifo_file = fifo,
     socket_file = socket,
     reparse_file = reparse,
-    type_unknown = unknown,  // file does exist, but isn't one of the above types or
-                      // we don't have strong enough permission to find its type
+    type_unknown = unknown,
 #   endif
+
     _detail_directory_symlink  // internal use only; never exposed to users
   }
   BOOST_SCOPED_ENUM_DECLARE_END(file_type)
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    static const file_type status_error = file_type::none;
+    static const file_type status_unknown = file_type::none;
+    static const file_type file_not_found = file_type::not_found;
+    static const file_type regular_file = file_type::regular;
+    static const file_type directory_file = file_type::directory;
+    static const file_type symlink_file = file_type::symlink;
+    static const file_type block_file = file_type::block;
+    static const file_type character_file = file_type::character;
+    static const file_type fifo_file = file_type::fifo;
+    static const file_type socket_file = file_type::socket;
+    static const file_type reparse_file = file_type::reparse;
+    static const file_type type_unknown = file_type::unknown;
+# endif
 
   template <class Char, class Traits>
   inline std::basic_ostream<Char, Traits>&
@@ -220,6 +235,14 @@ namespace boost
     x = static_cast<file_type>(tmp);
     return is;
   }
+
+//--------------------------------------------------------------------------------------//
+//                                    copy_options                                      //
+//--------------------------------------------------------------------------------------//
+
+  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_option)
+    {none=0, fail_if_exists = none, overwrite_if_exists}
+  BOOST_SCOPED_ENUM_DECLARE_END(copy_option)
 
 //--------------------------------------------------------------------------------------//
 //                                       perms                                          //
@@ -371,19 +394,15 @@ namespace boost
     boost::uintmax_t available; // <= free
   };
 
-  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_option)
-    {none=0, fail_if_exists = none, overwrite_if_exists};
-  BOOST_SCOPED_ENUM_DECLARE_END2()
-
 //--------------------------------------------------------------------------------------//
 //                             implementation details                                   //
 //--------------------------------------------------------------------------------------//
 
   namespace detail
   {
-    //  We cannot pass a BOOST_SCOPED_ENUM_NATIVE to a compled function because it will result
-    //  in an undefined reference if the library is compled with -std=c++0x but the use
-    //  is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
+    //  We cannot pass a BOOST_SCOPED_ENUM_NATIVE to a compled function because it will
+    //  result in an undefined reference if the library is compled with -std=c++0x but the
+    //  use is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
     enum copy_option {none=0, fail_if_exists = none, overwrite_if_exists};
 
     BOOST_FILESYSTEM_DECL
