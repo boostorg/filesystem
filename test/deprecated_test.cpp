@@ -189,8 +189,8 @@ namespace
   void file_type_test()
   {
     fs::file_status s = fs::status(".");
-    BOOST_TEST(s.type() == fs::file_type::directory_file);
-    BOOST_TEST(s.type() == fs::directory_file);
+    BOOST_TEST(s.type() == fs::file_type::directory_file);  // the new way
+    BOOST_TEST(s.type() == fs::directory_file);             // the deprecated way
   }
 
 } // unnamed namespace

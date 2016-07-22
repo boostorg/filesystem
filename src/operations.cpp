@@ -889,7 +889,7 @@ namespace detail
     }
     else if(is_regular_file(s))
     {
-      copy_file(from, to, fs::copy_option::fail_if_exists, *ec);
+      copy_file(from, to, fs::copy_options::none, *ec);
     }
     else
     {
@@ -911,11 +911,11 @@ namespace detail
   }
 
   BOOST_FILESYSTEM_DECL
-  void copy_file(const path& from, const path& to, copy_option option, error_code* ec)
+  void copy_file(const path& from, const path& to, copy_opts options, error_code* ec)
   {
     error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
-      option == fail_if_exists) ? BOOST_ERRNO : 0,
-        from, to, ec, "boost::filesystem::copy_file");
+      (options & copy_opts::copy_file_mask) == copy_opts::none) ? BOOST_ERRNO : 0,
+      from, to, ec, "boost::filesystem::copy_file");
   }
 
   BOOST_FILESYSTEM_DECL

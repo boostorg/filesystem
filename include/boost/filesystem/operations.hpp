@@ -240,9 +240,36 @@ namespace boost
 //                                    copy_options                                      //
 //--------------------------------------------------------------------------------------//
 
-  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_option)
-    {none=0, fail_if_exists = none, overwrite_if_exists}
-  BOOST_SCOPED_ENUM_DECLARE_END(copy_option)
+  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_options)
+  {
+    none=0,
+
+    // copy_file function effects for existing target files; default: treat as error
+    skip_existing = 1,        // do not overwrite existing file, do not report an error
+    overwrite_existing = 2,   // overwrite the existing file
+    update_existing = 4,      // overwrite existing file if older than replacement file
+
+    // copy function effects for sub-directories; default: do not copy sub-directories
+    recursive = 8,            // recursively copy sub-directories and their contents
+
+    // copy function effects for symbolic links; default: follow symlinks
+    copy_symlinks = 16,       // copy symlinks rather than the files they point to
+    skip_symlinks = 32,       // ignore symbolic links
+
+    // copy function effects for choosing the form of copying; default: copy contents
+    directories_only = 64,    // copy directory structure but no copy of other file types
+    create_symlinks = 128,    // make symbolic links instead of copies of files; source 
+                              // path shall be an absolute path unless destination path
+                              // is in the current directory
+    create_hard_links = 256,   // make hard links instead of copies of files
+
+    // extentions; not part of standard library filesystem
+    copy_file_mask = skip_existing|overwrite_existing|update_existing,
+    copy_sub_dirs_mask = recursive,
+    copy_symlinks_mask = copy_symlinks|skip_symlinks,
+    copy_form_mask = directories_only|create_symlinks|create_hard_links
+  }
+  BOOST_SCOPED_ENUM_DECLARE_END(copy_options)
 
 //--------------------------------------------------------------------------------------//
 //                                       perms                                          //
@@ -400,10 +427,27 @@ namespace boost
 
   namespace detail
   {
-    //  We cannot pass a BOOST_SCOPED_ENUM_NATIVE to a compled function because it will
-    //  result in an undefined reference if the library is compled with -std=c++0x but the
+    //  We cannot pass a BOOST_SCOPED_ENUM to a compled function because it will cause
+    //  an undefined reference if the library is compled with -std=c++0x but the
     //  use is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
-    enum copy_option {none=0, fail_if_exists = none, overwrite_if_exists};
+    //  The workaround is to pass a plain old enum.
+    enum copy_opts
+    {
+      none=0,
+      skip_existing = 1,      
+      overwrite_existing = 2, 
+      update_existing = 4,    
+      recursive = 8,          
+      copy_symlinks = 16,     
+      skip_symlinks = 32,     
+      directories_only = 64,  
+      create_symlinks = 128,  
+      create_hard_links = 256,
+      copy_file_mask = skip_existing|overwrite_existing|update_existing,
+      copy_sub_dirs_mask = recursive,
+      copy_symlinks_mask = copy_symlinks|skip_symlinks,
+      copy_form_mask = directories_only|create_symlinks|create_hard_links
+    };
 
     BOOST_FILESYSTEM_DECL
     file_status status(const path&p, system::error_code* ec=0);
@@ -421,7 +465,7 @@ namespace boost
     void copy_directory(const path& from, const path& to, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     void copy_file(const path& from, const path& to,  // See ticket #2925
-                    detail::copy_option option, system::error_code* ec=0);
+                    detail::copy_opts options, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -584,25 +628,26 @@ namespace boost
                                        {detail::copy_directory(from, to, &ec);}
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM_NATIVE(copy_option) option)
+                 BOOST_SCOPED_ENUM_NATIVE(copy_options) options)
   {
-    detail::copy_file(from, to, static_cast<detail::copy_option>(option));
+    detail::copy_file(from, to, static_cast<detail::copy_opts>(options));
   }
   inline
   void copy_file(const path& from, const path& to)
   {
-    detail::copy_file(from, to, detail::fail_if_exists);
+    detail::copy_file(from, to, detail::copy_opts::none);
   }
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM_NATIVE(copy_option) option, system::error_code& ec) BOOST_NOEXCEPT
+                 BOOST_SCOPED_ENUM_NATIVE(copy_options) options,
+                 system::error_code& ec) BOOST_NOEXCEPT
   {
-    detail::copy_file(from, to, static_cast<detail::copy_option>(option), &ec);
+    detail::copy_file(from, to, static_cast<detail::copy_opts>(options), &ec);
   }
   inline
   void copy_file(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
   {
-    detail::copy_file(from, to, detail::fail_if_exists, &ec);
+    detail::copy_file(from, to, detail::copy_opts::none, &ec);
   }
   inline
   void copy_symlink(const path& existing_symlink,
@@ -1041,8 +1086,8 @@ namespace filesystem
     no_recurse = none,         // don't follow directory symlinks (default behavior)
     recurse,                   // follow directory symlinks
     _detail_no_push = recurse << 1  // internal use only
-  };
-  BOOST_SCOPED_ENUM_DECLARE_END2()
+  }
+  BOOST_SCOPED_ENUM_DECLARE_END(symlink_option)
 
   BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(symlink_option))
 
