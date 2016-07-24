@@ -54,6 +54,7 @@ namespace boost
 {
   namespace filesystem
   {
+    typedef std::time_t file_time_type;
 
     //--------------------------------------------------------------------------------------//
     //                                                                                      //

@@ -1484,34 +1484,101 @@ namespace
   {
     cout << "copy_file_tests..." << endl;
 
-    BOOST_TEST(fs::exists(f1x));
     fs::remove(d1x / "f2");  // remove possible residue from prior testing
+
+    // verify set up is as expected
+    BOOST_TEST(fs::exists(f1x));
     BOOST_TEST(fs::exists(d1x));
     BOOST_TEST(!fs::exists(d1x / "f2"));
-    cout << " copy " << f1x << " to " << d1x / "f2" << endl;
+
+    bool ok;
+
+    // source !exists, target exists, options defaulted
+    ok = false;  // no exception 
+    try { fs::copy_file("no such file", d1x / "f2"); }
+    catch (const fs::filesystem_error &) { ok = true; }
+    BOOST_TEST(ok);
+
+    // source exists, target !exist, options defaulted
     fs::copy_file(f1x, d1x / "f2");
-    cout << " copy complete" << endl;
     BOOST_TEST(fs::exists(f1x));
     BOOST_TEST(fs::exists(d1x / "f2"));
     BOOST_TEST(!fs::is_directory(d1x / "f2"));
     verify_file(d1x / "f2", "file-f1");
 
-    bool copy_ex_ok = false;
+    // source exists, target exists, options defaulted
+    ok = false;  // no exception 
     try { fs::copy_file(f1x, d1x / "f2"); }
-    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
-    BOOST_TEST(copy_ex_ok);
+    catch (const fs::filesystem_error &) { ok = true; }
+    BOOST_TEST(ok);
 
-    copy_ex_ok = false;
+    // source exists, target exists, options == copy_options::none
+    ok = false;  // no exception
     try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::none); }
-    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
-    BOOST_TEST(copy_ex_ok);
+    catch (const fs::filesystem_error &) { ok = true; }
+    BOOST_TEST(ok);
 
+    // source exists, target exists, options == copy_options::skip_existing
     create_file(d1x / "f2", "1234567890");
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
-    copy_ex_ok = true;
+    ok = true;
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::skip_existing); }
+    catch (const fs::filesystem_error &) { ok = false; }
+    BOOST_TEST(ok);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    verify_file(d1x / "f2", "1234567890");
+
+    // source exists, target exists, options == copy_options::overwrite_existing
+    create_file(d1x / "f2", "1234567890");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    ok = true;
     try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::overwrite_existing); }
-    catch (const fs::filesystem_error &) { copy_ex_ok = false; }
-    BOOST_TEST(copy_ex_ok);
+    catch (const fs::filesystem_error &) { ok = false; }
+    BOOST_TEST(ok);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 7U);
+    verify_file(d1x / "f2", "file-f1");
+
+    // source exists, target !exists, options == copy_options::update_existing
+    fs::remove(d1x / "f2");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(fs::exists(d1x));
+    BOOST_TEST(!fs::exists(d1x / "f2"));
+    fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing);
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(fs::exists(d1x / "f2"));
+    BOOST_TEST(!fs::is_directory(d1x / "f2"));
+    verify_file(d1x / "f2", "file-f1");
+
+    // source exists, newer target exists, options == copy_options::update_existing
+    create_file(d1x / "f2", "1234567890");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    std::time_t ft = fs::last_write_time(d1x / "f2");   // get target write time
+    std::tm* tmp = std::localtime(&ft);
+    ++tmp->tm_year;
+    fs::last_write_time(d1x / "f2", std::mktime(tmp));  // make target newer
+
+    cout << fs::last_write_time(d1x / "f2") << endl;
+    cout << fs::last_write_time(f1x) << endl;
+    BOOST_TEST(fs::last_write_time(f1x) < fs::last_write_time(d1x / "f2")); // setup OK?
+    ok = true;
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing); }
+    catch (const fs::filesystem_error &) { ok = false; }
+    BOOST_TEST(ok);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    verify_file(d1x / "f2", "1234567890");
+
+    // source exists, older target exists, options == copy_options::update_existing
+    create_file(d1x / "f2", "1234567890");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    ft = fs::last_write_time(d1x / "f2");   // get target write time
+    tmp = std::localtime(&ft);
+    --tmp->tm_year;
+    fs::last_write_time(d1x / "f2", std::mktime(tmp));  // make target older
+    BOOST_TEST(fs::last_write_time(d1x / "f2") < fs::last_write_time(f1x)); // setup OK?
+    ok = true;
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing); }
+    catch (const fs::filesystem_error &) { ok = false; }
+    BOOST_TEST(ok);
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 7U);
     verify_file(d1x / "f2", "file-f1");
   }
@@ -1600,15 +1667,15 @@ namespace
     //BOOST_TEST(fs::exists(sym3));
     //BOOST_TEST(fs::is_symlink(sym3));
 
-    bool copy_ex_ok = false;
+    bool ok = false;
     try { fs::copy_symlink("no-such-file", "new-symlink1"); }
-    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
-    BOOST_TEST(copy_ex_ok);
+    catch (const fs::filesystem_error &) { ok = true; }
+    BOOST_TEST(ok);
 
-    copy_ex_ok = false;
+    ok = false;
     try { fs::copy_symlink(f1x, "new-symlink2"); } // should fail; f1x not symlink
-    catch (const fs::filesystem_error &) { copy_ex_ok = true; }
-    BOOST_TEST(copy_ex_ok);
+    catch (const fs::filesystem_error &) { ok = true; }
+    BOOST_TEST(ok);
   }
 
   //  write_time_tests  ----------------------------------------------------------------//

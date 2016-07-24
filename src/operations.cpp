@@ -44,6 +44,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/assert.hpp>
 #include <vector> 
 #include <cstdlib>     // for malloc, free
 #include <cstring>
@@ -267,6 +268,11 @@ namespace
   bool error(err_t error_num, const path& p, error_code* ec, const char* message);
   bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
     const char* message);
+  // Useage: caller typically uses BOOST_ERRNO as error_num argument
+  // Effects: if (!error_num) {if (ec != 0) ec->clear(); return false;}
+  //          if (ec == 0) BOOST_FILESYSTEM_THROW(...);
+  //          ec->assign(error_num, system_category()); }
+  //          return true; // error occurred
 
   const error_code ok;
 
@@ -408,9 +414,14 @@ namespace
 
   const char dot = '.';
 
-  bool not_found_error(int errval)
+  inline bool not_found_error(int errval)
   {
-    return errno == ENOENT || errno == ENOTDIR;
+    return errval == ENOENT || errval == ENOTDIR;
+  }
+
+  inline bool file_exists_error(int errval)
+  {
+    return errval == EEXIST;
   }
 
   bool // true if ok
@@ -496,7 +507,7 @@ namespace
 
   const wchar_t dot = L'.';
 
-  bool not_found_error(int errval)
+  inline bool not_found_error(int errval)
   {
     return errval == ERROR_FILE_NOT_FOUND
       || errval == ERROR_PATH_NOT_FOUND
@@ -506,6 +517,11 @@ namespace
       || errval == ERROR_INVALID_PARAMETER  // ":sys:stat.h"
       || errval == ERROR_BAD_PATHNAME  // "//nosuch" on Win64
       || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
+  }
+
+  inline bool file_exists_error(int errval)
+  {
+    return errval == ERROR_FILE_EXISTS;
   }
 
 // some distributions of mingw as early as GLIBCXX__ 20110325 have _stricmp, but the
@@ -911,11 +927,53 @@ namespace detail
   }
 
   BOOST_FILESYSTEM_DECL
-  void copy_file(const path& from, const path& to, copy_opts options, error_code* ec)
+  void copy_file(const path& from, const path& to, copy_opts opts, error_code* ec)
   {
-    error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
-      (options & copy_opts::copy_file_mask) == copy_opts::none) ? BOOST_ERRNO : 0,
-      from, to, ec, "boost::filesystem::copy_file");
+    if (ec != 0)
+      ec->clear();  // be optimistic
+
+    if (((opts & copy_opts::copy_file_mask) == copy_opts::none)
+      || ((opts & copy_opts::copy_file_mask) == copy_opts::overwrite_existing))
+    {
+      error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
+        (opts & copy_opts::copy_file_mask) == copy_opts::none) ? BOOST_ERRNO : 0,
+        from, to, ec, "boost::filesystem::copy_file");
+      return;
+    }
+
+    // if there is no error on the copy, we are done
+    if (BOOST_COPY_FILE(from.c_str(), to.c_str(), true))
+      return;
+
+    auto err = BOOST_ERRNO;  // there was an error, so capture error number
+
+    // there is an error, but is it something other than the file already exists?
+    if (!file_exists_error(err))
+    {
+      error(err, from, to, ec,"boost::filesystem::copy_file");  // it really is an error
+      return;
+    }
+
+    // we now know that "to" exists
+
+    if ((opts & copy_opts::copy_file_mask) == copy_opts::skip_existing)
+      return;
+
+    // the only option left is update_existing, but assert just to be sure
+    BOOST_ASSERT_MSG(
+      (opts & copy_opts::copy_file_mask) == copy_opts::update_existing,
+      "copy_file implementation logic error");
+
+    fs::file_time_type from_time, to_time;
+    from_time = detail::last_write_time(from, ec);
+    if (ec != 0 && *ec)
+      return;
+    to_time = detail::last_write_time(to, ec);
+    if (ec != 0 && *ec)
+      return;
+    if (from_time > to_time)  // overwrite if "from" file is newer
+      error(!BOOST_COPY_FILE(from.c_str(), to.c_str(), false) ? BOOST_ERRNO : 0,
+        from, to, ec, "boost::filesystem::copy_file");
   }
 
   BOOST_FILESYSTEM_DECL

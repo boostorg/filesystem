@@ -38,6 +38,25 @@
     </td>
 </table>
 
+<h2>V4 Conformance for C++17 Standard Library</h2>
+<ul>
+  <li>Change <code>enum file_type</code> to <code>class enum file_type</code>. 
+  Provide (deprecated) namespace <code>boost::filesystem</code> constants for 
+  the old names to prevent breaking existing code.</li>
+  <li>Update <code>file_type</code> constant names to follow the standard. 
+  Provide (deprecated) name aliases for the old names to prevent breaking 
+  existing code.</li>
+  <li>Add many new constants to <code>class enum copy_options</code>, and update 
+  the existing v3 constant names, to follow the standard. Provide (deprecated) 
+  name aliases for the old names to prevent breaking existing code.</li>
+  <li>Provide typedef <code>file_time_type</code>. See
+  <a href="breaking_changes.html#file_time_type">breaking changes</a>.</li>
+  <li><code>copy_file()</code> effects updated to support all applicable <code>
+  copy_options</code> effects: <code>none</code>, <code>skip_existing</code>,
+  <code>overwrite_existing</code>, and <code>update_existing</code>. Test cases 
+  added accordingly.</li>
+</ul>
+
 <h2>1.61.0</h2>
 <ul>
   <li><b>New:</b> Class <code>path</code> adds constexpr constants <code>
@@ -404,7 +423,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->01 December, 2015<!--webbot bot="Timestamp" endspan i-checksum="38635" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 July, 2016<!--webbot bot="Timestamp" endspan i-checksum="21158" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
