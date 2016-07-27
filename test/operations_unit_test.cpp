@@ -209,7 +209,8 @@ namespace
       CHECK(it->status() == status(it->path()));
       CHECK(it->symlink_status() == symlink_status(it->path()));
       if (it->status().type() == file_type::regular_file
-        && it->path().extension() != ".log")
+        && it->path().extension() != ".log"
+        && it->path().extension() != ".idb")
         CHECK(it->file_size() == file_size(it->path()));
 
       if (it->path().empty()
@@ -219,12 +220,14 @@ namespace
         || it->symlink_status() != symlink_status(it->path())
         || (it->status().type() == file_type::regular_file
           && it->path().extension() != ".log"
+          && it->path().extension() != ".idb"
           && it->file_size() != file_size(it->path()))
         )
       {
         cout << "  " << it->path() << '\n';
         cout << it->status().type() << " " << status(it->path()).type() << '\n';
         cout << it->symlink_status().type() << " " << symlink_status(it->path()).type() << '\n';
+        cout << it->file_size() << " " << file_size(it->path()) << '\n';
       }
     }
 
@@ -279,14 +282,24 @@ namespace
   {
     cout << "directory_entry test..." << endl;
 
-    directory_entry de("foo.bar");
+    directory_entry de(".");
+    CHECK(de.path() == ".");
+    directory_entry de1(de);  // copy constructor
+    CHECK(de1.path() == ".");
+    directory_entry de2;
+    de2 = de1;                // copy assignment
+    CHECK(de2.path() == ".");
+    directory_entry de3(std::move(de2));  // move constructor
+    CHECK(de3.path() == ".");
+    directory_entry de4;
+    de4 = std::move(de3);                 // move assignment
+    CHECK(de4.path() == ".");
 
-    CHECK(de.path() == "foo.bar");
-    CHECK(de.status().type() == file_type::file_not_found);
-    CHECK(de.symlink_status().type() == file_type::file_not_found);
-    CHECK(de < directory_entry("goo.bar"));
-    CHECK(de == directory_entry("foo.bar"));
-    CHECK(de != directory_entry("goo.bar"));
+    CHECK(de.status().type() == file_type::directory_file);
+    CHECK(de.symlink_status().type() == file_type::directory_file);
+    CHECK(de < directory_entry(".."));
+    CHECK(de == directory_entry("."));
+    CHECK(de != directory_entry(".."));
   }
 
   //  directory_entry_overload_test  ---------------------------------------------------//

@@ -759,64 +759,69 @@ public:
   // enable class path ctor taking directory_entry
   typedef boost::filesystem::path::value_type value_type;   
 
-  directory_entry() BOOST_NOEXCEPT {}
-
-  explicit directory_entry(const boost::filesystem::path& p)
-    : m_path(p) { refresh(); }
-
-  // compiler generated copy constructor, copy assignment, and destructor apply
-
   //  As of October 2015 the interaction between noexcept and =default is so troublesome
   //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
   //  functions. GCC is not even consistent for the same release on different platforms.
 
-  // TODO:
-//#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-//  directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
-//  {
-//    m_path = std::move(rhs.m_path);
-//    m_status = std::move(rhs.m_status);
-//    m_symlink_status = std::move(rhs.m_symlink_status);
-//  }
-//  directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
-//  { 
-//    m_path = std::move(rhs.m_path);
-//    m_status = std::move(rhs.m_status);
-//    m_symlink_status = std::move(rhs.m_symlink_status);
-//    return *this;
-//  }
-//#endif
+  directory_entry() BOOST_NOEXCEPT {}
 
-  directory_entry& operator=(const boost::filesystem::path& p) // TODO: error_code version?
+  explicit directory_entry(const boost::filesystem::path& p)
+    : m_path(p) { refresh(); }
+  directory_entry(const boost::filesystem::path& p, system::error_code& ec)
+    : m_path(p) { refresh(ec); }
+
+  //  compiler generated copy constructor, move constructor, copy assignment,
+  //  move assignment, and destructor
+
+  // extension; the standard library only provides assign()
+  directory_entry& operator=(const boost::filesystem::path& p)
   {
     m_path = p;
     refresh();
     return *this;
   }
 
-  void refresh()   //  refresh cache
+  directory_entry& assign(const boost::filesystem::path& p)
   {
-    // TODO: minimal conforming implementation; we can do much better that this on systems
-    // like Windows with APIs that obtain all the needed info via a single API call
-# ifdef BOOST_FILESYSTEM_CACHE_STATUS
-    m_status = boost::filesystem::status(path());
-# endif
-# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
-    m_symlink_status  = boost::filesystem::symlink_status(path());
-# endif
-# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
-    // note: all systems that suppost BOOST_FILESYSTEM_CACHE_FILESIZE supply m_status
-    if (is_regular_file(m_status))
-      m_file_size = boost::filesystem::file_size(path());
-    else
-      m_file_size = static_cast<boost::uintmax_t>(-1);
-# endif
+    m_path = p;
+    refresh();
+    return *this;
   }
 
-  void refresh(system::error_code& ec);  // TODO?
+  directory_entry& assign(const boost::filesystem::path& p, system::error_code& ec)
+  {
+    m_path = p;
+    refresh(ec);
+    return *this;
+  }
+
+  void replace_filename(const boost::filesystem::path& p)
+  {
+    m_path.remove_filename();
+    m_path /= p;
+    refresh();
+  }
+
+  void replace_filename(const boost::filesystem::path& p, system::error_code& ec)
+  {
+    m_path.remove_filename();
+    m_path /= p;
+    refresh(ec);
+  }
+
+  void refresh() { m_refresh(0); }
+
+  void refresh(system::error_code& ec) BOOST_NOEXCEPT { m_refresh(&ec); }
+
+  //  directory_entry observers --------------------------------------------------------//
 
   const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
   operator const boost::filesystem::path&() const BOOST_NOEXCEPT {return m_path;}
+
+  bool exists() const
+    { return boost::filesystem::exists(this->status()); }
+  bool exists(system::error_code& ec) const BOOST_NOEXCEPT 
+    { return boost::filesystem::exists(this->status(ec)); }
 
 # ifdef BOOST_FILESYSTEM_CACHE_STATUS
   file_status status() const { return m_status; }
@@ -865,7 +870,9 @@ public:
 private:
   friend struct detail::deacc;
 
-  boost::filesystem::path   m_path;
+  void m_refresh(system::error_code* ec);
+
+  boost::filesystem::path   m_path;  
 
   // platform specific cache; set by directory iteration or refresh()
 # ifdef BOOST_FILESYSTEM_CACHE_STATUS

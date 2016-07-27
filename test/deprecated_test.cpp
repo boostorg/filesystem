@@ -203,9 +203,9 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
 
   //path::default_name_check(fs::no_check);
 
-  fs::directory_entry de("foo/bar");
+  //fs::directory_entry de("foo/bar");
 
-  de.replace_leaf("", fs::file_status(), fs::file_status());
+  //de.replace_leaf("", fs::file_status(), fs::file_status());
 
   //de.leaf();
   //de.string();

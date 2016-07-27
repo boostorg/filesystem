@@ -576,7 +576,7 @@ namespace
       fs::path root_name_path(fs::current_path().root_name());
       fs::directory_iterator itx(root_name_path);
       BOOST_TEST(itx != fs::directory_iterator());
-//      BOOST_TEST(fs::exists((*itx).path()));
+      BOOST_TEST(fs::exists((*itx).path()));
       BOOST_TEST(fs::exists(itx->path()));
       BOOST_TEST(itx->path().parent_path() == root_name_path);
       bool found(false);

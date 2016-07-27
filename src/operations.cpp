@@ -1958,6 +1958,33 @@ namespace detail
   };
 }  // namespace detail
 
+//  directory_entry::refresh implementation  -----------------------------------------//
+
+  void directory_entry::m_refresh(system::error_code* ec)
+  {
+# ifdef BOOST_WINDOWS_API
+    WIN32_FILE_ATTRIBUTE_DATA fad;
+
+    if (!error(::GetFileAttributesExW(m_path.c_str(), ::GetFileExInfoStandard, &fad) == 0
+      ? BOOST_ERRNO : 0, m_path, ec, "boost::filesystem::directory_entry::refresh"))
+    {
+      m_file_size = (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0
+         ? (static_cast<boost::uintmax_t>(fad.nFileSizeHigh)
+                        << (sizeof(fad.nFileSizeLow)*8)) + fad.nFileSizeLow
+         : static_cast<boost::uintmax_t>(-1);
+      m_last_write_time = to_time_t(fad.ftLastWriteTime);
+      m_status = (fad.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+           && is_reparse_point_a_symlink(m_path)
+         ? fs::status(m_path)
+         : fs::detail::status_helper(m_path, fad.dwFileAttributes, false);
+      m_symlink_status =
+        fs::detail::symlink_status_helper(m_path, fad.dwFileAttributes);
+    }
+
+# else  // BOOST_POSIX_API
+# endif
+  }
+
 //  dispatch directory_entry supplied here rather than in 
 //  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
 //  test cases are in operations_unit_test.cpp
