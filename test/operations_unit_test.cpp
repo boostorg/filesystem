@@ -203,7 +203,32 @@ namespace
 
     for (; it != end; ++it)
     {
-      //cout << "  " << it->path() << "\n";
+      CHECK(!it->path().empty());
+      CHECK(it->path().filename() != ".");
+      CHECK(it->path().filename() != "..");
+      CHECK(it->status() == status(it->path()));
+      CHECK(it->symlink_status() == symlink_status(it->path()));
+      if (it->status().type() == file_type::regular
+        && it->path().extension() != ".log"
+        && it->path().extension() != ".idb")
+        CHECK(it->file_size() == file_size(it->path()));
+
+      if (it->path().empty()
+        || it->path().filename() == "."
+        || it->path().filename() == ".."
+        || it->status() != status(it->path())
+        || it->symlink_status() != symlink_status(it->path())
+        || (it->status().type() == file_type::regular
+          && it->path().extension() != ".log"
+          && it->path().extension() != ".idb"
+          && it->file_size() != file_size(it->path()))
+        )
+      {
+        cout << "  " << it->path() << '\n';
+        cout << it->status().type() << " " << status(it->path()).type() << '\n';
+        cout << it->symlink_status().type() << " " << symlink_status(it->path()).type() << '\n';
+        cout << it->file_size() << " " << file_size(it->path()) << '\n';
+      }
     }
 
     CHECK(recursive_directory_iterator("..") != recursive_directory_iterator());
@@ -222,13 +247,6 @@ namespace
       //cout << "  " << x.path() << "\n";
     }
 #endif
-
-    for (recursive_directory_iterator itr("..");
-      itr != recursive_directory_iterator(); ++itr)
-    {
-      CHECK(!itr->path().empty());
-      //cout << "  " << itr->path() << "\n";
-    }
 
     cout << "recursive_directory_iterator_test complete" << endl;
   }
@@ -264,17 +282,24 @@ namespace
   {
     cout << "directory_entry test..." << endl;
 
-    directory_entry de("foo.bar",
-      file_status(file_type::regular, owner_all), file_status(file_type::directory, group_all));
+    directory_entry de(".");
+    CHECK(de.path() == ".");
+    directory_entry de1(de);  // copy constructor
+    CHECK(de1.path() == ".");
+    directory_entry de2;
+    de2 = de1;                // copy assignment
+    CHECK(de2.path() == ".");
+    directory_entry de3(std::move(de2));  // move constructor
+    CHECK(de3.path() == ".");
+    directory_entry de4;
+    de4 = std::move(de3);                 // move assignment
+    CHECK(de4.path() == ".");
 
-    CHECK(de.path() == "foo.bar");
-    CHECK(de.status() == file_status(file_type::regular, owner_all));
-    CHECK(de.symlink_status() == file_status(file_type::directory, group_all));
-    CHECK(de < directory_entry("goo.bar"));
-    CHECK(de == directory_entry("foo.bar"));
-    CHECK(de != directory_entry("goo.bar"));
-    de.replace_filename("bar.foo");
-    CHECK(de.path() == "bar.foo");
+    CHECK(de.status().type() == file_type::directory);
+    CHECK(de.symlink_status().type() == file_type::directory);
+    CHECK(de < directory_entry(".."));
+    CHECK(de == directory_entry("."));
+    CHECK(de != directory_entry(".."));
   }
 
   //  directory_entry_overload_test  ---------------------------------------------------//
@@ -282,7 +307,6 @@ namespace
   void directory_entry_overload_test()
   {
     cout << "directory_entry overload test..." << endl;
-
     directory_iterator it(".");
     path p(*it);
   }

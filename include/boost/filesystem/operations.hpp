@@ -519,6 +519,9 @@ namespace boost
     path unique_path(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     path weakly_canonical(const path& p, system::error_code* ec = 0);
+
+    struct deacc;
+
   }  // namespace detail             
 
 //--------------------------------------------------------------------------------------//
@@ -833,82 +836,125 @@ namespace boost
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+//  TODO: is this really a GCC problem or is it a MSVC 2-phase lookup problem?
 //  GCC has a problem with a member function named path within a namespace or 
 //  sub-namespace that also has a class named path. The workaround is to always
 //  fully qualify the name path when it refers to the class name.
 
+#ifdef BOOST_WINDOWS_API
+# define BOOST_FILESYSTEM_CACHE_STATUS
+# define BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+# define BOOST_FILESYSTEM_CACHE_FILESIZE
+# define BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+#else
+#endif
+
 class BOOST_FILESYSTEM_DECL directory_entry
 {
 public:
-  typedef boost::filesystem::path::value_type value_type;   // enables class path ctor taking directory_entry
-
-  directory_entry() BOOST_NOEXCEPT {}
-  explicit directory_entry(const boost::filesystem::path& p)
-    : m_path(p), m_status(file_status()), m_symlink_status(file_status())
-    {}
-  directory_entry(const boost::filesystem::path& p,
-    file_status st, file_status symlink_st = file_status())
-    : m_path(p), m_status(st), m_symlink_status(symlink_st) {}
-
-  directory_entry(const directory_entry& rhs)
-    : m_path(rhs.m_path), m_status(rhs.m_status), m_symlink_status(rhs.m_symlink_status){}
-
-  directory_entry& operator=(const directory_entry& rhs)
-  {
-    m_path = rhs.m_path;
-    m_status = rhs.m_status;
-    m_symlink_status = rhs.m_symlink_status;
-    return *this;
-  }
+  // enable class path ctor taking directory_entry
+  typedef boost::filesystem::path::value_type value_type;   
 
   //  As of October 2015 the interaction between noexcept and =default is so troublesome
-  //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
-  //  functions. GCC is not even consistent for the same release on different platforms.
+  //  for VC++, GCC, and probably other compilers, that =default is not used.
+  //  GCC is not even consistent for the same release on different platforms.
 
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-  directory_entry(directory_entry&& rhs) BOOST_NOEXCEPT
+  directory_entry() BOOST_NOEXCEPT {}
+
+  explicit directory_entry(const boost::filesystem::path& p)
+    : m_path(p) { refresh(); }
+  directory_entry(const boost::filesystem::path& p, system::error_code& ec)
+    : m_path(p) { refresh(ec); }
+
+  //  compiler will generate copy constructor, move constructor, copy assignment,
+  //  move assignment, and destructor
+
+  // extension; the standard library only provides assign()
+  directory_entry& operator=(const boost::filesystem::path& p)
   {
-    m_path = std::move(rhs.m_path);
-    m_status = std::move(rhs.m_status);
-    m_symlink_status = std::move(rhs.m_symlink_status);
-  }
-  directory_entry& operator=(directory_entry&& rhs) BOOST_NOEXCEPT
-  { 
-    m_path = std::move(rhs.m_path);
-    m_status = std::move(rhs.m_status);
-    m_symlink_status = std::move(rhs.m_symlink_status);
+    m_path = p;
+    refresh();
     return *this;
   }
-#endif
 
-  void assign(const boost::filesystem::path& p,
-    file_status st = file_status(), file_status symlink_st = file_status())
-    { m_path = p; m_status = st; m_symlink_status = symlink_st; }
+  directory_entry& assign(const boost::filesystem::path& p)
+  {
+    m_path = p;
+    refresh();
+    return *this;
+  }
 
-  void replace_filename(const boost::filesystem::path& p,
-    file_status st = file_status(), file_status symlink_st = file_status())
+  directory_entry& assign(const boost::filesystem::path& p, system::error_code& ec)
+  {
+    m_path = p;
+    refresh(ec);
+    return *this;
+  }
+
+  void replace_filename(const boost::filesystem::path& p)
   {
     m_path.remove_filename();
     m_path /= p;
-    m_status = st;
-    m_symlink_status = symlink_st;
+    refresh();
   }
 
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-  void replace_leaf(const boost::filesystem::path& p,
-    file_status st, file_status symlink_st)
-      { replace_filename(p, st, symlink_st); }
-# endif
+  void replace_filename(const boost::filesystem::path& p, system::error_code& ec)
+  {
+    m_path.remove_filename();
+    m_path /= p;
+    refresh(ec);
+  }
+
+  void refresh() { m_refresh(0); }
+
+  void refresh(system::error_code& ec) BOOST_NOEXCEPT { m_refresh(&ec); }
+
+  //  directory_entry observers --------------------------------------------------------//
 
   const boost::filesystem::path&  path() const BOOST_NOEXCEPT {return m_path;}
-  operator const boost::filesystem::path&() const BOOST_NOEXCEPT
-                                                              {return m_path;}
-  file_status   status() const                                {return m_get_status();}
-  file_status   status(system::error_code& ec) const BOOST_NOEXCEPT
-                                                              {return m_get_status(&ec); }
-  file_status   symlink_status() const                        {return m_get_symlink_status();}
-  file_status   symlink_status(system::error_code& ec) const BOOST_NOEXCEPT
-                                                              {return m_get_symlink_status(&ec); }
+  operator const boost::filesystem::path&() const BOOST_NOEXCEPT {return m_path;}
+
+  bool exists() const
+    { return boost::filesystem::exists(this->status()); }
+  bool exists(system::error_code& ec) const BOOST_NOEXCEPT 
+    { return boost::filesystem::exists(this->status(ec)); }
+
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+  file_status status() const { return m_status; }
+  file_status status(system::error_code& ec) const { ec.clear(); return m_status; }
+# else 
+  file_status status() const { return boost::filesystem::status(m_path); }
+  file_status status(system::error_code& ec) const
+    { return boost::filesystem::status(m_path, ec); }
+# endif
+
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+  file_status symlink_status() const { return m_symlink_status; }
+  file_status symlink_status(system::error_code& ec) const
+    { ec.clear(); return m_symlink_status; }
+# else 
+  file_status symlink_status() const { return boost::filesystem::symlink_status(m_path); }
+  file_status symlink_status(system::error_code& ec) const
+    { return boost::filesystem::symlink_status(m_path, ec); }
+# endif
+
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+  boost::uintmax_t file_size() const { return m_file_size; }
+  boost::uintmax_t file_size(system::error_code& ec) const { ec.clear(); return m_file_size; }
+# else 
+  boost::uintmax_t file_size() const { return boost::filesystem::file_size(m_path); }
+  boost::uintmax_t file_size(system::error_code& ec) const
+    { return boost::filesystem::file_size(m_path, ec); }
+# endif
+
+# ifdef BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+  std::time_t last_write_time() const { return m_last_write_time; }
+  std::time_t last_write_time(system::error_code& ec) const { ec.clear(); return m_last_write_time; }
+# else 
+  std::time_t last_write_time() const { return boost::filesystem::last_write_time(m_path); }
+  std::time_t last_write_time(system::error_code& ec) const
+    { return boost::filesystem::last_write_time(m_path, ec); }
+# endif
 
   bool operator==(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path == rhs.m_path; }
   bool operator!=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path != rhs.m_path;} 
@@ -918,12 +964,26 @@ public:
   bool operator>=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path >= rhs.m_path;} 
 
 private:
-  boost::filesystem::path   m_path;
-  mutable file_status       m_status;           // stat()-like
-  mutable file_status       m_symlink_status;   // lstat()-like
+  friend struct detail::deacc;
 
-  file_status m_get_status(system::error_code* ec=0) const;
-  file_status m_get_symlink_status(system::error_code* ec=0) const;
+  void m_refresh(system::error_code* ec);
+
+  boost::filesystem::path   m_path;  
+
+  // platform specific cache; set by directory iteration or refresh()
+# ifdef BOOST_FILESYSTEM_CACHE_STATUS
+  file_status       m_status;           // stat()-like
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_SYMLINK_STATUS
+  file_status       m_symlink_status;   // lstat()-like
+# endif
+# ifdef BOOST_FILESYSTEM_CACHE_FILESIZE
+  boost::uintmax_t  m_file_size;        
+# endif
+# ifdef  BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
+  std::time_t       m_last_write_time;
+# endif
+
 }; // directory_entry
 
 //--------------------------------------------------------------------------------------//
@@ -937,7 +997,7 @@ class directory_iterator;
 namespace detail
 {
   BOOST_FILESYSTEM_DECL
-    system::error_code dir_itr_close(// never throws()
+    system::error_code close_directory(// never throws()
     void *& handle
 #   if     defined(BOOST_POSIX_API)
     , void *& buffer
@@ -961,7 +1021,7 @@ namespace detail
 
     ~dir_itr_imp() // never throws
     {
-      dir_itr_close(handle
+      close_directory(handle
 #       if defined(BOOST_POSIX_API)
          , buffer
 #       endif
@@ -1204,7 +1264,7 @@ namespace filesystem
         else
         {
           BOOST_FILESYSTEM_THROW(filesystem_error(
-            "filesystem::recursive_directory_iterator directory error",
+            "filesystem::recursive_directory_iterator increment error",
             ec_push_directory));
         }
       }
