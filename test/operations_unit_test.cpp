@@ -103,11 +103,40 @@ namespace
     }
     CHECK(!ec);
 
-    CHECK(exists("/"));
-    CHECK(is_directory("/"));
-    CHECK(!is_regular_file("/"));
-    CHECK(!boost::filesystem::is_empty("/"));
-    CHECK(!is_other("/"));
+    CHECK(exists("."));
+    CHECK(!is_empty("."));
+
+    CHECK(!is_block_file("."));
+    CHECK(!is_block_file(".", ec));
+    CHECK(is_block_file(file_status(file_type::block)));
+
+    CHECK(!is_character_file("."));
+    CHECK(!is_character_file(".", ec));
+    CHECK(is_character_file(file_status(file_type::character)));
+
+    CHECK(!is_fifo("."));
+    CHECK(!is_fifo(".", ec));
+    CHECK(is_fifo(file_status(file_type::fifo)));
+
+    CHECK(!is_socket("."));
+    CHECK(!is_socket(".", ec));
+    CHECK(is_socket(file_status(file_type::socket)));
+
+    CHECK(is_directory("."));
+    CHECK(is_directory(".", ec));
+    CHECK(is_directory(file_status(file_type::directory)));
+
+    CHECK(!is_regular_file("."));
+    CHECK(!is_regular_file(".", ec));
+    CHECK(is_regular_file(file_status(file_type::regular)));
+
+    CHECK(!is_other("."));
+    CHECK(!is_other(".", ec));
+    CHECK(is_other(file_status(file_type::unknown)));
+
+    CHECK(!is_symlink("."));
+    CHECK(!is_symlink(".", ec));
+    CHECK(is_symlink(file_status(file_type::symlink)));
   }
 
   //  directory_iterator_test  -----------------------------------------------//

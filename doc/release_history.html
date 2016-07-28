@@ -55,6 +55,12 @@
   copy_options</code> effects: <code>none</code>, <code>skip_existing</code>,
   <code>overwrite_existing</code>, and <code>update_existing</code>. Test cases 
   added accordingly.</li>
+  <li>Add missing <code>is_block_file()</code>, <code>is_character_file()</code>,
+  <code>is_fifo()</code>, and <code>is_socket()</code> operational functions, 
+  three overloads for each, with tests.</li>
+  <li>Implement P0317R1, Directory Entry Caching for Filesystem (R1). <b>
+  <span style="background-color: #FFFF00">TODO: add deprecated functions to 
+  minimize breakage of existing code.</span></b></li>
 </ul>
 
 <h2>1.61.0</h2>
@@ -423,7 +429,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->24 July, 2016<!--webbot bot="Timestamp" endspan i-checksum="21158" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->28 July, 2016<!--webbot bot="Timestamp" endspan i-checksum="21166" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

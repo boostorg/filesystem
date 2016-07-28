@@ -400,6 +400,14 @@ namespace boost
   inline bool exists(file_status f) BOOST_NOEXCEPT
                                           { return f.type() != file_type::none
                                                 && f.type() != file_type::not_found; }
+  inline bool is_block_file(file_status f) BOOST_NOEXCEPT
+                                          { return f.type() == file_type::block; }
+  inline bool is_character_file(file_status f) BOOST_NOEXCEPT
+                                          { return f.type() == file_type::character; }
+  inline bool is_fifo(file_status f) BOOST_NOEXCEPT
+                                          { return f.type() == file_type::fifo; }
+  inline bool is_socket(file_status f) BOOST_NOEXCEPT
+                                          { return f.type() == file_type::socket; }
   inline bool is_regular_file(file_status f) BOOST_NOEXCEPT
                                           { return f.type() == file_type::regular; }
   inline bool is_directory(file_status f) BOOST_NOEXCEPT
@@ -545,6 +553,26 @@ namespace boost
   inline 
   bool exists(const path& p, system::error_code& ec)
                                        {return exists(detail::status(p, &ec));}
+  inline 
+  bool is_block_file(const path& p)    {return is_block_file(detail::status(p));}
+  inline 
+  bool is_block_file(const path& p, system::error_code& ec)
+                                       {return is_block_file(detail::status(p, &ec));}
+  inline 
+  bool is_character_file(const path& p){return is_character_file(detail::status(p));}
+  inline 
+  bool is_character_file(const path& p, system::error_code& ec)
+                                       {return is_character_file(detail::status(p, &ec));}
+  inline 
+  bool is_fifo(const path& p)          {return is_fifo(detail::status(p));}
+  inline 
+  bool is_fifo(const path& p, system::error_code& ec)
+                                       {return is_fifo(detail::status(p, &ec));}
+  inline 
+  bool is_socket(const path& p)        {return is_socket(detail::status(p));}
+  inline 
+  bool is_socket(const path& p, system::error_code& ec)
+                                       {return is_socket(detail::status(p, &ec));}
   inline 
   bool is_directory(const path& p)     {return is_directory(detail::status(p));}
   inline 
@@ -918,6 +946,38 @@ public:
     { return boost::filesystem::exists(this->status()); }
   bool exists(system::error_code& ec) const BOOST_NOEXCEPT 
     { return boost::filesystem::exists(this->status(ec)); }
+  bool is_block_file() const
+    { return boost::filesystem::is_block_file(this->status()); }
+  bool is_block_file(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_block_file(this->status(ec)); }
+  bool is_character_file() const
+    { return boost::filesystem::is_character_file(this->status()); }
+  bool is_character_file(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_character_file(this->status(ec)); }
+  bool is_directory() const
+    { return boost::filesystem::is_directory(this->status()); }
+  bool is_directory(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_directory(this->status(ec)); }
+  bool is_fifo() const
+    { return boost::filesystem::is_fifo(this->status()); }
+  bool is_fifo(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_fifo(this->status(ec)); }
+  bool is_other() const
+    { return boost::filesystem::is_other(this->status()); }
+  bool is_other(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_other(this->status(ec)); }
+  bool is_regular_file() const
+    { return boost::filesystem::is_regular_file(this->status()); }
+  bool is_regular_file(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_regular_file(this->status(ec)); }
+  bool is_socket() const
+    { return boost::filesystem::is_socket(this->status()); }
+  bool is_socket(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_socket(this->status(ec)); }
+  bool is_symlink() const
+    { return boost::filesystem::is_symlink(this->status()); }
+  bool is_symlink(system::error_code& ec) const BOOST_NOEXCEPT
+    { return boost::filesystem::is_symlink(this->status(ec)); }
 
 # ifdef BOOST_FILESYSTEM_CACHE_STATUS
   file_status status() const { return m_status; }
