@@ -492,6 +492,7 @@ namespace
       fs::directory_iterator it1(dir);
       BOOST_TEST(it1 != fs::directory_iterator());
       BOOST_TEST(fs::exists(it1->status()));
+      cout << "  push_back: " << it1->path() << endl;
       vec.push_back(*it1);
       BOOST_TEST(*it1 == vec[0]);
 
@@ -505,6 +506,7 @@ namespace
       BOOST_TEST(it1 != it2);
       BOOST_TEST(*it1 != vec[0]);
       BOOST_TEST(*it2 == vec[0]);
+      cout << "  push_back: " << it1->path() << endl;
       vec.push_back(*it1);
 
       ++it1;
@@ -512,6 +514,7 @@ namespace
       BOOST_TEST(fs::exists(it1->status()));
       BOOST_TEST(it1 != it2);
       BOOST_TEST(*it2 == vec[0]);
+      cout << "  push_back: " << it1->path() << endl;
       vec.push_back(*it1);
 
       ++it1;
@@ -519,6 +522,7 @@ namespace
       BOOST_TEST(fs::exists(it1->status()));
       BOOST_TEST(it1 != it2);
       BOOST_TEST(*it2 == vec[0]);
+      cout << "  push_back: " << it1->path() << endl;
       vec.push_back(*it1);
 
       ++it1;

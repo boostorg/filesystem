@@ -2389,11 +2389,7 @@ namespace detail
         && (filename.size()== 1
           || (filename[1] == dot
             && filename.size()== 2))))
-      {
-//        it.m_imp->dir_entry.replace_filename(
-//          filename, file_stat, symlink_file_stat);
         return;
-      }
     }
   }
 }  // namespace detail
