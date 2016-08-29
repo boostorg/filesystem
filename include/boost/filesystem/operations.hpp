@@ -1274,12 +1274,17 @@ namespace filesystem
     }
 
     void increment()
-    { 
+    {
       BOOST_ASSERT_MSG(m_imp.get(),
         "increment of end recursive_directory_iterator");
-      m_imp->increment(0);
+      system::error_code iec;
+      m_imp->increment(&iec);
       if (m_imp->m_stack.empty())
         m_imp.reset(); // done, so make end iterator
+      if (iec)
+        BOOST_FILESYSTEM_THROW(filesystem_error(
+          "filesystem::recursive_directory_iterator directory error",
+          iec));
     }
 
     bool equal(const recursive_directory_iterator& rhs) const
