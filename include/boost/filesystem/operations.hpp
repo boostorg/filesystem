@@ -165,6 +165,14 @@ namespace boost
     };
 
 //--------------------------------------------------------------------------------------//
+//                                default error_code                                    //
+//  TODO: If this works, ask if it should be moved elsewhere so it can conveniently     //
+//  be used for libraries in other namespaces.                                          //
+//--------------------------------------------------------------------------------------//
+
+  BOOST_FILESYSTEM_DECL extern system::error_code barf;
+
+//--------------------------------------------------------------------------------------//
 //                                     file_type                                        //
 //--------------------------------------------------------------------------------------//
 
@@ -432,11 +440,22 @@ namespace boost
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  inline
-  file_status status(const path& p)    {return detail::status(p);}
+  //inline
+  //file_status status(const path& p)    {return detail::status(p);}
+  //inline 
+  //file_status status(const path& p, system::error_code& ec)
+  //                                     {return detail::status(p, &ec);}
+
   inline 
-  file_status status(const path& p, system::error_code& ec)
-                                       {return detail::status(p, &ec);}
+  file_status status(const path& p, system::error_code& ec = boost::filesystem::barf)
+  {
+    return &ec == &boost::filesystem::barf
+      ? detail::status(p)
+      : detail::status(p, &ec);
+  }
+
+
+
   inline 
   file_status symlink_status(const path& p) {return detail::symlink_status(p);}
   inline

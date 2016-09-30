@@ -724,6 +724,8 @@ namespace boost
 namespace filesystem
 {
 
+  BOOST_FILESYSTEM_DECL system::error_code barf;
+
   BOOST_FILESYSTEM_DECL
   path absolute(const path& p, const path& base)
   {
