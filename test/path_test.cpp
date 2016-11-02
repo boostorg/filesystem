@@ -772,6 +772,9 @@ namespace
     BOOST_TEST(path("..").filename() == "..");
 
     // stem() tests not otherwise covered
+    BOOST_TEST(path(".").stem() == ".");
+    BOOST_TEST(path("..").stem() == "..");
+    BOOST_TEST(path(".a").stem() == "");
     BOOST_TEST(path("b").stem() == "b");
     BOOST_TEST(path("a/b.txt").stem() == "b");
     BOOST_TEST(path("a/b.").stem() == "b"); 
@@ -779,6 +782,9 @@ namespace
     BOOST_TEST(path("a.b.c.").stem() == "a.b.c");
 
     // extension() tests not otherwise covered
+    BOOST_TEST(path(".").extension() == "");
+    BOOST_TEST(path("..").extension() == "");
+    BOOST_TEST(path(".a").extension() == ".a");
     BOOST_TEST(path("a/b").extension() == "");
     BOOST_TEST(path("a.b/c").extension() == "");
     BOOST_TEST(path("a/b.txt").extension() == ".txt");
