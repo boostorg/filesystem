@@ -937,9 +937,9 @@ namespace detail
  BOOST_FILESYSTEM_DECL
   bool create_directories(const path& p, system::error_code* ec)
   {
-    if (p.filename_is_dot() || p.filename_is_dot_dot())
+    if ((p.filename_is_dot() || p.filename_is_dot_dot()) && p.has_parent_path())
       return create_directories(p.parent_path(), ec);
-    
+
     error_code local_ec;
     file_status p_status = status(p, local_ec);
 
