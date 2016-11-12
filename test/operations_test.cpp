@@ -1028,6 +1028,7 @@ namespace
 
     BOOST_TEST(!fs::create_directory("."));
     BOOST_TEST(!fs::create_directory(".."));
+    BOOST_TEST(!fs::create_directory(" "));
 
     // create a directory, then check it for consistency
     //   take extra care to report problems, since if this fails
@@ -1103,6 +1104,10 @@ namespace
     cout << "create_directories_tests..." << endl;
 
     BOOST_TEST(!fs::create_directories("/")); 
+    BOOST_TEST(!fs::create_directories(" "));
+    BOOST_TEST(!fs::create_directories(""));
+    BOOST_TEST(!fs::create_directories("."));
+    BOOST_TEST(!fs::create_directories(".."));
 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
     // trailing "/.", "/./..", and "/" in the above elements test ticket #7258 and
@@ -1120,6 +1125,24 @@ namespace
       BOOST_TEST(!fs::create_directories("/permissions_test", ec));
       BOOST_TEST(!fs::create_directories("/permissions_test/another_directory", ec));
       BOOST_TEST(ec);
+    }
+
+    fs::path pPhantom = "/phantom";
+    try {
+      BOOST_TEST(!fs::create_directories(pPhantom));
+    }
+    catch (const fs::filesystem_error & x)
+    {
+      cout << x.what() << "\n\n"
+         "***** Creating directory " << pPhantom << " failed.   *****\n";
+    }
+
+    //should not throw
+    {
+      error_code ec;
+      BOOST_TEST(!fs::create_directories(pPhantom, ec));
+      BOOST_TEST(ec.value());
+      BOOST_TEST(ec.category() == system_category());
     }
   }
 
