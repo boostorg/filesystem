@@ -27,8 +27,13 @@
 #   endif
 # else // BOOST_WINDOWS_API
 #   include <windows.h>
+#if BOOST_PLAT_WINDOWS_RUNTIME
+	// wincrypt.h is not supported on Windows Phone, see
+	// http://stackoverflow.com/questions/24426815/c-c-function-for-cryptographically-secure-random-numbers-in-winrt
+#else
 #   include <wincrypt.h>
 #   pragma comment(lib, "Advapi32.lib")
+#endif	/* BOOST_PLAT_WINDOWS_RUNTIME */
 # endif
 
 namespace {
@@ -48,27 +53,32 @@ void fail(int err, boost::system::error_code* ec)
 
 int acquire_crypt_handle(HCRYPTPROV& handle)
 {
-  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+    // wincrypt.h is not supported on Windows Phone, see
+    // http://stackoverflow.com/questions/24426815/c-c-function-for-cryptographically-secure-random-numbers-in-winrt
     return 0;
+#   else
+    if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+        return 0;
 
-  int errval = ::GetLastError();
-  if (errval != NTE_BAD_KEYSET)
-    return errval;
+    int errval = ::GetLastError();
+    if (errval != NTE_BAD_KEYSET)
+        return errval;
 
-  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET | CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-    return 0;
+    if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET | CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+        return 0;
 
-  errval = ::GetLastError();
-  // Another thread could have attempted to create the keyset at the same time.
-  if (errval != NTE_EXISTS)
-    return errval;
+    errval = ::GetLastError();
+    // Another thread could have attempted to create the keyset at the same time.
+    if (errval != NTE_EXISTS)
+        return errval;
 
-  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-    return 0;
+    if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
+        return 0;
 
-  return ::GetLastError();
+    return ::GetLastError();
+#endif
 }
-
 #endif
 
 void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
@@ -103,6 +113,10 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   close(file);
 
 # else // BOOST_WINDOWS_API
+#   if BOOST_PLAT_WINDOWS_RUNTIME
+    // wincrypt.h is not supported on Windows Phone, see
+    // http://stackoverflow.com/questions/24426815/c-c-function-for-cryptographically-secure-random-numbers-in-winrt
+#   else
 
   HCRYPTPROV handle;
   int errval = acquire_crypt_handle(handle);
@@ -118,6 +132,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   if (!errval) return;
 
   fail(errval, ec);
+#   endif	/* BOOST_PLAT_WINDOWS_RUNTIME */
 # endif
 }
 

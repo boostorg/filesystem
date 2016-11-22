@@ -455,7 +455,8 @@ namespace filesystem
     //  Experimental generic function returning generic formatted path (i.e. separators
     //  are forward slashes). Motivation: simpler than a family of generic_*string
     //  functions.
-    path generic() const
+    //changed generic() to boost_generic() because generic is a keyword in c++/cx (winrt build)
+    path boost_generic() const
     {
 #   ifdef BOOST_WINDOWS_API
       path tmp;
