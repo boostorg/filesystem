@@ -598,6 +598,13 @@ namespace
       BOOST_TEST(++di != fs::directory_iterator());
     }
 
+    // Make invalidated directory iterators detectable (trac #12578)
+    {
+      fs::directory_iterator di( "." ), end;
+      std::distance( di, end ); // iterate a copy of di to the end iter
+      BOOST_TEST( di == end );
+    }
+
     cout << "  directory_iterator_tests complete" << endl;
   }
 
@@ -641,6 +648,13 @@ namespace
     BOOST_TEST(!ec);
     BOOST_TEST_EQ(d1f1_count, 1);
 
+    // Make invalidated directory iterators detectable (trac #12578)
+    {
+      fs::recursive_directory_iterator di( "." ), end;
+      std::distance( di, end ); // iterate a copy of di to the end iter
+      BOOST_TEST( di == end );
+    }    
+     
     cout << "  recursive_directory_iterator_tests complete" << endl;
   }
 
