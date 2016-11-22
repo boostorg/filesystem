@@ -939,7 +939,12 @@ namespace detail
     void increment() { detail::directory_iterator_increment(*this, 0); }
 
     bool equal(const directory_iterator& rhs) const
-      { return m_imp == rhs.m_imp; }
+    {
+      const bool is_lhs_valid = m_imp && m_imp->handle;
+      const bool is_rhs_valid = rhs.m_imp && rhs.m_imp->handle;
+      return (is_lhs_valid && is_rhs_valid && m_imp == rhs.m_imp)
+        || (!is_lhs_valid && !is_rhs_valid);
+    }
 
   };  // directory_iterator
 
@@ -1283,7 +1288,12 @@ namespace filesystem
     }
 
     bool equal(const recursive_directory_iterator& rhs) const
-      { return m_imp == rhs.m_imp; }
+    {
+      const bool is_lhs_valid = m_imp && !m_imp->m_stack.empty();
+      const bool is_rhs_valid = rhs.m_imp && !rhs.m_imp->m_stack.empty();
+      return (is_lhs_valid && is_rhs_valid && m_imp == rhs.m_imp)
+        || (!is_lhs_valid && !is_rhs_valid);
+    }
 
   };  // recursive directory iterator
 
