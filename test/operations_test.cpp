@@ -56,7 +56,7 @@ inline std::wstring convert(const char* c)
    return std::wstring(s.begin(), s.end());
 }
 
-#if defined(_MSC_VER) || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#if defined(_MSC_VER)
 //  Note: these three setenv* functions are not general solutions for the missing
 //  setenv* problem on VC++. See Microsoft's _putenv for that need, and ticker #7018
 //  for discussion and rationale for returning void for this test program, which needs
