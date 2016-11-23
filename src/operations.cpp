@@ -382,16 +382,25 @@ namespace
     error_code* ec)
   {
     boost::uintmax_t count = 1;
-
     if (type == fs::directory_file)  // but not a directory symlink
     {
-      for (fs::directory_iterator itr(p);
-            itr != end_dir_itr; ++itr)
+      fs::directory_iterator itr;
+      if (ec != 0)
+      {
+        itr = fs::directory_iterator(p, *ec);
+        if (*ec)
+          return count;
+      }
+      else
+        itr = fs::directory_iterator(p);
+      for (; itr != end_dir_itr; ++itr)
       {
         fs::file_type tmp_type = query_file_type(itr->path(), ec);
         if (ec != 0 && *ec)
           return count;
         count += remove_all_aux(itr->path(), tmp_type, ec);
+        if (ec != 0 && *ec)
+          return count;
       }
     }
     remove_file_or_directory(p, type, ec);
