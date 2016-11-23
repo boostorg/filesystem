@@ -1102,7 +1102,9 @@ namespace
   {
     cout << "create_directories_tests..." << endl;
 
-    BOOST_TEST(!fs::create_directories("/")); 
+    BOOST_TEST(!fs::create_directories("/"));
+    BOOST_TEST(!fs::create_directories("."));
+    BOOST_TEST(!fs::create_directories(".."));
 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
     // trailing "/.", "/./..", and "/" in the above elements test ticket #7258 and
