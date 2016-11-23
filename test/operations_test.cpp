@@ -1038,8 +1038,26 @@ namespace
   {
     cout << "create_directory_tests..." << endl;
 
-    BOOST_TEST(!fs::create_directory("."));
-    BOOST_TEST(!fs::create_directory(".."));
+    error_code ec;
+    BOOST_TEST(!fs::create_directory("", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory(" ", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory("/", ec));
+    BOOST_TEST(!ec);
+    BOOST_TEST(fs::is_directory("/"));  // this is a post-condition
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory(".", ec));
+    BOOST_TEST(!ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory("..", ec));
+    BOOST_TEST(!ec);
 
     // create a directory, then check it for consistency
     //   take extra care to report problems, since if this fails
@@ -1114,7 +1132,25 @@ namespace
   {
     cout << "create_directories_tests..." << endl;
 
-    BOOST_TEST(!fs::create_directories("/")); 
+    error_code ec;
+    BOOST_TEST(!fs::create_directories("", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories(" ", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("/", ec));
+    BOOST_TEST(!ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories(".", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("..", ec));
+    BOOST_TEST(ec);
 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
     // trailing "/.", "/./..", and "/" in the above elements test ticket #7258 and
@@ -1128,7 +1164,6 @@ namespace
 
     if (fs::exists("/permissions_test"))
     {
-      error_code ec;
       BOOST_TEST(!fs::create_directories("/permissions_test", ec));
       BOOST_TEST(!fs::create_directories("/permissions_test/another_directory", ec));
       BOOST_TEST(ec);
