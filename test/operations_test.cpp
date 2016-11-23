@@ -558,14 +558,22 @@ namespace
       BOOST_TEST(dir_itr->path() != p);
 
       // test case reported in comment to SourceForge bug tracker [937606]
+      // augmented to test single pass semantics of a copied iterator [#12578]
       fs::directory_iterator itx(dir);
+      fs::directory_iterator itx2(itx);
+      BOOST_TEST(itx == itx2);
       const fs::path p1 = (*itx++).path();
+      BOOST_TEST(itx == itx2);
       BOOST_TEST(itx != fs::directory_iterator());
       const fs::path p2 = (*itx++).path();
+      BOOST_TEST(itx == itx2);
       BOOST_TEST(p1 != p2);
       ++itx;
+      BOOST_TEST(itx == itx2);
       ++itx;
+      BOOST_TEST(itx == itx2);
       BOOST_TEST(itx == fs::directory_iterator());
+      BOOST_TEST(itx2 == fs::directory_iterator());
     }
 
     //  Windows has a tricky special case when just the root-name is given,
@@ -631,15 +639,19 @@ namespace
     cout << "  with error_code argument" << endl;
     boost::system::error_code ec;
     int d1f1_count = 0;
-    for (fs::recursive_directory_iterator it (dir, fs::symlink_option::no_recurse);
+    fs::recursive_directory_iterator it(dir, fs::symlink_option::no_recurse);
+    fs::recursive_directory_iterator it2(it);  // test single pass shallow copy semantics
+    for (;
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
       if (it->path().filename() == "d1f1")
         ++d1f1_count;
+      BOOST_TEST(it == it2);  // verify single pass shallow copy semantics
     }
     BOOST_TEST(!ec);
     BOOST_TEST_EQ(d1f1_count, 1);
+    BOOST_TEST(it == it2);  // verify single pass shallow copy semantics
 
     cout << "  recursive_directory_iterator_tests complete" << endl;
   }

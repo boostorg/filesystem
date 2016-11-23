@@ -921,8 +921,8 @@ namespace detail
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_increment(directory_iterator& it,
       system::error_code* ec);
 
-    // shared_ptr provides shallow-copy semantics required for InputIterators.
-    // m_imp.get()==0 indicates the end iterator.
+    // shared_ptr provides the shallow-copy semantics required for single pass iterators
+    // (i.e. InputIterators). The end iterator is indicated by !m_imp || !m_imp->handle
     boost::shared_ptr< detail::dir_itr_imp >  m_imp;
 
     friend class boost::iterator_core_access;
@@ -939,7 +939,11 @@ namespace detail
     void increment() { detail::directory_iterator_increment(*this, 0); }
 
     bool equal(const directory_iterator& rhs) const
-      { return m_imp == rhs.m_imp; }
+    { 
+      return m_imp == rhs.m_imp
+        || (!m_imp && rhs.m_imp && !rhs.m_imp->handle)
+        || (!rhs.m_imp && m_imp && !m_imp->handle);
+    }
 
   };  // directory_iterator
 
@@ -1256,8 +1260,9 @@ namespace filesystem
 
   private:
 
-    // shared_ptr provides shallow-copy semantics required for InputIterators.
-    // m_imp.get()==0 indicates the end iterator.
+    // shared_ptr provides the shallow-copy semantics required for single pass iterators
+    // (i.e. InputIterators).
+    // The end iterator is indicated by !m_imp || m_imp->m_stack.empty()
     boost::shared_ptr< detail::recur_dir_itr_imp >  m_imp;
 
     friend class boost::iterator_core_access;
@@ -1283,7 +1288,11 @@ namespace filesystem
     }
 
     bool equal(const recursive_directory_iterator& rhs) const
-      { return m_imp == rhs.m_imp; }
+    {
+      return m_imp == rhs.m_imp
+        || (!m_imp && rhs.m_imp && rhs.m_imp->m_stack.empty())
+        || (!rhs.m_imp && m_imp && m_imp->m_stack.empty())        ;
+    }
 
   };  // recursive directory iterator
 
