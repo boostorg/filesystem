@@ -385,7 +385,9 @@ namespace
 
     if (type == fs::directory_file)  // but not a directory symlink
     {
-      for (fs::directory_iterator itr(p);
+      for (fs::directory_iterator itr = (ec != 0)
+		  ? fs::directory_iterator(p, *ec)
+		  : fs::directory_iterator(p);
             itr != end_dir_itr; ++itr)
       {
         fs::file_type tmp_type = query_file_type(itr->path(), ec);
