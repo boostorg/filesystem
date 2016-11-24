@@ -1042,9 +1042,11 @@ namespace
     BOOST_TEST(!fs::create_directory("", ec));
     BOOST_TEST(ec);
 
+#ifdef BOOST_WINDOWS_API
     ec.clear();
-    BOOST_TEST(!fs::create_directory(" ", ec));
+    BOOST_TEST(!fs::create_directory(" ", ec));  // OK on Linux
     BOOST_TEST(ec);
+#endif
 
     ec.clear();
     BOOST_TEST(!fs::create_directory("/", ec));
@@ -1136,9 +1138,12 @@ namespace
     BOOST_TEST(!fs::create_directories("", ec));
     BOOST_TEST(ec);
 
+#ifdef BOOST_WINDOWS_API
+    // Windows only test, since " " is OK on Linux as a directory name
     ec.clear();
     BOOST_TEST(!fs::create_directories(" ", ec));
     BOOST_TEST(ec);
+#endif
 
     ec.clear();
     BOOST_TEST(!fs::create_directories("/", ec));
@@ -1152,6 +1157,13 @@ namespace
     BOOST_TEST(!fs::create_directories("..", ec));
     BOOST_TEST(ec);
 
+#ifdef BOOST_POSIX_API
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("/foo", ec));  // may be OK on Windows
+                                                      //  but unlikely to be OK on POSIX
+    BOOST_TEST(ec);
+#endif
+ 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
     // trailing "/.", "/./..", and "/" in the above elements test ticket #7258 and
     // related issues
