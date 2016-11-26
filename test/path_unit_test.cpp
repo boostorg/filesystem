@@ -465,7 +465,7 @@ namespace
     CHECK(p.string() == "abc\\def/ghi");
     CHECK(p.wstring() == L"abc\\def/ghi");
 
-    CHECK(p.generic().string() == "abc/def/ghi");
+    CHECK(p.generic_path().string() == "abc/def/ghi");
     CHECK(p.generic_string() == "abc/def/ghi");
     CHECK(p.generic_wstring() == L"abc/def/ghi");
 
@@ -482,7 +482,7 @@ namespace
     CHECK(p.string() == "abc\\def/ghi");
     CHECK(p.wstring() == L"abc\\def/ghi");
 
-    CHECK(p.generic().string() == "abc\\def/ghi");
+    CHECK(p.generic_path().string() == "abc\\def/ghi");
     CHECK(p.generic_string() == "abc\\def/ghi");
     CHECK(p.generic_wstring() == L"abc\\def/ghi");
 
@@ -606,6 +606,51 @@ namespace
 
     CHECK(p1 == "bar");
     CHECK(p2 == "foo");
+
+    CHECK(!path("").filename_is_dot());
+    CHECK(!path("").filename_is_dot_dot());
+    CHECK(!path("..").filename_is_dot());
+    CHECK(!path(".").filename_is_dot_dot());
+    CHECK(!path("...").filename_is_dot_dot());
+    CHECK(path(".").filename_is_dot());
+    CHECK(path("..").filename_is_dot_dot());
+    CHECK(path("/.").filename_is_dot());
+    CHECK(path("/..").filename_is_dot_dot());
+    CHECK(!path("a.").filename_is_dot());
+    CHECK(!path("a..").filename_is_dot_dot());
+
+    // edge cases
+    CHECK(path("foo/").filename() == path("."));
+    CHECK(path("foo/").filename_is_dot());
+    CHECK(path("/").filename() == path("/"));
+    CHECK(!path("/").filename_is_dot());
+# ifdef BOOST_WINDOWS_API
+    CHECK(path("c:.").filename() == path("."));
+    CHECK(path("c:.").filename_is_dot());
+    CHECK(path("c:/").filename() == path("/"));
+    CHECK(!path("c:\\").filename_is_dot());
+# else
+    CHECK(path("c:.").filename() == path("c:."));
+    CHECK(!path("c:.").filename_is_dot());
+    CHECK(path("c:/").filename() == path("."));
+    CHECK(path("c:/").filename_is_dot());
+# endif
+
+    // check that the implementation code to make the edge cases above work right
+    // doesn't cause some non-edge cases to fail
+    CHECK(path("c:").filename() != path("."));
+    CHECK(!path("c:").filename_is_dot());
+
+    // examples from reference.html
+    std::cout << path(".").filename_is_dot();            // outputs 1
+    std::cout << path("/.").filename_is_dot();           // outputs 1
+    std::cout << path("foo/.").filename_is_dot();        // outputs 1
+    std::cout << path("foo/").filename_is_dot();         // outputs 1
+    std::cout << path("/").filename_is_dot();            // outputs 0
+    std::cout << path("/foo").filename_is_dot();         // outputs 0
+    std::cout << path("/foo.").filename_is_dot();        // outputs 0
+    std::cout << path("..").filename_is_dot();           // outputs 0
+    cout << std::endl;
   }
 
 //  //  test_modifiers  ------------------------------------------------------------------//

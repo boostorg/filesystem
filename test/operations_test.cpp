@@ -56,7 +56,7 @@ inline std::wstring convert(const char* c)
    return std::wstring(s.begin(), s.end());
 }
 
-#if defined(_MSC_VER) || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#if defined(_MSC_VER)
 //  Note: these three setenv* functions are not general solutions for the missing
 //  setenv* problem on VC++. See Microsoft's _putenv for that need, and ticker #7018
 //  for discussion and rationale for returning void for this test program, which needs
@@ -558,14 +558,22 @@ namespace
       BOOST_TEST(dir_itr->path() != p);
 
       // test case reported in comment to SourceForge bug tracker [937606]
+      // augmented to test single pass semantics of a copied iterator [#12578]
       fs::directory_iterator itx(dir);
+      fs::directory_iterator itx2(itx);
+      BOOST_TEST(itx == itx2);
       const fs::path p1 = (*itx++).path();
+      BOOST_TEST(itx == itx2);
       BOOST_TEST(itx != fs::directory_iterator());
       const fs::path p2 = (*itx++).path();
+      BOOST_TEST(itx == itx2);
       BOOST_TEST(p1 != p2);
       ++itx;
+      BOOST_TEST(itx == itx2);
       ++itx;
+      BOOST_TEST(itx == itx2);
       BOOST_TEST(itx == fs::directory_iterator());
+      BOOST_TEST(itx2 == fs::directory_iterator());
     }
 
     //  Windows has a tricky special case when just the root-name is given,
@@ -631,15 +639,19 @@ namespace
     cout << "  with error_code argument" << endl;
     boost::system::error_code ec;
     int d1f1_count = 0;
-    for (fs::recursive_directory_iterator it (dir, fs::symlink_option::no_recurse);
+    fs::recursive_directory_iterator it(dir, fs::symlink_option::no_recurse);
+    fs::recursive_directory_iterator it2(it);  // test single pass shallow copy semantics
+    for (;
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
       if (it->path().filename() == "d1f1")
         ++d1f1_count;
+      BOOST_TEST(it == it2);  // verify single pass shallow copy semantics
     }
     BOOST_TEST(!ec);
     BOOST_TEST_EQ(d1f1_count, 1);
+    BOOST_TEST(it == it2);  // verify single pass shallow copy semantics
 
     cout << "  recursive_directory_iterator_tests complete" << endl;
   }
@@ -1026,8 +1038,28 @@ namespace
   {
     cout << "create_directory_tests..." << endl;
 
-    BOOST_TEST(!fs::create_directory("."));
-    BOOST_TEST(!fs::create_directory(".."));
+    error_code ec;
+    BOOST_TEST(!fs::create_directory("", ec));
+    BOOST_TEST(ec);
+
+#ifdef BOOST_WINDOWS_API
+    ec.clear();
+    BOOST_TEST(!fs::create_directory(" ", ec));  // OK on Linux
+    BOOST_TEST(ec);
+#endif
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory("/", ec));
+    BOOST_TEST(!ec);
+    BOOST_TEST(fs::is_directory("/"));  // this is a post-condition
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory(".", ec));
+    BOOST_TEST(!ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directory("..", ec));
+    BOOST_TEST(!ec);
 
     // create a directory, then check it for consistency
     //   take extra care to report problems, since if this fails
@@ -1102,12 +1134,41 @@ namespace
   {
     cout << "create_directories_tests..." << endl;
 
-    BOOST_TEST(!fs::create_directories("/")); 
+    error_code ec;
+    BOOST_TEST(!fs::create_directories("", ec));
+    BOOST_TEST(ec);
 
+#ifdef BOOST_WINDOWS_API
+    // Windows only test, since " " is OK on Linux as a directory name
+    ec.clear();
+    BOOST_TEST(!fs::create_directories(" ", ec));
+    BOOST_TEST(ec);
+#endif
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("/", ec));
+    BOOST_TEST(!ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories(".", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("..", ec));
+    BOOST_TEST(ec);
+
+#ifdef BOOST_POSIX_API
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("/foo", ec));  // may be OK on Windows
+                                                      //  but unlikely to be OK on POSIX
+    BOOST_TEST(ec);
+#endif
+ 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
     // trailing "/.", "/./..", and "/" in the above elements test ticket #7258 and
     // related issues
 
+    cout << "    p is " << p << endl;
     BOOST_TEST(!fs::exists(p));
     BOOST_TEST(fs::create_directories(p));
     BOOST_TEST(fs::exists(p));
@@ -1115,7 +1176,6 @@ namespace
 
     if (fs::exists("/permissions_test"))
     {
-      error_code ec;
       BOOST_TEST(!fs::create_directories("/permissions_test", ec));
       BOOST_TEST(!fs::create_directories("/permissions_test/another_directory", ec));
       BOOST_TEST(ec);
