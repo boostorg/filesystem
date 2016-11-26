@@ -1674,7 +1674,7 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;.
   <p> <i>—end example</i>]</p>
 </blockquote>
 
-<pre>path <a name="path-stem">stem</a>(const path&amp; p) const;</pre>
+<pre>path <a name="path-stem">stem</a>() const;</pre>
 
 <blockquote>
   <p><i>Returns:</i> if <code>p.filename()</code> contains a dot but does not 
@@ -1697,7 +1697,7 @@ for (; !p.extension().empty(); p = p.stem())
   <p> <i>—end example</i>]</p>
 </blockquote>
 
-<pre>path <a name="path-extension">extension</a>(const path&amp; p) const;</pre>
+<pre>path <a name="path-extension">extension</a>() const;</pre>
 
 <blockquote>
   <p><i>Returns:</i> if <code>p.filename()</code> contains a dot but does not 
