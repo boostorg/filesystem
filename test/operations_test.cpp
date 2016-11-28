@@ -1227,6 +1227,16 @@ namespace
     BOOST_TEST(!fs::is_directory(s));
     BOOST_TEST(!fs::is_symlink(s));
     BOOST_TEST(!fs::is_other(s));
+
+    // ticket #12574 was just user confusion, but are the tests are worth keeping
+    error_code ec;
+    BOOST_TEST(!fs::is_directory(dir / "no-such-directory", ec));
+    BOOST_TEST(ec);
+    //cout << "error_code value: " << ec.value() << endl;
+    ec.clear();
+    BOOST_TEST(!fs::is_directory(dir / "no-such-directory" / "bar", ec));
+    BOOST_TEST(ec);
+    //cout << "error_code value: " << ec.value() << endl;
   }
 
   //  status_error_reporting_tests  ----------------------------------------------------//
