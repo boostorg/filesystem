@@ -377,7 +377,7 @@ identifies the location of a file when resolved relative to
 an implied starting location. The elements of a path that determine if it is 
 relative are operating system dependent.&nbsp; [<i>Note:</i> 
 Paths <code>&quot;.&quot;</code> and <code>&quot;..&quot;</code> are relative paths. <i>—end note</i>]</p>
-<h3><a name="canonical-path">canonical path</a> [fs.def.cannonical-path]</h3>
+<h3><a name="canonical-path">canonical path</a> [fs.def.canonical-path]</h3>
 <p>An absolute path that has 
 no elements that are symbolic links, and no <code>&quot;.&quot;</code> or <code>&quot;..&quot;</code> elements.</p>
 <h3><a name="pathname">pathname</a> [fs.def.pathname]</h3>
@@ -955,7 +955,7 @@ errors are truly exceptional and indicate a serious failure. Throwing an
   most everyday programming.<br>
 &nbsp;</li>
   <li>
-  <p>Uses where file system system errors are routine and do not necessarily represent 
+  <p>Uses where file system errors are routine and do not necessarily represent 
   failure. Returning an error code is the most appropriate response. This allows 
   application specific error handling, including simply ignoring the error.</li>
 </ul>
@@ -985,7 +985,7 @@ errors are truly exceptional and indicate a serious failure. Throwing an
   implementation to an operating system or other underlying API results in an 
   error that prevents the function from meeting its specifications, the
 <code>system::error_code&amp;</code> argument is set as 
-  appropriate appropriate for the specific error. Otherwise, <code>clear()</code> 
+  appropriate for the specific error. Otherwise, <code>clear()</code> 
   is called on the
 <code>system::error_code&amp;</code> argument.<br>
 &nbsp;</li>
@@ -1318,7 +1318,7 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
     <p>an added separator 
     would be redundant, or</li>
     <li>
-    <p>would change an relative path to an absolute path, or</li>
+    <p>would change a relative path to an absolute path, or</li>
     <li>
     <p><code>p.empty()</code>, or</li>
     <li>
@@ -1346,7 +1346,7 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
     <p>an added separator 
     would be redundant, or</li>
     <li>
-    <p>would change an relative path to an absolute path, or</li>
+    <p>would change a relative path to an absolute path, or</li>
     <li>
     <p><code>p.empty()</code>, or</li>
     <li>
@@ -1400,7 +1400,7 @@ path</code> modifiers</a> [path.modifiers]</h3>
 <pre>path&amp; <a name="path-make_preferred">make_preferred</a>();</pre>
 
 <blockquote>
-  <p><i>Effects:</i> <i>directory-separator</i>s are converted to <i>prefered-separator</i>s. 
+  <p><i>Effects:</i> <i>directory-separator</i>s are converted to <i>preferred-separator</i>s. 
   See [<a href="#Operating-system-examples">fs.os.examples</a>].</p>
   <p><i>Returns:</i> <code>*this</code></p>
 </blockquote>
@@ -2709,7 +2709,7 @@ compliant iteration over the contents of a directory. Also see class <code><a hr
 input iterator (C++ Std, 24.2.1, Input iterators [input.iterators]).</p>
 <p>A <code>directory_iterator</code> reads successive elements from the directory for 
 which it was constructed, as if by calling ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/readdir_r.html">readdir_r()</a></code>. After a <code>directory_iterator</code> is constructed, and every time <code>operator++</code> is called, 
-it reads a directory element and stores information about it in a object of type <code><a href="#Class-directory_entry">directory_entry</a></code>. <code>operator++</code> is not equality preserving; that is, <code>i == j</code> does not imply that <code>++i == ++j</code>. </p>
+it reads a directory element and stores information about it in an object of type <code><a href="#Class-directory_entry">directory_entry</a></code>. <code>operator++</code> is not equality preserving; that is, <code>i == j</code> does not imply that <code>++i == ++j</code>. </p>
 <blockquote>
 <p>[<i>Note:</i> The practical consequence of not preserving equality is that directory iterators 
 can only be used for single-pass algorithms. <i>—end note</i>]</p>
@@ -2761,7 +2761,7 @@ noexcept;</code></p>
 directory_iterator(</code>const path&amp; p, system::error_code&amp; ec<code>);</code></pre>
 <blockquote>
 
-<p><i>Effects:</i> Constructs a iterator representing the first 
+<p><i>Effects:</i> Constructs an iterator representing the first 
 entry in the directory <code>p</code> resolves to, if any; otherwise, the end iterator.</p>
 
 <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
@@ -2863,7 +2863,7 @@ recursive_directory_iterator(const path&amp; p, <a href="#symlink_option">symlin
 recursive_<code>directory_iterator(</code>const path&amp; p, system::error_code&amp; ec<code>);</code></pre>
 <blockquote>
 
-<p><i>Effects:</i>&nbsp; Constructs a iterator representing the first 
+<p><i>Effects:</i>&nbsp; Constructs an iterator representing the first 
 entry in the directory <code>p</code> resolves to, if any; otherwise, the end iterator.</p>
 
 <p><i>Postcondition: </i>Unless the end iterator was constructed,<i> </i><code>level() == 0 &amp;&amp; no_push_pending() == false &amp;&amp; m_options == opt</code>. 
@@ -3426,7 +3426,7 @@ space_info <a name="space2">space</a>(const path&amp; p, system::error_code&amp;
 <blockquote>
   <p><i>Returns:</i> An object of type <code><a href="#space_info">space_info</a></code>. The value of the <code>space_info</code> object is determined as if by 
   using ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/statvfs.html"
-   style="text-decoration: none">statvfs()</a></code> to obtain a ISO/IEC 9945 struct
+   style="text-decoration: none">statvfs()</a></code> to obtain an ISO/IEC 9945 struct
   <code><a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/statvfs.h.html" style="text-decoration: none">statvfs</a></code>,
    and then multiplying its <code>f_blocks</code>, <code>f_bfree</code>,
    and <code>f_bavail</code> members by its <code>f_frsize</code> member,
@@ -4240,7 +4240,7 @@ Witt were particularly helpful in refining the library.</p>
 <p>The create_directories, extension, basename, and replace_extension functions 
 were developed by Vladimir Prus. The temp_directory_path function was 
 contributed by Jeff Flinn. David Svoboda suggested the canonical function and 
-provided psuedo-code.</p>
+provided pseudo-code.</p>
 <p>Howard Hinnant and John Maddock reviewed a draft of the version 2 proposal, and 
 identified a number of mistakes or weaknesses, resulting in a more polished 
 final document.</p>
