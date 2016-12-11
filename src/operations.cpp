@@ -1620,7 +1620,7 @@ namespace detail
 #   ifdef BOOST_POSIX_API
     struct BOOST_STATVFS vfs;
     space_info info;
-    if (!error(::BOOST_STATVFS(p.c_str(), &vfs)!= 0,
+    if (!error(::BOOST_STATVFS(p.c_str(), &vfs) ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::space"))
     {
       info.capacity 
