@@ -1163,6 +1163,13 @@ int test_main(int, char*[])
   BOOST_TEST(path::preferred_separator == '\\');
 #endif
 
+#ifdef BOOST_FILESYSTEM_DECL
+  cout << "BOOST_FILESYSTEM_DECL is defined as "
+    << BOOST_STRINGIZE(BOOST_FILESYSTEM_DECL) << endl;
+#else
+  cout << "BOOST_FILESYSTEM_DECL is not defined" << endl;
+#endif
+
   l.push_back('s');
   l.push_back('t');
   l.push_back('r');

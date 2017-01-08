@@ -38,6 +38,13 @@
     </td>
 </table>
 
+<h2>1.64.0</h2>
+<ul>
+  <li>Fix <code>operations_test</code> failure on MinGW: MinGW defines 
+  __MINGW32__ rather than _MSC_VER, so also test for __MINGW32__ to see if 
+  setenv/unsetenv workaround needed.</li>
+</ul>
+
 <h2>1.63.0</h2>
 <ul>
   <li dir="ltr">
@@ -439,7 +446,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->26 November, 2016<!--webbot bot="Timestamp" endspan i-checksum="39496" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 December, 2016<!--webbot bot="Timestamp" endspan i-checksum="38637" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">
