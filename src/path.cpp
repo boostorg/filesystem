@@ -358,20 +358,24 @@ namespace filesystem
 
   path path::stem() const
   {
+    size_type pos;
     path name(filename());
-    if (name == detail::dot_path() || name == detail::dot_dot_path()) return name;
-    size_type pos(name.m_pathname.rfind(dot));
-    return pos == string_type::npos
+    return (name == detail::dot_path()
+      || name == detail::dot_dot_path()
+      || !(pos = name.m_pathname.rfind(dot))
+      || pos == string_type::npos)
       ? name
       : path(name.m_pathname.c_str(), name.m_pathname.c_str() + pos);
   }
 
   path path::extension() const
   {
+    size_type pos;
     path name(filename());
-    if (name == detail::dot_path() || name == detail::dot_dot_path()) return path();
-    size_type pos(name.m_pathname.rfind(dot));
-    return pos == string_type::npos
+    return (name == detail::dot_path()
+      || name == detail::dot_dot_path()
+      || !(pos = name.m_pathname.rfind(dot))
+      || pos == string_type::npos)
       ? path()
       : path(name.m_pathname.c_str() + pos);
   }

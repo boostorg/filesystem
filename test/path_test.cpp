@@ -774,7 +774,7 @@ namespace
     // stem() tests not otherwise covered
     BOOST_TEST(path(".").stem() == ".");
     BOOST_TEST(path("..").stem() == "..");
-    BOOST_TEST(path(".a").stem() == "");
+    BOOST_TEST(path(".a").stem() == ".a");
     BOOST_TEST(path("b").stem() == "b");
     BOOST_TEST(path("a/b.txt").stem() == "b");
     BOOST_TEST(path("a/b.").stem() == "b"); 
@@ -784,7 +784,7 @@ namespace
     // extension() tests not otherwise covered
     BOOST_TEST(path(".").extension() == "");
     BOOST_TEST(path("..").extension() == "");
-    BOOST_TEST(path(".a").extension() == ".a");
+    BOOST_TEST(path(".a").extension() == "");
     BOOST_TEST(path("a/b").extension() == "");
     BOOST_TEST(path("a.b/c").extension() == "");
     BOOST_TEST(path("a/b.txt").extension() == ".txt");
@@ -1933,6 +1933,93 @@ namespace
     }
   }
 
+  //  Tests of examples Nicolai Josuttis presented to the C++ committee's Library
+  //  Evolution Working Group (LEWG) in Issaquah, November, 2016.
+
+  void clarify_stem_and_extension_tests()
+  {
+    std::cout << "clarify_stem_and_extension_tests..." << std::endl;
+    BOOST_TEST(path("/foo/bar.txt").stem() == "bar");
+    BOOST_TEST(path("/foo/bar.txt").extension() == ".txt");
+    BOOST_TEST(path(".profile").stem() == ".profile");
+    BOOST_TEST(path(".profile").extension() == "");
+    BOOST_TEST(path(".profile.old").stem() == ".profile");
+    BOOST_TEST(path(".profile.old").extension() == ".old");
+    BOOST_TEST(path("..abc").stem() == ".");
+    BOOST_TEST(path("..abc").extension() == ".abc");
+    BOOST_TEST(path("...abc").stem() == "..");
+    BOOST_TEST(path("...abc").extension() == ".abc");
+    BOOST_TEST(path("abc..def").stem() == "abc.");
+    BOOST_TEST(path("abc..def").extension() == ".def");
+    BOOST_TEST(path("abc...def").stem() == "abc..");
+    BOOST_TEST(path("abc...def").extension() == ".def");
+    BOOST_TEST(path("abc.").stem() == "abc");
+    BOOST_TEST(path("abc.").extension() == ".");
+    BOOST_TEST(path("abc..").stem() == "abc.");
+    BOOST_TEST(path("abc..").extension() == ".");
+    BOOST_TEST(path("abc.d.").stem() == "abc.d");
+    BOOST_TEST(path("abc.d.").extension() == ".");
+    BOOST_TEST(path("..").stem() == "..");
+    BOOST_TEST(path("..").extension() == "");
+    BOOST_TEST(path(".").stem() == ".");
+    BOOST_TEST(path(".").extension() == "");
+    BOOST_TEST(path("...").stem() == "..");       // not in Nico's examples
+    BOOST_TEST(path("...").extension() == ".");   // ditto
+  }
+
+  void clarify_filename_tests()
+  {
+    std::cout << "clarify_filename_tests..." << std::endl;
+    BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
+    BOOST_TEST(path("/foo/bar.txt").has_filename());
+    BOOST_TEST(path("/foo/bar").filename() == "bar");
+    BOOST_TEST(path("/foo/bar").has_filename());
+    BOOST_TEST(path("/foo/bar/").filename() == "");
+    BOOST_TEST(path("/foo/bar/").has_filename() == false);
+    BOOST_TEST(path("/foo/bar/.").filename() == ".");
+    BOOST_TEST(path("/foo/bar/").has_filename());
+    BOOST_TEST(path("/").filename() == "");
+    BOOST_TEST(path("/").has_filename() == false);
+    BOOST_TEST(path(".").filename() == ".");
+    BOOST_TEST(path(".").has_filename());
+    BOOST_TEST(path("..").filename() == "..");
+    BOOST_TEST(path("..").has_filename());
+    BOOST_TEST(path("//host").filename() == "");
+    BOOST_TEST(path("//host").has_filename() == false);
+    BOOST_TEST(path("//host/").filename() == "");
+    BOOST_TEST(path("//host/").has_filename() == false);
+    BOOST_TEST(path("//host/.").filename() == ".");
+    BOOST_TEST(path("//host/.").has_filename());
+    BOOST_TEST(path("").filename() == "");
+    BOOST_TEST(path("").has_filename() == false);
+
+    if (platform == "Windows")
+    {
+      BOOST_TEST(path("c:").filename() == "");
+      BOOST_TEST(path("c:").has_filename() == false);
+      BOOST_TEST(path("c:/").filename() == "");
+      BOOST_TEST(path("c:/").has_filename() == false);
+      BOOST_TEST(path("c:foo/").filename() == "");
+      BOOST_TEST(path("c:foo/").has_filename() == false);
+      BOOST_TEST(path("c:.").filename() == ".");
+      BOOST_TEST(path("c:.").has_filename());
+    }
+
+    if (platform == "POSIX")
+    {
+      BOOST_TEST(path("c:").filename() == "c:");
+      BOOST_TEST(path("c:").has_filename());
+      BOOST_TEST(path("c:/").filename() == "");
+      BOOST_TEST(path("c:/").has_filename() == false);
+      BOOST_TEST(path("c:foo/").filename() == "");
+      BOOST_TEST(path("c:foo/").has_filename() == false);
+      BOOST_TEST(path("c:.").filename() == "c:.");
+      BOOST_TEST(path("c:.").has_filename());
+    }
+
+  }
+
+
 } // unnamed namespace
 
 static boost::filesystem::path ticket_6737 = "FilePath";  // #6737 reported this crashed
@@ -1977,6 +2064,9 @@ int cpp_main(int, char*[])
   replace_extension_tests();
   make_preferred_tests();
   lexically_normal_tests();
+
+  clarify_stem_and_extension_tests();
+  //clarify_filename_tests();
 
   // verify deprecated names still available
 
