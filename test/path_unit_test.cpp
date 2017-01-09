@@ -1143,6 +1143,27 @@ namespace
 
 # endif
 
+  inline const char* macro_value(const char* name, const char* value)
+  {
+    static const char* no_value = "[no value]";
+    static const char* not_defined = "[not defined]";
+
+    //if (0 != strcmp(name, value + 1))  // macro is defined
+    //{
+    //  if (value[1])
+    //    return value;
+    //  else
+    //    return no_value;
+    //}
+    //return not_defined;
+
+    return 0 == strcmp(name, value + 1)
+      ? not_defined 
+      : (value[1] ? value : no_value);
+  }
+
+#define BOOST_MACRO_VALUE(X) macro_value(#X, BOOST_STRINGIZE(=X))
+
 }  // unnamed namespace
 
 //--------------------------------------------------------------------------------------//
@@ -1162,6 +1183,16 @@ int test_main(int, char*[])
   cout << "BOOST_WINDOWS_API" << endl;
   BOOST_TEST(path::preferred_separator == '\\');
 #endif
+
+  cout << "BOOST_FILESYSTEM_DECL "
+    << BOOST_MACRO_VALUE(BOOST_FILESYSTEM_DECL) << endl;
+
+//#ifdef BOOST_FILESYSTEM_DECL
+//  cout << "BOOST_FILESYSTEM_DECL is defined as "
+//    << BOOST_STRINGIZE(BOOST_FILESYSTEM_DECL) << endl;
+//#else
+//  cout << "BOOST_FILESYSTEM_DECL is not defined" << endl;
+//#endif
 
   l.push_back('s');
   l.push_back('t');

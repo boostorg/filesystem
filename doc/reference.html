@@ -96,9 +96,9 @@
  &nbsp;<a href="#Class-filesystem_error">Class <code>filesystem_error</code></a><br>
 &nbsp;&nbsp;&nbsp; <a href="#filesystem_error-members"><code>filesystem_error</code> 
     constructors</a><br>
-&nbsp;&nbsp;&nbsp; <code>f</code><a href="#filesystem_error-path1"><code>ilesystem_error</code> path1</a><br>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path1"><code>filesystem_error</code> path1</a><br>
 &nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path2"><code>filesystem_error</code> path2</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what"><code>filesystem_error </code>what</a></td>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what"><code>filesystem_error</code> what</a></td>
     <td width="33%" valign="top">
     <p>
     <a href="#Enum-file_type">Enum <code>file_type</code></a><br>
@@ -1674,7 +1674,7 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;.
   <p> <i>—end example</i>]</p>
 </blockquote>
 
-<pre>path <a name="path-stem">stem</a>(const path&amp; p) const;</pre>
+<pre>path <a name="path-stem">stem</a>() const;</pre>
 
 <blockquote>
   <p><i>Returns:</i> if <code>p.filename()</code> contains a dot but does not 
@@ -1697,7 +1697,7 @@ for (; !p.extension().empty(); p = p.stem())
   <p> <i>—end example</i>]</p>
 </blockquote>
 
-<pre>path <a name="path-extension">extension</a>(const path&amp; p) const;</pre>
+<pre>path <a name="path-extension">extension</a>() const;</pre>
 
 <blockquote>
   <p><i>Returns:</i> if <code>p.filename()</code> contains a dot but does not 

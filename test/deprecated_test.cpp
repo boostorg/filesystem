@@ -227,6 +227,7 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
   path_rename_test();
   normalize_test();
   file_type_test();
+  BOOST_TEST(fs::path("foo/bar").generic() == fs::path("foo/bar"));
  
 // extension() tests ---------------------------------------------------------//
 

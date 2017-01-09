@@ -388,16 +388,25 @@ namespace
     error_code* ec)
   {
     boost::uintmax_t count = 1;
-
     if (type == fs::file_type::directory)  // but not a directory symlink
     {
-      for (fs::directory_iterator itr(p);
-            itr != end_dir_itr; ++itr)
+      fs::directory_iterator itr;
+      if (ec != 0)
+      {
+        itr = fs::directory_iterator(p, *ec);
+        if (*ec)
+          return count;
+      }
+      else
+        itr = fs::directory_iterator(p);
+      for (; itr != end_dir_itr; ++itr)
       {
         fs::file_type tmp_type = query_file_type(itr->path(), ec);
         if (ec != 0 && *ec)
           return count;
         count += remove_all_aux(itr->path(), tmp_type, ec);
+        if (ec != 0 && *ec)
+          return count;
       }
     }
     remove_file_or_directory(p, type, ec);
@@ -999,6 +1008,17 @@ namespace detail
  BOOST_FILESYSTEM_DECL
   bool create_directories(const path& p, system::error_code* ec)
   {
+   if (p.empty())
+   {
+     if (ec == 0)
+       BOOST_FILESYSTEM_THROW(filesystem_error(
+         "boost::filesystem::create_directories", p,
+         system::errc::make_error_code(system::errc::invalid_argument)));
+     else
+       ec->assign(system::errc::invalid_argument, system::generic_category());
+     return false;
+   }
+
     if (p.filename_is_dot() || p.filename_is_dot_dot())
       return create_directories(p.parent_path(), ec);
     
@@ -1052,7 +1072,8 @@ namespace detail
     //  attempt to create directory failed
     int errval(BOOST_ERRNO);  // save reason for failure
     error_code dummy;
-    if (errval == BOOST_ERROR_ALREADY_EXISTS && is_directory(p, dummy))
+
+    if (is_directory(p, dummy))
     {
       if (ec != 0)
         ec->clear();
@@ -1065,6 +1086,7 @@ namespace detail
         p, error_code(errval, system_category())));
     else
       ec->assign(errval, system_category());
+
     return false;
   }
 
