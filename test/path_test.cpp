@@ -70,6 +70,8 @@ namespace fs = boost::filesystem;
 using boost::filesystem::path;
 using boost::next;
 using boost::prior;
+using std::cout;
+using std::endl;
 
 #ifdef BOOST_WINDOWS_API
 # define BOOST_DIR_SEP "\\"
@@ -205,7 +207,7 @@ namespace
     PATH_TEST_EQ(*--itr, "f");
     PATH_TEST_EQ(*--itr, "..");
 
-    // POSIX says treat "/foo/bar/" as "/foo/bar/."
+    // std::filesystem says treat "/foo/bar/" as "/", "foo", "bar", ""
     itr_ck = "/foo/bar/";
     itr = itr_ck.begin();
     PATH_TEST_EQ(itr->string(), "/");
@@ -213,39 +215,55 @@ namespace
     BOOST_TEST(itr != itr_ck.end());
     PATH_TEST_EQ(*++itr, "bar");
     BOOST_TEST(itr != itr_ck.end());
-    PATH_TEST_EQ(*++itr, ".");
-    BOOST_TEST(itr != itr_ck.end());  // verify the . isn't also seen as end()
+    PATH_TEST_EQ(*++itr, "");
+    BOOST_TEST(itr != itr_ck.end());  // verify the "" isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "");
     PATH_TEST_EQ(*--itr, "bar");
     PATH_TEST_EQ(*--itr, "foo");
     PATH_TEST_EQ(*--itr, "/");
 
-    // POSIX says treat "/f/b/" as "/f/b/."
+    // std::filesystem says treat "/foo//bar//" as "/", "foo", "bar", ""
+    itr_ck = "/foo//bar//";
+    itr = itr_ck.begin();
+    PATH_TEST_EQ(itr->string(), "/");
+    PATH_TEST_EQ(*++itr, "foo");
+    BOOST_TEST(itr != itr_ck.end());
+    PATH_TEST_EQ(*++itr, "bar");
+    BOOST_TEST(itr != itr_ck.end());
+    PATH_TEST_EQ(*++itr, "");
+    BOOST_TEST(itr != itr_ck.end());  // verify the "" isn't also seen as end()
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, "");
+    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "foo");
+    PATH_TEST_EQ(*--itr, "/");
+
+    // std::filesystem says treat "/f/b/" as "/", "foo", "bar", ""
     itr_ck = "/f/b/";
     itr = itr_ck.begin();
     PATH_TEST_EQ(itr->string(), "/");
     PATH_TEST_EQ(*++itr, "f");
     PATH_TEST_EQ(*++itr, "b");
-    PATH_TEST_EQ(*++itr, ".");
-    BOOST_TEST(itr != itr_ck.end());  // verify the . isn't also seen as end()
+    PATH_TEST_EQ(*++itr, "");
+    BOOST_TEST(itr != itr_ck.end());  // verify the "" isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "");
     PATH_TEST_EQ(*--itr, "b");
     PATH_TEST_EQ(*--itr, "f");
     PATH_TEST_EQ(*--itr, "/");
 
-    // POSIX says treat "a/b/" as "a/b/."
-    // Although similar to the prior test case, this failed the ". isn't end" test due to
-    // a bug while the prior case did not fail.
+    // std::filesystem says treat "a/b/" as "a/b/."
+    // Although similar to the prior test case, this failed the '"." isn't end' test due
+    // to a bug, while the prior case did not fail.
     itr_ck = "a/b/";
     itr = itr_ck.begin();
     PATH_TEST_EQ(*itr, "a");
     PATH_TEST_EQ(*++itr, "b");
-    PATH_TEST_EQ(*++itr, ".");
-    BOOST_TEST(itr != itr_ck.end());  // verify the . isn't also seen as end()
+    PATH_TEST_EQ(*++itr, "");
+    BOOST_TEST(itr != itr_ck.end());  // verify the "" isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "");
     PATH_TEST_EQ(*--itr, "b");
     PATH_TEST_EQ(*--itr, "a");
 
@@ -270,9 +288,9 @@ namespace
     PATH_TEST_EQ(itr->string(), "//foo");
     PATH_TEST_EQ(*++itr, "/");
     PATH_TEST_EQ(*++itr, "bar");
-    PATH_TEST_EQ(*++itr, ".");
+    PATH_TEST_EQ(*++itr, "");
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "");
     PATH_TEST_EQ(*--itr, "bar");
     PATH_TEST_EQ(*--itr, "/");
     PATH_TEST_EQ(*--itr, "//foo");
@@ -283,9 +301,9 @@ namespace
     PATH_TEST_EQ(itr->string(), "/");
     PATH_TEST_EQ(*++itr, "foo");
     PATH_TEST_EQ(*++itr, "bar");
-    PATH_TEST_EQ(*++itr, ".");
+    PATH_TEST_EQ(*++itr, "");
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "");
     PATH_TEST_EQ(*--itr, "bar");
     PATH_TEST_EQ(*--itr, "foo");
     PATH_TEST_EQ(*--itr, "/");
@@ -334,9 +352,9 @@ namespace
       PATH_TEST_EQ(itr->string(), "/");
       PATH_TEST_EQ(*++itr, "foo");
       PATH_TEST_EQ(*++itr, "bar");
-      PATH_TEST_EQ(*++itr, ".");
+      PATH_TEST_EQ(*++itr, "");
       BOOST_TEST(++itr == itr_ck.end());
-      PATH_TEST_EQ(*--itr, ".");
+      PATH_TEST_EQ(*--itr, "");
       PATH_TEST_EQ(*--itr, "bar");
       PATH_TEST_EQ(*--itr, "foo");
       PATH_TEST_EQ(*--itr, "/");
@@ -353,9 +371,9 @@ namespace
       itr = itr_ck.begin();
       BOOST_TEST(*itr == std::string("c:"));
       BOOST_TEST(*++itr == std::string("foo"));
-      BOOST_TEST(*++itr == std::string("."));
+      BOOST_TEST(*++itr == std::string(""));
       BOOST_TEST(++itr == itr_ck.end());
-      BOOST_TEST(*--itr == std::string("."));
+      BOOST_TEST(*--itr == std::string(""));
       BOOST_TEST(*--itr == std::string("foo"));
       BOOST_TEST(*--itr == std::string("c:"));
 
@@ -599,7 +617,7 @@ namespace
     // verify compare is actually lexicographical
     BOOST_TEST(path("a/b") < path("a.b"));
     BOOST_TEST(path("a/b") == path("a///b"));
-    BOOST_TEST(path("a/b/") == path("a/b/."));
+    BOOST_TEST(path("a/b/") == path("a/b/"));
     BOOST_TEST(path("a/b") != path("a/b/"));
 
     // make sure the derivative operators also work
@@ -766,7 +784,7 @@ namespace
     BOOST_TEST(path("..").parent_path() == "");
     BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
     BOOST_TEST(path("/foo/bar").filename() == "bar");    
-    BOOST_TEST(path("/foo/bar/").filename() == ".");   
+    BOOST_TEST(path("/foo/bar/").filename() == "");   
     BOOST_TEST(path("/").filename() == "/");           
     BOOST_TEST(path(".").filename() == ".");           
     BOOST_TEST(path("..").filename() == "..");
@@ -1819,9 +1837,9 @@ namespace
   {
     std::cout << "lexically_normal_tests..." << std::endl;
 
-    //  Note: lexically_lexically_normal() uses /= to build up some results, so these results will
+    //  Note: lexically_normal() uses /= to build up some results, so these results will
     //  have the platform's preferred separator. Since that is immaterial to the correct
-    //  functioning of lexically_lexically_normal(), the test results are converted to generic form,
+    //  functioning of lexically_normal(), the test results are converted to generic form,
     //  and the expected results are also given in generic form. Otherwise many of the
     //  tests would incorrectly be reported as failing on Windows.
 
@@ -1831,8 +1849,8 @@ namespace
     PATH_TEST_EQ(path("///").lexically_normal().generic_path(), "/");
     PATH_TEST_EQ(path("f").lexically_normal().generic_path(), "f");
     PATH_TEST_EQ(path("foo").lexically_normal().generic_path(), "foo");
-    PATH_TEST_EQ(path("foo/").lexically_normal().generic_path(), "foo/.");
-    PATH_TEST_EQ(path("f/").lexically_normal().generic_path(), "f/.");
+    PATH_TEST_EQ(path("foo/").lexically_normal().generic_path(), "foo/");
+    PATH_TEST_EQ(path("f/").lexically_normal().generic_path(), "f/");
     PATH_TEST_EQ(path("/foo").lexically_normal().generic_path(), "/foo");
     PATH_TEST_EQ(path("foo/bar").lexically_normal().generic_path(), "foo/bar");
     PATH_TEST_EQ(path("..").lexically_normal().generic_path(), "..");
@@ -1977,7 +1995,7 @@ namespace
     BOOST_TEST(path("/foo/bar/").filename() == "");
     BOOST_TEST(path("/foo/bar/").has_filename() == false);
     BOOST_TEST(path("/foo/bar/.").filename() == ".");
-    BOOST_TEST(path("/foo/bar/").has_filename());
+    BOOST_TEST(path("/foo/bar/.").has_filename());
     BOOST_TEST(path("/").filename() == "");
     BOOST_TEST(path("/").has_filename() == false);
     BOOST_TEST(path(".").filename() == ".");
@@ -2016,7 +2034,6 @@ namespace
       BOOST_TEST(path("c:.").filename() == "c:.");
       BOOST_TEST(path("c:.").has_filename());
     }
-
   }
 
 
@@ -2066,7 +2083,7 @@ int cpp_main(int, char*[])
   lexically_normal_tests();
 
   clarify_stem_and_extension_tests();
-  //clarify_filename_tests();
+  clarify_filename_tests();
 
   // verify deprecated names still available
 

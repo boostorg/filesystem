@@ -500,9 +500,10 @@ namespace filesystem
 
     //  -----  decomposition  -----
 
-    path  root_path() const; 
-    path  root_name() const;         // returns 0 or 1 element path
-                                     // even on POSIX, root_name() is non-empty() for network paths
+    path  root_path() const;         // returns 0, 1, or 2 element path
+    path  root_name() const;         // returns 0 or 1 element path;
+                                     // even on POSIX, root_name() is non-empty()
+                                     // for network paths
     path  root_directory() const;    // returns 0 or 1 element path
     path  relative_path() const;
     path  parent_path() const;
@@ -520,7 +521,7 @@ namespace filesystem
     bool has_root_directory() const  { return !root_directory().empty(); }
     bool has_relative_path() const   { return !relative_path().empty(); }
     bool has_parent_path() const     { return !parent_path().empty(); }
-    bool has_filename() const        { return !m_pathname.empty(); }
+    bool has_filename() const        { return !filename().empty(); }
     bool has_stem() const            { return !stem().empty(); }
     bool has_extension() const       { return !extension().empty(); }
     bool is_relative() const         { return !is_absolute(); } 

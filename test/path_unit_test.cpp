@@ -620,20 +620,20 @@ namespace
     CHECK(!path("a..").filename_is_dot_dot());
 
     // edge cases
-    CHECK(path("foo/").filename() == path("."));
-    CHECK(path("foo/").filename_is_dot());
-    CHECK(path("/").filename() == path("/"));
+    CHECK(path("foo/").filename() == path(""));
+    CHECK(!path("foo/").filename_is_dot());
+    CHECK(path("/").filename() == path(""));
     CHECK(!path("/").filename_is_dot());
 # ifdef BOOST_WINDOWS_API
     CHECK(path("c:.").filename() == path("."));
     CHECK(path("c:.").filename_is_dot());
-    CHECK(path("c:/").filename() == path("/"));
+    CHECK(path("c:/").filename() == path(""));
     CHECK(!path("c:\\").filename_is_dot());
 # else
     CHECK(path("c:.").filename() == path("c:."));
     CHECK(!path("c:.").filename_is_dot());
-    CHECK(path("c:/").filename() == path("."));
-    CHECK(path("c:/").filename_is_dot());
+    CHECK(path("c:/").filename() == path("c:/"));
+    CHECK(!path("c:/").filename_is_dot());
 # endif
 
     // check that the implementation code to make the edge cases above work right
@@ -645,7 +645,7 @@ namespace
     std::cout << path(".").filename_is_dot();            // outputs 1
     std::cout << path("/.").filename_is_dot();           // outputs 1
     std::cout << path("foo/.").filename_is_dot();        // outputs 1
-    std::cout << path("foo/").filename_is_dot();         // outputs 1
+    std::cout << path("foo/").filename_is_dot();         // outputs 0
     std::cout << path("/").filename_is_dot();            // outputs 0
     std::cout << path("/foo").filename_is_dot();         // outputs 0
     std::cout << path("/foo.").filename_is_dot();        // outputs 0
@@ -1217,6 +1217,12 @@ int test_main(int, char*[])
   wv.push_back(L'f');
   wv.push_back(L'u');
   wv.push_back(L'z');
+
+  path xs("c:/foo");
+  for (auto itr = xs.begin(); itr != xs.end(); ++itr)
+    cout << *itr << endl;
+  cout << xs.root_path() << " " << xs.root_name() << " " << xs.root_directory() << " " << xs.relative_path() << endl;
+
 
   test_overloads();
   test_constructors();

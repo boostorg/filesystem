@@ -347,13 +347,22 @@ namespace filesystem
 
   path path::filename() const
   {
-    size_type pos(filename_pos(m_pathname, m_pathname.size()));
-    return (m_pathname.size()
-              && pos
-              && detail::is_directory_separator(m_pathname[pos])
-              && !is_root_separator(m_pathname, pos))
-      ? detail::dot_path()
-      : path(m_pathname.c_str() + pos);
+    // V3 implementation:
+    //size_type pos(filename_pos(m_pathname, m_pathname.size()));
+    //return (m_pathname.size()
+    //          && pos
+    //          && detail::is_directory_separator(m_pathname[pos])
+    //          && !is_root_separator(m_pathname, pos))
+    //  ? path()
+    //  : path(m_pathname.c_str() + pos);
+
+    // initial V4 implementation strives for correctness rather than efficiency
+    iterator root_end = begin();
+    if (has_root_name())
+      ++root_end;
+    if (has_root_directory())
+      ++root_end;
+    return root_end == end() ? path() : *--end();
   }
 
   path path::stem() const
@@ -362,7 +371,7 @@ namespace filesystem
     path name(filename());
     return (name == detail::dot_path()
       || name == detail::dot_dot_path()
-      || !(pos = name.m_pathname.rfind(dot))
+      || (pos = name.m_pathname.rfind(dot)) == 0  // == 0 to suppress VC++ C4706
       || pos == string_type::npos)
       ? name
       : path(name.m_pathname.c_str(), name.m_pathname.c_str() + pos);
@@ -374,7 +383,7 @@ namespace filesystem
     path name(filename());
     return (name == detail::dot_path()
       || name == detail::dot_dot_path()
-      || !(pos = name.m_pathname.rfind(dot))
+      || (pos = name.m_pathname.rfind(dot)) == 0  // == 0 to suppress VC++ C4706
       || pos == string_type::npos)
       ? path()
       : path(name.m_pathname.c_str() + pos);
@@ -752,9 +761,9 @@ namespace filesystem
     BOOST_ASSERT_MSG(it.m_pos < it.m_path_ptr->m_pathname.size(),
       "path::basic_iterator increment past end()");
 
-    // increment to position past current element; if current element is implicit dot,
-    // this will cause it.m_pos to represent the end iterator
-    it.m_pos += it.m_element.m_pathname.size();
+    // increment to position past current element; if current element is "" (ie trailing
+    // "/") this will cause it.m_pos to represent the end iterator
+    it.m_pos += (it.m_element.m_pathname.size() ? it.m_element.m_pathname.size() : 1);
 
     // if the end is reached, we are done
     if (it.m_pos == it.m_path_ptr->m_pathname.size())
@@ -789,12 +798,12 @@ namespace filesystem
         && detail::is_directory_separator(it.m_path_ptr->m_pathname[it.m_pos]))
         { ++it.m_pos; }
 
-      // detect trailing separator, and treat it as ".", per POSIX spec
+      // detect trailing separator, and treat it as path(), per std::filesystem spec
       if (it.m_pos == it.m_path_ptr->m_pathname.size()
         && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)) 
       {
         --it.m_pos;
-        it.m_element = detail::dot_path();
+        it.m_element = path();
         return;
       }
     }
@@ -812,15 +821,15 @@ namespace filesystem
 
     size_type end_pos(it.m_pos);
 
-    // if at end and there was a trailing non-root '/', return "."
+    // if at end and there was a trailing '/', return path()
     if (it.m_pos == it.m_path_ptr->m_pathname.size()
       && it.m_path_ptr->m_pathname.size() > 1
       && detail::is_directory_separator(it.m_path_ptr->m_pathname[it.m_pos-1])
-      && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
+      //&& !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
        )
     {
       --it.m_pos;
-      it.m_element = detail::dot_path();
+      it.m_element = path();
       return;
     }
 
