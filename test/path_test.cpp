@@ -1939,6 +1939,12 @@ static boost::filesystem::path ticket_6737 = "FilePath";  // #6737 reported this
                                                           // on VC++ debug mode build 
 const boost::filesystem::path ticket_6690("test");  // #6690 another V++ static init crash
 
+void ticket_12759(const path::value_type &) {
+  ticket_12759(path::separator);
+  ticket_12759(path::preferred_separator);
+  ticket_12759(path::dot);
+}
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                                     main                                             //
