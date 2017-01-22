@@ -125,6 +125,19 @@ namespace boost
 {
 namespace filesystem
 {
+  namespace detail
+  {
+    const path& preferred_separator_path()
+    {
+#   ifdef BOOST_WINDOWS_API
+      static const fs::path preferred_separator(L"\\");
+#   else
+      static const fs::path preferred_separator("/");
+#   endif
+      return preferred_separator;
+    }
+  }
+
   path& path::operator/=(const path& p)
   {
     if (p.empty())
@@ -424,76 +437,69 @@ namespace filesystem
     return tmp;
   }
 
-  //  normal  --------------------------------------------------------------------------//
+  //  lexically_normal  ----------------------------------------------------------------//
 
   path path::lexically_normal() const
   {
+    // aim for correctness; worry about efficiency later
+
+    path temp;                  // return value will be built here
+    // an empty path is already in normal form
     if (m_pathname.empty())
-      return *this;
-      
-    path temp;
-    iterator start(begin());
-    iterator last(end());
-    iterator stop(last--);
-    for (iterator itr(start); itr != stop; ++itr)
+      return temp;
+
+    iterator itr = begin();
+
+    // handle root-name if present
+    if (itr->has_root_name())
     {
-      // ignore "." except at start and last
-      if (itr->native().size() == 1
-        && (itr->native())[0] == dot
-        && itr != start
-        && itr != last) continue;
-
-      // ignore a name and following ".."
-      if (!temp.empty()
-        && itr->native().size() == 2
-        && (itr->native())[0] == dot
-        && (itr->native())[1] == dot) // dot dot
+      temp = *itr;
+#ifdef BOOST_WINDOWS_API
+      // on POSIX directory-separators are already the preferred_separator
+      if (detail::is_directory_separator(temp.m_pathname[0]))
       {
-        string_type lf(temp.filename().native());  
-        if (lf.size() > 0  
-          && (lf.size() != 1
-            || (lf[0] != dot
-              && lf[0] != separator))
-          && (lf.size() != 2 
-            || (lf[0] != dot
-              && lf[1] != dot
-#             ifdef BOOST_WINDOWS_API
-              && lf[1] != colon
-#             endif
-               )
-             )
-          )
-        {
-          temp.remove_filename();
-          //// if not root directory, must also remove "/" if any
-          //if (temp.native().size() > 0
-          //  && temp.native()[temp.native().size()-1]
-          //    == separator)
-          //{
-          //  string_type::size_type rds(
-          //    root_directory_start(temp.native(), temp.native().size()));
-          //  if (rds == string_type::npos
-          //    || rds != temp.native().size()-1) 
-          //  {
-          //    temp.m_pathname.erase(temp.native().size()-1);
-          //  }
-          //}
-
-          iterator next(itr);
-          if (temp.empty() && ++next != stop
-            && next == last && *last == detail::dot_path())
-          {
-            temp /= detail::dot_path();
-          }
-          continue;
-        }
+        temp.m_pathname[0] = preferred_separator;
+        temp.m_pathname[1] = preferred_separator;
       }
+#endif
+      ++itr;
+    }
 
-      temp /= *itr;
-    };
+    // handle root-directory if present
+    if (itr != end() && itr->has_root_directory())
+    {
+      temp += preferred_separator;
+      ++itr;
+    }
 
-    if (temp.empty())
-      temp /= detail::dot_path();
+    // handle relative-path portion of the pathname if present
+    for (; itr != end(); ++itr)
+    {
+      path temp_filename;   // by dot-dot handler below
+
+      // skip all dot elements
+      if (itr->native().size() == 1 && (itr->native())[0] == dot)
+        {}  // do nothing
+
+      // call temp.remove_filename() and skip the current dot-dot element when the
+      // current element is dot-dot and temp.filename() is not empty and is not dot-dot
+      else if (*itr == detail::dot_dot_path()
+          && !(temp_filename = temp.filename()).empty()
+          && temp_filename != detail::dot_dot_path())
+        temp.remove_filename();
+
+      // if the current element is a trailing directory-separator, which is represented by
+      // an empty path, and temp doesn't already end with a separator, then insert a
+      // preferred-separator
+      else if (itr->empty() 
+        && (temp.empty()
+          || !detail::is_directory_separator(temp.native()[temp.size()-1])))
+        temp /= detail::preferred_separator_path();
+
+      else  // it is a plain old element
+        temp /= *itr;
+    }  // each relative-path element
+
     return temp;
   }
 
