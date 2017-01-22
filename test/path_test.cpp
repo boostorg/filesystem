@@ -785,7 +785,7 @@ namespace
     BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
     BOOST_TEST(path("/foo/bar").filename() == "bar");    
     BOOST_TEST(path("/foo/bar/").filename() == "");   
-    BOOST_TEST(path("/").filename() == "/");           
+    BOOST_TEST(path("/").filename() == "");           
     BOOST_TEST(path(".").filename() == ".");           
     BOOST_TEST(path("..").filename() == "..");
 
@@ -839,8 +839,8 @@ namespace
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    BOOST_TEST(p.filename() == "/");
-    BOOST_TEST(p.stem() == "/");
+    BOOST_TEST(p.filename() == "");
+    BOOST_TEST(p.stem() == "");
     BOOST_TEST(p.extension() == "");
     BOOST_TEST(p.root_name() == "");
     BOOST_TEST(p.root_directory() == "/");
@@ -849,8 +849,8 @@ namespace
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
-    BOOST_TEST(p.has_filename());
-    BOOST_TEST(p.has_stem());
+    BOOST_TEST(!p.has_filename());
+    BOOST_TEST(!p.has_stem());
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(!p.has_parent_path());
     if (platform == "POSIX")
@@ -862,8 +862,8 @@ namespace
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    PATH_TEST_EQ(p.filename(), "//");
-    PATH_TEST_EQ(p.stem(), "//");
+    PATH_TEST_EQ(p.filename(), "");
+    PATH_TEST_EQ(p.stem(), "");
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "//");
     PATH_TEST_EQ(p.root_directory(), "");
@@ -872,8 +872,8 @@ namespace
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
-    BOOST_TEST(p.has_filename());
-    BOOST_TEST(p.has_stem());
+    BOOST_TEST(!p.has_filename());
+    BOOST_TEST(!p.has_stem());
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(!p.is_absolute());
@@ -882,8 +882,8 @@ namespace
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    PATH_TEST_EQ(p.filename(), "/");
-    PATH_TEST_EQ(p.stem(), "/");
+    PATH_TEST_EQ(p.filename(), "");
+    PATH_TEST_EQ(p.stem(), "");
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "");
     PATH_TEST_EQ(p.root_directory(), "/");
@@ -892,8 +892,8 @@ namespace
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
-    BOOST_TEST(p.has_filename());
-    BOOST_TEST(p.has_stem());
+    BOOST_TEST(!p.has_filename());
+    BOOST_TEST(!p.has_stem());
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(!p.has_parent_path());
     if (platform == "POSIX")
@@ -988,8 +988,8 @@ namespace
     PATH_TEST_EQ(p.relative_path().string(), "foo/");
     PATH_TEST_EQ(p.parent_path().string(), "/foo");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    PATH_TEST_EQ(p.filename(), ".");
-    PATH_TEST_EQ(p.stem(), ".");
+    PATH_TEST_EQ(p.filename(), "");
+    PATH_TEST_EQ(p.stem(), "");
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "");
     PATH_TEST_EQ(p.root_directory(), "/");
@@ -998,8 +998,8 @@ namespace
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(p.has_relative_path());
-    BOOST_TEST(p.has_filename());
-    BOOST_TEST(p.has_stem());
+    BOOST_TEST(!p.has_filename());
+    BOOST_TEST(!p.has_stem());
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(p.has_parent_path());
     if (platform == "POSIX")
@@ -1108,7 +1108,7 @@ namespace
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(p.filename(), "//net");
+    PATH_TEST_EQ(p.filename(), "");
     PATH_TEST_EQ(p.root_name(), "//net");
     PATH_TEST_EQ(p.root_directory(), "");
     PATH_TEST_EQ(p.root_path().string(), "//net");
@@ -1116,7 +1116,7 @@ namespace
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
-    BOOST_TEST(p.has_filename());
+    BOOST_TEST(!p.has_filename());
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(!p.is_absolute());
 
@@ -1124,7 +1124,7 @@ namespace
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "//net");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    BOOST_TEST(p.filename() == "/");
+    BOOST_TEST(p.filename() == "");
     BOOST_TEST(p.root_name() == "//net");
     BOOST_TEST(p.root_directory() == "/");
     BOOST_TEST(p.root_path().string() == "//net/");
@@ -1132,7 +1132,7 @@ namespace
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
-    BOOST_TEST(p.has_filename());
+    BOOST_TEST(!p.has_filename());
     BOOST_TEST(p.has_parent_path());
     BOOST_TEST(p.is_absolute());
 
@@ -1172,21 +1172,15 @@ namespace
     //  by failure to handle this case correctly on Windows.
     p = path(":"); 
     PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(p.filename(), ":");
     BOOST_TEST(!p.has_parent_path());
-    BOOST_TEST(p.has_filename());
 
     //  test some similar cases that both POSIX and Windows should handle identically
     p = path("c:"); 
     PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(p.filename(), "c:");
     BOOST_TEST(!p.has_parent_path());
-    BOOST_TEST(p.has_filename());
     p = path("cc:"); 
     PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(p.filename(), "cc:");
     BOOST_TEST(!p.has_parent_path());
-    BOOST_TEST(p.has_filename());
  
     //  Windows specific tests
     if (platform == "Windows")
@@ -1216,7 +1210,7 @@ namespace
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "");
       PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      BOOST_TEST(p.filename() == "c:");
+      BOOST_TEST(p.filename() == "");
       BOOST_TEST(p.root_name() == "c:");
       BOOST_TEST(p.root_directory() == "");
       BOOST_TEST(p.root_path().string() == "c:");
@@ -1224,7 +1218,7 @@ namespace
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(!p.has_root_directory());
       BOOST_TEST(!p.has_relative_path());
-      BOOST_TEST(p.has_filename());
+      BOOST_TEST(!p.has_filename());
       BOOST_TEST(!p.has_parent_path());
       BOOST_TEST(!p.is_absolute());
  
@@ -1280,7 +1274,7 @@ namespace
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "c:");
       PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      BOOST_TEST(p.filename() == "/");
+      BOOST_TEST(p.filename() == "");
       BOOST_TEST(p.root_name() == "c:");
       BOOST_TEST(p.root_directory() == "/");
       BOOST_TEST(p.root_path().string() == "c:/");
@@ -1288,7 +1282,7 @@ namespace
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(p.has_root_directory());
       BOOST_TEST(!p.has_relative_path());
-      BOOST_TEST(p.has_filename());
+      BOOST_TEST(!p.has_filename());
       BOOST_TEST(p.has_parent_path());
       BOOST_TEST(p.is_absolute());
 
@@ -1360,7 +1354,7 @@ namespace
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "");
       PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-      BOOST_TEST(p.filename() == "prn:");
+      BOOST_TEST(p.filename() == "");
       BOOST_TEST(p.root_name() == "prn:");
       BOOST_TEST(p.root_directory() == "");
       BOOST_TEST(p.root_path().string() == "prn:");
@@ -1368,7 +1362,7 @@ namespace
       BOOST_TEST(p.has_root_name());
       BOOST_TEST(!p.has_root_directory());
       BOOST_TEST(!p.has_relative_path());
-      BOOST_TEST(p.has_filename());
+      BOOST_TEST(!p.has_filename());
       BOOST_TEST(!p.has_parent_path());
       BOOST_TEST(!p.is_absolute());
 
@@ -2036,6 +2030,103 @@ namespace
     }
   }
 
+  void filename_tests()
+  {
+    std::cout << "filename_tests()..." << std::endl;
+
+    // tests include some paths that are invalid on Windows to be sure they still
+    // decompose correctly on both Windows and POSIX
+
+    if (platform == "Windows")
+    {
+      BOOST_TEST(path("c:").filename() == "");
+      BOOST_TEST(path("c:").has_filename() == false);
+      BOOST_TEST(path("c:").root_name() == "c:");
+      BOOST_TEST(path("c:").has_root_name());
+      BOOST_TEST(path("c:").root_directory() == "");
+      BOOST_TEST(path("c:").has_root_directory() == false);
+
+      BOOST_TEST(path("c:d:").filename() == "d:");
+      BOOST_TEST(path("c:d:").has_filename());
+      BOOST_TEST(path("c:d:").root_name() == "c:");
+      BOOST_TEST(path("c:d:").has_root_name());
+      BOOST_TEST(path("c:d:").root_directory() == "");
+      BOOST_TEST(path("c:d:").has_root_directory() == false);
+
+      BOOST_TEST(path("/c:").filename() == "c:");
+      BOOST_TEST(path("/c:").has_filename());
+      BOOST_TEST(path("/c:").root_name() == "");
+      BOOST_TEST(path("/c:").has_root_name() == false);
+      BOOST_TEST(path("/c:").root_directory() == "/");
+      BOOST_TEST(path("/c:").has_root_directory());
+
+      BOOST_TEST(path(":").filename() == "");
+      BOOST_TEST(path(":").has_filename() == false);
+      BOOST_TEST(path(":").root_name() == ":");
+      BOOST_TEST(path(":").has_root_name());
+      BOOST_TEST(path(":").root_directory() == "");
+      BOOST_TEST(path(":").has_root_directory() == false);
+
+      BOOST_TEST(path("prn:").filename() == "");
+      BOOST_TEST(path("prn:").has_filename() == false);
+      BOOST_TEST(path("prn:").root_name() == "prn:");
+      BOOST_TEST(path("prn:").has_root_name());
+      BOOST_TEST(path("prn:").root_directory() == "");
+      BOOST_TEST(path("prn:").has_root_directory() == false);
+
+      BOOST_TEST(path("abcdefg:").filename() == "");
+      BOOST_TEST(path("abcdefg:").has_filename() == false);
+      BOOST_TEST(path("abcdefg:").root_name() == "abcdefg:");
+      BOOST_TEST(path("abcdefg:").has_root_name());
+      BOOST_TEST(path("abcdefg:").root_directory() == "");
+      BOOST_TEST(path("abcdefg:").has_root_directory() == false);
+     }
+
+    if (platform == "POSIX")
+    {
+      BOOST_TEST(path("c:").filename() == "c:");
+      BOOST_TEST(path("c:").has_filename());
+      BOOST_TEST(path("c:").root_name() == "");
+      BOOST_TEST(path("c:").has_root_name() == false);
+      BOOST_TEST(path("c:").root_directory() == "");
+      BOOST_TEST(path("c:").has_root_directory() == false);
+
+      BOOST_TEST(path("c:d:").filename() == "c:d:");
+      BOOST_TEST(path("c:d:").has_filename());
+      BOOST_TEST(path("c:d:").root_name() == "");
+      BOOST_TEST(path("c:d:").has_root_name() == false);
+      BOOST_TEST(path("c:d:").root_directory() == "");
+      BOOST_TEST(path("c:d:").has_root_directory() == false);
+
+      BOOST_TEST(path("/c:").filename() == "c:");
+      BOOST_TEST(path("/c:").has_filename());
+      BOOST_TEST(path("/c:").root_name() == "");
+      BOOST_TEST(path("/c:").has_root_name() == false);
+      BOOST_TEST(path("/c:").root_directory() == "/");
+      BOOST_TEST(path("/c:").has_root_directory());
+
+      BOOST_TEST(path(":").filename() == ":");
+      BOOST_TEST(path(":").has_filename());
+      BOOST_TEST(path(":").root_name() == "");
+      BOOST_TEST(path(":").has_root_name() == false);
+      BOOST_TEST(path(":").root_directory() == "");
+      BOOST_TEST(path(":").has_root_directory() == false);
+
+      BOOST_TEST(path("prn:").filename() == "prn:");
+      BOOST_TEST(path("prn:").has_filename());
+      BOOST_TEST(path("prn:").root_name() == "");
+      BOOST_TEST(path("prn:").has_root_name() == false);
+      BOOST_TEST(path("prn:").root_directory() == "");
+      BOOST_TEST(path("prn:").has_root_directory() == false);
+
+      BOOST_TEST(path("abcdefg:").filename() == "abcdefg:");
+      BOOST_TEST(path("abcdefg:").has_filename());
+      BOOST_TEST(path("abcdefg:").root_name() == "");
+      BOOST_TEST(path("abcdefg:").has_root_name() == false);
+      BOOST_TEST(path("abcdefg:").root_directory() == "");
+      BOOST_TEST(path("abcdefg:").has_root_directory() == false);
+    }
+  }
 
 } // unnamed namespace
 
@@ -2072,6 +2163,9 @@ int cpp_main(int, char*[])
   append_tests();
   self_assign_and_append_tests();
   overload_tests();
+  filename_tests();
+  clarify_filename_tests();
+  clarify_stem_and_extension_tests();
   query_and_decomposition_tests();
   composition_tests();
   iterator_tests();
@@ -2082,8 +2176,6 @@ int cpp_main(int, char*[])
   make_preferred_tests();
   lexically_normal_tests();
 
-  clarify_stem_and_extension_tests();
-  clarify_filename_tests();
 
   // verify deprecated names still available
 

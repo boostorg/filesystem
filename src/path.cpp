@@ -825,7 +825,7 @@ namespace filesystem
     if (it.m_pos == it.m_path_ptr->m_pathname.size()
       && it.m_path_ptr->m_pathname.size() > 1
       && detail::is_directory_separator(it.m_path_ptr->m_pathname[it.m_pos-1])
-      //&& !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
+      && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
        )
     {
       --it.m_pos;
