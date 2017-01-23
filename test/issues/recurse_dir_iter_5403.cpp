@@ -25,7 +25,9 @@
 # endif
 
 #include <boost/cerrno.hpp>
-#include <boost/detail/lightweight_test.hpp>
+#include <iostream>
+#define BOOST_LIGHTWEIGHT_TEST_OSTREAM std::cout
+#include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
 namespace fs = boost::filesystem;

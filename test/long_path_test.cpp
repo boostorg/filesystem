@@ -12,12 +12,13 @@
 #include <boost/config/warning_disable.hpp>
 
 #include <boost/filesystem.hpp>
-#include <iostream>
 #include <string>
 
 using namespace boost::filesystem;
 
-#include <boost/detail/lightweight_test.hpp>
+#include <iostream>
+#define BOOST_LIGHTWEIGHT_TEST_OSTREAM std::cout
+#include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
 namespace

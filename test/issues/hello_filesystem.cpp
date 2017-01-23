@@ -20,7 +20,8 @@
 #include <boost/filesystem.hpp>
 
 #include <iostream>
-#include <boost/detail/lightweight_test.hpp>
+#define BOOST_LIGHTWEIGHT_TEST_OSTREAM std::cout
+#include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
 using std::cout;

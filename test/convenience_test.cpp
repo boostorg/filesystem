@@ -25,11 +25,12 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#include <boost/detail/lightweight_test.hpp>
+#include <iostream>
+#define BOOST_LIGHTWEIGHT_TEST_OSTREAM std::cout
+#include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <boost/bind.hpp>
 #include <fstream>
-#include <iostream>
 
 namespace fs = boost::filesystem;
 using fs::path;
