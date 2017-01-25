@@ -1720,6 +1720,7 @@ namespace detail
     return info;
   }
 
+# ifdef BOOST_WINDOWS_API
   inline
   file_status status_helper(const path& p, DWORD attr, bool is_symlink)
   {
@@ -1729,6 +1730,7 @@ namespace detail
       ? file_status(directory_file, make_permissions(p, attr))
       : file_status(regular_file, make_permissions(p, attr));
   }
+# endif
 
   BOOST_FILESYSTEM_DECL
   file_status status(const path& p, error_code* ec)
