@@ -233,6 +233,7 @@ namespace
 
     for (; it != end; ++it)
     {
+      //cout << "*it: " << *it << endl;
       CHECK(!it->path().empty());
       CHECK(it->path().filename() != ".");
       CHECK(it->path().filename() != "..");

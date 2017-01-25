@@ -860,10 +860,10 @@ namespace filesystem
 
   inline bool path::filename_is_dot() const
   {
-    // implicit dot is tricky, so actually call filename(); see path::filename() example
-    // in reference.html 
-    path p(filename());
-    return p.size() == 1 && *p.c_str() == dot;
+    return size() >= 1 && m_pathname[size() - 1] == dot
+      && (m_pathname.size() == 1 || detail::is_element_separator(m_pathname[size() - 2]));
+      // use detail::is_element_separator() rather than detail::is_directory_separator
+      // to deal with "c:." edge case on Windows when ':' acts as a separator
   }
 
   inline bool path::filename_is_dot_dot() const

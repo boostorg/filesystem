@@ -1008,18 +1008,18 @@ namespace detail
  BOOST_FILESYSTEM_DECL
   bool create_directories(const path& p, system::error_code* ec)
   {
-   if (p.empty())
-   {
-     if (ec == 0)
-       BOOST_FILESYSTEM_THROW(filesystem_error(
-         "boost::filesystem::create_directories", p,
-         system::errc::make_error_code(system::errc::invalid_argument)));
-     else
-       ec->assign(system::errc::invalid_argument, system::generic_category());
-     return false;
-   }
+    if (p.empty())
+    {
+      if (ec == 0)
+        BOOST_FILESYSTEM_THROW(filesystem_error(
+          "boost::filesystem::create_directories", p,
+          system::errc::make_error_code(system::errc::invalid_argument)));
+      else
+        ec->assign(system::errc::invalid_argument, system::generic_category());
+      return false;
+    }
 
-    if (p.filename_is_dot() || p.filename_is_dot_dot())
+    if (p.filename_is_dot() || p.filename_is_dot_dot() || !p.has_filename())
       return create_directories(p.parent_path(), ec);
     
     error_code local_ec;

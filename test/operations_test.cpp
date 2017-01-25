@@ -1143,16 +1143,17 @@ namespace
     BOOST_TEST(!fs::create_directories("", ec));
     BOOST_TEST(ec);
 
-#ifdef BOOST_WINDOWS_API
-    // Windows only test, since " " is OK on Linux as a directory name
-    ec.clear();
-    BOOST_TEST(!fs::create_directories(" ", ec));
-    BOOST_TEST(ec);
-#endif
-
     ec.clear();
     BOOST_TEST(!fs::create_directories("/", ec));
-    BOOST_TEST(!ec);
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("//host", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("//host/", ec));
+    BOOST_TEST(ec);
 
     ec.clear();
     BOOST_TEST(!fs::create_directories(".", ec));
@@ -1161,6 +1162,37 @@ namespace
     ec.clear();
     BOOST_TEST(!fs::create_directories("..", ec));
     BOOST_TEST(ec);
+
+#ifdef BOOST_WINDOWS_API
+    // Windows only test, since " " is OK on Linux as a directory name
+    ec.clear();
+    BOOST_TEST(!fs::create_directories(" ", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("c:", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("c:/", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("prn:", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("prn:/", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("no-such-device:", ec));
+    BOOST_TEST(ec);
+
+    ec.clear();
+    BOOST_TEST(!fs::create_directories("no-such-device:prn:/", ec));
+    BOOST_TEST(ec);
+#endif
 
 #ifdef BOOST_POSIX_API
     ec.clear();
