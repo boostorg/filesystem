@@ -237,8 +237,6 @@ namespace
       CHECK(!it->path().empty());
       CHECK(it->path().filename() != ".");
       CHECK(it->path().filename() != "..");
-      CHECK(it->status() == status(it->path()));
-      CHECK(it->symlink_status() == symlink_status(it->path()));
       if (it->status().type() == file_type::regular
         && it->path().extension() != ".log"
         && it->path().extension() != ".idb")
