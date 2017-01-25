@@ -201,85 +201,6 @@ namespace
     cout << "directory_iterator_test complete" << endl;
   }
 
-  //  recursive_directory_iterator_test  -----------------------------------------------//
-
-  void recursive_directory_iterator_test()
-  {
-    cout << "recursive_directory_iterator_test..." << endl;
-
-    recursive_directory_iterator end;
-
-    recursive_directory_iterator it("..");
-
-    CHECK(!it->path().empty());
-
-    if (is_regular_file(it->status()))
-    {
-      CHECK(is_regular_file(it->symlink_status()));
-      CHECK(!is_directory(it->status()));
-      CHECK(!is_symlink(it->status()));
-      CHECK(!is_directory(it->symlink_status()));
-      CHECK(!is_symlink(it->symlink_status()));
-    }
-    else
-    {
-      CHECK(is_directory(it->status()));
-      CHECK(is_directory(it->symlink_status()));
-      CHECK(!is_regular_file(it->status()));
-      CHECK(!is_regular_file(it->symlink_status()));
-      CHECK(!is_symlink(it->status()));
-      CHECK(!is_symlink(it->symlink_status()));
-    }
-
-    for (; it != end; ++it)
-    {
-      //cout << "*it: " << *it << endl;
-      CHECK(!it->path().empty());
-      CHECK(it->path().filename() != ".");
-      CHECK(it->path().filename() != "..");
-      if (it->status().type() == file_type::regular
-        && it->path().extension() != ".log"
-        && it->path().extension() != ".idb")
-        CHECK(it->file_size() == file_size(it->path()));
-
-      if (it->path().empty()
-        || it->path().filename() == "."
-        || it->path().filename() == ".."
-        || it->status() != status(it->path())
-        || it->symlink_status() != symlink_status(it->path())
-        || (it->status().type() == file_type::regular
-          && it->path().extension() != ".log"
-          && it->path().extension() != ".idb"
-          && it->file_size() != file_size(it->path()))
-        )
-      {
-        cout << "  " << it->path() << '\n';
-        cout << it->status().type() << " " << status(it->path()).type() << '\n';
-        cout << it->symlink_status().type() << " " << symlink_status(it->path()).type() << '\n';
-        cout << it->file_size() << " " << file_size(it->path()) << '\n';
-      }
-    }
-
-    CHECK(recursive_directory_iterator("..") != recursive_directory_iterator());
-    CHECK(recursive_directory_iterator() == end);
-
-#ifndef BOOST_NO_CXX11_RANGE_BASED_FOR
-    for (directory_entry& x : recursive_directory_iterator(".."))
-    {
-      CHECK(!x.path().empty());
-      //cout << "  " << x.path() << "\n";
-    }
-    const recursive_directory_iterator dir_itr("..");
-    for (directory_entry& x : dir_itr)
-    {
-      CHECK(!x.path().empty());
-      //cout << "  " << x.path() << "\n";
-    }
-#endif
-
-    cout << "recursive_directory_iterator_test complete" << endl;
-  }
-
   //  operations_test  -------------------------------------------------------//
 
   void operations_test()
@@ -410,7 +331,6 @@ int cpp_main(int, char*[])
   file_status_test();
   query_test();
   directory_iterator_test();
-  recursive_directory_iterator_test();
   operations_test();
   directory_entry_test();
   directory_entry_overload_test();

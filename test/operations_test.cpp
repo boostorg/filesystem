@@ -626,7 +626,7 @@ namespace
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
-//      cout << "      " << it->path() << endl;
+      // cout << "      " << it->path() << endl;
       if (it->path().filename() == "d1f1")
         ++d1f1_count;
     }
@@ -641,7 +641,6 @@ namespace
       BOOST_TEST(walk_tree(true) > 1);
 
     //  test iterator increment with error_code argument
-    cout << "  with error_code argument" << endl;
     boost::system::error_code ec;
     int d1f1_count = 0;
     fs::recursive_directory_iterator it(dir, fs::symlink_option::no_recurse);
@@ -657,6 +656,79 @@ namespace
     BOOST_TEST(!ec);
     BOOST_TEST_EQ(d1f1_count, 1);
     BOOST_TEST(it == it2);  // verify single pass shallow copy semantics
+
+    // the following tests were moved here from operations_unit_test to gain a reliable
+    // directory containing other directories to iterate over that is not subject to
+    // file system races. 
+
+    fs::recursive_directory_iterator end;
+
+    it = fs::recursive_directory_iterator(dir);
+
+    BOOST_TEST(!it->path().empty());
+
+    if (is_regular_file(it->status()))
+    {
+      BOOST_TEST(is_regular_file(it->symlink_status()));
+      BOOST_TEST(!is_directory(it->status()));
+      BOOST_TEST(!is_symlink(it->status()));
+      BOOST_TEST(!is_directory(it->symlink_status()));
+      BOOST_TEST(!is_symlink(it->symlink_status()));
+    }
+    else
+    {
+      BOOST_TEST(is_directory(it->status()));
+      BOOST_TEST(is_directory(it->symlink_status()));
+      BOOST_TEST(!is_regular_file(it->status()));
+      BOOST_TEST(!is_regular_file(it->symlink_status()));
+      BOOST_TEST(!is_symlink(it->status()));
+      BOOST_TEST(!is_symlink(it->symlink_status()));
+    }
+
+    cout << "  yet another trial iteration over " << dir << endl;
+    for (; it != end; ++it)
+    {
+      cout << "     " << *it << endl;
+      BOOST_TEST(!it->path().empty());
+      BOOST_TEST(it->path().filename() != ".");
+      BOOST_TEST(it->path().filename() != "..");
+      BOOST_TEST(it->status() == status(it->path()));
+      BOOST_TEST(it->symlink_status() == symlink_status(it->path()));
+      if (it->status().type() == fs::file_type::regular)
+        BOOST_TEST(it->file_size() == file_size(it->path()));
+
+      if (it->path().empty()
+        || it->path().filename() == "."
+        || it->path().filename() == ".."
+        || it->status() != status(it->path())
+        || it->symlink_status() != symlink_status(it->path())
+        || (it->status().type() == fs::file_type::regular
+          && it->file_size() != file_size(it->path()))
+        )
+      {
+        cout << "  " << it->path() << '\n';
+        cout << it->status().type() << " " << status(it->path()).type() << '\n';
+        cout << it->symlink_status().type() << " " << symlink_status(it->path()).type() << '\n';
+        cout << it->file_size() << " " << file_size(it->path()) << '\n';
+      }
+    }
+
+    BOOST_TEST(fs::recursive_directory_iterator("..") != fs::recursive_directory_iterator());
+    BOOST_TEST(fs::recursive_directory_iterator() == end);
+
+#ifndef BOOST_NO_CXX11_RANGE_BASED_FOR
+    for (fs::directory_entry& x : fs::recursive_directory_iterator(".."))
+    {
+      BOOST_TEST(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
+    }
+    const fs::recursive_directory_iterator dir_itr("..");
+    for (fs::directory_entry& x : dir_itr)
+    {
+      BOOST_TEST(!x.path().empty());
+      //cout << "  " << x.path() << "\n";
+    }
+#endif
 
     cout << "  recursive_directory_iterator_tests complete" << endl;
   }
