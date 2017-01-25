@@ -1807,6 +1807,7 @@ namespace detail
 #   endif
   }
 
+# ifdef BOOST_WINDOWS_API
   inline
   file_status symlink_status_helper(const path& p, DWORD attr)
   {
@@ -1819,7 +1820,7 @@ namespace detail
       ? file_status(file_type::directory, make_permissions(p, attr))
       : file_status(file_type::regular, make_permissions(p, attr));
   }
-
+# endif
   BOOST_FILESYSTEM_DECL
   file_status symlink_status(const path& p, error_code* ec)
   {
