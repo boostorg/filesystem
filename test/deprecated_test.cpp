@@ -54,8 +54,8 @@ namespace
     PATH_CHECK(path("///").normalize(), "/");
     PATH_CHECK(path("f").normalize(), "f");
     PATH_CHECK(path("foo").normalize(), "foo");
-    PATH_CHECK(path("foo/").normalize(), "foo/.");
-    PATH_CHECK(path("f/").normalize(), "f/.");
+    PATH_CHECK(path("foo/").normalize(), "foo/");
+    PATH_CHECK(path("f/").normalize(), "f/");
     PATH_CHECK(path("/foo").normalize(), "/foo");
     PATH_CHECK(path("foo/bar").normalize(), "foo/bar");
     PATH_CHECK(path("..").normalize(), "..");
@@ -63,30 +63,30 @@ namespace
     PATH_CHECK(path("/..").normalize(), "/..");
     PATH_CHECK(path("/../..").normalize(), "/../..");
     PATH_CHECK(path("../foo").normalize(), "../foo");
-    PATH_CHECK(path("foo/..").normalize(), ".");
-    PATH_CHECK(path("foo/../").normalize(), "./.");
-    PATH_CHECK((path("foo") / "..").normalize() , ".");
+    PATH_CHECK(path("foo/..").normalize(), "");
+    PATH_CHECK(path("foo/../").normalize(), "/");
+    PATH_CHECK((path("foo") / "..").normalize(), "");
     PATH_CHECK(path("foo/...").normalize(), "foo/...");
-    PATH_CHECK(path("foo/.../").normalize(), "foo/.../.");
+    PATH_CHECK(path("foo/.../").normalize(), "foo/.../");
     PATH_CHECK(path("foo/..bar").normalize(), "foo/..bar");
     PATH_CHECK(path("../f").normalize(), "../f");
     PATH_CHECK(path("/../f").normalize(), "/../f");
-    PATH_CHECK(path("f/..").normalize(), ".");
-    PATH_CHECK((path("f") / "..").normalize() , ".");
+    PATH_CHECK(path("f/..").normalize(), "");
+    PATH_CHECK((path("f") / "..").normalize() , "");
     PATH_CHECK(path("foo/../..").normalize(), "..");
-    PATH_CHECK(path("foo/../../").normalize(), "../.");
+    PATH_CHECK(path("foo/../../").normalize(), "../");
     PATH_CHECK(path("foo/../../..").normalize(), "../..");
-    PATH_CHECK(path("foo/../../../").normalize(), "../../.");
+    PATH_CHECK(path("foo/../../../").normalize(), "../../");
     PATH_CHECK(path("foo/../bar").normalize(), "bar");
-    PATH_CHECK(path("foo/../bar/").normalize(), "bar/.");
+    PATH_CHECK(path("foo/../bar/").normalize(), "bar/");
     PATH_CHECK(path("foo/bar/..").normalize(), "foo");
-    PATH_CHECK(path("foo/bar/../").normalize(), "foo/.");
-    PATH_CHECK(path("foo/bar/../..").normalize(), ".");
-    PATH_CHECK(path("foo/bar/../../").normalize(), "./.");
+    PATH_CHECK(path("foo/bar/../").normalize(), "foo/");
+    PATH_CHECK(path("foo/bar/../..").normalize(), "");
+    PATH_CHECK(path("foo/bar/../../").normalize(), "/");
     PATH_CHECK(path("foo/bar/../blah").normalize(), "foo/blah");
     PATH_CHECK(path("f/../b").normalize(), "b");
     PATH_CHECK(path("f/b/..").normalize(), "f");
-    PATH_CHECK(path("f/b/../").normalize(), "f/.");
+    PATH_CHECK(path("f/b/../").normalize(), "f/");
     PATH_CHECK(path("f/b/../a").normalize(), "f/a");
     PATH_CHECK(path("foo/bar/blah/../..").normalize(), "foo");
     PATH_CHECK(path("foo/bar/blah/../../bletch").normalize(), "foo/bletch");
@@ -95,59 +95,59 @@ namespace
     PATH_CHECK(path("//..net").normalize(), "//..net");
     PATH_CHECK(path("//net/..").normalize(), "//net/..");
     PATH_CHECK(path("//net/foo").normalize(), "//net/foo");
-    PATH_CHECK(path("//net/foo/").normalize(), "//net/foo/.");
+    PATH_CHECK(path("//net/foo/").normalize(), "//net/foo/");
     PATH_CHECK(path("//net/foo/..").normalize(), "//net/");
-    PATH_CHECK(path("//net/foo/../").normalize(), "//net/.");
+    PATH_CHECK(path("//net/foo/../").normalize(), "//net/");
 
     PATH_CHECK(path("/net/foo/bar").normalize(), "/net/foo/bar");
-    PATH_CHECK(path("/net/foo/bar/").normalize(), "/net/foo/bar/.");
+    PATH_CHECK(path("/net/foo/bar/").normalize(), "/net/foo/bar/");
     PATH_CHECK(path("/net/foo/..").normalize(), "/net");
-    PATH_CHECK(path("/net/foo/../").normalize(), "/net/.");
+    PATH_CHECK(path("/net/foo/../").normalize(), "/net/");
 
     PATH_CHECK(path("//net//foo//bar").normalize(), "//net/foo/bar");
-    PATH_CHECK(path("//net//foo//bar//").normalize(), "//net/foo/bar/.");
+    PATH_CHECK(path("//net//foo//bar//").normalize(), "//net/foo/bar/");
     PATH_CHECK(path("//net//foo//..").normalize(), "//net/");
-    PATH_CHECK(path("//net//foo//..//").normalize(), "//net/.");
+    PATH_CHECK(path("//net//foo//..//").normalize(), "//net/");
 
     PATH_CHECK(path("///net///foo///bar").normalize(), "/net/foo/bar");
-    PATH_CHECK(path("///net///foo///bar///").normalize(), "/net/foo/bar/.");
+    PATH_CHECK(path("///net///foo///bar///").normalize(), "/net/foo/bar/");
     PATH_CHECK(path("///net///foo///..").normalize(), "/net");
-    PATH_CHECK(path("///net///foo///..///").normalize(), "/net/.");
+    PATH_CHECK(path("///net///foo///..///").normalize(), "/net/");
 
     if (platform == "Windows")
     {
       PATH_CHECK(path("c:..").normalize(), "c:..");
       PATH_CHECK(path("c:foo/..").normalize(), "c:");
 
-      PATH_CHECK(path("c:foo/../").normalize(), "c:.");
+      PATH_CHECK(path("c:foo/../").normalize(), "c:/");
 
       PATH_CHECK(path("c:/foo/..").normalize(), "c:/");
-      PATH_CHECK(path("c:/foo/../").normalize(), "c:/.");
+      PATH_CHECK(path("c:/foo/../").normalize(), "c:/");
       PATH_CHECK(path("c:/..").normalize(), "c:/..");
-      PATH_CHECK(path("c:/../").normalize(), "c:/../.");
+      PATH_CHECK(path("c:/../").normalize(), "c:/../");
       PATH_CHECK(path("c:/../..").normalize(), "c:/../..");
-      PATH_CHECK(path("c:/../../").normalize(), "c:/../../.");
+      PATH_CHECK(path("c:/../../").normalize(), "c:/../../");
       PATH_CHECK(path("c:/../foo").normalize(), "c:/../foo");
-      PATH_CHECK(path("c:/../foo/").normalize(), "c:/../foo/.");
+      PATH_CHECK(path("c:/../foo/").normalize(), "c:/../foo/");
       PATH_CHECK(path("c:/../../foo").normalize(), "c:/../../foo");
-      PATH_CHECK(path("c:/../../foo/").normalize(), "c:/../../foo/.");
+      PATH_CHECK(path("c:/../../foo/").normalize(), "c:/../../foo/");
       PATH_CHECK(path("c:/..foo").normalize(), "c:/..foo");
     }
     else // POSIX
     {
       PATH_CHECK(path("c:..").normalize(), "c:..");
-      PATH_CHECK(path("c:foo/..").normalize(), ".");
-      PATH_CHECK(path("c:foo/../").normalize(), "./.");
+      PATH_CHECK(path("c:foo/..").normalize(), "");
+      PATH_CHECK(path("c:foo/../").normalize(), "/");
       PATH_CHECK(path("c:/foo/..").normalize(), "c:");
-      PATH_CHECK(path("c:/foo/../").normalize(), "c:/.");
-      PATH_CHECK(path("c:/..").normalize(), ".");
-      PATH_CHECK(path("c:/../").normalize(), "./.");
+      PATH_CHECK(path("c:/foo/../").normalize(), "c:/");
+      PATH_CHECK(path("c:/..").normalize(), "");
+      PATH_CHECK(path("c:/../").normalize(), "/");
       PATH_CHECK(path("c:/../..").normalize(), "..");
-      PATH_CHECK(path("c:/../../").normalize(), "../.");
+      PATH_CHECK(path("c:/../../").normalize(), "../");
       PATH_CHECK(path("c:/../foo").normalize(), "foo");
-      PATH_CHECK(path("c:/../foo/").normalize(), "foo/.");
+      PATH_CHECK(path("c:/../foo/").normalize(), "foo/");
       PATH_CHECK(path("c:/../../foo").normalize(), "../foo");
-      PATH_CHECK(path("c:/../../foo/").normalize(), "../foo/.");
+      PATH_CHECK(path("c:/../../foo/").normalize(), "../foo/");
       PATH_CHECK(path("c:/..foo").normalize(), "c:/..foo");
     }
   }

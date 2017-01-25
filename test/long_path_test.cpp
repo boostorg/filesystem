@@ -5,9 +5,14 @@
 //  Distributed under the Boost Software License, Version 1.0.
 //  http://www.boost.org/LICENSE_1_0.txt
 
-//  See http://www.boost.org/libs/btree for documentation.
+/*----------------------------------------------------------------------------------------
 
-//  See http://msdn.microsoft.com/en-us/library/aa365247%28v=vs.85%29.aspx
+This is a Windows-only test is to ensure that \\?\ pathnames (i.e. very long paths)
+work correctly.
+
+See http://msdn.microsoft.com/en-us/library/aa365247%28v=vs.85%29.aspx
+
+----------------------------------------------------------------------------------------*/
 
 #include <boost/config/warning_disable.hpp>
 
@@ -44,17 +49,21 @@ int cpp_main(int, char*[])
   std::cout << "x_p.native().size() is " << x_p.native().size() << '\n';
   std::cout << "y_p.native().size() is " << y_p.native().size() << '\n';
 
+  std::cout << "removing y_p" << std::endl;
+  remove(y_p);   // remove residue from prior tests
+  std::cout << "removing x_p" << std::endl;
+  remove(x_p);   // remove residue from prior tests
+
+  std::cout << "creating x_p" << std::endl;
   create_directory(x_p);
+  std::cout << "test exists(x_p)" << std::endl;
   BOOST_TEST(exists(x_p));
+  std::cout << "creating y_p" << std::endl;
   create_directory(y_p);
+  std::cout << "test exists(y_p)" << std::endl;
   BOOST_TEST(exists(y_p));
-
-  //std::cout << "directory x.../y... ready for testing, where ... is " << safe_size
-  //          << " repeats of x and y, respectively\n";
-
+  std::cout << "retest exists(x_p)" << std::endl;
   BOOST_TEST(exists(x_p));
-
-  //remove_all(x_p);
 
   return ::boost::report_errors();
 }

@@ -777,18 +777,37 @@ namespace
     std::cout << "query_and_decomposition_tests..." << std::endl;
 
     // these are the examples given in reference docs, so check they work
-    BOOST_TEST(path("/foo/bar.txt").parent_path() == "/foo");
-    BOOST_TEST(path("/foo/bar").parent_path() == "/foo");    
-    BOOST_TEST(path("/foo/bar/").parent_path() == "/foo/bar");   
-    BOOST_TEST(path("/").parent_path() == "");           
-    BOOST_TEST(path(".").parent_path() == "");           
-    BOOST_TEST(path("..").parent_path() == "");
     BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
-    BOOST_TEST(path("/foo/bar").filename() == "bar");    
-    BOOST_TEST(path("/foo/bar/").filename() == "");   
-    BOOST_TEST(path("/").filename() == "");           
-    BOOST_TEST(path(".").filename() == ".");           
+    BOOST_TEST(path("/foo/bar.txt").parent_path() == "/foo");
+    BOOST_TEST(path("/foo/bar.txt").relative_path() == "foo/bar.txt");
+
+    BOOST_TEST(path("/foo/bar").filename() == "bar");
+    BOOST_TEST(path("/foo/bar").parent_path() == "/foo");
+    BOOST_TEST(path("/foo/bar").relative_path() == "foo/bar");
+
+    BOOST_TEST(path("/foo/bar/").filename() == "");
+    BOOST_TEST(path("/foo/bar/").parent_path() == "/foo/bar");   
+    BOOST_TEST(path("/foo/bar/").relative_path() == "foo/bar/");
+
+    BOOST_TEST(path("/").filename() == "");
+    BOOST_TEST(path("/").parent_path() == "");
+    BOOST_TEST(path("/").relative_path() == "");
+
+    BOOST_TEST(path(".").filename() == ".");
+    BOOST_TEST(path(".").parent_path() == "");
+    BOOST_TEST(path(".").relative_path() == ".");
+
+    BOOST_TEST(path("//host/foo/.").filename() == ".");
+    BOOST_TEST(path("//host/foo/.").parent_path() == "//host/foo");
+    BOOST_TEST(path("//host/foo/.").relative_path() == "foo/.");
+
+    BOOST_TEST(path("//host/foo/./").filename() == "");
+    BOOST_TEST(path("//host/foo/./").parent_path() == "//host/foo/.");
+    BOOST_TEST(path("//host/foo/./").relative_path() == "foo/./");
+
     BOOST_TEST(path("..").filename() == "..");
+    BOOST_TEST(path("..").parent_path() == "");
+    BOOST_TEST(path("..").relative_path() == "..");
 
     // stem() tests not otherwise covered
     BOOST_TEST(path(".").stem() == ".");
@@ -2035,7 +2054,7 @@ namespace
   {
     std::cout << "filename_tests()..." << std::endl;
 
-    // tests include some paths that are invalid on Windows to be sure they still
+    // tests include some paths that are invalid on Windows because they still have to
     // decompose correctly on both Windows and POSIX
 
     if (platform == "Windows")
