@@ -2024,7 +2024,7 @@ namespace detail
   //  directory_entry private access
   struct deacc
   {
-    static path& path(directory_entry& x) { return x.m_path; }
+    static path& de_path(directory_entry& x) { return x.m_path; }
 # ifdef BOOST_FILESYSTEM_CACHE_STATUS
     static file_status& status(directory_entry& x) { return x.m_status; }
 # endif
@@ -2138,10 +2138,10 @@ namespace
 #endif
 
   error_code open_directory(void *& handle, void *& buffer,
-    const char* dir, string& target,
+    const path& dir, string& target,
     fs::file_status &, fs::file_status &)
   {
-    if ((handle = ::opendir(dir))== 0)
+    if ((handle = ::opendir(dir.c_str()))== 0)
       return error_code(errno, system_category());
     target = string(".");  // string was static but caused trouble
                              // when iteration called from dtor, after
@@ -2242,20 +2242,20 @@ namespace
         ? 0 : ::GetLastError(), system_category() );
     }
     target = data.cFileName;
-    fs::detail::deacc::path(dir_entry) = dir / data.cFileName;
+    fs::detail::deacc::de_path(dir_entry) = dir / data.cFileName;
     fs::detail::deacc::file_size(dir_entry)
       = (static_cast<boost::uintmax_t>(data.nFileSizeHigh)
           << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
     fs::detail::deacc::symlink_status(dir_entry) = fs::detail::symlink_status_helper(
-      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
+      fs::detail::deacc::de_path(dir_entry), data.dwFileAttributes);
 
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
         && is_reparse_tag_a_symlink(data.dwReserved0))
       fs::detail::deacc::status(dir_entry)
-        = fs::status(fs::detail::deacc::path(dir_entry));
+        = fs::status(fs::detail::deacc::de_path(dir_entry));
     else
       fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
-        fs::detail::deacc::path(dir_entry), data.dwFileAttributes, false);
+        fs::detail::deacc::de_path(dir_entry), data.dwFileAttributes, false);
     return error_code();
   }
 
@@ -2270,21 +2270,21 @@ namespace
       return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
     }
     target = data.cFileName;
-    fs::detail::deacc::path(dir_entry).remove_filename();
-    fs::detail::deacc::path(dir_entry) /= data.cFileName;
+    fs::detail::deacc::de_path(dir_entry).remove_filename();
+    fs::detail::deacc::de_path(dir_entry) /= data.cFileName;
     fs::detail::deacc::file_size(dir_entry)
       = (static_cast<boost::uintmax_t>(data.nFileSizeHigh)
           << (sizeof(data.nFileSizeLow)*8)) + data.nFileSizeLow;
     fs::detail::deacc::symlink_status(dir_entry) = fs::detail::symlink_status_helper(
-      fs::detail::deacc::path(dir_entry), data.dwFileAttributes);
+      fs::detail::deacc::de_path(dir_entry), data.dwFileAttributes);
 
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
         && is_reparse_tag_a_symlink(data.dwReserved0))
       fs::detail::deacc::status(dir_entry)
-        = fs::status(fs::detail::deacc::path(dir_entry));
+        = fs::status(fs::detail::deacc::de_path(dir_entry));
     else
       fs::detail::deacc::status(dir_entry) = fs::detail::status_helper(
-        fs::detail::deacc::path(dir_entry), data.dwFileAttributes, false);
+        fs::detail::deacc::de_path(dir_entry), data.dwFileAttributes, false);
     return error_code();
   }
 #endif
@@ -2391,7 +2391,7 @@ namespace detail
 
       if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
       {
-        path error_path(fs::detail::deacc::path(
+        path error_path(fs::detail::deacc::de_path(
           it.m_imp->dir_entry).parent_path());  // fix ticket #5900
         it.m_imp.reset();
         if (ec == 0)
