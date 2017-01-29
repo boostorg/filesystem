@@ -444,6 +444,7 @@ namespace filesystem
     // aim for correctness; worry about efficiency later
 
     path temp;                  // return value will be built here
+
     // an empty path is already in normal form
     if (m_pathname.empty())
       return temp;
@@ -472,10 +473,12 @@ namespace filesystem
       ++itr;
     }
 
+    path::string_type::size_type relative_path_start = temp.size();
+
     // handle relative-path portion of the pathname if present
     for (; itr != end(); ++itr)
     {
-      path temp_filename;   // by dot-dot handler below
+      path temp_filename;   // used by dot-dot handler below
 
       // skip all dot elements
       if (itr->native().size() == 1 && (itr->native())[0] == dot)
@@ -489,16 +492,23 @@ namespace filesystem
         temp.remove_filename();
 
       // if the current element is a trailing directory-separator, which is represented by
-      // an empty path, and temp doesn't already end with a separator, then insert a
-      // preferred-separator
-      else if (itr->empty() 
-        && (temp.empty()
-          || !detail::is_directory_separator(temp.native()[temp.size()-1])))
+      // an empty path, then append a preferred-separator
+      else if (itr->empty())
         temp /= detail::preferred_separator_path();
 
       else  // it is a plain old element
         temp /= *itr;
     }  // each relative-path element
+
+    // if empty, path become a dot
+    if (temp.empty())
+      temp = detail::dot_path();
+
+    // if relative-path portion of the pathname consists solely of a director-separator,
+    // a dot filename is inserted before the trailing directory-separator
+    else if (temp.size() == (relative_path_start + 1u)
+      && temp.m_pathname[relative_path_start] == path::preferred_separator)
+      temp.m_pathname.insert(relative_path_start, 1, path::dot);
 
     return temp;
   }

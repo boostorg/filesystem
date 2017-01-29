@@ -28,22 +28,24 @@
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
 
-#define PATH_CHECK(a, b) check(a, b, __LINE__)
+#define PATH_CHECK(a, b) check(a, b, __FILE__, __LINE__)
 
 namespace
 {
   std::string platform(BOOST_PLATFORM);
 
   void check(const fs::path & source,
-              const std::string & expected, int line)
+	  const std::string & expected, const char* file, int line)
   {
     if (source.generic_string()== expected) return;
 
     ++::boost::detail::test_errors();
 
-    std::cout << '(' << line << ") source.string(): \"" << source.string()
-              << "\" != expected: \"" << expected
-              << "\"" << std::endl;
+	std::cout << file
+		<< '(' << line << "): source: \"" << source.string()
+		<< "\" != expected: \"" << expected
+		<< "\"" << std::endl;
+
   }
 
   void normalize_test()
@@ -63,16 +65,16 @@ namespace
     PATH_CHECK(path("/..").normalize(), "/..");
     PATH_CHECK(path("/../..").normalize(), "/../..");
     PATH_CHECK(path("../foo").normalize(), "../foo");
-    PATH_CHECK(path("foo/..").normalize(), "");
-    PATH_CHECK(path("foo/../").normalize(), "/");
-    PATH_CHECK((path("foo") / "..").normalize(), "");
+    PATH_CHECK(path("foo/..").normalize(), ".");
+    PATH_CHECK(path("foo/../").normalize(), "./");
+    PATH_CHECK((path("foo") / "..").normalize(), ".");
     PATH_CHECK(path("foo/...").normalize(), "foo/...");
     PATH_CHECK(path("foo/.../").normalize(), "foo/.../");
     PATH_CHECK(path("foo/..bar").normalize(), "foo/..bar");
     PATH_CHECK(path("../f").normalize(), "../f");
     PATH_CHECK(path("/../f").normalize(), "/../f");
-    PATH_CHECK(path("f/..").normalize(), "");
-    PATH_CHECK((path("f") / "..").normalize() , "");
+    PATH_CHECK(path("f/..").normalize(), ".");
+    PATH_CHECK((path("f") / "..").normalize() , ".");
     PATH_CHECK(path("foo/../..").normalize(), "..");
     PATH_CHECK(path("foo/../../").normalize(), "../");
     PATH_CHECK(path("foo/../../..").normalize(), "../..");
@@ -81,8 +83,8 @@ namespace
     PATH_CHECK(path("foo/../bar/").normalize(), "bar/");
     PATH_CHECK(path("foo/bar/..").normalize(), "foo");
     PATH_CHECK(path("foo/bar/../").normalize(), "foo/");
-    PATH_CHECK(path("foo/bar/../..").normalize(), "");
-    PATH_CHECK(path("foo/bar/../../").normalize(), "/");
+    PATH_CHECK(path("foo/bar/../..").normalize(), ".");
+    PATH_CHECK(path("foo/bar/../../").normalize(), "./");
     PATH_CHECK(path("foo/bar/../blah").normalize(), "foo/blah");
     PATH_CHECK(path("f/../b").normalize(), "b");
     PATH_CHECK(path("f/b/..").normalize(), "f");
@@ -97,7 +99,7 @@ namespace
     PATH_CHECK(path("//net/foo").normalize(), "//net/foo");
     PATH_CHECK(path("//net/foo/").normalize(), "//net/foo/");
     PATH_CHECK(path("//net/foo/..").normalize(), "//net/");
-    PATH_CHECK(path("//net/foo/../").normalize(), "//net/");
+    PATH_CHECK(path("//net/foo/../").normalize(), "//net/./");
 
     PATH_CHECK(path("/net/foo/bar").normalize(), "/net/foo/bar");
     PATH_CHECK(path("/net/foo/bar/").normalize(), "/net/foo/bar/");
@@ -107,7 +109,7 @@ namespace
     PATH_CHECK(path("//net//foo//bar").normalize(), "//net/foo/bar");
     PATH_CHECK(path("//net//foo//bar//").normalize(), "//net/foo/bar/");
     PATH_CHECK(path("//net//foo//..").normalize(), "//net/");
-    PATH_CHECK(path("//net//foo//..//").normalize(), "//net/");
+    PATH_CHECK(path("//net//foo//..//").normalize(), "//net/./");
 
     PATH_CHECK(path("///net///foo///bar").normalize(), "/net/foo/bar");
     PATH_CHECK(path("///net///foo///bar///").normalize(), "/net/foo/bar/");
@@ -119,10 +121,10 @@ namespace
       PATH_CHECK(path("c:..").normalize(), "c:..");
       PATH_CHECK(path("c:foo/..").normalize(), "c:");
 
-      PATH_CHECK(path("c:foo/../").normalize(), "c:/");
+      PATH_CHECK(path("c:foo/../").normalize(), "c:./");
 
       PATH_CHECK(path("c:/foo/..").normalize(), "c:/");
-      PATH_CHECK(path("c:/foo/../").normalize(), "c:/");
+      PATH_CHECK(path("c:/foo/../").normalize(), "c:/./");
       PATH_CHECK(path("c:/..").normalize(), "c:/..");
       PATH_CHECK(path("c:/../").normalize(), "c:/../");
       PATH_CHECK(path("c:/../..").normalize(), "c:/../..");

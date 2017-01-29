@@ -78,5 +78,10 @@ int main(int argc, char* argv[])
   cout  <<  "  has_stem()-----------: " << say_what(p.has_stem()) << '\n';
   cout  <<  "  has_extension()------: " << say_what(p.has_extension()) << '\n';
 
+  cout << "\nlexical:\n";
+  cout << "  lexically_normal()---: " << p.lexically_normal() << '\n';
+  cout << "  lexically_normal()\n    .generic_string()--: \""
+    << p.lexically_normal().generic_string() << "\"\n";
+
   return 0;
 }
