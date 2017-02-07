@@ -473,7 +473,7 @@ namespace filesystem
       ++itr;
     }
 
-    path::string_type::size_type relative_path_start = temp.size();
+    path::string_type::size_type relative_path_start = temp.size(); // see dot rules
 
     // handle relative-path portion of the pathname if present
     for (; itr != end(); ++itr)
@@ -500,12 +500,13 @@ namespace filesystem
         temp /= *itr;
     }  // each relative-path element
 
-    // if empty, path become a dot
+	// dot insertion rules
+    //   if empty, path become a dot
     if (temp.empty())
       temp = detail::dot_path();
 
-    // if relative-path portion of the pathname consists solely of a director-separator,
-    // a dot filename is inserted before the trailing directory-separator
+    //   if relative-path portion of the pathname consists solely of a director-separator,
+    //   a dot filename is inserted before the trailing directory-separator
     else if (temp.size() == (relative_path_start + 1u)
       && temp.m_pathname[relative_path_start] == path::preferred_separator)
       temp.m_pathname.insert(relative_path_start, 1, path::dot);
