@@ -2094,6 +2094,24 @@ namespace
   {
     std::cout << "filename_tests()..." << std::endl;
 
+	// tests from the C++ standard [path.decompose] filename()
+\
+	std::cout << path("/foo/bar.txt").filename() << '\n'; // outputs "bar.txt"
+	std::cout << path("/foo/bar").filename() << '\n';     // outputs "bar"
+	std::cout << path("/foo/bar/").filename() << '\n';    // outputs ""
+	std::cout << path("/").filename() << '\n';            // outputs ""
+	std::cout << path("//host").filename() << '\n';       // outputs ""
+	std::cout << path(".").filename() << '\n';            // outputs "."
+	std::cout << path("..").filename() << '\n';           // outputs ".."
+
+	BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
+	BOOST_TEST(path("/foo/bar").filename()     == "bar");
+	BOOST_TEST(path("/foo/bar/").filename()    == "");
+	BOOST_TEST(path("/").filename()            == "");
+	BOOST_TEST(path("//host").filename()       == "");
+	BOOST_TEST(path(".").filename()            == ".");
+	BOOST_TEST(path("..").filename()           == "..");
+
     // tests include some paths that are invalid on Windows because they still have to
     // decompose correctly on both Windows and POSIX
 
