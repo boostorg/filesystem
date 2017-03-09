@@ -1857,8 +1857,8 @@ namespace
     //  and the expected results are also given in generic form. Otherwise many of the
     //  tests would incorrectly be reported as failing on Windows.
 
-    //  the first set of tests correspond to the table in US-37 of c++ standards
-	//  committee document P0492R1 from the 2017 Kona pre-meeting mailing
+    // the first set of tests correspond to the table in US-37 of c++ standards
+	// committee document P0492R1 from the 2017 Kona pre-meeting mailing
 	PATH_TEST_EQ(path("").lexically_normal().generic_path(), "");            // case 1 
     PATH_TEST_EQ(path(".").lexically_normal().generic_path(), ".");		     // case 2
     PATH_TEST_EQ(path("..").lexically_normal().generic_path(), "..");	     // case 3
@@ -1898,7 +1898,23 @@ namespace
 	PATH_TEST_EQ(path(".././../.").lexically_normal().generic_path(), "../..");    // 34
 	PATH_TEST_EQ(path(".././.././").lexically_normal().generic_path(), "../../");  // 35
 
-	//  other tests
+	// cases Nico suggested we concentrate on to resolve questions about invariants
+	PATH_TEST_EQ(path(".").lexically_normal().generic_path(), ".");		     // 1
+	PATH_TEST_EQ(path("./").lexically_normal().generic_path(), "./");		 // 2
+	PATH_TEST_EQ(path("/./").lexically_normal().generic_path(), "/./");		 // 3
+	PATH_TEST_EQ(path("foo/").lexically_normal().generic_path(), "foo/");	 // 4
+	PATH_TEST_EQ(path("foo/.").lexically_normal().generic_path(), "foo");	 // 5
+	PATH_TEST_EQ(path("foo/..").lexically_normal().generic_path(), ".");	 // 6 
+	PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), "./");	 // 7
+	PATH_TEST_EQ(path("foo/../.").lexically_normal().generic_path(), ".");	 // 8
+	PATH_TEST_EQ(path("/foo/..").lexically_normal().generic_path(), "/");	 // 9 
+	PATH_TEST_EQ(path("/foo/../.").lexically_normal().generic_path(), "/");	 // 10
+	PATH_TEST_EQ(path("/foo/bar/.").lexically_normal().generic_path(), "/foo/bar");	 // 11
+	PATH_TEST_EQ(path("/foo/bar/./").lexically_normal().generic_path(), "/foo/bar/");// 12
+	PATH_TEST_EQ(path("/foo/bar/..").lexically_normal().generic_path(), "/foo");	 // 13
+	PATH_TEST_EQ(path("/foo/bar/../").lexically_normal().generic_path(), "/foo/");	 // 14
+
+	// other tests
     PATH_TEST_EQ(path("///").lexically_normal().generic_path(), "/");
 	PATH_TEST_EQ(path("f").lexically_normal().generic_path(), "f");
     PATH_TEST_EQ(path("foo").lexically_normal().generic_path(), "foo");
@@ -2095,7 +2111,7 @@ namespace
     std::cout << "filename_tests()..." << std::endl;
 
 	// tests from the C++ standard [path.decompose] filename()
-\
+
 	std::cout << path("/foo/bar.txt").filename() << '\n'; // outputs "bar.txt"
 	std::cout << path("/foo/bar").filename() << '\n';     // outputs "bar"
 	std::cout << path("/foo/bar/").filename() << '\n';    // outputs ""
