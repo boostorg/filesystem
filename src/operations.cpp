@@ -517,13 +517,13 @@ namespace
       || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
   }
 
-// some distributions of mingw as early as GLIBCXX__ 20110325 have _stricmp, but the
+// some distributions of mingw as early as GLIBCXX__ 20110325 have _wcsicmp, but the
 // offical 4.6.2 release with __GLIBCXX__ 20111026  doesn't. Play it safe for now, and
-// only use _stricmp if _MSC_VER is defined
+// only use _wcsicmp if _MSC_VER is defined
 #if defined(_MSC_VER) // || (defined(__GLIBCXX__) && __GLIBCXX__ >= 20110325)
-#  define BOOST_FILESYSTEM_STRICMP _stricmp
+#  define BOOST_FILESYSTEM_STRICMP _wcsicmp
 #else
-#  define BOOST_FILESYSTEM_STRICMP strcmp
+#  define BOOST_FILESYSTEM_STRICMP wcscmp
 #endif
 
   perms make_permissions(const path& p, DWORD attr)
@@ -531,10 +531,11 @@ namespace
     perms prms = fs::owner_read | fs::group_read | fs::others_read;
     if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
       prms |= fs::owner_write | fs::group_write | fs::others_write;
-    if (BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".exe") == 0
-      || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".com") == 0
-      || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".bat") == 0
-      || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".cmd") == 0)
+    path ext = p.extension();
+    if (BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".exe") == 0
+      || BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".com") == 0
+      || BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".bat") == 0
+      || BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".cmd") == 0)
       prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
     return prms;
   }
