@@ -516,26 +516,140 @@ namespace
       || errval == ERROR_BAD_PATHNAME  // "//nosuch" on Win64
       || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
   }
+  
+  // File name case-insensitive comparison needs to be locale- and collation-independent. 
+  // The approach used below follows a combined strategy described here
+  // http://archives.miloush.net/michkap/archive/2005/10/17/481600.html
+  // and here:
+  // http://archives.miloush.net/michkap/archive/2007/09/14/4900107.html
+  // If possible, we use CompareStringOrdinal, alternatively we fallback to 
+  // RtlEqualUnicodeString, and if all fails we perform the equivalent characterwise 
+  // comparsion using LCMapString and uppercase binary equality.
 
-// some distributions of mingw as early as GLIBCXX__ 20110325 have _wcsicmp, but the
-// offical 4.6.2 release with __GLIBCXX__ 20111026  doesn't. Play it safe for now, and
-// only use _wcsicmp if _MSC_VER is defined
-#if defined(_MSC_VER) // || (defined(__GLIBCXX__) && __GLIBCXX__ >= 20110325)
-#  define BOOST_FILESYSTEM_STRICMP _wcsicmp
-#else
-#  define BOOST_FILESYSTEM_STRICMP wcscmp
+  //  Windows kernel32.dll and ntdll.dll functions that may or may not be present
+  //  must be accessed through pointers
+  typedef int (WINAPI *PtrCompareStringOrdinal)(
+    /*__in*/ LPCWSTR lpString1,
+    /*__in*/ int     cchCount1,
+    /*__in*/ LPCWSTR lpString2,
+    /*__in*/ int     cchCount2,
+    /*__in*/ BOOL    bIgnoreCase
+  );
+
+  PtrCompareStringOrdinal compare_string_ordinal_api = PtrCompareStringOrdinal(
+    ::GetProcAddress(
+      ::GetModuleHandle(TEXT("kernel32.dll")), "CompareStringOrdinal"));
+
+  typedef struct _UNICODE_STRING {
+    USHORT Length;
+    USHORT MaximumLength;
+    PWSTR  Buffer;
+  } UNICODE_STRING;
+
+  typedef UNICODE_STRING *PUNICODE_STRING;
+  typedef const UNICODE_STRING *PCUNICODE_STRING;
+
+  typedef VOID (WINAPI *PtrRtlInitUnicodeString)(
+    /*_Inout_*/  PUNICODE_STRING DestinationString,
+    /*_In_opt_*/ PCWSTR          SourceString
+  );
+
+  typedef BOOLEAN (WINAPI *PtrRtlEqualUnicodeString)(
+    /*_In_*/ PCUNICODE_STRING String1,
+    /*_In_*/ PCUNICODE_STRING String2,
+    /*_In_*/ BOOLEAN          CaseInSensitive
+  );
+
+  PtrRtlInitUnicodeString rtl_init_unicode_string_api = PtrRtlInitUnicodeString(
+    ::GetProcAddress(
+      ::GetModuleHandle(TEXT("ntdll.dll")), "RtlInitUnicodeString"));
+    
+  PtrRtlEqualUnicodeString rtl_equal_unicode_string_api = PtrRtlEqualUnicodeString(
+    ::GetProcAddress(
+      ::GetModuleHandle(TEXT("ntdll.dll")), "RtlEqualUnicodeString"));
+
+#ifndef LOCALE_INVARIANT
+# define LOCALE_INVARIANT (MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
 #endif
 
+  bool equal_string_ordinal_ic_1(const wchar_t* s1, const wchar_t* s2)
+  {
+    int res = compare_string_ordinal_api(s1, -1, s2, -1, TRUE);
+    if (res != 0)
+      return res == 2;
+    assert(!"CompareStringOrdinal failed to compare strings");
+    res = wcscmp(s1, s2); // Should never happen, but this is a safe fallback.
+    return res == 0;
+  }
+    
+  bool equal_string_ordinal_ic_2(const wchar_t* s1, const wchar_t* s2)
+  {
+    UNICODE_STRING us1, us2;
+    rtl_init_unicode_string_api(&us1, s1);
+    rtl_init_unicode_string_api(&us2, s2);
+    BOOLEAN res = rtl_equal_unicode_string_api(&us1, &us2, TRUE);
+    return res != FALSE;
+  }
+  
+  inline
+  wchar_t to_upper_invariant(wchar_t input)
+  {
+    wchar_t result;
+    // According to 
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/dd318144(v=vs.85).aspx
+    // "When transforming between uppercase and lowercase, the function always maps a 
+    // single character to a single character."
+    int res = ::LCMapStringW(LOCALE_INVARIANT, LCMAP_UPPERCASE, &input, 1, &result, 1); 
+    if (res != 0)
+      return result;
+    assert(!"LCMapStringW failed to convert a character to upper case");
+    return input; // Should never happen, but this is a safe fallback.
+  }
+  
+  bool equal_string_ordinal_ic_3(const wchar_t* s1, const wchar_t* s2)
+  {
+    for (;; ++s1, ++s2)
+    {
+      const wchar_t c1 = *s1;
+      const wchar_t c2 = *s2;
+      if (c1 == c2)
+      {
+        if (!c1)
+          return true; // We have reached the end of both strings, no difference found.
+      }
+      else
+      {
+        if (!c1 || !c2)
+          return false; // We have reached the end of one string
+        // This needs to be upper case to match the behavior of the operating system,
+        // see http://archives.miloush.net/michkap/archive/2005/10/17/481600.html
+        const wchar_t u1 = to_upper_invariant(c1);
+        const wchar_t u2 = to_upper_invariant(c2);
+        if (u1 != u2)
+          return false; // strings are different
+      }
+    }
+  }  
+  
+  typedef bool (*Ptr_equal_string_ordinal_ic)(const wchar_t*, const wchar_t*);
+
+  Ptr_equal_string_ordinal_ic equal_string_ordinal_ic = 
+    compare_string_ordinal_api ? 
+      equal_string_ordinal_ic_1 : 
+      (rtl_init_unicode_string_api && rtl_equal_unicode_string_api) ?
+        equal_string_ordinal_ic_2 :
+        equal_string_ordinal_ic_3;
+  
   perms make_permissions(const path& p, DWORD attr)
   {
     perms prms = fs::owner_read | fs::group_read | fs::others_read;
     if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
       prms |= fs::owner_write | fs::group_write | fs::others_write;
     path ext = p.extension();
-    if (BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".exe") == 0
-      || BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".com") == 0
-      || BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".bat") == 0
-      || BOOST_FILESYSTEM_STRICMP(ext.c_str(), L".cmd") == 0)
+    if (equal_string_ordinal_ic(ext.c_str(), L".exe")
+      || equal_string_ordinal_ic(ext.c_str(), L".com")
+      || equal_string_ordinal_ic(ext.c_str(), L".bat")
+      || equal_string_ordinal_ic(ext.c_str(), L".cmd"))
       prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
     return prms;
   }
