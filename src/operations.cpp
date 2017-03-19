@@ -101,6 +101,7 @@ using std::wstring;
       // See MinGW's windef.h
 #     define WINVER 0x501
 #   endif
+#   include <cwchar>
 #   include <io.h>
 #   include <windows.h>
 #   include <winnt.h>
@@ -518,41 +519,27 @@ namespace
   }
   
   // File name case-insensitive comparison needs to be locale- and collation-independent. 
-  // The approach used below follows a combined strategy described here
+  // The approach used below follows a combined strategy described in the following
+  // articles:
   // http://archives.miloush.net/michkap/archive/2005/10/17/481600.html
-  // and here:
   // http://archives.miloush.net/michkap/archive/2007/09/14/4900107.html
-  // If possible, we use CompareStringOrdinal, alternatively we fallback to 
-  // RtlEqualUnicodeString, and if all fails we perform the equivalent characterwise 
-  // comparsion using LCMapString and uppercase binary equality.
+  // http://archives.miloush.net/michkap/archive/2007/10/12/5396685.html
+  // CompareStringOrdinal is only available on newer systems and is just a wrapper of
+  // RtlCompareUnicodeString, but measurements showed that RtlEqualUnicodeString has better
+  // performance. Therefore we use RtlEqualUnicodeString, and if that does not exist 
+  // we perform the equivalent characterwise comparsion using LCMapString and uppercase 
+  // binary equality. Instead of calling RtlInitUnicodeString we use wcslen directly
+  // because that results in better performance as well.
 
-  //  Windows kernel32.dll and ntdll.dll functions that may or may not be present
+  //  Windows ntdll.dll functions that may or may not be present
   //  must be accessed through pointers
-  typedef int (WINAPI *PtrCompareStringOrdinal)(
-    /*__in*/ LPCWSTR lpString1,
-    /*__in*/ int     cchCount1,
-    /*__in*/ LPCWSTR lpString2,
-    /*__in*/ int     cchCount2,
-    /*__in*/ BOOL    bIgnoreCase
-  );
-
-  PtrCompareStringOrdinal compare_string_ordinal_api = PtrCompareStringOrdinal(
-    ::GetProcAddress(
-      ::GetModuleHandle(TEXT("kernel32.dll")), "CompareStringOrdinal"));
-
   typedef struct _UNICODE_STRING {
     USHORT Length;
     USHORT MaximumLength;
     PWSTR  Buffer;
   } UNICODE_STRING;
 
-  typedef UNICODE_STRING *PUNICODE_STRING;
   typedef const UNICODE_STRING *PCUNICODE_STRING;
-
-  typedef VOID (WINAPI *PtrRtlInitUnicodeString)(
-    /*_Inout_*/  PUNICODE_STRING DestinationString,
-    /*_In_opt_*/ PCWSTR          SourceString
-  );
 
   typedef BOOLEAN (WINAPI *PtrRtlEqualUnicodeString)(
     /*_In_*/ PCUNICODE_STRING String1,
@@ -560,37 +547,30 @@ namespace
     /*_In_*/ BOOLEAN          CaseInSensitive
   );
 
-  PtrRtlInitUnicodeString rtl_init_unicode_string_api = PtrRtlInitUnicodeString(
-    ::GetProcAddress(
-      ::GetModuleHandle(TEXT("ntdll.dll")), "RtlInitUnicodeString"));
-    
   PtrRtlEqualUnicodeString rtl_equal_unicode_string_api = PtrRtlEqualUnicodeString(
     ::GetProcAddress(
-      ::GetModuleHandle(TEXT("ntdll.dll")), "RtlEqualUnicodeString"));
+      ::GetModuleHandleW(L"ntdll.dll"), "RtlEqualUnicodeString"));
 
 #ifndef LOCALE_INVARIANT
-# define LOCALE_INVARIANT (MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
+#  define LOCALE_INVARIANT (MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
 #endif
 
   bool equal_string_ordinal_ic_1(const wchar_t* s1, const wchar_t* s2)
   {
-    int res = compare_string_ordinal_api(s1, -1, s2, -1, TRUE);
-    if (res != 0)
-      return res == 2;
-    assert(!"CompareStringOrdinal failed to compare strings");
-    res = wcscmp(s1, s2); // Should never happen, but this is a safe fallback.
-    return res == 0;
-  }
-    
-  bool equal_string_ordinal_ic_2(const wchar_t* s1, const wchar_t* s2)
-  {
-    UNICODE_STRING us1, us2;
-    rtl_init_unicode_string_api(&us1, s1);
-    rtl_init_unicode_string_api(&us2, s2);
+    std::size_t len1 = std::wcslen(s1);
+    UNICODE_STRING us1;
+    us1.Buffer = const_cast<wchar_t*>(s1);
+    us1.Length = static_cast<USHORT>(sizeof(*s1) * len1);
+    us1.MaximumLength = us1.Length + sizeof(*s1);
+    std::size_t len2 = std::wcslen(s2);
+    UNICODE_STRING us2;
+    us2.Buffer = const_cast<wchar_t*>(s2);
+    us2.Length = static_cast<USHORT>(sizeof(*s2) * len2);
+    us2.MaximumLength = us2.Length + sizeof(*s2);
     BOOLEAN res = rtl_equal_unicode_string_api(&us1, &us2, TRUE);
     return res != FALSE;
   }
-  
+
   inline
   wchar_t to_upper_invariant(wchar_t input)
   {
@@ -606,7 +586,7 @@ namespace
     return input; // Should never happen, but this is a safe fallback.
   }
   
-  bool equal_string_ordinal_ic_3(const wchar_t* s1, const wchar_t* s2)
+  bool equal_string_ordinal_ic_2(const wchar_t* s1, const wchar_t* s2)
   {
     for (;; ++s1, ++s2)
     {
@@ -634,11 +614,7 @@ namespace
   typedef bool (*Ptr_equal_string_ordinal_ic)(const wchar_t*, const wchar_t*);
 
   Ptr_equal_string_ordinal_ic equal_string_ordinal_ic = 
-    compare_string_ordinal_api ? 
-      equal_string_ordinal_ic_1 : 
-      (rtl_init_unicode_string_api && rtl_equal_unicode_string_api) ?
-        equal_string_ordinal_ic_2 :
-        equal_string_ordinal_ic_3;
+    rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1 : equal_string_ordinal_ic_2;
   
   perms make_permissions(const path& p, DWORD attr)
   {
@@ -811,7 +787,7 @@ namespace
 
   PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
     ::GetProcAddress(
-      ::GetModuleHandle(TEXT("kernel32.dll")), "CreateHardLinkW"));
+      ::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
 
   typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
@@ -821,7 +797,7 @@ namespace
 
   PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
     ::GetProcAddress(
-      ::GetModuleHandle(TEXT("kernel32.dll")), "CreateSymbolicLinkW"));
+      ::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
 
 #endif
 
