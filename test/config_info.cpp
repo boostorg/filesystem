@@ -37,10 +37,10 @@ int main()
   cout << "  BOOST_LIB_NAME: " << BOOST_MACRO_VALUE(BOOST_LIB_NAME) << endl;
   cout << "  BOOST_POSIX_API: " << BOOST_MACRO_VALUE(BOOST_POSIX_API) << endl;
   cout << "  BOOST_WINDOWS_API: " << BOOST_MACRO_VALUE(BOOST_WINDOWS_API) << endl;
+  cout << "  BOOST_COMPILER: " << BOOST_MACRO_VALUE(BOOST_COMPILER) << endl;
   cout << "  _MSC_VER: " << BOOST_MACRO_VALUE(_MSC_VER) << endl;
+  cout << "  _MSC_FULL_VER: " << BOOST_MACRO_VALUE(_MSC_FULL_VER) << endl;
   cout << "  __MINGW32__: " << BOOST_MACRO_VALUE(__MINGW32__) << endl;
-  //cout << "  : " << BOOST_MACRO_VALUE() << endl;
-  //cout << "  : " << BOOST_MACRO_VALUE() << endl;
   //cout << "  : " << BOOST_MACRO_VALUE() << endl;
   //cout << "  : " << BOOST_MACRO_VALUE() << endl;
   //cout << "  : " << BOOST_MACRO_VALUE() << endl;
