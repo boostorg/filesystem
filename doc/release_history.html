@@ -40,10 +40,12 @@
 
 <h2>1.64.0</h2>
 <ul>
+  <li><code>is_empty()</code>overload with <code>error_code</code> parameter 
+  should not throw on error. Thanks to ldqrk for pull request #42</li>
   <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/10731">#10731</a> and
   <a href="https://svn.boost.org/trac/boost/ticket/9480">#9480</a>, <i>Evaluate 
   path.extension only once</i>. Thanks to Daniel Krügler for pull request #41.</li>
-  <li>Fix errno propagation in <code>space(p, ec)</code>. Thanks to cmuellner 
+  <li>Fix error propagation in <code>space(p, ec)</code>. Thanks to cmuellner 
   for pull request #39.</li>
   <li>Add test/config_info.cpp to increase macro state reporting in hopes of 
   easing debugging on remote machines.</li>

@@ -329,9 +329,10 @@ namespace
 
   //  general helpers  -----------------------------------------------------------------//
 
-  bool is_empty_directory(const path& p)
+  bool is_empty_directory(const path& p, error_code* ec)
   {
-    return fs::directory_iterator(p)== end_dir_itr;
+    return (ec != 0 ? fs::directory_iterator(p, *ec) : fs::directory_iterator(p))
+      == end_dir_itr;
   }
 
   bool not_found_error(int errval); // forward declaration
@@ -1408,7 +1409,7 @@ namespace detail
         p, ec, "boost::filesystem::is_empty"))
       return false;        
     return S_ISDIR(path_stat.st_mode)
-      ? is_empty_directory(p)
+      ? is_empty_directory(p, ec)
       : path_stat.st_size == 0;
 #   else
 
@@ -1420,7 +1421,7 @@ namespace detail
     if (ec != 0) ec->clear();
     return 
       (fad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        ? is_empty_directory(p)
+        ? is_empty_directory(p, ec)
         : (!fad.nFileSizeHigh && !fad.nFileSizeLow);
 #   endif
   }
