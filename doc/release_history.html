@@ -40,6 +40,15 @@
 
 <h2>1.64.0</h2>
 <ul>
+  <li><code>is_empty()</code>overload with <code>error_code</code> parameter 
+  should not throw on error. Thanks to ldqrk for pull request #42</li>
+  <li>Fix <a href="https://svn.boost.org/trac/boost/ticket/10731">#10731</a> and
+  <a href="https://svn.boost.org/trac/boost/ticket/9480">#9480</a>, <i>Evaluate 
+  path.extension only once</i>. Thanks to Daniel Krügler for pull request #41.</li>
+  <li>Fix error propagation in <code>space(p, ec)</code>. Thanks to cmuellner 
+  for pull request #39.</li>
+  <li>Add test/config_info.cpp to increase macro state reporting in hopes of 
+  easing debugging on remote machines.</li>
   <li>Fix <code>operations_test</code> failure on MinGW: MinGW defines 
   __MINGW32__ rather than _MSC_VER, so also test for __MINGW32__ to see if 
   setenv/unsetenv workaround needed.</li>
@@ -87,8 +96,7 @@
   member functions. Thanks to faithandbrave for pull request #31</li>
   <li>Fix broken link to <a href="https://svn.boost.org/trac/boost/ticket/7506">#7506</a> in 1.60.0 Release History (Daniel Krügler).</li>
   <li>Refactor <code>push_directory()</code>internal logic so it is easier to 
-  reason about.<br>
-&nbsp;</li>
+  reason about.</li>
 </ul>
 
 <h2>1.60.0</h2>
@@ -446,7 +454,7 @@
 </ul>
 <hr>
 <p>Revised
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->30 December, 2016<!--webbot bot="Timestamp" endspan i-checksum="38637" --></p>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%d %B, %Y" startspan -->03 April, 2017<!--webbot bot="Timestamp" endspan i-checksum="30018" --></p>
 <p>&copy; Copyright Beman Dawes, 2011</p>
 <p> Use, modification, and distribution are subject to the Boost Software 
 License, Version 1.0. See <a href="http://www.boost.org/LICENSE_1_0.txt">

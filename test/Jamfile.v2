@@ -15,6 +15,8 @@ project
 # has a history of bugs that appear only in one type of build or the other.
 
    test-suite "filesystem" :
+       [ run config_info.cpp :  :  : <link>shared <test-info>always_show_run_output ]
+       [ run config_info.cpp :  :  : <link>static <test-info>always_show_run_output : config_info_static ]
        [ run convenience_test.cpp ]
        [ compile macro_default_test.cpp ]
        [ run odr1_test.cpp odr2_test.cpp ]
