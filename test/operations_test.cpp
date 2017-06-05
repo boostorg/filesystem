@@ -1805,6 +1805,7 @@ namespace
         BOOST_TEST(!fs::is_regular_file(junc));
         BOOST_TEST(fs::exists(junc / "d1f1"));
         BOOST_TEST(fs::is_regular_file(junc / "d1f1"));
+        BOOST_TEST_EQ(fs::read_symlink(junc), dir / "d1");
 
         int count = 0;
         for (fs::directory_iterator itr(junc);
@@ -1824,6 +1825,7 @@ namespace
         BOOST_TEST(!fs::is_regular_file(new_junc));
         BOOST_TEST(fs::exists(new_junc / "d1f1"));
         BOOST_TEST(fs::is_regular_file(new_junc / "d1f1"));
+        BOOST_TEST_EQ(fs::read_symlink(new_junc), dir / "d1");
 
         fs::remove(new_junc);
         BOOST_TEST(!fs::exists(new_junc / "d1f1"));

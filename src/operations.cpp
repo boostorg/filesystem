@@ -1636,15 +1636,34 @@ namespace detail
 
     DWORD sz;
 
-    if (!error(::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
+    if (error(::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
           0, 0, info.buf, sizeof(info), &sz, 0) == 0 ? BOOST_ERRNO : 0, p, ec,
           "boost::filesystem::read_symlink" ))
-      symlink_path.assign(
-        static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
-        + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(wchar_t),
-        static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
-        + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(wchar_t)
-        + info.rdb.SymbolicLinkReparseBuffer.PrintNameLength/sizeof(wchar_t));
+        return symlink_path;
+
+    wchar_t const* path_buffer = NULL;
+    size_t path_length = 0;
+    switch (info.rdb.ReparseTag)
+    {
+    case IO_REPARSE_TAG_SYMLINK:
+      path_buffer = info.rdb.SymbolicLinkReparseBuffer.PathBuffer
+        + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(wchar_t);
+      path_length
+        = info.rdb.SymbolicLinkReparseBuffer.PrintNameLength/sizeof(wchar_t);
+      break;
+    case IO_REPARSE_TAG_MOUNT_POINT:
+      path_buffer = info.rdb.MountPointReparseBuffer.PathBuffer
+        + info.rdb.MountPointReparseBuffer.PrintNameOffset/sizeof(wchar_t);
+      path_length
+        = info.rdb.MountPointReparseBuffer.PrintNameLength/sizeof(wchar_t);
+      break;
+    default:
+      error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
+            "boost::filesystem::read_symlink");
+      return symlink_path;
+    }
+
+    symlink_path.assign(path_buffer, path_buffer + path_length);
 #     endif
     return symlink_path;
   }
