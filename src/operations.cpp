@@ -445,6 +445,14 @@ namespace
       return false;
     }
 
+    // non-regular file types cannot be copied by reading and writing their contents
+    if ((from_stat.st_mode & S_IFMT) != S_IFREG)
+    {
+      BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy_file_api",
+                                              from_p.c_str(), to_p.c_str(),
+					      error_code(BOOST_ERROR_NOT_SUPPORTED, system_category())));
+    }
+
     int oflag = O_CREAT | O_WRONLY | O_TRUNC;
     if (fail_if_exists)
       oflag |= O_EXCL;
