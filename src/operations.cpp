@@ -614,11 +614,11 @@ namespace
   
   typedef bool (*Ptr_equal_string_ordinal_ic)(const wchar_t*, const wchar_t*);
 
-  Ptr_equal_string_ordinal_ic equal_string_ordinal_ic = 
-    rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1 : equal_string_ordinal_ic_2;
-  
   perms make_permissions(const path& p, DWORD attr)
   {
+    static Ptr_equal_string_ordinal_ic equal_string_ordinal_ic = 
+      rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1 : equal_string_ordinal_ic_2;
+  
     perms prms = fs::owner_read | fs::group_read | fs::others_read;
     if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
       prms |= fs::owner_write | fs::group_write | fs::others_write;
