@@ -12,8 +12,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_OPERATIONS_HPP
-#define BOOST_FILESYSTEM3_OPERATIONS_HPP
+#ifndef BOOST_FILESYSTEM_OPERATIONS_HPP
+#define BOOST_FILESYSTEM_OPERATIONS_HPP
 
 #include <boost/config.hpp>
 
@@ -24,7 +24,6 @@
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <boost/core/scoped_enum.hpp>
 #include <boost/detail/bitmask.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
@@ -170,40 +169,39 @@ namespace boost
 //                                     file_type                                        //
 //--------------------------------------------------------------------------------------//
 
-  BOOST_SCOPED_ENUM_DECLARE_BEGIN(file_type)
-  { 
-    none,
-    not_found,
-    regular,
-    directory,
-    // the following may not apply to some operating systems or file systems
-    symlink,
-    block,
-    character,
-    fifo,
-    socket,
-    reparse,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
-    unknown,  // file exists, but isn't one of the above types or
-              //   we don't have permission to find its type
+    enum class file_type
+    {
+        none,
+        not_found,
+        regular,
+        directory,
+        // the following may not apply to some operating systems or file systems
+        symlink,
+        block,
+        character,
+        fifo,
+        socket,
+        reparse,  // Windows: FILE_ATTRIBUTE_REPARSE_POINT that is not a symlink
+        unknown,  // file exists, but isn't one of the above types or
+                  //   we don't have permission to find its type
 
 #   ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    status_error = none,
-    status_unknown = none,
-    file_not_found = not_found,
-    regular_file = regular,
-    directory_file = directory,
-    symlink_file = symlink,
-    block_file = block,
-    character_file = character,
-    fifo_file = fifo,
-    socket_file = socket,
-    reparse_file = reparse,
-    type_unknown = unknown,
+                  status_error = none,
+                  status_unknown = none,
+                  file_not_found = not_found,
+                  regular_file = regular,
+                  directory_file = directory,
+                  symlink_file = symlink,
+                  block_file = block,
+                  character_file = character,
+                  fifo_file = fifo,
+                  socket_file = socket,
+                  reparse_file = reparse,
+                  type_unknown = unknown,
 #   endif
 
-    _detail_directory_symlink  // internal use only; never exposed to users
-  }
-  BOOST_SCOPED_ENUM_DECLARE_END(file_type)
+                  _detail_directory_symlink  // internal use only; never exposed to users
+    };
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
     static const file_type status_error = file_type::none;
@@ -241,9 +239,9 @@ namespace boost
 //                                    copy_options                                      //
 //--------------------------------------------------------------------------------------//
 
-  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_options)
+  enum class copy_options
   {
-    none=0,
+    none = 0,
 
     // copy_file function effects for existing target files; default: treat as error
     skip_existing = 1,        // do not overwrite existing file, do not report an error
@@ -262,21 +260,22 @@ namespace boost
     create_symlinks = 128,    // make symbolic links instead of copies of files; source 
                               // path shall be an absolute path unless destination path
                               // is in the current directory
-    create_hard_links = 256,   // make hard links instead of copies of files
+    create_hard_links = 256,  // make hard links instead of copies of files
 
     // extentions; not part of standard library filesystem
-    copy_file_mask = skip_existing|overwrite_existing|update_existing,
+    copy_file_mask = skip_existing | overwrite_existing | update_existing,
     copy_sub_dirs_mask = recursive,
-    copy_symlinks_mask = copy_symlinks|skip_symlinks,
-    copy_form_mask = directories_only|create_symlinks|create_hard_links
-  }
-  BOOST_SCOPED_ENUM_DECLARE_END(copy_options)
+    copy_symlinks_mask = copy_symlinks | skip_symlinks,
+    copy_form_mask = directories_only | create_symlinks | create_hard_links
+  };
+
+  BOOST_BITMASK(copy_options)
 
 //--------------------------------------------------------------------------------------//
 //                                       perms                                          //
 //--------------------------------------------------------------------------------------//
 
-  enum perms
+  enum class perms
   {
     no_perms = 0,       // file_not_found is no_perms rather than perms_not_known
 
@@ -300,35 +299,62 @@ namespace boost
     others_exe = 01,    // S_IXOTH, Execute/search permission, others
     others_all = 07,    // S_IRWXO, Read, write, execute/search by others
 
-    all_all = 0777,     // owner_all|group_all|others_all
+    all = 0777,         // owner_all|group_all|others_all
 
     // other POSIX bits
 
-    set_uid_on_exe = 04000, // S_ISUID, Set-user-ID on execution
-    set_gid_on_exe = 02000, // S_ISGID, Set-group-ID on execution
-    sticky_bit     = 01000, // S_ISVTX,
-                            // (POSIX XSI) On directories, restricted deletion flag 
-                            // (V7) 'sticky bit': save swapped text even after use 
-                            // (SunOS) On non-directories: don't cache this file
-                            // (SVID-v4.2) On directories: restricted deletion flag
-                            // Also see http://en.wikipedia.org/wiki/Sticky_bit
+    set_uid = 04000,    // S_ISUID, Set-user-ID on execution
+    set_gid = 02000,    // S_ISGID, Set-group-ID on execution
+    sticky_bit = 01000, // S_ISVTX,
+                        // (POSIX XSI) On directories, restricted deletion flag 
+                        // (V7) 'sticky bit': save swapped text even after use 
+                        // (SunOS) On non-directories: don't cache this file
+                        // (SVID-v4.2) On directories: restricted deletion flag
+                        // Also see http://en.wikipedia.org/wiki/Sticky_bit
 
-    perms_mask = 07777,     // all_all|set_uid_on_exe|set_gid_on_exe|sticky_bit
+    mask = 07777,       // all_all|set_uid_on_exe|set_gid_on_exe|sticky_bit
 
-    perms_not_known = 0xFFFF, // present when directory_entry cache not loaded
-
-    // options for permissions() function
-
-    add_perms = 0x1000,     // adds the given permission bits to the current bits
-    remove_perms = 0x2000,  // removes the given permission bits from the current bits;
-                            // choose add_perms or remove_perms, not both; if neither add_perms
-                            // nor remove_perms is given, replace the current bits with
-                            // the given bits.
-
-    symlink_perms = 0x4000  // on POSIX, don't resolve symlinks; implied on Windows
+    unknown = 0xFFFF,   // permissions are not known, such as when a file_status object
+                        // is created without specifying the permissions
   };
 
   BOOST_BITMASK(perms)
+
+//--------------------------------------------------------------------------------------//
+//                                   perm_options                                       //
+//--------------------------------------------------------------------------------------//
+
+  enum class perm_options
+  {
+    // one of:
+    replace = 0,          // replace the file’s permission bits with perm arg
+    add = 1,              // replace the file’s permission bits with the bitwise OR of
+                          //   perm arg and the file’s current permission bits
+    remove = 2,           // replace the file’s permission bits with the bitwise AND of
+                          //   complement of perm arg and file’s current permission bits
+    // optional bitmask:
+    nofollow = 4          // change the permissions of a symbolic link itself rather than
+                          //   the permissions of the file the link resolves to
+  };
+
+  BOOST_BITMASK(perm_options)
+
+//--------------------------------------------------------------------------------------//
+//                                 directory_options                                    //
+//--------------------------------------------------------------------------------------//
+
+  enum class directory_options
+  {
+    none = 0,                     // (default) Skip directory symlinks, permission denied
+                                  //   is an error
+    follow_directory_symlink = 1, // follow rather than skip directory symlinks
+    skip_permission_denied = 2,   // skip directories that would otherwise result in a
+                                  //   permission denied error
+
+    _detail_no_push = 4           // internal use only
+  };
+
+  BOOST_BITMASK(directory_options)
 
 //--------------------------------------------------------------------------------------//
 //                                    file_status                                       //
@@ -338,9 +364,9 @@ namespace boost
   {
   public:
              file_status() BOOST_NOEXCEPT
-               : m_value(file_type::none), m_perms(perms_not_known) {}
+               : m_value(file_type::none), m_perms(perms::unknown) {}
     explicit file_status(file_type v) BOOST_NOEXCEPT
-               : m_value(v), m_perms(perms_not_known)  {}
+               : m_value(v), m_perms(perms::unknown)  {}
              file_status(file_type v, perms prms) BOOST_NOEXCEPT
                : m_value(v), m_perms(prms) {}
 
@@ -387,14 +413,14 @@ namespace boost
       { return !(*this == rhs); }
 
   private:
-    file_type   m_value;
-    enum perms  m_perms;
+    file_type         m_value;
+    enum class perms  m_perms;
   };
 
   inline bool type_present(file_status f) BOOST_NOEXCEPT
                                           { return f.type() != file_type::none; }
   inline bool permissions_present(file_status f) BOOST_NOEXCEPT
-                                          {return f.permissions() != perms_not_known;}
+                                          {return f.permissions() != perms::unknown;}
   inline bool status_known(file_status f) BOOST_NOEXCEPT
                                           { return type_present(f) && permissions_present(f); }
   inline bool exists(file_status f) BOOST_NOEXCEPT
@@ -436,27 +462,27 @@ namespace boost
 
   namespace detail
   {
-    //  We cannot pass a BOOST_SCOPED_ENUM to a compled function because it will cause
-    //  an undefined reference if the library is compled with -std=c++0x but the
-    //  use is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
-    //  The workaround is to pass a plain old enum.
-    enum copy_opts
-    {
-      none=0,
-      skip_existing = 1,      
-      overwrite_existing = 2, 
-      update_existing = 4,    
-      recursive = 8,          
-      copy_symlinks = 16,     
-      skip_symlinks = 32,     
-      directories_only = 64,  
-      create_symlinks = 128,  
-      create_hard_links = 256,
-      copy_file_mask = skip_existing|overwrite_existing|update_existing,
-      copy_sub_dirs_mask = recursive,
-      copy_symlinks_mask = copy_symlinks|skip_symlinks,
-      copy_form_mask = directories_only|create_symlinks|create_hard_links
-    };
+    ////  We cannot pass a BOOST_SCOPED_ENUM to a compled function because it will cause
+    ////  an undefined reference if the library is compled with -std=c++0x but the
+    ////  use is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
+    ////  The workaround is to pass a plain old enum.
+    //enum copy_opts
+    //{
+    //  none=0,
+    //  skip_existing = 1,      
+    //  overwrite_existing = 2, 
+    //  update_existing = 4,    
+    //  recursive = 8,          
+    //  copy_symlinks = 16,     
+    //  skip_symlinks = 32,     
+    //  directories_only = 64,  
+    //  create_symlinks = 128,  
+    //  create_hard_links = 256,
+    //  copy_file_mask = skip_existing|overwrite_existing|update_existing,
+    //  copy_sub_dirs_mask = recursive,
+    //  copy_symlinks_mask = copy_symlinks|skip_symlinks,
+    //  copy_form_mask = directories_only|create_symlinks|create_hard_links
+    //};
 
     BOOST_FILESYSTEM_DECL
     file_status status(const path&p, system::error_code* ec=0);
@@ -474,7 +500,7 @@ namespace boost
     void copy_directory(const path& from, const path& to, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     void copy_file(const path& from, const path& to,  // See ticket #2925
-                    detail::copy_opts options, system::error_code* ec=0);
+                    copy_options options, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -660,26 +686,26 @@ namespace boost
                                        {detail::copy_directory(from, to, &ec);}
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM_NATIVE(copy_options) options)
+                 copy_options options)
   {
-    detail::copy_file(from, to, static_cast<detail::copy_opts>(options));
+    detail::copy_file(from, to, options);
   }
   inline
   void copy_file(const path& from, const path& to)
   {
-    detail::copy_file(from, to, detail::copy_opts::none);
+    detail::copy_file(from, to, copy_options::none);
   }
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM_NATIVE(copy_options) options,
+                 copy_options options,
                  system::error_code& ec) BOOST_NOEXCEPT
   {
-    detail::copy_file(from, to, static_cast<detail::copy_opts>(options), &ec);
+    detail::copy_file(from, to, options, &ec);
   }
   inline
   void copy_file(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
   {
-    detail::copy_file(from, to, detail::copy_opts::none, &ec);
+    detail::copy_file(from, to, copy_options::none, &ec);
   }
   inline
   void copy_symlink(const path& existing_symlink,
@@ -1205,16 +1231,16 @@ namespace filesystem
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  BOOST_SCOPED_ENUM_DECLARE_BEGIN(symlink_option)
-  {
-    none,
-    no_recurse = none,         // don't follow directory symlinks (default behavior)
-    recurse,                   // follow directory symlinks
-    _detail_no_push = recurse << 1  // internal use only
-  }
-  BOOST_SCOPED_ENUM_DECLARE_END(symlink_option)
+  //BOOST_SCOPED_ENUM_DECLARE_BEGIN(directory_options)
+  //{
+  //  none,
+  //  no_recurse = none,         // don't follow directory symlinks (default behavior)
+  //  recurse,                   // follow directory symlinks
+  //  _detail_no_push = recurse << 1  // internal use only
+  //}
+  //BOOST_SCOPED_ENUM_DECLARE_END(directory_options)
 
-  BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(symlink_option))
+  //BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(directory_options))
 
   namespace detail
   {
@@ -1223,9 +1249,9 @@ namespace filesystem
       typedef directory_iterator element_type;
       std::stack< element_type, std::vector< element_type > > m_stack;
       int  m_level;
-      BOOST_SCOPED_ENUM_NATIVE(symlink_option) m_options;
+      directory_options m_options;
 
-      recur_dir_itr_imp() : m_level(0), m_options(symlink_option::none) {}
+      recur_dir_itr_imp() : m_level(0), m_options(directory_options::none) {}
 
       void increment(system::error_code* ec);  // ec == 0 means throw on error
 
@@ -1248,9 +1274,9 @@ namespace filesystem
       //  Discover if the iterator is for a directory that needs to be recursed into,
       //  taking symlinks and options into account.
 
-      if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
+      if ((m_options & directory_options::_detail_no_push) == directory_options::_detail_no_push)
       {
-        m_options &= ~symlink_option::_detail_no_push;
+        m_options &= ~directory_options::_detail_no_push;
         return false;
       }
 
@@ -1258,7 +1284,7 @@ namespace filesystem
 
       // if we are not recursing into symlinks, we are going to have to know if the
       // stack top is a symlink, so get symlink_status and verify no error occurred 
-      if ((m_options & symlink_option::recurse) != symlink_option::recurse)
+      if ((m_options & directory_options::follow_directory_symlink) != directory_options::follow_directory_symlink)
       {
         symlink_stat = m_stack.top()->symlink_status(ec);
         if (ec)
@@ -1267,13 +1293,14 @@ namespace filesystem
 
       // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
       // symlinks correctly and efficiently, fixing ticket #5652.
-      //   if (((m_options & symlink_option::recurse) == symlink_option::recurse
+      //   if (((m_options & directory_options::follow_directory_symlink)
+      //        == directory_options::follow_directory_symlink
       //         || !is_symlink(m_stack.top()->symlink_status()))
       //       && is_directory(m_stack.top()->status())) ...
       // The predicate code has since been rewritten to pass error_code arguments,
       // per ticket #5653.
 
-      if ((m_options & symlink_option::recurse) == symlink_option::recurse
+      if ((m_options & directory_options::follow_directory_symlink) == directory_options::follow_directory_symlink
         || !is_symlink(symlink_stat))
       {
         file_status stat = m_stack.top()->status(ec);
@@ -1370,14 +1397,14 @@ namespace filesystem
     explicit recursive_directory_iterator(const path& dir_path)  // throws if !exists()
       : m_imp(new detail::recur_dir_itr_imp)
     {
-      m_imp->m_options = symlink_option::none;
+      m_imp->m_options = directory_options::none;
       m_imp->m_stack.push(directory_iterator(dir_path));
       if (m_imp->m_stack.top() == directory_iterator())
         { m_imp.reset(); }
     }
 
     recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt)  // throws if !exists()
+      directory_options opt)  // throws if !exists()
       : m_imp(new detail::recur_dir_itr_imp)
     {
       m_imp->m_options = opt;
@@ -1386,8 +1413,7 @@ namespace filesystem
         { m_imp.reset (); }
     }
 
-    recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt,
+    recursive_directory_iterator(const path& dir_path, directory_options opt,
       system::error_code & ec) BOOST_NOEXCEPT
     : m_imp(new detail::recur_dir_itr_imp)
     {
@@ -1401,7 +1427,7 @@ namespace filesystem
       system::error_code & ec) BOOST_NOEXCEPT
     : m_imp(new detail::recur_dir_itr_imp)
     {
-      m_imp->m_options = symlink_option::none;
+      m_imp->m_options = directory_options::none;
       m_imp->m_stack.push(directory_iterator(dir_path, ec));
       if (m_imp->m_stack.top() == directory_iterator())
         { m_imp.reset (); }
@@ -1430,8 +1456,8 @@ namespace filesystem
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "is_no_push_requested() on end recursive_directory_iterator");
-      return (m_imp->m_options & symlink_option::_detail_no_push)
-        == symlink_option::_detail_no_push;
+      return (m_imp->m_options & directory_options::_detail_no_push)
+        == directory_options::_detail_no_push;
     }
   
     bool no_push_pending() const BOOST_NOEXCEPT { return recursion_pending(); }
@@ -1453,9 +1479,9 @@ namespace filesystem
       BOOST_ASSERT_MSG(m_imp.get(),
         "no_push() on end recursive_directory_iterator");
       if (value)
-        m_imp->m_options |= symlink_option::_detail_no_push;
+        m_imp->m_options |= directory_options::_detail_no_push;
       else
-        m_imp->m_options &= ~symlink_option::_detail_no_push;
+        m_imp->m_options &= ~directory_options::_detail_no_push;
     }
   
     void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }
@@ -1570,4 +1596,4 @@ namespace filesystem
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
-#endif // BOOST_FILESYSTEM3_OPERATIONS_HPP
+#endif // BOOST_FILESYSTEM_OPERATIONS_HPP

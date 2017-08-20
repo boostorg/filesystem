@@ -544,14 +544,14 @@ namespace
 
   perms make_permissions(const path& p, DWORD attr)
   {
-    perms prms = fs::owner_read | fs::group_read | fs::others_read;
+    perms prms = fs::perms::owner_read | fs::perms::group_read | fs::perms::others_read;
     if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
-      prms |= fs::owner_write | fs::group_write | fs::others_write;
+      prms |= fs::perms::owner_write | fs::perms::group_write | fs::perms::others_write;
     if (BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".exe") == 0
       || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".com") == 0
       || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".bat") == 0
       || BOOST_FILESYSTEM_STRICMP(p.extension().string().c_str(), ".cmd") == 0)
-      prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
+      prms |= fs::perms::owner_exe | fs::perms::group_exe | fs::perms::others_exe;
     return prms;
   }
 
@@ -656,7 +656,7 @@ namespace
 
     if (not_found_error(errval))
     {
-      return fs::file_status(fs::file_type::not_found, fs::no_perms);
+      return fs::file_status(fs::file_type::not_found, fs::perms::no_perms);
     }
     else if ((errval == ERROR_SHARING_VIOLATION))
     {
@@ -940,16 +940,16 @@ namespace detail
   }
 
   BOOST_FILESYSTEM_DECL
-  void copy_file(const path& from, const path& to, copy_opts opts, error_code* ec)
+  void copy_file(const path& from, const path& to, copy_options opts, error_code* ec)
   {
     if (ec != 0)
       ec->clear();  // be optimistic
 
-    if (((opts & copy_opts::copy_file_mask) == copy_opts::none)
-      || ((opts & copy_opts::copy_file_mask) == copy_opts::overwrite_existing))
+    if (((opts & copy_options::copy_file_mask) == copy_options::none)
+      || ((opts & copy_options::copy_file_mask) == copy_options::overwrite_existing))
     {
       error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
-        (opts & copy_opts::copy_file_mask) == copy_opts::none) ? BOOST_ERRNO : 0,
+        (opts & copy_options::copy_file_mask) == copy_options::none) ? BOOST_ERRNO : 0,
         from, to, ec, "boost::filesystem::copy_file");
       return;
     }
@@ -969,12 +969,12 @@ namespace detail
 
     // we now know that "to" exists
 
-    if ((opts & copy_opts::copy_file_mask) == copy_opts::skip_existing)
+    if ((opts & copy_options::copy_file_mask) == copy_options::skip_existing)
       return;
 
     // the only option left is update_existing, but assert just to be sure
     BOOST_ASSERT_MSG(
-      (opts & copy_opts::copy_file_mask) == copy_opts::update_existing,
+      (opts & copy_options::copy_file_mask) == copy_options::update_existing,
       "copy_file implementation logic error");
 
     fs::file_time_type from_time, to_time;
