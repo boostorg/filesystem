@@ -67,13 +67,13 @@ namespace
     cout << "file_status test..." << endl;
 
     file_status s = status(".");
-    int v = s.permissions();
+    int v = static_cast<int>(s.permissions());
     cout << "  status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
 
     s = symlink_status(".");
-    v = s.permissions();
+    v = static_cast<int>(s.permissions());
     cout << "  symlink_status(\".\") permissions are "
       << std::oct << (v & 0777) << std::dec << endl; 
     CHECK((v & 0400) == 0400);
@@ -90,7 +90,7 @@ namespace
     CHECK(file_size("no-such-file", ec) == static_cast<boost::uintmax_t>(-1));
     CHECK(ec == errc::no_such_file_or_directory);
 
-    CHECK(status("no-such-file") == file_status(file_type::not_found, no_perms));
+    CHECK(status("no-such-file") == file_status(file_type::not_found, perms::no_perms));
 
     CHECK(exists("/"));
     CHECK(is_directory("/"));

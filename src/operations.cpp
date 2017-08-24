@@ -1469,13 +1469,21 @@ namespace detail
 # endif
 
   BOOST_FILESYSTEM_DECL
-  void permissions(const path& p, perms prms, system::error_code* ec)
+  void permissions(const path& p, perms prms, perm_options opts, system::error_code* ec)
   {
-    BOOST_ASSERT_MSG(!((prms & add_perms) && (prms & remove_perms)),
-      "add_perms and remove_perms are mutually exclusive");
+# ifndef NDEBUG
+    int count=0;
+    if (bitmask_set(opts & perm_options::replace))
+      ++count;
+    if (bitmask_set(opts & perm_options::add))
+      ++count;
+    if (bitmask_set(opts & perm_options::remove))
+      ++count;
 
-    if ((prms & add_perms) && (prms & remove_perms))  // precondition failed
-      return;
+    BOOST_ASSERT_MSG(count == 1,
+      "opts arg requires exactly one of the perm_options constants replace, add, or"
+      "remove.");
+# endif
 
 # ifdef BOOST_POSIX_API
     error_code local_ec;
@@ -1492,9 +1500,9 @@ namespace detail
       return;
     }
 
-    if (prms & add_perms)
+    if (opts & perm_options::add)
       prms |= current_status.permissions();
-    else if (prms & remove_perms)
+    else if (opts & perm_options::remove)
       prms = current_status.permissions() & ~prms;
 
     // OS X <10.10, iOS <8.0 and some other platforms don't support fchmodat().
@@ -1532,8 +1540,9 @@ namespace detail
 # else  // Windows
 
     // if not going to alter FILE_ATTRIBUTE_READONLY, just return
-    if (!(!((prms & (add_perms | remove_perms)))
-      || (prms & (owner_write|group_write|others_write))))
+    if (!(!((opts & (perm_options::add | perm_options::remove)))
+      || bitmask_set(prms
+        & (perms::owner_write| perms::group_write| perms::others_write))))
       return;
 
     DWORD attr = ::GetFileAttributesW(p.c_str());
@@ -1541,11 +1550,12 @@ namespace detail
     if (error(attr == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::permissions"))
       return;
 
-    if (prms & add_perms)
+    if (bitmask_set(opts & perm_options::add))
       attr &= ~FILE_ATTRIBUTE_READONLY;
-    else if (prms & remove_perms)
+    else if (bitmask_set(opts & perm_options::remove))
       attr |= FILE_ATTRIBUTE_READONLY;
-    else if (prms & (owner_write|group_write|others_write))
+    else if (bitmask_set(prms
+      & (perms::owner_write| perms::group_write| perms::others_write)))
       attr &= ~FILE_ATTRIBUTE_READONLY;
     else
       attr |= FILE_ATTRIBUTE_READONLY;

@@ -169,7 +169,7 @@ namespace boost
 //                                     file_type                                        //
 //--------------------------------------------------------------------------------------//
 
-    enum class file_type
+    enum class file_type  // was plain enum in V3
     {
         none,
         not_found,
@@ -204,18 +204,20 @@ namespace boost
     };
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    static const file_type status_error = file_type::none;
-    static const file_type status_unknown = file_type::none;
-    static const file_type file_not_found = file_type::not_found;
-    static const file_type regular_file = file_type::regular;
-    static const file_type directory_file = file_type::directory;
-    static const file_type symlink_file = file_type::symlink;
-    static const file_type block_file = file_type::block;
-    static const file_type character_file = file_type::character;
-    static const file_type fifo_file = file_type::fifo;
-    static const file_type socket_file = file_type::socket;
-    static const file_type reparse_file = file_type::reparse;
-    static const file_type type_unknown = file_type::unknown;
+    // Was plain enum in V3, so inject V3 names into enclosing namespace
+    // Use "static const" rather than "constexpr" to support non-C++11 compliant compilers
+    static const file_type status_error = file_type::status_error;
+    static const file_type status_unknown = file_type::status_unknown;
+    static const file_type file_not_found = file_type::file_not_found;
+    static const file_type regular_file = file_type::regular_file;
+    static const file_type directory_file = file_type::directory_file;
+    static const file_type symlink_file = file_type::symlink_file;
+    static const file_type block_file = file_type::block_file;
+    static const file_type character_file = file_type::character_file;
+    static const file_type fifo_file = file_type::fifo_file;
+    static const file_type socket_file = file_type::socket_file;
+    static const file_type reparse_file = file_type::reparse_file;
+    static const file_type type_unknown = file_type::type_unknown;
 # endif
 
   template <class Char, class Traits>
@@ -239,7 +241,7 @@ namespace boost
 //                                    copy_options                                      //
 //--------------------------------------------------------------------------------------//
 
-  enum class copy_options
+  enum class copy_options     // was BOOST_SCOPED enum copy_option in V3
   {
     none = 0,
 
@@ -266,8 +268,15 @@ namespace boost
     copy_file_mask = skip_existing | overwrite_existing | update_existing,
     copy_sub_dirs_mask = recursive,
     copy_symlinks_mask = copy_symlinks | skip_symlinks,
-    copy_form_mask = directories_only | create_symlinks | create_hard_links
+    copy_form_mask = directories_only | create_symlinks | create_hard_links,
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    fail_if_exists = none,
+    overwrite_if_exists = overwrite_existing
+# endif
   };
+
+  //  Was BOOST_SCOPED enum copy_option in V3 so no need to inject V3 names into namespace
 
   BOOST_BITMASK(copy_options)
 
@@ -275,7 +284,7 @@ namespace boost
 //                                       perms                                          //
 //--------------------------------------------------------------------------------------//
 
-  enum class perms
+  enum class perms      // was plain enum in V3
   {
     no_perms = 0,       // file_not_found is no_perms rather than perms_not_known
 
@@ -316,24 +325,73 @@ namespace boost
 
     unknown = 0xFFFF,   // permissions are not known, such as when a file_status object
                         // is created without specifying the permissions
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    all_all = all,
+    set_uid_on_exe = set_uid,
+    set_gid_on_exe = set_gid,
+    perms_mask = mask,
+    perms_not_known = unknown
+# endif
   };
 
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+  // Was plain enum in V3, so inject V3 names into enclosing namespace 
+  // Use "static const" rather than "constexpr" to support non-C++11 compliant compilers
+  static const perms no_perms = perms::no_perms;
+  static const perms owner_read = perms::owner_read;
+  static const perms owner_write = perms::owner_write;
+  static const perms owner_exe = perms::owner_exe;
+  static const perms owner_all = perms::owner_all;
+  static const perms group_read = perms::group_read;
+  static const perms group_write = perms::group_write;
+  static const perms group_exe = perms::group_exe;
+  static const perms group_all = perms::group_all;
+  static const perms others_read = perms::others_read;
+  static const perms others_write = perms::others_write;
+  static const perms others_exe = perms::others_exe;
+  static const perms others_all = perms::others_all;
+  static const perms all_all = perms::all_all;
+  static const perms set_uid_on_exe = perms::set_uid_on_exe;
+  static const perms set_gid_on_exe = perms::set_gid_on_exe;
+  static const perms sticky_bit = perms::sticky_bit;
+  static const perms perms_mask = perms::perms_mask;
+  static const perms perms_not_known = perms::perms_not_known;
+# endif
+
   BOOST_BITMASK(perms)
+
+  template <class Char, class Traits>
+  inline std::basic_ostream<Char, Traits>&
+    operator<<(std::basic_ostream<Char, Traits>& os, perms x)
+  {
+    return os << static_cast<int>(x);
+  }
+
+  template <class Char, class Traits>
+  inline std::basic_istream<Char, Traits>&
+    operator>>(std::basic_istream<Char, Traits>& is, perms& x)
+  {
+    int tmp;
+    is >> tmp;
+    x = static_cast<file_type>(tmp);
+    return is;
+  }
 
 //--------------------------------------------------------------------------------------//
 //                                   perm_options                                       //
 //--------------------------------------------------------------------------------------//
 
-  enum class perm_options
+  enum class perm_options   // was folded in with perms in V3
   {
     // one of:
-    replace = 0,          // replace the file’s permission bits with perm arg
-    add = 1,              // replace the file’s permission bits with the bitwise OR of
+    replace = 1,          // replace the file’s permission bits with perm arg
+    add = 2,              // replace the file’s permission bits with the bitwise OR of
                           //   perm arg and the file’s current permission bits
-    remove = 2,           // replace the file’s permission bits with the bitwise AND of
+    remove = 4,           // replace the file’s permission bits with the bitwise AND of
                           //   complement of perm arg and file’s current permission bits
     // optional bitmask:
-    nofollow = 4          // change the permissions of a symbolic link itself rather than
+    nofollow = 8          // change the permissions of a symbolic link itself rather than
                           //   the permissions of the file the link resolves to
   };
 
@@ -343,13 +401,18 @@ namespace boost
 //                                 directory_options                                    //
 //--------------------------------------------------------------------------------------//
 
-  enum class directory_options
+  enum class directory_options    // was BOOST_SCOPED_ENUM symlink_option in V3 
   {
     none = 0,                     // (default) Skip directory symlinks, permission denied
                                   //   is an error
     follow_directory_symlink = 1, // follow rather than skip directory symlinks
     skip_permission_denied = 2,   // skip directories that would otherwise result in a
                                   //   permission denied error
+
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    no_recurse = none,
+    recurse = follow_directory_symlink,
+# endif
 
     _detail_no_push = 4           // internal use only
   };
@@ -414,7 +477,7 @@ namespace boost
 
   private:
     file_type         m_value;
-    enum class perms  m_perms;
+    perms             m_perms;
   };
 
   inline bool type_present(file_status f) BOOST_NOEXCEPT
@@ -462,28 +525,6 @@ namespace boost
 
   namespace detail
   {
-    ////  We cannot pass a BOOST_SCOPED_ENUM to a compled function because it will cause
-    ////  an undefined reference if the library is compled with -std=c++0x but the
-    ////  use is compiled in C++03 mode, or visa versa. See tickets 6124, 6779, 10038.
-    ////  The workaround is to pass a plain old enum.
-    //enum copy_opts
-    //{
-    //  none=0,
-    //  skip_existing = 1,      
-    //  overwrite_existing = 2, 
-    //  update_existing = 4,    
-    //  recursive = 8,          
-    //  copy_symlinks = 16,     
-    //  skip_symlinks = 32,     
-    //  directories_only = 64,  
-    //  create_symlinks = 128,  
-    //  create_hard_links = 256,
-    //  copy_file_mask = skip_existing|overwrite_existing|update_existing,
-    //  copy_sub_dirs_mask = recursive,
-    //  copy_symlinks_mask = copy_symlinks|skip_symlinks,
-    //  copy_form_mask = directories_only|create_symlinks|create_hard_links
-    //};
-
     BOOST_FILESYSTEM_DECL
     file_status status(const path&p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -530,7 +571,8 @@ namespace boost
     void last_write_time(const path& p, const std::time_t new_time,
                          system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
-    void permissions(const path& p, perms prms, system::error_code* ec=0);
+    void permissions(const path& p, perms prms, perm_options opts,
+                     system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
     path read_symlink(const path& p, system::error_code* ec=0);
     BOOST_FILESYSTEM_DECL
@@ -800,11 +842,16 @@ namespace boost
                        system::error_code& ec) BOOST_NOEXCEPT
                                        {detail::last_write_time(p, new_time, &ec);}
   inline
-  void permissions(const path& p, perms prms)
-                                       {detail::permissions(p, prms);}
+  void permissions(const path& p, perms prms, perm_options opts = perm_options::replace)
+                                       {detail::permissions(p, prms, opts);}
   inline
   void permissions(const path& p, perms prms, system::error_code& ec) BOOST_NOEXCEPT
-                                       {detail::permissions(p, prms, &ec);}
+                                       {detail::permissions(p, prms,
+                                         perm_options::replace, &ec);}
+  inline
+  void permissions(const path& p, perms prms, perm_options opts,
+                   system::error_code& ec) BOOST_NOEXCEPT
+                                       {detail::permissions(p, prms, opts, &ec);}
 
   inline
   path read_symlink(const path& p)     {return detail::read_symlink(p);}
@@ -1231,17 +1278,6 @@ namespace filesystem
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  //BOOST_SCOPED_ENUM_DECLARE_BEGIN(directory_options)
-  //{
-  //  none,
-  //  no_recurse = none,         // don't follow directory symlinks (default behavior)
-  //  recurse,                   // follow directory symlinks
-  //  _detail_no_push = recurse << 1  // internal use only
-  //}
-  //BOOST_SCOPED_ENUM_DECLARE_END(directory_options)
-
-  //BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(directory_options))
-
   namespace detail
   {
     struct recur_dir_itr_imp
@@ -1274,7 +1310,8 @@ namespace filesystem
       //  Discover if the iterator is for a directory that needs to be recursed into,
       //  taking symlinks and options into account.
 
-      if ((m_options & directory_options::_detail_no_push) == directory_options::_detail_no_push)
+      if ((m_options & directory_options::_detail_no_push) 
+          == directory_options::_detail_no_push)
       {
         m_options &= ~directory_options::_detail_no_push;
         return false;

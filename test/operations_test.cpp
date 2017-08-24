@@ -256,7 +256,7 @@ namespace
   //void dump_tree(const fs::path & root)
   //{
   //  cout << "dumping tree rooted at " << root << endl;
-  //  for (fs::recursive_directory_iterator it (root, fs::symlink_option::recurse);
+  //  for (fs::recursive_directory_iterator it (root, fs::directory_options::follow_directory_symlink);
   //       it != fs::recursive_directory_iterator();
   //       ++it)
   //  {
@@ -622,7 +622,7 @@ namespace
     error_code ec;
     int d1f1_count = 0;
     for (fs::recursive_directory_iterator it (dir,
-      recursive ? fs::symlink_option::recurse : fs::symlink_option::no_recurse);
+      recursive ? fs::directory_options::follow_directory_symlink : fs::directory_options::none);
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
@@ -643,7 +643,7 @@ namespace
     //  test iterator increment with error_code argument
     boost::system::error_code ec;
     int d1f1_count = 0;
-    fs::recursive_directory_iterator it(dir, fs::symlink_option::no_recurse);
+    fs::recursive_directory_iterator it(dir, fs::directory_options::none);
     fs::recursive_directory_iterator it2(it);  // test single pass shallow copy semantics
     for (;
          it != fs::recursive_directory_iterator();
@@ -932,32 +932,34 @@ namespace
     {
       cout << "  fs::status(p).permissions() " << std::oct << fs::status(p).permissions()
         << std::dec << endl;
-      BOOST_TEST((fs::status(p).permissions() & 0600) == 0600);  // 0644, 0664 sometimes returned
+      BOOST_TEST((fs::status(p).permissions()
+        & static_cast<fs::perms>(0600)) == static_cast<fs::perms>(0600));  // 0644, 0664 sometimes returned
 
-      fs::permissions(p, fs::owner_all);
-      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+      fs::permissions(p, fs::perms::owner_all);
+      BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
 
-      fs::permissions(p, fs::add_perms | fs::group_all);
-      BOOST_TEST(fs::status(p).permissions() == (fs::owner_all | fs::group_all));
+      fs::permissions(p, fs::perms::group_all, fs::perm_options::add);
+      BOOST_TEST(fs::status(p).permissions()
+        == (fs::perms::owner_all | fs::perms::group_all));
 
-      fs::permissions(p, fs::remove_perms | fs::group_all);
-      BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+      fs::permissions(p, fs::perms::group_all, fs::perm_options::remove);
+      BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
 
       // some POSIX platforms cache permissions during directory iteration, some don't
       // so test that iteration finds the correct permissions
       for (fs::directory_iterator itr(dir); itr != fs::directory_iterator(); ++itr)
         if (itr->path().filename() == fs::path("permissions.txt"))
-          BOOST_TEST(itr->status().permissions() == fs::owner_all);
+          BOOST_TEST(itr->status().permissions() == fs::perms::owner_all);
 
       if (create_symlink_ok)  // only if symlinks supported
       {
-        BOOST_TEST(fs::status(p).permissions() == fs::owner_all);
+        BOOST_TEST(fs::status(p).permissions() == fs::perms::owner_all);
         fs::path p2(dir / "permissions-symlink.txt");
         fs::create_symlink(p, p2);
         cout << std::oct; 
         cout << "   status(p).permissions() "  << fs::status(p).permissions() << endl;
         cout << "  status(p2).permissions() "  << fs::status(p).permissions() << endl;
-        fs::permissions(p2, fs::add_perms | fs::others_read);
+        fs::permissions(p2, fs::perms::others_read, fs::perm_options::add);
         cout << "   status(p).permissions(): " << fs::status(p).permissions() << endl; 
         cout << "  status(p2).permissions(): " << fs::status(p2).permissions() << endl;
         cout << std::dec;
@@ -966,11 +968,11 @@ namespace
     }
     else // Windows
     {
-      BOOST_TEST(fs::status(p).permissions() == 0666);
-      fs::permissions(p, fs::remove_perms | fs::group_write);
-      BOOST_TEST(fs::status(p).permissions() == 0444);
-      fs::permissions(p, fs::add_perms | fs::group_write);
-      BOOST_TEST(fs::status(p).permissions() == 0666);
+      BOOST_TEST(fs::status(p).permissions() == static_cast<fs::perms>(0666));
+      fs::permissions(p, fs::perms::group_write, fs::perm_options::remove);
+      BOOST_TEST(fs::status(p).permissions() == static_cast<fs::perms>(0444));
+      fs::permissions(p, fs::perms::group_write, fs::perm_options::add);
+      BOOST_TEST(fs::status(p).permissions() == static_cast<fs::perms>(0666));
     }
   }
   
