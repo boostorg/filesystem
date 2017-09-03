@@ -240,7 +240,8 @@ typedef DWORD err_t;
 #   define BOOST_DELETE_FILE(P)(::DeleteFileW(P)!= 0)
 #   define BOOST_COPY_DIRECTORY(F,T)(::CreateDirectoryExW(F, T, 0)!= 0)
 #   define BOOST_COPY_FILE(F,T,FailIfExistsBool)(::CopyFileW(F, T, FailIfExistsBool)!= 0)
-#   define BOOST_MOVE_FILE(OLD,NEW)(::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
+#   define BOOST_MOVE_FILE(OLD,NEW)\
+      (::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
 
@@ -898,7 +899,8 @@ namespace detail
     }
     if (ec != 0)
       ec->clear();
-    BOOST_ASSERT_MSG(result.is_absolute(), "canonical() implementation error; please report");
+    BOOST_ASSERT_MSG(result.is_absolute(),
+      "canonical() implementation error; please report");
     return result;
   }
 
@@ -1094,7 +1096,7 @@ namespace detail
   void create_directory_symlink(const path& to, const path& from,
                                  system::error_code* ec)
   {
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
+#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK before Vista & Server 2008
 
     error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
       "boost::filesystem::create_directory_symlink");
@@ -1130,15 +1132,15 @@ namespace detail
           return;
 #     endif
 
-    error(!BOOST_CREATE_HARD_LINK(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0, to, from, ec,
-      "boost::filesystem::create_hard_link");
+    error(!BOOST_CREATE_HARD_LINK(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0, to, from,
+      ec, "boost::filesystem::create_hard_link");
 #   endif
   }
 
   BOOST_FILESYSTEM_DECL
   void create_symlink(const path& to, const path& from, error_code* ec)
   {
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
+#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK before Vista & Server 2008
     error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
       "boost::filesystem::create_directory_symlink");
 #   else
@@ -1168,7 +1170,8 @@ namespace detail
       {
         if (error(errno != ERANGE ? errno : 0
       // bug in some versions of the Metrowerks C lib on the Mac: wrong errno set 
-#         if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+#         if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__)\
+            || defined(__APPLE_CC__))
           && errno != 0
 #         endif
           , ec, "boost::filesystem::current_path"))
@@ -2045,7 +2048,7 @@ namespace detail
     static boost::uintmax_t& file_size(directory_entry& x) { return x.m_file_size; }
 # endif
 # ifdef BOOST_FILESYSTEM_CACHE_LAST_WRITE_TIME
-    static std::time_t& last_write_time(directory_entry& x) { return x.m_last_write_time; }
+    static std::time_t& last_write_time(directory_entry& x) {return x.m_last_write_time;}
 # endif
   };
 }  // namespace detail
@@ -2197,7 +2200,7 @@ namespace
     dirent * entry(static_cast<dirent *>(buffer));
     dirent * result;
     int return_code;
-    if ((return_code = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result))!= 0)
+    if ((return_code = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result))!=0)
       return error_code(errno, system_category());
     if (result == 0)
       return fs::detail::close_directory(handle, buffer);
