@@ -11,6 +11,12 @@
 //--------------------------------------------------------------------------------------// 
 
 //  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
+
+// The Android NDK fully supports 64-bit offsets beginning with API level 24 (7.0).
+// If building for older versions of Android, enabling 64-bit offsets disables some
+// functions (truncate, fgetpos, fsetpos, ...) completely when using NDK r15c and above.
+#if !defined(__ANDROID__) || __ANDROID_API__ >= 24
+
 #if !(defined(__HP_aCC) && defined(_ILP32) && !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #endif
@@ -27,6 +33,8 @@
       // systems as well.
 #else
 #define _FILE_OFFSET_BITS 64
+#endif
+
 #endif
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
