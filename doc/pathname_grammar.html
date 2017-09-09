@@ -1,0 +1,69 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>New Page 3</title>
+</head>
+
+<body>
+
+<p>&nbsp;</p>
+<p><i>pathname:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; root-name<sub>opt</sub> root-directory<sub>opt</sub> 
+relative-path</i></p>
+<p><i>root-name:</i><sup> See <a href="#4">4</a>, <a href="#5">5</a> below</sup><i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>operating system dependent 
+sequences of characters<i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>implementation-defined 
+sequences of characters</p>
+<p><i>root-directory:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; directory-separator</i></p>
+<p><i>relative-path:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; filename<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; filename directory-separator 
+relative-path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>an empty path</p>
+<p><i>filename:</i><sup>See <a href="#3">3</a> below</sup><i><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>non-empty sequence of 
+characters other than <i>directory-separator</i> characters</p>
+<p><i>directory-separator:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; preferred-separator directory-separator<sub>opt</sub><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fallback-separator directory-separator<sub>opt</sub></i></p>
+<p><i>preferred-separator:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>operating system dependent 
+directory separator character</p>
+<p><i>fallback-separator:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>/, if preferred-separator 
+is not /</p>
+<p><font face="Times New Roman">¶</font> <a name="2">2</a>: Except in a <i>
+root-name</i>, multiple successive <i>directory-separator</i> characters are 
+considered to be the same as one <i>directory-separator</i> character. </p>
+<p><font face="Times New Roman">¶</font> <a name="3">3</a>: The filename <i>dot</i> 
+(30.10.4.6) is treated as a reference to the current directory. The filename <i>
+dot-dot</i> (30.10.4.6) is treated as a reference to the parent directory. What 
+the filename <i>dot-dot</i> refers to relative to <i>root-directory</i> is 
+implementation-defined. Specific filenames may have special meanings for a 
+particular operating system. </p>
+<p><font face="Times New Roman">¶ </font><a name="4">4</a>: A <i>root-name</i> 
+identifies the starting location for pathname resolution (30.10.4.17). If there 
+are no operating system dependent <i>root-name</i>s, at least one 
+implementation-defined <i>root-name</i> is required. [ Note: Many operating 
+systems define a name beginning with two <i>directory-separator</i> characters 
+as a <i>root-name</i> that identifies network or other resource locations. Some 
+operating systems define a single letter followed by a colon as a drive 
+specifier – a <i>root-name</i> identifying a specific device such as a disk 
+drive. —end note ] </p>
+<p><font face="Times New Roman">¶ </font><a name="5">5</a> If a <i>root-name</i> 
+is otherwise ambiguous, the possibility with the longest sequence of characters 
+is chosen. [ Note: On a POSIX-like operating system, it is impossible to have a
+<i>root-name</i> and a <i>relative-path</i> without an intervening <i>
+root-directory</i> element. —end note ]</p>
+<p>&nbsp;</p>
+<p><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i></p>
+
+</body>
+
+</html>
