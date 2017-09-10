@@ -62,76 +62,20 @@ namespace filesystem
 
 # ifdef BOOST_WINDOWS_API
     typedef wchar_t                        value_type;
-    BOOST_STATIC_CONSTEXPR value_type      separator = L'/';
     BOOST_STATIC_CONSTEXPR value_type      preferred_separator = L'\\';
+    BOOST_STATIC_CONSTEXPR value_type      separator = L'/';
     BOOST_STATIC_CONSTEXPR value_type      dot = L'.';
 # else 
     typedef char                           value_type;
-    BOOST_STATIC_CONSTEXPR value_type      separator = '/';
     BOOST_STATIC_CONSTEXPR value_type      preferred_separator = '/';
+    BOOST_STATIC_CONSTEXPR value_type      separator = '/';
     BOOST_STATIC_CONSTEXPR value_type      dot = '.';
 # endif
     typedef std::basic_string<value_type>  string_type;  
     typedef std::codecvt<wchar_t, char,
                          std::mbstate_t>   codecvt_type;
 
-
-    //  ----- character encoding conversions -----
-
-    //  Following the principle of least astonishment, path input arguments
-    //  passed to or obtained from the operating system via objects of
-    //  class path behave as if they were directly passed to or
-    //  obtained from the O/S API, unless conversion is explicitly requested.
-    //
-    //  POSIX specfies that path strings are passed unchanged to and from the
-    //  API. Note that this is different from the POSIX command line utilities,
-    //  which convert according to a locale.
-    //
-    //  Thus for POSIX, char strings do not undergo conversion.  wchar_t strings
-    //  are converted to/from char using the path locale or, if a conversion
-    //  argument is given, using a conversion object modeled on
-    //  std::wstring_convert.
-    //
-    //  The path locale, which is global to the thread, can be changed by the
-    //  imbue() function. It is initialized to an implementation defined locale.
-    //  
-    //  For Windows, wchar_t strings do not undergo conversion. char strings
-    //  are converted using the "ANSI" or "OEM" code pages, as determined by
-    //  the AreFileApisANSI() function, or, if a conversion argument is given,
-    //  using a conversion object modeled on std::wstring_convert.
-    //
-    //  See m_pathname comments for further important rationale.
-
-    //  TODO: rules needed for operating systems that use / or .
-    //  differently, or format directory paths differently from file paths. 
-    //
-    //  **********************************************************************************
-    //
-    //  More work needed: How to handle an operating system that may have
-    //  slash characters or dot characters in valid filenames, either because
-    //  it doesn't follow the POSIX standard, or because it allows MBCS
-    //  filename encodings that may contain slash or dot characters. For
-    //  example, ISO/IEC 2022 (JIS) encoding which allows switching to
-    //  JIS x0208-1983 encoding. A valid filename in this set of encodings is
-    //  0x1B 0x24 0x42 [switch to X0208-1983] 0x24 0x2F [U+304F Kiragana letter KU]
-    //                                             ^^^^
-    //  Note that 0x2F is the ASCII slash character
-    //
-    //  **********************************************************************************
-
-    //  Supported source arguments: half-open iterator range, container, c-array,
-    //  and single pointer to null terminated string.
-
-    //  All source arguments except pointers to null terminated byte strings support
-    //  multi-byte character strings which may have embedded nulls. Embedded null
-    //  support is required for some Asian languages on Windows.
-
-    //  "const codecvt_type& cvt=codecvt()" default arguments are not used because this
-    //  limits the impact of locale("") initialization failures on POSIX systems to programs
-    //  that actually depend on locale(""). It further ensures that exceptions thrown
-    //  as a result of such failues occur after main() has started, so can be caught. 
-
-    //  -----  constructors  -----
+    //  -----  30.10.8.4.1, constructors and destructor  -----
 
     path() BOOST_NOEXCEPT {}                                          
     path(const path& p) : m_pathname(p.m_pathname) {}
@@ -534,7 +478,7 @@ namespace filesystem
 #     endif
     }
 
-    //  -----  lexical operations  -----
+    //  -----  30.10.8.4.11 lexical path generation  -----
 
     path  lexically_normal() const;
     path  lexically_relative(const path& base) const;

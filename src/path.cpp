@@ -443,73 +443,85 @@ namespace filesystem
   {
     // aim for correctness; worry about efficiency later
 
+    // "bullet #" in comments refers to 30.10.4.11 normal form [fs.def.normal.form]
+   
     path temp;                  // return value will be built here
 
-    // an empty path is already in normal form
+    // bullet 1: If the path is empty, stop.
     if (m_pathname.empty())
       return temp;
 
-    iterator itr = begin();
+    //  This implementation assumes iteration over "//foo//bar///baz////"
+    //  yields "//foo", "/", "bar", "baz", "". Search for "//foo//bar///baz////" in
+    //  test/path_test.cpp to see a test of this.
 
-    // handle root-name if present
-    if (itr->has_root_name())
+    temp = root_name();
+    iterator itr = begin();
+ 
+    if (!temp.empty())  // i.e. there was a root-name
     {
-      temp = *itr;
+      ++itr; // bypass the root-name
+
+    // bullet 2: Replace each slash character in the root-name with a preferred-separator.
 #ifdef BOOST_WINDOWS_API
       // on POSIX directory-separators are already the preferred_separator
       if (detail::is_directory_separator(temp.m_pathname[0]))
       {
         temp.m_pathname[0] = preferred_separator;
+        BOOST_ASSERT_MSG(temp.size() > 2 
+          && detail::is_directory_separator(temp.m_pathname[1]),
+           "implementation error, please report");   // root_name() must be wacky
         temp.m_pathname[1] = preferred_separator;
       }
 #endif
-      ++itr;
-    }
+    } // temp was not empty; i.e. there was a root_name
 
-    // handle root-directory if present
     if (itr != end() && itr->has_root_directory())
     {
+      // bullet 3: Replace each directory-separator with a preferred-separator.
       temp += preferred_separator;
       ++itr;
-    }
 
-    path::string_type::size_type relative_path_start = temp.size(); // see dot rules
+      // bullet 6: If there is a root-directory, remove all dot-dot filenames and any
+      // directory-separators immediately following them.
+      while (itr != end() && *itr == detail::dot_dot_path())
+        ++itr;
+    }
 
     // handle relative-path portion of the pathname if present
     for (; itr != end(); ++itr)
     {
-      path temp_filename;   // used by dot-dot handler below
+      path prior_filename;   // used by bullet 5 handler below
 
-      // skip all dot elements
+      // bullet 4: Remove each dot filename and any immediately following
+      // directory-separator.
       if (itr->native().size() == 1 && (itr->native())[0] == dot)
-        {}  // do nothing
+        {}  // skip the dot element
 
-      // call temp.remove_filename() and skip the current dot-dot element when the
-      // current element is dot-dot and temp.filename() is not empty and is not dot-dot
+      // bullet 5: ... remove a non-dot-dot filename immediately followed by a
+      // directory-separator and a dot-dot filename, along with any immediately following
+      // directory-separator.
       else if (*itr == detail::dot_dot_path()
-          && !(temp_filename = temp.filename()).empty()
-          && temp_filename != detail::dot_dot_path())
+        && !(prior_filename = temp.filename()).empty()
+        && prior_filename != detail::dot_dot_path())
         temp.remove_filename();
 
-      // if the current element is a trailing directory-separator, which is represented by
-      // an empty path, then append a preferred-separator
-      else if (itr->empty())
-        temp /= detail::preferred_separator_path();
+      else if (itr->empty()) // trailing directory-specifying
+      {
+        // bullet 7: If the last filename is dot-dot, remove any trailing
+        // directory-separator.
+        if (temp.filename() != detail::dot_dot_path())
+          temp /= detail::preferred_separator_path();
+      }
 
-      else  // it is a plain old element
-        temp /= *itr;
+      else
+        temp /= *itr;  // nothing special about this element, so just add it
+
     }  // each relative-path element
 
-	// dot insertion rules
-    //   if empty, path become a dot
+    // bullet 8: If the path is empty, add a dot.
     if (temp.empty())
       temp = detail::dot_path();
-
-    //   if relative-path portion of the pathname consists solely of a director-separator,
-    //   a dot filename is inserted before the trailing directory-separator
-    else if (temp.size() == (relative_path_start + 1u)
-      && temp.m_pathname[relative_path_start] == path::preferred_separator)
-      temp.m_pathname.insert(relative_path_start, 1, path::dot);
 
     return temp;
   }
