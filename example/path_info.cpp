@@ -35,7 +35,6 @@ int main(int argc, char* argv[])
 
   cout  <<  "\ncomposed path:\n";
   cout  <<  "  operator<<()---------: " << p << "\n";
-  cout  <<  "  make_preferred()-----: " << p.make_preferred() << "\n";
 
   cout << "\nelements:\n";
   for (auto element : p)
