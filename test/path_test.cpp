@@ -59,6 +59,7 @@
 #include <boost/utility.hpp>
 #include <iostream>
 #include <sstream>
+#include <array>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -85,20 +86,7 @@ using std::endl;
 namespace
 {
   std::string platform(BOOST_PLATFORM);
-
-  void check(const fs::path & source,
-              const std::string & expected, const char* file, int line)
-  {
-    if (source.string() == expected)
-      return;
-
-    std::cout << file
-              << '(' << line << "): source: \"" << source.string()
-              << "\" != expected: \"" << expected
-              << "\"" << std::endl;
-
-    ++::boost::detail::test_errors();
-  }
+  std::string src_file(__FILE__);
 
   path p1("fe/fi/fo/fum");
   path p2(p1);
@@ -106,7 +94,103 @@ namespace
   path p4("foobar");
   path p5;
 
-  //  exception_tests  -----------------------------------------------------------------//
+  void check(const fs::path & source,
+              const std::string & expected, const char* file, int line)
+  {
+    if (source.string() == expected)
+      return;
+
+    // The format of this message is choosen to ensure that double-clicking on the
+    // message in the Visual Studio IDE output window will take you to the line in the
+    // file that caused the error.
+    cout << file
+      << '(' << line << "): source: \"" << source.string()
+      << "\" != expected \"" << expected
+      << "\"" << endl;
+
+    ++::boost::detail::test_errors();
+  }
+
+  void member_check(const fs::path& p, const std::string& member, const fs::path& result,
+    const std::string& expected, int line)
+  {
+    if (result.string() == expected)  // string() required on Windows to convert from
+                                      //   native wstring to same type as expected.
+      return;
+
+    // The format of this message is choosen to ensure that double-clicking on the
+    // message in the Visual Studio IDE output window will take you to the line in the
+    // file that caused the error.
+    cout << src_file
+      << '(' << line << "): error: path(" << p << ")." << member
+      << "().string() result " << result << " != expected \"" << expected << "\""
+      << endl;
+
+    ++::boost::detail::test_errors();
+  }
+
+  //  decomposition test support  ------------------------------------------------------//
+
+  struct dtst
+  {
+    int line;
+    const char* path;
+    const char* root_name;
+    const char* root_directory;
+    const char* root_path;
+    const char* relative_path;
+    const char* parent_path;
+    const char* filename;
+    const char* stem;
+    const char* extension;
+  };
+
+  static const dtst decomp_table[] 
+  {
+    //                                  root_     root_ root_     rel..._   parent_
+    //              path                 name      dir   path      path      path     filename     stem     ext
+    dtst{__LINE__, ""                 , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, " "                , ""     ,  ""      , ""      , " "     , ""      , " "    , " "    , ""},
+    dtst{__LINE__, "/"                , ""     ,  "/"     , "/"     , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "//"               , ""     ,  "/"     , "/"     , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "///"              , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "."                , ""     ,  ""      , ""      , "."     , ""      , ""     , ""     , ""},
+    dtst{__LINE__, ".."               , ""     ,  ""      , ""      , ".."    , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "foo"              , ""     ,  ""      , ""      , "foo"   , ""      , "foo"  , "foo"  , ""},
+    dtst{__LINE__, "foo/bar"          , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "foo/bar/baz"      , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "foo/bar.baz"      , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "bar.baz.bak"      , ""     ,  ""      , ""      , ""      , ""      , ""     , "bar"  , ".baz.bak" },
+    dtst{__LINE__, "/foo"             , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+    dtst{__LINE__, "/foo/bar"         , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
+//    dtst{__LINE__, "//foo/bar/baz.bak", "//foo",  "/",  "//foo/", "bar/baz.bak", "//foo/bar", "baz.bak", "baz", ".bak"},
+//    dtst{__LINE__, "//foo/bar/baz.bak", "//fo",  "/",  "//foo/", "bar/baz.bak", "//foo/bar", "baz.bak", "baz", ".bak"},
+  };
+
+  void decomposition_table_tests()
+  {
+    std::cout << "decomposition_table_tests..." << std::endl;
+
+    std::cout << sizeof(decomp_table)/sizeof(dtst) << endl;
+
+    for (const dtst& test : decomp_table)
+    {
+      path p(test.path);
+
+      member_check(p, "root_name", p.root_name(), test.root_name, test.line);
+      member_check(p, "root_directory", p.root_directory(), test.root_directory, test.line);
+      member_check(p, "root_path", p.root_path(), test.root_path, test.line);
+      member_check(p, "relative_path", p.relative_path(), test.relative_path, test.line);
+      member_check(p, "parent_path", p.parent_path(), test.parent_path, test.line);
+      member_check(p, "filename", p.filename(), test.filename, test.line);
+      member_check(p, "stem", p.stem(), test.stem, test.line);
+      member_check(p, "extension", p.extension(), test.extension, test.line);
+    }
+
+    std::cout << "    end decomposition_table_tests" << std::endl;
+  }
+    
+//  exception_tests  -----------------------------------------------------------------//
 
   void exception_tests()
   {
@@ -838,8 +922,8 @@ namespace
     p = q = "";
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "");
-    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.stem() == "");
     BOOST_TEST(p.extension() == "");
     BOOST_TEST(p.root_name() == "");
@@ -858,8 +942,8 @@ namespace
     p = q = "/";
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "");
-    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     BOOST_TEST(p.filename() == "");
+    BOOST_TEST(q.remove_filename() == "/");
     BOOST_TEST(p.stem() == "");
     BOOST_TEST(p.extension() == "");
     BOOST_TEST(p.root_name() == "");
@@ -878,19 +962,19 @@ namespace
     else
       BOOST_TEST(!p.is_absolute());
 
-    p = q = "//";
+    p = q = "//";   // "//" is a root directory, not an invalid root-name
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     PATH_TEST_EQ(p.filename(), "");
+    BOOST_TEST(q.remove_filename() == "//");
     PATH_TEST_EQ(p.stem(), "");
     PATH_TEST_EQ(p.extension(), "");
-    PATH_TEST_EQ(p.root_name(), "//");
-    PATH_TEST_EQ(p.root_directory(), "");
-    PATH_TEST_EQ(p.root_path().string(), "//");
+    PATH_TEST_EQ(p.root_name(), "");
+    PATH_TEST_EQ(p.root_directory(), "/");
+    PATH_TEST_EQ(p.root_path().string(), "/");
     BOOST_TEST(p.has_root_path());
-    BOOST_TEST(p.has_root_name());
-    BOOST_TEST(!p.has_root_directory());
+    BOOST_TEST(!p.has_root_name());
+    BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
     BOOST_TEST(!p.has_filename());
     BOOST_TEST(!p.has_stem());
@@ -901,8 +985,8 @@ namespace
     p = q = "///";
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     PATH_TEST_EQ(p.filename(), "");
+    BOOST_TEST(q.remove_filename() == "///");
     PATH_TEST_EQ(p.stem(), "");
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "");
@@ -1851,11 +1935,13 @@ namespace
   {
     std::cout << "lexically_normal_tests..." << std::endl;
 
-    BOOST_TEST(!path("///foo").has_root_name());  // also tested elsewhere, but repeat as
-                                                  // impl depends on has_root_name()
+    // the lexically_normal implementation depends on root_name() so test that first
+    BOOST_TEST(!path("//").has_root_name());
+    BOOST_TEST(path("//foo").has_root_name());
+    BOOST_TEST(!path("///foo").has_root_name());
 
-    //  The implementation of lexically_normal in src/path.cpp assumes that
-    //  iteration over "//foo//bar///baz////" yields "//foo", "/", "bar", "baz", "".
+    // the lexically_normal implementation assumes that iteration over 
+    // "//foo//bar///baz////" yields "//foo", "/", "bar", "baz", ""
     path foo_bar_baz("//foo//bar///baz////");
     path::iterator it = foo_bar_baz.begin();
     BOOST_TEST(*it == "//foo");
@@ -2274,6 +2360,7 @@ int cpp_main(int, char*[])
   filename_tests();
   clarify_filename_tests();
   clarify_stem_and_extension_tests();
+  decomposition_table_tests();
   query_and_decomposition_tests();
   composition_tests();
   iterator_tests();
