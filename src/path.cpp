@@ -251,7 +251,8 @@ namespace filesystem
 
   path& path::remove_filename()
   {
-    m_pathname.erase(m_parent_path_end());
+    if (has_filename())
+      m_pathname.erase(m_parent_path_end());
     return *this;
   }
 
@@ -294,10 +295,11 @@ namespace filesystem
 
     return (itr.m_pos != m_pathname.size()
       && (
-          (itr.m_element.m_pathname.size() > 1
+          (itr.m_element.m_pathname.size() > 2
             && detail::is_directory_separator(itr.m_element.m_pathname[0])
             && detail::is_directory_separator(itr.m_element.m_pathname[1])
-   )
+            && !detail::is_directory_separator(itr.m_element.m_pathname[2])
+            )
 #       ifdef BOOST_WINDOWS_API
         || itr.m_element.m_pathname[itr.m_element.m_pathname.size()-1] == colon
 #       endif
@@ -601,7 +603,15 @@ namespace
 
   size_type root_directory_start(const string_type & path, size_type size)
   // return npos if no root_directory found
-  {
+  { 
+    // case "/"
+    if (size == 1
+      && fs::detail::is_directory_separator(path[0])) return 0;
+
+    // case "//"
+    if (size == 2
+      && fs::detail::is_directory_separator(path[0])
+      && fs::detail::is_directory_separator(path[1])) return 0;
 
 #   ifdef BOOST_WINDOWS_API
     // case "c:/"
@@ -609,11 +619,6 @@ namespace
       && path[1] == colon
       && fs::detail::is_directory_separator(path[2])) return 2;
 #   endif
-
-    // case "//"
-    if (size == 2
-      && fs::detail::is_directory_separator(path[0])
-      && fs::detail::is_directory_separator(path[1])) return string_type::npos;
 
 #   ifdef BOOST_WINDOWS_API
     // case "\\?\"
@@ -638,7 +643,7 @@ namespace
       return pos < size ? pos : string_type::npos;
     }
     
-    // case "/"
+    // case "/" followed by anything else
     if (size > 0 && fs::detail::is_directory_separator(path[0])) return 0;
 
     return string_type::npos;
