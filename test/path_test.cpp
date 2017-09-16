@@ -147,23 +147,25 @@ namespace
 
   static const dtst decomp_table[] 
   {
-    //                                  root_     root_ root_     rel..._   parent_
-    //              path                 name      dir   path      path      path     filename     stem     ext
-    dtst{__LINE__, ""                 , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, " "                , ""     ,  ""      , ""      , " "     , ""      , " "    , " "    , ""},
-    dtst{__LINE__, "/"                , ""     ,  "/"     , "/"     , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "//"               , ""     ,  "/"     , "/"     , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "///"              , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "."                , ""     ,  ""      , ""      , "."     , ""      , ""     , ""     , ""},
-    dtst{__LINE__, ".."               , ""     ,  ""      , ""      , ".."    , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "foo"              , ""     ,  ""      , ""      , "foo"   , ""      , "foo"  , "foo"  , ""},
-    dtst{__LINE__, "foo/bar"          , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "foo/bar/baz"      , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "foo/bar.baz"      , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "bar.baz.bak"      , ""     ,  ""      , ""      , ""      , ""      , ""     , "bar"  , ".baz.bak" },
-    dtst{__LINE__, "/foo"             , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-    dtst{__LINE__, "/foo/bar"         , ""     ,  ""      , ""      , ""      , ""      , ""     , ""     , ""},
-//    dtst{__LINE__, "//foo/bar/baz.bak", "//foo",  "/",  "//foo/", "bar/baz.bak", "//foo/bar", "baz.bak", "baz", ".bak"},
+    //                                  root_    root_  root_       rel..._      parent_
+    //              path                 name     dir    path        path         path         filename   stem   ext
+    dtst{__LINE__, "//foo/bar/baz.bak", "//foo", "/", "//foo/", "bar/baz.bak" , "//foo/bar",  "baz.bak", "baz",".bak"},
+    dtst{__LINE__, ""                 , ""     , "" ,     "" ,  ""            , ""         , ""        , ""     , ""},
+    dtst{__LINE__, " "                , ""     , "" ,     "" ,  " "           , ""         , " "       , " "    , ""},
+    dtst{__LINE__, "/"                , ""     , "/",     "/",  ""            , ""         , ""        , ""     , ""},
+    dtst{__LINE__, "//"               , ""     , "/",     "/",  ""            , ""         , ""        , ""     , ""},
+    dtst{__LINE__, "///"              , ""     , "/",     "/",  ""            , ""         , ""        , ""     , ""},
+    dtst{__LINE__, "."                , ""     , "" ,     "" ,  "."           , ""         , "."       , "."    , "" },
+    dtst{__LINE__, "/."               , ""     , "/",     "/",  "."           , "/"        , "."       , "."    , "" },
+    dtst{__LINE__, ".."               , ""     , "" ,     "" ,  ".."          , ""         , ".."      , ".."   , "" },
+    dtst{__LINE__, "//.."             , ""     , "/",     "/",  ".."          , "/"        , ".."      , ".."   , "" },
+    dtst{__LINE__, "foo"              , ""     , "" ,     "" ,  "foo"         , ""         , "foo"     , "foo"  , ""},
+    dtst{__LINE__, "foo/bar"          , ""     , "" ,     "" ,  "foo/bar"     , "foo"      , "bar"     , "bar"  , ""},
+    dtst{__LINE__, "foo/bar/baz"      , ""     , "" ,     "" ,  "foo/bar/baz" , "foo/bar"  , "baz"     , "baz"  , ""},
+    dtst{__LINE__, "foo/bar.baz"      , ""     , "" ,     "" ,  "foo/bar.baz" , "foo"      , "bar.baz" , "bar"  , ".baz"},
+    dtst{__LINE__, "bar.baz.bak"      , ""     , "" ,     "" ,  "bar.baz.bak" , ""         , "bar.baz.bak","bar.baz", ".bak" },
+    dtst{__LINE__, "/foo"             , ""     , "/",     "/",  "foo"         , "/"        , "foo"     , "foo"  , ""},
+    dtst{__LINE__, "/foo/bar"         , ""     , "/",     "/",  "foo/bar"     , "/foo"     , "bar"     , "bar"  , ""},
 //    dtst{__LINE__, "//foo/bar/baz.bak", "//fo",  "/",  "//foo/", "bar/baz.bak", "//foo/bar", "baz.bak", "baz", ".bak"},
   };
 
@@ -190,7 +192,7 @@ namespace
     std::cout << "    end decomposition_table_tests" << std::endl;
   }
     
-//  exception_tests  -----------------------------------------------------------------//
+//  exception_tests  -------------------------------------------------------------------//
 
   void exception_tests()
   {
@@ -284,6 +286,16 @@ namespace
     PATH_TEST_EQ(*--itr, "foo");
     PATH_TEST_EQ(*--itr, "/");
 
+    itr_ck = "/foo//bar";
+    itr = itr_ck.begin();
+    BOOST_TEST(itr->string() == "/");
+    BOOST_TEST(*++itr == std::string("foo"));
+    BOOST_TEST(*++itr == std::string("bar"));
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "foo");
+    PATH_TEST_EQ(*--itr, "/");
+
     itr_ck = "../f"; // previously failed due to short name bug
     itr = itr_ck.begin();
     PATH_TEST_EQ(itr->string(), "..");
@@ -291,6 +303,22 @@ namespace
     BOOST_TEST(++itr == itr_ck.end());
     PATH_TEST_EQ(*--itr, "f");
     PATH_TEST_EQ(*--itr, "..");
+
+    itr_ck = "//.."; // previously failed due to misinterpretation as root-name
+    itr = itr_ck.begin();
+    PATH_TEST_EQ(itr->string(), "//");
+    PATH_TEST_EQ(*++itr, "..");
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, "..");
+    PATH_TEST_EQ(*--itr, "//");
+
+    itr_ck = "//."; // previously failed due to misinterpretation as root-name
+    itr = itr_ck.begin();
+    PATH_TEST_EQ(itr->string(), "//");
+    PATH_TEST_EQ(*++itr, ".");
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, ".");
+    PATH_TEST_EQ(*--itr, "//");
 
     // std::filesystem says treat "/foo/bar/" as "/", "foo", "bar", ""
     itr_ck = "/foo/bar/";
@@ -2357,13 +2385,13 @@ int cpp_main(int, char*[])
   append_tests();
   self_assign_and_append_tests();
   overload_tests();
+  iterator_tests();
+  decomposition_table_tests();
   filename_tests();
   clarify_filename_tests();
   clarify_stem_and_extension_tests();
-  decomposition_table_tests();
   query_and_decomposition_tests();
   composition_tests();
-  iterator_tests();
   non_member_tests();
   exception_tests();
   name_function_tests();

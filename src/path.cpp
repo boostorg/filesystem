@@ -106,11 +106,7 @@ namespace
       const string_type& src,
       size_type& element_pos,
       size_type& element_size,
-#     if !BOOST_WORKAROUND(BOOST_MSVC, <= 1310) // VC++ 7.1
       size_type size = string_type::npos
-#     else
-      size_type size = -1
-#     endif
     );
 
 }  // unnamed namespace
@@ -291,21 +287,25 @@ namespace filesystem
 
   path path::root_name() const
   {
-    iterator itr(begin());
+# ifdef BOOST_WINDOWS_API
+    // Windows drive-letter, e.g. C:
+    if (m_pathname.size() > 1 && m_pathname[1] == colon && is_letter(m_pathname[0]))
+      return path(m_pathname.substr(0, 2));
+# endif
 
-    return (itr.m_pos != m_pathname.size()
-      && (
-          (itr.m_element.m_pathname.size() > 2
-            && detail::is_directory_separator(itr.m_element.m_pathname[0])
-            && detail::is_directory_separator(itr.m_element.m_pathname[1])
-            && !detail::is_directory_separator(itr.m_element.m_pathname[2])
-            )
-#       ifdef BOOST_WINDOWS_API
-        || itr.m_element.m_pathname[itr.m_element.m_pathname.size()-1] == colon
-#       endif
-  ))
-      ? itr.m_element
-      : path();
+    // if empty or the first element is a filename
+    if (m_pathname.empty() || !detail::is_directory_separator(m_pathname[0]) )
+      return path();
+
+    // the only remaining possibilities are root-name or root-directory  
+    path element = *begin();
+    for (auto c : element.m_pathname)
+    {
+      if (!detail::is_directory_separator(c))
+        return element;  // not a root-directory so must be a root-name
+    }
+
+    return path();  // first element is a root-directory
   }
 
   path path::root_directory() const
@@ -601,50 +601,54 @@ namespace
 
   //  root_directory_start  ------------------------------------------------------------//
 
-  size_type root_directory_start(const string_type & path, size_type size)
+  size_type root_directory_start(const string_type& p, size_type size)
   // return npos if no root_directory found
-  { 
+  {
     // case "/"
     if (size == 1
-      && fs::detail::is_directory_separator(path[0])) return 0;
+      && fs::detail::is_directory_separator(p[0])) return 0;
 
     // case "//"
     if (size == 2
-      && fs::detail::is_directory_separator(path[0])
-      && fs::detail::is_directory_separator(path[1])) return 0;
+      && fs::detail::is_directory_separator(p[0])
+      && fs::detail::is_directory_separator(p[1])) return 0;
 
 #   ifdef BOOST_WINDOWS_API
     // case "c:/"
     if (size > 2
-      && path[1] == colon
-      && fs::detail::is_directory_separator(path[2])) return 2;
+      && p[1] == colon
+      && fs::detail::is_directory_separator(p[2])) return 2;
 #   endif
 
 #   ifdef BOOST_WINDOWS_API
     // case "\\?\"
     if (size > 4
-      && fs::detail::is_directory_separator(path[0])
-      && fs::detail::is_directory_separator(path[1])
-      && path[2] == questionmark
-      && fs::detail::is_directory_separator(path[3]))
+      && fs::detail::is_directory_separator(p[0])
+      && fs::detail::is_directory_separator(p[1])
+      && p[2] == questionmark
+      && fs::detail::is_directory_separator(p[3]))
     {
-      string_type::size_type pos(path.find_first_of(separators, 4));
+      string_type::size_type pos(p.find_first_of(separators, 4));
         return pos < size ? pos : string_type::npos;
     }
 #   endif
 
-    // case "//net {/}"
+    // case "//name {/}"
     if (size > 3
-      && fs::detail::is_directory_separator(path[0])
-      && fs::detail::is_directory_separator(path[1])
-      && !fs::detail::is_directory_separator(path[2]))
+      && fs::detail::is_directory_separator(p[0])
+      && fs::detail::is_directory_separator(p[1])
+      && !fs::detail::is_directory_separator(p[2]))
     {
-      string_type::size_type pos(path.find_first_of(separators, 2));
+      if (p[2] == path::dot && p[3] == path::dot
+        && (size == 4 || fs::detail::is_directory_separator(p[5])))
+        return 0;
+
+      string_type::size_type pos(p.find_first_of(separators, 2));
       return pos < size ? pos : string_type::npos;
     }
     
     // case "/" followed by anything else
-    if (size > 0 && fs::detail::is_directory_separator(path[0])) return 0;
+    if (size > 0 && fs::detail::is_directory_separator(p[0])) return 0;
 
     return string_type::npos;
   }
@@ -660,14 +664,16 @@ namespace
       size_type size
 )
   {
-    if (size == string_type::npos) size = src.size();
+    if (size == string_type::npos)
+      size = src.size();
     element_pos = 0;
     element_size = 0;
-    if (src.empty()) return;
+    if (src.empty())
+      return;
 
     string_type::size_type cur(0);
     
-    // deal with // [network]
+    // root-name
     if (size >= 2 && fs::detail::is_directory_separator(src[0])
       && fs::detail::is_directory_separator(src[1])
       && (size == 2

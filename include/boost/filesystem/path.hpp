@@ -425,7 +425,8 @@ namespace filesystem
     const std::string   generic_string() const; 
     const std::string   generic_string(const codecvt_type& cvt) const; 
     const std::wstring  generic_wstring() const;
-    const std::wstring  generic_wstring(const codecvt_type&) const { return generic_wstring(); };
+    const std::wstring  generic_wstring(const codecvt_type&) const
+      { return generic_wstring(); };
 
 #   else // BOOST_POSIX_API
     //  On POSIX-like systems, the generic format is the same as the native format
