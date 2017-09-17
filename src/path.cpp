@@ -281,6 +281,13 @@ namespace filesystem
   size_type path::m_root_name_size() const
   {
     size_type size{ 0 };
+
+# ifdef BOOST_WINDOWS_API
+    // Windows drive-letter, e.g. C:
+    if (m_pathname.size() > 1 && m_pathname[1] == colon && is_letter(m_pathname[0]))
+      size = 2;
+    else
+# endif
     
     // if too small to be a root-name, or is a filename or is a root-directory
     if (m_pathname.size() < 2                              // is empty
@@ -291,12 +298,6 @@ namespace filesystem
         && detail::is_directory_separator(m_pathname[1])   // "///" ...
         && detail::is_directory_separator(m_pathname[2]))  //   is root-directory
       ) {}
-
-# ifdef BOOST_WINDOWS_API
-    // Windows drive-letter, e.g. C:
-    else if (m_pathname.size() > 1 && m_pathname[1] == colon && is_letter(m_pathname[0]))
-      size = 2;
-# endif
     
     // The only remaining possibility is that the pathname begins with exactly two
     // directory-separators (i.e. "//"). The implementation-defined remainder of the
@@ -389,26 +390,6 @@ namespace filesystem
    return end_pos == string_type::npos
      ? path()
      : path(m_pathname.c_str(), m_pathname.c_str() + end_pos);
-  }
-
-  path path::filename() const
-  {
-    // V3 implementation:
-    //size_type pos(filename_pos(m_pathname, m_pathname.size()));
-    //return (m_pathname.size()
-    //          && pos
-    //          && detail::is_directory_separator(m_pathname[pos])
-    //          && !is_root_separator(m_pathname, pos))
-    //  ? path()
-    //  : path(m_pathname.c_str() + pos);
-
-    // initial V4 implementation strives for correctness rather than efficiency
-    iterator root_end = begin();
-    if (has_root_name())
-      ++root_end;
-    if (has_root_directory())
-      ++root_end;
-    return root_end == end() ? path() : *--end();
   }
 
   path path::stem() const

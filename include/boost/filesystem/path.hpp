@@ -827,7 +827,12 @@ namespace filesystem
       // use detail::is_element_separator() rather than detail::is_directory_separator
       // to deal with "c:.." edge case on Windows when ':' acts as a separator
   }
- 
+
+  inline path path::filename() const
+  {
+    return has_relative_path() ? *--end() : path();
+  }
+
 //--------------------------------------------------------------------------------------//
 //                     class path member template implementation                        //
 //--------------------------------------------------------------------------------------//
