@@ -382,6 +382,9 @@ namespace filesystem
 
   path path::parent_path() const
   {
+    if (!has_relative_path())
+      return *this;
+
    size_type end_pos(m_parent_path_end());
    return end_pos == string_type::npos
      ? path()

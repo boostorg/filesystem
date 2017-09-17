@@ -165,9 +165,9 @@ namespace
     dtst{__LINE__, "bar.baz.bak"      , ""     , "" ,     "" ,  "bar.baz.bak" , ""         , "bar.baz.bak","bar.baz", ".bak" },
     dtst{__LINE__, "/foo"             , ""     , "/",     "/",  "foo"         , "/"        , "foo"     , "foo"  , ""},
     dtst{__LINE__, "/foo/bar"         , ""     , "/",     "/",  "foo/bar"     , "/foo"     , "bar"     , "bar"  , ""},
-    dtst{__LINE__, "//net"           , "//net" , "" , "//net",  ""            , "//net"         , ""        , ""     , "" },
-    dtst{__LINE__, "//net/"          , "//net" , "/","//net/",  ""            , "//net/"         , ""        , ""     , "" },
-    dtst{__LINE__, "//net/foo"       , "//net" , "/","//net/",  "foo"         , "//net/"   , "foo"     , ""     , "" },
+    dtst{__LINE__, "//net"           , "//net" , "" , "//net",  ""            , "//net"    , ""        , ""     , ""},
+    dtst{__LINE__, "//net/"          , "//net" , "/","//net/",  ""            , "//net/"  ,  ""        , ""     , "" },
+    dtst{__LINE__, "//net/foo"       , "//net" , "/","//net/",  "foo"         , "//net/"   , "foo"     , "foo"  , "" },
   };
 
   void decomposition_table_tests()
