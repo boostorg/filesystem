@@ -152,13 +152,12 @@ namespace
     dtst{__LINE__, "//foo/bar/baz.bak", "//foo", "/", "//foo/", "bar/baz.bak" , "//foo/bar",  "baz.bak", "baz",".bak"},
     dtst{__LINE__, ""                 , ""     , "" ,     "" ,  ""            , ""         , ""        , ""     , ""},
     dtst{__LINE__, " "                , ""     , "" ,     "" ,  " "           , ""         , " "       , " "    , ""},
-    dtst{__LINE__, "/"                , ""     , "/",     "/",  ""            , ""         , ""        , ""     , ""},
-    dtst{__LINE__, "//"               , ""     , "/",     "/",  ""            , ""         , ""        , ""     , ""},
-    dtst{__LINE__, "///"              , ""     , "/",     "/",  ""            , ""         , ""        , ""     , ""},
+    dtst{__LINE__, "/"                , ""     , "/",     "/",  ""            , "/"         , ""        , ""     , ""},
+    dtst{__LINE__, "//"               , "//"   , "" ,     "//", ""            , "//"         , ""        , ""     , ""},
+    dtst{__LINE__, "///"              , ""     , "/",     "/",  ""            , "///"         , ""        , ""     , ""},
     dtst{__LINE__, "."                , ""     , "" ,     "" ,  "."           , ""         , "."       , "."    , "" },
     dtst{__LINE__, "/."               , ""     , "/",     "/",  "."           , "/"        , "."       , "."    , "" },
     dtst{__LINE__, ".."               , ""     , "" ,     "" ,  ".."          , ""         , ".."      , ".."   , "" },
-    dtst{__LINE__, "//.."             , ""     , "/",     "/",  ".."          , "/"        , ".."      , ".."   , "" },
     dtst{__LINE__, "foo"              , ""     , "" ,     "" ,  "foo"         , ""         , "foo"     , "foo"  , ""},
     dtst{__LINE__, "foo/bar"          , ""     , "" ,     "" ,  "foo/bar"     , "foo"      , "bar"     , "bar"  , ""},
     dtst{__LINE__, "foo/bar/baz"      , ""     , "" ,     "" ,  "foo/bar/baz" , "foo/bar"  , "baz"     , "baz"  , ""},
@@ -166,18 +165,22 @@ namespace
     dtst{__LINE__, "bar.baz.bak"      , ""     , "" ,     "" ,  "bar.baz.bak" , ""         , "bar.baz.bak","bar.baz", ".bak" },
     dtst{__LINE__, "/foo"             , ""     , "/",     "/",  "foo"         , "/"        , "foo"     , "foo"  , ""},
     dtst{__LINE__, "/foo/bar"         , ""     , "/",     "/",  "foo/bar"     , "/foo"     , "bar"     , "bar"  , ""},
-//    dtst{__LINE__, "//foo/bar/baz.bak", "//fo",  "/",  "//foo/", "bar/baz.bak", "//foo/bar", "baz.bak", "baz", ".bak"},
+    dtst{__LINE__, "//net"           , "//net" , "" , "//net",  ""            , "//net"         , ""        , ""     , "" },
+    dtst{__LINE__, "//net/"          , "//net" , "/","//net/",  ""            , "//net/"         , ""        , ""     , "" },
+    dtst{__LINE__, "//net/foo"       , "//net" , "/","//net/",  "foo"         , "//net/"   , "foo"     , ""     , "" },
   };
 
   void decomposition_table_tests()
   {
-    std::cout << "decomposition_table_tests..." << std::endl;
+    cout << "decomposition_table_tests..." << endl;
 
-    std::cout << sizeof(decomp_table)/sizeof(dtst) << endl;
+    cout << sizeof(decomp_table)/sizeof(dtst) << endl;
 
     for (const dtst& test : decomp_table)
     {
       path p(test.path);
+
+      cout << test.line << " " << p << endl;
 
       member_check(p, "root_name", p.root_name(), test.root_name, test.line);
       member_check(p, "root_directory", p.root_directory(), test.root_directory, test.line);
@@ -304,21 +307,17 @@ namespace
     PATH_TEST_EQ(*--itr, "f");
     PATH_TEST_EQ(*--itr, "..");
 
-    itr_ck = "//.."; // previously failed due to misinterpretation as root-name
+    itr_ck = "//..";
     itr = itr_ck.begin();
-    PATH_TEST_EQ(itr->string(), "//");
-    PATH_TEST_EQ(*++itr, "..");
+    PATH_TEST_EQ(itr->string(), "//..");
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, "..");
-    PATH_TEST_EQ(*--itr, "//");
+    PATH_TEST_EQ(*--itr, "//..");
 
-    itr_ck = "//."; // previously failed due to misinterpretation as root-name
+    itr_ck = "//.";
     itr = itr_ck.begin();
-    PATH_TEST_EQ(itr->string(), "//");
-    PATH_TEST_EQ(*++itr, ".");
+    PATH_TEST_EQ(itr->string(), "//.");
     BOOST_TEST(++itr == itr_ck.end());
-    PATH_TEST_EQ(*--itr, ".");
-    PATH_TEST_EQ(*--itr, "//");
+    PATH_TEST_EQ(*--itr, "//.");
 
     // std::filesystem says treat "/foo/bar/" as "/", "foo", "bar", ""
     itr_ck = "/foo/bar/";
@@ -2380,6 +2379,16 @@ int cpp_main(int, char*[])
   BOOST_TEST(p04.string() == "foobar");
   p04 = p04; // self-assignment
   BOOST_TEST(p04.string() == "foobar");
+
+  path xx("//");
+  xx.has_root_name();
+  xx.root_name();
+  xx = path("//foo");
+  xx.root_name();
+  xx = path("//foo/");
+  xx.root_name();
+  xx.root_directory();
+
 
   construction_tests();
   append_tests();

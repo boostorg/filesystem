@@ -278,44 +278,72 @@ namespace filesystem
 
   //  decomposition  -------------------------------------------------------------------//
 
-  path  path::root_path() const
-  { 
-    path temp(root_name());
-    if (!root_directory().empty()) temp.m_pathname += root_directory().c_str();
-    return temp;
-  } 
+  size_type path::m_root_name_size() const
+  {
+    size_type size{ 0 };
+    
+    // if too small to be a root-name, or is a filename or is a root-directory
+    if (m_pathname.size() < 2                              // is empty
+      || !detail::is_directory_separator(m_pathname[0])    // is filename
+      || (m_pathname.size() >= 2                           // "/" ...
+        && !detail::is_directory_separator(m_pathname[1])) //   is root-directory
+      || (m_pathname.size() > 2
+        && detail::is_directory_separator(m_pathname[1])   // "///" ...
+        && detail::is_directory_separator(m_pathname[2]))  //   is root-directory
+      ) {}
+
+# ifdef BOOST_WINDOWS_API
+    // Windows drive-letter, e.g. C:
+    else if (m_pathname.size() > 1 && m_pathname[1] == colon && is_letter(m_pathname[0]))
+      size = 2;
+# endif
+    
+    // The only remaining possibility is that the pathname begins with exactly two
+    // directory-separators (i.e. "//"). The implementation-defined remainder of the
+    // root-name may be missing or otherwise invalid, but it isn't path's job to detect
+    // or diagnose that.
+
+    else
+    {
+      size = 2;
+      for (; size != m_pathname.size()
+        && !detail::is_directory_separator(m_pathname[size]); ++size) {}
+    }
+
+    return size;
+  }
+
+  size_type path::m_root_directory_size(size_type pos) const
+  {
+    size_type size{ 0 };
+    for (; pos + size != m_pathname.size()
+      && detail::is_directory_separator(m_pathname[pos+size]); ++size) {
+    }
+    return size;
+  }
 
   path path::root_name() const
   {
-# ifdef BOOST_WINDOWS_API
-    // Windows drive-letter, e.g. C:
-    if (m_pathname.size() > 1 && m_pathname[1] == colon && is_letter(m_pathname[0]))
-      return path(m_pathname.substr(0, 2));
-# endif
-
-    // if empty or the first element is a filename
-    if (m_pathname.empty() || !detail::is_directory_separator(m_pathname[0]) )
-      return path();
-
-    // the only remaining possibilities are root-name or root-directory  
-    path element = *begin();
-    for (auto c : element.m_pathname)
-    {
-      if (!detail::is_directory_separator(c))
-        return element;  // not a root-directory so must be a root-name
-    }
-
-    return path();  // first element is a root-directory
+    size_type sz(m_root_name_size());
+    return m_pathname.empty()
+      ? path()
+      : (sz == m_pathname.size()
+        ? *this
+        : path(m_pathname.substr(0, sz)));
   }
 
   path path::root_directory() const
   {
-    size_type pos(root_directory_start(m_pathname, m_pathname.size()));
-
-    return pos == string_type::npos
-      ? path()
-      : path(m_pathname.c_str() + pos, m_pathname.c_str() + pos + 1);
+    return has_root_directory() ? path(separator_string) : path();
   }
+
+  path  path::root_path() const
+  { 
+    path temp(root_name());
+    if (!root_directory().empty())
+      temp.m_pathname += root_directory().c_str();
+    return temp;
+  } 
 
   path path::relative_path() const
   {
