@@ -665,74 +665,6 @@ namespace
     return string_type::npos;
   }
 
-  //  first_element --------------------------------------------------------------------//
-  //   sets pos and len of first element, excluding extra separators
-  //   if src.empty(), sets pos,len, to 0,0.
-
-  void first_element(
-      const string_type & src,
-      size_type & element_pos,
-      size_type & element_size,
-      size_type size
-)
-  {
-    if (size == string_type::npos)
-      size = src.size();
-    element_pos = 0;
-    element_size = 0;
-    if (src.empty())
-      return;
-
-    string_type::size_type cur(0);
-    
-    // root-name
-    if (size >= 2 && fs::detail::is_directory_separator(src[0])
-      && fs::detail::is_directory_separator(src[1])
-      && (size == 2
-        || !fs::detail::is_directory_separator(src[2])))
-    { 
-      cur += 2;
-      element_size += 2;
-    }
-
-    // leading (not non-network) separator
-    else if (fs::detail::is_directory_separator(src[0]))
-    {
-      ++element_size;
-      // bypass extra leading separators
-      while (cur+1 < size
-        && fs::detail::is_directory_separator(src[cur+1]))
-      {
-        ++cur;
-        ++element_pos;
-      }
-      return;
-    }
-
-    // at this point, we have either a plain name, a network name,
-    // or (on Windows only) a device name
-
-    // find the end
-    while (cur < size
-#     ifdef BOOST_WINDOWS_API
-      && src[cur] != colon
-#     endif
-      && !fs::detail::is_directory_separator(src[cur]))
-    {
-      ++cur;
-      ++element_size;
-    }
-
-#   ifdef BOOST_WINDOWS_API
-    if (cur == size) return;
-    // include device delimiter
-    if (src[cur] == colon)
-      { ++element_size; }
-#   endif
-
-    return;
-  }
-
 }  // unnamed namespace
 
 
@@ -792,11 +724,31 @@ namespace filesystem
   {
     iterator itr;
     itr.m_path_ptr = this;
-    size_type element_size;
-    first_element(m_pathname, itr.m_pos, element_size);
-    itr.m_element = m_pathname.substr(itr.m_pos, element_size);
-    if (itr.m_element.m_pathname == preferred_separator_string)
-      itr.m_element.m_pathname = separator_string;  // needed for Windows, harmless on POSIX
+    itr.m_pos = 0;
+
+    size_type element_sz{ 0 };
+
+    // empty or has root-name
+    if (m_pathname.empty() || (element_sz = m_root_name_size()) != 0)
+    {
+      itr.m_element = m_pathname.substr(0, element_sz);
+    }
+
+    // has root-directory
+    else if ((element_sz = m_root_directory_size(0)) != 0)
+    {
+       itr.m_element = separator_string;
+       return itr;
+    }
+
+    // only possibility left is a filename
+    else
+    {
+      for (; element_sz != m_pathname.size()
+               && !fs::detail::is_directory_separator(m_pathname[element_sz]);
+             ++element_sz) {}
+      itr.m_element = m_pathname.substr(0, element_sz);
+    }
     return itr;
   }
 
