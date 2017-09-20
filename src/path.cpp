@@ -348,6 +348,11 @@ namespace filesystem
 
   path path::relative_path() const
   {
+    //return (empty() || !has_relative_path())
+    //  ? path()
+    //  : path();
+
+
     iterator itr(begin());
 
     for (; itr.m_pos != m_pathname.size()
@@ -718,6 +723,11 @@ namespace filesystem
 //                                                                                      //
 //                        class path::iterator implementation                           //
 //                                                                                      //
+//  note 1:                                                                             //       //
+//  [fs.path.itr] ¶ 4 specifies traversal in the generic format.                        //
+//  [fs.path.generic.obs] ¶ 1 specifies "A single slash (’/’) character is used as the  //
+//  directory-separator."                                                               //
+//                                                                                      //
 //--------------------------------------------------------------------------------------//
 
   path::iterator path::begin() const
@@ -737,8 +747,7 @@ namespace filesystem
     // has root-directory
     else if ((element_sz = m_root_directory_size(0)) != 0)
     {
-       itr.m_element = separator_string;
-       return itr;
+       itr.m_element = separator_string;  // see note 1 above
     }
 
     // only possibility left is a filename
@@ -760,10 +769,12 @@ namespace filesystem
     return itr;
   }
 
-  void path::m_path_iterator_increment(path::iterator & it)
+  void path::m_path_iterator_increment(path::iterator& it)
   {
     BOOST_ASSERT_MSG(it.m_pos < it.m_path_ptr->m_pathname.size(),
       "path::basic_iterator increment past end()");
+
+    bool was_root_name = (it.m_pos == 0 && it.m_element.m_root_name_size() != 0);
 
     // increment to position past current element; if current element is "" (ie trailing
     // "/") this will cause it.m_pos to represent the end iterator
@@ -772,37 +783,26 @@ namespace filesystem
     // if the end is reached, we are done
     if (it.m_pos == it.m_path_ptr->m_pathname.size())
     {
-      it.m_element.clear();  // aids debugging, may release unneeded memory
+      it.m_element.clear();  // aids debugging and may release unneeded memory
       return;
     }
 
-    // both POSIX and Windows treat paths that begin with exactly two separators specially
-    bool was_net(it.m_element.m_pathname.size() > 2
-      && detail::is_directory_separator(it.m_element.m_pathname[0])
-      && detail::is_directory_separator(it.m_element.m_pathname[1])
-      && !detail::is_directory_separator(it.m_element.m_pathname[2]));
-
-    // process separator (Windows drive spec is only case not a separator)
+    // directory-separator
     if (detail::is_directory_separator(it.m_path_ptr->m_pathname[it.m_pos]))
     {
-      // detect root directory
-      if (was_net
-#       ifdef BOOST_WINDOWS_API
-        // case "c:/"
-        || it.m_element.m_pathname[it.m_element.m_pathname.size()-1] == colon
-#       endif
-         )
+      // detect root-directory following root-name
+      if (was_root_name)
       {
-        it.m_element.m_pathname = separator;  // generic format; see docs
+        it.m_element = separator_string;  // see note 1 above
         return;
       }
 
-      // skip separators until it.m_pos points to the start of the next element
+      // skip directory-separators until it.m_pos points to start of next element
       while (it.m_pos != it.m_path_ptr->m_pathname.size()
         && detail::is_directory_separator(it.m_path_ptr->m_pathname[it.m_pos]))
         { ++it.m_pos; }
 
-      // detect trailing separator, and treat it as path(), per std::filesystem spec
+      // detect trailing directory-, and treat it as path(), per [fs.path.itr] ¶ 4.4
       if (it.m_pos == it.m_path_ptr->m_pathname.size()
         && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)) 
       {
@@ -812,7 +812,7 @@ namespace filesystem
       }
     }
 
-    // get m_element
+    // filename
     size_type end_pos(it.m_path_ptr->m_pathname.find_first_of(separators, it.m_pos));
     if (end_pos == string_type::npos)
       end_pos = it.m_path_ptr->m_pathname.size();

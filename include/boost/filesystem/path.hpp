@@ -589,7 +589,7 @@ namespace filesystem
     friend bool operator<(const path& lhs, const path& rhs);
     
     size_type m_root_name_size() const;
-    size_type m_root_directory_size(size_type pos) const;
+    size_type m_root_directory_size(size_type pos) const;  // "//a///" returns 3
     size_type m_root_path_size() const
     {
       size_type root_name_sz{ m_root_name_size() };
