@@ -175,12 +175,12 @@ namespace
     // decompose correctly on both Windows and POSIX.
 
     dtst{__LINE__, ":"                , ""     , "" ,     "" ,  ":"           , ""         , ":"       , ":"    , ""},
-    dtst{__LINE__, "ab:"              , ""     , "" ,     "" ,  "ab:"         , "ab:"      , "ab:"     , "ab:"  , ""},
+    dtst{__LINE__, "ab:"              , ""     , "" ,     "" ,  "ab:"         , ""         , "ab:"     , "ab:"  , ""},
     dtst{__LINE__, "/c:"              , ""     , "/" ,    "/",  "c:"          , "/"        , "c:"      , "c:"   , ""},
 
 #ifdef BOOST_WINDOWS_API
     dtst{__LINE__, "c:"               , "c:"   , "" ,    "c:",  ""            , "c:"       , ""        , ""     , ""},
-    dtst{__LINE__, "c:d:"             , "c:"   , "" ,    "c:",  ""            , "c:"       , "d:"      , "d:"   , ""},
+    dtst{__LINE__, "c:d:"             , "c:"   , "" ,    "c:",  "d:"          , "c:"       , "d:"      , "d:"   , ""},
     dtst{__LINE__, "c:/"              , "c:"   , "/",   "c:/",  ""            , "c:/"      , ""        , ""     , ""},
     dtst{__LINE__, "c:/.foo"          , "c:"   , "/",   "c:/",  ".foo"        , "c:/"      , ".foo"    , ".foo" , ""},
 #endif
@@ -200,6 +200,10 @@ namespace
 
       cout << test.line << " " << p << endl;
 
+      // Say line 170 reports a root_name error. To debug set a breakpoint on the
+      // appropriate member_check call below, and then make the breakpoint conditional on
+      // test.line, e.g. test.line == 170. Once the breakpoint fires, set an unconditional
+      // breakpoint on the failing function, e.g. path::root_name.
       member_check(p, "root_name", p.root_name(), test.root_name, test.line);
       member_check(p, "root_directory", p.root_directory(),test.root_directory,test.line);
       member_check(p, "root_path", p.root_path(), test.root_path, test.line);

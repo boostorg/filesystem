@@ -348,21 +348,25 @@ namespace filesystem
 
   path path::relative_path() const
   {
-    //return (empty() || !has_relative_path())
-    //  ? path()
-    //  : path();
+    path temp;
 
+    if (has_relative_path())
+    {
+      auto itr = begin();
+      if (has_root_name())        // skip root-name if present
+        ++itr;
+      if (has_root_directory())   // skip root-directory if present
+        ++itr;
+      for (; itr != end(); ++itr) // process any filenames & trailing directory-sep if any
+      {
+        if (!temp.empty())        // have processed at least one prior filename
+          temp += separator;
+        if (!itr->empty())        // append filename unless trailing directory-separator
+          temp += itr->native();
+      }
+    }
 
-    iterator itr(begin());
-
-    for (; itr.m_pos != m_pathname.size()
-      && (detail::is_directory_separator(itr.m_element.m_pathname[0])
-#     ifdef BOOST_WINDOWS_API
-      || itr.m_element.m_pathname[itr.m_element.m_pathname.size()-1] == colon
-#     endif
-    ); ++itr) {}
-
-    return path(m_pathname.c_str() + itr.m_pos);
+    return temp;
   }
 
   string_type::size_type path::m_parent_path_end() const
@@ -388,13 +392,33 @@ namespace filesystem
 
   path path::parent_path() const
   {
-    if (!has_relative_path())
-      return *this;
+    path temp;
 
-   size_type end_pos(m_parent_path_end());
-   return end_pos == string_type::npos
-     ? path()
-     : path(m_pathname.c_str(), m_pathname.c_str() + end_pos);
+    if (!empty())
+    {
+      auto itr = begin();
+      if (itr != end() && has_root_name())
+        temp = *itr++;
+      if (itr != end() && has_root_directory())
+        temp += *itr++;
+
+      if (itr != end())               // has_relative_path() is true
+      {
+        auto end_itr = --end();       // parent_path does not include last element
+        bool prior_filename{ false };
+        for (; itr != end_itr; ++itr) // process any filenames
+        {
+          if (prior_filename)         // have processed at least one prior filename
+            temp += separator;
+          else
+            prior_filename = true;
+          temp += itr->native();      // append filename
+        }
+      }
+    }
+    return temp;
+
+
   }
 
   path path::stem() const
