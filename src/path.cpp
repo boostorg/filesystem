@@ -248,7 +248,9 @@ namespace filesystem
   path& path::remove_filename()
   {
     if (has_filename())
-      m_pathname.erase(m_parent_path_end());
+    {
+      m_pathname.erase((--end()).m_pos);
+    }
     return *this;
   }
 
@@ -321,16 +323,6 @@ namespace filesystem
       && detail::is_directory_separator(m_pathname[pos+size]); ++size) {
     }
     return size;
-  }
-
-  path path::root_name() const
-  {
-    size_type sz(m_root_name_size());
-    return m_pathname.empty()
-      ? path()
-      : (sz == m_pathname.size()
-        ? *this
-        : path(m_pathname.substr(0, sz)));
   }
 
   path path::root_directory() const

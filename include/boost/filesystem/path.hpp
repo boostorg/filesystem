@@ -803,6 +803,10 @@ namespace filesystem
 #     endif
       ;
     }
+    template <class ForwardIterator>
+    path to_generic(ForwardIterator first, ForwardIterator last,
+      bool root_name_possible);
+
   }  // namespace detail
 
   //------------------------------------------------------------------------------------//
@@ -828,10 +832,56 @@ namespace filesystem
       // to deal with "c:.." edge case on Windows when ':' acts as a separator
   }
 
-  inline path path::filename() const
+  inline path path::filename() const   // [fs.path.decompose] ¶ 6
   {
     return has_relative_path() ? *--end() : path();
   }
+
+  inline path path::root_name() const
+  {
+    return detail::to_generic(m_pathname.begin(),
+      m_pathname.begin() + m_root_name_size(), true);
+  }
+
+  namespace detail
+  {
+    template <class ForwardIterator>
+    inline path to_generic(ForwardIterator first, ForwardIterator last,
+      bool root_name_possible)  // i.e. two leading directory-separators not collapsed
+    {
+      path temp;
+      if (first != last)
+      {
+        // exactly two leading directory-separators indicate a root-name 
+        if (root_name_possible    // root_name_possible
+            && (last-first) >= 2  // there are two or more characters
+            // both the first and second but not the third are directory-separators
+            && is_directory_separator(*first)
+            && is_directory_separator(*(first+1))
+            && ((last - first) == 2
+              ||!is_directory_separator(*(first+2))))
+        {
+          temp += path::separator;
+          temp += path::separator;
+          ++first;
+          ++first;
+        }
+
+        while (first != last)
+        {
+          // collapse multiple directory-separators into single generic separator
+          if (is_directory_separator(*first))
+          {
+           temp += path::separator;
+           while (++first != last && is_directory_separator(*first)) {}
+          }
+          else
+            temp += *first++;
+        }
+      }
+      return temp;
+    }
+  }  // namespace detail
 
 //--------------------------------------------------------------------------------------//
 //                     class path member template implementation                        //
