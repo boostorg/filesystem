@@ -327,7 +327,10 @@ namespace filesystem
 
   path path::root_directory() const
   {
-    return has_root_directory() ? path(separator_string) : path();
+    return has_root_directory()
+      ? path(m_pathname.c_str() + m_root_name_size(),
+             m_pathname.c_str() + m_root_path_size())
+      : path();
   }
 
   path  path::root_path() const
@@ -340,77 +343,26 @@ namespace filesystem
 
   path path::relative_path() const
   {
-    path temp;
-
-    if (has_relative_path())
-    {
-      auto itr = begin();
-      if (has_root_name())        // skip root-name if present
-        ++itr;
-      if (has_root_directory())   // skip root-directory if present
-        ++itr;
-      for (; itr != end(); ++itr) // process any filenames & trailing directory-sep if any
-      {
-        if (!temp.empty())        // have processed at least one prior filename
-          temp += separator;
-        if (!itr->empty())        // append filename unless trailing directory-separator
-          temp += itr->native();
-      }
-    }
-
-    return temp;
-  }
-
-  string_type::size_type path::m_parent_path_end() const
-  {
-    size_type end_pos(filename_pos(m_pathname, m_pathname.size()));
-
-    bool filename_was_separator(m_pathname.size()
-      && detail::is_directory_separator(m_pathname[end_pos]));
-
-    // skip separators unless root directory
-    size_type root_dir_pos(root_directory_start(m_pathname, end_pos));
-    for (; 
-      end_pos > 0
-      && (end_pos-1) != root_dir_pos
-      && detail::is_directory_separator(m_pathname[end_pos-1])
-      ;
-      --end_pos) {}
-
-   return (end_pos == 1 && root_dir_pos == 0 && filename_was_separator)
-     ? string_type::npos
-     : end_pos;
+    return has_relative_path()
+      ? path(m_pathname.c_str() + m_root_path_size())
+      : path();
   }
 
   path path::parent_path() const
   {
-    path temp;
+    if (!has_relative_path())
+      return *this;
 
-    if (!empty())
+    auto pos = filename_pos(m_pathname, m_pathname.size());
+
+    if (pos != m_root_path_size())  // i.e. there are multiple filenames
     {
-      auto itr = begin();
-      if (itr != end() && has_root_name())
-        temp = *itr++;
-      if (itr != end() && has_root_directory())
-        temp += *itr++;
-
-      if (itr != end())               // has_relative_path() is true
-      {
-        auto end_itr = --end();       // parent_path does not include last element
-        bool prior_filename{ false };
-        for (; itr != end_itr; ++itr) // process any filenames
-        {
-          if (prior_filename)         // have processed at least one prior filename
-            temp += separator;
-          else
-            prior_filename = true;
-          temp += itr->native();      // append filename
-        }
-      }
+      BOOST_ASSERT(pos);
+      // skip the directory-separator(s) that preceed the last filename
+      for (; fs::detail::is_directory_separator(m_pathname[pos-1]); --pos) {}
     }
-    return temp;
 
-
+    return path(m_pathname.c_str(), m_pathname.c_str() + pos);
   }
 
   path path::stem() const

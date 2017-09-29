@@ -1,0 +1,227 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+ ins  {background-color: #CCFFCC; text-decoration: none;}
+ del  {background-color: #FFCACA; text-decoration: none;}
+</style>
+<title>Decomposition</title>
+</head>
+
+<body>
+
+<h2>Path decomposition functions inconsistent, underspecified, and confusing for
+<i>directory-specifier</i>s</h2>
+
+<p>Underspecified in that:</p>
+
+<ul>
+  <li><code>root_directory()</code>, <code>relative_path()</code>, and <code>
+  relative_path()</code> do not specify whether <i>directory-specifier</i> 
+  sequences are collapsed or not.</li>
+  <li><code>parent_path()</code> does not specify whether <i>directory-specifier</i> 
+  sequences are collapsed or not for all control paths.</li>
+  <li><code>root_name()</code>, <code>root_directory()</code>, <code>
+  relative_path()</code>, <code>relative_path()</code>, and <code>parent_path()</code> 
+  do not specify whether <i>directory-specifier</i>s are represented by <i>
+  preferred-separator</i>s, <i>fallback-separator</i>s, or whichever is present 
+  in the pathname.</li>
+</ul>
+
+<p>Confusing in that <code>root_name()</code>, <code>root_directory()</code>,
+<code>relative_path()</code>, <code>relative_path()</code>, and <code>
+parent_path()</code> contain no examples, as so require the reader to understand 
+the complexities of the generic format grammar and its corner cases. Numerous 
+other class path function descriptions use examples to reduce these confusions.</p>
+
+<p><b>Problem:</b> <code>root_path()</code> collapses sequences of directory-separators 
+into a single <i>directory-specifier</i> but <code>parent_path()</code> does not collapse such 
+sequences. That&#39;s by long-standing design, so the fix is simply to add a note.</p>
+
+<p>&nbsp;</p>
+
+<h3><span style="background-color: #FFFFA8">The problem</span></h3>
+
+<p><span style="background-color: #FFFFA8">&nbsp;Except in </span> <i>
+<span style="background-color: #FFFFA8">root-names, </span> </i>
+<span style="background-color: #FFFFA8">both the generic format and the POSIX and 
+Windows native formats treat sequences of </span> <i>
+<span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8"> characters 
+as a single </span> <i><span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8">. Thus the paths
+</span> <code><span style="background-color: #FFFFA8">&quot;///foo//bar&quot;</span></code><span style="background-color: #FFFFA8"> 
+and </span> <code><span style="background-color: #FFFFA8">&quot;/foo/bar&quot;</span></code><span style="background-color: #FFFFA8"> resolve to the same location in an actual file 
+system. </span> </p>
+
+<p><span style="background-color: #FFFFA8">Class path, except for a few functions that specifically mandate replacing
+</span> <i>
+<span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8"> sequences with single
+</span> <i><span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8">,&nbsp; 
+has always left </span> <i><span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8"> sequences unchanged.</span></p>
+
+<p><span style="background-color: #FFFFA8">The path decomposition functions return paths with
+</span> <i><span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8"> 
+sequences unchanged, while the generic string functions return paths with </span> <i>
+<span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8"> sequences reduced to a single
+</span> <i><span style="background-color: #FFFFA8">directory-separator. </span>
+</i><span style="background-color: #FFFFA8">This can be confusing because the decomposition functions are specified in 
+terms of the generic format, and never mention that what happens when </span> <i>
+<span style="background-color: #FFFFA8">directory-separator</span></i><span style="background-color: #FFFFA8"> sequences are present.</span></p>
+
+<h3>30.10.8.4.9 path decomposition [fs.path.decompose] </h3>
+
+<p><ins>Path decomposition functions create a new path from a portion of the pathname described by the generic 
+pathname format ([fs.path.generic]). Unless otherwise specified, the contents of 
+the result&#39;s pathname are unchanged from the original pathname portion.</ins></p>
+
+  <pre>path root_name() const; </pre>
+
+<blockquote>
+  <p><i>Returns:</i> <ins>The</ins> <i>root-name</i> <ins>portion of the pathname</ins>, if the pathname in the generic format includes
+  <i>root-name</i>, otherwise <code>path()</code>. </p>
+  <p><ins>[<i> Example:</i></ins></p>
+  <blockquote>
+  <p><ins><i>// On both POSIX and Windows,</i></ins><br>
+  <ins><code>path(&quot;/net/foo/bar/baz&quot;).root_name()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code>
+  // <i>yields</i><code> &quot;&quot;<br>
+  path(&quot;//net///foo//bar/baz&quot;).root_name()&nbsp; </code>// <i>yields</i><code> &quot;//net&quot;</code></ins></p>
+  <p><ins><i>// On Windows,</i><br>
+  <code>path(&quot;\\net\\foo\\bar\\baz&quot;).root_name()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code>
+  // <i>yields</i><code> &quot;&quot;</code></ins><br>
+  <ins><code>path(&quot;/\\net\\/\\foo\\/bar\\baz&quot;).root_name()&nbsp;  </code>
+  // <i>yields</i><code> &quot;/\\net&quot;</code></ins></p>
+  </blockquote>
+  <p><ins>—<i>end example </i>]</ins></p>
+</blockquote>
+
+<pre>path root_directory() const; </pre>
+<blockquote>
+  <p><i>Returns:</i> <ins>The</ins> <i>root-directory</i> <ins>portion of the pathname</ins>, if the pathname in the generic format includes 
+  <i>root-directory</i>, otherwise <code>path()</code>. </p>
+  <p><ins>[<i> Example:</i></ins></p>
+  <blockquote>
+  <p><i><ins>// On both POSIX and Windows,</ins><br>
+  </i><ins><code>path(&quot;/net/foo/bar/baz&quot;).root_directory()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code>
+  // <i>yields</i><code> &quot;/&quot;<br>
+  path(&quot;//net///foo//bar/baz&quot;).root_directory()&nbsp; </code>// <i>yields</i><code> &quot;///&quot;</code></ins></p>
+  <p><i><ins>// On Windows,</ins></i><br>
+  <ins><code>path(&quot;\\net\\foo\\bar\\baz&quot;).root_directory()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  </code>// <i>yields</i><code> &quot;\\&quot;<br>
+  path(&quot;/\\net\\/\\foo\\/bar/baz&quot;).root_directory()&nbsp;&nbsp;</code>// <i>yields</i><code> &quot;\\/\\&quot;</code></ins></p>
+  </blockquote>
+  <p><ins>—<i>end example </i>]</ins></p>
+</blockquote>
+<pre>path root_path() const; </pre>
+<blockquote>
+  <p><i>Returns:</i> <code>root_name() / root_directory()</code>. </p>
+  <p><ins>[<i> Example:</i></ins></p>
+  <blockquote>
+  <p><i><ins>// On both POSIX and Windows,</ins><br>
+  </i><ins><code>path(&quot;//net///foo//bar/baz&quot;).root_path()&nbsp; </code>
+  // <i>yields</i><code> &quot;//net/&quot;</code></ins></p>
+  <p><i><ins>// On Windows,</ins></i><br>
+  <ins><code>path(&quot;/\\net\\/\\foo\\/bar\\baz&quot;).root_path()&nbsp;  </code>
+  // <i>yields</i><code> &quot;/\\net\\/\\&quot;</code></ins></p>
+  </blockquote>
+  <p><ins>—<i>end example </i>]</ins></p>
+  <p><u><span style="background-color: #FFFF00">Add a note about inconsistency?</span></u></p>
+</blockquote>
+
+<pre>path relative_path() const; </pre>
+<blockquote>
+  <p><i>Returns:</i> A <code>path</code> composed from the pathname <del>in the generic format</del>, if empty() is false, beginning with the first <i>filename</i> after 
+  <i>root-path</i> <ins>in the generic format</ins>. Otherwise, 
+  <code>path()</code>. </p>
+  <p><ins>[<i> Example:</i></ins></p>
+  <blockquote>
+  <p><i><ins>// On both POSIX and Windows,</ins><br>
+  </i><ins><code>path(&quot;//net///foo//bar/baz&quot;).relative_path()&nbsp; </code>
+  // <i>yields</i><code> &quot;foo//bar/baz&quot;</code></ins></p>
+  <p><i><ins>// On Windows,</ins></i><br>
+  <ins><code>path(&quot;/\\net\\/\\foo\\/bar\\baz&quot;).relative_path()&nbsp;  </code>
+  // <i>yields</i><code> &quot;foo\\/bar\\baz&quot;</code></ins></p>
+  </blockquote>
+  <p><ins>—<i>end example </i>]</ins></p>
+</blockquote>
+
+<pre>path parent_path() const; </pre>
+<blockquote>
+<p><i>Returns:</i> <code>*this</code> if <code>has_relative_path()</code> is 
+<code>false</code>, otherwise a path whose 
+generic format pathname is the longest prefix of the generic format pathname of 
+<code>*this</code> that produces 
+one fewer element in its iteration.</p>
+  <p><ins>[<i> Example:</i></ins></p>
+  <blockquote>
+  <p><i><ins>// On both POSIX and Windows,</ins><br>
+  </i><ins><code>path(&quot;//net//&quot;).relative_path()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </code>
+  // <i>yields</i><code> &quot;//net//&quot;<br>
+  path(&quot;//net///foo//bar/baz&quot;).relative_path()&nbsp; </code>// <i>yields</i><code> 
+  &quot;//net///foo//bar&quot;</code></ins></p>
+  <p><i><ins>// On Windows,</ins></i><br>
+  <ins><code>path(&quot;/\\net\\/&quot;).relative_path()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  </code>
+  // <i>yields</i><code> &quot;/\\net\\/&quot;<br>
+  path(&quot;/\\net\\/\\foo\\/bar\\baz&quot;).relative_path()&nbsp; </code>// <i>yields</i><code> &quot;/\\net\\/\\foo\\/bar&quot;</code></ins></p>
+  </blockquote>
+  <p><ins>—<i>end example </i>]</ins> </p>
+</blockquote>
+
+<pre>path filename() const; </pre>
+<blockquote>
+<p><i>Returns:</i> <code>relative_path().empty() ? path() : *--end()</code>. </p>
+<p>[ Example: </p>
+  <pre>path(&quot;/foo/bar.txt&quot;).filename(); // <i>yields</i> &quot;bar.txt&quot; 
+path(&quot;/foo/bar&quot;).filename();     // <i>yields</i> &quot;bar&quot;
+path(&quot;/foo/bar/&quot;).filename();    // <i>yields</i> &quot;&quot; 
+path(&quot;/&quot;).filename();            // <i>yields</i> &quot;&quot;
+path(&quot;//host&quot;).filename();       // <i>yields</i> &quot;&quot;
+path(&quot;.&quot;).filename();            // <i>yields</i> &quot;.&quot;
+path(&quot;..&quot;).filename();           // <i>yields</i> &quot;..&quot; </pre>
+  <p>—end example ] </p>
+</blockquote>
+
+<pre>path stem() const; </pre>
+<blockquote>
+<p><i>Returns:</i> Let f be the generic format pathname of filename(). Returns a path 
+whose pathname in the generic format is </p>
+<p>&nbsp;— f, if it contains no periods other than a leading period or consists 
+solely of one or two periods; </p>
+<p>&nbsp;— otherwise, the prefix of f ending before its last period. </p>
+<p>[ <i>Example: </i> </p>
+  <blockquote>
+    <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).stem(); // outputs &quot;bar&quot; 
+path p = &quot;foo.bar.baz.tar&quot;; 
+for (; !p.extension().empty(); p = p.stem())
+  std::cout &lt;&lt; p.extension() &lt;&lt; ’\n’; 
+// outputs: .tar 
+// .baz 
+// .bar </pre>
+  </blockquote>
+  <p>—<i>end example </i>] </p>
+</blockquote>
+
+<pre>path extension() const; </pre>
+<blockquote>
+  <p><i>Returns:</i> A path whose pathname in the generic format is the suffix of 
+  filename() not included in stem(). </p>
+  <p>[ <i>Example</i>: </p>
+  <pre>path(&quot;/foo/bar.txt&quot;).extension();  // <i>yields</i> &quot;.txt&quot; and stem() is &quot;bar&quot;
+path(&quot;/foo/bar&quot;).extension();      // <i>yields</i> &quot;&quot; and stem() is &quot;bar&quot; 
+path(&quot;/foo/.profile&quot;).extension(); // <i>yields</i> &quot;&quot; and stem() is &quot;.profile&quot; 
+path(&quot;.bar&quot;).extension();          // <i>yields</i> &quot;&quot; and stem() is &quot;.bar&quot; 
+path(&quot;..bar&quot;).extension();         // <i>yields</i> &quot;.bar&quot; and stem() is &quot;.&quot; </pre>
+  <p>—<i>end example</i> ] </p>
+  <p>[ Note: The period is included in the return value so that it is possible 
+  to distinguish between no extension and an empty extension. —end note ] </p>
+  <p>[ Note: On non-POSIX operating systems, for a path p, it may not be the 
+  case that p.stem() + p.extension() == p.filename(), even though the generic 
+  format pathnames are the same. —end note ]</p>
+</blockquote>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>

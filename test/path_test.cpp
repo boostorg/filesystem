@@ -9,7 +9,7 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-//  basic_path's stem(), extension(), and replace_extension() tests are based
+//  path's stem(), extension(), and replace_extension() tests are based
 //  on basename(), extension(), and change_extension() tests from the original
 //  convenience_test.cpp by Vladimir Prus.
 
@@ -208,36 +208,49 @@ namespace
     dtst{__LINE__, ""                 , ""     , "" ,     "" ,  ""            , ""         , ""        , ""     , "", ""},
     dtst{__LINE__, " "                , ""     , "" ,     "" ,  " "           , ""         , " "       , " "    , "", ""},
     dtst{__LINE__, "/"                , ""     , "/",     "/",  ""            , "/"        , ""        , ""     , "", "/"},
-    dtst{__LINE__, "//"               , "//"   , "" ,     "//", ""            , "//"       , ""        , ""     , "", "//"},
-    dtst{__LINE__, "///"              , ""     , "/",     "/",  ""            , "/"        , ""        , ""     , "", "///"},
+    dtst{__LINE__, "//"               , "//"   , "" ,    "//",  ""            , "//"       , ""        , ""     , "", "//"},
+    dtst{__LINE__, "///"              , ""     , "///", "///",  ""            , "///"      , ""        , ""     , "", "///"},
     dtst{__LINE__, "."                , ""     , "" ,     "" ,  "."           , ""         , "."       , "."    , "", ""},
     dtst{__LINE__, "/."               , ""     , "/",     "/",  "."           , "/"        , "."       , "."    , "", "/"},
     dtst{__LINE__, ".."               , ""     , "" ,     "" ,  ".."          , ""         , ".."      , ".."   , "", ""},
     dtst{__LINE__, "foo"              , ""     , "" ,     "" ,  "foo"         , ""         , "foo"     , "foo"  , "", ""},
     dtst{__LINE__, "foo/bar"          , ""     , "" ,     "" ,  "foo/bar"     , "foo"      , "bar"     , "bar"  , "", "foo/"},
     dtst{__LINE__, "foo/bar/baz"      , ""     , "" ,     "" ,  "foo/bar/baz" , "foo/bar"  , "baz"     , "baz"  , "", "foo/bar/"},
-    dtst{__LINE__, "foo//bar//baz"    , ""     , "" ,     "" ,  "foo/bar/baz" , "foo/bar"  , "baz"     , "baz"  , "", "foo//bar//"},
-    dtst{__LINE__, "foo///bar///baz"  , ""     , "" ,     "" ,  "foo/bar/baz" , "foo/bar"  , "baz"     , "baz"  , "", "foo///bar///"},
+    dtst{__LINE__, "foo//bar//baz"    , ""     , "" ,     "" ,  "foo//bar//baz","foo//bar" , "baz"     , "baz"  , "", "foo//bar//"},
+    dtst{__LINE__, "/foo"             , ""     , "/",     "/",  "foo"         , "/"        , "foo"     , "foo"  , "", "/"},
+    dtst{__LINE__, "///foo"           , ""     , "///", "///",  "foo"         , "///"      , "foo"     , "foo"  , "", "///"},
+    dtst{__LINE__, "///foo//bar///baz", ""     , "///", "///",  "foo//bar///baz","///foo//bar","baz"   , "baz"  , "", "///foo//bar///" },
+    dtst{__LINE__, "foo//bar///baz"   , ""     , "" ,     "" ,  "foo//bar///baz" ,"foo//bar", "baz"    , "baz"  , "", "foo//bar///"},
     dtst{__LINE__, "foo/bar.baz"      , ""     , "" ,     "" ,  "foo/bar.baz" , "foo"      , "bar.baz" , "bar"  ,".baz", "foo/"},
     dtst{__LINE__, "bar.baz.bak"      , ""     , "" ,     "" ,  "bar.baz.bak" , ""         , "bar.baz.bak","bar.baz", ".bak", ""},
-    dtst{__LINE__, "/foo"             , ""     , "/",     "/",  "foo"         , "/"        , "foo"     , "foo"  , "", "/"},
     dtst{__LINE__, "../foo"           , ""     , "" ,     "" ,  "../foo"      , ".."       , "foo"     , "foo"  , "", "../"},
-    dtst{__LINE__, "..//foo"          , ""     , "" ,     "" ,  "../foo"      , ".."       , "foo"     , "foo"  , "", "..//"},
-    dtst{__LINE__, "///foo"           , ""     , "/",     "/",  "foo"         , "/"        , "foo"     , "foo"  , "", "///"},
+    dtst{__LINE__, "..//foo"          , ""     , "" ,     "" ,  "..//foo"     , ".."       , "foo"     , "foo"  , "", "..//"},
     dtst{__LINE__, "/foo/"            , ""     , "/",     "/",  "foo/"        , "/foo"     , ""        , ""     , "", "/foo/"},
-    dtst{__LINE__, "/foo//"           , ""     , "/",     "/",  "foo/"        , "/foo"     , ""        , ""     , "", "/foo//"},
+    dtst{__LINE__, "/foo//"           , ""     , "/",     "/",  "foo//"       , "/foo"     , ""        , ""     , "", "/foo//"},
     dtst{__LINE__, "/foo/bar"         , ""     , "/",     "/",  "foo/bar"     , "/foo"     , "bar"     , "bar"  , "", "/foo/"},
     dtst{__LINE__, "//net"            , "//net", "" , "//net",  ""            , "//net"    , ""        , ""     , "", "//net"},
     dtst{__LINE__, "//net/"           , "//net", "/", "//net/", ""            , "//net/"   , ""        , ""     , "", "//net/"},
-    dtst{__LINE__, "//net//"          , "//net", "/", "//net/", ""            , "//net/"   , ""        , ""     , "", "//net//"},
-    dtst{__LINE__, "//net///"         , "//net", "/", "//net/", ""            , "//net/"   , ""        , ""     , "", "//net///"},
+    dtst{__LINE__, "//net//"          , "//net", "//","//net//",""            , "//net//"  , ""        , ""     , "", "//net//"},
+    dtst{__LINE__, "//net///"         , "//net", "///", "//net///", ""        , "//net///" , ""        , ""     , "", "//net///"},
     dtst{__LINE__, "//net/foo"        , "//net", "/", "//net/", "foo"         , "//net/"   , "foo"     , "foo"  , "", "//net/"},
-    dtst{__LINE__, "//net//foo"       , "//net", "/", "//net/", "foo"         , "//net/"   , "foo"     , "foo"  , "", "//net//"},
+    dtst{__LINE__, "//net//foo"       , "//net", "//", "//net//", "foo"       , "//net//"  , "foo"     , "foo"  , "", "//net//"},
     dtst{__LINE__, "//x/foo/."        , "//x"  , "/", "//x/"  , "foo/."       , "//x/foo"  , "."       , "."    , "", "//x/foo/"},
     dtst{__LINE__, "//host/foo/./"    , "//host","/", "//host/","foo/./"      ,"//host/foo/.", ""      , ""     , "", "//host/foo/./"},
+    //                                  root_    root_  root_   relative_       parent_                                remove_
+    //              path                 name     dir    path    path            path         filename   stem    ext    filename
 
-    // Examples for filename() given in [fs.path.decompose] ¶ 7; tested as given even
-    // though often redundant with other tests
+    // Examples given in decomposition.html for both POSIX and Windows
+    dtst{ __LINE__, "/net/foo/bar/baz", ""     , "/",    "/" , "net/foo/bar/baz","/net/foo/bar","baz"  , "baz"  , "", "/net/foo/bar/"},
+    dtst{ __LINE__, "//net///foo//bar/baz"
+                                      ,"//net" , "///", "//net///","foo//bar/baz", "//net///foo//bar","baz","baz"  , "", "//net///foo//bar/"},
+#ifdef BOOST_WINDOWS_API
+    // Examples given in decomposition.html for Windows
+    dtst{ __LINE__, "\\net\\foo\\bar\\baz", "" , "\\",  "\\" , "net\\foo\\bar\\baz", "\\net\\foo\\bar", "baz"     , "baz"  , "", "\\net\\foo\\bar\\"},
+    dtst{ __LINE__, "/\\net\\/\\foo\\/bar/baz",
+                                  "/\\net","\\/\\","/\\net\\/\\","foo\\/bar/baz", "/\\net\\/\\foo\\/bar" , "baz" , "baz"  , "", "/\\net\\/\\foo\\/bar/"},
+#endif
+
+    // Examples for filename() from [fs.path.decompose] ¶ 7; often redundant with other tests
 
     dtst{__LINE__, "/foo/bar.txt"     , ""     , "/",    "/" ,  "foo/bar.txt" , "/foo"     , "bar.txt" , "bar"  , ".txt", "/foo/"},
     dtst{__LINE__, "/foo/bar"         , ""     , "/",    "/" ,  "foo/bar"     , "/foo"     , "bar"     , "bar"  , "", "/foo/"},
@@ -263,13 +276,15 @@ namespace
     dtst{__LINE__, "cc:"              , ""     , "" ,      "",  "cc:"       , ""         , "cc:"     , "cc:"  , "", ""},
     dtst{__LINE__, "c:d:"             , "c:"   , "" ,    "c:",  "d:"        , "c:"       , "d:"      , "d:"   , "", "c:"},
     dtst{__LINE__, "c:/"              , "c:"   , "/",   "c:/",  ""          , "c:/"      , ""        , ""     , "", "c:/"},
-    dtst{__LINE__, "c://"             , "c:"   , "/",   "c:/",  ""          , "c:/"      , ""        , ""     , "", "c://"},
-    dtst{__LINE__, "c://foo"          , "c:"   , "/",   "c:/",  "foo"       , "c:/"      , "foo"     , "foo"  , "", "c://" },
+    dtst{__LINE__, "c://"             , "c:"   ,"//",   "c://", ""          , "c://"     , ""        , ""     , "", "c://"},
+    dtst{__LINE__, "c://foo"          , "c:"   ,"//",   "c://", "foo"       , "c://"     , "foo"     , "foo"  , "", "c://"},
+    dtst{__LINE__, "c://foo//bar"     , "c:"   ,"//",   "c://", "foo//bar"  , "c://foo"  , "bar"     , "bar"  , "", "c://foo//" },
     dtst{__LINE__, "c:/.foo"          , "c:"   , "/",   "c:/",  ".foo"      , "c:/"      , ".foo"    , ".foo" , "", "c:/"},
     dtst{__LINE__, "c:foo"            , "c:"   , "" ,    "c:",  "foo"       , "c:"       , "foo"     , "foo"  , "", "c:"},
     dtst{__LINE__, "c:."              , "c:"   , "" ,    "c:",  "."         , "c:"       , "."       , "."    , "", "c:"},
     dtst{__LINE__, "c:.."             , "c:"   , "" ,    "c:",  ".."        , "c:"       , ".."      , ".."   , "", "c:"},
-    dtst{__LINE__, "\\\\net\\\\\\foo" , "//net", "/", "//net/", "foo"       , "//net/"   , "foo"     , "foo"  , "", "\\\\net\\\\\\" },
+    dtst{__LINE__, "\\\\net\\\\\\foo" , "\\\\net", "\\\\\\", "\\\\net\\\\\\",
+                                                                "foo"       , "\\\\net\\\\\\"   , "foo"     , "foo"  , "", "\\\\net\\\\\\" },
 #endif
     //                                  root_    root_  root_   relative_       parent_                              remove_
     //              path                 name     dir    path    path            path        filename   stem    ext   filename
@@ -979,22 +994,6 @@ namespace
       BOOST_TEST(!(L"c:\\file" > p11));
       BOOST_TEST(!(L"c:/file" > p11));
     }
-
-    // relative
-
-    BOOST_TEST(fs::relative("/abc/def", "/abc") == path("def"));
-    BOOST_TEST(fs::relative("abc/def", "abc") == path("def"));
-    BOOST_TEST(fs::relative("/abc/xyz/def", "/abc") == path("xyz/def"));
-    BOOST_TEST(fs::relative("abc/xyz/def", "abc") == path("xyz/def"));
-
-    if (platform == "Windows")
-    {
-      std::cout << "  Windows relatie tests..." << std::endl;
-      BOOST_TEST(fs::relative("\\abc\\xyz\\def", "/abc") == path("xyz/def"));
-      std::cout << "    fs::relative(\"/abc/xyz/def\", \"/abc\") is "
-        << fs::relative("/abc/xyz/def", "/abc") << std::endl;
-      BOOST_TEST(fs::relative("abc\\xyz\\def", "abc") == path("xyz/def"));
-    }
   }
 
   //  query_and_decomposition_tests  ---------------------------------------------------//
@@ -1166,21 +1165,7 @@ namespace
       BOOST_TEST(p.is_absolute());
 
       p = q = path("c:\\foo\\bar");
-      PATH_TEST_EQ(p.relative_path().string(), "foo/bar");
-      PATH_TEST_EQ(p.parent_path().string(), "c:/foo");
       PATH_TEST_EQ(q.remove_filename().native(), "c:\\foo\\");
-      cout << q << endl;
-      cout << q.string() << endl;
-      PATH_TEST_EQ(p.filename(), "bar");
-      PATH_TEST_EQ(p.root_name(), "c:");
-      PATH_TEST_EQ(p.root_directory(), "/");
-      PATH_TEST_EQ(p.root_path().string(), "c:/");
-      BOOST_TEST(p.has_root_path());
-      BOOST_TEST(p.has_root_name());
-      BOOST_TEST(p.has_root_directory());
-      BOOST_TEST(p.has_relative_path());
-      BOOST_TEST(p.has_filename());
-      BOOST_TEST(p.has_parent_path());
       BOOST_TEST(p.is_absolute());
 
     } // Windows
@@ -1634,7 +1619,7 @@ namespace
     std::cout << "lexically_normal_tests..." << std::endl;
 
     // the lexically_normal implementation depends on root_name() so test that first
-    BOOST_TEST(!path("//").has_root_name());
+    BOOST_TEST(path("//").has_root_name());
     BOOST_TEST(path("//foo").has_root_name());
     BOOST_TEST(!path("///foo").has_root_name());
 
@@ -1817,6 +1802,32 @@ namespace
       PATH_TEST_EQ(path("c:/../../foo/").lexically_normal(), "../foo/");
       PATH_TEST_EQ(path("c:/..foo").lexically_normal(), "c:/..foo");
     }
+    std::cout << "    end lexically_normal_tests..." << std::endl;
+  }
+
+  //  lexically_relative_tests  --------------------------------------------------------//
+
+  void lexically_relative_tests()
+  {
+    std::cout << "lexically_relative_tests..." << std::endl;
+
+    //// relative
+
+    //BOOST_TEST(fs::relative("/abc/def", "/abc") == path("def"));
+    //BOOST_TEST(fs::relative("abc/def", "abc") == path("def"));
+    //BOOST_TEST(fs::relative("/abc/xyz/def", "/abc") == path("xyz/def"));
+    //BOOST_TEST(fs::relative("abc/xyz/def", "abc") == path("xyz/def"));
+
+    //if (platform == "Windows")
+    //{
+    //  std::cout << "  Windows relative tests..." << std::endl;
+    //  BOOST_TEST(fs::relative("\\abc\\xyz\\def", "/abc") == path("xyz/def"));
+    //  std::cout << "    fs::relative(\"/abc/xyz/def\", \"/abc\") is "
+    //    << fs::relative("/abc/xyz/def", "/abc") << std::endl;
+    //  BOOST_TEST(fs::relative("abc\\xyz\\def", "abc") == path("xyz/def"));
+    //}
+
+    std::cout << "    end lexically_relative_tests..." << std::endl;
   }
 
   //  Tests of examples Nicolai Josuttis presented to the C++ committee's Library
@@ -2081,7 +2092,8 @@ int cpp_main(int, char*[])
   name_function_tests();
   replace_extension_tests();
   make_preferred_tests();
-  //lexically_normal_tests();
+  lexically_relative_tests();
+  lexically_normal_tests();
 
 
   // verify deprecated names still available

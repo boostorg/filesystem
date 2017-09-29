@@ -446,10 +446,10 @@ namespace filesystem
 
     //  -----  decomposition  -----
 
-    path  root_path() const;         // returns 0, 1, or 2 element path
     path  root_name() const;         // returns 0 or 1 element path;
                                      // even on POSIX, root_name() is non-empty()
                                      // for network paths
+    path  root_path() const;         // returns 0, 1, or 2 element path
     path  root_directory() const;    // returns 0 or 1 element path
     path  relative_path() const;
     path  parent_path() const;
@@ -839,8 +839,7 @@ namespace filesystem
 
   inline path path::root_name() const
   {
-    return detail::to_generic(m_pathname.begin(),
-      m_pathname.begin() + m_root_name_size(), true);
+    return path(m_pathname.begin(), m_pathname.begin() + m_root_name_size());
   }
 
   namespace detail
