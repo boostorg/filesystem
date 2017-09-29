@@ -2092,8 +2092,8 @@ int cpp_main(int, char*[])
   name_function_tests();
   replace_extension_tests();
   make_preferred_tests();
+//  lexically_normal_tests();
   lexically_relative_tests();
-  lexically_normal_tests();
 
 
   // verify deprecated names still available

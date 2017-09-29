@@ -408,20 +408,43 @@ namespace filesystem
     }
   }
 
+  //  See 30.10.8.4.11 path generation [fs.path.gen]
+
   path path::lexically_relative(const path& base) const
   {
-    std::pair<path::iterator, path::iterator> mm
-      = detail::mismatch(begin(), end(), base.begin(), base.end());
-    if (mm.first == begin() && mm.second == base.begin())
+    if (root_name() != base.root_name()
+      || is_absolute() != base.is_absolute()
+      || (!has_root_directory() && base.has_root_directory())
+      )
       return path();
+
+    std::pair<path::iterator, path::iterator> mm =
+      detail::mismatch(begin(), end(), base.begin(), base.end());
+
     if (mm.first == end() && mm.second == base.end())
       return detail::dot_path();
-    path tmp;
+
+    int n = 0;
+    path names;
     for (; mm.second != base.end(); ++mm.second)
-      tmp /= detail::dot_dot_path();
-    for (; mm.first != end(); ++mm.first)
-      tmp /= *mm.first;
-    return tmp;
+      names /= *mm.second;
+    for (path name = names.filename(); !name.empty();
+      names = names.parent_path())
+    {
+      if (name != detail::dot_path() && name != detail::dot_dot_path())
+        ++n;
+      if (name == detail::dot_dot_path())
+        --n;
+    }
+    if (n < 0)
+      return path();
+
+    path result;
+    for (; n; --n)
+      result /= detail::dot_dot_path();
+    for (mm.first; mm.first != end(); ++mm.first)
+      result /= *mm.first;
+    return result;
   }
 
   //  lexically_normal  ----------------------------------------------------------------//
