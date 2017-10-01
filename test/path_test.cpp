@@ -160,9 +160,8 @@ namespace
     // message in the Visual Studio IDE output window will take you to the line in the
     // file that caused the error.
     cout << src_file
-      << '(' << line << "): error: " << desc
-      << "() result " << result << " != expected \"" << expected << "\""
-      << endl;
+      << '(' << line << "): error: " << desc << "() on " << p
+      << ", result " << result << " != expected \"" << expected << "\"" << endl;
 
     ++::boost::detail::test_errors();
   }
@@ -177,8 +176,8 @@ namespace
     // message in the Visual Studio IDE output window will take you to the line in the
     // file that caused the error.
     cout << src_file
-      << '(' << line << "): error: has_" << desc
-      << "() result " << result << " != expected " << !expected.empty() << endl;
+      << '(' << line << "): error: has_" << desc << "() on " << p
+      << ", result " << result << " != expected " << !expected.empty() << endl;
 
     ++::boost::detail::test_errors();
   }
@@ -300,7 +299,7 @@ namespace
     {
       path p(test.path);
 
-      cout << test.line << " " << p << endl;
+      //cout << test.line << " " << p << endl;
 
       // Say line 170 reports a root_name error. To debug set a breakpoint on the
       // appropriate member_check call below, and then make the breakpoint conditional on
@@ -1640,8 +1639,12 @@ namespace
     //  and the expected results are also given in generic form. Otherwise many of the
     //  tests would incorrectly be reported as failing on Windows.
 
-    // the first set of tests correspond to the table in US-37 of c++ standards
-    // committee document P0492R1 from the 2017 Kona pre-meeting mailing
+    //  Tests from 30.10.8.4.11 path generation [fs.path.gen]
+    PATH_TEST_EQ(path("foo/./bar/..").lexically_normal().generic_path(), "foo/");
+    PATH_TEST_EQ(path("foo/.///bar/../").lexically_normal().generic_path(), "foo/");
+
+    //  Tests corresponding to the table in US-37 of c++ standards committee document
+    //  P0492R1 from the 2017 Kona pre-meeting mailing. 
     PATH_TEST_EQ(path("").lexically_normal().generic_path(), "");            // case 1 
     PATH_TEST_EQ(path(".").lexically_normal().generic_path(), ".");		       // case 2
     PATH_TEST_EQ(path("..").lexically_normal().generic_path(), "..");	       // case 3
@@ -1649,118 +1652,118 @@ namespace
     PATH_TEST_EQ(path("//").lexically_normal().generic_path(), "//");	       // case 5
     PATH_TEST_EQ(path("/foo").lexically_normal().generic_path(), "/foo"); 	 // case 6
     PATH_TEST_EQ(path("/foo/").lexically_normal().generic_path(), "/foo/");	 // case 7
-    PATH_TEST_EQ(path("/foo/.").lexically_normal().generic_path(), "/foo");  // case 8 
-    PATH_TEST_EQ(path("/foo/bar/..").lexically_normal().generic_path(), "/foo"); //  9
+    PATH_TEST_EQ(path("/foo/.").lexically_normal().generic_path(), "/foo/"); // case 8 Nico 
+    PATH_TEST_EQ(path("/foo/bar/..").lexically_normal().generic_path(), "/foo/"); // 9 Nico
     PATH_TEST_EQ(path("/foo/..").lexically_normal().generic_path(), "/");	   // case 10
     PATH_TEST_EQ(path("/.").lexically_normal().generic_path(), "/");		     // case 11
-    PATH_TEST_EQ(path("/./").lexically_normal().generic_path(), "/./");		   // case 12
+    PATH_TEST_EQ(path("/./").lexically_normal().generic_path(), "/");		     // case 12 Nico
     PATH_TEST_EQ(path("/./.").lexically_normal().generic_path(), "/");		   // case 13
-    PATH_TEST_EQ(path("/././").lexically_normal().generic_path(), "/./");	   // case 14
+    PATH_TEST_EQ(path("/././").lexically_normal().generic_path(), "/");	     // case 14 Nico
     PATH_TEST_EQ(path("/././.").lexically_normal().generic_path(), "/");	   // case 15
-    PATH_TEST_EQ(path("./").lexically_normal().generic_path(), "./");		     // case 16
+    PATH_TEST_EQ(path("./").lexically_normal().generic_path(), ".");		     // case 16 R2
     PATH_TEST_EQ(path("./.").lexically_normal().generic_path(), ".");		     // case 17
-    PATH_TEST_EQ(path("././").lexically_normal().generic_path(), "./");		   // case 18
+    PATH_TEST_EQ(path("././").lexically_normal().generic_path(), ".");		   // case 18 R2
     PATH_TEST_EQ(path("././.").lexically_normal().generic_path(), ".");		   // case 19
-    PATH_TEST_EQ(path("./././").lexically_normal().generic_path(), "./");	   // case 20
+    PATH_TEST_EQ(path("./././").lexically_normal().generic_path(), ".");	   // case 20 R2
     PATH_TEST_EQ(path("./././.").lexically_normal().generic_path(), ".");	   // case 21
     PATH_TEST_EQ(path("foo/..").lexically_normal().generic_path(), ".");	   // case 22
-    PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), "./");	 // case 23
+    PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), ".");	   // case 23 R2
     PATH_TEST_EQ(path("foo/../..").lexically_normal().generic_path(), ".."); // case 24
-  if (platform == "Windows")
-  {
-    PATH_TEST_EQ(path("C:bar/..").lexically_normal().generic_path(), "C:");  // case 25
-    PATH_TEST_EQ(path("C:").lexically_normal().generic_path(), "C:");        // case 26
-  }
-  PATH_TEST_EQ(path("//host/bar/..").lexically_normal().generic_path(), "//host/");//27
-  PATH_TEST_EQ(path("//host").lexically_normal().generic_path(), "//host");      // 28
-  PATH_TEST_EQ(path("foo/../foo/..").lexically_normal().generic_path(), ".");    // 29
-  PATH_TEST_EQ(path("foo/../foo/../..").lexically_normal().generic_path(), "..");// 30
-  PATH_TEST_EQ(path("../foo/../foo/..").lexically_normal().generic_path(), "..");// 31
-  PATH_TEST_EQ(path("../.f/../f").lexically_normal().generic_path(), "../f");    // 32
-  PATH_TEST_EQ(path("../f/../.f").lexically_normal().generic_path(), "../.f");   // 33
-  PATH_TEST_EQ(path(".././../.").lexically_normal().generic_path(), "../..");    // 34
-  PATH_TEST_EQ(path(".././.././").lexically_normal().generic_path(), "../../");  // 35
+    if (platform == "Windows")
+    {
+      PATH_TEST_EQ(path("C:bar/..").lexically_normal().generic_path(), "C:");  // case 25
+      PATH_TEST_EQ(path("C:").lexically_normal().generic_path(), "C:");        // case 26
+    }
+    PATH_TEST_EQ(path("//host/bar/..").lexically_normal().generic_path(), "//host/");//27
+    PATH_TEST_EQ(path("//host").lexically_normal().generic_path(), "//host");      // 28
+    PATH_TEST_EQ(path("foo/../foo/..").lexically_normal().generic_path(), ".");    // 29
+    PATH_TEST_EQ(path("foo/../foo/../..").lexically_normal().generic_path(), "..");// 30
+    PATH_TEST_EQ(path("../foo/../foo/..").lexically_normal().generic_path(), "..");// 31 R2 bullet 7
+    PATH_TEST_EQ(path("../.f/../f").lexically_normal().generic_path(), "../f");    // 32
+    PATH_TEST_EQ(path("../f/../.f").lexically_normal().generic_path(), "../.f");   // 33
+    PATH_TEST_EQ(path(".././../.").lexically_normal().generic_path(), "../..");    // 34 R2 bullet 7
+    PATH_TEST_EQ(path(".././.././").lexically_normal().generic_path(), "../..");   // 35 R2 bullet 7
 
-  // cases Nico suggested we concentrate on to resolve questions about invariants
-  PATH_TEST_EQ(path(".").lexically_normal().generic_path(), ".");		       // 1
-  PATH_TEST_EQ(path("./").lexically_normal().generic_path(), "./");		     // 2
-  PATH_TEST_EQ(path("/./").lexically_normal().generic_path(), "/./");		   // 3
-  PATH_TEST_EQ(path("foo/").lexically_normal().generic_path(), "foo/");	   // 4
-  PATH_TEST_EQ(path("foo/.").lexically_normal().generic_path(), "foo");	   // 5
-  PATH_TEST_EQ(path("foo/..").lexically_normal().generic_path(), ".");	   // 6 
-  PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), "./");   // 7
-  PATH_TEST_EQ(path("foo/../.").lexically_normal().generic_path(), ".");   // 8
-  PATH_TEST_EQ(path("/foo/..").lexically_normal().generic_path(), "/");	   // 9 
-  PATH_TEST_EQ(path("/foo/../.").lexically_normal().generic_path(), "/");	 // 10
-  PATH_TEST_EQ(path("/foo/bar/.").lexically_normal().generic_path(), "/foo/bar");	 // 11
-  PATH_TEST_EQ(path("/foo/bar/./").lexically_normal().generic_path(), "/foo/bar/");// 12
-  PATH_TEST_EQ(path("/foo/bar/..").lexically_normal().generic_path(), "/foo");	   // 13
-  PATH_TEST_EQ(path("/foo/bar/../").lexically_normal().generic_path(), "/foo/");	 // 14
+    // cases Nico suggested we concentrate on to resolve questions about invariants
+    PATH_TEST_EQ(path(".").lexically_normal().generic_path(), ".");		       // 1
+    PATH_TEST_EQ(path("./").lexically_normal().generic_path(), ".");		     // 2 R2
+    PATH_TEST_EQ(path("/./").lexically_normal().generic_path(), "/");		     // 3 R2
+    PATH_TEST_EQ(path("foo/").lexically_normal().generic_path(), "foo/");	   // 4
+    PATH_TEST_EQ(path("foo/.").lexically_normal().generic_path(), "foo/");	 // 5 R2
+    PATH_TEST_EQ(path("foo/..").lexically_normal().generic_path(), ".");	   // 6 
+    PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), ".");    // 7 R2
+    PATH_TEST_EQ(path("foo/../.").lexically_normal().generic_path(), ".");   // 8
+    PATH_TEST_EQ(path("/foo/..").lexically_normal().generic_path(), "/");	   // 9 
+    PATH_TEST_EQ(path("/foo/../.").lexically_normal().generic_path(), "/");	 // 10
+    PATH_TEST_EQ(path("/foo/bar/.").lexically_normal().generic_path(), "/foo/bar/"); // 11 R2
+    PATH_TEST_EQ(path("/foo/bar/./").lexically_normal().generic_path(), "/foo/bar/");// 12
+    PATH_TEST_EQ(path("/foo/bar/..").lexically_normal().generic_path(), "/foo/");	   // 13 R2
+    PATH_TEST_EQ(path("/foo/bar/../").lexically_normal().generic_path(), "/foo/");	 // 14
 
-  // other tests
+    // other tests
     PATH_TEST_EQ(path("///").lexically_normal().generic_path(), "/");
-  PATH_TEST_EQ(path("f").lexically_normal().generic_path(), "f");
+    PATH_TEST_EQ(path("f").lexically_normal().generic_path(), "f");
     PATH_TEST_EQ(path("foo").lexically_normal().generic_path(), "foo");
     PATH_TEST_EQ(path("foo/").lexically_normal().generic_path(), "foo/");
     PATH_TEST_EQ(path("f/").lexically_normal().generic_path(), "f/");
     PATH_TEST_EQ(path("/foo").lexically_normal().generic_path(), "/foo");
     PATH_TEST_EQ(path("foo/bar").lexically_normal().generic_path(), "foo/bar");
     PATH_TEST_EQ(path("../..").lexically_normal().generic_path(), "../..");
-    PATH_TEST_EQ(path("/..").lexically_normal().generic_path(), "/..");
-    PATH_TEST_EQ(path("/../..").lexically_normal().generic_path(), "/../..");
+    PATH_TEST_EQ(path("/..").lexically_normal().generic_path(), "/");
+    PATH_TEST_EQ(path("/../..").lexically_normal().generic_path(), "/");
     PATH_TEST_EQ(path("../foo").lexically_normal().generic_path(), "../foo");
-  PATH_TEST_EQ(path("/foo/../").lexically_normal().generic_path(), "/./");
-  PATH_TEST_EQ(path("foo/../..").lexically_normal().generic_path(), "..");
-  PATH_TEST_EQ((path("foo") / "..").lexically_normal().generic_path() , ".");
+    PATH_TEST_EQ(path("/foo/../").lexically_normal().generic_path(), "/");
+    PATH_TEST_EQ(path("foo/../..").lexically_normal().generic_path(), "..");
+    PATH_TEST_EQ((path("foo") / "..").lexically_normal().generic_path() , ".");
     PATH_TEST_EQ(path("foo/...").lexically_normal().generic_path(), "foo/...");
     PATH_TEST_EQ(path("foo/.../").lexically_normal().generic_path(), "foo/.../");
     PATH_TEST_EQ(path("foo/..bar").lexically_normal().generic_path(), "foo/..bar");
     PATH_TEST_EQ(path("../f").lexically_normal().generic_path(), "../f");
-    PATH_TEST_EQ(path("/../f").lexically_normal().generic_path(), "/../f");
+    PATH_TEST_EQ(path("/../f").lexically_normal().generic_path(), "/f");
     PATH_TEST_EQ(path("f/..").lexically_normal().generic_path(), ".");
     PATH_TEST_EQ((path("f") / "..").lexically_normal().generic_path() , ".");
-    PATH_TEST_EQ(path("foo/../../").lexically_normal().generic_path(), "../");
+    PATH_TEST_EQ(path("foo/../../").lexically_normal().generic_path(), "..");  // bullet 7
     PATH_TEST_EQ(path("foo/../../..").lexically_normal().generic_path(), "../..");
-    PATH_TEST_EQ(path("foo/../../../").lexically_normal().generic_path(), "../../");
+    PATH_TEST_EQ(path("foo/../../../").lexically_normal().generic_path(), "../..");  // bullet 7
     PATH_TEST_EQ(path("foo/../bar").lexically_normal().generic_path(), "bar");
     PATH_TEST_EQ(path("foo/../bar/").lexically_normal().generic_path(), "bar/");
-    PATH_TEST_EQ(path("foo/bar/..").lexically_normal().generic_path(), "foo");
-    PATH_TEST_EQ(path("foo/./bar/..").lexically_normal().generic_path(), "foo");
-    std::cout << path("foo/./bar/..").lexically_normal() << std::endl;  // outputs "foo"
+    PATH_TEST_EQ(path("foo/bar/..").lexically_normal().generic_path(), "foo/");
+    PATH_TEST_EQ(path("foo/./bar/..").lexically_normal().generic_path(), "foo/");
+    std::cout << path("foo/./bar/..").lexically_normal() << std::endl;  // outputs "foo/"
     PATH_TEST_EQ(path("foo/bar/../").lexically_normal().generic_path(), "foo/");
     PATH_TEST_EQ(path("foo/./bar/../").lexically_normal().generic_path(), "foo/");
     std::cout << path("foo/./bar/../").lexically_normal() << std::endl;  // POSIX: "foo/", Windows: "foo\" 
     PATH_TEST_EQ(path("foo/bar/../..").lexically_normal().generic_path(), ".");
-    PATH_TEST_EQ(path("foo/bar/../../").lexically_normal().generic_path(), "./");
+    PATH_TEST_EQ(path("foo/bar/../../").lexically_normal().generic_path(), ".");
     PATH_TEST_EQ(path("foo/bar/../blah").lexically_normal().generic_path(), "foo/blah");
     PATH_TEST_EQ(path("f/../b").lexically_normal().generic_path(), "b");
-    PATH_TEST_EQ(path("f/b/..").lexically_normal().generic_path(), "f");
+    PATH_TEST_EQ(path("f/b/..").lexically_normal().generic_path(), "f/");
     PATH_TEST_EQ(path("f/b/../").lexically_normal().generic_path(), "f/");
     PATH_TEST_EQ(path("f/b/../a").lexically_normal().generic_path(), "f/a");
-    PATH_TEST_EQ(path("foo/bar/blah/../..").lexically_normal().generic_path(), "foo");
+    PATH_TEST_EQ(path("foo/bar/blah/../..").lexically_normal().generic_path(), "foo/");
     PATH_TEST_EQ(path("foo/bar/blah/../../bletch").lexically_normal().generic_path(), "foo/bletch");
     PATH_TEST_EQ(path("//net").lexically_normal().generic_path(), "//net");
     PATH_TEST_EQ(path("//net/").lexically_normal().generic_path(), "//net/");
     PATH_TEST_EQ(path("//..net").lexically_normal().generic_path(), "//..net");
-    PATH_TEST_EQ(path("//net/..").lexically_normal().generic_path(), "//net/..");
+    PATH_TEST_EQ(path("//net/..").lexically_normal().generic_path(), "//net/");
     PATH_TEST_EQ(path("//net/foo").lexically_normal().generic_path(), "//net/foo");
     PATH_TEST_EQ(path("//net/foo/").lexically_normal().generic_path(), "//net/foo/");
     PATH_TEST_EQ(path("//net/foo/..").lexically_normal().generic_path(), "//net/");
-    PATH_TEST_EQ(path("//net/foo/../").lexically_normal().generic_path(), "//net/./");
+    PATH_TEST_EQ(path("//net/foo/../").lexically_normal().generic_path(), "//net/");
 
     PATH_TEST_EQ(path("/net/foo/bar").lexically_normal().generic_path(), "/net/foo/bar");
     PATH_TEST_EQ(path("/net/foo/bar/").lexically_normal().generic_path(), "/net/foo/bar/");
-    PATH_TEST_EQ(path("/net/foo/..").lexically_normal().generic_path(), "/net");
+    PATH_TEST_EQ(path("/net/foo/..").lexically_normal().generic_path(), "/net/");
     PATH_TEST_EQ(path("/net/foo/../").lexically_normal().generic_path(), "/net/");
 
     PATH_TEST_EQ(path("//net//foo//bar").lexically_normal().generic_path(), "//net/foo/bar");
     PATH_TEST_EQ(path("//net//foo//bar//").lexically_normal().generic_path(), "//net/foo/bar/");
     PATH_TEST_EQ(path("//net//foo//..").lexically_normal().generic_path(), "//net/");
-    PATH_TEST_EQ(path("//net//foo//..//").lexically_normal().generic_path(), "//net/./");
+    PATH_TEST_EQ(path("//net//foo//..//").lexically_normal().generic_path(), "//net/");
 
     PATH_TEST_EQ(path("///net///foo///bar").lexically_normal().generic_path(), "/net/foo/bar");
     PATH_TEST_EQ(path("///net///foo///bar///").lexically_normal().generic_path(), "/net/foo/bar/");
-    PATH_TEST_EQ(path("///net///foo///..").lexically_normal().generic_path(), "/net");
+    PATH_TEST_EQ(path("///net///foo///..").lexically_normal().generic_path(), "/net/");
     PATH_TEST_EQ(path("///net///foo///..///").lexically_normal().generic_path(), "/net/");
 
     if (platform == "Windows")
@@ -1768,18 +1771,18 @@ namespace
       PATH_TEST_EQ(path("c:..").lexically_normal().generic_path(), "c:..");
       PATH_TEST_EQ(path("c:foo/..").lexically_normal().generic_path(), "c:");
 
-      PATH_TEST_EQ(path("c:foo/../").lexically_normal().generic_path(), "c:./");
+      PATH_TEST_EQ(path("c:foo/../").lexically_normal().generic_path(), "c:");
 
       PATH_TEST_EQ(path("c:/foo/..").lexically_normal().generic_path(), "c:/");
-      PATH_TEST_EQ(path("c:/foo/../").lexically_normal().generic_path(), "c:/./");
-      PATH_TEST_EQ(path("c:/..").lexically_normal().generic_path(), "c:/..");
-      PATH_TEST_EQ(path("c:/../").lexically_normal().generic_path(), "c:/../");
-      PATH_TEST_EQ(path("c:/../..").lexically_normal().generic_path(), "c:/../..");
-      PATH_TEST_EQ(path("c:/../../").lexically_normal().generic_path(), "c:/../../");
-      PATH_TEST_EQ(path("c:/../foo").lexically_normal().generic_path(), "c:/../foo");
-      PATH_TEST_EQ(path("c:/../foo/").lexically_normal().generic_path(), "c:/../foo/");
-      PATH_TEST_EQ(path("c:/../../foo").lexically_normal().generic_path(), "c:/../../foo");
-      PATH_TEST_EQ(path("c:/../../foo/").lexically_normal().generic_path(), "c:/../../foo/");
+      PATH_TEST_EQ(path("c:/foo/../").lexically_normal().generic_path(), "c:/");
+      PATH_TEST_EQ(path("c:/..").lexically_normal().generic_path(), "c:/");
+      PATH_TEST_EQ(path("c:/../").lexically_normal().generic_path(), "c:/");
+      PATH_TEST_EQ(path("c:/../..").lexically_normal().generic_path(), "c:/");
+      PATH_TEST_EQ(path("c:/../../").lexically_normal().generic_path(), "c:/");
+      PATH_TEST_EQ(path("c:/../foo").lexically_normal().generic_path(), "c:/foo");
+      PATH_TEST_EQ(path("c:/../foo/").lexically_normal().generic_path(), "c:/foo/");
+      PATH_TEST_EQ(path("c:/../../foo").lexically_normal().generic_path(), "c:/foo");
+      PATH_TEST_EQ(path("c:/../../foo/").lexically_normal().generic_path(), "c:/foo/");
       PATH_TEST_EQ(path("c:/..foo").lexically_normal().generic_path(), "c:/..foo");
 
     // more Windows tests, from Nico Josuttis 
@@ -2092,7 +2095,7 @@ int cpp_main(int, char*[])
   name_function_tests();
   replace_extension_tests();
   make_preferred_tests();
-//  lexically_normal_tests();
+  lexically_normal_tests();
   lexically_relative_tests();
 
 

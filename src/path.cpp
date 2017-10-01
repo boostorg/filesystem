@@ -102,13 +102,6 @@ namespace
   size_type root_directory_start(const string_type& path, size_type size);
   //  Returns:  npos if no root_directory found
 
-  void first_element(
-      const string_type& src,
-      size_type& element_pos,
-      size_type& element_size,
-      size_type size = string_type::npos
-    );
-
 }  // unnamed namespace
 
 //--------------------------------------------------------------------------------------//
@@ -390,10 +383,11 @@ namespace filesystem
   }
 
   //  lexical operations  --------------------------------------------------------------//
+  //  See 30.10.8.4.11 path generation [fs.path.gen]
 
   namespace detail
   {
-    // C++14 provide a mismatch algorithm with four iterator arguments(), but earlier
+    // C++14 has a mismatch algorithm with four iterator arguments(), but earlier
     // standard libraries didn't, so provide this needed functionality.
     inline
     std::pair<path::iterator, path::iterator> mismatch(path::iterator it1,
@@ -408,7 +402,7 @@ namespace filesystem
     }
   }
 
-  //  See 30.10.8.4.11 path generation [fs.path.gen]
+  //  lexically_relative  --------------------------------------------------------------//
 
   path path::lexically_relative(const path& base) const
   {
@@ -455,41 +449,33 @@ namespace filesystem
 
     // "bullet #" in comments refers to 30.10.4.11 normal form [fs.def.normal.form]
    
-    path temp;                  // return value will be built here
+    path result;
+    const_iterator itr = begin();
 
     // bullet 1: If the path is empty, stop.
     if (m_pathname.empty())
-      return temp;
+      return result;
 
-    //  This implementation assumes iteration over "//foo//bar///baz////"
-    //  yields "//foo", "/", "bar", "baz", "". Search for "//foo//bar///baz////" in
-    //  test/path_test.cpp to see a test of this.
-
-    temp = root_name();
-    iterator itr = begin();
- 
-    if (!temp.empty())  // i.e. there was a root-name
-    {
-      ++itr; // bypass the root-name
+    result = root_name();
 
     // bullet 2: Replace each slash character in the root-name with a preferred-separator.
+    if (!result.empty())  // i.e. there is a root-name
+    {
 #ifdef BOOST_WINDOWS_API
-      // on POSIX directory-separators are already the preferred_separator
-      if (detail::is_directory_separator(temp.m_pathname[0]))
+      // on POSIX root-name directory-separators are already the preferred_separator
+      if (detail::is_directory_separator(result.m_pathname[0]))
       {
-        temp.m_pathname[0] = preferred_separator;
-        BOOST_ASSERT_MSG(temp.size() > 2 
-          && detail::is_directory_separator(temp.m_pathname[1]),
-           "implementation error, please report");   // root_name() must be wacky
-        temp.m_pathname[1] = preferred_separator;
+        result.m_pathname[0] = preferred_separator;
+        result.m_pathname[1] = preferred_separator;
       }
 #endif
-    } // temp was not empty; i.e. there was a root_name
+      ++itr;
+    }
 
-    if (itr != end() && itr->has_root_directory())
+    if (has_root_directory())
     {
       // bullet 3: Replace each directory-separator with a preferred-separator.
-      temp += preferred_separator;
+      result += preferred_separator;
       ++itr;
 
       // bullet 6: If there is a root-directory, remove all dot-dot filenames and any
@@ -498,42 +484,57 @@ namespace filesystem
         ++itr;
     }
 
-    // handle relative-path portion of the pathname if present
+    std::vector<path::const_iterator> relative_filenames;
+    bool trailing_directory_separator = false;
+
+    // process the relative portion of the pathname, if any
     for (; itr != end(); ++itr)
     {
-      path prior_filename;   // used by bullet 5 handler below
-
       // bullet 4: Remove each dot filename and any immediately following
       // directory-separator.
-      if (itr->native().size() == 1 && (itr->native())[0] == dot)
-        {}  // skip the dot element
+      if (itr->size() == 1 && itr->m_pathname[0] == dot)
+      {
+        if (!relative_filenames.empty() && itr == --end())
+          trailing_directory_separator = true;
+      }
 
       // bullet 5: ... remove a non-dot-dot filename immediately followed by a
       // directory-separator and a dot-dot filename, along with any immediately following
       // directory-separator.
       else if (*itr == detail::dot_dot_path()
-        && !(prior_filename = temp.filename()).empty()
-        && prior_filename != detail::dot_dot_path())
-        temp.remove_filename();
-
-      else if (itr->empty()) // trailing directory-specifying
+        && !relative_filenames.empty()
+        && *relative_filenames.back() != detail::dot_dot_path())
       {
-        // bullet 7: If the last filename is dot-dot, remove any trailing
-        // directory-separator.
-        if (temp.filename() != detail::dot_dot_path())
-          temp /= detail::preferred_separator_path();
+        relative_filenames.erase(--relative_filenames.end());
+        trailing_directory_separator = !relative_filenames.empty();
       }
 
+      else if (itr->empty()) // trailing directory-specifier
+        trailing_directory_separator = true;
+
       else
-        temp /= *itr;  // nothing special about this element, so just add it
+      {
+        relative_filenames.push_back(itr);
+        trailing_directory_separator = false;
+      }
 
     }  // each relative-path element
 
-    // bullet 8: If the path is empty, add a dot.
-    if (temp.empty())
-      temp = detail::dot_path();
+    for (auto filename_itr : relative_filenames)
+      result /= *filename_itr;
 
-    return temp;
+    // bullet 7: If the last filename is dot-dot, remove any trailing
+    // directory-separator.
+    if (trailing_directory_separator
+      && !relative_filenames.empty()
+      && *relative_filenames.back() != detail::dot_dot_path())
+        result += preferred_separator;
+
+    // bullet 8: If the path is empty, add a dot.
+    else if (result.empty())
+      result = detail::dot_path();
+
+    return result;
   }
 
 }  // namespace filesystem
