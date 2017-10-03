@@ -487,7 +487,7 @@ namespace filesystem
     path  lexically_proximate(const path& base) const
     {
       path tmp(lexically_relative(base));
-      return tmp.empty() ? *this : tmp;
+      return !tmp.empty() ? tmp : *this;
     }
 
     //  -----  iterators  -----
