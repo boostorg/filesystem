@@ -415,29 +415,29 @@ namespace filesystem
     std::pair<path::iterator, path::iterator> mm =
       detail::mismatch(begin(), end(), base.begin(), base.end());
 
+    // ¶ 4.1
     if (mm.first == end() && mm.second == base.end())
       return detail::dot_path();
 
+    // ¶ 4.2
     int n = 0;
-    path names;
     for (; mm.second != base.end(); ++mm.second)
-      names /= *mm.second;
-    for (path name = names.filename(); !name.empty();
-      names = names.parent_path())
     {
-      if (name != detail::dot_path() && name != detail::dot_dot_path())
+      if (*mm.second != detail::dot_path() && *mm.second != detail::dot_dot_path())
         ++n;
-      if (name == detail::dot_dot_path())
+      if (*mm.second == detail::dot_dot_path())
         --n;
     }
     if (n < 0)
       return path();
 
+    // ¶ 4.3
     path result;
     for (; n; --n)
       result /= detail::dot_dot_path();
     for (mm.first; mm.first != end(); ++mm.first)
       result /= *mm.first;
+
     return result;
   }
 
