@@ -1,4 +1,4 @@
-//  filesystem relative_test.cpp  ----------------------------------------------------  //
+//  filesystem path_generation_test.cpp  ---------------------------------------------  //
 
 //  Copyright Beman Dawes 2015
 
@@ -6,12 +6,6 @@
 //  See http://www.boost.org/LICENSE_1_0.txt
 
 //  Library home page: http://www.boost.org/libs/filesystem
-
-//  ----------------------------------------------------------------------------------  //
-//
-//  At least initially, development is easier if these tests are in a separate file.
-//
-//  ----------------------------------------------------------------------------------  //
 
 #include <boost/config/warning_disable.hpp>
 #include <boost/filesystem/path.hpp>

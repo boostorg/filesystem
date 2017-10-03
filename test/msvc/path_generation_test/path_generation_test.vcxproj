@@ -162,15 +162,15 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\relative_test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\filesystem_dll\filesystem_dll.vcxproj">
       <Project>{ffd738f7-96f0-445c-81ea-551665ef53d1}</Project>
     </ProjectReference>
     <ProjectReference Include="..\system_dll\system_dll.vcxproj">
       <Project>{f94ccadd-a90b-480c-a304-c19d015d36b1}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\path_generation_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
