@@ -726,13 +726,13 @@ namespace
     CHECK(path("").remove_filename() == "");
     CHECK(path("foo").remove_filename() == "");
     CHECK(path("/foo").remove_filename() == "/");
-    CHECK(path("foo/bar").remove_filename() == "foo");
-    BOOST_TEST_EQ(path("foo/bar/").remove_filename(), path("foo/bar"));
+    CHECK(path("foo/bar").remove_filename() == "foo/");
+    BOOST_TEST_EQ(path("foo/bar/").remove_filename(), path("foo/bar/"));
     BOOST_TEST_EQ(path(".").remove_filename(), path(""));
-    BOOST_TEST_EQ(path("./.").remove_filename(), path("."));
+    BOOST_TEST_EQ(path("./.").remove_filename(), path("./"));
     BOOST_TEST_EQ(path("/.").remove_filename(), path("/"));
     BOOST_TEST_EQ(path("..").remove_filename(), path(""));
-    BOOST_TEST_EQ(path("../..").remove_filename(), path(".."));
+    BOOST_TEST_EQ(path("../..").remove_filename(), path("../"));
     BOOST_TEST_EQ(path("/..").remove_filename(), path("/"));
 
   }
@@ -772,7 +772,7 @@ namespace
     CHECK(path("/foo").relative_path().string() == "foo");
 
     CHECK(path("").parent_path().string() == "");
-    CHECK(path("/").parent_path().string() == "");
+    CHECK(path("/").parent_path().string() == "/");
     CHECK(path("/foo").parent_path().string() == "/");
     CHECK(path("/foo/bar").parent_path().string() == "/foo");
 
