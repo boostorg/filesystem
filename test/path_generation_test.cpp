@@ -344,7 +344,7 @@ namespace
     cout << "lexically_proximate_test..." << endl;
 
     // paths unrelated
-    PATH_TEST_EQ(path("a/b/c").lexically_proximate("x"), "a/b/c");
+    BOOST_TEST_EQ(path("a/b/c").lexically_relative("x"), "../a/b/c");
   }
 }  // unnamed namespace
 

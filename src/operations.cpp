@@ -1101,7 +1101,7 @@ namespace detail
  BOOST_FILESYSTEM_DECL
   bool create_directories(const path& p, system::error_code* ec)
   {
-    if (p.empty())
+   if (p.empty() || !p.has_relative_path())
     {
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error(
