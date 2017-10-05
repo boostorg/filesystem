@@ -1723,6 +1723,7 @@ namespace detail
     return symlink_path;
   }
 
+  // 30.10.15.29 Relative [fs.op.relative]
   BOOST_FILESYSTEM_DECL
   path relative(const path& p, const path& base, error_code* ec)
   {
