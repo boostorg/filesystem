@@ -111,7 +111,9 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
   if (!errval)
   {
-    BOOL gen_ok = ::CryptGenRandom(handle, len, static_cast<unsigned char*>(buf));
+	// Use static cast to silence Visual Studio 2017
+	// warning C4267: 'argument': conversion from 'size_t' to 'DWORD', possible loss of data
+	BOOL gen_ok = ::CryptGenRandom(handle, static_cast<DWORD>(len), static_cast<unsigned char*>(buf));
     if (!gen_ok)
       errval = ::GetLastError();
     ::CryptReleaseContext(handle, 0);
