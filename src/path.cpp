@@ -677,9 +677,24 @@ namespace filesystem
     {
       for (; first1 != last1 && first2 != last2;)
       {
-        if (first1->native() < first2->native()) return -1;
-        if (first2->native() < first1->native()) return 1;
-        BOOST_ASSERT(first2->native() == first1->native());
+#     ifdef BOOST_WINDOWS_API
+        // root-names on Windows treated specially because leading directory-separators
+        // may be either preferred-separator or fallback-separator
+        if (first1 == first1 && first1->has_root_name() && first2->has_root_name()
+          && detail::is_directory_separator(first1->native()[0]))
+        {
+          int result = first1->native().compare(2, first1->native().size() - 2,
+            first2->native(), 2, first1->native().size() - 2);
+          if (result != 0)
+            return result;
+        }
+        else
+#     endif
+        {
+          if (first1->native() < first2->native()) return -1;
+          if (first2->native() < first1->native()) return 1;
+        }
+
         ++first1;
         ++first2;
       }

@@ -865,6 +865,17 @@ namespace
     BOOST_TEST(path("a/b/") == path("a/b/"));
     BOOST_TEST(path("a/b") != path("a/b/"));
 
+    BOOST_TEST(path("foo//bar") == "foo/bar");
+    BOOST_TEST(path("//foo") == "//foo");
+    BOOST_TEST(path("//foo///bar") == "//foo/bar");
+    if (platform == "Windows")
+    {
+      BOOST_TEST(path("foo\\\\bar") == "foo/bar");
+      BOOST_TEST(path("\\\\foo") == "//foo");
+      BOOST_TEST(path("\\\\foo\\\\\\bar") == "//foo///bar");
+    }
+
+
     // make sure the derivative operators also work
 
     BOOST_TEST(b > a);
