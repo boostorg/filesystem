@@ -467,7 +467,7 @@ namespace filesystem
     bool has_root_directory() const  { return m_root_directory_size(m_root_name_size()); }
     bool has_relative_path() const   { return m_root_path_size() < m_pathname.size(); }
     bool has_parent_path() const     { return !parent_path().empty(); }
-    bool has_filename() const        { return !filename().empty(); }
+    bool has_filename() const; 
     bool has_stem() const            { return !stem().empty(); }
     bool has_extension() const       { return !extension().empty(); }
     bool is_relative() const         { return !is_absolute(); } 
@@ -836,6 +836,8 @@ namespace filesystem
   {
     return has_relative_path() ? *--end() : path();
   }
+
+  inline bool path::has_filename() const { return !filename().empty(); }
 
   inline path path::root_name() const
   {
