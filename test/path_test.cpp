@@ -199,7 +199,7 @@ namespace
     const char* remove_filename;
   };
 
-  static const dtst decomp_table[] 
+  static const dtst decomp_table[] =
   {
     //                                  root_    root_  root_   relative_       parent_                                remove_
     //              path                 name     dir    path    path            path         filename   stem    ext    filename

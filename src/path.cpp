@@ -275,7 +275,7 @@ namespace filesystem
 
   size_type path::m_root_name_size() const
   {
-    size_type size{ 0 };
+    size_type size(0);
 
 # ifdef BOOST_WINDOWS_API
     // Windows drive-letter, e.g. C:
@@ -311,7 +311,7 @@ namespace filesystem
 
   size_type path::m_root_directory_size(size_type pos) const
   {
-    size_type size{ 0 };
+    size_type size(0);
     for (; pos + size != m_pathname.size()
       && detail::is_directory_separator(m_pathname[pos+size]); ++size) {
     }
@@ -356,6 +356,11 @@ namespace filesystem
     }
 
     return path(m_pathname.c_str(), m_pathname.c_str() + pos);
+  }
+
+  path path::filename() const   // [fs.path.decompose] ¶ 6
+  {
+    return has_relative_path() ? *--end() : path();
   }
 
   path path::stem() const
@@ -435,7 +440,7 @@ namespace filesystem
     path result;
     for (; n; --n)
       result /= detail::dot_dot_path();
-    for (mm.first; mm.first != end(); ++mm.first)
+    for (; mm.first != end(); ++mm.first)
       result /= *mm.first;
 
     return result;
@@ -743,7 +748,7 @@ namespace filesystem
     itr.m_path_ptr = this;
     itr.m_pos = 0;
 
-    size_type element_sz{ 0 };
+    size_type element_sz(0);
 
     // empty or has root-name
     if (m_pathname.empty() || (element_sz = m_root_name_size()) != 0)

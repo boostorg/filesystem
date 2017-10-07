@@ -463,8 +463,8 @@ namespace filesystem
     bool filename_is_dot() const;
     bool filename_is_dot_dot() const;
     bool has_root_path() const       { return has_root_directory() || has_root_name(); }
-    bool has_root_name() const       { return m_root_name_size(); }
-    bool has_root_directory() const  { return m_root_directory_size(m_root_name_size()); }
+    bool has_root_name() const       { return m_root_name_size() != 0; }
+    bool has_root_directory() const {return m_root_directory_size(m_root_name_size())!= 0;}
     bool has_relative_path() const   { return m_root_path_size() < m_pathname.size(); }
     bool has_parent_path() const     { return !parent_path().empty(); }
     bool has_filename() const; 
@@ -592,7 +592,7 @@ namespace filesystem
     size_type m_root_directory_size(size_type pos) const;  // "//a///" returns 3
     size_type m_root_path_size() const
     {
-      size_type root_name_sz{ m_root_name_size() };
+      size_type root_name_sz = m_root_name_size();
       return root_name_sz + m_root_directory_size(root_name_sz);
     }
 
@@ -830,11 +830,6 @@ namespace filesystem
       && (m_pathname.size() == 2 || detail::is_element_separator(m_pathname[size()-3]));
       // use detail::is_element_separator() rather than detail::is_directory_separator
       // to deal with "c:.." edge case on Windows when ':' acts as a separator
-  }
-
-  inline path path::filename() const   // [fs.path.decompose] ¶ 6
-  {
-    return has_relative_path() ? *--end() : path();
   }
 
   inline bool path::has_filename() const { return !filename().empty(); }
