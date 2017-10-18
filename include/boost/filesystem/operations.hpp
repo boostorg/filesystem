@@ -835,6 +835,28 @@ private:
   file_status m_get_symlink_status(system::error_code* ec=0) const;
 }; // directory_entry
 
+
+//--------------------------------------------------------------------------------------//
+//                                                                                      //
+//                            directory_entry overloads                                 //
+//                                                                                      //
+//--------------------------------------------------------------------------------------//
+
+//  Without these functions, calling (for example) 'is_directory' with a 'directory_entry' results in:
+//  - a conversion to 'path' using 'operator const boost::filesystem::path&()',
+//  - then a call to 'is_directory(const path& p)' which recomputes the status with 'detail::status(p)'.
+//  
+//  These functions avoid a costly recomputation of the status if one calls 'is_directory(e)' instead of 'is_directory(e.status)'
+
+inline file_status status         (const directory_entry& e) { return e.status(); }
+inline bool        is_directory   (const directory_entry& e) { return is_directory(e.status()); }
+inline bool        exists         (const directory_entry& e) { return exists(e.status()); }
+inline bool        is_regular_file(const directory_entry& e) { return is_regular_file(e.status()); }
+inline bool        is_other       (const directory_entry& e) { return is_other(e.status()); }
+# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+inline bool        is_regular     (const directory_entry& e) { return is_regular(e.status()); }
+# endif
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                            directory_iterator helpers                                //
