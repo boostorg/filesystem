@@ -96,6 +96,7 @@ using std::wstring;
 
 # else // BOOST_WINDOW_API
 
+#   include <boost/detail/interlocked.hpp>
 #   if (defined(__MINGW32__) || defined(__CYGWIN__)) && !defined(WINVER)
       // Versions of MinGW or Cygwin that support Filesystem V3 support at least WINVER 0x501.
       // See MinGW's windef.h
@@ -548,9 +549,7 @@ namespace
     /*_In_*/ BOOLEAN          CaseInSensitive
   );
 
-  PtrRtlEqualUnicodeString rtl_equal_unicode_string_api = PtrRtlEqualUnicodeString(
-    ::GetProcAddress(
-      ::GetModuleHandleW(L"ntdll.dll"), "RtlEqualUnicodeString"));
+  PtrRtlEqualUnicodeString rtl_equal_unicode_string_api;
 
 #ifndef LOCALE_INVARIANT
 #  define LOCALE_INVARIANT (MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
@@ -614,8 +613,52 @@ namespace
   
   typedef bool (*Ptr_equal_string_ordinal_ic)(const wchar_t*, const wchar_t*);
 
-  Ptr_equal_string_ordinal_ic equal_string_ordinal_ic = 
-    rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1 : equal_string_ordinal_ic_2;
+  BOOST_NOINLINE Ptr_equal_string_ordinal_ic get_compare_function()
+  {
+    rtl_equal_unicode_string_api = PtrRtlEqualUnicodeString(
+      ::GetProcAddress(
+        ::GetModuleHandleW(L"ntdll.dll"), "RtlEqualUnicodeString"));
+
+    return rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1
+                                        : equal_string_ordinal_ic_2;
+  }
+
+  static Ptr_equal_string_ordinal_ic compare_function;
+  static long compare_function_state;
+
+  inline Ptr_equal_string_ordinal_ic compare()
+  {
+    // The loop condition check is semantically a read-acquire operation:
+    for (unsigned i = 0; BOOST_INTERLOCKED_COMPARE_EXCHANGE(&compare_function_state, 0, 0) < 2; ++i)
+    {
+      if (BOOST_INTERLOCKED_COMPARE_EXCHANGE(&compare_function_state, 1, 0) == 0)
+      {
+        compare_function = get_compare_function();
+        BOOST_INTERLOCKED_INCREMENT(&compare_function_state);
+        break;
+      }
+      else if (i & 1) 
+      {
+        if (!::SwitchToThread())
+        {
+          ::Sleep(0);
+        }
+      }
+      else 
+      {
+        ::Sleep(1);
+      }
+    }
+    return compare_function;
+  }
+
+  // force function pointer setup into initialization phase
+  static bool compare_function_initializer = compare() != 0;
+
+  inline bool equal_string_ordinal_ic(const wchar_t* s1, const wchar_t* s2)
+  {
+    return compare()(s1, s2);
+  }
   
   perms make_permissions(const path& p, DWORD attr)
   {
