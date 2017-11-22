@@ -40,6 +40,7 @@
 #include <ctime>
 #include <vector>
 #include <stack>
+#include <new> // std::nothrow
 
 #ifdef BOOST_WINDOWS_API
 #  include <fstream>
@@ -1173,22 +1174,42 @@ namespace filesystem
     recursive_directory_iterator(const path& dir_path,
       BOOST_SCOPED_ENUM(symlink_option) opt,
       system::error_code & ec) BOOST_NOEXCEPT
-    : m_imp(new detail::recur_dir_itr_imp)
     {
-      m_imp->m_options = opt;
-      m_imp->m_stack.push(directory_iterator(dir_path, ec));
-      if (m_imp->m_stack.top() == directory_iterator())
-        { m_imp.reset (); }
+      detail::recur_dir_itr_imp * pi = new(std::nothrow) detail::recur_dir_itr_imp;
+
+      if (pi == 0)
+      {
+        ec = make_error_code(boost::system::errc::not_enough_memory);
+      }
+      else
+      {
+        m_imp.reset(pi);
+
+        m_imp->m_options = opt;
+        m_imp->m_stack.push(directory_iterator(dir_path, ec));
+        if (m_imp->m_stack.top() == directory_iterator())
+          { m_imp.reset (); }
+        }
     }
 
     recursive_directory_iterator(const path& dir_path,
       system::error_code & ec) BOOST_NOEXCEPT
-    : m_imp(new detail::recur_dir_itr_imp)
     {
-      m_imp->m_options = symlink_option::none;
-      m_imp->m_stack.push(directory_iterator(dir_path, ec));
-      if (m_imp->m_stack.top() == directory_iterator())
-        { m_imp.reset (); }
+      detail::recur_dir_itr_imp * pi = new(std::nothrow) detail::recur_dir_itr_imp;
+
+      if (pi == 0)
+      {
+        ec = make_error_code(boost::system::errc::not_enough_memory);
+      }
+      else
+      {
+        m_imp.reset(pi);
+
+        m_imp->m_options = symlink_option::none;
+        m_imp->m_stack.push(directory_iterator(dir_path, ec));
+        if (m_imp->m_stack.top() == directory_iterator())
+          { m_imp.reset (); }
+      }
     }
 
     recursive_directory_iterator& increment(system::error_code& ec) BOOST_NOEXCEPT
