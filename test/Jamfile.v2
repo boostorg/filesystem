@@ -39,4 +39,6 @@ path-constant HERE : . ;
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
 
+       # `quick` target (for CI)
+       [ run quick.cpp ]
        ;
