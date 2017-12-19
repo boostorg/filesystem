@@ -1957,6 +1957,7 @@ namespace
   {
     {
       cout << "temp_directory_path_tests..." << endl;
+      cout << " temp_directory_path() is " << fs::temp_directory_path() << endl;
 
 #if defined(BOOST_WINDOWS_API)
 
@@ -2002,7 +2003,7 @@ namespace
 #endif
       BOOST_TEST(!fs::temp_directory_path().empty());
       BOOST_TEST(exists(fs::temp_directory_path()));
-      fs::path ph = fs::temp_directory_path()/"temp_directory_path_test.txt";
+      fs::path ph = fs::temp_directory_path() / fs::unique_path("temp_directory_path_test_%%%%_%%%%.txt");
       {
           if(exists(ph)) remove(ph);
           std::ofstream f(ph.BOOST_FILESYSTEM_C_STR);

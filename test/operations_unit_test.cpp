@@ -177,7 +177,7 @@ namespace
 
     recursive_directory_iterator end;
 
-    recursive_directory_iterator it("..");
+    recursive_directory_iterator it(".");
 
     CHECK(!it->path().empty());
 
@@ -365,7 +365,7 @@ int cpp_main(int argc, char* argv[])
     cout << "current_path() is " << current_path().string() << endl;
   }
 
-  const path temp_dir(current_path() / unique_path("op-unit_test-%%%%-%%%%-%%%%"));
+  const path temp_dir(current_path() / ".." / unique_path("op-unit_test-%%%%-%%%%-%%%%"));
   cout << "temp_dir is " << temp_dir.string() << endl;
 
   create_directory(temp_dir);
