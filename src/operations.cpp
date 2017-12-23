@@ -548,9 +548,7 @@ namespace
     /*_In_*/ BOOLEAN          CaseInSensitive
   );
 
-  PtrRtlEqualUnicodeString rtl_equal_unicode_string_api = PtrRtlEqualUnicodeString(
-    ::GetProcAddress(
-      ::GetModuleHandleW(L"ntdll.dll"), "RtlEqualUnicodeString"));
+  PtrRtlEqualUnicodeString rtl_equal_unicode_string_api;
 
 #ifndef LOCALE_INVARIANT
 #  define LOCALE_INVARIANT (MAKELCID(MAKELANGID(LANG_INVARIANT, SUBLANG_NEUTRAL), SORT_DEFAULT))
@@ -614,9 +612,49 @@ namespace
   
   typedef bool (*Ptr_equal_string_ordinal_ic)(const wchar_t*, const wchar_t*);
 
-  Ptr_equal_string_ordinal_ic equal_string_ordinal_ic = 
-    rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1 : equal_string_ordinal_ic_2;
-  
+  BOOST_NOINLINE Ptr_equal_string_ordinal_ic get_compare_function()
+  {
+    rtl_equal_unicode_string_api = PtrRtlEqualUnicodeString(
+      ::GetProcAddress(
+        ::GetModuleHandleW(L"ntdll.dll"), "RtlEqualUnicodeString"));
+
+    return rtl_equal_unicode_string_api ? equal_string_ordinal_ic_1
+                                        : equal_string_ordinal_ic_2;
+  }
+
+/* the following lowers to exactly the same machine code on all recent major compilers
+ * on all major architectures, in particular the ones running this Windows-specific code,
+ * without taking a dependency on c++11 std::atomics or boost::atomics
+ * (see also https://godbolt.org/g/mt5GBV)
+ *
+ * atomic<Ptr_equal_string_ordinal_ic> compare_function;
+ * inline Ptr_equal_string_ordinal_ic compare()
+ * {
+ *   Ptr_equal_string_ordinal_ic cf = compare_function.load(memory_order_relaxed);
+ *   if (!cf)
+ *      compare_function.store(cf = get_compare_function(), memory_order_relaxed);
+ *   return cf;
+ * }
+ */
+
+  static BOOST_ALIGNMENT(8) Ptr_equal_string_ordinal_ic compare_function;
+
+  inline Ptr_equal_string_ordinal_ic compare()
+  {
+    Ptr_equal_string_ordinal_ic cf = compare_function;
+    if (!cf)
+       compare_function = cf = get_compare_function();
+    return cf;
+  }
+
+  // force function pointer setup into initialization phase
+  static bool compare_function_initializer = compare() != 0;
+
+  inline bool equal_string_ordinal_ic(const wchar_t* s1, const wchar_t* s2)
+  {
+    return compare()(s1, s2);
+  }
+
   perms make_permissions(const path& p, DWORD attr)
   {
     perms prms = fs::owner_read | fs::group_read | fs::others_read;
