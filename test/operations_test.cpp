@@ -176,7 +176,7 @@ namespace
     return false;
   }
 
-  boost::system::error_category* poison_category_aux() { return 0; }
+  boost::system::error_category* poison_category_aux() { return reinterpret_cast<boost::system::error_category*>(8); }
   boost::system::error_category& poison_category()     { return *poison_category_aux(); }
 
   // compile-only two argument "do-the-right-thing" tests
