@@ -643,7 +643,7 @@ namespace
     {
       return fs::file_status(fs::file_not_found, fs::no_perms);
     }
-    else if ((errval == ERROR_SHARING_VIOLATION))
+    else if (errval == ERROR_SHARING_VIOLATION)
     {
       return fs::file_status(fs::type_unknown);
     }
