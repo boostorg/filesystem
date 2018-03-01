@@ -10,7 +10,9 @@
 
 //--------------------------------------------------------------------------------------// 
 
-//  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
+//  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355)
+//  Google Android NDK is broken though as it doesn't provide truncate() declaration when _FILE_OFFSET_BITS=64 is defined (https://github.com/boostorg/filesystem/issues/65)
+#if !defined(__ANDROID__) || (__ANDROID_API__+0) >= 21 || defined(__CRYSTAX__)
 #if !(defined(__HP_aCC) && defined(_ILP32) && !defined(_STATVFS_ACPP_PROBLEMS_FIXED))
 #define _FILE_OFFSET_BITS 64 // at worst, these defines may have no effect,
 #endif
@@ -28,6 +30,7 @@
 #else
 #define _FILE_OFFSET_BITS 64
 #endif
+#endif // !defined(__ANDROID__) || (__ANDROID_API__+0) >= 21 || defined(__CRYSTAX__)
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
