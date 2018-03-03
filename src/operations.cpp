@@ -11,27 +11,17 @@
 //--------------------------------------------------------------------------------------// 
 
 //  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
-#if defined(__HP_aCC) && defined(_ILP32) && !defined(_STATVFS_ACPP_PROBLEMS_FIXED)
 
+// 64-bit systems or on 32-bit systems which don't have files larger
+// than can be represented by a traditional POSIX/UNIX off_t type.
+// OTOH, defining them should kick in 64-bit off_t's (and thus
+// st_size)on 32-bit systems that provide the Large File
+// Support (LFS)interface, such as Linux, Solaris, and IRIX.
+// The defines are given before any headers are included to
+// ensure that they are available to all included headers.
+// That is required at least on Solaris, and possibly on other
+// systems as well.
 #define _FILE_OFFSET_BITS 64
-
-#elif defined(__PGI)
-
-#define _FILE_OFFSET_BITS 64
-
-#else
-
-#define _FILE_OFFSET_BITS 64
-      // 64-bit systems or on 32-bit systems which don't have files larger 
-      // than can be represented by a traditional POSIX/UNIX off_t type. 
-      // OTOH, defining them should kick in 64-bit off_t's (and thus 
-      // st_size)on 32-bit systems that provide the Large File
-      // Support (LFS)interface, such as Linux, Solaris, and IRIX.
-      // The defines are given before any headers are included to
-      // ensure that they are available to all included headers.
-      // That is required at least on Solaris, and possibly on other
-      // systems as well.
-#endif
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
