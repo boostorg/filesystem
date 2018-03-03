@@ -11,7 +11,21 @@
 //--------------------------------------------------------------------------------------// 
 
 //  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
-
+#if defined(__ANDROID__) && defined(__ANDROID_API__) && __ANDROID_API__ < 21
+// The newer Android NDKs (r16 and above), if compiling for older Android APIs
+// (below 21) and if _FILE_OFFSET_BITS=64 is defined, do not declare
+// truncate() function.
+// Thus, if _FILE_OFFSET_BITS=64 is defined, compilation of this file
+// (operations.cpp) will fail.
+// See https://github.com/boostorg/filesystem/issues/65 for more info.
+//
+// Android NDK developers consider it the expected behavior.
+// See their official position here:
+// - https://github.com/android-ndk/ndk/issues/501#issuecomment-326447479
+// - https://android.googlesource.com/platform/bionic/+/a34817457feee026e8702a1d2dffe9e92b51d7d1/docs/32-bit-abi.md#32_bit-abi-bugs
+//
+// Thus we do not define _FILE_OFFSET_BITS in such case.
+#else
 // 64-bit systems or on 32-bit systems which don't have files larger
 // than can be represented by a traditional POSIX/UNIX off_t type.
 // OTOH, defining them should kick in 64-bit off_t's (and thus
@@ -22,6 +36,7 @@
 // That is required at least on Solaris, and possibly on other
 // systems as well.
 #define _FILE_OFFSET_BITS 64
+#endif
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
