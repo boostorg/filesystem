@@ -26,13 +26,25 @@
 //
 // Thus we do not define _FILE_OFFSET_BITS in such case.
 #else
-// 64-bit systems or on 32-bit systems which don't have files larger
-// than can be represented by a traditional POSIX/UNIX off_t type.
-// OTOH, defining them should kick in 64-bit off_t's (and thus
-// st_size)on 32-bit systems that provide the Large File
-// Support (LFS)interface, such as Linux, Solaris, and IRIX.
-// The defines are given before any headers are included to
-// ensure that they are available to all included headers.
+// Defining _FILE_OFFSET_BITS=64 should kick in 64-bit off_t's
+// (and thus st_size) on 32-bit systems that provide the Large File
+// Support (LFS) interface, such as Linux, Solaris, and IRIX.
+//
+// At the time of this comment writing (March 2018), on most systems
+// _FILE_OFFSET_BITS=64 definition is harmless:
+// either the definition is supported and enables 64-bit off_t,
+// or the definition is not supported and is ignored, in which case
+// off_t does not change its default size for the target system
+// (which may be 32-bit or 64-bit already).
+// Thus it makes sense to have _FILE_OFFSET_BITS=64 defined by default,
+// instead of listing every system that supports the definition.
+// Those few systems, on which _FILE_OFFSET_BITS=64 is harmful,
+// for example this definition causes compilation failure on those systems,
+// should be exempt from defining _FILE_OFFSET_BITS by adding
+// an appropriate #elif block above with the appropriate comment.
+//
+// _FILE_OFFSET_BITS must be defined before any headers are included
+// to ensure that the definition is available to all included headers.
 // That is required at least on Solaris, and possibly on other
 // systems as well.
 #define _FILE_OFFSET_BITS 64
