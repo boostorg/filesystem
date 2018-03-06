@@ -11,13 +11,16 @@
 //--------------------------------------------------------------------------------------// 
 
 //  define 64-bit offset macros BEFORE including boost/config.hpp (see ticket #5355) 
-#if defined(__ANDROID__) && defined(__ANDROID_API__) && __ANDROID_API__ < 21
-// The newer Android NDKs (r16 and above), if compiling for older Android APIs
-// (below 21) and if _FILE_OFFSET_BITS=64 is defined, do not declare
-// truncate() function.
-// Thus, if _FILE_OFFSET_BITS=64 is defined, compilation of this file
-// (operations.cpp) will fail.
-// See https://github.com/boostorg/filesystem/issues/65 for more info.
+#if defined(__ANDROID__) && defined(__ANDROID_API__) && __ANDROID_API__ < 24
+// Android fully supports 64-bit file offsets only for API 24 and above.
+//
+// Trying to define _FILE_OFFSET_BITS=64 for APIs below 24
+// leads to compilation failure for one or another reason,
+// depending on target Android API level, Android NDK version,
+// used STL, order of include paths and more.
+// For more information, please see:
+// - https://github.com/boostorg/filesystem/issues/65
+// - https://github.com/boostorg/filesystem/pull/69
 //
 // Android NDK developers consider it the expected behavior.
 // See their official position here:
