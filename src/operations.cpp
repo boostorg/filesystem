@@ -890,20 +890,25 @@ namespace detail
   BOOST_FILESYSTEM_DECL
   void copy(const path& from, const path& to, system::error_code* ec)
   {
-    file_status s(symlink_status(from, *ec));
-    if (ec != 0 && *ec) return;
+    system::error_code local_ec;
+    file_status s(symlink_status(from, local_ec));
+    if (ec != 0 && local_ec)
+    {
+      *ec = local_ec;
+      return;
+    }
 
     if(is_symlink(s))
     {
-      copy_symlink(from, to, *ec);
+      copy_symlink(from, to, local_ec);
     }
     else if(is_directory(s))
     {
-      copy_directory(from, to, *ec);
+      copy_directory(from, to, local_ec);
     }
     else if(is_regular_file(s))
     {
-      copy_file(from, to, fs::copy_option::fail_if_exists, *ec);
+      copy_file(from, to, fs::copy_option::fail_if_exists, local_ec);
     }
     else
     {
@@ -911,6 +916,11 @@ namespace detail
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy",
           from, to, error_code(BOOST_ERROR_NOT_SUPPORTED, system_category())));
       ec->assign(BOOST_ERROR_NOT_SUPPORTED, system_category());
+    }
+
+    if (ec)
+    {
+      *ec = local_ec;
     }
   }
 
