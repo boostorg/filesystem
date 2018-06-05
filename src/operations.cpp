@@ -2113,17 +2113,20 @@ namespace
   inline int readdir_r_simulator(DIR * dirp, struct dirent * entry,
     struct dirent ** result)// *result set to 0 on end of directory
   {
-    errno = 0;
-
 #   if !defined(__CYGWIN__)\
     && defined(_POSIX_THREAD_SAFE_FUNCTIONS)\
     && defined(_SC_THREAD_SAFE_FUNCTIONS)\
     && (_POSIX_THREAD_SAFE_FUNCTIONS+0 >= 0)\
     && (!defined(__hpux) || defined(_REENTRANT)) \
     && (!defined(_AIX) || defined(__THREAD_SAFE))
+
+    errno = 0;
+
     if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS)>= 0)
       { return ::readdir_r(dirp, entry, result); }
 #   endif
+
+    errno = 0;
 
     struct dirent * p;
     *result = 0;
