@@ -22,6 +22,7 @@
 # endif
 
 #include <boost/filesystem/config.hpp>
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #include <boost/filesystem/path_traits.hpp>  // includes <cwchar>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
@@ -454,6 +455,11 @@ namespace filesystem
 
 #   endif
 
+    const std::string u8string() const
+    {
+      return string(detail::utf8_codecvt_facet());
+    }
+
     //  -----  generic format observers  -----
 
     //  Experimental generic function returning generic formatted path (i.e. separators
@@ -788,6 +794,8 @@ namespace filesystem
   }
 
   inline void swap(path& lhs, path& rhs)                   { lhs.swap(rhs); }
+
+  inline path u8path(const std::string& source)          { return path(source, detail::utf8_codecvt_facet()); }
 
   inline path operator/(const path& lhs, const path& rhs)  { return path(lhs) /= rhs; }
 
