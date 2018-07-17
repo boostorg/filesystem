@@ -18,6 +18,7 @@
 #endif
 
 #include <boost/filesystem/config.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <cwchar>  // for mbstate_t
 
 #ifdef BOOST_WINDOWS_API
@@ -39,10 +40,10 @@
     UINT codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
 
     int count;
-    // Use static_cast to silence Visual Studio 2017:
+    // Use boost::numeric_cast to silence Visual Studio 2017:
     // warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
     if ((count = ::MultiByteToWideChar(codepage, MB_PRECOMPOSED, from,
-      static_cast<int>(from_end - from), to, static_cast<int>(to_end - to))) == 0)
+      boost::numeric_cast<int>(from_end - from), to, boost::numeric_cast<int>(to_end - to))) == 0)
     {
       return error;  // conversion failed
     }
@@ -64,7 +65,7 @@
     // Use static cast to silence Visual Studio 2017:
     // warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
     if ((count = ::WideCharToMultiByte(codepage, WC_NO_BEST_FIT_CHARS, from,
-       static_cast<int>(from_end - from), to, static_cast<int>(to_end - to), 0, 0)) == 0)
+       boost::numeric_cast<int>(from_end - from), to, boost::numeric_cast<int>(to_end - to), 0, 0)) == 0)
     {
       return error;  // conversion failed
     }
