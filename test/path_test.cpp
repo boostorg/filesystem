@@ -57,6 +57,7 @@
 # endif
 
 #include <boost/utility.hpp>
+#include <boost/next_prior.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>

@@ -56,32 +56,40 @@ inline std::wstring convert(const char* c)
    return std::wstring(s.begin(), s.end());
 }
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
 //  Note: these three setenv* functions are not general solutions for the missing
 //  setenv* problem on VC++. See Microsoft's _putenv for that need, and ticker #7018
 //  for discussion and rationale for returning void for this test program, which needs
 //  to work for both the MSVC Runtime and the Windows Runtime (which does not support
 //  _putenv).
 
-inline void setenv(const char* name, const fs::path::value_type* val, int) 
+inline void setenv_(const char* name, const fs::path::value_type* val, int)
 {
-  SetEnvironmentVariableW(convert(name).c_str(), val); 
+  SetEnvironmentVariableW(convert(name).c_str(), val);
 }
 
-inline void setenv(const char* name, const char* val, int) 
+inline void setenv_(const char* name, const char* val, int)
 {
-  SetEnvironmentVariableW(convert(name).c_str(), convert(val).c_str()); 
+  SetEnvironmentVariableW(convert(name).c_str(), convert(val).c_str());
 }
 
-inline void unsetenv(const char* name) 
+inline void unsetenv_(const char* name)
 { 
-  SetEnvironmentVariableW(convert(name).c_str(), 0); 
+  SetEnvironmentVariableW(convert(name).c_str(), 0);
 }
-#endif
 
 #else
 
 #include <stdlib.h>  // allow unqualifed calls to env funcs on SunOS
+
+inline void setenv_(const char* name, const char* val, int ovw)
+{
+  setenv(name, val, ovw);
+}
+
+inline void unsetenv_(const char* name)
+{
+  unsetenv(name);
+}
 
 #endif
 
@@ -168,7 +176,7 @@ namespace
     return false;
   }
 
-  boost::system::error_category* poison_category_aux() { return 0; }
+  boost::system::error_category* poison_category_aux() { return reinterpret_cast<boost::system::error_category*>(8); }
   boost::system::error_category& poison_category()     { return *poison_category_aux(); }
 
   // compile-only two argument "do-the-right-thing" tests
@@ -1929,8 +1937,8 @@ namespace
       }
       ~previous_value()
       {
-        m_empty? unsetenv(m_name.c_str()) 
-               : setenv(m_name.c_str(), m_string.c_str(), 1);
+        m_empty? unsetenv_(m_name.c_str())
+               : setenv_(m_name.c_str(), m_string.c_str(), 1);
       }
     };
   
@@ -1940,7 +1948,7 @@ namespace
     : m_previous_value(name) 
     {
 //      std::cout << name << " old value is \"" << getenv(name) << "\"" << std::endl;
-      value ? setenv(name, value, 1) : unsetenv(name);
+      value ? setenv_(name, value, 1) : unsetenv_(name);
 //      std::cout << name << " new value is \"" << getenv(name) << "\"" << std::endl;
     }
   };
@@ -1949,6 +1957,7 @@ namespace
   {
     {
       cout << "temp_directory_path_tests..." << endl;
+      cout << " temp_directory_path() is " << fs::temp_directory_path() << endl;
 
 #if defined(BOOST_WINDOWS_API)
 
@@ -1994,7 +2003,7 @@ namespace
 #endif
       BOOST_TEST(!fs::temp_directory_path().empty());
       BOOST_TEST(exists(fs::temp_directory_path()));
-      fs::path ph = fs::temp_directory_path()/"temp_directory_path_test.txt";
+      fs::path ph = fs::temp_directory_path() / fs::unique_path("temp_directory_path_test_%%%%_%%%%.txt");
       {
           if(exists(ph)) remove(ph);
           std::ofstream f(ph.BOOST_FILESYSTEM_C_STR);

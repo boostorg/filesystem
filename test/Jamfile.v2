@@ -4,6 +4,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # See www.boost.org/LICENSE_1_0.txt
 
+import testing ;
+
 project 
     : requirements
       <library>/boost/filesystem//boost_filesystem
@@ -13,6 +15,8 @@ project
     
 # Some tests are run both statically and as shared libraries since Filesystem
 # has a history of bugs that appear only in one type of build or the other.
+
+path-constant HERE : . ;
 
    test-suite "filesystem" :
        [ run config_info.cpp :  :  : <link>shared <test-info>always_show_run_output ]
@@ -26,7 +30,7 @@ project
        [ run locale_info.cpp  : : : <test-info>always_show_run_output ]
        [ run operations_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
        [ run operations_test.cpp :  :  : <link>static : operations_test_static ]
-       [ run operations_unit_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
+       [ run operations_unit_test.cpp : $(HERE) :  : <link>shared <test-info>always_show_run_output ]
        [ run path_test.cpp :  :  : <link>shared ]                  
        [ run path_test.cpp :  :  : <link>static : path_test_static ]                  
        [ run path_unit_test.cpp :  :  : <link>shared ]                  
@@ -35,4 +39,6 @@ project
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
 
+       # `quick` target (for CI)
+       [ run quick.cpp ]
        ;
