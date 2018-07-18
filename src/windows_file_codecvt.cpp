@@ -59,12 +59,13 @@
   {
     UINT codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
 
-    int count;
-    if ((count = ::WideCharToMultiByte(codepage, WC_NO_BEST_FIT_CHARS, from,
-       boost::numeric_cast<int>(from_end - from), to, boost::numeric_cast<int>(to_end - to), 0, 0)) == 0)
-    {
+    int count = ::WideCharToMultiByte(
+      codepage, WC_NO_BEST_FIT_CHARS,
+      from, boost::numeric_cast<int>(from_end - from),
+      to, boost::numeric_cast<int>(to_end - to),
+      0, 0);
+    if (count == 0)
       return error;  // conversion failed
-    }
 
     from_next = from_end;
     to_next = to + count;
