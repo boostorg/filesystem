@@ -60,8 +60,6 @@
     UINT codepage = AreFileApisANSI() ? CP_ACP : CP_OEMCP;
 
     int count;
-    // Use static cast to silence Visual Studio 2017:
-    // warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
     if ((count = ::WideCharToMultiByte(codepage, WC_NO_BEST_FIT_CHARS, from,
        boost::numeric_cast<int>(from_end - from), to, boost::numeric_cast<int>(to_end - to), 0, 0)) == 0)
     {
