@@ -420,7 +420,7 @@ namespace
       }
       else
         itr = fs::directory_iterator(p);
-      for (; itr != end_dir_itr; ++itr)
+      while (itr != end_dir_itr)
       {
         fs::file_type tmp_type = query_file_type(itr->path(), ec);
         if (ec != 0 && *ec)
@@ -428,6 +428,18 @@ namespace
         count += remove_all_aux(itr->path(), tmp_type, ec);
         if (ec != 0 && *ec)
           return count;
+
+        // Don't let ++itr throw when reporting errors via ec.
+        if (ec != 0)
+        {
+          itr.increment(*ec);
+          if (*ec)
+            return count;
+        }
+        else
+        {
+          ++itr;
+        }
       }
     }
     remove_file_or_directory(p, type, ec);
@@ -2341,7 +2353,7 @@ namespace detail
         && (filename.size()== 1
           || (filename[1] == dot
             && filename.size()== 2)))
-        {  it.increment(*ec); }
+        {  ec ? it.increment(*ec) : ++it; }
     }
   }
 
