@@ -42,4 +42,7 @@ path-constant HERE : . ;
 
        # `quick` target (for CI)
        [ run quick.cpp ]
+
+       # Tests for specific issues
+       [ run issues/70-71-copy.cpp ]
        ;
