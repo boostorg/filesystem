@@ -2341,7 +2341,7 @@ namespace detail
         && (filename.size()== 1
           || (filename[1] == dot
             && filename.size()== 2)))
-        {  it.increment(*ec); }
+        { detail::directory_iterator_increment(it, ec); }
     }
   }
 
