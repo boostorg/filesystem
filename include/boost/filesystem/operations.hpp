@@ -32,8 +32,6 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/range/mutable_iterator.hpp>
-#include <boost/range/const_iterator.hpp>
 #include <boost/assert.hpp>
 #include <string>
 #include <utility> // for pair
@@ -976,11 +974,18 @@ namespace detail
   }  // namespace filesystem
 
   //  namespace boost template specializations
+  template<typename C, typename Enabler>
+  struct range_mutable_iterator;
+
   template<>
-  struct range_mutable_iterator<boost::filesystem::directory_iterator>
+  struct range_mutable_iterator<boost::filesystem::directory_iterator, void>
     { typedef boost::filesystem::directory_iterator type; };
+
+  template<typename C, typename Enabler>
+  struct range_const_iterator;
+
   template<>
-  struct range_const_iterator <boost::filesystem::directory_iterator>
+  struct range_const_iterator<boost::filesystem::directory_iterator, void>
     { typedef boost::filesystem::directory_iterator type; };
 
 namespace filesystem
@@ -1332,10 +1337,10 @@ namespace filesystem
 
   //  namespace boost template specializations
   template<>
-  struct range_mutable_iterator<boost::filesystem::recursive_directory_iterator>
+  struct range_mutable_iterator<boost::filesystem::recursive_directory_iterator, void>
                         { typedef boost::filesystem::recursive_directory_iterator type; };
   template<>
-  struct range_const_iterator <boost::filesystem::recursive_directory_iterator>
+  struct range_const_iterator<boost::filesystem::recursive_directory_iterator, void>
                         { typedef boost::filesystem::recursive_directory_iterator type; };
 
 namespace filesystem
