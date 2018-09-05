@@ -968,6 +968,9 @@ namespace detail
   directory_iterator range_begin(const directory_iterator& iter) BOOST_NOEXCEPT
     {return iter;}
   inline
+  directory_iterator range_end(directory_iterator&) BOOST_NOEXCEPT
+    {return directory_iterator();}
+  inline
   directory_iterator range_end(const directory_iterator&) BOOST_NOEXCEPT
     {return directory_iterator();}
   }  // namespace filesystem
@@ -1319,6 +1322,9 @@ namespace filesystem
   recursive_directory_iterator
     range_begin(const recursive_directory_iterator& iter) BOOST_NOEXCEPT
                                                    {return iter;}
+  inline
+  recursive_directory_iterator range_end(recursive_directory_iterator&) BOOST_NOEXCEPT
+                                                  {return recursive_directory_iterator();}
   inline
   recursive_directory_iterator range_end(const recursive_directory_iterator&) BOOST_NOEXCEPT
                                                   {return recursive_directory_iterator();}
