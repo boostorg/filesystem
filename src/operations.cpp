@@ -2117,6 +2117,8 @@ namespace
     && defined(_POSIX_THREAD_SAFE_FUNCTIONS)\
     && defined(_SC_THREAD_SAFE_FUNCTIONS)\
     && (_POSIX_THREAD_SAFE_FUNCTIONS+0 >= 0)\
+    && !(defined(linux) || defined(__linux) || defined(__linux__))\
+    && !defined(__ANDROID__)\
     && (!defined(__hpux) || defined(_REENTRANT)) \
     && (!defined(_AIX) || defined(__THREAD_SAFE))
 
