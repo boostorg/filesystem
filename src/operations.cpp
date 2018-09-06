@@ -2087,10 +2087,6 @@ namespace
     return ok;
   }
 
-#if defined(__PGI) && defined(__USE_FILE_OFFSET64)
-#define dirent dirent64
-#endif
-
   error_code dir_itr_first(void *& handle, void *& buffer,
     const char* dir, string& target,
     fs::file_status &, fs::file_status &)
