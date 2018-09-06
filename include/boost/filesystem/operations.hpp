@@ -241,7 +241,11 @@ namespace boost
                             // nor remove_perms is given, replace the current bits with
                             // the given bits.
 
-    symlink_perms = 0x4000  // on POSIX, don't resolve symlinks; implied on Windows
+    symlink_perms = 0x4000, // on POSIX, don't resolve symlinks; implied on Windows
+
+    // BOOST_BITMASK op~ casts to int32_least_t, producing invalid enum values
+    _detail_extend_perms_32_1 = 0x7fffffff,
+    _detail_extend_perms_32_2 = -0x7fffffff-1
   };
 
   BOOST_BITMASK(perms)
@@ -1002,7 +1006,11 @@ namespace filesystem
     none,
     no_recurse = none,         // don't follow directory symlinks (default behavior)
     recurse,                   // follow directory symlinks
-    _detail_no_push = recurse << 1  // internal use only
+    _detail_no_push = recurse << 1, // internal use only
+
+    // BOOST_BITMASK op~ casts to int32_least_t, producing invalid enum values
+    _detail_extend_symlink_option_32_1 = 0x7fffffff,
+    _detail_extend_symlink_option_32_2 = -0x7fffffff-1
   };
   BOOST_SCOPED_ENUM_END
 
