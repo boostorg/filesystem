@@ -204,16 +204,16 @@ namespace
       //cout << "  " << it->path() << "\n";
     }
 
-    CHECK(recursive_directory_iterator("..") != recursive_directory_iterator());
+    CHECK(recursive_directory_iterator(".") != recursive_directory_iterator());
     CHECK(recursive_directory_iterator() == end);
 
 #ifndef BOOST_NO_CXX11_RANGE_BASED_FOR
-    for (directory_entry& x : recursive_directory_iterator(".."))
+    for (directory_entry& x : recursive_directory_iterator("."))
     {
       CHECK(!x.path().empty());
       //cout << "  " << x.path() << "\n";
     }
-    const recursive_directory_iterator dir_itr("..");
+    const recursive_directory_iterator dir_itr(".");
     for (directory_entry& x : dir_itr)
     {
       CHECK(!x.path().empty());
@@ -221,7 +221,7 @@ namespace
     }
 #endif
 
-    for (recursive_directory_iterator itr("..");
+    for (recursive_directory_iterator itr(".");
       itr != recursive_directory_iterator(); ++itr)
     {
       CHECK(!itr->path().empty());
