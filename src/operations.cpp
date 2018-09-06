@@ -420,12 +420,18 @@ namespace
       }
       else
         itr = fs::directory_iterator(p);
-      for (; itr != end_dir_itr; ++itr)
+
+      while(itr != end_dir_itr)
       {
         fs::file_type tmp_type = query_file_type(itr->path(), ec);
         if (ec != 0 && *ec)
           return count;
+
         count += remove_all_aux(itr->path(), tmp_type, ec);
+        if (ec != 0 && *ec)
+          return count;
+
+        fs::detail::directory_iterator_increment(itr, ec);
         if (ec != 0 && *ec)
           return count;
       }
