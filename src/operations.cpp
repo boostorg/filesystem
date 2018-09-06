@@ -408,7 +408,8 @@ namespace
   boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
     error_code* ec)
   {
-    boost::uintmax_t count = 1;
+    boost::uintmax_t count = 0;
+
     if (type == fs::directory_file)  // but not a directory symlink
     {
       fs::directory_iterator itr;
@@ -436,8 +437,12 @@ namespace
           return count;
       }
     }
+
     remove_file_or_directory(p, type, ec);
-    return count;
+    if (ec != 0 && *ec)
+      return count;
+
+    return ++count;
   }
 
 #ifdef BOOST_POSIX_API
