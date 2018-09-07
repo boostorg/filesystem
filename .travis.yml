@@ -166,6 +166,7 @@ matrix:
         apt:
           packages:
             - clang-3.6
+            - libstdc++-4.9-dev
           sources:
             - ubuntu-toolchain-r-test
 
