@@ -176,8 +176,17 @@ namespace
     return false;
   }
 
-  boost::system::error_category* poison_category_aux() { return reinterpret_cast<boost::system::error_category*>(8); }
-  boost::system::error_category& poison_category()     { return *poison_category_aux(); }
+  struct poison_category_impl: public boost::system::error_category
+  {
+    char const * name() const BOOST_NOEXCEPT { return "poison"; }
+    std::string message( int ) const { return "poison_category::message"; }
+  };
+
+  boost::system::error_category& poison_category()
+  {
+    static poison_category_impl instance;
+    return instance;
+  }
 
   // compile-only two argument "do-the-right-thing" tests
   //   verifies that all overload combinations compile without error
