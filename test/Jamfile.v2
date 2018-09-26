@@ -22,7 +22,9 @@ local VIS ;
 
 if [ os.environ UBSAN ]
 {
-    VIS = <visibility>global ;
+    VIS = <visibility>global
+       -<library>/boost/filesystem//boost_filesystem
+        <library>/boost/filesystem//boost_filesystem/<visibility>global ;
 }
 
 run config_info.cpp : : : <link>shared <test-info>always_show_run_output ;
