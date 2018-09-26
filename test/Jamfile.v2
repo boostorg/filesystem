@@ -5,6 +5,7 @@
 # See www.boost.org/LICENSE_1_0.txt
 
 import testing ;
+import os ;
 
 project
     : requirements
@@ -18,6 +19,13 @@ project
 
 path-constant HERE : . ;
 
+local VIS ;
+
+if [ os.environ UBSAN ]
+{
+    VIS = <visibility>global ;
+}
+
    test-suite "filesystem" :
        [ run config_info.cpp :  :  : <link>shared <test-info>always_show_run_output ]
        [ run config_info.cpp :  :  : <link>static <test-info>always_show_run_output : config_info_static ]
@@ -25,7 +33,7 @@ path-constant HERE : . ;
        [ compile macro_default_test.cpp ]
        [ run odr1_test.cpp odr2_test.cpp ]
        [ run deprecated_test.cpp ]
-       [ run fstream_test.cpp ]
+       [ run fstream_test.cpp : : :  $(VIS) ]
        [ run large_file_support_test.cpp ]
        [ run locale_info.cpp  : : : <test-info>always_show_run_output ]
        [ run operations_test.cpp :  :  : <link>shared <test-info>always_show_run_output ]
@@ -33,8 +41,8 @@ path-constant HERE : . ;
        [ run operations_unit_test.cpp : $(HERE) :  : <link>shared <test-info>always_show_run_output ]
        [ run path_test.cpp :  :  : <link>shared ]
        [ run path_test.cpp :  :  : <link>static : path_test_static ]
-       [ run path_unit_test.cpp :  :  : <link>shared ]
-       [ run path_unit_test.cpp :  :  : <link>static : path_unit_test_static ]
+       [ run path_unit_test.cpp :  :  : <link>shared $(VIS) ]
+       [ run path_unit_test.cpp :  :  : <link>static $(VIS) : path_unit_test_static ]
        [ run relative_test.cpp ]
        [ run ../example/simple_ls.cpp ]
        [ run ../example/file_status.cpp ]
