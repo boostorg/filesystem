@@ -6,7 +6,9 @@ Boost.Filesystem, part of collection of the [Boost C++ Libraries](https://github
 
 * **doc** - Documentation sources
 * **include** - Interface headers of Boost.Filesystem
+* **src** - Compilable source files of Boost.Filesystem
 * **test** - Boost.Filesystem unit tests
+* **example** - Boost.Filesystem usage examples
 
 ### More information
 
