@@ -1493,7 +1493,8 @@ namespace detail
       && !(defined(__MAC_OS_X_VERSION_MIN_REQUIRED) \
            && __MAC_OS_X_VERSION_MIN_REQUIRED < 101000) \
       && !(defined(__IPHONE_OS_VERSION_MIN_REQUIRED) \
-           && __IPHONE_OS_VERSION_MIN_REQUIRED < 80000)
+           && __IPHONE_OS_VERSION_MIN_REQUIRED < 80000) \
+      && !(defined(__QNX__) && (_NTO_VERSION <= 700))
       if (::fchmodat(AT_FDCWD, p.c_str(), mode_cast(prms),
            !(prms & symlink_perms) ? 0 : AT_SYMLINK_NOFOLLOW))
 #   else  // fallback if fchmodat() not supported
