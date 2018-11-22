@@ -304,7 +304,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (std::runtime_error x)
+    catch (const std::runtime_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -325,7 +325,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (system_error x)
+    catch (const system_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -343,7 +343,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (fs::filesystem_error x)
+    catch (const fs::filesystem_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
