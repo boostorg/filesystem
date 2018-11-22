@@ -908,8 +908,6 @@ namespace detail
         : m_imp(new detail::dir_itr_imp)
           { detail::directory_iterator_construct(*this, p, &ec); }
 
-   ~directory_iterator() {}
-
     directory_iterator& increment(system::error_code& ec) BOOST_NOEXCEPT
     { 
       detail::directory_iterator_increment(*this, &ec);
