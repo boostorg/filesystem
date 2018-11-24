@@ -11,10 +11,10 @@
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 #  define BOOST_FILESYSTEM_NO_DEPRECATED
 #endif
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -142,7 +142,7 @@ int cpp_main(int, char*[])
 
   it = fs::recursive_directory_iterator(unique_yy_zz);
   BOOST_TEST(it == fs::recursive_directory_iterator());
-  
+
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
   BOOST_TEST(it.level() == 0);
@@ -166,7 +166,7 @@ int cpp_main(int, char*[])
 
   ec.clear();
   BOOST_TEST(!ec);
-  // check that two argument failed constructor creates the end iterator 
+  // check that two argument failed constructor creates the end iterator
   BOOST_TEST(fs::recursive_directory_iterator("nosuchdir", ec)
     == fs::recursive_directory_iterator());
   BOOST_TEST(ec);

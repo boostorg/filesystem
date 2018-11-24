@@ -22,10 +22,10 @@
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 # define BOOST_FILESYSTEM_NO_DEPRECATED
 #endif
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -232,7 +232,7 @@ namespace
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK
 
-    boost::shared_ptr< Derived > pDerived( new Derived() ); 
+    boost::shared_ptr< Derived > pDerived( new Derived() );
     fun( pDerived );  // tests constructor member template enable_if working correctly;
                       // will fail to compile if enable_if not taking path off the table
   }
@@ -299,7 +299,7 @@ namespace
     if (!from2.empty())
       cout << "Note: move assignment did not result in empty rhs path" << endl;
 # else
-    std::cout << 
+    std::cout <<
       "Test skipped because compiler does not support move semantics" << std::endl;
 # endif
 
@@ -828,7 +828,7 @@ namespace
     std::cout << "testing imbue locale..." << std::endl;
 
     //  weak test case for before/after states since we don't know what characters the
-    //  default locale accepts. 
+    //  default locale accepts.
     path before("abc");
 
     //  So that tests are run with known encoding, use Boost UTF-8 codecvt
@@ -1158,7 +1158,7 @@ namespace
     //return not_defined;
 
     return 0 == strcmp(name, value + 1)
-      ? not_defined 
+      ? not_defined
       : (value[1] ? value : no_value);
   }
 
