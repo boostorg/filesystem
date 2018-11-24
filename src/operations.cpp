@@ -66,8 +66,10 @@
 #endif
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
+#include <new> // std::bad_alloc
 #include <limits>
 #include <vector>
 #include <cstdlib>     // for malloc, free
@@ -453,9 +455,10 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  const char dot = '.';
+  BOOST_CONSTEXPR_OR_CONST char dot = '.';
+  BOOST_CONSTEXPR_OR_CONST char end_of_string = '\0';
 
-  bool not_found_error(int errval)
+  inline bool not_found_error(int errval)
   {
     return errno == ENOENT || errno == ENOTDIR;
   }
@@ -539,11 +542,12 @@ namespace
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  const std::size_t buf_size=128;
+  BOOST_CONSTEXPR_OR_CONST std::size_t buf_size=128;
 
-  const wchar_t dot = L'.';
+  BOOST_CONSTEXPR_OR_CONST wchar_t dot = L'.';
+  BOOST_CONSTEXPR_OR_CONST wchar_t end_of_string = L'\0';
 
-  bool not_found_error(int errval)
+  inline bool not_found_error(int errval)
   {
     return errval == ERROR_FILE_NOT_FOUND
       || errval == ERROR_PATH_NOT_FOUND
@@ -2111,9 +2115,10 @@ namespace
     std::size_t path_size (0);  // initialization quiets gcc warning (ticket #3509)
     error_code ec = path_max(path_size);
     if (ec)return ec;
-    dirent de;
-    buffer = std::malloc((sizeof(dirent) - sizeof(de.d_name))
-      +  path_size + 1); // + 1 for "/0"
+    buffer = std::malloc((sizeof(dirent) - sizeof(dirent().d_name))
+      +  path_size + 1); // + 1 for "\0"
+    if (BOOST_UNLIKELY(!buffer))
+      return make_error_code(boost::system::errc::not_enough_memory);
     return ok;
   }
 
@@ -2326,32 +2331,43 @@ namespace detail
               "boost::filesystem::directory_iterator::construct"))
       return;
 
-    path::string_type filename;
-    file_status file_stat, symlink_file_stat;
-    error_code result = dir_itr_first(it.m_imp->handle,
+    try
+    {
+      path::string_type filename;
+      file_status file_stat, symlink_file_stat;
+      error_code result = dir_itr_first(it.m_imp->handle,
 #     if defined(BOOST_POSIX_API)
-      it.m_imp->buffer,
+        it.m_imp->buffer,
 #     endif
-      p.c_str(), filename, file_stat, symlink_file_stat);
+        p.c_str(), filename, file_stat, symlink_file_stat);
 
-    if (result)
-    {
-      it.m_imp.reset();
-      error(result.value(), p,
-        ec, "boost::filesystem::directory_iterator::construct");
-      return;
+      if (result)
+      {
+        it.m_imp.reset();
+        error(result.value(), p,
+          ec, "boost::filesystem::directory_iterator::construct");
+        return;
+      }
+
+      if (it.m_imp->handle == 0)
+        it.m_imp.reset(); // eof, so make end iterator
+      else // not eof
+      {
+        it.m_imp->dir_entry.assign(p / filename, file_stat, symlink_file_stat);
+        const path::string_type::value_type* filename_str = filename.c_str();
+        if (filename_str[0] == dot // dot or dot-dot
+          && (filename_str[1] == end_of_string ||
+             (filename_str[1] == dot && filename_str[2] == end_of_string)))
+          { detail::directory_iterator_increment(it, ec); }
+      }
     }
-
-    if (it.m_imp->handle == 0)
-      it.m_imp.reset(); // eof, so make end iterator
-    else // not eof
+    catch (std::bad_alloc&)
     {
-      it.m_imp->dir_entry.assign(p / filename, file_stat, symlink_file_stat);
-      if (filename[0] == dot // dot or dot-dot
-        && (filename.size()== 1
-          || (filename[1] == dot
-            && filename.size()== 2)))
-        { detail::directory_iterator_increment(it, ec); }
+      if (!ec)
+        throw;
+
+      *ec = make_error_code(boost::system::errc::not_enough_memory);
+      it.m_imp.reset();
     }
   }
 
@@ -2361,47 +2377,59 @@ namespace detail
     BOOST_ASSERT_MSG(it.m_imp.get(), "attempt to increment end iterator");
     BOOST_ASSERT_MSG(it.m_imp->handle != 0, "internal program error");
 
-    path::string_type filename;
-    file_status file_stat, symlink_file_stat;
-    system::error_code temp_ec;
+    if (ec != 0)
+      ec->clear();
 
-    for (;;)
+    try
     {
-      temp_ec = dir_itr_increment(it.m_imp->handle,
+      path::string_type filename;
+      file_status file_stat, symlink_file_stat;
+      system::error_code temp_ec;
+
+      for (;;)
+      {
+        temp_ec = dir_itr_increment(it.m_imp->handle,
 #       if defined(BOOST_POSIX_API)
-        it.m_imp->buffer,
+          it.m_imp->buffer,
 #       endif
-        filename, file_stat, symlink_file_stat);
-
-      if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
-      {
-        path error_path(it.m_imp->dir_entry.path().parent_path());  // fix ticket #5900
-        it.m_imp.reset();
-        if (ec == 0)
-          BOOST_FILESYSTEM_THROW(
-            filesystem_error("boost::filesystem::directory_iterator::operator++",
-              error_path,
-              error_code(BOOST_ERRNO, system_category())));
-        ec->assign(BOOST_ERRNO, system_category());
-        return;
-      }
-      else if (ec != 0) ec->clear();
-
-      if (it.m_imp->handle == 0)  // eof, make end
-      {
-        it.m_imp.reset();
-        return;
-      }
-
-      if (!(filename[0] == dot // !(dot or dot-dot)
-        && (filename.size()== 1
-          || (filename[1] == dot
-            && filename.size()== 2))))
-      {
-        it.m_imp->dir_entry.replace_filename(
           filename, file_stat, symlink_file_stat);
-        return;
+
+        if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
+        {
+          path error_path(it.m_imp->dir_entry.path().parent_path());  // fix ticket #5900
+          it.m_imp.reset();
+          if (ec == 0)
+            BOOST_FILESYSTEM_THROW(
+              filesystem_error("boost::filesystem::directory_iterator::operator++",
+                error_path,
+                error_code(BOOST_ERRNO, system_category())));
+          ec->assign(BOOST_ERRNO, system_category());
+          return;
+        }
+
+        if (it.m_imp->handle == 0)  // eof, make end
+        {
+          it.m_imp.reset();
+          return;
+        }
+
+        const path::string_type::value_type* filename_str = filename.c_str();
+        if (!(filename_str[0] == dot // !(dot or dot-dot)
+          && (filename_str[1] == end_of_string ||
+             (filename_str[1] == dot && filename_str[2] == end_of_string))))
+        {
+          it.m_imp->dir_entry.replace_filename(
+            filename, file_stat, symlink_file_stat);
+          return;
+        }
       }
+    }
+    catch (std::bad_alloc&)
+    {
+      if (!ec)
+        throw;
+
+      *ec = make_error_code(boost::system::errc::not_enough_memory);
     }
   }
 }  // namespace detail

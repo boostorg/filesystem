@@ -38,6 +38,7 @@
 #include <ctime>
 #include <vector>
 #include <stack>
+#include <new> // std::nothrow, std::bad_alloc
 
 #ifdef BOOST_WINDOWS_API
 #  include <fstream>
@@ -862,13 +863,13 @@ namespace detail
     void*            buffer;  // see dir_itr_increment implementation
 #   endif
 
-    dir_itr_imp() : handle(0)
+    dir_itr_imp() BOOST_NOEXCEPT : handle(0)
 #   ifdef BOOST_POSIX_API
       , buffer(0)
 #   endif
     {}
 
-    ~dir_itr_imp() // never throws
+    ~dir_itr_imp() BOOST_NOEXCEPT
     {
       dir_itr_close(handle
 #       if defined(BOOST_POSIX_API)
@@ -903,26 +904,36 @@ namespace detail
 
     // iterator_facade derived classes don't seem to like implementations in
     // separate translation unit dll's, so forward to detail functions
-    explicit directory_iterator(const path& p)
-        : m_imp(new detail::dir_itr_imp())
-          { detail::directory_iterator_construct(*this, p, 0); }
+    explicit directory_iterator(const path& p) :
+      m_imp(new detail::dir_itr_imp())
+    {
+      detail::directory_iterator_construct(*this, p, 0);
+    }
 
-    directory_iterator(const path& p, system::error_code& ec) BOOST_NOEXCEPT
-        : m_imp(new detail::dir_itr_imp())
-          { detail::directory_iterator_construct(*this, p, &ec); }
+    directory_iterator(const path& p, system::error_code& ec) BOOST_NOEXCEPT :
+      m_imp(new (std::nothrow) detail::dir_itr_imp())
+    {
+      if (BOOST_UNLIKELY(!m_imp))
+      {
+        ec = make_error_code(system::errc::not_enough_memory);
+        return;
+      }
+
+      detail::directory_iterator_construct(*this, p, &ec);
+    }
 
     BOOST_DEFAULTED_FUNCTION(directory_iterator(directory_iterator const& that), : m_imp(that.m_imp) {})
     BOOST_DEFAULTED_FUNCTION(directory_iterator& operator= (directory_iterator const& that), { m_imp = that.m_imp; return *this; })
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     directory_iterator(directory_iterator&& that) BOOST_NOEXCEPT :
-      m_imp(static_cast< boost::intrusive_ptr< detail::dir_itr_imp >&& >(that.m_imp))
+      m_imp(std::move(that.m_imp))
     {
     }
 
     directory_iterator& operator= (directory_iterator&& that) BOOST_NOEXCEPT
     {
-      m_imp = static_cast< boost::intrusive_ptr< detail::dir_itr_imp >&& >(that.m_imp);
+      m_imp = std::move(that.m_imp);
       return *this;
     }
 #endif // !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -1050,14 +1061,14 @@ namespace filesystem
       int  m_level;
       BOOST_SCOPED_ENUM(symlink_option) m_options;
 
-      recur_dir_itr_imp() : m_level(0), m_options(symlink_option::none) {}
-      explicit recur_dir_itr_imp(BOOST_SCOPED_ENUM(symlink_option) opt) : m_level(0), m_options(opt) {}
+      recur_dir_itr_imp() BOOST_NOEXCEPT : m_level(0), m_options(symlink_option::none) {}
+      explicit recur_dir_itr_imp(BOOST_SCOPED_ENUM(symlink_option) opt) BOOST_NOEXCEPT : m_level(0), m_options(opt) {}
 
       void increment(system::error_code* ec);  // ec == 0 means throw on error
 
       bool push_directory(system::error_code& ec) BOOST_NOEXCEPT;
 
-      void pop();
+      void pop(system::error_code* ec);  // ec == 0 means throw on error
     };
 
     //  Implementation is inline to avoid dynamic linking difficulties with m_stack:
@@ -1070,49 +1081,61 @@ namespace filesystem
     {
       ec.clear();
 
-      //  Discover if the iterator is for a directory that needs to be recursed into,
-      //  taking symlinks and options into account.
-
-      if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
+      try
       {
-        m_options &= ~symlink_option::_detail_no_push;
-        return false;
-      }
+        //  Discover if the iterator is for a directory that needs to be recursed into,
+        //  taking symlinks and options into account.
 
-      file_status symlink_stat;
-
-      // if we are not recursing into symlinks, we are going to have to know if the
-      // stack top is a symlink, so get symlink_status and verify no error occurred
-      if ((m_options & symlink_option::recurse) != symlink_option::recurse)
-      {
-        symlink_stat = m_stack.top()->symlink_status(ec);
-        if (ec)
-          return false;
-      }
-
-      // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
-      // symlinks correctly and efficiently, fixing ticket #5652.
-      //   if (((m_options & symlink_option::recurse) == symlink_option::recurse
-      //         || !is_symlink(m_stack.top()->symlink_status()))
-      //       && is_directory(m_stack.top()->status())) ...
-      // The predicate code has since been rewritten to pass error_code arguments,
-      // per ticket #5653.
-
-      if ((m_options & symlink_option::recurse) == symlink_option::recurse
-        || !is_symlink(symlink_stat))
-      {
-        file_status stat = m_stack.top()->status(ec);
-        if (ec || !is_directory(stat))
-          return false;
-
-        directory_iterator next(m_stack.top()->path(), ec);
-        if (!ec && next != directory_iterator())
+        if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
         {
-          m_stack.push(next);
-          ++m_level;
-          return true;
+          m_options &= ~symlink_option::_detail_no_push;
+          return false;
+        }
+
+        file_status symlink_stat;
+
+        // if we are not recursing into symlinks, we are going to have to know if the
+        // stack top is a symlink, so get symlink_status and verify no error occurred
+        if ((m_options & symlink_option::recurse) != symlink_option::recurse)
+        {
+          symlink_stat = m_stack.top()->symlink_status(ec);
+          if (ec)
+            return false;
+        }
+
+        // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
+        // symlinks correctly and efficiently, fixing ticket #5652.
+        //   if (((m_options & symlink_option::recurse) == symlink_option::recurse
+        //         || !is_symlink(m_stack.top()->symlink_status()))
+        //       && is_directory(m_stack.top()->status())) ...
+        // The predicate code has since been rewritten to pass error_code arguments,
+        // per ticket #5653.
+
+        if ((m_options & symlink_option::recurse) == symlink_option::recurse
+          || !is_symlink(symlink_stat))
+        {
+          file_status stat = m_stack.top()->status(ec);
+          if (ec || !is_directory(stat))
+            return false;
+
+          directory_iterator next(m_stack.top()->path(), ec);
+          if (!ec && next != directory_iterator())
+          {
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+            m_stack.push(std::move(next)); // may throw
+#else
+            m_stack.push(next); // may throw
+#endif
+            ++m_level;
+            return true;
+          }
         }
       }
+      catch (std::bad_alloc&)
+      {
+        ec = make_error_code(system::errc::not_enough_memory);
+      }
+
       return false;
     }
 
@@ -1136,20 +1159,14 @@ namespace filesystem
         return;
       }
 
-      //  Do the actual increment operation on the top iterator in the iterator
-      //  stack, popping the stack if necessary, until either the stack is empty or a
-      //  non-end iterator is reached.
-      while (!m_stack.empty() && ++m_stack.top() == directory_iterator())
-      {
-        m_stack.pop();
-        --m_level;
-      }
-
       // report errors if any
       if (ec_push_directory)
       {
         if (ec)
+        {
           *ec = ec_push_directory;
+          return;
+        }
         else
         {
           BOOST_FILESYSTEM_THROW(filesystem_error(
@@ -1157,22 +1174,51 @@ namespace filesystem
             ec_push_directory));
         }
       }
-      else if (ec)
+
+      //  Do the actual increment operation on the top iterator in the iterator
+      //  stack, popping the stack if necessary, until either the stack is empty or a
+      //  non-end iterator is reached.
+      while (!m_stack.empty())
+      {
+        directory_iterator& it = m_stack.top();
+        detail::directory_iterator_increment(it, ec);
+        if (ec && *ec)
+          return;
+        if (it != directory_iterator())
+          break;
+
+        m_stack.pop();
+        --m_level;
+      }
+
+      if (ec)
         ec->clear();
     }
 
     inline
-    void recur_dir_itr_imp::pop()
+    void recur_dir_itr_imp::pop(system::error_code* ec)
     {
       BOOST_ASSERT_MSG(m_level > 0,
         "pop() on recursive_directory_iterator with level < 1");
 
-      do
+      if (ec)
+        ec->clear();
+
+      while (true)
       {
         m_stack.pop();
         --m_level;
+
+        if (m_stack.empty())
+          break;
+
+        directory_iterator& it = m_stack.top();
+        detail::directory_iterator_increment(it, ec);
+        if (ec && *ec)
+          break;
+        if (it != directory_iterator())
+          break;
       }
-      while (!m_stack.empty() && ++m_stack.top() == directory_iterator());
     }
   } // namespace detail
 
@@ -1211,21 +1257,67 @@ namespace filesystem
 
     recursive_directory_iterator(const path& dir_path,
       BOOST_SCOPED_ENUM(symlink_option) opt,
-      system::error_code & ec) BOOST_NOEXCEPT
-    : m_imp(new detail::recur_dir_itr_imp(opt))
+      system::error_code & ec) BOOST_NOEXCEPT :
+      m_imp(new (std::nothrow) detail::recur_dir_itr_imp(opt))
     {
-      m_imp->m_stack.push(directory_iterator(dir_path, ec));
-      if (m_imp->m_stack.top() == directory_iterator())
-        { m_imp.reset (); }
+      if (BOOST_UNLIKELY(!m_imp))
+      {
+        ec = make_error_code(system::errc::not_enough_memory);
+        return;
+      }
+
+      directory_iterator it(dir_path, ec);
+      if (ec || it == directory_iterator())
+      {
+        m_imp.reset();
+        return;
+      }
+
+      try
+      {
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+        m_imp->m_stack.push(std::move(it));
+#else
+        m_imp->m_stack.push(it);
+#endif
+      }
+      catch (std::bad_alloc&)
+      {
+        ec = make_error_code(system::errc::not_enough_memory);
+        m_imp.reset();
+      }
     }
 
     recursive_directory_iterator(const path& dir_path,
-      system::error_code & ec) BOOST_NOEXCEPT
-    : m_imp(new detail::recur_dir_itr_imp())
+      system::error_code & ec) BOOST_NOEXCEPT :
+      m_imp(new (std::nothrow) detail::recur_dir_itr_imp())
     {
-      m_imp->m_stack.push(directory_iterator(dir_path, ec));
-      if (m_imp->m_stack.top() == directory_iterator())
-        { m_imp.reset (); }
+      if (BOOST_UNLIKELY(!m_imp))
+      {
+        ec = make_error_code(system::errc::not_enough_memory);
+        return;
+      }
+
+      directory_iterator it(dir_path, ec);
+      if (ec || it == directory_iterator())
+      {
+        m_imp.reset();
+        return;
+      }
+
+      try
+      {
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+        m_imp->m_stack.push(std::move(it));
+#else
+        m_imp->m_stack.push(it);
+#endif
+      }
+      catch (std::bad_alloc&)
+      {
+        ec = make_error_code(system::errc::not_enough_memory);
+        m_imp.reset();
+      }
     }
 
     BOOST_DEFAULTED_FUNCTION(recursive_directory_iterator(recursive_directory_iterator const& that), : m_imp(that.m_imp) {})
@@ -1233,13 +1325,13 @@ namespace filesystem
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     recursive_directory_iterator(recursive_directory_iterator&& that) BOOST_NOEXCEPT :
-      m_imp(static_cast< boost::intrusive_ptr< detail::recur_dir_itr_imp >&& >(that.m_imp))
+      m_imp(std::move(that.m_imp))
     {
     }
 
     recursive_directory_iterator& operator= (recursive_directory_iterator&& that) BOOST_NOEXCEPT
     {
-      m_imp = static_cast< boost::intrusive_ptr< detail::recur_dir_itr_imp >&& >(that.m_imp);
+      m_imp = std::move(that.m_imp);
       return *this;
     }
 #endif // !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -1281,7 +1373,15 @@ namespace filesystem
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "pop() on end recursive_directory_iterator");
-      m_imp->pop();
+      m_imp->pop(0);
+      if (m_imp->m_stack.empty()) m_imp.reset(); // done, so make end iterator
+    }
+
+    void pop(system::error_code& ec) BOOST_NOEXCEPT
+    {
+      BOOST_ASSERT_MSG(m_imp.get(),
+        "pop() on end recursive_directory_iterator");
+      m_imp->pop(&ec);
       if (m_imp->m_stack.empty()) m_imp.reset(); // done, so make end iterator
     }
 
