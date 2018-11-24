@@ -742,8 +742,8 @@ namespace
    );
 
   PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
-    boost::detail::winapi::get_proc_address(
-      boost::detail::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
+    boost::winapi::get_proc_address(
+      boost::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
 
   typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
@@ -752,8 +752,8 @@ namespace
    );
 
   PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
-    boost::detail::winapi::get_proc_address(
-      boost::detail::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
+    boost::winapi::get_proc_address(
+      boost::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
 
 #endif
 
