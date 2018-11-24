@@ -67,7 +67,8 @@
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/scoped_array.hpp>
+#include <boost/smart_ptr/scoped_array.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/detail/workaround.hpp>
 #include <new> // std::bad_alloc
 #include <limits>
@@ -2384,26 +2385,27 @@ namespace detail
     {
       path::string_type filename;
       file_status file_stat, symlink_file_stat;
-      system::error_code temp_ec;
+      system::error_code increment_ec;
 
       for (;;)
       {
-        temp_ec = dir_itr_increment(it.m_imp->handle,
+        increment_ec = dir_itr_increment(it.m_imp->handle,
 #       if defined(BOOST_POSIX_API)
           it.m_imp->buffer,
 #       endif
           filename, file_stat, symlink_file_stat);
 
-        if (temp_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
+        if (increment_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
         {
-          path error_path(it.m_imp->dir_entry.path().parent_path());  // fix ticket #5900
-          it.m_imp.reset();
+          boost::intrusive_ptr< detail::dir_itr_imp > imp;
+          imp.swap(it.m_imp);
+          path error_path(imp->dir_entry.path().parent_path());  // fix ticket #5900
           if (ec == 0)
             BOOST_FILESYSTEM_THROW(
               filesystem_error("boost::filesystem::directory_iterator::operator++",
                 error_path,
-                error_code(BOOST_ERRNO, system_category())));
-          ec->assign(BOOST_ERRNO, system_category());
+                increment_ec));
+          *ec = increment_ec;
           return;
         }
 
