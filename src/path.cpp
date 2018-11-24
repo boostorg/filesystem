@@ -16,9 +16,9 @@
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/system/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
-#define BOOST_FILESYSTEM_SOURCE 
+#define BOOST_FILESYSTEM_SOURCE
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -188,7 +188,7 @@ namespace filesystem
   }
 
   const std::wstring path::generic_wstring() const
-  { 
+  {
     path tmp(*this);
     std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
     return tmp.wstring();
@@ -202,7 +202,7 @@ namespace filesystem
   {
     if (!m_pathname.empty() &&
 #     ifdef BOOST_WINDOWS_API
-      *(m_pathname.end()-1) != colon && 
+      *(m_pathname.end()-1) != colon &&
 #     endif
       !detail::is_directory_separator(*(m_pathname.end()-1)))
     {
@@ -269,11 +269,11 @@ namespace filesystem
   //  decomposition  -------------------------------------------------------------------//
 
   path  path::root_path() const
-  { 
+  {
     path temp(root_name());
     if (!root_directory().empty()) temp.m_pathname += root_directory().c_str();
     return temp;
-  } 
+  }
 
   path path::root_name() const
   {
@@ -325,7 +325,7 @@ namespace filesystem
 
     // skip separators unless root directory
     size_type root_dir_pos(root_directory_start(m_pathname, end_pos));
-    for (; 
+    for (;
       end_pos > 0
       && (end_pos-1) != root_dir_pos
       && detail::is_directory_separator(m_pathname[end_pos-1])
@@ -417,7 +417,7 @@ namespace filesystem
   {
     if (m_pathname.empty())
       return *this;
-      
+
     path temp;
     iterator start(begin());
     iterator last(end());
@@ -436,12 +436,12 @@ namespace filesystem
         && (itr->native())[0] == dot
         && (itr->native())[1] == dot) // dot dot
       {
-        string_type lf(temp.filename().native());  
-        if (lf.size() > 0  
+        string_type lf(temp.filename().native());
+        if (lf.size() > 0
           && (lf.size() != 1
             || (lf[0] != dot
               && lf[0] != separator))
-          && (lf.size() != 2 
+          && (lf.size() != 2
             || (lf[0] != dot
               && lf[1] != dot
 #             ifdef BOOST_WINDOWS_API
@@ -460,7 +460,7 @@ namespace filesystem
           //  string_type::size_type rds(
           //    root_directory_start(temp.native(), temp.native().size()));
           //  if (rds == string_type::npos
-          //    || rds != temp.native().size()-1) 
+          //    || rds != temp.native().size()-1)
           //  {
           //    temp.m_pathname.erase(temp.native().size()-1);
           //  }
@@ -486,7 +486,7 @@ namespace filesystem
 
 }  // namespace filesystem
 }  // namespace boost
-  
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                         class path helpers implementation                            //
@@ -509,12 +509,12 @@ namespace
       --pos;
 
     //  "/" [...]
-    if (pos == 0)  
+    if (pos == 0)
       return true;
 
 # ifdef BOOST_WINDOWS_API
     //  "c:/" [...]
-    if (pos == 2 && is_letter(str[0]) && str[1] == colon)  
+    if (pos == 2 && is_letter(str[0]) && str[1] == colon)
       return true;
 # endif
 
@@ -533,14 +533,14 @@ namespace
     // return 0 if str itself is filename (or empty)
   {
     // case: "//"
-    if (end_pos == 2 
+    if (end_pos == 2
       && fs::detail::is_directory_separator(str[0])
       && fs::detail::is_directory_separator(str[1])) return 0;
 
     // case: ends in "/"
     if (end_pos && fs::detail::is_directory_separator(str[end_pos-1]))
       return end_pos-1;
-    
+
     // set pos to start of last element
     size_type pos(str.find_last_of(separators, end_pos-1));
 
@@ -595,7 +595,7 @@ namespace
       string_type::size_type pos(path.find_first_of(separators, 2));
       return pos < size ? pos : string_type::npos;
     }
-    
+
     // case "/"
     if (size > 0 && fs::detail::is_directory_separator(path[0])) return 0;
 
@@ -619,13 +619,13 @@ namespace
     if (src.empty()) return;
 
     string_type::size_type cur(0);
-    
+
     // deal with // [network]
     if (size >= 2 && fs::detail::is_directory_separator(src[0])
       && fs::detail::is_directory_separator(src[1])
       && (size == 2
         || !fs::detail::is_directory_separator(src[2])))
-    { 
+    {
       cur += 2;
       element_size += 2;
     }
@@ -787,7 +787,7 @@ namespace filesystem
 
       // detect trailing separator, and treat it as ".", per POSIX spec
       if (it.m_pos == it.m_path_ptr->m_pathname.size()
-        && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)) 
+        && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1))
       {
         --it.m_pos;
         it.m_element = detail::dot_path();
@@ -812,7 +812,7 @@ namespace filesystem
     if (it.m_pos == it.m_path_ptr->m_pathname.size()
       && it.m_path_ptr->m_pathname.size() > 1
       && detail::is_directory_separator(it.m_path_ptr->m_pathname[it.m_pos-1])
-      && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1) 
+      && !is_root_separator(it.m_path_ptr->m_pathname, it.m_pos-1)
        )
     {
       --it.m_pos;
@@ -824,7 +824,7 @@ namespace filesystem
 
     // skip separators unless root directory
     for (
-      ; 
+      ;
       end_pos > 0
       && (end_pos-1) != root_dir_pos
       && detail::is_directory_separator(it.m_path_ptr->m_pathname[end_pos-1])
@@ -833,8 +833,8 @@ namespace filesystem
 
     it.m_pos = filename_pos(it.m_path_ptr->m_pathname, end_pos);
     it.m_element = it.m_path_ptr->m_pathname.substr(it.m_pos, end_pos - it.m_pos);
-    if (it.m_element.m_pathname == preferred_separator_string) // needed for Windows, harmless on POSIX 
-      it.m_element.m_pathname = separator_string;    // generic format; see docs 
+    if (it.m_element.m_pathname == preferred_separator_string) // needed for Windows, harmless on POSIX
+      it.m_element.m_pathname = separator_string;    // generic format; see docs
   }
 
 }  // namespace filesystem
@@ -858,10 +858,10 @@ namespace
   //  path interface requires the implementation itself to call codecvt() to obtain the
   //  default facet, and the initialization of the static within path_locale() could race.
   //
-  //  The code below is portable to all platforms, is much simpler, and hopefully will be 
+  //  The code below is portable to all platforms, is much simpler, and hopefully will be
   //  much more robust. Timing tests (on Windows, using a Visual C++ release build)
   //  indicated the current code is roughly 9% slower than the previous code, and that
-  //  seems a small price to pay for better code that is easier to use. 
+  //  seems a small price to pay for better code that is easier to use.
 
   std::locale default_locale()
   {
@@ -901,7 +901,7 @@ namespace
   std::locale& path_locale()
   // std::locale("") construction, needed on non-Apple POSIX systems, can throw
   // (if environmental variables LC_MESSAGES or LANG are wrong, for example), so
-  // path_locale() provides lazy initialization via a local static to ensure that any 
+  // path_locale() provides lazy initialization via a local static to ensure that any
   // exceptions occur after main() starts and so can be caught. Furthermore,
   // path_locale() is only called if path::codecvt() or path::imbue() are themselves
   // actually called, ensuring that an exception will only be thrown if std::locale("")
