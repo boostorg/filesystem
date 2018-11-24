@@ -291,6 +291,12 @@ namespace
 
   //  exception_tests()  ---------------------------------------------------------------//
 
+#if defined(BOOST_GCC) && BOOST_GCC >= 80000
+#pragma GCC diagnostic push
+// catching polymorphic type "X" by value - that's the intention of the test
+#pragma GCC diagnostic ignored "-Wcatch-value"
+#endif
+
   void exception_tests()
   {
     cout << "exception_tests..." << endl;
@@ -304,7 +310,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (std::runtime_error& x)
+    catch (std::runtime_error x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -325,7 +331,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (system_error& x)
+    catch (system_error x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -343,7 +349,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (fs::filesystem_error& x)
+    catch (fs::filesystem_error x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -368,7 +374,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (fs::filesystem_error& x)
+    catch (const fs::filesystem_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -406,6 +412,10 @@ namespace
 
     cout << "  exception_tests complete" << endl;
   }
+
+#if defined(BOOST_GCC) && BOOST_GCC >= 80000
+#pragma GCC diagnostic pop
+#endif
 
   // create a directory tree that can be used by subsequent tests  ---------------------//
   //
