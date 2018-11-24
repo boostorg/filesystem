@@ -412,7 +412,7 @@ namespace filesystem
     {
       std::string tmp;
       if (!m_pathname.empty())
-        path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
+        path_traits::convert(m_pathname.c_str(), m_pathname.c_str()+m_pathname.size(),
         tmp);
       return tmp;
     }
@@ -420,7 +420,7 @@ namespace filesystem
     {
       std::string tmp;
       if (!m_pathname.empty())
-        path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
+        path_traits::convert(m_pathname.c_str(), m_pathname.c_str()+m_pathname.size(),
           tmp, cvt);
       return tmp;
     }
@@ -438,7 +438,7 @@ namespace filesystem
     {
       std::wstring tmp;
       if (!m_pathname.empty())
-        path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
+        path_traits::convert(m_pathname.c_str(), m_pathname.c_str()+m_pathname.size(),
           tmp);
       return tmp;
     }
@@ -446,7 +446,7 @@ namespace filesystem
     {
       std::wstring tmp;
       if (!m_pathname.empty())
-        path_traits::convert(&*m_pathname.begin(), &*m_pathname.begin()+m_pathname.size(),
+        path_traits::convert(m_pathname.c_str(), m_pathname.c_str()+m_pathname.size(),
           tmp, cvt);
       return tmp;
     }
