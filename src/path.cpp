@@ -125,9 +125,14 @@ namespace boost
 {
 namespace filesystem
 {
+
+// MSVC up to and including 12.0 (a.k.a. VS 2013) fails to link because of multiple definitions of the constants defined below.
+// Apparently, the compiler emits definitions of these constants in every translation unit that includes path.hpp.
+#if !defined(BOOST_MSVC) || BOOST_MSVC >= 1900
   BOOST_CONSTEXPR_OR_CONST path::value_type path::separator;
   BOOST_CONSTEXPR_OR_CONST path::value_type path::preferred_separator;
   BOOST_CONSTEXPR_OR_CONST path::value_type path::dot;
+#endif
 
   path& path::operator/=(const path& p)
   {
