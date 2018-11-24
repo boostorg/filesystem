@@ -16,14 +16,14 @@ project boost/filesystem
 
 SOURCES =
     codecvt_error_category
-	operations
-	path
-	path_traits
-	portability
-	unique_path
-	utf8_codecvt_facet
-	windows_file_codecvt
-	;
+    operations
+    path
+    path_traits
+    portability
+    unique_path
+    utf8_codecvt_facet
+    windows_file_codecvt
+    ;
 
 lib boost_filesystem
     : $(SOURCES).cpp ../../system/build//boost_system
