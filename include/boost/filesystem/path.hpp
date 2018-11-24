@@ -61,14 +61,14 @@ namespace filesystem
 
 # ifdef BOOST_WINDOWS_API
     typedef wchar_t                        value_type;
-    BOOST_STATIC_CONSTEXPR value_type      separator = L'/';
-    BOOST_STATIC_CONSTEXPR value_type      preferred_separator = L'\\';
-    BOOST_STATIC_CONSTEXPR value_type      dot = L'.';
+    static BOOST_CONSTEXPR_OR_CONST value_type      separator = L'/';
+    static BOOST_CONSTEXPR_OR_CONST value_type      preferred_separator = L'\\';
+    static BOOST_CONSTEXPR_OR_CONST value_type      dot = L'.';
 # else
     typedef char                           value_type;
-    BOOST_STATIC_CONSTEXPR value_type      separator = '/';
-    BOOST_STATIC_CONSTEXPR value_type      preferred_separator = '/';
-    BOOST_STATIC_CONSTEXPR value_type      dot = '.';
+    static BOOST_CONSTEXPR_OR_CONST value_type      separator = '/';
+    static BOOST_CONSTEXPR_OR_CONST value_type      preferred_separator = '/';
+    static BOOST_CONSTEXPR_OR_CONST value_type      dot = '.';
 # endif
     typedef std::basic_string<value_type>  string_type;
     typedef std::codecvt<wchar_t, char,

@@ -125,6 +125,10 @@ namespace boost
 {
 namespace filesystem
 {
+  BOOST_CONSTEXPR_OR_CONST path::value_type path::separator;
+  BOOST_CONSTEXPR_OR_CONST path::value_type path::preferred_separator;
+  BOOST_CONSTEXPR_OR_CONST path::value_type path::dot;
+
   path& path::operator/=(const path& p)
   {
     if (p.empty())
