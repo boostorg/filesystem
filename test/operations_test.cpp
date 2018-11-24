@@ -304,7 +304,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (std::runtime_error x)
+    catch (std::runtime_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -325,7 +325,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (system_error x)
+    catch (system_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -343,7 +343,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (fs::filesystem_error x)
+    catch (fs::filesystem_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -368,7 +368,7 @@ namespace
     {
       fs::create_directory("no-such-dir/foo/bar");
     }
-    catch (const fs::filesystem_error & x)
+    catch (fs::filesystem_error& x)
     {
       exception_thrown = true;
       if (report_throws) cout << x.what() << endl;
@@ -395,9 +395,11 @@ namespace
       BOOST_TEST(CHECK_EXCEPTION(bad_directory_size, 0));
 
     // test path::exception members
-    try { fs::file_size(ng); } // will throw
-
-    catch (const fs::filesystem_error & ex)
+    try
+    {
+      fs::file_size(ng); // will throw
+    }
+    catch (fs::filesystem_error& ex)
     {
       BOOST_TEST(ex.path1().string() == " no-way, Jose");
     }
@@ -1811,7 +1813,7 @@ namespace
         fs::path cur_path(fs::current_path());
         fs::current_path(dir);
         //cout << "    current_path() is " << fs::current_path() << endl;
-        std::system("mklink /j junc d1");
+        BOOST_TEST(std::system("mklink /j junc d1") == 0);
         //std::system("dir");
         fs::current_path(cur_path);
         //cout << "    current_path() is " << fs::current_path() << endl;
