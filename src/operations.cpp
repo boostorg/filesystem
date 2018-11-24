@@ -129,6 +129,7 @@ using std::wstring;
       // See MinGW's windef.h
 #     define WINVER 0x501
 #   endif
+#   include <boost/winapi/dll.hpp> // get_proc_address, GetModuleHandleW
 #   include <cwchar>
 #   include <io.h>
 #   include <windows.h>
@@ -741,8 +742,8 @@ namespace
    );
 
   PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
-    ::GetProcAddress(
-      ::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
+    boost::detail::winapi::get_proc_address(
+      boost::detail::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
 
   typedef BOOLEAN (WINAPI *PtrCreateSymbolicLinkW)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
@@ -751,8 +752,8 @@ namespace
    );
 
   PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
-    ::GetProcAddress(
-      ::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
+    boost::detail::winapi::get_proc_address(
+      boost::detail::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
 
 #endif
 
