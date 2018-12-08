@@ -708,7 +708,7 @@ namespace boost
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   inline bool symbolic_link_exists(const path& p)
-                                       { return is_symlink(symlink_status(p)); }
+                                       { return is_symlink(filesystem::symlink_status(p)); }
 # endif
 
   inline
