@@ -287,6 +287,11 @@ typedef DWORD err_t;
 namespace
 {
 
+  // Absolute maximum path length, in bytes, that we're willing to accept from various system calls.
+  // This value is arbitrary, it is supposed to be a hard limit to avoid memory exhaustion
+  // in some of the algorithms below in case of some corrupted or maliciously broken filesystem.
+  BOOST_CONSTEXPR_OR_CONST std::size_t absolute_path_max = 16u * 1024u * 1024u;
+
   fs::file_type query_file_type(const path& p, error_code* ec);
 
   boost::filesystem::directory_iterator end_dir_itr;
@@ -364,7 +369,7 @@ namespace
       == end_dir_itr;
   }
 
-  bool not_found_error(int errval); // forward declaration
+  bool not_found_error(int errval) BOOST_NOEXCEPT; // forward declaration
 
   // only called if directory exists
   bool remove_directory(const path& p) // true if succeeds or not found
@@ -460,16 +465,16 @@ namespace
   BOOST_CONSTEXPR_OR_CONST char dot = '.';
   BOOST_CONSTEXPR_OR_CONST char end_of_string = '\0';
 
-  inline bool not_found_error(int errval)
+  inline bool not_found_error(int errval) BOOST_NOEXCEPT
   {
-    return errno == ENOENT || errno == ENOTDIR;
+    return errval == ENOENT || errval == ENOTDIR;
   }
 
   bool // true if ok
   copy_file_api(const std::string& from_p,
     const std::string& to_p, bool fail_if_exists)
   {
-    const std::size_t buf_sz = 32768;
+    BOOST_CONSTEXPR_OR_CONST std::size_t buf_sz = 65536;
     boost::scoped_array<char> buf(new char [buf_sz]);
     int infile=-1, outfile=-1;  // -1 means not open
 
@@ -491,7 +496,7 @@ namespace
       oflag |= O_EXCL;
     if ((outfile = ::open(to_p.c_str(), oflag, from_stat.st_mode))< 0)
     {
-      int open_errno = errno;
+      const int open_errno = errno;
       BOOST_ASSERT(infile >= 0);
       ::close(infile);
       errno = open_errno;
@@ -549,7 +554,7 @@ namespace
   BOOST_CONSTEXPR_OR_CONST wchar_t dot = L'.';
   BOOST_CONSTEXPR_OR_CONST wchar_t end_of_string = L'\0';
 
-  inline bool not_found_error(int errval)
+  inline bool not_found_error(int errval) BOOST_NOEXCEPT
   {
     return errval == ERROR_FILE_NOT_FOUND
       || errval == ERROR_PATH_NOT_FOUND
@@ -1144,30 +1149,58 @@ namespace detail
   path current_path(error_code* ec)
   {
 #   ifdef BOOST_POSIX_API
-    path cur;
-    for (long path_max = 128;; path_max *=2)// loop 'til buffer large enough
+    struct local
     {
-      boost::scoped_array<char>
-        buf(new char[static_cast<std::size_t>(path_max)]);
-      if (::getcwd(buf.get(), static_cast<std::size_t>(path_max))== 0)
+      static bool getcwd_error(error_code* ec)
       {
-        if (error(errno != ERANGE ? errno : 0
-      // bug in some versions of the Metrowerks C lib on the Mac: wrong errno set
-#         if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
-          && errno != 0
-#         endif
-          , ec, "boost::filesystem::current_path"))
+        const int err = errno;
+        return error((err != ERANGE
+            // bug in some versions of the Metrowerks C lib on the Mac: wrong errno set
+#     if defined(__MSL__) && (defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__))
+            && err != 0
+#     endif
+          ) ? err : 0, ec, "boost::filesystem::current_path");
+      }
+    };
+
+    path cur;
+    char small_buf[1024];
+    const char* p = ::getcwd(small_buf, sizeof(small_buf));
+    if (BOOST_LIKELY(!!p))
+    {
+      cur = p;
+      if (ec != 0) ec->clear();
+    }
+    else if (BOOST_LIKELY(!local::getcwd_error(ec)))
+    {
+      for (std::size_t path_max = sizeof(small_buf);; path_max *= 2u) // loop 'til buffer large enough
+      {
+        if (BOOST_UNLIKELY(path_max > absolute_path_max))
+        {
+          if (ec == 0)
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::current_path",
+              error_code(ENAMETOOLONG, system_category())));
+          else
+            ec->assign(ENAMETOOLONG, system_category());
+          break;
+        }
+
+        boost::scoped_array<char> buf(new char[path_max]);
+        p = ::getcwd(buf.get(), path_max);
+        if (BOOST_LIKELY(!!p))
+        {
+          cur = buf.get();
+          if (ec != 0)
+            ec->clear();
+          break;
+        }
+        else if (BOOST_UNLIKELY(local::getcwd_error(ec)))
         {
           break;
         }
       }
-      else
-      {
-        cur = buf.get();
-        if (ec != 0) ec->clear();
-        break;
-      }
     }
+
     return cur;
 
 #   else
@@ -1507,12 +1540,13 @@ namespace detail
       if (::chmod(p.c_str(), mode_cast(prms)))
 #   endif
     {
+      const int err = errno;
       if (ec == 0)
-      BOOST_FILESYSTEM_THROW(filesystem_error(
+        BOOST_FILESYSTEM_THROW(filesystem_error(
           "boost::filesystem::permissions", p,
-          error_code(errno, system::generic_category())));
+          error_code(err, system::generic_category())));
       else
-        ec->assign(errno, system::generic_category());
+        ec->assign(err, system::generic_category());
     }
 
 # else  // Windows
@@ -1547,22 +1581,46 @@ namespace detail
     path symlink_path;
 
 #   ifdef BOOST_POSIX_API
-
-    for (std::size_t path_max = 64;; path_max *= 2)// loop 'til buffer large enough
+    const char* const path_str = p.c_str();
+    char small_buf[1024];
+    ssize_t result = ::readlink(path_str, small_buf, sizeof(small_buf));
+    if (BOOST_UNLIKELY(result < 0))
     {
-      boost::scoped_array<char> buf(new char[path_max]);
-      ssize_t result;
-      if ((result=::readlink(p.c_str(), buf.get(), path_max))== -1)
-      {
-        if (ec == 0)
-          BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::read_symlink",
-            p, error_code(errno, system_category())));
-        else ec->assign(errno, system_category());
-        break;
-      }
+    fail:
+      const int err = errno;
+      if (ec == 0)
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::read_symlink",
+          p, error_code(err, system_category())));
       else
+        ec->assign(err, system_category());
+    }
+    else if (BOOST_LIKELY(static_cast< std::size_t >(result) < sizeof(small_buf)))
+    {
+      symlink_path.assign(small_buf, small_buf + result);
+      if (ec != 0)
+        ec->clear();
+    }
+    else
+    {
+      for (std::size_t path_max = sizeof(small_buf) * 2u;; path_max *= 2u) // loop 'til buffer large enough
       {
-        if(result != static_cast<ssize_t>(path_max))
+        if (BOOST_UNLIKELY(path_max > absolute_path_max))
+        {
+          if (ec == 0)
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::read_symlink",
+              p, error_code(ENAMETOOLONG, system_category())));
+          else
+            ec->assign(ENAMETOOLONG, system_category());
+          break;
+        }
+
+        boost::scoped_array<char> buf(new char[path_max]);
+        result = ::readlink(path_str, buf.get(), path_max);
+        if (BOOST_UNLIKELY(result < 0))
+        {
+          goto fail;
+        }
+        else if (BOOST_LIKELY(static_cast< std::size_t >(result) < path_max))
         {
           symlink_path.assign(buf.get(), buf.get() + result);
           if (ec != 0) ec->clear();
@@ -1720,16 +1778,17 @@ namespace detail
     struct stat path_stat;
     if (::stat(p.c_str(), &path_stat)!= 0)
     {
+      const int err = errno;
       if (ec != 0)                            // always report errno, even though some
-        ec->assign(errno, system_category());   // errno values are not status_errors
+        ec->assign(err, system_category());   // errno values are not status_errors
 
-      if (not_found_error(errno))
+      if (not_found_error(err))
       {
         return fs::file_status(fs::file_not_found, fs::no_perms);
       }
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status",
-          p, error_code(errno, system_category())));
+          p, error_code(err, system_category())));
       return fs::file_status(fs::status_error);
     }
     if (ec != 0) ec->clear();;
@@ -1800,16 +1859,17 @@ namespace detail
     struct stat path_stat;
     if (::lstat(p.c_str(), &path_stat)!= 0)
     {
+      const int err = errno;
       if (ec != 0)                            // always report errno, even though some
-        ec->assign(errno, system_category());   // errno values are not status_errors
+        ec->assign(err, system_category());   // errno values are not status_errors
 
-      if (errno == ENOENT || errno == ENOTDIR) // these are not errors
+      if (not_found_error(err)) // these are not errors
       {
         return fs::file_status(fs::file_not_found, fs::no_perms);
       }
       if (ec == 0)
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status",
-          p, error_code(errno, system_category())));
+          p, error_code(err, system_category())));
       return fs::file_status(fs::status_error);
     }
     if (ec != 0) ec->clear();
@@ -2095,11 +2155,16 @@ namespace
       long tmp = ::pathconf("/", _PC_NAME_MAX);
       if (tmp < 0)
       {
-        if (errno == 0)// indeterminate
+        const int err = errno;
+        if (err == 0)// indeterminate
           max = 4096; // guess
-        else return error_code(errno, system_category());
+        else
+          return error_code(err, system_category());
       }
-      else max = static_cast<std::size_t>(tmp + 1); // relative root
+      else
+      {
+        max = static_cast<std::size_t>(tmp + 1); // relative root
+      }
     }
     result = max;
     return ok;
@@ -2110,7 +2175,10 @@ namespace
     fs::file_status &, fs::file_status &)
   {
     if ((handle = ::opendir(dir))== 0)
-      return error_code(errno, system_category());
+    {
+      const int err = errno;
+      return error_code(err, system_category());
+    }
     target = string(".");  // string was static but caused trouble
                              // when iteration called from dtor, after
                              // static had already been destroyed
@@ -2139,15 +2207,15 @@ namespace
 
     errno = 0;
 
-    if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS)>= 0)
-      { return ::readdir_r(dirp, entry, result); }
+    if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS) >= 0)
+      return ::readdir_r(dirp, entry, result);
 #   endif
 
     errno = 0;
 
     struct dirent * p;
     *result = 0;
-    if ((p = ::readdir(dirp))== 0)
+    if ((p = ::readdir(dirp)) == 0)
       return errno;
     std::strcpy(entry->d_name, p->d_name);
     *result = entry;
@@ -2162,7 +2230,10 @@ namespace
     dirent * result;
     int return_code;
     if ((return_code = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result))!= 0)
-      return error_code(errno, system_category());
+    {
+      const int err = errno;
+      return error_code(err, system_category());
+    }
     if (result == 0)
       return fs::detail::dir_itr_close(handle, buffer);
     target = entry->d_name;
@@ -2313,7 +2384,10 @@ namespace detail
     if (handle == 0)return ok;
     DIR * h(static_cast<DIR*>(handle));
     handle = 0;
-    return error_code(::closedir(h)== 0 ? 0 : errno, system_category());
+    int err = 0;
+    if (::closedir(h) != 0)
+      err = errno;
+    return error_code(err, system_category());
 
 #   else
     if (handle != 0)
