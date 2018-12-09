@@ -1080,8 +1080,8 @@ namespace filesystem
       // symlink_option values, declared as unsigned int for ABI compatibility
       unsigned int m_options;
 
-      recur_dir_itr_imp() BOOST_NOEXCEPT : m_level(0), m_options(boost::underlying_cast< unsigned int >(symlink_option::none)) {}
-      explicit recur_dir_itr_imp(BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt) BOOST_NOEXCEPT : m_level(0), m_options(boost::underlying_cast< unsigned int >(opt)) {}
+      recur_dir_itr_imp() BOOST_NOEXCEPT : m_level(0), m_options(static_cast< unsigned int >(symlink_option::none)) {}
+      explicit recur_dir_itr_imp(BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt) BOOST_NOEXCEPT : m_level(0), m_options(static_cast< unsigned int >(opt)) {}
 
       // ec == 0 means throw on error
       //
@@ -1238,8 +1238,8 @@ namespace filesystem
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "is_no_push_requested() on end recursive_directory_iterator");
-      return (m_imp->m_options & boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push))
-        == boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
+      return (m_imp->m_options & static_cast< unsigned int >(symlink_option::_detail_no_push))
+        == static_cast< unsigned int >(symlink_option::_detail_no_push);
     }
 
     bool no_push_pending() const BOOST_NOEXCEPT { return recursion_pending(); }
@@ -1269,9 +1269,9 @@ namespace filesystem
       BOOST_ASSERT_MSG(m_imp.get(),
         "no_push() on end recursive_directory_iterator");
       if (value)
-        m_imp->m_options |= boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
+        m_imp->m_options |= static_cast< unsigned int >(symlink_option::_detail_no_push);
       else
-        m_imp->m_options &= ~boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
+        m_imp->m_options &= ~static_cast< unsigned int >(symlink_option::_detail_no_push);
     }
 
     void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }

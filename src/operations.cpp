@@ -2527,9 +2527,9 @@ namespace detail
       //  Discover if the iterator is for a directory that needs to be recursed into,
       //  taking symlinks and options into account.
 
-      if ((m_options & boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push)) == boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push))
+      if ((m_options & static_cast< unsigned int >(symlink_option::_detail_no_push)) == static_cast< unsigned int >(symlink_option::_detail_no_push))
       {
-        m_options &= ~boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
+        m_options &= ~static_cast< unsigned int >(symlink_option::_detail_no_push);
         return false;
       }
 
@@ -2537,7 +2537,7 @@ namespace detail
 
       // if we are not recursing into symlinks, we are going to have to know if the
       // stack top is a symlink, so get symlink_status and verify no error occurred
-      if ((m_options & boost::underlying_cast< unsigned int >(symlink_option::recurse)) != boost::underlying_cast< unsigned int >(symlink_option::recurse))
+      if ((m_options & static_cast< unsigned int >(symlink_option::recurse)) != static_cast< unsigned int >(symlink_option::recurse))
       {
         symlink_stat = m_stack.top()->symlink_status(ec);
         if (ec)
@@ -2552,7 +2552,7 @@ namespace detail
       // The predicate code has since been rewritten to pass error_code arguments,
       // per ticket #5653.
 
-      if ((m_options & boost::underlying_cast< unsigned int >(symlink_option::recurse)) == boost::underlying_cast< unsigned int >(symlink_option::recurse)
+      if ((m_options & static_cast< unsigned int >(symlink_option::recurse)) == static_cast< unsigned int >(symlink_option::recurse)
         || !is_symlink(symlink_stat))
       {
         file_status stat = m_stack.top()->status(ec);
