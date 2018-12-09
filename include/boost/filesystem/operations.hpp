@@ -24,7 +24,7 @@
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 
-#include <boost/detail/scoped_enum_emulation.hpp>
+#include <boost/core/scoped_enum.hpp>
 #include <boost/detail/bitmask.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
@@ -257,23 +257,23 @@ namespace boost
 //                                    file_status                                       //
 //--------------------------------------------------------------------------------------//
 
-  class BOOST_FILESYSTEM_DECL file_status
+  class file_status
   {
   public:
-             file_status() BOOST_NOEXCEPT
-               : m_value(status_error), m_perms(perms_not_known) {}
-    explicit file_status(file_type v) BOOST_NOEXCEPT
-               : m_value(v), m_perms(perms_not_known)  {}
-             file_status(file_type v, perms prms) BOOST_NOEXCEPT
-               : m_value(v), m_perms(prms) {}
+    BOOST_CONSTEXPR file_status() BOOST_NOEXCEPT
+      : m_value(status_error), m_perms(perms_not_known) {}
+    explicit BOOST_CONSTEXPR file_status(file_type v) BOOST_NOEXCEPT
+      : m_value(v), m_perms(perms_not_known)  {}
+    BOOST_CONSTEXPR file_status(file_type v, perms prms) BOOST_NOEXCEPT
+      : m_value(v), m_perms(prms) {}
 
   //  As of October 2015 the interaction between noexcept and =default is so troublesome
   //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
   //  functions. GCC is not even consistent for the same release on different platforms.
 
-    file_status(const file_status& rhs) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR file_status(const file_status& rhs) BOOST_NOEXCEPT
       : m_value(rhs.m_value), m_perms(rhs.m_perms) {}
-    file_status& operator=(const file_status& rhs) BOOST_NOEXCEPT
+    BOOST_CXX14_CONSTEXPR file_status& operator=(const file_status& rhs) BOOST_NOEXCEPT
     {
       m_value = rhs.m_value;
       m_perms = rhs.m_perms;
@@ -281,12 +281,9 @@ namespace boost
     }
 
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    file_status(file_status&& rhs) BOOST_NOEXCEPT
-    {
-      m_value = std::move(rhs.m_value);
-      m_perms = std::move(rhs.m_perms);
-    }
-    file_status& operator=(file_status&& rhs) BOOST_NOEXCEPT
+    BOOST_CONSTEXPR file_status(file_status&& rhs) BOOST_NOEXCEPT
+      : m_value(std::move(rhs.m_value)), m_perms(std::move(rhs.m_perms)) {}
+    BOOST_CXX14_CONSTEXPR file_status& operator=(file_status&& rhs) BOOST_NOEXCEPT
     {
       m_value = std::move(rhs.m_value);
       m_perms = std::move(rhs.m_perms);
@@ -294,19 +291,18 @@ namespace boost
     }
 # endif
 
-
     // observers
-    file_type  type() const BOOST_NOEXCEPT            { return m_value; }
-    perms      permissions() const BOOST_NOEXCEPT     { return m_perms; }
+    BOOST_CONSTEXPR file_type  type() const BOOST_NOEXCEPT            { return m_value; }
+    BOOST_CONSTEXPR perms      permissions() const BOOST_NOEXCEPT     { return m_perms; }
 
     // modifiers
-    void       type(file_type v) BOOST_NOEXCEPT       { m_value = v; }
-    void       permissions(perms prms) BOOST_NOEXCEPT { m_perms = prms; }
+    BOOST_CXX14_CONSTEXPR void       type(file_type v) BOOST_NOEXCEPT       { m_value = v; }
+    BOOST_CXX14_CONSTEXPR void       permissions(perms prms) BOOST_NOEXCEPT { m_perms = prms; }
 
-    bool operator==(const file_status& rhs) const BOOST_NOEXCEPT
+    BOOST_CONSTEXPR bool operator==(const file_status& rhs) const BOOST_NOEXCEPT
       { return type() == rhs.type() &&
         permissions() == rhs.permissions(); }
-    bool operator!=(const file_status& rhs) const BOOST_NOEXCEPT
+    BOOST_CONSTEXPR bool operator!=(const file_status& rhs) const BOOST_NOEXCEPT
       { return !(*this == rhs); }
 
   private:
@@ -314,24 +310,24 @@ namespace boost
     enum perms  m_perms;
   };
 
-  inline bool type_present(file_status f) BOOST_NOEXCEPT
+  inline BOOST_CONSTEXPR bool type_present(file_status f) BOOST_NOEXCEPT
                                           { return f.type() != status_error; }
-  inline bool permissions_present(file_status f) BOOST_NOEXCEPT
+  inline BOOST_CONSTEXPR bool permissions_present(file_status f) BOOST_NOEXCEPT
                                           {return f.permissions() != perms_not_known;}
-  inline bool status_known(file_status f) BOOST_NOEXCEPT
-                                          { return type_present(f) && permissions_present(f); }
-  inline bool exists(file_status f) BOOST_NOEXCEPT
+  inline BOOST_CONSTEXPR bool status_known(file_status f) BOOST_NOEXCEPT
+                                          { return filesystem::type_present(f) && filesystem::permissions_present(f); }
+  inline BOOST_CONSTEXPR bool exists(file_status f) BOOST_NOEXCEPT
                                           { return f.type() != status_error
                                                 && f.type() != file_not_found; }
-  inline bool is_regular_file(file_status f) BOOST_NOEXCEPT
+  inline BOOST_CONSTEXPR bool is_regular_file(file_status f) BOOST_NOEXCEPT
                                           { return f.type() == regular_file; }
-  inline bool is_directory(file_status f) BOOST_NOEXCEPT
+  inline BOOST_CONSTEXPR bool is_directory(file_status f) BOOST_NOEXCEPT
                                           { return f.type() == directory_file; }
-  inline bool is_symlink(file_status f) BOOST_NOEXCEPT
+  inline BOOST_CONSTEXPR bool is_symlink(file_status f) BOOST_NOEXCEPT
                                           { return f.type() == symlink_file; }
-  inline bool is_other(file_status f) BOOST_NOEXCEPT
-                                          { return exists(f) && !is_regular_file(f)
-                                                && !is_directory(f) && !is_symlink(f); }
+  inline BOOST_CONSTEXPR bool is_other(file_status f) BOOST_NOEXCEPT
+                                          { return filesystem::exists(f) && !filesystem::is_regular_file(f)
+                                                && !filesystem::is_directory(f) && !filesystem::is_symlink(f); }
 
 # ifndef BOOST_FILESYSTEM_NO_DEPRECATED
   inline bool is_regular(file_status f) BOOST_NOEXCEPT { return f.type() == regular_file; }
@@ -345,9 +341,9 @@ namespace boost
     boost::uintmax_t available; // <= free
   };
 
-  BOOST_SCOPED_ENUM_START(copy_option)
-    {none=0, fail_if_exists = none, overwrite_if_exists};
-  BOOST_SCOPED_ENUM_END
+  BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_option)
+    {none=0, fail_if_exists = none, overwrite_if_exists}
+  BOOST_SCOPED_ENUM_DECLARE_END(copy_option)
 
 //--------------------------------------------------------------------------------------//
 //                             implementation details                                   //
@@ -539,7 +535,7 @@ namespace boost
                                        {detail::copy_directory(from, to, &ec);}
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM(copy_option) option)
+                 BOOST_SCOPED_ENUM_NATIVE(copy_option) option)
   {
     detail::copy_file(from, to, static_cast<detail::copy_option>(option));
   }
@@ -550,7 +546,7 @@ namespace boost
   }
   inline
   void copy_file(const path& from, const path& to,   // See ticket #2925
-                 BOOST_SCOPED_ENUM(copy_option) option, system::error_code& ec) BOOST_NOEXCEPT
+                 BOOST_SCOPED_ENUM_NATIVE(copy_option) option, system::error_code& ec) BOOST_NOEXCEPT
   {
     detail::copy_file(from, to, static_cast<detail::copy_option>(option), &ec);
   }
@@ -746,7 +742,7 @@ namespace boost
 //  sub-namespace that also has a class named path. The workaround is to always
 //  fully qualify the name path when it refers to the class name.
 
-class BOOST_FILESYSTEM_DECL directory_entry
+class directory_entry
 {
 public:
   typedef boost::filesystem::path::value_type value_type;   // enables class path ctor taking directory_entry
@@ -827,12 +823,13 @@ public:
   bool operator>=(const directory_entry& rhs) const BOOST_NOEXCEPT {return m_path >= rhs.m_path;}
 
 private:
+  BOOST_FILESYSTEM_DECL file_status m_get_status(system::error_code* ec=0) const;
+  BOOST_FILESYSTEM_DECL file_status m_get_symlink_status(system::error_code* ec=0) const;
+
+private:
   boost::filesystem::path   m_path;
   mutable file_status       m_status;           // stat()-like
   mutable file_status       m_symlink_status;   // lstat()-like
-
-  file_status m_get_status(system::error_code* ec=0) const;
-  file_status m_get_symlink_status(system::error_code* ec=0) const;
 }; // directory_entry
 
 
@@ -871,7 +868,7 @@ class directory_iterator;
 namespace detail
 {
   BOOST_FILESYSTEM_DECL
-    system::error_code dir_itr_close(// never throws()
+  system::error_code dir_itr_close(// never throws()
     void *& handle
 #   if     defined(BOOST_POSIX_API)
     , void *& buffer
@@ -1061,20 +1058,16 @@ namespace filesystem
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-  BOOST_SCOPED_ENUM_START(symlink_option)
+  BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(symlink_option, unsigned int)
   {
     none,
     no_recurse = none,         // don't follow directory symlinks (default behavior)
     recurse,                   // follow directory symlinks
-    _detail_no_push = recurse << 1, // internal use only
+    _detail_no_push = recurse << 1 // internal use only
+  }
+  BOOST_SCOPED_ENUM_DECLARE_END(symlink_option)
 
-    // BOOST_BITMASK op~ casts to int32_least_t, producing invalid enum values
-    _detail_extend_symlink_option_32_1 = 0x7fffffff,
-    _detail_extend_symlink_option_32_2 = -0x7fffffff-1
-  };
-  BOOST_SCOPED_ENUM_END
-
-  BOOST_BITMASK(BOOST_SCOPED_ENUM(symlink_option))
+  BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(symlink_option))
 
   namespace detail
   {
@@ -1083,168 +1076,29 @@ namespace filesystem
     {
       typedef directory_iterator element_type;
       std::stack< element_type, std::vector< element_type > > m_stack;
-      int  m_level;
-      BOOST_SCOPED_ENUM(symlink_option) m_options;
+      int m_level;
+      // symlink_option values, declared as unsigned int for ABI compatibility
+      unsigned int m_options;
 
-      recur_dir_itr_imp() BOOST_NOEXCEPT : m_level(0), m_options(symlink_option::none) {}
-      explicit recur_dir_itr_imp(BOOST_SCOPED_ENUM(symlink_option) opt) BOOST_NOEXCEPT : m_level(0), m_options(opt) {}
+      recur_dir_itr_imp() BOOST_NOEXCEPT : m_level(0), m_options(boost::underlying_cast< unsigned int >(symlink_option::none)) {}
+      explicit recur_dir_itr_imp(BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt) BOOST_NOEXCEPT : m_level(0), m_options(boost::underlying_cast< unsigned int >(opt)) {}
 
-      void increment(system::error_code* ec);  // ec == 0 means throw on error
+      // ec == 0 means throw on error
+      //
+      // Invariant: On return, the top of the iterator stack is the next valid (possibly
+      // end) iterator, regardless of whether or not an error is reported, and regardless of
+      // whether any error is reported by exception or error code. In other words, progress
+      // is always made so a loop on the iterator will always eventually terminate
+      // regardless of errors.
+      BOOST_FILESYSTEM_DECL void increment(system::error_code* ec);
 
-      bool push_directory(system::error_code& ec) BOOST_NOEXCEPT;
+      // Returns: true if push occurs, otherwise false. Always returns false on error.
+      BOOST_FILESYSTEM_DECL bool push_directory(system::error_code& ec) BOOST_NOEXCEPT;
 
-      void pop(system::error_code* ec);  // ec == 0 means throw on error
+      // ec == 0 means throw on error
+      BOOST_FILESYSTEM_DECL void pop(system::error_code* ec);
     };
 
-    //  Implementation is inline to avoid dynamic linking difficulties with m_stack:
-    //  Microsoft warning C4251, m_stack needs to have dll-interface to be used by
-    //  clients of struct 'boost::filesystem::detail::recur_dir_itr_imp'
-
-    inline
-    bool recur_dir_itr_imp::push_directory(system::error_code& ec) BOOST_NOEXCEPT
-    // Returns: true if push occurs, otherwise false. Always returns false on error.
-    {
-      ec.clear();
-
-      try
-      {
-        //  Discover if the iterator is for a directory that needs to be recursed into,
-        //  taking symlinks and options into account.
-
-        if ((m_options & symlink_option::_detail_no_push) == symlink_option::_detail_no_push)
-        {
-          m_options &= ~symlink_option::_detail_no_push;
-          return false;
-        }
-
-        file_status symlink_stat;
-
-        // if we are not recursing into symlinks, we are going to have to know if the
-        // stack top is a symlink, so get symlink_status and verify no error occurred
-        if ((m_options & symlink_option::recurse) != symlink_option::recurse)
-        {
-          symlink_stat = m_stack.top()->symlink_status(ec);
-          if (ec)
-            return false;
-        }
-
-        // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
-        // symlinks correctly and efficiently, fixing ticket #5652.
-        //   if (((m_options & symlink_option::recurse) == symlink_option::recurse
-        //         || !is_symlink(m_stack.top()->symlink_status()))
-        //       && is_directory(m_stack.top()->status())) ...
-        // The predicate code has since been rewritten to pass error_code arguments,
-        // per ticket #5653.
-
-        if ((m_options & symlink_option::recurse) == symlink_option::recurse
-          || !is_symlink(symlink_stat))
-        {
-          file_status stat = m_stack.top()->status(ec);
-          if (ec || !is_directory(stat))
-            return false;
-
-          directory_iterator next(m_stack.top()->path(), ec);
-          if (!ec && next != directory_iterator())
-          {
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-            m_stack.push(std::move(next)); // may throw
-#else
-            m_stack.push(next); // may throw
-#endif
-            ++m_level;
-            return true;
-          }
-        }
-      }
-      catch (std::bad_alloc&)
-      {
-        ec = make_error_code(system::errc::not_enough_memory);
-      }
-
-      return false;
-    }
-
-    inline
-    void recur_dir_itr_imp::increment(system::error_code* ec)
-    // ec == 0 means throw on error
-    //
-    // Invariant: On return, the top of the iterator stack is the next valid (possibly
-    // end) iterator, regardless of whether or not an error is reported, and regardless of
-    // whether any error is reported by exception or error code. In other words, progress
-    // is always made so a loop on the iterator will always eventually terminate
-    // regardless of errors.
-    {
-      system::error_code ec_push_directory;
-
-      //  if various conditions are met, push a directory_iterator into the iterator stack
-      if (push_directory(ec_push_directory))
-      {
-        if (ec)
-          ec->clear();
-        return;
-      }
-
-      // report errors if any
-      if (ec_push_directory)
-      {
-        if (ec)
-        {
-          *ec = ec_push_directory;
-          return;
-        }
-        else
-        {
-          BOOST_FILESYSTEM_THROW(filesystem_error(
-            "filesystem::recursive_directory_iterator directory error",
-            ec_push_directory));
-        }
-      }
-
-      //  Do the actual increment operation on the top iterator in the iterator
-      //  stack, popping the stack if necessary, until either the stack is empty or a
-      //  non-end iterator is reached.
-      while (!m_stack.empty())
-      {
-        directory_iterator& it = m_stack.top();
-        detail::directory_iterator_increment(it, ec);
-        if (ec && *ec)
-          return;
-        if (it != directory_iterator())
-          break;
-
-        m_stack.pop();
-        --m_level;
-      }
-
-      if (ec)
-        ec->clear();
-    }
-
-    inline
-    void recur_dir_itr_imp::pop(system::error_code* ec)
-    {
-      BOOST_ASSERT_MSG(m_level > 0,
-        "pop() on recursive_directory_iterator with level < 1");
-
-      if (ec)
-        ec->clear();
-
-      while (true)
-      {
-        m_stack.pop();
-        --m_level;
-
-        if (m_stack.empty())
-          break;
-
-        directory_iterator& it = m_stack.top();
-        detail::directory_iterator_increment(it, ec);
-        if (ec && *ec)
-          break;
-        if (it != directory_iterator())
-          break;
-      }
-    }
   } // namespace detail
 
 //--------------------------------------------------------------------------------------//
@@ -1272,7 +1126,7 @@ namespace filesystem
     }
 
     recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM(symlink_option) opt)  // throws if !exists()
+      BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt)  // throws if !exists()
       : m_imp(new detail::recur_dir_itr_imp(opt))
     {
       m_imp->m_stack.push(directory_iterator(dir_path));
@@ -1281,7 +1135,7 @@ namespace filesystem
     }
 
     recursive_directory_iterator(const path& dir_path,
-      BOOST_SCOPED_ENUM(symlink_option) opt,
+      BOOST_SCOPED_ENUM_NATIVE(symlink_option) opt,
       system::error_code & ec) BOOST_NOEXCEPT :
       m_imp(new (std::nothrow) detail::recur_dir_itr_imp(opt))
     {
@@ -1384,8 +1238,8 @@ namespace filesystem
     {
       BOOST_ASSERT_MSG(m_imp.get(),
         "is_no_push_requested() on end recursive_directory_iterator");
-      return (m_imp->m_options & symlink_option::_detail_no_push)
-        == symlink_option::_detail_no_push;
+      return (m_imp->m_options & boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push))
+        == boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
     }
 
     bool no_push_pending() const BOOST_NOEXCEPT { return recursion_pending(); }
@@ -1415,9 +1269,9 @@ namespace filesystem
       BOOST_ASSERT_MSG(m_imp.get(),
         "no_push() on end recursive_directory_iterator");
       if (value)
-        m_imp->m_options |= symlink_option::_detail_no_push;
+        m_imp->m_options |= boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
       else
-        m_imp->m_options &= ~symlink_option::_detail_no_push;
+        m_imp->m_options &= ~boost::underlying_cast< unsigned int >(symlink_option::_detail_no_push);
     }
 
     void no_push(bool value=true) BOOST_NOEXCEPT { disable_recursion_pending(value); }
