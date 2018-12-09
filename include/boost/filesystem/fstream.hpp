@@ -34,6 +34,12 @@
 # define BOOST_FILESYSTEM_C_STR c_str()
 #endif
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+// 'boost::filesystem::basic_fstream<charT>' : inherits 'std::basic_istream<_Elem,_Traits>::std::basic_istream<_Elem,_Traits>::_Add_vtordisp1' via dominance
+#pragma warning(disable: 4250)
+#endif
+
 namespace boost
 {
 namespace filesystem
@@ -177,6 +183,10 @@ namespace filesystem
 
 } // namespace filesystem
 } // namespace boost
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif  // BOOST_FILESYSTEM3_FSTREAM_HPP
