@@ -278,6 +278,7 @@ install:
   - git submodule init tools/boostdep
   - git submodule init tools/boost_install
   - git submodule init libs/headers
+  - git submodule init libs/config
   - git submodule update --jobs 4
   - cp -r $TRAVIS_BUILD_DIR/* libs/filesystem
   - python tools/boostdep/depinst/depinst.py filesystem
