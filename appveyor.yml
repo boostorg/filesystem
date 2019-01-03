@@ -67,4 +67,4 @@ test_script:
   - PATH=%ADDPATH%%PATH%
   - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
   - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
-  - b2 -j 3 libs/filesystem/test toolset=%TOOLSET% %CXXSTD% %ADDRMD%
+  - b2 -j %NUMBER_OF_PROCESSORS% libs/filesystem/test toolset=%TOOLSET% %CXXSTD% %ADDRMD%
