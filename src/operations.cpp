@@ -2184,15 +2184,18 @@ namespace
                              // static had already been destroyed
     std::size_t path_size (0);  // initialization quiets gcc warning (ticket #3509)
     error_code ec = path_max(path_size);
-    if (ec)return ec;
-    buffer = std::malloc((sizeof(dirent) - sizeof(dirent().d_name))
-      +  path_size + 1); // + 1 for "\0"
+    if (ec)
+      return ec;
+    const std::size_t buffer_size = (sizeof(dirent) - sizeof(dirent().d_name))
+      +  path_size + 1; // + 1 for "\0"
+    buffer = std::malloc(buffer_size);
     if (BOOST_UNLIKELY(!buffer))
       return make_error_code(boost::system::errc::not_enough_memory);
+    std::memset(buffer, 0, buffer_size);
     return ok;
   }
 
-  // warning: the only dirent member updated is d_name
+  // warning: the only dirent members updated are d_name and d_type
   inline int readdir_r_simulator(DIR * dirp, struct dirent * entry,
     struct dirent ** result)// *result set to 0 on end of directory
   {
@@ -2217,6 +2220,9 @@ namespace
     *result = 0;
     if ((p = ::readdir(dirp)) == 0)
       return errno;
+#   ifdef BOOST_FILESYSTEM_STATUS_CACHE
+    entry->d_type = p->d_type;
+#   endif
     std::strcpy(entry->d_name, p->d_name);
     *result = entry;
     return 0;
@@ -2253,11 +2259,12 @@ namespace
         sf = fs::file_status(fs::status_error);
         symlink_sf = fs::file_status(fs::symlink_file);
       }
-      else sf = symlink_sf = fs::file_status(fs::status_error);
+      else
+        sf = symlink_sf = fs::file_status(fs::status_error);
     }
 #   else
     sf = symlink_sf = fs::file_status(fs::status_error);
-#    endif
+#   endif
     return ok;
   }
 
