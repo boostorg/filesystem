@@ -10,9 +10,8 @@ import os ;
 project
     : requirements
       <library>/boost/filesystem//boost_filesystem
-      <library>/boost/system//boost_system
     ;
-    
+
 # Some tests are run both statically and as shared libraries since Filesystem
 # has a history of bugs that appear only in one type of build or the other.
 
