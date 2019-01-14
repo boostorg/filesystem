@@ -10,7 +10,6 @@
 project
     : requirements
       <library>/boost/filesystem//boost_filesystem
-      <toolset>msvc:<asynch-exceptions>on
       <link>static
     ;
 

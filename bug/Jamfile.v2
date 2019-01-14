@@ -9,9 +9,8 @@
 project
     : requirements
       <library>/boost/filesystem//boost_filesystem
-      <toolset>msvc:<asynch-exceptions>on
     ;
-    
+
 exe bug : bug.cpp : <link>static ;
 
 # install in ./bin; invoke via "b2", not "b2 install"
