@@ -45,6 +45,7 @@ environment:
       CXXSTD: 03,11,14,1z
 
 install:
+  - set GIT_FETCH_JOBS=8
   - set BOOST_BRANCH=develop
   - if "%APPVEYOR_REPO_BRANCH%" == "master" set BOOST_BRANCH=master
   - cd ..
@@ -55,9 +56,9 @@ install:
   - git submodule init tools/boost_install
   - git submodule init libs/headers
   - git submodule init libs/config
-  - git submodule update --jobs 4
+  - git submodule update --jobs %GIT_FETCH_JOBS%
   - xcopy /s /e /q %APPVEYOR_BUILD_FOLDER% libs\filesystem
-  - python tools/boostdep/depinst/depinst.py filesystem
+  - python tools/boostdep/depinst/depinst.py --git_args "--jobs %GIT_FETCH_JOBS%" filesystem
   - cmd /c bootstrap
   - b2 -d0 headers
 
