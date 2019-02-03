@@ -1546,12 +1546,30 @@ path read_symlink(const path& p, system::error_code* ec)
   if (!error(::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
         0, 0, info.buf, sizeof(info), &sz, 0) == 0 ? BOOST_ERRNO : 0, p, ec,
         "boost::filesystem::read_symlink" ))
+  {
+    const wchar_t* buffer;
+    size_t offset, len;
+    if (info.rdb.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT)
+    {
+      buffer = info.rdb.MountPointReparseBuffer.PathBuffer;
+      offset = info.rdb.MountPointReparseBuffer.PrintNameOffset;
+      len = info.rdb.MountPointReparseBuffer.PrintNameLength;
+    } else if (info.rdb.ReparseTag == IO_REPARSE_TAG_SYMLINK)
+    {
+      buffer = info.rdb.SymbolicLinkReparseBuffer.PathBuffer;
+      offset = info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset;
+      len = info.rdb.SymbolicLinkReparseBuffer.PrintNameLength;
+      // Note: iff info.rdb.SymbolicLinkReparseBuffer.Flags & SYMLINK_FLAG_RELATIVE
+      //       -> resulting path is relative to the source
+    } else
+    {
+      error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::read_symlink");
+      return symlink_path;
+    }
     symlink_path.assign(
-      static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
-      + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(wchar_t),
-      static_cast<wchar_t*>(info.rdb.SymbolicLinkReparseBuffer.PathBuffer)
-      + info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(wchar_t)
-      + info.rdb.SymbolicLinkReparseBuffer.PrintNameLength/sizeof(wchar_t));
+      buffer + offset / sizeof(wchar_t),
+      buffer + (offset + len) / sizeof(wchar_t));
+  }
 # endif
   return symlink_path;
 }
