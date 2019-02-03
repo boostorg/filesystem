@@ -792,6 +792,12 @@ path canonical(const path& p, const path& base, system::error_code* ec)
 
       result /= *itr;
 
+      // If we don't have an absolute path yet then don't check symlink status.
+      // This avoids checking "C:" which is "the current directory on drive C"
+      // and hence not what we want to check/resolve here.
+      if(!result.is_absolute())
+          continue;
+
       bool is_sym (is_symlink(detail::symlink_status(result, ec)));
       if (ec && *ec)
         return path();
