@@ -52,3 +52,4 @@ run quick.cpp ;
 
 # Tests for specific issues
 run issues/70-71-copy.cpp ;
+run issues/99_canonical_with_junction_point.cpp : : : <build>no <target-os>windows:<build>yes ;
