@@ -1547,10 +1547,7 @@ path read_symlink(const path& p, system::error_code* ec)
     }
   }
 
-# elif _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
-  error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
-        "boost::filesystem::read_symlink");
-# else  // Vista and Server 2008 SDK, or later
+# else
 
   union info_t
   {
