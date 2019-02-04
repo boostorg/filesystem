@@ -1569,7 +1569,7 @@ path read_symlink(const path& p, system::error_code* ec)
       //       -> resulting path is relative to the source
     } else
     {
-      error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::read_symlink");
+      error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "Unknown ReparseTag in boost::filesystem::read_symlink");
       return symlink_path;
     }
     symlink_path.assign(
