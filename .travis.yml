@@ -29,6 +29,26 @@ matrix:
       env: TOOLSET=gcc COMPILER=g++ CXXSTD=03,11
 
     - os: linux
+      compiler: g++-4.4
+      env: TOOLSET=gcc COMPILER=g++-4.4 CXXSTD=98,0x
+      addons:
+        apt:
+          packages:
+            - g++-4.4
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - os: linux
+      compiler: g++-4.6
+      env: TOOLSET=gcc COMPILER=g++-4.6 CXXSTD=03,0x
+      addons:
+        apt:
+          packages:
+            - g++-4.6
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - os: linux
       compiler: g++-4.7
       env: TOOLSET=gcc COMPILER=g++-4.7 CXXSTD=03,11
       addons:
@@ -47,6 +67,7 @@ matrix:
             - g++-4.8
           sources:
             - ubuntu-toolchain-r-test
+
     - os: linux
       compiler: g++-4.9
       env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=03,11
@@ -78,7 +99,6 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - os: linux
-      dist: trusty
       compiler: g++-7
       env: TOOLSET=gcc COMPILER=g++-7 CXXSTD=03,11,14,17
       addons:
@@ -89,8 +109,44 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - os: linux
+      compiler: g++-8
+      env: TOOLSET=gcc COMPILER=g++-8 CXXSTD=03,11,14,17
+      addons:
+        apt:
+          packages:
+            - g++-8
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - os: linux
+      compiler: g++-8
+      env: UBSAN=1 TOOLSET=gcc COMPILER=g++-8 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1 LINKFLAGS=-fuse-ld=gold
+      addons:
+        apt:
+          packages:
+            - g++-8
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - os: linux
       compiler: clang++
       env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11
+
+    - os: linux
+      compiler: /usr/bin/clang++
+      env: TOOLSET=clang COMPILER=/usr/bin/clang++ CXXSTD=03,11
+      addons:
+        apt:
+          packages:
+            - clang-3.3
+
+    - os: linux
+      compiler: /usr/bin/clang++
+      env: TOOLSET=clang COMPILER=/usr/bin/clang++ CXXSTD=03,11
+      addons:
+        apt:
+          packages:
+            - clang-3.4
 
     - os: linux
       compiler: clang++-3.5
@@ -102,7 +158,6 @@ matrix:
             - libstdc++-4.9-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.5
 
     - os: linux
       compiler: clang++-3.6
@@ -111,20 +166,9 @@ matrix:
         apt:
           packages:
             - clang-3.6
+            - libstdc++-4.9-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-
-    - os: linux
-      compiler: clang++-3.7
-      env: TOOLSET=clang COMPILER=clang++-3.7 CXXSTD=03,11,14,1z
-      addons:
-        apt:
-          packages:
-            - clang-3.7
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
 
     - os: linux
       compiler: clang++-3.8
@@ -136,7 +180,6 @@ matrix:
             - libstdc++-4.9-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
 
     - os: linux
       compiler: clang++-3.9
@@ -148,7 +191,6 @@ matrix:
             - libstdc++-4.9-dev
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.9
 
     - os: linux
       compiler: clang++-4.0
@@ -174,27 +216,82 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
 
+    - os: linux
+      compiler: clang++-6.0
+      env: TOOLSET=clang COMPILER=clang++-6.0 CXXSTD=03,11,14,17
+      addons:
+        apt:
+          packages:
+            - clang-6.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+
+    - os: linux
+      compiler: clang++-7
+      env: TOOLSET=clang COMPILER=clang++-7 CXXSTD=03,11,14,17
+      addons:
+        apt:
+          packages:
+            - clang-7
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-7
+
+    - os: linux
+      compiler: clang++-6.0
+      env: UBSAN=1 TOOLSET=clang COMPILER=clang++-6.0 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1
+      addons:
+        apt:
+          packages:
+            - clang-6.0
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+
+    - os: linux
+      compiler: clang++-libc++
+      env: TOOLSET=clang COMPILER=clang++-libc++ CXXSTD=03,11,14,1z
+      addons:
+        apt:
+          packages:
+            - libc++-dev
+
+    - os: linux
+      compiler: clang++-libc++
+      env: UBSAN=1 TOOLSET=clang COMPILER=clang++-libc++ CXXSTD=03,11,14,1z UBSAN_OPTIONS=print_stacktrace=1
+      addons:
+        apt:
+          packages:
+            - libc++-dev
+
     - os: osx
       compiler: clang++
       env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
 
 install:
-  - BOOST_BRANCH=develop && [ "$TRAVIS_BRANCH" == "master" ] && BOOST_BRANCH=master || true
+  - GIT_FETCH_JOBS=8
+  - BOOST_BRANCH=develop
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then BOOST_BRANCH=master; fi
   - cd ..
   - git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
   - cd boost-root
-  - git submodule update --init tools/build
-  - git submodule update --init libs/config
-  - git submodule update --init tools/boostdep
+  - git submodule init tools/build
+  - git submodule init tools/boostdep
+  - git submodule init tools/boost_install
+  - git submodule init libs/headers
+  - git submodule init libs/config
+  - git submodule update --jobs $GIT_FETCH_JOBS
   - cp -r $TRAVIS_BUILD_DIR/* libs/filesystem
-  - python tools/boostdep/depinst/depinst.py filesystem
+  - python tools/boostdep/depinst/depinst.py --git_args "--jobs $GIT_FETCH_JOBS" filesystem
   - ./bootstrap.sh
   - ./b2 headers
 
 script:
   - |-
     echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
-  - ./b2 -j 3 libs/filesystem/test toolset=$TOOLSET cxxstd=$CXXSTD
+  - BUILD_JOBS=`(nproc || sysctl -n hw.ncpu) 2> /dev/null`
+  - ./b2 -j $BUILD_JOBS libs/filesystem/test toolset=$TOOLSET cxxstd=$CXXSTD variant=debug,release ${UBSAN:+cxxflags=-fsanitize=undefined cxxflags=-fno-sanitize-recover=undefined linkflags=-fsanitize=undefined define=UBSAN=1 debug-symbols=on} ${LINKFLAGS:+linkflags=$LINKFLAGS}
 
 notifications:
   email:

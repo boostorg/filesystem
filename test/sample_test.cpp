@@ -48,7 +48,7 @@ int cpp_main(int argc, char* argv[])
   //    BOOST_TEST(predicate);  // test passes if predicate evaluates to true
   //    BOOST_TEST_EQ(x, y);    // test passes if x == y
   //    BOOST_TEST_NE(x, y);    // test passes if x != y
-  //    BOOST_ERROR(msg);       // test fails, outputs msg 
+  //    BOOST_ERROR(msg);       // test fails, outputs msg
   //    Examples:
   //      BOOST_TEST(path("f00").size() == 3);   // test passes
   //      BOOST_TEST_EQ(path("f00").size(), 3);  // test passes

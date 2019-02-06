@@ -7,13 +7,13 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-//--------------------------------------------------------------------------------------// 
+//--------------------------------------------------------------------------------------//
 
 // define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
 // the library is being built (possibly exporting rather than importing code)
-#define BOOST_FILESYSTEM_SOURCE 
+#define BOOST_FILESYSTEM_SOURCE
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -131,17 +131,31 @@ namespace boost { namespace filesystem { namespace detail {
 BOOST_FILESYSTEM_DECL
 path unique_path(const path& model, system::error_code* ec)
 {
-  std::wstring s (model.wstring());  // std::string ng for MBCS encoded POSIX
+  // This function used wstring for fear of misidentifying
+  // a part of a multibyte character as a percent sign.
+  // However, double byte encodings only have 80-FF as lead
+  // bytes and 40-7F as trailing bytes, whereas % is 25.
+  // So, use string on POSIX and avoid conversions.
+
+  path::string_type s( model.native() );
+
+#ifdef BOOST_WINDOWS_API
   const wchar_t hex[] = L"0123456789abcdef";
+  const wchar_t percent = L'%';
+#else
+  const char hex[] = "0123456789abcdef";
+  const char percent = '%';
+#endif
+
   char ran[] = "123456789abcdef";  // init to avoid clang static analyzer message
                                    // see ticket #8954
   assert(sizeof(ran) == 16);
   const int max_nibbles = 2 * sizeof(ran);   // 4-bits per nibble
 
   int nibbles_used = max_nibbles;
-  for(std::wstring::size_type i=0; i < s.size(); ++i)
+  for(path::string_type::size_type i=0; i < s.size(); ++i)
   {
-    if (s[i] == L'%')                        // digit request
+    if (s[i] == percent)                     // digit request
     {
       if (nibbles_used == max_nibbles)
       {

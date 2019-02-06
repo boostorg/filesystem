@@ -12,7 +12,7 @@ int main() {
     fs::recursive_directory_iterator beg("."), end;
 
     auto fileFilter = [](fs::path const & path)
-    { 
+    {
       return is_regular_file(path);
     };
 

@@ -42,10 +42,10 @@
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED 
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 #  define BOOST_FILESYSTEM_NO_DEPRECATED
 #endif
-#ifndef BOOST_SYSTEM_NO_DEPRECATED 
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
 #  define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
@@ -123,7 +123,7 @@ namespace
     try { throw fs::filesystem_error(str_1, "p1", "p2", ec); }
     catch (const fs::filesystem_error & ex)
     {
-      //std::cout << ex.what() << "*" << std::endl;                    
+      //std::cout << ex.what() << "*" << std::endl;
       //BOOST_TEST(std::strcmp(ex.what(),
       //  "string-1: Unknown error: \"p1\", \"p2\"") == 0);
       BOOST_TEST(ex.code() == ec);
@@ -438,7 +438,7 @@ namespace
     std::cout << "non_member_tests..." << std::endl;
 
     // test non-member functions, particularly operator overloads
-                                                               
+
     path e, e2;
     std::string es, es2;
     char ecs[] = "";
@@ -760,16 +760,16 @@ namespace
 
     // these are the examples given in reference docs, so check they work
     BOOST_TEST(path("/foo/bar.txt").parent_path() == "/foo");
-    BOOST_TEST(path("/foo/bar").parent_path() == "/foo");    
-    BOOST_TEST(path("/foo/bar/").parent_path() == "/foo/bar");   
-    BOOST_TEST(path("/").parent_path() == "");           
-    BOOST_TEST(path(".").parent_path() == "");           
+    BOOST_TEST(path("/foo/bar").parent_path() == "/foo");
+    BOOST_TEST(path("/foo/bar/").parent_path() == "/foo/bar");
+    BOOST_TEST(path("/").parent_path() == "");
+    BOOST_TEST(path(".").parent_path() == "");
     BOOST_TEST(path("..").parent_path() == "");
     BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
-    BOOST_TEST(path("/foo/bar").filename() == "bar");    
-    BOOST_TEST(path("/foo/bar/").filename() == ".");   
-    BOOST_TEST(path("/").filename() == "/");           
-    BOOST_TEST(path(".").filename() == ".");           
+    BOOST_TEST(path("/foo/bar").filename() == "bar");
+    BOOST_TEST(path("/foo/bar/").filename() == ".");
+    BOOST_TEST(path("/").filename() == "/");
+    BOOST_TEST(path(".").filename() == ".");
     BOOST_TEST(path("..").filename() == "..");
 
     // stem() tests not otherwise covered
@@ -778,7 +778,7 @@ namespace
     BOOST_TEST(path(".a").stem() == "");
     BOOST_TEST(path("b").stem() == "b");
     BOOST_TEST(path("a/b.txt").stem() == "b");
-    BOOST_TEST(path("a/b.").stem() == "b"); 
+    BOOST_TEST(path("a/b.").stem() == "b");
     BOOST_TEST(path("a.b.c").stem() == "a.b");
     BOOST_TEST(path("a.b.c.").stem() == "a.b.c");
 
@@ -1153,28 +1153,28 @@ namespace
 
     //  ticket 2739, infinite recursion leading to stack overflow, was caused
     //  by failure to handle this case correctly on Windows.
-    p = path(":"); 
+    p = path(":");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(p.filename(), ":");
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(p.has_filename());
 
     //  test some similar cases that both POSIX and Windows should handle identically
-    p = path("c:"); 
+    p = path("c:");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(p.filename(), "c:");
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(p.has_filename());
-    p = path("cc:"); 
+    p = path("cc:");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(p.filename(), "cc:");
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(p.has_filename());
- 
+
     //  Windows specific tests
     if (platform == "Windows")
     {
- 
+
       //p = q = L"\\\\?\\";
       //BOOST_TEST(p.relative_path().string() == "");
       //BOOST_TEST(p.parent_path().string() == "");
@@ -1210,7 +1210,7 @@ namespace
       BOOST_TEST(p.has_filename());
       BOOST_TEST(!p.has_parent_path());
       BOOST_TEST(!p.is_absolute());
- 
+
       //p = q = path(L"\\\\?\\c:");
       //BOOST_TEST(p.relative_path().string() == "");
       //BOOST_TEST(p.parent_path().string() == "");
@@ -1258,7 +1258,7 @@ namespace
       //BOOST_TEST(p.has_filename());
       //BOOST_TEST(p.has_parent_path());
       //BOOST_TEST(!p.is_absolute());
-   
+
       p = q = path("c:/");
       BOOST_TEST(p.relative_path().string() == "");
       BOOST_TEST(p.parent_path().string() == "c:");
@@ -1546,7 +1546,7 @@ namespace
     // so that results in further permutations to be tested.
 
     //// code to generate test cases
-    //// 
+    ////
     //// expected results must be checked by hand
     //// "foo\bar" expected result must be edited by hand and moved for Windows/POSIX
     ////
@@ -1556,7 +1556,7 @@ namespace
     //for (int i = 0; i < sizeof(x)/sizeof(char*); ++i)
     //  for (int j = 0; j < sizeof(y)/sizeof(char*); ++j)
     //  {
-    //    std::cout << "\n    PATH_TEST_EQ(path(\"" << x[i] << "\") / \"" << y[j] << "\", \"" 
+    //    std::cout << "\n    PATH_TEST_EQ(path(\"" << x[i] << "\") / \"" << y[j] << "\", \""
     //              << path(x[i]) / y[j] << "\");\n";
     //    std::cout << "    append_test_aux(\"" << x[i] << "\", \"" << y[j] << "\", \""
     //              << path(x[i]) / y[j] << "\");\n";
@@ -1656,7 +1656,7 @@ namespace
 
     p = "snafubar";
     p.assign(p.c_str(), path::codecvt());
-    PATH_TEST_EQ(p, "snafubar");  
+    PATH_TEST_EQ(p, "snafubar");
 
     p = "snafubar";
     PATH_TEST_EQ(p = p.c_str()+5, "bar");
@@ -1670,11 +1670,11 @@ namespace
 
     p = "snafubar";
     p /= p.c_str();
-    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");  
+    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");
 
     p = "snafubar";
     p.append(p.c_str(), path::codecvt());
-    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar"); 
+    PATH_TEST_EQ(p, "snafubar" BOOST_DIR_SEP "snafubar");
 
     p = "snafubar";
     PATH_TEST_EQ(p.append(p.c_str() + 5, p.c_str() + 7), "snafubar" BOOST_DIR_SEP "ba");
@@ -1763,7 +1763,7 @@ namespace
     BOOST_TEST(!fs::portable_directory_name(std::string("foo.")));
     BOOST_TEST(!fs::portable_file_name(std::string("foo.")));
   }
-  
+
   //  replace_extension_tests  ---------------------------------------------------------//
 
   void replace_extension_tests()
@@ -1787,7 +1787,7 @@ namespace
     BOOST_TEST(path("a.").replace_extension("tex") == "a.tex");
     BOOST_TEST(path("a").replace_extension(".txt") == "a.txt");
     BOOST_TEST(path("a").replace_extension("txt") == "a.txt");
-    BOOST_TEST(path("a.b.txt").replace_extension(".tex") == "a.b.tex");  
+    BOOST_TEST(path("a.b.txt").replace_extension(".tex") == "a.b.tex");
     BOOST_TEST(path("a.b.txt").replace_extension("tex") == "a.b.tex");
     BOOST_TEST(path("a/b").replace_extension(".c") == "a/b.c");
     PATH_TEST_EQ(path("a.txt/b").replace_extension(".c"), "a.txt/b.c"); // ticket 4702
@@ -1795,7 +1795,7 @@ namespace
     BOOST_TEST(path("foo.txt").replace_extension(".tar.bz2")
                                                     == "foo.tar.bz2");  // ticket 5118
   }
-  
+
   //  make_preferred_tests  ------------------------------------------------------------//
 
   void make_preferred_tests()
@@ -1862,7 +1862,7 @@ namespace
     std::cout << path("foo/./bar/..").lexically_normal() << std::endl;  // outputs "foo"
     PATH_TEST_EQ(path("foo/bar/../").lexically_normal().generic_path(), "foo/.");
     PATH_TEST_EQ(path("foo/./bar/../").lexically_normal().generic_path(), "foo/.");
-    std::cout << path("foo/./bar/../").lexically_normal() << std::endl;  // POSIX: "foo/.", Windows: "foo\." 
+    std::cout << path("foo/./bar/../").lexically_normal() << std::endl;  // POSIX: "foo/.", Windows: "foo\."
     PATH_TEST_EQ(path("foo/bar/../..").lexically_normal().generic_path(), ".");
     PATH_TEST_EQ(path("foo/bar/../../").lexically_normal().generic_path(), "./.");
     PATH_TEST_EQ(path("foo/bar/../blah").lexically_normal().generic_path(), "foo/blah");
@@ -1934,10 +1934,16 @@ namespace
     }
   }
 
+  inline void odr_use(const path::value_type& c)
+  {
+    static const path::value_type dummy = '\0';
+    BOOST_TEST(&c != &dummy);
+  }
+
 } // unnamed namespace
 
 static boost::filesystem::path ticket_6737 = "FilePath";  // #6737 reported this crashed
-                                                          // on VC++ debug mode build 
+                                                          // on VC++ debug mode build
 const boost::filesystem::path ticket_6690("test");  // #6690 another V++ static init crash
 
 //--------------------------------------------------------------------------------------//
@@ -2028,6 +2034,12 @@ int cpp_main(int, char*[])
   BOOST_TEST(round_trip.string() == "foo/bar");
   std::cout << round_trip.string() << "..." << round_trip << " complete\n";
 # endif
+
+  // Check that path constants have definitions
+  // https://svn.boost.org/trac10/ticket/12759
+  odr_use(path::separator);
+  odr_use(path::preferred_separator);
+  odr_use(path::dot);
 
   return ::boost::report_errors();
 }

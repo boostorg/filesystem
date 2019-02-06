@@ -7,7 +7,7 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-//--------------------------------------------------------------------------------------// 
+//--------------------------------------------------------------------------------------//
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/detail/macro_value.hpp>
@@ -21,7 +21,7 @@ int main()
 {
   cout << "Verify macro reporting works correctly\n";
   cout << "  NOSUCHMACRO: " << BOOST_MACRO_VALUE(NOSUCHMACRO) << endl;
-# define SUCHAMACRO      
+# define SUCHAMACRO
   cout << "  SUCHAMACRO: " << BOOST_MACRO_VALUE(SUCHAMACRO) << endl;
   cout << "  BOOST_VERSION: " << BOOST_MACRO_VALUE(BOOST_VERSION) << endl;
 

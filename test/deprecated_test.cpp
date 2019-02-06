@@ -218,7 +218,7 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
   path_rename_test();
   normalize_test();
   BOOST_TEST(fs::path("foo/bar").generic() == fs::path("foo/bar"));
- 
+
 // extension() tests ---------------------------------------------------------//
 
   BOOST_TEST(fs::extension("a/b") == "");
@@ -228,22 +228,22 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
   BOOST_TEST(fs::extension("a.b.c.") == ".");
   BOOST_TEST(fs::extension("") == "");
   BOOST_TEST(fs::extension("a/") == "");
-  
+
 // basename() tests ----------------------------------------------------------//
 
   BOOST_TEST(fs::basename("b") == "b");
   BOOST_TEST(fs::basename("a/b.txt") == "b");
-  BOOST_TEST(fs::basename("a/b.") == "b"); 
+  BOOST_TEST(fs::basename("a/b.") == "b");
   BOOST_TEST(fs::basename("a.b.c") == "a.b");
   BOOST_TEST(fs::basename("a.b.c.") == "a.b.c");
   BOOST_TEST(fs::basename("") == "");
-  
+
 // change_extension tests ---------------------------------------------------//
 
   BOOST_TEST(fs::change_extension("a.txt", ".tex").string() == "a.tex");
   BOOST_TEST(fs::change_extension("a.", ".tex").string() == "a.tex");
   BOOST_TEST(fs::change_extension("a", ".txt").string() == "a.txt");
-  BOOST_TEST(fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex");  
+  BOOST_TEST(fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex");
   // see the rationale in html docs for explanation why this works
   BOOST_TEST(fs::change_extension("", ".png").string() == ".png");
 
