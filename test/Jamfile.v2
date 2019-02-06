@@ -78,3 +78,4 @@ run quick.cpp ;
 run issues/70-71-copy.cpp ;
 
 run issues/99_canonical_with_junction_point.cpp : : : <conditional>@check-mklink ;
+run issues/reparce_tag_file_placeholder.cpp : : : <conditional>@check-mklink ;
