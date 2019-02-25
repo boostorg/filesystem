@@ -493,7 +493,7 @@ namespace path_detail // intentionally don't use filesystem::detail to not bring
     const std::string   generic_string() const { return generic_path().string(); }
     const std::string   generic_string(const codecvt_type& cvt) const { return generic_path().string(cvt); }
     const std::wstring  generic_wstring() const { return generic_path().wstring(); }
-    const std::wstring  generic_wstring(const codecvt_type&) const { return generic_wstring(); };
+    const std::wstring  generic_wstring(const codecvt_type&) const { return generic_wstring(); }
 #   else // BOOST_POSIX_API
     //  On POSIX-like systems, the generic format is the same as the native format
     const std::string&  generic_string() const  { return m_pathname; }
