@@ -2210,11 +2210,7 @@ int cpp_main(int argc, char* argv[])
     platform = "POSIX";
 # elif defined(BOOST_WINDOWS_API)
     platform = "Windows";
-#   if !defined(__MINGW32__) && !defined(__CYGWIN__)
-      language_id = ::GetUserDefaultUILanguage();
-#   else
-      language_id = 0x0409; // Assume US English
-#   endif
+    language_id = ::GetUserDefaultUILanguage();
 # else
 #   error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 # endif
