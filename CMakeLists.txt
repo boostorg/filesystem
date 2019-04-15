@@ -47,3 +47,8 @@ target_link_libraries( boost_filesystem
         Boost::system
         Boost::type_traits
 )
+
+target_link_libraries( boost_filesystem
+    PRIVATE
+        Boost::winapi
+)
