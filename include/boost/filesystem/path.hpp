@@ -536,7 +536,8 @@ namespace path_detail // intentionally don't use filesystem::detail to not bring
     bool is_relative() const         { return !is_absolute(); }
     bool is_absolute() const
     {
-#     ifdef BOOST_WINDOWS_API
+      // Windows CE has no root name (aka driver letters)
+#     if defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
       return has_root_name() && has_root_directory();
 #     else
       return has_root_directory();
