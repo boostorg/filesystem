@@ -2234,14 +2234,12 @@ namespace
     BOOST_ASSERT(buffer != 0);
     dirent * entry(static_cast<dirent *>(buffer));
     dirent * result;
-    int return_code;
-    if ((return_code = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result))!= 0)
-    {
-      const int err = errno;
+    int err;
+    if ((err = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result)) != 0)
       return error_code(err, system_category());
-    }
     if (result == 0)
       return fs::detail::dir_itr_close(handle, buffer);
+
     target = entry->d_name;
 #   ifdef BOOST_FILESYSTEM_STATUS_CACHE
     if (entry->d_type == DT_UNKNOWN) // filesystem does not supply d_type value
