@@ -2211,7 +2211,10 @@ namespace
     errno = 0;
 
     if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS) >= 0)
-      return ::readdir_r(dirp, entry, result);
+    {
+      errno = ::readdir_r(dirp, entry, result);
+      return errno;
+    }
 #   endif
 
     errno = 0;
