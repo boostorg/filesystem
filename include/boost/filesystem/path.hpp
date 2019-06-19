@@ -784,7 +784,7 @@ namespace path_detail // intentionally don't use filesystem::detail to not bring
   inline bool operator> (const path& lhs, const path& rhs) {return rhs < lhs;}
   inline bool operator>=(const path& lhs, const path& rhs) {return !(lhs < rhs);}
 
-  inline std::size_t hash_value(const path& x)
+  inline std::size_t hash_value(const path& x) BOOST_NOEXCEPT
   {
 # ifdef BOOST_WINDOWS_API
     std::size_t seed = 0;
