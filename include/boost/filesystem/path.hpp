@@ -798,9 +798,18 @@ namespace path_detail // intentionally don't use filesystem::detail to not bring
 
   inline void swap(path& lhs, path& rhs) BOOST_NOEXCEPT { lhs.swap(rhs); }
 
-  inline path operator/(const path& lhs, const path& rhs) { return path(lhs) /= rhs; }
+  inline path operator/(const path& lhs, const path& rhs)
+  {
+    path p = lhs;
+    p /= rhs;
+    return p;
+  }
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-  inline path&& operator/(path&& lhs, const path& rhs) { lhs /= rhs; return std::move(lhs); }
+  inline path operator/(path&& lhs, const path& rhs)
+  {
+    lhs /= rhs;
+    return std::move(lhs);
+  }
 # endif
 
   //  inserters and extractors
