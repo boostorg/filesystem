@@ -2604,6 +2604,7 @@ namespace detail
   void recur_dir_itr_imp::increment(system::error_code* ec)
   {
     system::error_code ec_push_directory;
+    system::error_code ec_increment;
 
     //  if various conditions are met, push a directory_iterator into the iterator stack
     if (push_directory(ec_push_directory))
@@ -2616,6 +2617,7 @@ namespace detail
     // report errors if any
     if (ec_push_directory)
     {
+      m_options |= static_cast< unsigned int >(symlink_option::_detail_no_push);
       if (ec)
       {
         *ec = ec_push_directory;
@@ -2635,14 +2637,28 @@ namespace detail
     while (!m_stack.empty())
     {
       directory_iterator& it = m_stack.top();
-      detail::directory_iterator_increment(it, ec);
-      if (ec && *ec)
-        return;
-      if (it != directory_iterator())
+      detail::directory_iterator_increment(it, &ec_increment);
+      if (!ec_increment && it != directory_iterator())
         break;
 
       m_stack.pop();
       --m_level;
+
+      if (ec_increment)
+      {
+        m_options |= static_cast< unsigned int >(symlink_option::_detail_no_push);
+        if (ec)
+        {
+          *ec = ec_increment;
+          return;
+        }
+        else
+        {
+          BOOST_FILESYSTEM_THROW(filesystem_error(
+            "boost::filesystem::directory_iterator::increment error",
+            ec_increment));
+        }
+      }
     }
 
     if (ec)
