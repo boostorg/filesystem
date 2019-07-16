@@ -44,6 +44,7 @@ run path_unit_test.cpp : : : <link>shared $(VIS) ;
 run path_unit_test.cpp : : : <link>static $(VIS) : path_unit_test_static ;
 run relative_test.cpp ;
 run ../example/simple_ls.cpp ;
+run ../example/recursive_ls.cpp ;
 run ../example/file_status.cpp ;
 run foreach_test.cpp ;
 
