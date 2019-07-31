@@ -23,11 +23,11 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/exception.hpp>
 
 #include <boost/core/scoped_enum.hpp>
 #include <boost/detail/bitmask.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/system/system_error.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -48,123 +48,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-namespace boost
-{
-  namespace filesystem
-  {
-
-    //--------------------------------------------------------------------------------------//
-    //                                                                                      //
-    //                            class filesystem_error                                    //
-    //                                                                                      //
-    //--------------------------------------------------------------------------------------//
-
-    class BOOST_SYMBOL_VISIBLE filesystem_error :
-      public system::system_error
-    {
-      // see http://www.boost.org/more/error_handling.html for design rationale
-
-      // all functions are inline to avoid issues with crossing dll boundaries
-
-      // functions previously throw() are now BOOST_NOEXCEPT_OR_NOTHROW
-      // functions previously without throw() are now BOOST_NOEXCEPT
-
-    public:
-      // compiler generates copy constructor and copy assignment
-
-      filesystem_error(
-        const std::string & what_arg, system::error_code ec) BOOST_NOEXCEPT :
-        system::system_error(ec, what_arg)
-      {
-        try
-        {
-          m_imp_ptr.reset(new impl());
-        }
-        catch (...) { m_imp_ptr.reset(); }
-      }
-
-      filesystem_error(
-        const std::string & what_arg, const path& path1_arg,
-        system::error_code ec) BOOST_NOEXCEPT :
-        system::system_error(ec, what_arg)
-      {
-        try
-        {
-          m_imp_ptr.reset(new impl(path1_arg));
-        }
-        catch (...) { m_imp_ptr.reset(); }
-      }
-
-      filesystem_error(
-        const std::string & what_arg, const path& path1_arg,
-        const path& path2_arg, system::error_code ec) BOOST_NOEXCEPT :
-        system::system_error(ec, what_arg)
-      {
-        try
-        {
-          m_imp_ptr.reset(new impl(path1_arg, path2_arg));
-        }
-        catch (...) { m_imp_ptr.reset(); }
-      }
-
-      ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW {}
-
-      const path& path1() const BOOST_NOEXCEPT
-      {
-        static const path empty_path;
-        return m_imp_ptr.get() ? m_imp_ptr->m_path1 : empty_path;
-      }
-      const path& path2() const BOOST_NOEXCEPT
-      {
-        static const path empty_path;
-        return m_imp_ptr.get() ? m_imp_ptr->m_path2 : empty_path;
-      }
-
-      const char* what() const BOOST_NOEXCEPT_OR_NOTHROW
-      {
-        if (!m_imp_ptr.get())
-          return system::system_error::what();
-
-        try
-        {
-          if (m_imp_ptr->m_what.empty())
-          {
-            m_imp_ptr->m_what = system::system_error::what();
-            if (!m_imp_ptr->m_path1.empty())
-            {
-              m_imp_ptr->m_what += ": \"";
-              m_imp_ptr->m_what += m_imp_ptr->m_path1.string();
-              m_imp_ptr->m_what += "\"";
-            }
-            if (!m_imp_ptr->m_path2.empty())
-            {
-              m_imp_ptr->m_what += ", \"";
-              m_imp_ptr->m_what += m_imp_ptr->m_path2.string();
-              m_imp_ptr->m_what += "\"";
-            }
-          }
-          return m_imp_ptr->m_what.c_str();
-        }
-        catch (...)
-        {
-          return system::system_error::what();
-        }
-      }
-
-    private:
-      struct impl :
-        public boost::intrusive_ref_counter< impl >
-      {
-        path         m_path1; // may be empty()
-        path         m_path2; // may be empty()
-        std::string  m_what;  // not built until needed
-
-        BOOST_DEFAULTED_FUNCTION(impl(), {})
-        explicit impl(path const& path1) : m_path1(path1) {}
-        impl(path const& path1, path const& path2) : m_path1(path1), m_path2(path2) {}
-      };
-      boost::intrusive_ptr< impl > m_imp_ptr;
-    };
+namespace boost {
+namespace filesystem {
 
 //--------------------------------------------------------------------------------------//
 //                                     file_type                                        //
