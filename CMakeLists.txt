@@ -32,6 +32,9 @@ target_compile_definitions( boost_filesystem
         BOOST_FILESYSTEM_NO_LIB
         $<$<STREQUAL:$<TARGET_PROPERTY:boost_filesystem,TYPE>,SHARED_LIBRARY>:BOOST_FILESYSTEM_DYN_LINK=1>
         $<$<STREQUAL:$<TARGET_PROPERTY:boost_filesystem,TYPE>,STATIC_LIBRARY>:BOOST_FILESYSTEM_STATIC_LINK=1>
+
+    PRIVATE
+        BOOST_FILESYSTEM_SOURCE
 )
 
 target_link_libraries( boost_filesystem

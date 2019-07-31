@@ -9,7 +9,11 @@
 //  Library home page: http://www.boost.org/libs/filesystem
 
 #include <string>
+#include <boost/filesystem/config.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/exception.hpp>
+
+#include "error_handling.hpp"
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -89,6 +93,35 @@ const path& filesystem_error::get_empty_path() BOOST_NOEXCEPT
 {
   static const path empty_path;
   return empty_path;
+}
+
+//  error handling helpers declared in error_handling.hpp  -----------------------------------------------------//
+
+void emit_error(err_t error_num, system::error_code* ec, const char* message)
+{
+  if (!ec)
+    BOOST_FILESYSTEM_THROW(filesystem_error(message,
+      system::error_code(error_num, system::system_category())));
+  else
+    ec->assign(error_num, system::system_category());
+}
+
+void emit_error(err_t error_num, const path& p, system::error_code* ec, const char* message)
+{
+  if (!ec)
+    BOOST_FILESYSTEM_THROW(filesystem_error(message,
+      p, system::error_code(error_num, system::system_category())));
+  else
+    ec->assign(error_num, system::system_category());
+}
+
+void emit_error(err_t error_num, const path& p1, const path& p2, system::error_code* ec, const char* message)
+{
+  if (ec == 0)
+    BOOST_FILESYSTEM_THROW(filesystem_error(message,
+      p1, p2, system::error_code(error_num, system::system_category())));
+  else
+    ec->assign(error_num, system::system_category());
 }
 
 } // namespace filesystem

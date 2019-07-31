@@ -53,10 +53,6 @@
 #define _FILE_OFFSET_BITS 64
 #endif
 
-// define BOOST_FILESYSTEM_SOURCE so that <boost/filesystem/config.hpp> knows
-// the library is being built (possibly exporting rather than importing code)
-#define BOOST_FILESYSTEM_SOURCE
-
 #ifndef BOOST_SYSTEM_NO_DEPRECATED
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
@@ -66,6 +62,7 @@
 #endif
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/file_status.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -84,6 +81,8 @@
 #ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 # include <iostream>
 #endif
+
+#include "error_handling.hpp"
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -124,7 +123,7 @@ using std::wstring;
 #   endif
 #   include "limits.h"
 
-# else // BOOST_WINDOW_API
+# else // BOOST_WINDOWS_API
 
 #   if (defined(__MINGW32__) || defined(__CYGWIN__)) && !defined(WINVER)
       // Versions of MinGW or Cygwin that support Filesystem V3 support at least WINVER 0x501.
@@ -238,10 +237,6 @@ inline std::wstring wgetenv(const wchar_t* name)
 
 # if defined(BOOST_POSIX_API)
 
-typedef int err_t;
-
-//  POSIX uses a 0 return to indicate success
-#   define BOOST_ERRNO    errno
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::chdir(P)== 0)
 #   define BOOST_CREATE_DIRECTORY(P)(::mkdir(P, S_IRWXU|S_IRWXG|S_IRWXO)== 0)
 #   define BOOST_CREATE_HARD_LINK(F,T)(::link(T, F)== 0)
@@ -254,15 +249,8 @@ typedef int err_t;
 #   define BOOST_MOVE_FILE(OLD,NEW)(::rename(OLD, NEW)== 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(::truncate(P, SZ)== 0)
 
-#   define BOOST_ERROR_NOT_SUPPORTED ENOSYS
-#   define BOOST_ERROR_ALREADY_EXISTS EEXIST
-
 # else  // BOOST_WINDOWS_API
 
-typedef DWORD err_t;
-
-//  Windows uses a non-0 return to indicate success
-#   define BOOST_ERRNO    ::GetLastError()
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::SetCurrentDirectoryW(P)!= 0)
 #   define BOOST_CREATE_DIRECTORY(P)(::CreateDirectoryW(P, 0)!= 0)
 #   define BOOST_CREATE_HARD_LINK(F,T)(create_hard_link_api(F, T, 0)!= 0)
@@ -274,9 +262,6 @@ typedef DWORD err_t;
 #   define BOOST_MOVE_FILE(OLD,NEW)(::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
-
-#   define BOOST_ERROR_ALREADY_EXISTS ERROR_ALREADY_EXISTS
-#   define BOOST_ERROR_NOT_SUPPORTED ERROR_NOT_SUPPORTED
 
 # endif
 
@@ -297,71 +282,6 @@ namespace
   fs::file_type query_file_type(const path& p, error_code* ec);
 
   boost::filesystem::directory_iterator end_dir_itr;
-
-  //  error handling helpers  ----------------------------------------------------------//
-
-  bool error(err_t error_num, error_code* ec, const char* message);
-  bool error(err_t error_num, const path& p, error_code* ec, const char* message);
-  bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
-    const char* message);
-
-  const error_code ok;
-
-  //  error_num is value of errno on POSIX, error code (from ::GetLastError()) on Windows.
-  //  Interface changed 30 Jan 15 to have caller supply error_num as ::SetLastError()
-  //  values were apparently getting cleared before they could be retrieved by error().
-
-  bool error(err_t error_num, error_code* ec, const char* message)
-  {
-    if (!error_num)
-    {
-      if (ec != 0) ec->clear();
-    }
-    else
-    { //  error
-      if (ec == 0)
-        BOOST_FILESYSTEM_THROW(filesystem_error(message,
-          error_code(error_num, system_category())));
-      else
-        ec->assign(error_num, system_category());
-    }
-    return error_num != 0;
-  }
-
-  bool error(err_t error_num, const path& p, error_code* ec, const char* message)
-  {
-    if (!error_num)
-    {
-      if (ec != 0) ec->clear();
-    }
-    else
-    { //  error
-      if (ec == 0)
-        BOOST_FILESYSTEM_THROW(filesystem_error(message,
-          p, error_code(error_num, system_category())));
-      else
-        ec->assign(error_num, system_category());
-    }
-    return error_num != 0;
-  }
-
-  bool error(err_t error_num, const path& p1, const path& p2, error_code* ec,
-    const char* message)
-  {
-    if (!error_num)
-    {
-      if (ec != 0) ec->clear();
-    }
-    else
-    { //  error
-      if (ec == 0)
-        BOOST_FILESYSTEM_THROW(filesystem_error(message,
-          p1, p2, error_code(error_num, system_category())));
-      else
-        ec->assign(error_num, system_category());
-    }
-    return error_num != 0;
-  }
 
   //  general helpers  -----------------------------------------------------------------//
 
@@ -2195,7 +2115,7 @@ namespace
       }
     }
     result = max;
-    return ok;
+    return error_code();
   }
 
   error_code dir_itr_first(void *& handle, void *& buffer,
@@ -2220,7 +2140,7 @@ namespace
     if (BOOST_UNLIKELY(!buffer))
       return make_error_code(boost::system::errc::not_enough_memory);
     std::memset(buffer, 0, buffer_size);
-    return ok;
+    return error_code();
   }
 
   // warning: the only dirent members updated are d_name and d_type
@@ -2291,7 +2211,7 @@ namespace
 #   else
     sf = symlink_sf = fs::file_status(fs::status_error);
 #   endif
-    return ok;
+    return error_code();
   }
 
 # else // BOOST_WINDOWS_API
@@ -2414,7 +2334,8 @@ namespace detail
 #   ifdef BOOST_POSIX_API
     std::free(buffer);
     buffer = 0;
-    if (handle == 0)return ok;
+    if (handle == 0)
+      return error_code();
     DIR * h(static_cast<DIR*>(handle));
     handle = 0;
     int err = 0;
@@ -2428,7 +2349,7 @@ namespace detail
       ::FindClose(handle);
       handle = 0;
     }
-    return ok;
+    return error_code();
 
 #   endif
   }
