@@ -119,7 +119,6 @@ using std::wstring;
 #   include <dirent.h>
 #   include <unistd.h>
 #   include <fcntl.h>
-#   include <utime.h>
 #   include "limits.h"
 
 # else // BOOST_WINDOW_API
@@ -1464,10 +1463,10 @@ namespace detail
     if (error(::stat(p.c_str(), &path_stat)!= 0,
       p, ec, "boost::filesystem::last_write_time"))
         return;
-    ::utimbuf buf;
-    buf.actime = path_stat.st_atime; // utime()updates access time too:-(
-    buf.modtime = new_time;
-    error(::utime(p.c_str(), &buf)!= 0 ? BOOST_ERRNO : 0,
+    ::timespec buf[2];
+    buf[0].tv_sec = path_stat.st_atime; // utimensat() updates access time too:-(
+    buf[1].tv_sec = new_time;
+    error(::utimensat(AT_FDCWD, p.c_str(), buf, 0)!= 0 ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::last_write_time");
 
 #   else
