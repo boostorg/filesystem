@@ -2539,6 +2539,7 @@ namespace detail
       if (!ec)
         throw;
 
+      it.m_imp.reset();
       *ec = make_error_code(boost::system::errc::not_enough_memory);
     }
   }
