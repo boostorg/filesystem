@@ -62,7 +62,7 @@
 #endif
 
 #ifndef _POSIX_PTHREAD_SEMANTICS
-# define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r()needs this
+# define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 #endif
 
 #include <boost/filesystem/operations.hpp>
@@ -119,7 +119,9 @@ using std::wstring;
 #   include <dirent.h>
 #   include <unistd.h>
 #   include <fcntl.h>
-#   include <utime.h>
+#   if _POSIX_C_SOURCE < 200809L
+#     include <utime.h>
+#   endif
 #   include "limits.h"
 
 # else // BOOST_WINDOW_API
@@ -1459,6 +1461,22 @@ namespace detail
                         system::error_code* ec)
   {
 #   ifdef BOOST_POSIX_API
+#     if _POSIX_C_SOURCE >= 200809L
+
+    struct timespec times[2] = {};
+
+    // Keep the last access time unchanged
+    times[0].tv_nsec = UTIME_OMIT;
+
+    times[1].tv_sec = new_time;
+
+    if (BOOST_UNLIKELY(::utimensat(AT_FDCWD, p.c_str(), times, 0) != 0))
+    {
+      error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+      return;
+    }
+
+#     else // _POSIX_C_SOURCE >= 200809L
 
     struct stat path_stat;
     if (error(::stat(p.c_str(), &path_stat)!= 0,
@@ -1469,6 +1487,8 @@ namespace detail
     buf.modtime = new_time;
     error(::utime(p.c_str(), &buf)!= 0 ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::last_write_time");
+
+#     endif // _POSIX_C_SOURCE >= 200809L
 
 #   else
 
