@@ -28,6 +28,14 @@
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+// 'm_A' : class 'A' needs to have dll-interface to be used by clients of class 'B'
+#pragma warning(disable: 4251)
+// non dll-interface class 'A' used as base for dll-interface class 'B'
+#pragma warning(disable: 4275)
+#endif
+
 namespace boost {
 namespace filesystem {
 
@@ -37,19 +45,20 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-class BOOST_SYMBOL_VISIBLE filesystem_error :
+class BOOST_FILESYSTEM_DECL filesystem_error :
   public system::system_error
 {
   // see http://www.boost.org/more/error_handling.html for design rationale
 
 public:
-  // compiler generates copy constructor and copy assignment
+  filesystem_error(const std::string& what_arg, system::error_code ec);
+  filesystem_error(const std::string& what_arg, const path& path1_arg, system::error_code ec);
+  filesystem_error(const std::string& what_arg, const path& path1_arg, const path& path2_arg, system::error_code ec);
 
-  BOOST_FILESYSTEM_DECL filesystem_error(const std::string& what_arg, system::error_code ec);
-  BOOST_FILESYSTEM_DECL filesystem_error(const std::string& what_arg, const path& path1_arg, system::error_code ec);
-  BOOST_FILESYSTEM_DECL filesystem_error(const std::string& what_arg, const path& path1_arg, const path& path2_arg, system::error_code ec);
+  filesystem_error(filesystem_error const& that);
+  filesystem_error& operator= (filesystem_error const& that);
 
-  BOOST_FILESYSTEM_DECL ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW;
+  ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW;
 
   const path& path1() const BOOST_NOEXCEPT
   {
@@ -60,10 +69,10 @@ public:
     return m_imp_ptr.get() ? m_imp_ptr->m_path2 : get_empty_path();
   }
 
-  BOOST_FILESYSTEM_DECL const char* what() const BOOST_NOEXCEPT_OR_NOTHROW;
+  const char* what() const BOOST_NOEXCEPT_OR_NOTHROW;
 
 private:
-  BOOST_FILESYSTEM_DECL static const path& get_empty_path() BOOST_NOEXCEPT;
+  static const path& get_empty_path() BOOST_NOEXCEPT;
 
 private:
   struct impl :
@@ -82,6 +91,10 @@ private:
 
 } // namespace filesystem
 } // namespace boost
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
 #endif // BOOST_FILESYSTEM3_EXCEPTION_HPP
