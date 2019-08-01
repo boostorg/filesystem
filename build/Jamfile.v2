@@ -17,6 +17,7 @@ project boost/filesystem
 SOURCES =
     codecvt_error_category
     exception
+    directory
     operations
     path
     path_traits

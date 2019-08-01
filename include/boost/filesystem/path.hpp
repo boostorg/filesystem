@@ -27,6 +27,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/iterator_categories.hpp>
 #include <boost/core/enable_if.hpp>
 #include <boost/io/detail/quoted_manip.hpp>
 #include <boost/functional/hash_fwd.hpp>

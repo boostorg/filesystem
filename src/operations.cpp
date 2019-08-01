@@ -61,15 +61,28 @@
 # define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 #endif
 
+// Include Boost.Predef first so that windows.h is guaranteed to be not included
+#include <boost/predef/os/windows.h>
+#if BOOST_OS_WINDOWS
+#include <boost/winapi/config.hpp>
+#endif
+
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/file_status.hpp>
+#include <boost/filesystem/exception.hpp>
+#include <boost/filesystem/directory.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/cstdint.hpp>
+#include <boost/assert.hpp>
 #include <new> // std::bad_alloc
 #include <limits>
+#include <string>
 #include <vector>
+#include <cstddef>
 #include <cstdlib>     // for malloc, free
 #include <cstring>
 #include <cstdio>      // for remove, rename
@@ -81,18 +94,6 @@
 #ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
 # include <iostream>
 #endif
-
-#include "error_handling.hpp"
-
-namespace fs = boost::filesystem;
-using boost::filesystem::path;
-using boost::filesystem::filesystem_error;
-using boost::filesystem::perms;
-using boost::system::error_code;
-using boost::system::error_category;
-using boost::system::system_category;
-using std::string;
-using std::wstring;
 
 # ifdef BOOST_POSIX_API
 
@@ -115,7 +116,6 @@ using std::wstring;
 #     define BOOST_STATVFS statfs
 #     define BOOST_STATVFS_F_FRSIZE static_cast<boost::uintmax_t>(vfs.f_bsize)
 #   endif
-#   include <dirent.h>
 #   include <unistd.h>
 #   include <fcntl.h>
 #   if _POSIX_C_SOURCE < 200809L
@@ -125,19 +125,11 @@ using std::wstring;
 
 # else // BOOST_WINDOWS_API
 
-#   if (defined(__MINGW32__) || defined(__CYGWIN__)) && !defined(WINVER)
-      // Versions of MinGW or Cygwin that support Filesystem V3 support at least WINVER 0x501.
-      // See MinGW's windef.h
-#     define WINVER 0x501
-#   endif
 #   include <boost/winapi/dll.hpp> // get_proc_address, GetModuleHandleW
 #   include <cwchar>
 #   include <io.h>
 #   include <windows.h>
 #   include <winnt.h>
-#   if !defined(_WIN32_WINNT)
-#     define  _WIN32_WINNT   0x0500
-#   endif
 #   if defined(__BORLANDC__) || defined(__MWERKS__)
 #     if defined(__BORLANDC__)
         using std::time_t;
@@ -146,6 +138,19 @@ using std::wstring;
 #   else
 #     include <sys/utime.h>
 #   endif
+
+# endif  // BOOST_WINDOWS_API
+
+#include "error_handling.hpp"
+
+namespace fs = boost::filesystem;
+using boost::filesystem::path;
+using boost::filesystem::filesystem_error;
+using boost::filesystem::perms;
+using boost::system::error_code;
+using boost::system::system_category;
+
+# if defined(BOOST_WINDOWS_API)
 
 //  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the
 //  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
@@ -216,16 +221,6 @@ inline std::wstring wgetenv(const wchar_t* name)
 
 # endif  // BOOST_WINDOWS_API
 
-//  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
-//  dir_itr_increment. The config tests are placed here because some of the
-//  macros being tested come from dirent.h.
-//
-// TODO: find out what macros indicate dirent::d_type present in more libraries
-# if defined(BOOST_WINDOWS_API)\
-  || defined(_DIRENT_HAVE_D_TYPE)// defined by GNU C library if d_type present
-#   define BOOST_FILESYSTEM_STATUS_CACHE
-# endif
-
 //  POSIX/Windows macros  ----------------------------------------------------//
 
 //  Portions of the POSIX and Windows API's are very similar, except for name,
@@ -281,14 +276,12 @@ namespace
 
   fs::file_type query_file_type(const path& p, error_code* ec);
 
-  boost::filesystem::directory_iterator end_dir_itr;
-
   //  general helpers  -----------------------------------------------------------------//
 
   bool is_empty_directory(const path& p, error_code* ec)
   {
     return (ec != 0 ? fs::directory_iterator(p, *ec) : fs::directory_iterator(p))
-      == end_dir_itr;
+      == fs::directory_iterator();
   }
 
   bool not_found_error(int errval) BOOST_NOEXCEPT; // forward declaration
@@ -353,7 +346,8 @@ namespace
       else
         itr = fs::directory_iterator(p);
 
-      while(itr != end_dir_itr)
+      const fs::directory_iterator end_dit;
+      while(itr != end_dit)
       {
         fs::file_type tmp_type = query_file_type(itr->path(), ec);
         if (ec != 0 && *ec)
@@ -2012,612 +2006,5 @@ namespace detail
   }
 }  // namespace detail
 
-//--------------------------------------------------------------------------------------//
-//                                                                                      //
-//                                 directory_entry                                      //
-//                                                                                      //
-//--------------------------------------------------------------------------------------//
-
-  BOOST_FILESYSTEM_DECL
-  file_status directory_entry::m_get_status(system::error_code* ec) const
-  {
-    if (!status_known(m_status))
-    {
-      // optimization: if the symlink status is known, and it isn't a symlink,
-      // then status and symlink_status are identical so just copy the
-      // symlink status to the regular status.
-      if (status_known(m_symlink_status)
-        && !is_symlink(m_symlink_status))
-      {
-        m_status = m_symlink_status;
-        if (ec != 0) ec->clear();
-      }
-      else m_status = detail::status(m_path, ec);
-    }
-    else if (ec != 0) ec->clear();
-    return m_status;
-  }
-
-  BOOST_FILESYSTEM_DECL
-  file_status directory_entry::m_get_symlink_status(system::error_code* ec) const
-  {
-    if (!status_known(m_symlink_status))
-      m_symlink_status = detail::symlink_status(m_path, ec);
-    else if (ec != 0) ec->clear();
-    return m_symlink_status;
-  }
-
-//  dispatch directory_entry supplied here rather than in
-//  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
-//  test cases are in operations_unit_test.cpp
-
-namespace path_traits
-{
-  void dispatch(const directory_entry & de,
-#                ifdef BOOST_WINDOWS_API
-    std::wstring& to,
-#                else
-    std::string& to,
-#                endif
-    const codecvt_type &)
-  {
-    to = de.path().native();
-  }
-
-  void dispatch(const directory_entry & de,
-#                ifdef BOOST_WINDOWS_API
-    std::wstring& to
-#                else
-    std::string& to
-#                endif
-    )
-  {
-    to = de.path().native();
-  }
-}  // namespace path_traits
-} // namespace filesystem
-} // namespace boost
-
-//--------------------------------------------------------------------------------------//
-//                                                                                      //
-//                               directory_iterator                                     //
-//                                                                                      //
-//--------------------------------------------------------------------------------------//
-
-namespace
-{
-# ifdef BOOST_POSIX_API
-
-  error_code path_max(std::size_t & result)
-  // this code is based on Stevens and Rago, Advanced Programming in the
-  // UNIX envirnment, 2nd Ed., ISBN 0-201-43307-9, page 49
-  {
-#   ifdef PATH_MAX
-    static std::size_t max = PATH_MAX;
-#   else
-    static std::size_t max = 0;
-#   endif
-    if (max == 0)
-    {
-      errno = 0;
-      long tmp = ::pathconf("/", _PC_NAME_MAX);
-      if (tmp < 0)
-      {
-        const int err = errno;
-        if (err == 0)// indeterminate
-          max = 4096; // guess
-        else
-          return error_code(err, system_category());
-      }
-      else
-      {
-        max = static_cast<std::size_t>(tmp + 1); // relative root
-      }
-    }
-    result = max;
-    return error_code();
-  }
-
-  error_code dir_itr_first(void *& handle, void *& buffer,
-    const char* dir, string& target,
-    fs::file_status &, fs::file_status &)
-  {
-    if ((handle = ::opendir(dir))== 0)
-    {
-      const int err = errno;
-      return error_code(err, system_category());
-    }
-    target = string(".");  // string was static but caused trouble
-                             // when iteration called from dtor, after
-                             // static had already been destroyed
-    std::size_t path_size (0);  // initialization quiets gcc warning (ticket #3509)
-    error_code ec = path_max(path_size);
-    if (ec)
-      return ec;
-    const std::size_t buffer_size = (sizeof(dirent) - sizeof(dirent().d_name))
-      +  path_size + 1; // + 1 for "\0"
-    buffer = std::malloc(buffer_size);
-    if (BOOST_UNLIKELY(!buffer))
-      return make_error_code(boost::system::errc::not_enough_memory);
-    std::memset(buffer, 0, buffer_size);
-    return error_code();
-  }
-
-  // warning: the only dirent members updated are d_name and d_type
-  inline int readdir_r_simulator(DIR * dirp, struct dirent * entry,
-    struct dirent ** result)// *result set to 0 on end of directory
-  {
-#   if !defined(__CYGWIN__)\
-    && defined(_POSIX_THREAD_SAFE_FUNCTIONS)\
-    && defined(_SC_THREAD_SAFE_FUNCTIONS)\
-    && (_POSIX_THREAD_SAFE_FUNCTIONS+0 >= 0)\
-    && !(defined(linux) || defined(__linux) || defined(__linux__))\
-    && !defined(__ANDROID__)\
-    && (!defined(__hpux) || defined(_REENTRANT)) \
-    && (!defined(_AIX) || defined(__THREAD_SAFE))
-
-    errno = 0;
-
-    if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS) >= 0)
-      return ::readdir_r(dirp, entry, result);
-#   endif
-
-    errno = 0;
-
-    struct dirent * p;
-    *result = 0;
-    if ((p = ::readdir(dirp)) == 0)
-      return errno;
-#   ifdef BOOST_FILESYSTEM_STATUS_CACHE
-    entry->d_type = p->d_type;
-#   endif
-    std::strcpy(entry->d_name, p->d_name);
-    *result = entry;
-    return 0;
-  }
-
-  error_code dir_itr_increment(void *& handle, void *& buffer,
-    string& target, fs::file_status & sf, fs::file_status & symlink_sf)
-  {
-    BOOST_ASSERT(buffer != 0);
-    dirent * entry(static_cast<dirent *>(buffer));
-    dirent * result;
-    int err;
-    if ((err = readdir_r_simulator(static_cast<DIR*>(handle), entry, &result)) != 0)
-      return error_code(err, system_category());
-    if (result == 0)
-      return fs::detail::dir_itr_close(handle, buffer);
-
-    target = entry->d_name;
-#   ifdef BOOST_FILESYSTEM_STATUS_CACHE
-    if (entry->d_type == DT_UNKNOWN) // filesystem does not supply d_type value
-    {
-      sf = symlink_sf = fs::file_status(fs::status_error);
-    }
-    else  // filesystem supplies d_type value
-    {
-      if (entry->d_type == DT_DIR)
-        sf = symlink_sf = fs::file_status(fs::directory_file);
-      else if (entry->d_type == DT_REG)
-        sf = symlink_sf = fs::file_status(fs::regular_file);
-      else if (entry->d_type == DT_LNK)
-      {
-        sf = fs::file_status(fs::status_error);
-        symlink_sf = fs::file_status(fs::symlink_file);
-      }
-      else
-        sf = symlink_sf = fs::file_status(fs::status_error);
-    }
-#   else
-    sf = symlink_sf = fs::file_status(fs::status_error);
-#   endif
-    return error_code();
-  }
-
-# else // BOOST_WINDOWS_API
-
-  error_code dir_itr_first(void *& handle, const fs::path& dir,
-    wstring& target, fs::file_status & sf, fs::file_status & symlink_sf)
-  // Note: an empty root directory has no "." or ".." entries, so this
-  // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
-  // error. It is treated as eof instead.
-  {
-    // use a form of search Sebastian Martel reports will work with Win98
-    wstring dirpath(dir.wstring());
-    dirpath += (dirpath.empty()
-      || (dirpath[dirpath.size()-1] != L'\\'
-        && dirpath[dirpath.size()-1] != L'/'
-        && dirpath[dirpath.size()-1] != L':'))? L"\\*" : L"*";
-
-    WIN32_FIND_DATAW data;
-    if ((handle = ::FindFirstFileW(dirpath.c_str(), &data))
-      == INVALID_HANDLE_VALUE)
-    {
-      handle = 0;  // signal eof
-      return error_code( (::GetLastError() == ERROR_FILE_NOT_FOUND
-                       // Windows Mobile returns ERROR_NO_MORE_FILES; see ticket #3551
-                       || ::GetLastError() == ERROR_NO_MORE_FILES)
-        ? 0 : ::GetLastError(), system_category() );
-    }
-    target = data.cFileName;
-    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-    // reparse points are complex, so don't try to handle them here; instead just mark
-    // them as status_error which causes directory_entry caching to call status()
-    // and symlink_status() which do handle reparse points fully
-    {
-      sf.type(fs::status_error);
-      symlink_sf.type(fs::status_error);
-    }
-    else
-    {
-      if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-      {
-        sf.type(fs::directory_file);
-        symlink_sf.type(fs::directory_file);
-      }
-      else
-      {
-        sf.type(fs::regular_file);
-        symlink_sf.type(fs::regular_file);
-      }
-      sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-      symlink_sf.permissions(sf.permissions());
-    }
-    return error_code();
-  }
-
-  error_code  dir_itr_increment(void *& handle, wstring& target,
-    fs::file_status & sf, fs::file_status & symlink_sf)
-  {
-    WIN32_FIND_DATAW data;
-    if (::FindNextFileW(handle, &data)== 0)// fails
-    {
-      int error = ::GetLastError();
-      fs::detail::dir_itr_close(handle);
-      return error_code(error == ERROR_NO_MORE_FILES ? 0 : error, system_category());
-    }
-    target = data.cFileName;
-    if (data.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
-    // reparse points are complex, so don't try to handle them here; instead just mark
-    // them as status_error which causes directory_entry caching to call status()
-    // and symlink_status() which do handle reparse points fully
-    {
-      sf.type(fs::status_error);
-      symlink_sf.type(fs::status_error);
-    }
-    else
-    {
-      if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-      {
-        sf.type(fs::directory_file);
-        symlink_sf.type(fs::directory_file);
-      }
-      else
-      {
-        sf.type(fs::regular_file);
-        symlink_sf.type(fs::regular_file);
-      }
-      sf.permissions(make_permissions(data.cFileName, data.dwFileAttributes));
-      symlink_sf.permissions(sf.permissions());
-    }
-    return error_code();
-  }
-#endif
-
-  const error_code not_found_error_code (
-#     ifdef BOOST_WINDOWS_API
-        ERROR_PATH_NOT_FOUND
-#     else
-        ENOENT
-#     endif
-        , system_category());
-
-}  // unnamed namespace
-
-namespace boost
-{
-namespace filesystem
-{
-
-namespace detail
-{
-  //  dir_itr_close is called both from the ~dir_itr_imp()destructor
-  //  and dir_itr_increment()
-  BOOST_FILESYSTEM_DECL
-  system::error_code dir_itr_close( // never throws
-    void *& handle
-#   if defined(BOOST_POSIX_API)
-    , void *& buffer
-#   endif
-   )
-  {
-#   ifdef BOOST_POSIX_API
-    std::free(buffer);
-    buffer = 0;
-    if (handle == 0)
-      return error_code();
-    DIR * h(static_cast<DIR*>(handle));
-    handle = 0;
-    int err = 0;
-    if (::closedir(h) != 0)
-      err = errno;
-    return error_code(err, system_category());
-
-#   else
-    if (handle != 0)
-    {
-      ::FindClose(handle);
-      handle = 0;
-    }
-    return error_code();
-
-#   endif
-  }
-
-  void directory_iterator_construct(directory_iterator& it,
-    const path& p, system::error_code* ec)
-  {
-    if (error(p.empty() ? not_found_error_code.value() : 0, p, ec,
-              "boost::filesystem::directory_iterator::construct"))
-      return;
-
-    try
-    {
-      path::string_type filename;
-      file_status file_stat, symlink_file_stat;
-      error_code result = dir_itr_first(it.m_imp->handle,
-#     if defined(BOOST_POSIX_API)
-        it.m_imp->buffer,
-#     endif
-        p.c_str(), filename, file_stat, symlink_file_stat);
-
-      if (result)
-      {
-        it.m_imp.reset();
-        error(result.value(), p,
-          ec, "boost::filesystem::directory_iterator::construct");
-        return;
-      }
-
-      if (it.m_imp->handle == 0)
-        it.m_imp.reset(); // eof, so make end iterator
-      else // not eof
-      {
-        it.m_imp->dir_entry.assign(p / filename, file_stat, symlink_file_stat);
-        const path::string_type::value_type* filename_str = filename.c_str();
-        if (filename_str[0] == dot // dot or dot-dot
-          && (filename_str[1] == end_of_string ||
-             (filename_str[1] == dot && filename_str[2] == end_of_string)))
-          { detail::directory_iterator_increment(it, ec); }
-      }
-    }
-    catch (std::bad_alloc&)
-    {
-      if (!ec)
-        throw;
-
-      *ec = make_error_code(boost::system::errc::not_enough_memory);
-      it.m_imp.reset();
-    }
-  }
-
-  void directory_iterator_increment(directory_iterator& it,
-    system::error_code* ec)
-  {
-    BOOST_ASSERT_MSG(it.m_imp.get(), "attempt to increment end iterator");
-    BOOST_ASSERT_MSG(it.m_imp->handle != 0, "internal program error");
-
-    if (ec != 0)
-      ec->clear();
-
-    try
-    {
-      path::string_type filename;
-      file_status file_stat, symlink_file_stat;
-      system::error_code increment_ec;
-
-      for (;;)
-      {
-        increment_ec = dir_itr_increment(it.m_imp->handle,
-#       if defined(BOOST_POSIX_API)
-          it.m_imp->buffer,
-#       endif
-          filename, file_stat, symlink_file_stat);
-
-        if (increment_ec)  // happens if filesystem is corrupt, such as on a damaged optical disc
-        {
-          boost::intrusive_ptr< detail::dir_itr_imp > imp;
-          imp.swap(it.m_imp);
-          path error_path(imp->dir_entry.path().parent_path());  // fix ticket #5900
-          if (ec == 0)
-            BOOST_FILESYSTEM_THROW(
-              filesystem_error("boost::filesystem::directory_iterator::operator++",
-                error_path,
-                increment_ec));
-          *ec = increment_ec;
-          return;
-        }
-
-        if (it.m_imp->handle == 0)  // eof, make end
-        {
-          it.m_imp.reset();
-          return;
-        }
-
-        const path::string_type::value_type* filename_str = filename.c_str();
-        if (!(filename_str[0] == dot // !(dot or dot-dot)
-          && (filename_str[1] == end_of_string ||
-             (filename_str[1] == dot && filename_str[2] == end_of_string))))
-        {
-          it.m_imp->dir_entry.replace_filename(
-            filename, file_stat, symlink_file_stat);
-          return;
-        }
-      }
-    }
-    catch (std::bad_alloc&)
-    {
-      if (!ec)
-        throw;
-
-      it.m_imp.reset();
-      *ec = make_error_code(boost::system::errc::not_enough_memory);
-    }
-  }
-
-//--------------------------------------------------------------------------------------//
-//                                                                                      //
-//                           recursive_directory_iterator                               //
-//                                                                                      //
-//--------------------------------------------------------------------------------------//
-
-  // Returns: true if push occurs, otherwise false. Always returns false on error.
-  BOOST_FILESYSTEM_DECL
-  bool recur_dir_itr_imp::push_directory(system::error_code& ec) BOOST_NOEXCEPT
-  {
-    ec.clear();
-
-    try
-    {
-      //  Discover if the iterator is for a directory that needs to be recursed into,
-      //  taking symlinks and options into account.
-
-      if ((m_options & static_cast< unsigned int >(symlink_option::_detail_no_push)) == static_cast< unsigned int >(symlink_option::_detail_no_push))
-      {
-        m_options &= ~static_cast< unsigned int >(symlink_option::_detail_no_push);
-        return false;
-      }
-
-      file_status symlink_stat;
-
-      // if we are not recursing into symlinks, we are going to have to know if the
-      // stack top is a symlink, so get symlink_status and verify no error occurred
-      if ((m_options & static_cast< unsigned int >(symlink_option::recurse)) != static_cast< unsigned int >(symlink_option::recurse))
-      {
-        symlink_stat = m_stack.top()->symlink_status(ec);
-        if (ec)
-          return false;
-      }
-
-      // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
-      // symlinks correctly and efficiently, fixing ticket #5652.
-      //   if (((m_options & symlink_option::recurse) == symlink_option::recurse
-      //         || !is_symlink(m_stack.top()->symlink_status()))
-      //       && is_directory(m_stack.top()->status())) ...
-      // The predicate code has since been rewritten to pass error_code arguments,
-      // per ticket #5653.
-
-      if ((m_options & static_cast< unsigned int >(symlink_option::recurse)) == static_cast< unsigned int >(symlink_option::recurse)
-        || !is_symlink(symlink_stat))
-      {
-        file_status stat = m_stack.top()->status(ec);
-        if (ec || !is_directory(stat))
-          return false;
-
-        directory_iterator next(m_stack.top()->path(), ec);
-        if (!ec && next != directory_iterator())
-        {
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-          m_stack.push(std::move(next)); // may throw
-#else
-          m_stack.push(next); // may throw
-#endif
-          ++m_level;
-          return true;
-        }
-      }
-    }
-    catch (std::bad_alloc&)
-    {
-      ec = make_error_code(system::errc::not_enough_memory);
-    }
-
-    return false;
-  }
-
-  // ec == 0 means throw on error
-  //
-  // Invariant: On return, the top of the iterator stack is the next valid (possibly
-  // end) iterator, regardless of whether or not an error is reported, and regardless of
-  // whether any error is reported by exception or error code. In other words, progress
-  // is always made so a loop on the iterator will always eventually terminate
-  // regardless of errors.
-  BOOST_FILESYSTEM_DECL
-  void recur_dir_itr_imp::increment(system::error_code* ec)
-  {
-    system::error_code ec_push_directory;
-
-    //  if various conditions are met, push a directory_iterator into the iterator stack
-    if (push_directory(ec_push_directory))
-    {
-      if (ec)
-        ec->clear();
-      return;
-    }
-
-    // report errors if any
-    if (ec_push_directory)
-    {
-      if (ec)
-      {
-        *ec = ec_push_directory;
-        return;
-      }
-      else
-      {
-        BOOST_FILESYSTEM_THROW(filesystem_error(
-          "filesystem::recursive_directory_iterator directory error",
-          ec_push_directory));
-      }
-    }
-
-    //  Do the actual increment operation on the top iterator in the iterator
-    //  stack, popping the stack if necessary, until either the stack is empty or a
-    //  non-end iterator is reached.
-    while (!m_stack.empty())
-    {
-      directory_iterator& it = m_stack.top();
-      detail::directory_iterator_increment(it, ec);
-      if (ec && *ec)
-        return;
-      if (it != directory_iterator())
-        break;
-
-      m_stack.pop();
-      --m_level;
-    }
-
-    if (ec)
-      ec->clear();
-  }
-
-  // ec == 0 means throw on error
-  BOOST_FILESYSTEM_DECL
-  void recur_dir_itr_imp::pop(system::error_code* ec)
-  {
-    BOOST_ASSERT_MSG(m_level > 0,
-      "pop() on recursive_directory_iterator with level < 1");
-
-    if (ec)
-      ec->clear();
-
-    while (true)
-    {
-      m_stack.pop();
-      --m_level;
-
-      if (m_stack.empty())
-        break;
-
-      directory_iterator& it = m_stack.top();
-      detail::directory_iterator_increment(it, ec);
-      if (ec && *ec)
-        break;
-      if (it != directory_iterator())
-        break;
-    }
-  }
-
-}  // namespace detail
 } // namespace filesystem
 } // namespace boost

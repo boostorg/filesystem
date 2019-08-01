@@ -7,6 +7,12 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+// Include Boost.Predef first so that windows.h is guaranteed to be not included
+#include <boost/predef/os/windows.h>
+#if BOOST_OS_WINDOWS
+#include <boost/winapi/config.hpp>
+#endif
+
 //  Old standard library configurations, particularly MingGW, don't support wide strings.
 //  Report this with an explicit error message.
 #include <boost/config.hpp>
