@@ -275,7 +275,7 @@ namespace
   //void dump_tree(const fs::path & root)
   //{
   //  cout << "dumping tree rooted at " << root << endl;
-  //  for (fs::recursive_directory_iterator it (root, fs::symlink_option::recurse);
+  //  for (fs::recursive_directory_iterator it (root, fs::directory_options::follow_directory_symlink);
   //       it != fs::recursive_directory_iterator();
   //       ++it)
   //  {
@@ -649,7 +649,7 @@ namespace
     error_code ec;
     int d1f1_count = 0;
     for (fs::recursive_directory_iterator it (dir,
-      recursive ? fs::symlink_option::recurse : fs::symlink_option::no_recurse);
+      recursive ? fs::directory_options::follow_directory_symlink : fs::directory_options::none);
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
@@ -671,7 +671,7 @@ namespace
     cout << "  with error_code argument" << endl;
     boost::system::error_code ec;
     int d1f1_count = 0;
-    fs::recursive_directory_iterator it(dir, fs::symlink_option::no_recurse);
+    fs::recursive_directory_iterator it(dir, fs::directory_options::none);
     fs::recursive_directory_iterator it2(it);  // test single pass shallow copy semantics
     for (;
          it != fs::recursive_directory_iterator();

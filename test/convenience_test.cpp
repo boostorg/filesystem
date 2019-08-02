@@ -133,7 +133,7 @@ int cpp_main(int, char*[])
 
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
-  it.no_push();
+  it.disable_recursion_pending();
   ++it;
   BOOST_TEST(it->path() == unique_yya);
   ++it;
@@ -156,7 +156,7 @@ int cpp_main(int, char*[])
 
   it = fs::recursive_directory_iterator(unique_dir);
   BOOST_TEST(it->path() == unique_yy);
-  it.no_push();
+  it.disable_recursion_pending();
   ++it;
   BOOST_TEST(it == fs::recursive_directory_iterator());
 
