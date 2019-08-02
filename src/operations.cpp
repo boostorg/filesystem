@@ -139,6 +139,8 @@
 #     include <sys/utime.h>
 #   endif
 
+#include "windows_tools.hpp"
+
 # endif  // BOOST_WINDOWS_API
 
 #include "error_handling.hpp"
@@ -480,31 +482,6 @@ namespace
       || errval == ERROR_INVALID_PARAMETER  // ":sys:stat.h"
       || errval == ERROR_BAD_PATHNAME  // "//nosuch" on Win64
       || errval == ERROR_BAD_NETPATH;  // "//nosuch" on Win32
-  }
-
-  static bool equal_extension( wchar_t const* p, wchar_t const (&x1)[ 5 ], wchar_t const (&x2)[ 5 ] )
-  {
-    return
-      (p[0] == x1[0] || p[0] == x2[0]) &&
-      (p[1] == x1[1] || p[1] == x2[1]) &&
-      (p[2] == x1[2] || p[2] == x2[2]) &&
-      (p[3] == x1[3] || p[3] == x2[3]) &&
-      p[4] == 0;
-  }
-
-  perms make_permissions(const path& p, DWORD attr)
-  {
-    perms prms = fs::owner_read | fs::group_read | fs::others_read;
-    if  ((attr & FILE_ATTRIBUTE_READONLY) == 0)
-      prms |= fs::owner_write | fs::group_write | fs::others_write;
-    path ext = p.extension();
-    wchar_t const* q = ext.c_str();
-    if (equal_extension(q, L".exe", L".EXE")
-      || equal_extension(q, L".com", L".COM")
-      || equal_extension(q, L".bat", L".BAT")
-      || equal_extension(q, L".cmd", L".CMD"))
-      prms |= fs::owner_exe | fs::group_exe | fs::others_exe;
-    return prms;
   }
 
   // these constants come from inspecting some Microsoft sample code
@@ -1762,6 +1739,8 @@ namespace detail
       return process_status_failure(p, ec);
     }
 
+    perms permissions = make_permissions(p, attr);
+
     //  reparse point handling;
     //    since GetFileAttributesW does not resolve symlinks, try to open a file
     //    handle to discover if the file exists
@@ -1782,13 +1761,13 @@ namespace detail
       }
 
       if (!is_reparse_point_a_symlink(p))
-        return file_status(reparse_file, make_permissions(p, attr));
+        return file_status(reparse_file, permissions);
     }
 
     if (ec != 0) ec->clear();
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
-      ? file_status(directory_file, make_permissions(p, attr))
-      : file_status(regular_file, make_permissions(p, attr));
+      ? file_status(directory_file, permissions)
+      : file_status(regular_file, permissions);
 
 #   endif
   }
@@ -1848,14 +1827,16 @@ namespace detail
 
     if (ec != 0) ec->clear();
 
+    perms permissions = make_permissions(p, attr);
+
     if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
       return is_reparse_point_a_symlink(p)
-             ? file_status(symlink_file, make_permissions(p, attr))
-             : file_status(reparse_file, make_permissions(p, attr));
+             ? file_status(symlink_file, permissions)
+             : file_status(reparse_file, permissions);
 
     return (attr & FILE_ATTRIBUTE_DIRECTORY)
-      ? file_status(directory_file, make_permissions(p, attr))
-      : file_status(regular_file, make_permissions(p, attr));
+      ? file_status(directory_file, permissions)
+      : file_status(regular_file, permissions);
 
 #   endif
   }

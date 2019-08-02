@@ -41,8 +41,6 @@
 #include <boost/assert.hpp>
 #include <boost/system/error_code.hpp>
 
-#include "error_handling.hpp"
-
 #ifdef BOOST_POSIX_API
 
 #include <dirent.h>
@@ -64,7 +62,11 @@
 #include <cwchar>
 #include <windows.h>
 
+#include "windows_tools.hpp"
+
 #endif  // BOOST_WINDOWS_API
+
+#include "error_handling.hpp"
 
 //  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
 //  dir_itr_increment. The config tests are placed here because some of the
