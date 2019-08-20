@@ -161,7 +161,7 @@ private:
 //  Without these functions, calling (for example) 'is_directory' with a 'directory_entry' results in:
 //  - a conversion to 'path' using 'operator const boost::filesystem::path&()',
 //  - then a call to 'is_directory(const path& p)' which recomputes the status with 'detail::status(p)'.
-//  
+//
 //  These functions avoid a costly recomputation of the status if one calls 'is_directory(e)' instead of 'is_directory(e.status)'
 
 inline file_status status         (const directory_entry& e) BOOST_NOEXCEPT { return e.status(); }
@@ -187,9 +187,10 @@ BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(directory_options, unsigned int)
   none = 0u,
   skip_permission_denied = 1u,        // if a directory cannot be opened because of insufficient permissions, pretend that the directory is empty
   follow_directory_symlink = 1u << 1, // recursive_directory_iterator: follow directory symlinks
-  pop_on_error = 1u << 2,             // non-standard extension for recursive_directory_iterator: instead of producing an end iterator on errors,
+  skip_dangling_symlinks = 1u << 2,   // non-standard extension for recursive_directory_iterator: don't follow dangling directory symlinks,
+  pop_on_error = 1u << 3,             // non-standard extension for recursive_directory_iterator: instead of producing an end iterator on errors,
                                       // repeatedly invoke pop() until it succeeds or the iterator becomes equal to end iterator
-  _detail_no_push = 1u << 3           // internal use only
+  _detail_no_push = 1u << 4           // internal use only
 }
 BOOST_SCOPED_ENUM_DECLARE_END(directory_options)
 

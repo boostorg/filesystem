@@ -645,18 +645,19 @@ namespace
 
   int walk_tree(bool recursive)
   {
-//    cout << "    walk_tree" << endl;
+    //cout << "    walk_tree" << endl;
     error_code ec;
     int d1f1_count = 0;
     for (fs::recursive_directory_iterator it (dir,
-      recursive ? fs::directory_options::follow_directory_symlink : fs::directory_options::none);
+      recursive ? (fs::directory_options::follow_directory_symlink | fs::directory_options::skip_dangling_symlinks) : fs::directory_options::none);
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
-//      cout << "      " << it->path() << endl;
+      //cout << "      " << it->path() << " : " << ec << endl;
       if (it->path().filename() == "d1f1")
         ++d1f1_count;
     }
+    //cout << "      last error : " << ec << endl;
     return d1f1_count;
   }
 

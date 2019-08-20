@@ -711,9 +711,17 @@ void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::
 
 namespace {
 
-// Returns: true if push occurs, otherwise false. Always returns false on error.
-inline bool recursive_directory_iterator_push_directory(detail::recur_dir_itr_imp* imp, system::error_code& ec) BOOST_NOEXCEPT
+enum push_directory_result
 {
+  directory_not_pushed = 0u,
+  directory_pushed = 1u,
+  keep_depth = 1u << 1
+};
+
+// Returns: true if push occurs, otherwise false. Always returns false on error.
+inline push_directory_result recursive_directory_iterator_push_directory(detail::recur_dir_itr_imp* imp, system::error_code& ec) BOOST_NOEXCEPT
+{
+  push_directory_result result = directory_not_pushed;
   try
   {
     //  Discover if the iterator is for a directory that needs to be recursed into,
@@ -722,18 +730,19 @@ inline bool recursive_directory_iterator_push_directory(detail::recur_dir_itr_im
     if ((imp->m_options & static_cast< unsigned int >(directory_options::_detail_no_push)) != 0u)
     {
       imp->m_options &= ~static_cast< unsigned int >(directory_options::_detail_no_push);
-      return false;
+      return result;
     }
 
     file_status symlink_stat;
 
     // if we are not recursing into symlinks, we are going to have to know if the
     // stack top is a symlink, so get symlink_status and verify no error occurred
-    if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) == 0u)
+    if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) == 0u ||
+      (imp->m_options & static_cast< unsigned int >(directory_options::skip_dangling_symlinks)) != 0u)
     {
       symlink_stat = imp->m_stack.back()->symlink_status(ec);
       if (ec)
-        return false;
+        return result;
     }
 
     // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
@@ -747,14 +756,30 @@ inline bool recursive_directory_iterator_push_directory(detail::recur_dir_itr_im
     if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) != 0u || !fs::is_symlink(symlink_stat))
     {
       file_status stat = imp->m_stack.back()->status(ec);
-      if (ec || !fs::is_directory(stat))
-        return false;
+      if (BOOST_UNLIKELY(!!ec))
+      {
+        if (ec == make_error_condition(system::errc::no_such_file_or_directory) && fs::is_symlink(symlink_stat) &&
+          (imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks))
+          == static_cast< unsigned int >(directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks))
+        {
+          // Skip dangling symlink and continue iteration on the current depth level
+          ec = error_code();
+        }
+
+        return result;
+      }
+
+      if (!fs::is_directory(stat))
+        return result;
 
       if (BOOST_UNLIKELY((imp->m_stack.size() - 1u) >= static_cast< std::size_t >((std::numeric_limits< int >::max)())))
       {
         // We cannot let depth to overflow
         ec = make_error_code(system::errc::value_too_large);
-        return false;
+        // When depth overflow happens, avoid popping the current directory iterator
+        // and attempt to continue iteration on the current depth.
+        result = keep_depth;
+        return result;
       }
 
       directory_iterator next(imp->m_stack.back()->path(), static_cast< BOOST_SCOPED_ENUM_NATIVE(directory_options) >(imp->m_options), ec);
@@ -765,7 +790,7 @@ inline bool recursive_directory_iterator_push_directory(detail::recur_dir_itr_im
 #else
         imp->m_stack.push_back(next); // may throw
 #endif
-        return true;
+        return directory_pushed;
       }
     }
   }
@@ -774,7 +799,7 @@ inline bool recursive_directory_iterator_push_directory(detail::recur_dir_itr_im
     ec = make_error_code(system::errc::not_enough_memory);
   }
 
-  return false;
+  return result;
 }
 
 } // namespace
@@ -791,7 +816,8 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
   system::error_code local_ec;
 
   //  if various conditions are met, push a directory_iterator into the iterator stack
-  if (recursive_directory_iterator_push_directory(imp, local_ec))
+  push_directory_result push_result = recursive_directory_iterator_push_directory(imp, local_ec);
+  if (push_result == directory_pushed)
     return;
 
   // report errors if any
@@ -805,10 +831,8 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
     }
     else
     {
-      if (BOOST_UNLIKELY(local_ec == make_error_code(system::errc::value_too_large)))
+      if ((push_result & keep_depth) != 0u)
       {
-        // When depth overflow happens, avoid popping the current directory iterator
-        // and attempt to continue iteration on the current depth.
         system::error_code increment_ec;
         directory_iterator& dir_it = imp->m_stack.back();
         detail::directory_iterator_increment(dir_it, &increment_ec);
