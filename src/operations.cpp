@@ -371,7 +371,6 @@ boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
 //--------------------------------------------------------------------------------------//
 
 BOOST_CONSTEXPR_OR_CONST char dot = '.';
-BOOST_CONSTEXPR_OR_CONST char end_of_string = '\0';
 
 inline bool not_found_error(int errval) BOOST_NOEXCEPT
 {
@@ -460,7 +459,6 @@ inline fs::file_type query_file_type(const path& p, error_code* ec)
 BOOST_CONSTEXPR_OR_CONST std::size_t buf_size = 128;
 
 BOOST_CONSTEXPR_OR_CONST wchar_t dot = L'.';
-BOOST_CONSTEXPR_OR_CONST wchar_t end_of_string = L'\0';
 
 inline std::wstring wgetenv(const wchar_t* name)
 {
