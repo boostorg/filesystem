@@ -40,6 +40,7 @@
 #include <utility> // std::move
 #include <boost/assert.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #ifdef BOOST_POSIX_API
 
