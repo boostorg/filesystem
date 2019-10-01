@@ -60,6 +60,8 @@ namespace path_detail // intentionally don't use filesystem::detail to not bring
     static BOOST_CONSTEXPR_OR_CONST value_type      dot = Dot;
   };
 
+// Before C++17 it was mandatory to redeclare all static constexpr
+#if defined(BOOST_NO_CXX17_INLINE_VARIABLES)
   template< typename Char, Char Separator, Char PreferredSeparator, Char Dot >
   BOOST_CONSTEXPR_OR_CONST typename path_constants< Char, Separator, PreferredSeparator, Dot >::value_type
   path_constants< Char, Separator, PreferredSeparator, Dot >::separator;
@@ -69,7 +71,7 @@ namespace path_detail // intentionally don't use filesystem::detail to not bring
   template< typename Char, Char Separator, Char PreferredSeparator, Char Dot >
   BOOST_CONSTEXPR_OR_CONST typename path_constants< Char, Separator, PreferredSeparator, Dot >::value_type
   path_constants< Char, Separator, PreferredSeparator, Dot >::dot;
-
+#endif
 } // namespace path_detail
 
   //------------------------------------------------------------------------------------//
