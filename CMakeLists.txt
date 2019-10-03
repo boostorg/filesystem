@@ -10,6 +10,7 @@ project( BoostFilesystem )
 
 add_library( boost_filesystem
     src/codecvt_error_category.cpp
+    src/exception.cpp
     src/operations.cpp
     src/directory.cpp
     src/path.cpp
