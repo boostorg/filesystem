@@ -51,11 +51,6 @@
 
 
 
-<p><i>Headings and synopsis for recently added functionality are shown with a
-<span style="background-color: #CCFFCC">green background</span>. </i></p>
-
-
-
 <h2><a name="TOC">Table of Contents</a></h2>
 
 <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
@@ -147,8 +142,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#permissions">permissions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#op-relative">
-    <span style="background-color: #CCFFCC">relative</span></a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#op-relative">relative</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br>
@@ -160,8 +154,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#system_complete">system_complete</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#temp_directory_path">temp_directory_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#weakly_canonical">
-    <span style="background-color: #CCFFCC">weakly_canonical</span></a><br></code>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#weakly_canonical">weakly_canonical</a><br></code>
     <a href="#File-streams">File streams</a><br>
 <a href="#path-decomposition-table">Path decomposition table</a><br>
     <a href="#long-path-warning">Warning: Long paths on Windows and the
@@ -340,7 +333,7 @@ and <code>&quot;..&quot;</code>&nbsp; have special meaning. The follow character
   filenames are operating system dependent:</p>
 <ul>
   <li>
-  <p>The permitted characters. See [<a href="#Operating-system-examples">fs.os.example</a>s].</p>
+  <p>The permitted characters. See [<a href="#Operating-system-examples">fs.os.examples</a>].</p>
   </li>
   <li>
   <p>Specific filenames that are not permitted.</p>
@@ -389,7 +382,7 @@ native pathname format.</p>
 
 <h3><a name="native-pathname-format">native pathname format</a> [fs.def.native]</h3>
 <p>The operating system dependent pathname format accepted by the host operating system.</p>
-<h3><a name="normal-form"><span style="background-color: #CCFFCC">normal form</span></a><span style="background-color: #CCFFCC"> path</span> [fs.def.normal]</h3>
+<h3><a name="normal-form">normal form</a> path [fs.def.normal]</h3>
 <p>A path with no redundant current directory (<i>dot</i>) or parent directory (<i>dot-dot</i>)
 elements. The normal form for an empty path is an empty path. The normal form
 for a path ending in a <i>directory-separator</i> that is not the root directory
@@ -886,8 +879,8 @@ nothing else.&quot;</p>
     bool         <a href="#is_other2">is_other</a>(const path&amp; p, system::error_code&amp; ec) noexcept;
 
     bool         <a href="#is_regular_file">is_regular_file</a>(file_status s) noexcept;
-    bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p);
-    bool         i<a href="#is_regular_file2">s_regular_file</a>(const path&amp; p,
+    bool         <a href="#is_regular_file2">is_regular_file</a>(const path&amp; p);
+    bool         <a href="#is_regular_file2">is_regular_file</a>(const path&amp; p,
                    system::error_code&amp; ec) noexcept;
 
     bool         <a href="#is_symlink">is_symlink</a>(file_status s noexcept);
@@ -903,10 +896,10 @@ nothing else.&quot;</p>
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p);
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p, system::error_code&amp; ec);
 
-    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span>
-    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, const path&amp; base=</span><span style="background-color: #E8FFE8">current_path</span><span style="background-color: #E8FFE8">());</span>
-    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p,</span>
-                     <span style="background-color: #E8FFE8">const path&amp; base, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span>
+    path         <a href="#op-relative">relative</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#op-relative">relative</a>(const path&amp; p, const path&amp; base=current_path());
+    path         <a href="#op-relative">relative</a>(const path&amp; p,
+                     const path&amp; base, system::error_code&amp; ec);
 
     bool         <a href="#remove">remove</a>(const path&amp; p);
     bool         <a href="#remove">remove</a>(const path&amp; p, system::error_code&amp; ec);
@@ -943,8 +936,8 @@ nothing else.&quot;</p>
     path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
     path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
 
-    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">weakly_canonical(const</span><span style="background-color: #E8FFE8"> path&amp; p);</span>
-    <span style="background-color: #E8FFE8">path         </span><span style="background-color: #E8FFE8">weakly_canonical(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span>
+    path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p);
+    path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p, system::error_code&amp; ec);
 
   }  // namespace filesystem
 }  // namespace boost</pre>
@@ -1092,13 +1085,14 @@ system or for a particular file system.</p>
         void  <a href="#path-swap">swap</a>(path&amp; rhs);
 
         // lexical operations
-        <span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">lexically_normal</span><span style="background-color: #E8FFE8">() const;</span>
-        <span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">lexically_relative(const</span><span style="background-color: #E8FFE8"> path&amp; base) const;</span>
+        path <a href="#lexically_normal">lexically_normal</a>() const;
+        path <a href="#lexically_relative">lexically_relative</a>(const path&amp; base) const;
+        path <a href="#lexically_proximate">lexically_proximate</a>(const path&amp; base) const;
 
         // <a href="#path-native-format-observers">native format observers</a>
         const string_type&amp;  <a href="#native">native</a>() const noexcept;  // native format, encoding
         const value_type*   <a href="#c_str">c_str</a>() const noexcept;   // native().c_str()
-        <span style="background-color: #E8FFE8">string_type::size_type</span><span style="background-color: #E8FFE8"> </span><a href="#path-size"><span style="background-color: #E8FFE8">size</span></a><span style="background-color: #E8FFE8">() const noexcept; // </span><span style="background-color: #E8FFE8">native().size</span><span style="background-color: #E8FFE8">()</span>
+        string_type::size_type <a href="#path-size">size</a>() const noexcept; // native().size()
 
         template &lt;class String&gt;
           String  <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
@@ -1133,8 +1127,8 @@ system or for a particular file system.</p>
 
         // <a href="#path-query">query</a>
         bool <a href="#path-query">empty</a>() const;
-        <span style="background-color: #CCFFCC">bool <a href="#filename_is_dot">filename_is_dot</a>() const;</span>
-        <span style="background-color: #CCFFCC">bool <a href="#filename_is_dot­_dot">filename_is_dot_dot</a>() const;</span>
+        bool <a href="#filename_is_dot">filename_is_dot</a>() const;
+        bool <a href="#filename_is_dot_dot">filename_is_dot_dot</a>() const;
         bool <a href="#path-has_root_name">has_root_name</a>() const;
         bool <a href="#path-has_root_directory">has_root_directory</a>() const;
         bool <a href="#path-has_root_path">has_root_path</a>() const;
@@ -1453,7 +1447,7 @@ path</code> modifiers</a> [path.modifiers]</h3>
 
   <h3><a name="path-lexical-operations"><code>path</code> lexical operations</a>
   [path.lex.ops]</h3>
-  <pre><span style="background-color: #E8FFE8">path </span><a name="lexically_normal"><span style="background-color: #E8FFE8">lexically_normal</span></a><span style="background-color: #E8FFE8">() const;</span></pre>
+  <pre>path <a name="lexically_normal">lexically_normal</a>() const;</pre>
 <blockquote>
 <p><i>Overview:</i> Returns <code>*this</code> with redundant current directory
 (<i>dot</i>), parent directory (<i>dot-dot</i>), and <i>directory-separator</i> elements removed.</p>
@@ -1467,7 +1461,7 @@ returned path&#39;s <i>directory-separator</i> characters will be backslashes ra
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
 </blockquote>
 
-<pre><span style="background-color: #E8FFE8">path </span><a name="lexically-relative"><span style="background-color: #E8FFE8">lexically_relative</span></a><span style="background-color: #E8FFE8">(const</span><span style="background-color: #E8FFE8"> path&amp; base) const;</span></pre>
+<pre>path <a name="lexically_relative">lexically_relative</a>(const path&amp; base) const;</pre>
   <blockquote>
   <p><i>Overview:</i> Returns <code>*this</code> made relative to <code>base</code>.
   Treats empty or identical paths as corner cases, not errors. Does not resolve
@@ -1513,18 +1507,33 @@ returned path&#39;s <i>directory-separator</i>s will be backslashes rather than
 forward slashes, but that
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
 
-  <p>[<i>Note:</i> If symlink following semantics are desired, use the  operational function <code>
-  <a href="#op-proximate">relative</a></code>&nbsp; <i>—end note</i>]</p>
+  <p>[<i>Note:</i> If symlink following semantics are desired, use the operational function <code>
+  <a href="#op-relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
 
   <p>[<i>Note:</i> If <a href="#lexically_normal">normalization</a> is needed to ensure
   consistent matching of elements, apply <code><a href="#lexically_normal">lexically_normal()</a></code>
   to <code>*this</code>, <code>base</code>, or both. <i>—end note</i>]</p>
 
+<pre>path <a name="lexically_proximate">lexically_proximate</a>(const path&amp; base) const;</pre>
+<blockquote>
+<p><i>Returns:</i> If <code>lexically_relative(base)</code> returns a non-empty path, returns that path.
+Otherwise returns <code>*this</code>.</p>
+
+  <p>[<i>Note:</i> If symlink following semantics are desired, use the operational function <code>
+  <a href="#op-relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
+
+  <p>[<i>Note:</i> If <a href="#lexically_normal">normalization</a> is needed to ensure
+  consistent matching of elements, apply <code><a href="#lexically_normal">lexically_normal()</a></code>
+  to <code>*this</code>, <code>base</code>, or both. <i>—end note</i>]</p>
+
+</blockquote>
+
+
 <h3> <a name="path-native-format-observers"><code><font size="4">path</font></code> native format observers</a>
 [path.native.obs]</h3>
 <p>The string returned by all native format observers is in the <a href="#native-pathname-format">native pathname format</a>.</p>
 
-<pre>const string_type&amp;  <a name="native">native</a>() const noexcept;</pre>
+<pre>const string_type&amp; <a name="native">native</a>() const noexcept;</pre>
 
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
@@ -1536,7 +1545,7 @@ does not affect <code>path</code> equality.<i> —end example</i>]</p>
 <p><i>Returns:</i> <code>pathname.c_str()</code>.</p>
 </blockquote>
 
-<pre><span style="background-color: #CCFFCC">string_type::size_type </span><a name="path-size"><span style="background-color: #CCFFCC">size</span></a><span style="background-color: #CCFFCC">() const noexcept;</span></pre>
+<pre>string_type::size_type <a name="path-size">size</a>() const noexcept;</pre>
 
 <blockquote>
 <p><i>Returns:</i> <code>pathname.size()</code>.</p>
@@ -1737,7 +1746,7 @@ for (; !p.extension().empty(); p = p.stem())
   <p><i>Returns:</i> <code>m_pathname.empty()</code>.</p>
 </blockquote>
 
-<pre><span style="background-color: #CCFFCC">bool </span><a name="filename_is_dot"><span style="background-color: #CCFFCC">filename_is_dot</span></a><span style="background-color: #CCFFCC">() const;</span></pre>
+<pre>bool <a name="filename_is_dot">filename_is_dot</a>() const;</pre>
 
 <blockquote>
   <p><i>Returns:</i> <code>filename() == path(&quot;.&quot;)</code></p>
@@ -1759,7 +1768,7 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename_is_dot();    // outputs 0</pre>
   <p> <i>—end example</i>]</p>
 </blockquote>
 
-<pre><span style="background-color: #CCFFCC">bool </span><span style="background-color: #CCFFCC"><a name="filename_is_dot­_dot">filename_is_dot_dot</a>() const;</span></pre>
+<pre>bool <a name="filename_is_dot_dot">filename_is_dot_dot</a>() const;</pre>
 
 <blockquote>
   <p><i>Returns:</i> <code>filename() == path(&quot;..&quot;)</code></p>
@@ -1946,7 +1955,7 @@ const string_type  external_directory_string() const { return native(); }</pre>
 
   <div>
 
-  <pre><span style="background-color: #CCFFCC">path lexically_</span><a name="lex-normal"><span style="background-color: #CCFFCC">normal</span></a><span style="background-color: #CCFFCC">(const path&amp; p);</span></pre>
+  <pre>path <a name="lex-normal">lexically_normal</a>(const path&amp; p);</pre>
 
   </div>
 
@@ -3413,13 +3422,13 @@ path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>. [<i>Note:</i> It is an error if <code>p</code> does not
   resolve to a symbolic link. <i>—end note</i>]</p>
 </blockquote>
-<pre><span style="background-color: #E8FFE8">path </span><a name="op-relative"><span style="background-color: #E8FFE8">relative</span></a><span style="background-color: #E8FFE8">(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span></pre>
+<pre>path <a name="op-relative">relative</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Returns:</i> <code>relative(p, current_path(), ec)</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>
 </blockquote>
-<pre><span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, const path&amp; base=</span><span style="background-color: #E8FFE8">current_path</span><span style="background-color: #E8FFE8">());</span>
-<span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">relative(const</span><span style="background-color: #E8FFE8"> path&amp; p, const path&amp; base, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span></pre>
+<pre>path relative(const path&amp; p, const path&amp; base=current_path());
+path relative(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Overview:</i> Returns <code>p</code> made relative to <code>base</code>.
   Treats empty or identical paths as corner cases, not errors. Resolves symlinks
@@ -3670,8 +3679,8 @@ path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
   provided by the operating system. [<i>Note</i>: Such generators may block
   until sufficient entropy develops. <i>—end note</i>]</p>
 </blockquote>
-<pre><span style="background-color: #E8FFE8">path </span><a name="weakly_canonical"><span style="background-color: #E8FFE8">weakly_canonical</span></a><span style="background-color: #E8FFE8">(const</span><span style="background-color: #E8FFE8"> path&amp; p);</span>
-<span style="background-color: #E8FFE8">path </span><span style="background-color: #E8FFE8">weakly_canonical(const</span><span style="background-color: #E8FFE8"> path&amp; p, </span><span style="background-color: #E8FFE8">system::error_code</span><span style="background-color: #E8FFE8">&amp; </span><span style="background-color: #E8FFE8">ec</span><span style="background-color: #E8FFE8">);</span></pre>
+<pre>path <a name="weakly_canonical">weakly_canonical</a>(const path&amp; p);
+path weakly_canonical(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Overview:</i> Returns <code>p</code> with symlinks resolved and the
   result normalized.</p>
@@ -3689,8 +3698,6 @@ path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
   the entirety of <code>p</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>
 </blockquote>
-<pre>&nbsp;</pre>
-  <p>&nbsp;</p>
 <hr>
 
 <!-- generate-section-numbers=false -->
@@ -4080,82 +4087,82 @@ ISO/IEC 9945 result and the bottom value is the Windows result. <br>
 <td><code>c:</code></td>
 <td><code>c:</code></td>
 <td><code>c:</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><span style="background-color: #CCFFCC"><code>c:</code><br><font size="-1"><i>empty</i></font></span></td>
+<td><code>c:</code><br><font size="-1"><i>empty</i></font></td>
 <td><font size="-1"><i>empty</i></font></td>
 <td><code>c:</code></td>
 </tr>
 <tr>
 <td><code>c:/</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:,.</code><br><code>c:,/</code></span></td>
+<td><code>c:,.</code><br><code>c:,/</code></td>
 <td><code>c:/</code></td>
 <td><code>c:/</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>/</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:/</code><br><font size="-1"><i>empty</i></font></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
+<td><code>c:/</code><br><font size="-1"><i>empty</i></font></td>
 <td><code>c:</code></td>
-<td><span style="background-color: #CCFFCC"><code>.</code><br><code>/</code></span></td>
+<td><code>.</code><br><code>/</code></td>
 </tr>
 <tr>
 <td><code>c:foo</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo</code><br><code>c:,foo</code></span></td>
+<td><code>c:foo</code><br><code>c:,foo</code></td>
 <td><code>c:foo</code></td>
 <td><code>c:foo</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo</code><br><code>foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo</code><br><code>foo</code></span></td>
+<td><code>c:foo</code><br><code>foo</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><code>c:foo</code><br><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:/foo</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:,foo</code><br><code>c:,/,foo</code></span></td>
+<td><code>c:,foo</code><br><code>c:,/,foo</code></td>
 <td><code>c:/foo</code></td>
 <td><code>c:/foo</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>/</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:/foo</code><br><code>foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:</code><br><code>c:/</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
+<td><code>c:/foo</code><br><code>foo</code></td>
+<td><code>c:</code><br><code>c:/</code></td>
 <td><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:foo/</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo,.</code><br><code>c:,foo,.</code></span></td>
+<td><code>c:foo,.</code><br><code>c:,foo,.</code></td>
 <td><code>c:foo/</code></td>
 <td><code>c:foo/</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo/</code><br><code>foo/</code></span></td>
+<td><code>c:foo/</code><br><code>foo/</code></td>
 <td><code>c:foo</code></td>
 <td><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:/foo/</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:,foo,.</code><br><code>c:,/,foo,.</code></span></td>
+<td><code>c:,foo,.</code><br><code>c:,/,foo,.</code></td>
 <td><code>c:/foo/</code></td>
 <td><code>c:/foo/</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>/</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:/foo/</code><br><code>foo/</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
+<td><code>c:/foo/</code><br><code>foo/</code></td>
 <td><code>c:/foo</code></td>
 <td><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:/foo/bar</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:,foo,bar</code><br><code>c:,/,foo,bar</code></span></td>
+<td><code>c:,foo,bar</code><br><code>c:,/,foo,bar</code></td>
 <td><code>c:/foo/bar</code></td>
 <td><code>c:/foo/bar</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>/</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:/foo/bar</code><br><code>foo/bar</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
+<td><code>c:/foo/bar</code><br><code>foo/bar</code></td>
 <td><code>c:/foo</code></td>
 <td><code>bar</code></td>
 </tr>
@@ -4164,96 +4171,96 @@ ISO/IEC 9945 result and the bottom value is the Windows result. <br>
 <td><code>prn:</code></td>
 <td><code>prn:</code></td>
 <td><code>prn:</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>prn:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>prn:</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>prn:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>prn:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><span style="background-color: #CCFFCC"><code>prn:</code><br><font size="-1"><i>empty</i></font></span></td>
+<td><code>prn:</code><br><font size="-1"><i>empty</i></font></td>
 <td><font size="-1"><i>empty</i></font></td>
 <td><code>prn:</code></td>
 </tr>
 <tr>
 <td><code>c:\</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\</code><br><code>c:,/</code></span></td>
+<td><code>c:\</code><br><code>c:,/</code></td>
 <td><code>c:\</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\</code><br><code>c:/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:\</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>\</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\</code><br><font size="-1"><i>empty</i></font></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\</code><br><code>\</code></span></td>
+<td><code>c:\</code><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
+<td><code>c:\</code><br><font size="-1"><i>empty</i></font></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><code>c:\</code><br><code>\</code></td>
 </tr>
 <tr>
 <td><code>c:foo</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo</code><br><code>c:,foo</code></span></td>
+<td><code>c:foo</code><br><code>c:,foo</code></td>
 <td><code>c:foo</code></td>
 <td><code>c:foo</code></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo</code><br><code>foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo</code><br><code>foo</code></span></td>
+<td><code>c:foo</code><br><code>foo</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><code>c:foo</code><br><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:\foo</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo</code><br><code>c:,/,foo</code></span></td>
+<td><code>c:\foo</code><br><code>c:,/,foo</code></td>
 <td><code>c:\foo</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo</code><br><code>c:/foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:\</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>\</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo</code><br><code>foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:\</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo</code><br><code>foo</code></span></td>
+<td><code>c:\foo</code><br><code>c:/foo</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
+<td><code>c:\foo</code><br><code>foo</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
+<td><code>c:\foo</code><br><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:foo\</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo\</code><br><code>c:,foo,.</code></span></td>
+<td><code>c:foo\</code><br><code>c:,foo,.</code></td>
 <td><code>c:foo\</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo\</code><br><code>c:foo/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
+<td><code>c:foo\</code><br><code>c:foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo\</code><br><code>foo\</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:foo\</code><br><code>.</code></span></td>
+<td><code>c:foo\</code><br><code>foo\</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:foo</code></td>
+<td><code>c:foo\</code><br><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:\foo\</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo\</code><br><code>c:,/,foo,.</code></span></td>
+<td><code>c:\foo\</code><br><code>c:,/,foo,.</code></td>
 <td><code>c:\foo\</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo\</code><br><code>c:/foo/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:\</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>\</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo\</code><br><code>foo\</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:\foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo\</code><br><code>.</code></span></td>
+<td><code>c:\foo\</code><br><code>c:/foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
+<td><code>c:\foo\</code><br><code>foo\</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:\foo</code></td>
+<td><code>c:\foo\</code><br><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:\foo/</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo,.</code><br><code>c:,/,foo,.</code></span></td>
+<td><code>c:\foo,.</code><br><code>c:,/,foo,.</code></td>
 <td><code>c:\foo/</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo/</code><br><code>c:/foo/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:\</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>\</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:\foo/</code><br><code>foo/</code></span></td>
+<td><code>c:\foo/</code><br><code>c:/foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
+<td><code>c:\foo/</code><br><code>foo/</code></td>
 <td><code>c:\foo</code></td>
 <td><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:/foo\bar</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:,foo\bar</code><br><code>c:,/,foo,bar</code></span></td>
+<td><code>c:,foo\bar</code><br><code>c:,/,foo,bar</code></td>
 <td><code>c:/foo\bar</code></td>
-<td><span style="background-color: #CCFFCC"><code>c:/foo\bar</code><br><code>c:/foo/bar</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:/</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>c:</code></span></td>
-<td><span style="background-color: #CCFFCC"><font size="-1"><i>empty</i></font><br><code>/</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:/foo\bar</code><br><code>foo\bar</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>c:</code><br><code>c:/foo</code></span></td>
-<td><span style="background-color: #CCFFCC"><code>foo\bar</code><br><code>bar</code></span></td>
+<td><code>c:/foo\bar</code><br><code>c:/foo/bar</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
+<td><code>c:/foo\bar</code><br><code>foo\bar</code></td>
+<td><code>c:</code><br><code>c:/foo</code></td>
+<td><code>foo\bar</code><br><code>bar</code></td>
 </tr>
 </table>
 <h2><a name="long-path-warning"></a>Warning: Long paths on Windows and the
@@ -4275,7 +4282,7 @@ Read the following cautions carefully!</p>
 <ul>
   <li>Individual components of a path are still are limited to whatever is
   supported for the particular filesystem, commonly 255 characters.</li>
-  <li>Only backslashes only are acceptable as directory separators. Slashes are
+  <li>Only backslashes are acceptable as directory separators. Slashes are
   not treated as separators.</li>
   <li>All paths must be absolute - relative paths are not allowed.</li>
   <li>Once an absolute path grows beyond 260 characters, it is essentially
