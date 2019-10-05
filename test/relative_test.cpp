@@ -48,6 +48,13 @@ namespace
     BOOST_TEST(path("a/b/c").lexically_relative("a/x/y") == "../../b/c");
     BOOST_TEST(path("a/b/c").lexically_relative("a/b/x/y") == "../../c");
     BOOST_TEST(path("a/b/c").lexically_relative("a/b/c/x/y/z") == "../../..");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/") == "b/c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/.") == "b/c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/./") == "b/c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/..") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/../") == "");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/d/..") == "c");
+    BOOST_TEST(path("a/b/c").lexically_relative("a/b/d/../") == "c");
 
     // paths unrelated except first element, and first element is root directory
     BOOST_TEST(path("/a/b/c").lexically_relative("/x") == "../a/b/c");

@@ -32,6 +32,7 @@
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <iterator>
+#include <utility>
 #include <cstddef>
 #include <cstring>
 #include <cassert>
@@ -386,16 +387,31 @@ namespace filesystem
 
   BOOST_FILESYSTEM_DECL path path::lexically_relative(const path& base) const
   {
-    std::pair<path::iterator, path::iterator> mm
-      = detail::mismatch(begin(), end(), base.begin(), base.end());
-    if (mm.first == begin() && mm.second == base.begin())
+    path::iterator b = begin(), e = end(), base_b = base.begin(), base_e = base.end();
+    std::pair<path::iterator, path::iterator> mm = detail::mismatch(b, e, base_b, base_e);
+    if (mm.first == b && mm.second == base_b)
       return path();
-    if (mm.first == end() && mm.second == base.end())
+    if (mm.first == e && mm.second == base_e)
       return detail::dot_path();
+
+    std::ptrdiff_t n = 0;
+    for (; mm.second != base_e; ++mm.second)
+    {
+      path const& p = *mm.second;
+      if (p == detail::dot_dot_path())
+        --n;
+      else if (!p.empty() && p != detail::dot_path())
+        ++n;
+    }
+    if (n < 0)
+      return path();
+    if (n == 0 && (mm.first == e || mm.first->empty()))
+      return detail::dot_path();
+
     path tmp;
-    for (; mm.second != base.end(); ++mm.second)
+    for (; n > 0; --n)
       tmp /= detail::dot_dot_path();
-    for (; mm.first != end(); ++mm.first)
+    for (; mm.first != e; ++mm.first)
       tmp /= *mm.first;
     return tmp;
   }
