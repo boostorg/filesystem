@@ -28,7 +28,7 @@ matrix:
 # gcc, Linux
     - os: linux
       dist: trusty
-      compiler: g++-4.4
+      compiler: gcc-4.4
       env: TOOLSET=gcc COMPILER=g++-4.4 CXXSTD=98,0x
       addons:
         apt:
@@ -39,7 +39,7 @@ matrix:
 
     - os: linux
       dist: trusty
-      compiler: g++-4.6
+      compiler: gcc-4.6
       env: TOOLSET=gcc COMPILER=g++-4.6 CXXSTD=03,0x
       addons:
         apt:
@@ -50,7 +50,7 @@ matrix:
 
     - os: linux
       dist: trusty
-      compiler: g++-4.7
+      compiler: gcc-4.7
       env: TOOLSET=gcc COMPILER=g++-4.7 CXXSTD=03,11
       addons:
         apt:
@@ -61,7 +61,7 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: g++-4.8
+      compiler: gcc-4.8
       env: TOOLSET=gcc COMPILER=g++-4.8 CXXSTD=03,11
       addons:
         apt:
@@ -72,7 +72,7 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: g++-4.9
+      compiler: gcc-4.9
       env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=03,11
       addons:
         apt:
@@ -83,7 +83,7 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: g++-5
+      compiler: gcc-5
       env: TOOLSET=gcc COMPILER=g++-5 CXXSTD=03,11,14,1z
       addons:
         apt:
@@ -94,7 +94,7 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: g++-6
+      compiler: gcc-6
       env: TOOLSET=gcc COMPILER=g++-6 CXXSTD=03,11,14,1z
       addons:
         apt:
@@ -105,7 +105,7 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: g++-7
+      compiler: gcc-7
       env: TOOLSET=gcc COMPILER=g++-7 CXXSTD=03,11,14,17
       addons:
         apt:
@@ -116,7 +116,7 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: g++-8
+      compiler: gcc-8
       env: TOOLSET=gcc COMPILER=g++-8 CXXSTD=03,11,14,17
       addons:
         apt:
@@ -126,7 +126,7 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc-9
       env: TOOLSET=gcc COMPILER=g++-9 CXXSTD=03,11,14,17
       addons:
@@ -136,10 +136,10 @@ matrix:
             - g++-9-multilib
             - linux-libc-dev:i386
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
 
     - os: linux
-      dist: xenial
+      dist: bionic
       compiler: gcc-UBSAN
       env: UBSAN=1 TOOLSET=gcc COMPILER=g++-9 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1 LINKFLAGS=-fuse-ld=gold
       addons:
@@ -147,7 +147,7 @@ matrix:
           packages:
             - g++-9
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
 
 # clang, Linux
     - os: linux
@@ -302,57 +302,80 @@ matrix:
 
     - os: linux
       dist: xenial
-      compiler: clang-UBSAN
-      env: UBSAN=1 TOOLSET=clang COMPILER=clang++-8 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1
+      compiler: clang-9
+      env: TOOLSET=clang COMPILER=clang++-9 CXXSTD=03,11,14,17
       addons:
         apt:
           packages:
-            - clang-8
-            - g++-8-multilib
+            - clang-9
+            - g++-9-multilib
             - linux-libc-dev:i386
           sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+
+    - os: linux
+      dist: xenial
+      compiler: clang-UBSAN
+      env: UBSAN=1 TOOLSET=clang COMPILER=clang++-9 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1
+      addons:
+        apt:
+          packages:
+            - clang-9
+            - g++-9-multilib
+            - linux-libc-dev:i386
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
 
     - os: linux
       dist: xenial
       compiler: clang-libc++
-      env: TOOLSET=clang COMPILER=clang++-8 CXXSTD=03,11,14,17 CXXFLAGS="-stdlib=libc++" LINKFLAGS="-stdlib=libc++"
+      env: TOOLSET=clang COMPILER=clang++-9 CXXSTD=03,11,14,17 CXXFLAGS="-stdlib=libc++" LINKFLAGS="-stdlib=libc++"
       addons:
         apt:
           packages:
-            - clang-8
-            - g++-8-multilib
+            - clang-9
+            - g++-9-multilib
             - linux-libc-dev:i386
-            - libc++-8-dev
-            - libc++abi-8-dev
+            - libc++-9-dev
+            - libc++abi-9-dev
           sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
 
     - os: linux
       dist: xenial
       compiler: clang-libc++-UBSAN
-      env: UBSAN=1 TOOLSET=clang COMPILER=clang++-8 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1 CXXFLAGS="-stdlib=libc++" LINKFLAGS="-stdlib=libc++"
+      env: UBSAN=1 TOOLSET=clang COMPILER=clang++-9 CXXSTD=03,11,14,17 UBSAN_OPTIONS=print_stacktrace=1 CXXFLAGS="-stdlib=libc++" LINKFLAGS="-stdlib=libc++"
       addons:
         apt:
           packages:
-            - clang-8
-            - g++-8-multilib
+            - clang-9
+            - g++-9-multilib
             - linux-libc-dev:i386
-            - libc++-8-dev
-            - libc++abi-8-dev
+            - libc++-9-dev
+            - libc++abi-9-dev
           sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+            - sourceline: "deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
 
 # clang, OS X
     - os: osx
-      compiler: clang++
       env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
+      osx_image: xcode9.4
+
+    - os: osx
+      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
+      osx_image: xcode10.3
+
+    - os: osx
+      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,17
+      osx_image: xcode11.2
 
 install:
   - GIT_FETCH_JOBS=8
@@ -376,7 +399,7 @@ script:
   - |-
     echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
   - BUILD_JOBS=`(nproc || sysctl -n hw.ncpu) 2> /dev/null`
-  - ./b2 -j $BUILD_JOBS libs/filesystem/test toolset=$TOOLSET cxxstd=$CXXSTD ${UBSAN:+cxxflags=-fsanitize=undefined cxxflags=-fno-sanitize-recover=undefined linkflags=-fsanitize=undefined define=UBSAN=1 debug-symbols=on} ${CXXFLAGS:+cxxflags="$CXXFLAGS"} ${LINKFLAGS:+linkflags="$LINKFLAGS"}
+  - ./b2 -j $BUILD_JOBS libs/filesystem/test toolset=$TOOLSET cxxstd=$CXXSTD ${UBSAN:+cxxflags=-fsanitize=undefined cxxflags=-fno-sanitize-recover=undefined linkflags=-fsanitize=undefined define=UBSAN=1 debug-symbols=on visibility=global} ${CXXFLAGS:+cxxflags="$CXXFLAGS"} ${LINKFLAGS:+linkflags="$LINKFLAGS"}
 
 notifications:
   email:
