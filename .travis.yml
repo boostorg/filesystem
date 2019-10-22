@@ -347,13 +347,14 @@ matrix:
               key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
 
 # clang, OS X
-    - os: osx
-      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
-      osx_image: xcode9.4
-
-    - os: osx
-      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
-      osx_image: xcode10.3
+# OS X builds are slow on Travis CI
+#    - os: osx
+#      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
+#      osx_image: xcode9.4
+#
+#    - os: osx
+#      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,1z
+#      osx_image: xcode10.3
 
     - os: osx
       env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,17
