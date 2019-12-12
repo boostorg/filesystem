@@ -28,10 +28,11 @@ environment:
       ADDRMD: 32,64
       CXXSTD: 14,17
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-    - TOOLSET: clang-win
-      ADDRMD: 32,64
-      CXXSTD: 14,17
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+# clang-win fails to link the library
+#    - TOOLSET: clang-win
+#      ADDRMD: 32,64
+#      CXXSTD: 14,17
+#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     - TOOLSET: gcc
       CXXSTD: 03,11,14,1z
       ADDPATH: C:\cygwin\bin;
