@@ -65,7 +65,7 @@
 #include <vector>
 #include <cstring>
 #include <cassert>
-#include <boost/detail/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
 namespace fs = boost::filesystem;

@@ -32,7 +32,7 @@
 # endif
 
 #include <boost/system/error_code.hpp>
-#include <boost/detail/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 #include <iostream>
 
