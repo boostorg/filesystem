@@ -128,7 +128,7 @@
 #   include <io.h>
 #   include <windows.h>
 #   include <winnt.h>
-#   if defined(BOOST_BORLANDC) || defined(__MWERKS__)
+#   if defined(__BORLANDC__) || defined(__MWERKS__)
 #     if defined(BOOST_BORLANDC)
         using std::time_t;
 #     endif
