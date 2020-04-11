@@ -1194,7 +1194,7 @@ namespace
     ec.clear();
     BOOST_TEST(!fs::create_directories("/foo", ec));  // may be OK on Windows
                                                       //  but unlikely to be OK on POSIX
-    BOOST_TEST(ec);
+    BOOST_TEST(!ec);
 #endif
 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
@@ -1754,6 +1754,18 @@ namespace
     BOOST_TEST(time_diff >= -60.0 && time_diff <= 60.0);
   }
 
+  //  creation_time_tests  ----------------------------------------------------------------//
+
+  void creation_time_tests(const fs::path& dirx)
+  {
+    cout << "creation_time_tests..." << endl;
+    fs::path f1x = dirx / "foobar2";
+    create_file(f1x, "foobar2");
+
+    std::time_t ft = fs::last_write_time(f1x);
+    BOOST_TEST(ft == fs::creation_time(f1x));
+  }
+
   //  platform_specific_tests  ---------------------------------------------------------//
 
   void platform_specific_tests()
@@ -2300,6 +2312,7 @@ int cpp_main(int argc, char* argv[])
   if (create_symlink_ok)  // only if symlinks supported
     remove_symlink_tests();
   write_time_tests(dir);
+  creation_time_tests(dir);
   temp_directory_path_tests();
 
   platform_specific_tests();  // do these last since they take a lot of time on Windows,

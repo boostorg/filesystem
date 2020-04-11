@@ -1399,6 +1399,40 @@ void last_write_time(const path& p, const std::time_t new_time,
 # endif
 }
 
+BOOST_FILESYSTEM_DECL
+std::time_t creation_time(const path& p, system::error_code* ec)
+{
+# ifdef BOOST_POSIX_API
+
+  struct statx path_stat;
+  if (error(::statx(AT_FDCWD, p.c_str(), AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
+	AT_STATX_SYNC_AS_STAT, STATX_BTIME, &path_stat)!= 0 ? BOOST_ERRNO : 0,
+    p, ec, "boost::filesystem::creation_time"))
+      return std::time_t(-1);
+  return std::time_t(path_stat.stx_btime.tv_sec);
+
+# else
+
+  handle_wrapper hw(
+    create_file_handle(p.c_str(), 0,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+
+  if (error(hw.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
+    p, ec, "boost::filesystem::creation_time"))
+      return std::time_t(-1);
+
+  FILETIME lct;
+
+  if (error(::GetFileTime(hw.handle, &lct, 0, 0)== 0 ? BOOST_ERRNO : 0,
+    p, ec, "boost::filesystem::creation_time"))
+      return std::time_t(-1);
+
+  return to_time_t(lct);
+
+# endif
+}
+
 # ifdef BOOST_POSIX_API
 const perms active_bits(all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit);
 inline mode_t mode_cast(perms prms) { return prms & active_bits; }

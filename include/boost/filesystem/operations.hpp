@@ -113,6 +113,8 @@ BOOST_FILESYSTEM_DECL
 void last_write_time(const path& p, const std::time_t new_time,
                      system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
+std::time_t creation_time(const path& p, system::error_code* ec=0);
+BOOST_FILESYSTEM_DECL
 void permissions(const path& p, perms prms, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
 path read_symlink(const path& p, system::error_code* ec=0);
@@ -359,6 +361,13 @@ inline
 void last_write_time(const path& p, const std::time_t new_time,
                      system::error_code& ec) BOOST_NOEXCEPT
                                      {detail::last_write_time(p, new_time, &ec);}
+inline
+std::time_t creation_time(const path& p) {return detail::creation_time(p);}
+
+inline
+std::time_t creation_time(const path& p, system::error_code& ec) BOOST_NOEXCEPT
+                                     {return detail::creation_time(p, &ec);}
+
 inline
 void permissions(const path& p, perms prms)
                                      {detail::permissions(p, prms);}
