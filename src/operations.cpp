@@ -119,6 +119,15 @@
 #   if _POSIX_C_SOURCE < 200809L
 #     include <utime.h>
 #   endif
+#   ifdef __GLIBC__
+#     include <gnu/libc-version.h>
+#     if __GLIBC_MINOR__ > 27
+#       define BOOST_HAS_NATIVE_STATX 1
+#     endif
+#   endif
+#   ifndef BOOST_HAS_NATIVE_STATX
+#     include "linux_statx.hpp"
+#   endif
 #   include "limits.h"
 
 # else // BOOST_WINDOWS_API

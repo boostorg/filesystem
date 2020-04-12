@@ -49,6 +49,10 @@ using std::endl;
 #include <ctime>
 #include <cstdlib> // for system(), getenv(), etc.
 
+#if defined(BOOST_POSIX_API) && defined(__linux__)
+# include <linux/version.h>
+#endif
+
 #ifdef BOOST_WINDOWS_API
 # include <windows.h>
 
@@ -1194,7 +1198,7 @@ namespace
     ec.clear();
     BOOST_TEST(!fs::create_directories("/foo", ec));  // may be OK on Windows
                                                       //  but unlikely to be OK on POSIX
-    BOOST_TEST(!ec);
+    BOOST_TEST(ec);
 #endif
 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
@@ -1762,8 +1766,12 @@ namespace
     fs::path f1x = dirx / "foobar2";
     create_file(f1x, "foobar2");
 
+#if defined(BOOST_POSIX_API) && defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
+    BOOST_TEST(std::time_t(-1) == fs::creation_time(f1x));
+#else
     std::time_t ft = fs::last_write_time(f1x);
     BOOST_TEST(ft == fs::creation_time(f1x));
+#endif
   }
 
   //  platform_specific_tests  ---------------------------------------------------------//
