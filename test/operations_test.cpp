@@ -1766,12 +1766,14 @@ namespace
     fs::path f1x = dirx / "foobar2";
     create_file(f1x, "foobar2");
 
-#if defined(BOOST_POSIX_API) && defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
+# ifdef BOOST_POSIX_API
+#  if defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
     BOOST_TEST(std::time_t(-1) == fs::creation_time(f1x));
-#else
+#  endif
+# else
     std::time_t ft = fs::last_write_time(f1x);
     BOOST_TEST(ft == fs::creation_time(f1x));
-#endif
+# endif
   }
 
   //  platform_specific_tests  ---------------------------------------------------------//
