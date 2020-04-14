@@ -257,6 +257,15 @@ namespace
     fs::path to;
   };
 
+# ifdef BOOST_POSIX_API
+#  if defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
+  void bad_creation_time_when_kernel_not_supported()
+  {
+    fs::creation_time(".");
+  }
+#   endif
+# endif
+
   //------------------------------ debugging aids --------------------------------------//
 
   //std::ostream& operator<<(std::ostream& os, const fs::file_status& s)
@@ -1768,7 +1777,7 @@ namespace
 
 # ifdef BOOST_POSIX_API
 #  if defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
-    BOOST_TEST(std::time_t(-1) == fs::creation_time(f1x));
+    BOOST_TEST(CHECK_EXCEPTION(bad_creation_time_when_kernel_not_supported, ENOSYS));
 #  endif
 # else
     std::time_t ft = fs::last_write_time(f1x);
