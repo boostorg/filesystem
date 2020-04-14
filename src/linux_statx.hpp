@@ -20,6 +20,7 @@
 #include <linux/version.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <errno.h>
 
 /*
  * Timestamp structure for the timestamps in struct statx.
@@ -155,6 +156,7 @@ int statx(int fd, const char* path, int flags, unsigned int mask, statx* buf)
 # if defined(__NR_statx) && LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
   return ::syscall(__NR_statx, fd, path, flags, mask, buf);
 # else
+  errno = ENOSYS;
   return -1;
 #endif
 }
