@@ -257,14 +257,10 @@ namespace
     fs::path to;
   };
 
-# ifdef BOOST_POSIX_API
-#  if defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
-  void bad_creation_time_when_kernel_not_supported()
+  void bad_creation_time()
   {
     fs::creation_time(".");
   }
-#   endif
-# endif
 
   //------------------------------ debugging aids --------------------------------------//
 
@@ -1776,8 +1772,10 @@ namespace
     create_file(f1x, "foobar2");
 
 # ifdef BOOST_POSIX_API
-#  if defined(__linux__) && LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
-    BOOST_TEST(CHECK_EXCEPTION(bad_creation_time_when_kernel_not_supported, ENOSYS));
+#  ifdef __linux__
+#    if LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
+    BOOST_TEST(CHECK_EXCEPTION(bad_creation_time, ENOSYS));
+#    endif
 #  endif
 # else
     std::time_t ft = fs::last_write_time(f1x);
