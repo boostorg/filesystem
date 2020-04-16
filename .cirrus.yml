@@ -1,0 +1,33 @@
+# Copyright 2016, 2017 Peter Dimov
+# Copyright 2019 Andrey Semashev
+# Copyright 2020 Seyyed Soroosh Hosseinalipour
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+
+freebsd_instance:
+    image-family: freebsd-12-0
+
+task:
+    name: full build
+    install_script:
+        - GIT_FETCH_JOBS=8
+        - BOOST_BRANCH=develop
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then BOOST_BRANCH=master; fi
+        - cd ..
+        - git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
+        - cd boost-root
+        - git submodule init tools/build
+        - git submodule init tools/boostdep
+        - git submodule init tools/boost_install
+        - git submodule init libs/headers
+        - git submodule init libs/config
+        - git submodule update --jobs $GIT_FETCH_JOBS
+        - cp -r $TRAVIS_BUILD_DIR/* libs/filesystem
+        - python tools/boostdep/depinst/depinst.py --git_args "--jobs $GIT_FETCH_JOBS" filesystem
+        - ./bootstrap.sh
+        - ./b2 headers
+    test_script:
+        - |-
+          echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
+        - BUILD_JOBS=`(nproc || sysctl -n hw.ncpu) 2> /dev/null`
+        - ./b2 -j $BUILD_JOBS libs/filesystem/test toolset=$TOOLSET cxxstd=$CXXSTD ${UBSAN:+cxxflags=-fsanitize=undefined cxxflags=-fno-sanitize-recover=undefined linkflags=-fsanitize=undefined define=UBSAN=1 debug-symbols=on visibility=global} ${CXXFLAGS:+cxxflags="$CXXFLAGS"} ${LINKFLAGS:+linkflags="$LINKFLAGS"}
