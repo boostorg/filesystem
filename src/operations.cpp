@@ -1447,6 +1447,12 @@ std::time_t creation_time(const path& p, system::error_code* ec)
   return std::time_t(path_stat.st_birthtimespec.tv_sec);
 #     endif
 #   endif
+# elif defined(__FreeBSD__)
+  struct stat path_stat;
+  if (error(::stat(p.c_str(), &path_stat) != 0 ? BOOST_ERRNO : 0, p, ec,
+	"boost::filesystem::creation_time"))
+      return std::time_t(-1);
+  return std::time_t(path_stat.st_birthtim.tv_sec);
 # else
   // TODO: Check for symbolic file
   error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time does not support on this platform");
