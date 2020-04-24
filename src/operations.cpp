@@ -247,6 +247,11 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
 
+// Fallback for MinGW/Cygwin
+#   ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
+#    define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
+#   endif
+
 # endif
 
 namespace boost {
