@@ -1121,16 +1121,18 @@ BOOST_FILESYSTEM_DECL
 bool equivalent(const path& p1, const path& p2, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
-  struct stat s2;
-  int e2(::stat(p2.c_str(), &s2));
-  struct stat s1;
-  int e1(::stat(p1.c_str(), &s1));
+  // p2 is done first, so any error reported is for p1
+  struct stat s2 = {};
+  int e2 = ::stat(p2.c_str(), &s2);
+  struct stat s1 = {};
+  int e1 = ::stat(p1.c_str(), &s1);
 
-  if (e1 != 0 || e2 != 0)
+  if (BOOST_UNLIKELY(e1 != 0 || e2 != 0))
   {
     // if one is invalid and the other isn't then they aren't equivalent,
     // but if both are invalid then it is an error
-    error (e1 != 0 && e2 != 0, p1, p2, ec, "boost::filesystem::equivalent");
+    if (e1 != 0 && e2 != 0)
+      error(errno, p1, p2, ec, "boost::filesystem::equivalent");
     return false;
   }
 
@@ -1170,14 +1172,12 @@ bool equivalent(const path& p1, const path& p2, system::error_code* ec)
         FILE_FLAG_BACKUP_SEMANTICS,
         0));
 
-  if (h1.handle == INVALID_HANDLE_VALUE
-    || h2.handle == INVALID_HANDLE_VALUE)
+  if (BOOST_UNLIKELY(h1.handle == INVALID_HANDLE_VALUE || h2.handle == INVALID_HANDLE_VALUE))
   {
     // if one is invalid and the other isn't, then they aren't equivalent,
     // but if both are invalid then it is an error
-    error((h1.handle == INVALID_HANDLE_VALUE
-      && h2.handle == INVALID_HANDLE_VALUE) ? BOOST_ERROR_NOT_SUPPORTED : 0, p1, p2, ec,
-        "boost::filesystem::equivalent");
+    if (h1.handle == INVALID_HANDLE_VALUE && h2.handle == INVALID_HANDLE_VALUE)
+      error(BOOST_ERRNO, p1, p2, ec, "boost::filesystem::equivalent");
     return false;
   }
 
