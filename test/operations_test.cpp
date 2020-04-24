@@ -1806,8 +1806,13 @@ namespace
       // Directory junctions are very similar to symlinks, but have some performance
       // and other advantages over symlinks. They can be created from the command line
       // with "mklink /j junction-name target-path".
-
-      if (create_symlink_ok)  // only if symlinks supported
+      
+      // Make sure that mklink does exist, it doesn't for e.g. cygwin
+      if(std::system("mklink /?") != 0)
+      {
+        cout << "  junction point could not be created." << endl;
+        cout << "  Skipping junction tests." << endl;
+      } else
       {
         cout << "  directory junction tests..." << endl;
         BOOST_TEST(fs::exists(dir));
@@ -1831,24 +1836,23 @@ namespace
         //std::system("dir");
         fs::current_path(cur_path);
         //cout << "    current_path() is " << fs::current_path() << endl;
-
+        
         BOOST_TEST(fs::exists(junc));
         BOOST_TEST(fs::is_symlink(junc));
         BOOST_TEST(fs::is_directory(junc));
         BOOST_TEST(!fs::is_regular_file(junc));
         BOOST_TEST(fs::exists(junc / "d1f1"));
         BOOST_TEST(fs::is_regular_file(junc / "d1f1"));
-
+        
         int count = 0;
-        for (fs::directory_iterator itr(junc);
-          itr != fs::directory_iterator(); ++itr)
+        for (fs::directory_iterator itr(junc); itr != fs::directory_iterator(); ++itr)
         {
           //cout << itr->path() << endl;
           ++count;
         }
         cout << "    iteration count is " << count << endl;
         BOOST_TEST(count > 0);
-
+        
         fs::rename(junc, new_junc);
         BOOST_TEST(!fs::exists(junc));
         BOOST_TEST(fs::exists(new_junc));
@@ -1857,7 +1861,7 @@ namespace
         BOOST_TEST(!fs::is_regular_file(new_junc));
         BOOST_TEST(fs::exists(new_junc / "d1f1"));
         BOOST_TEST(fs::is_regular_file(new_junc / "d1f1"));
-
+        
         fs::remove(new_junc);
         BOOST_TEST(!fs::exists(new_junc / "d1f1"));
         BOOST_TEST(!fs::exists(new_junc));
