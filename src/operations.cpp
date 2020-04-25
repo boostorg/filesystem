@@ -1529,7 +1529,7 @@ path read_symlink(const path& p, system::error_code* ec)
 
   union info_t
   {
-    char buf[REPARSE_DATA_BUFFER_HEADER_SIZE+MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+    char buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     REPARSE_DATA_BUFFER rdb;
   } info;
 
