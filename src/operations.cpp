@@ -247,6 +247,11 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
 
+// Fallback for MinGW/Cygwin
+#   ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
+#    define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
+#   endif
+
 # endif
 
 namespace boost {
@@ -872,16 +877,9 @@ BOOST_FILESYSTEM_DECL
 void copy_symlink(const path& existing_symlink, const path& new_symlink,
   system::error_code* ec)
 {
-# if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
-  error(BOOST_ERROR_NOT_SUPPORTED, new_symlink, existing_symlink, ec,
-    "boost::filesystem::copy_symlink");
-
-# else  // modern Windows or BOOST_POSIX_API
   path p(read_symlink(existing_symlink, ec));
   if (ec != 0 && *ec) return;
   create_symlink(p, new_symlink, ec);
-
-# endif
 }
 
 BOOST_FILESYSTEM_DECL
@@ -973,64 +971,44 @@ BOOST_FILESYSTEM_DECL
 void create_directory_symlink(const path& to, const path& from,
                                system::error_code* ec)
 {
-# if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
-
-  error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
-    "boost::filesystem::create_directory_symlink");
-# else
-
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT >= 0x0600
-      // see if actually supported by Windows runtime dll
-      if (error(!create_symbolic_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec,
-          "boost::filesystem::create_directory_symlink"))
-        return;
-#   endif
+#if defined(BOOST_WINDOWS_API)
+  // see if actually supported by Windows runtime dll
+  if (error(!create_symbolic_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec,
+      "boost::filesystem::create_directory_symlink"))
+    return;
+#endif
 
   error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(),
     SYMBOLIC_LINK_FLAG_DIRECTORY) ? BOOST_ERRNO : 0,
     to, from, ec, "boost::filesystem::create_directory_symlink");
-# endif
 }
 
 BOOST_FILESYSTEM_DECL
 void create_hard_link(const path& to, const path& from, error_code* ec)
 {
-# if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0500  // SDK earlier than Win 2K
-
-  error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
-    "boost::filesystem::create_hard_link");
-# else
-
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT >= 0x0500
-      // see if actually supported by Windows runtime dll
-      if (error(!create_hard_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec,
-          "boost::filesystem::create_hard_link"))
-        return;
-#   endif
+#if defined(BOOST_WINDOWS_API)
+  // see if actually supported by Windows runtime dll
+  if (error(!create_hard_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec,
+      "boost::filesystem::create_hard_link"))
+    return;
+#endif
 
   error(!BOOST_CREATE_HARD_LINK(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0, to, from, ec,
     "boost::filesystem::create_hard_link");
-# endif
 }
 
 BOOST_FILESYSTEM_DECL
 void create_symlink(const path& to, const path& from, error_code* ec)
 {
-# if defined(BOOST_WINDOWS_API) && _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
-  error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec,
-    "boost::filesystem::create_directory_symlink");
-# else
-
-#   if defined(BOOST_WINDOWS_API) && _WIN32_WINNT >= 0x0600
-      // see if actually supported by Windows runtime dll
-      if (error(!create_symbolic_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec,
-          "boost::filesystem::create_symlink"))
-        return;
-#   endif
+#if defined(BOOST_WINDOWS_API)
+  // see if actually supported by Windows runtime dll
+  if (error(!create_symbolic_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec,
+      "boost::filesystem::create_symlink"))
+    return;
+#endif
 
   error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), 0) ? BOOST_ERRNO : 0,
     to, from, ec, "boost::filesystem::create_symlink");
-# endif
 }
 
 BOOST_FILESYSTEM_DECL
@@ -1547,14 +1525,11 @@ path read_symlink(const path& p, system::error_code* ec)
     }
   }
 
-# elif _WIN32_WINNT < 0x0600  // SDK earlier than Vista and Server 2008
-  error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
-        "boost::filesystem::read_symlink");
-# else  // Vista and Server 2008 SDK, or later
+# else
 
   union info_t
   {
-    char buf[REPARSE_DATA_BUFFER_HEADER_SIZE+MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+    char buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
     REPARSE_DATA_BUFFER rdb;
   } info;
 
