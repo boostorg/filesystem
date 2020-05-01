@@ -41,6 +41,8 @@
 <h2>1.74.0</h2>
 <ul>
   <li>Removed compile-time checks for support for symlinks and hardlink on Windows. Instead, a runtime check is used. (<a href="https://github.com/boostorg/filesystem/pull/142">PR#142</a>)</li>
+  <li><code>copy_file</code> implementation has been updated to perform checks on the source and target files, as required by C++20 ([fs.op.copy.file]/4.1). In particular, the operation will fail if the source or target file is not a regular file or the source and target paths identify the same file.</li>
+  <li><code>equivalent</code> no longer considers file size and last modification time in order to test whether the two paths refer to the same file. These checks could result in a false negative if the file was modified during the <code>equivalent</code> call.</li>
 </ul>
 
 <h2>1.72.0</h2>

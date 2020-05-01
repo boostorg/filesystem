@@ -77,7 +77,7 @@
 #include <boost/detail/workaround.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/assert.hpp>
-#include <new> // std::bad_alloc
+#include <new> // std::bad_alloc, std::nothrow
 #include <limits>
 #include <string>
 #include <cstddef>
@@ -233,6 +233,10 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define BOOST_MOVE_FILE(OLD,NEW)(::rename(OLD, NEW)== 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(::truncate(P, SZ)== 0)
 
+#   ifndef O_CLOEXEC
+#     define O_CLOEXEC 0
+#   endif
+
 # else  // BOOST_WINDOWS_API
 
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::SetCurrentDirectoryW(P)!= 0)
@@ -249,7 +253,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 
 // Fallback for MinGW/Cygwin
 #   ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
-#    define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
+#     define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
 #   endif
 
 # endif
@@ -382,70 +386,117 @@ inline bool not_found_error(int errval) BOOST_NOEXCEPT
   return errval == ENOENT || errval == ENOTDIR;
 }
 
+//! Returns \c true of the two \c stat structures refer to the same file
+inline bool equivalent_stat(struct ::stat const& s1, struct ::stat const& s2) BOOST_NOEXCEPT
+{
+  // According to the POSIX stat specs, "The st_ino and st_dev fields
+  // taken together uniquely identify the file within the system."
+  return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
+}
+
 bool // true if ok
 copy_file_api(const std::string& from_p,
   const std::string& to_p, bool fail_if_exists)
 {
-  BOOST_CONSTEXPR_OR_CONST std::size_t buf_sz = 65536;
-  boost::scoped_array<char> buf(new char [buf_sz]);
-  int infile=-1, outfile=-1;  // -1 means not open
+  int err = 0;
 
-  // bug fixed: code previously did a stat()on the from_file first, but that
-  // introduced a gratuitous race condition; the stat()is now done after the open()
+  int infile = ::open(from_p.c_str(), O_RDONLY | O_CLOEXEC);
+  if (BOOST_UNLIKELY(infile < 0))
+    return false;
 
-  if ((infile = ::open(from_p.c_str(), O_RDONLY))< 0)
-    { return false; }
-
-  struct stat from_stat;
-  if (::stat(from_p.c_str(), &from_stat)!= 0)
+  struct ::stat from_stat = {};
+  if (BOOST_UNLIKELY(::fstat(infile, &from_stat) != 0))
   {
+    err = errno;
+
+  fail1:
     ::close(infile);
+    errno = err;
     return false;
   }
 
-  int oflag = O_CREAT | O_WRONLY | O_TRUNC;
+  if (BOOST_UNLIKELY(!S_ISREG(from_stat.st_mode)))
+  {
+    err = ENOSYS;
+    goto fail1;
+  }
+
+  int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
   if (fail_if_exists)
     oflag |= O_EXCL;
-  if ((outfile = ::open(to_p.c_str(), oflag, from_stat.st_mode)) < 0)
+  int outfile = ::open(to_p.c_str(), oflag, from_stat.st_mode);
+  if (BOOST_UNLIKELY(outfile < 0))
   {
-    const int open_errno = errno;
-    BOOST_ASSERT(infile >= 0);
+    err = errno;
+    goto fail1;
+  }
+
+  struct ::stat to_stat = {};
+  if (BOOST_UNLIKELY(::fstat(outfile, &to_stat) != 0))
+  {
+    err = errno;
+
+  fail2:
+    ::close(outfile);
     ::close(infile);
-    errno = open_errno;
+    errno = err;
     return false;
   }
 
-  ssize_t sz, sz_read=1, sz_write;
-  while (sz_read > 0
-    && (sz_read = ::read(infile, buf.get(), buf_sz)) > 0)
+  if (BOOST_UNLIKELY(!S_ISREG(to_stat.st_mode)))
   {
-    // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
-    // Marc Rochkind, Addison-Wesley, 2004, page 94
-    sz_write = 0;
-    do
-    {
-      BOOST_ASSERT(sz_read - sz_write > 0);  // #1
-        // ticket 4438 claimed possible infinite loop if write returns 0. My analysis
-        // is that POSIX specifies 0 return only if 3rd arg is 0, and that will never
-        // happen due to loop entry and coninuation conditions. BOOST_ASSERT #1 above
-        // and #2 below added to verify that analysis.
-      if ((sz = ::write(outfile, buf.get() + sz_write,
-        sz_read - sz_write)) < 0)
-      {
-        sz_read = sz; // cause read loop termination
-        break;        //  and error reported after closes
-      }
-      BOOST_ASSERT(sz > 0);                  // #2
-      sz_write += sz;
-    } while (sz_write < sz_read);
+    err = ENOSYS;
+    goto fail2;
   }
 
-  if (::close(infile)< 0)
-    sz_read = -1;
-  if (::close(outfile)< 0)
-    sz_read = -1;
+  if (BOOST_UNLIKELY(equivalent_stat(from_stat, to_stat)))
+  {
+    err = EEXIST;
+    goto fail2;
+  }
 
-  return sz_read >= 0;
+  BOOST_CONSTEXPR_OR_CONST std::size_t buf_sz = 65536u;
+  boost::scoped_array<char> buf(new (std::nothrow) char [buf_sz]);
+  if (BOOST_UNLIKELY(!buf.get()))
+  {
+    err = ENOMEM;
+    goto fail2;
+  }
+
+  while (true)
+  {
+    ssize_t sz_read = ::read(infile, buf.get(), buf_sz);
+    if (sz_read == 0)
+      break;
+    if (BOOST_UNLIKELY(sz_read < 0))
+    {
+      err = errno;
+      if (err == EINTR)
+        continue;
+      goto fail2;
+    }
+
+    // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
+    // Marc Rochkind, Addison-Wesley, 2004, page 94
+    for (ssize_t sz_wrote = 0; sz_wrote < sz_read;)
+    {
+      ssize_t sz = ::write(outfile, buf.get() + sz_wrote, static_cast< std::size_t >(sz_read - sz_wrote));
+      if (BOOST_UNLIKELY(sz < 0))
+      {
+        err = errno;
+        if (err == EINTR)
+          continue;
+        goto fail2;
+      }
+
+      sz_wrote += sz;
+    }
+  }
+
+  ::close(outfile);
+  ::close(infile);
+
+  return true;
 }
 
 inline fs::file_type query_file_type(const path& p, error_code* ec)
@@ -1100,9 +1151,9 @@ bool equivalent(const path& p1, const path& p2, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
   // p2 is done first, so any error reported is for p1
-  struct stat s2 = {};
+  struct ::stat s2 = {};
   int e2 = ::stat(p2.c_str(), &s2);
-  struct stat s1 = {};
+  struct ::stat s1 = {};
   int e1 = ::stat(p1.c_str(), &s1);
 
   if (BOOST_UNLIKELY(e1 != 0 || e2 != 0))
@@ -1114,12 +1165,7 @@ bool equivalent(const path& p1, const path& p2, system::error_code* ec)
     return false;
   }
 
-  // both stats now known to be valid
-  return  s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino
-      // According to the POSIX stat specs, "The st_ino and st_dev fields
-      // taken together uniquely identify the file within the system."
-      // Just to be sure, size and mod time are also checked.
-      && s1.st_size == s2.st_size && s1.st_mtime == s2.st_mtime;
+  return equivalent_stat(s1, s2);
 
 # else  // Windows
 
@@ -1193,7 +1239,7 @@ boost::uintmax_t file_size(const path& p, error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   if (error(::stat(p.c_str(), &path_stat)!= 0 ? BOOST_ERRNO : 0,
       p, ec, "boost::filesystem::file_size"))
     return static_cast<boost::uintmax_t>(-1);
@@ -1227,7 +1273,7 @@ boost::uintmax_t hard_link_count(const path& p, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   return error(::stat(p.c_str(), &path_stat)!= 0 ? BOOST_ERRNO : 0,
                 p, ec, "boost::filesystem::hard_link_count")
          ? 0
@@ -1266,7 +1312,7 @@ bool is_empty(const path& p, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   if (error(::stat(p.c_str(), &path_stat)!= 0,
       p, ec, "boost::filesystem::is_empty"))
     return false;
@@ -1295,7 +1341,7 @@ std::time_t last_write_time(const path& p, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   if (error(::stat(p.c_str(), &path_stat)!= 0 ? BOOST_ERRNO : 0,
     p, ec, "boost::filesystem::last_write_time"))
       return std::time_t(-1);
@@ -1345,7 +1391,7 @@ void last_write_time(const path& p, const std::time_t new_time,
 
 #   else // _POSIX_C_SOURCE >= 200809L
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   if (error(::stat(p.c_str(), &path_stat)!= 0,
     p, ec, "boost::filesystem::last_write_time"))
       return;
@@ -1669,7 +1715,7 @@ file_status status(const path& p, error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   if (::stat(p.c_str(), &path_stat)!= 0)
   {
     const int err = errno;
@@ -1685,7 +1731,8 @@ file_status status(const path& p, error_code* ec)
         p, error_code(err, system_category())));
     return fs::file_status(fs::status_error);
   }
-  if (ec != 0) ec->clear();;
+  if (ec != 0)
+    ec->clear();
   if (S_ISDIR(path_stat.st_mode))
     return fs::file_status(fs::directory_file,
       static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
@@ -1752,7 +1799,7 @@ file_status symlink_status(const path& p, error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 
-  struct stat path_stat;
+  struct ::stat path_stat;
   if (::lstat(p.c_str(), &path_stat)!= 0)
   {
     const int err = errno;
@@ -1768,7 +1815,8 @@ file_status symlink_status(const path& p, error_code* ec)
         p, error_code(err, system_category())));
     return fs::file_status(fs::status_error);
   }
-  if (ec != 0) ec->clear();
+  if (ec != 0)
+    ec->clear();
   if (S_ISREG(path_stat.st_mode))
     return fs::file_status(fs::regular_file,
       static_cast<perms>(path_stat.st_mode) & fs::perms_mask);
