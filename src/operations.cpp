@@ -150,7 +150,14 @@ using boost::filesystem::perms;
 using boost::system::error_code;
 using boost::system::system_category;
 
-# if defined(BOOST_WINDOWS_API)
+#if defined(BOOST_POSIX_API)
+
+// At least Mac OS X 10.6 and older doesn't support O_CLOEXEC
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
+
+#else // defined(BOOST_POSIX_API)
 
 //  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the
 //  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
@@ -194,21 +201,26 @@ typedef struct _REPARSE_DATA_BUFFER {
 #define REPARSE_DATA_BUFFER_HEADER_SIZE \
   FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
 
-#endif
+#endif // !defined(REPARSE_DATA_BUFFER_HEADER_SIZE)
 
 #ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
-#define MAXIMUM_REPARSE_DATA_BUFFER_SIZE  ( 16 * 1024 )
+#define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
 #endif
 
-# ifndef FSCTL_GET_REPARSE_POINT
-#   define FSCTL_GET_REPARSE_POINT 0x900a8
-# endif
+#ifndef FSCTL_GET_REPARSE_POINT
+#define FSCTL_GET_REPARSE_POINT 0x900a8
+#endif
 
-# ifndef IO_REPARSE_TAG_SYMLINK
-#   define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
-# endif
+#ifndef IO_REPARSE_TAG_SYMLINK
+#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
+#endif
 
-# endif  // BOOST_WINDOWS_API
+// Fallback for MinGW/Cygwin
+#ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
+#define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
+#endif
+
+# endif // defined(BOOST_POSIX_API)
 
 //  POSIX/Windows macros  ----------------------------------------------------//
 
@@ -233,10 +245,6 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define BOOST_MOVE_FILE(OLD,NEW)(::rename(OLD, NEW)== 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(::truncate(P, SZ)== 0)
 
-#   ifndef O_CLOEXEC
-#     define O_CLOEXEC 0
-#   endif
-
 # else  // BOOST_WINDOWS_API
 
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::SetCurrentDirectoryW(P)!= 0)
@@ -250,11 +258,6 @@ typedef struct _REPARSE_DATA_BUFFER {
 #   define BOOST_MOVE_FILE(OLD,NEW)(::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
-
-// Fallback for MinGW/Cygwin
-#   ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
-#     define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
-#   endif
 
 # endif
 
