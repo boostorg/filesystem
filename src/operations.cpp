@@ -795,7 +795,7 @@ path canonical(const path& p, const path& base, system::error_code* ec)
       // If we don't have an absolute path yet then don't check symlink status.
       // This avoids checking "C:" which is "the current directory on drive C"
       // and hence not what we want to check/resolve here.
-      if(!result.is_absolute())
+      if (!result.is_absolute())
           continue;
 
       bool is_sym (is_symlink(detail::symlink_status(result, ec)));
@@ -840,15 +840,15 @@ void copy(const path& from, const path& to, system::error_code* ec)
   file_status s(detail::symlink_status(from, ec));
   if (ec != 0 && *ec) return;
 
-  if(is_symlink(s))
+  if (is_symlink(s))
   {
     detail::copy_symlink(from, to, ec);
   }
-  else if(is_directory(s))
+  else if (is_directory(s))
   {
     detail::copy_directory(from, to, ec);
   }
-  else if(is_regular_file(s))
+  else if (is_regular_file(s))
   {
     detail::copy_file(from, to, detail::fail_if_exists, ec);
   }
@@ -1554,21 +1554,22 @@ path read_symlink(const path& p, system::error_code* ec)
         "boost::filesystem::read_symlink" ))
   {
     const wchar_t* buffer;
-    size_t offset, len;
-    if (info.rdb.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT)
+    std::size_t offset, len;
+    switch (info.rdb.ReparseTag)
     {
+    case IO_REPARSE_TAG_MOUNT_POINT:
       buffer = info.rdb.MountPointReparseBuffer.PathBuffer;
       offset = info.rdb.MountPointReparseBuffer.PrintNameOffset;
       len = info.rdb.MountPointReparseBuffer.PrintNameLength;
-    } else if (info.rdb.ReparseTag == IO_REPARSE_TAG_SYMLINK)
-    {
+      break;
+    case IO_REPARSE_TAG_SYMLINK:
       buffer = info.rdb.SymbolicLinkReparseBuffer.PathBuffer;
       offset = info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset;
       len = info.rdb.SymbolicLinkReparseBuffer.PrintNameLength;
       // Note: iff info.rdb.SymbolicLinkReparseBuffer.Flags & SYMLINK_FLAG_RELATIVE
       //       -> resulting path is relative to the source
-    } else
-    {
+      break;
+    default:
       error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "Unknown ReparseTag in boost::filesystem::read_symlink");
       return symlink_path;
     }

@@ -1,4 +1,11 @@
+//  Boost operations_test.cpp  ---------------------------------------------------------//
 
+//  Copyright Alexander Grund 2020
+
+//  Distributed under the Boost Software License, Version 1.0.
+//  See http://www.boost.org/LICENSE_1_0.txt
+
+//  Library home page: http://www.boost.org/libs/filesystem
 
 #include <boost/filesystem.hpp>
 #include <boost/core/lightweight_test.hpp>
@@ -21,9 +28,11 @@ struct TmpDir
   }
 };
 
+// Test fs::canonical for various path in a Windows directory junction point
+// This failed before due to broken handling of absolute paths and ignored ReparseTag
 int main()
 {
-  if(std::system("mklink /?") != 0)
+  if (std::system("mklink /?") != 0)
   {
     std::cerr << "Junction points not supported. Skipping test" << std::endl;
     return boost::report_errors();
