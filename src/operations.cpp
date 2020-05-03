@@ -2,6 +2,7 @@
 
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
+//  Copyright 2018-2020 Andrey Semashev
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -155,6 +156,10 @@ using boost::system::system_category;
 // At least Mac OS X 10.6 and older doesn't support O_CLOEXEC
 #ifndef O_CLOEXEC
 #define O_CLOEXEC 0
+#endif
+
+#if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
+#define BOOST_FILESYSTEM_HAS_FDATASYNC
 #endif
 
 #else // defined(BOOST_POSIX_API)
@@ -424,10 +429,14 @@ copy_file_api(const std::string& from_p,
     goto fail1;
   }
 
+  // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
+  // which checks the file permission on the server, even if the client's file descriptor supports writing.
+  mode_t to_mode = from_stat.st_mode | S_IWUSR;
+
   int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
   if (fail_if_exists)
     oflag |= O_EXCL;
-  int outfile = ::open(to_p.c_str(), oflag, from_stat.st_mode);
+  int outfile = ::open(to_p.c_str(), oflag, to_mode);
   if (BOOST_UNLIKELY(outfile < 0))
   {
     err = errno;
@@ -494,6 +503,34 @@ copy_file_api(const std::string& from_p,
 
       sz_wrote += sz;
     }
+  }
+
+  // If we created a new file with an explicitly added S_IWUSR permission,
+  // we may need to update its mode bits to match the source file.
+  if (to_stat.st_mode != from_stat.st_mode)
+  {
+    if (BOOST_UNLIKELY(::fchmod(outfile, from_stat.st_mode) != 0))
+    {
+      err = errno;
+      goto fail2;
+    }
+  }
+
+  // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
+  // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
+  // file descriptor upon its return. This means that if an error happens later, when the OS flushes data to the
+  // underlying media, this error will go unnoticed and we have no way to receive it from close. Calling fsync/fdatasync
+  // ensures that all data have been written, and even if close fails for some unfathomable reason, we don't really
+  // care at that point.
+#if defined(BOOST_FILESYSTEM_HAS_FDATASYNC)
+  err = ::fdatasync(outfile);
+#else
+  err = ::fsync(outfile);
+#endif
+  if (BOOST_UNLIKELY(err != 0))
+  {
+    err = errno;
+    goto fail2;
   }
 
   ::close(outfile);
