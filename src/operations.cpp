@@ -1626,7 +1626,7 @@ path read_symlink(const path& p, system::error_code* ec)
   } info;
 
   handle_wrapper h(
-    create_file_handle(p.c_str(), GENERIC_READ,
+    create_file_handle(p.c_str(), 0,
       FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING,
       FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0));
 
