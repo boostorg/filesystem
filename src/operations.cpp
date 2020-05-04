@@ -637,7 +637,7 @@ HANDLE create_file_handle(const path& p, DWORD dwDesiredAccess,
 
 bool is_reparse_point_a_symlink(const path& p)
 {
-  handle_wrapper h(create_file_handle(p, FILE_READ_EA,
+  handle_wrapper h(create_file_handle(p, 0,
     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING,
     FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL));
   if (h.handle == INVALID_HANDLE_VALUE)
