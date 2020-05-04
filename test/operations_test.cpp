@@ -1920,6 +1920,10 @@ namespace
       cout << "       free = " << spi.free << '\n';
       cout << "  available = " << spi.available << '\n';
 #   endif
+
+    // Test that we can specify path to file
+    fs::space_info spi_file(fs::space(f0));
+    BOOST_TEST_EQ(spi_file.capacity, spi.capacity);
   }
 
   //  equivalent_tests  ----------------------------------------------------------------//

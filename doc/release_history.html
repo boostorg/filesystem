@@ -47,6 +47,8 @@
   <li><code>copy_file</code> on POSIX systems will now also copy the source file permissions to the target file, if the target file is overwritten.</li>
   <li><code>equivalent</code> on POSIX systems now returns the actual error code from the OS if one of the paths does not resolve to a file. Previously the function would return an error code of 1. (<a href="https://github.com/boostorg/filesystem/issues/141">#141</a>)</li>
   <li><code>equivalent</code> no longer considers file size and last modification time in order to test whether the two paths refer to the same file. These checks could result in a false negative if the file was modified during the <code>equivalent</code> call.</li>
+  <li><code>space</code> now initializes the <code>space_info</code> structure members to -1 values on error, as required by C++20 ([fs.op.space]/1).</li>
+  <li><code>space</code> on Windows now accepts paths referring to arbitrary files, not only directories. This is similar to POSIX systems and corresponds to the operation description in C++20. (<a href="https://github.com/boostorg/filesystem/issues/73">#73</a>)</li>
 </ul>
 
 <h2>1.72.0</h2>

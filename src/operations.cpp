@@ -1497,7 +1497,7 @@ void permissions(const path& p, perms prms, system::error_code* ec)
   if (local_ec)
   {
     if (ec == 0)
-    BOOST_FILESYSTEM_THROW(filesystem_error(
+      BOOST_FILESYSTEM_THROW(filesystem_error(
         "boost::filesystem::permissions", p, local_ec));
     else
       *ec = local_ec;
@@ -1734,45 +1734,79 @@ void resize_file(const path& p, uintmax_t size, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 space_info space(const path& p, error_code* ec)
 {
-# ifdef BOOST_POSIX_API
-  struct BOOST_STATVFS vfs;
   space_info info;
+  // Initialize members to -1, as required by C++20 [fs.op.space]/1 in case of error
+  info.capacity = static_cast<boost::uintmax_t>(-1);
+  info.free = static_cast<boost::uintmax_t>(-1);
+  info.available = static_cast<boost::uintmax_t>(-1);
+
+  if (ec)
+    ec->clear();
+
+# ifdef BOOST_POSIX_API
+
+  struct BOOST_STATVFS vfs;
   if (!error(::BOOST_STATVFS(p.c_str(), &vfs) ? BOOST_ERRNO : 0,
     p, ec, "boost::filesystem::space"))
   {
     info.capacity
-      = static_cast<boost::uintmax_t>(vfs.f_blocks)* BOOST_STATVFS_F_FRSIZE;
+      = static_cast<boost::uintmax_t>(vfs.f_blocks) * BOOST_STATVFS_F_FRSIZE;
     info.free
-      = static_cast<boost::uintmax_t>(vfs.f_bfree)* BOOST_STATVFS_F_FRSIZE;
+      = static_cast<boost::uintmax_t>(vfs.f_bfree) * BOOST_STATVFS_F_FRSIZE;
     info.available
-      = static_cast<boost::uintmax_t>(vfs.f_bavail)* BOOST_STATVFS_F_FRSIZE;
+      = static_cast<boost::uintmax_t>(vfs.f_bavail) * BOOST_STATVFS_F_FRSIZE;
   }
 
 # else
 
-  ULARGE_INTEGER avail, total, free;
-  space_info info;
+  // GetDiskFreeSpaceExW requires a directory path, which is unlike statvfs, which accepts any file.
+  // To work around this, test if the path refers to a directory and use the parent directory if not.
+  file_status status = detail::status(p, ec);
+  if (ec && *ec)
+    return info;
 
-  if (!error(::GetDiskFreeSpaceExW(p.c_str(), &avail, &total, &free)== 0,
+  path dir_path = p;
+  if (!is_directory(status))
+  {
+    path cur_path = detail::current_path(ec);
+    if (ec && *ec)
+      return info;
+
+    status = detail::symlink_status(p, ec);
+    if (ec && *ec)
+      return info;
+    if (is_symlink(status))
+    {
+      // We need to resolve the symlink so that we report the space for the symlink target
+      dir_path = detail::canonical(p, cur_path, ec);
+      if (ec && *ec)
+        return info;
+    }
+
+    dir_path = dir_path.parent_path();
+    if (dir_path.empty())
+    {
+      // The original path was just a filename, which is a relative path wrt. current directory
+      dir_path = cur_path;
+    }
+  }
+
+  // For UNC names, the path must also include a trailing slash.
+  path::string_type str = dir_path.native();
+  if (str.size() >= 2u && detail::is_directory_separator(str[0]) && detail::is_directory_separator(str[1]) && !detail::is_directory_separator(*(str.end() - 1)))
+    str.push_back(path::preferred_separator);
+
+  ULARGE_INTEGER avail, total, free;
+  if (!error(::GetDiskFreeSpaceExW(str.c_str(), &avail, &total, &free) == 0,
      p, ec, "boost::filesystem::space"))
   {
-    info.capacity
-      = (static_cast<boost::uintmax_t>(total.HighPart)<< 32)
-        + total.LowPart;
-    info.free
-      = (static_cast<boost::uintmax_t>(free.HighPart)<< 32)
-        + free.LowPart;
-    info.available
-      = (static_cast<boost::uintmax_t>(avail.HighPart)<< 32)
-        + avail.LowPart;
+    info.capacity = static_cast<boost::uintmax_t>(total.QuadPart);
+    info.free = static_cast<boost::uintmax_t>(free.QuadPart);
+    info.available = static_cast<boost::uintmax_t>(avail.QuadPart);
   }
 
 # endif
 
-  else
-  {
-    info.capacity = info.free = info.available = 0;
-  }
   return info;
 }
 
