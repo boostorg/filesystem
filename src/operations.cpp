@@ -74,6 +74,7 @@
 #include <boost/filesystem/exception.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/smart_ptr/scoped_ptr.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/cstdint.hpp>
@@ -224,6 +225,13 @@ typedef struct _REPARSE_DATA_BUFFER {
 #ifndef SYMBOLIC_LINK_FLAG_DIRECTORY
 #define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
 #endif
+
+// Our convenience type for allocating REPARSE_DATA_BUFFER along with sufficient space after it
+union reparse_data_buffer
+{
+  REPARSE_DATA_BUFFER rdb;
+  unsigned char storage[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+};
 
 # endif // defined(BOOST_POSIX_API)
 
@@ -643,16 +651,15 @@ bool is_reparse_point_a_symlink(const path& p)
   if (h.handle == INVALID_HANDLE_VALUE)
     return false;
 
-  boost::scoped_array<char> buf(new char [MAXIMUM_REPARSE_DATA_BUFFER_SIZE]);
+  boost::scoped_ptr<reparse_data_buffer> buf(new reparse_data_buffer);
 
   // Query the reparse data
-  DWORD dwRetLen;
+  DWORD dwRetLen = 0u;
   BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(),
-    MAXIMUM_REPARSE_DATA_BUFFER_SIZE, &dwRetLen, NULL);
+    sizeof(*buf), &dwRetLen, NULL);
   if (!result) return false;
 
-  return reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
-      == IO_REPARSE_TAG_SYMLINK
+  return buf->rdb.ReparseTag == IO_REPARSE_TAG_SYMLINK
       // Issue 9016 asked that NTFS directory junctions be recognized as directories.
       // That is equivalent to recognizing them as symlinks, and then the normal symlink
       // mechanism will take care of recognizing them as directories.
@@ -660,8 +667,7 @@ bool is_reparse_point_a_symlink(const path& p)
       // Directory junctions are very similar to symlinks, but have some performance
       // and other advantages over symlinks. They can be created from the command line
       // with "mklink /j junction-name target-path".
-    || reinterpret_cast<const REPARSE_DATA_BUFFER*>(buf.get())->ReparseTag
-      == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
+    || buf->rdb.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT;  // aka "directory junction" or "junction"
 }
 
 inline std::size_t get_full_path_name(
@@ -1619,12 +1625,6 @@ path read_symlink(const path& p, system::error_code* ec)
 
 # else
 
-  union info_t
-  {
-    char buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-    REPARSE_DATA_BUFFER rdb;
-  } info;
-
   handle_wrapper h(
     create_file_handle(p.c_str(), 0,
       FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING,
@@ -1634,25 +1634,25 @@ path read_symlink(const path& p, system::error_code* ec)
     p, ec, "boost::filesystem::read_symlink"))
       return symlink_path;
 
-  DWORD sz;
-
+  boost::scoped_ptr<reparse_data_buffer> buf(new reparse_data_buffer);
+  DWORD sz = 0u;
   if (!error(::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT,
-        0, 0, info.buf, sizeof(info), &sz, 0) == 0 ? BOOST_ERRNO : 0, p, ec,
+        0, 0, buf.get(), sizeof(*buf), &sz, 0) == 0 ? BOOST_ERRNO : 0, p, ec,
         "boost::filesystem::read_symlink" ))
   {
     const wchar_t* buffer;
     std::size_t offset, len;
-    switch (info.rdb.ReparseTag)
+    switch (buf->rdb.ReparseTag)
     {
     case IO_REPARSE_TAG_MOUNT_POINT:
-      buffer = info.rdb.MountPointReparseBuffer.PathBuffer;
-      offset = info.rdb.MountPointReparseBuffer.PrintNameOffset;
-      len = info.rdb.MountPointReparseBuffer.PrintNameLength;
+      buffer = buf->rdb.MountPointReparseBuffer.PathBuffer;
+      offset = buf->rdb.MountPointReparseBuffer.PrintNameOffset;
+      len = buf->rdb.MountPointReparseBuffer.PrintNameLength;
       break;
     case IO_REPARSE_TAG_SYMLINK:
-      buffer = info.rdb.SymbolicLinkReparseBuffer.PathBuffer;
-      offset = info.rdb.SymbolicLinkReparseBuffer.PrintNameOffset;
-      len = info.rdb.SymbolicLinkReparseBuffer.PrintNameLength;
+      buffer = buf->rdb.SymbolicLinkReparseBuffer.PathBuffer;
+      offset = buf->rdb.SymbolicLinkReparseBuffer.PrintNameOffset;
+      len = buf->rdb.SymbolicLinkReparseBuffer.PrintNameLength;
       // Note: iff info.rdb.SymbolicLinkReparseBuffer.Flags & SYMLINK_FLAG_RELATIVE
       //       -> resulting path is relative to the source
       break;
