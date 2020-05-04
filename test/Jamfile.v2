@@ -26,6 +26,30 @@ if [ os.environ UBSAN ]
         <library>/boost/filesystem//boost_filesystem/<visibility>global ;
 }
 
+# The rule checks we're running on Windows that supports mklink command (Vista and later)
+rule check-mklink ( properties * )
+{
+    local result = <build>no ;
+
+    if <target-os>windows in $(properties)
+    {
+        # mklink is a builtin shell command, so we can't check if an executable exists.
+        # Testing the exit status of the mklink command (in the hope that it will be different
+        # when the command is not supported) is inconclusive as for some reason Windows 8.1 shell
+        # always returns exit code of 1. We have to match the output of the command. :(
+        # Note that the output may be localized, so pick some part that is likely to be stable regardless
+        # of localization.
+        local output = [ SHELL "mklink /?" : exit-status ] ;
+        if [ MATCH (MKLINK) : $(output[1]) ]
+        {
+            result = <build>yes ;
+        }
+    }
+
+    #ECHO Result: $(result) ;
+    return $(result) ;
+}
+
 run config_info.cpp : : : <link>shared <test-info>always_show_run_output ;
 run config_info.cpp : : : <link>static <test-info>always_show_run_output : config_info_static ;
 run convenience_test.cpp ;
@@ -52,4 +76,5 @@ run quick.cpp ;
 
 # Tests for specific issues
 run issues/70-71-copy.cpp ;
-run issues/99_canonical_with_junction_point.cpp : : : <build>no <target-os>windows:<build>yes ;
+
+run issues/99_canonical_with_junction_point.cpp : : : <conditional>@check-mklink ;
