@@ -63,5 +63,8 @@ int main()
     BOOST_TEST(fs::canonical(junction / subDir) == real / subDir);
   }
 
+  // Restore the original current directory so that temp directory can be removed
+  fs::current_path(cwd);
+
   return boost::report_errors();
 }
