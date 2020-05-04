@@ -49,6 +49,7 @@
   <li><code>equivalent</code> no longer considers file size and last modification time in order to test whether the two paths refer to the same file. These checks could result in a false negative if the file was modified during the <code>equivalent</code> call.</li>
   <li><code>space</code> now initializes the <code>space_info</code> structure members to -1 values on error, as required by C++20 ([fs.op.space]/1).</li>
   <li><code>space</code> on Windows now accepts paths referring to arbitrary files, not only directories. This is similar to POSIX systems and corresponds to the operation description in C++20. (<a href="https://github.com/boostorg/filesystem/issues/73">#73</a>)</li>
+  <li>Added implementation of <code>temp_directory_path</code> for Windows CE. (<a href="https://github.com/boostorg/filesystem/pull/25">PR#25</a>)</li>
 </ul>
 
 <h2>1.72.0</h2>

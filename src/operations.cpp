@@ -564,6 +564,8 @@ BOOST_CONSTEXPR_OR_CONST std::size_t buf_size = 128;
 
 BOOST_CONSTEXPR_OR_CONST wchar_t dot = L'.';
 
+// Windows CE has no environment variables
+#if !defined(UNDER_CE)
 inline std::wstring wgetenv(const wchar_t* name)
 {
   // use a separate buffer since C++03 basic_string is not required to be contiguous
@@ -577,6 +579,7 @@ inline std::wstring wgetenv(const wchar_t* name)
 
   return std::wstring();
 }
+#endif // !defined(UNDER_CE)
 
 inline bool not_found_error(int errval) BOOST_NOEXCEPT
 {
@@ -1968,6 +1971,9 @@ file_status symlink_status(const path& p, error_code* ec)
 BOOST_FILESYSTEM_DECL
 path temp_directory_path(system::error_code* ec)
 {
+  if (ec)
+    ec->clear();
+
 # ifdef BOOST_POSIX_API
   const char* val = 0;
 
@@ -1983,15 +1989,23 @@ path temp_directory_path(system::error_code* ec)
 #   endif
   path p((val != NULL) ? val : default_tmp);
 
-  if (p.empty() || (ec && !is_directory(p, *ec)) || (!ec && !is_directory(p)))
+  if (BOOST_UNLIKELY(p.empty()))
   {
+  fail_not_dir:
     error(ENOTDIR, p, ec, "boost::filesystem::temp_directory_path");
     return p;
   }
 
+  file_status status = detail::status(p, ec);
+  if (BOOST_UNLIKELY(ec && *ec))
+    return path();
+  if (BOOST_UNLIKELY(!is_directory(status)))
+    goto fail_not_dir;
+
   return p;
 
-# else  // Windows
+# else   // Windows
+# if !defined(UNDER_CE)
 
   const wchar_t* tmp_env = L"TMP";
   const wchar_t* temp_env = L"TEMP";
@@ -2037,6 +2051,39 @@ path temp_directory_path(system::error_code* ec)
 
   return p;
 
+# else // Windows CE
+
+  // Windows CE has no environment variables, so the same code as used for
+  // regular Windows, above, doesn't work.
+
+  DWORD size = ::GetTempPathW(0, NULL);
+  if (size == 0u)
+  {
+  fail:
+    int errval = ::GetLastError();
+    error(errval, ec, "boost::filesystem::temp_directory_path");
+    return path();
+  }
+
+  boost::scoped_array<wchar_t> buf(new wchar_t[size]);
+  if (::GetTempPathW(size, buf.get()) == 0)
+    goto fail;
+
+  path p(buf.get());
+  p.remove_trailing_separator();
+
+  file_status status = detail::status(p, ec);
+  if (ec && *ec)
+    return path();
+  if (!is_directory(status))
+  {
+    error(ERROR_PATH_NOT_FOUND, p, ec, "boost::filesystem::temp_directory_path");
+    return path();
+  }
+
+  return p;
+
+# endif // !defined(UNDER_CE)
 # endif
 }
 
