@@ -31,6 +31,7 @@
 #include <boost/filesystem/directory.hpp>
 #endif
 
+#include <boost/detail/bitmask.hpp>
 #include <boost/core/scoped_enum.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/cstdint.hpp>
@@ -52,20 +53,30 @@ struct space_info
   boost::uintmax_t available; // <= free
 };
 
+BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(copy_options, unsigned int)
+{
+  none = 0u,                    // Default, error if the target file exists
+  overwrite_existing = 1u,      // Overwrite existing file
+}
+BOOST_SCOPED_ENUM_DECLARE_END(copy_options)
+
+BOOST_BITMASK(BOOST_SCOPED_ENUM_NATIVE(copy_options))
+
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 BOOST_SCOPED_ENUM_DECLARE_BEGIN(copy_option)
-  {none=0, fail_if_exists = none, overwrite_if_exists}
+{
+  none = static_cast< unsigned int >(copy_options::none),
+  fail_if_exists = none,
+  overwrite_if_exists = static_cast< unsigned int >(copy_options::overwrite_existing)
+}
 BOOST_SCOPED_ENUM_DECLARE_END(copy_option)
+#endif
 
 //--------------------------------------------------------------------------------------//
 //                             implementation details                                   //
 //--------------------------------------------------------------------------------------//
 
 namespace detail {
-
-//  We cannot pass a BOOST_SCOPED_ENUM to a compled function because it will result
-//  in an undefined reference if the library is compled with -std=c++0x but the use
-//  is compiled in C++03 mode, or vice versa. See tickets 6124, 6779, 10038.
-enum copy_option {none=0, fail_if_exists = none, overwrite_if_exists};
 
 BOOST_FILESYSTEM_DECL
 file_status status(const path&p, system::error_code* ec=0);
@@ -83,7 +94,7 @@ BOOST_FILESYSTEM_DECL
 void copy_directory(const path& from, const path& to, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
 void copy_file(const path& from, const path& to,  // See ticket #2925
-                detail::copy_option option, system::error_code* ec=0);
+               unsigned int options, system::error_code* ec=0); // see copy_options for options
 BOOST_FILESYSTEM_DECL
 void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
@@ -246,27 +257,41 @@ inline
 void copy_directory(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
                                      {detail::copy_directory(from, to, &ec);}
 inline
-void copy_file(const path& from, const path& to,   // See ticket #2925
-               BOOST_SCOPED_ENUM_NATIVE(copy_option) option)
-{
-  detail::copy_file(from, to, static_cast<detail::copy_option>(option));
-}
-inline
 void copy_file(const path& from, const path& to)
 {
-  detail::copy_file(from, to, detail::fail_if_exists);
-}
-inline
-void copy_file(const path& from, const path& to,   // See ticket #2925
-               BOOST_SCOPED_ENUM_NATIVE(copy_option) option, system::error_code& ec) BOOST_NOEXCEPT
-{
-  detail::copy_file(from, to, static_cast<detail::copy_option>(option), &ec);
+  detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none));
 }
 inline
 void copy_file(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
 {
-  detail::copy_file(from, to, detail::fail_if_exists, &ec);
+  detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none), &ec);
 }
+inline
+void copy_file(const path& from, const path& to,   // See ticket #2925
+               BOOST_SCOPED_ENUM_NATIVE(copy_options) options)
+{
+  detail::copy_file(from, to, static_cast< unsigned int >(options));
+}
+inline
+void copy_file(const path& from, const path& to,   // See ticket #2925
+               BOOST_SCOPED_ENUM_NATIVE(copy_options) options, system::error_code& ec) BOOST_NOEXCEPT
+{
+  detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
+}
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+inline
+void copy_file(const path& from, const path& to,   // See ticket #2925
+               BOOST_SCOPED_ENUM_NATIVE(copy_option) options)
+{
+  detail::copy_file(from, to, static_cast< unsigned int >(options));
+}
+inline
+void copy_file(const path& from, const path& to,   // See ticket #2925
+               BOOST_SCOPED_ENUM_NATIVE(copy_option) options, system::error_code& ec) BOOST_NOEXCEPT
+{
+  detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
+}
+#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 inline
 void copy_symlink(const path& existing_symlink,
                   const path& new_symlink) {detail::copy_symlink(existing_symlink, new_symlink);}

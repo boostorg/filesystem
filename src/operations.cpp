@@ -254,7 +254,6 @@ union reparse_data_buffer
 #   define BOOST_DELETE_FILE(P)(::unlink(P)== 0)
 #   define BOOST_COPY_DIRECTORY(F,T)(!(::stat(from.c_str(), &from_stat)!= 0\
          || ::mkdir(to.c_str(),from_stat.st_mode)!= 0))
-#   define BOOST_COPY_FILE(F,T,FailIfExistsBool)copy_file_api(F, T, FailIfExistsBool)
 #   define BOOST_MOVE_FILE(OLD,NEW)(::rename(OLD, NEW)== 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(::truncate(P, SZ)== 0)
 
@@ -267,7 +266,6 @@ union reparse_data_buffer
 #   define BOOST_REMOVE_DIRECTORY(P)(::RemoveDirectoryW(P)!= 0)
 #   define BOOST_DELETE_FILE(P)(::DeleteFileW(P)!= 0)
 #   define BOOST_COPY_DIRECTORY(F,T)(::CreateDirectoryExW(F, T, 0)!= 0)
-#   define BOOST_COPY_FILE(F,T,FailIfExistsBool)(::CopyFileW(F, T, FailIfExistsBool)!= 0)
 #   define BOOST_MOVE_FILE(OLD,NEW)(::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING|MOVEFILE_COPY_ALLOWED)!= 0)
 #   define BOOST_RESIZE_FILE(P,SZ)(resize_file_api(P, SZ)!= 0)
 #   define BOOST_READ_SYMLINK(P,T)
@@ -397,6 +395,21 @@ boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
 
 BOOST_CONSTEXPR_OR_CONST char dot = '.';
 
+struct fd_wrapper
+{
+  int fd;
+
+  fd_wrapper() BOOST_NOEXCEPT : fd(-1) {}
+  explicit fd_wrapper(int fd) BOOST_NOEXCEPT : fd(fd) {}
+  ~fd_wrapper() BOOST_NOEXCEPT
+  {
+    if (fd >= 0)
+      ::close(fd);
+  }
+  BOOST_DELETED_FUNCTION(fd_wrapper(fd_wrapper const&))
+  BOOST_DELETED_FUNCTION(fd_wrapper& operator= (fd_wrapper const&))
+};
+
 inline bool not_found_error(int errval) BOOST_NOEXCEPT
 {
   return errval == ENOENT || errval == ENOTDIR;
@@ -410,78 +423,15 @@ inline bool equivalent_stat(struct ::stat const& s1, struct ::stat const& s2) BO
   return s1.st_dev == s2.st_dev && s1.st_ino == s2.st_ino;
 }
 
-bool // true if ok
-copy_file_api(const std::string& from_p,
-  const std::string& to_p, bool fail_if_exists)
+typedef int (copy_file_data_t)(int infile, struct ::stat const& from_stat, int outfile, struct ::stat const& to_stat);
+
+//! copy_file implementation that uses read/write loop
+int copy_file_data_read_write(int infile, struct ::stat const& from_stat, int outfile, struct ::stat const& to_stat)
 {
-  int err = 0;
-
-  int infile = ::open(from_p.c_str(), O_RDONLY | O_CLOEXEC);
-  if (BOOST_UNLIKELY(infile < 0))
-    return false;
-
-  struct ::stat from_stat = {};
-  if (BOOST_UNLIKELY(::fstat(infile, &from_stat) != 0))
-  {
-    err = errno;
-
-  fail1:
-    ::close(infile);
-    errno = err;
-    return false;
-  }
-
-  if (BOOST_UNLIKELY(!S_ISREG(from_stat.st_mode)))
-  {
-    err = ENOSYS;
-    goto fail1;
-  }
-
-  // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
-  // which checks the file permission on the server, even if the client's file descriptor supports writing.
-  mode_t to_mode = from_stat.st_mode | S_IWUSR;
-
-  int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
-  if (fail_if_exists)
-    oflag |= O_EXCL;
-  int outfile = ::open(to_p.c_str(), oflag, to_mode);
-  if (BOOST_UNLIKELY(outfile < 0))
-  {
-    err = errno;
-    goto fail1;
-  }
-
-  struct ::stat to_stat = {};
-  if (BOOST_UNLIKELY(::fstat(outfile, &to_stat) != 0))
-  {
-    err = errno;
-
-  fail2:
-    ::close(outfile);
-    ::close(infile);
-    errno = err;
-    return false;
-  }
-
-  if (BOOST_UNLIKELY(!S_ISREG(to_stat.st_mode)))
-  {
-    err = ENOSYS;
-    goto fail2;
-  }
-
-  if (BOOST_UNLIKELY(equivalent_stat(from_stat, to_stat)))
-  {
-    err = EEXIST;
-    goto fail2;
-  }
-
   BOOST_CONSTEXPR_OR_CONST std::size_t buf_sz = 65536u;
-  boost::scoped_array<char> buf(new (std::nothrow) char [buf_sz]);
+  boost::scoped_array<char> buf(new (std::nothrow) char[buf_sz]);
   if (BOOST_UNLIKELY(!buf.get()))
-  {
-    err = ENOMEM;
-    goto fail2;
-  }
+    return ENOMEM;
 
   while (true)
   {
@@ -490,10 +440,10 @@ copy_file_api(const std::string& from_p,
       break;
     if (BOOST_UNLIKELY(sz_read < 0))
     {
-      err = errno;
+      int err = errno;
       if (err == EINTR)
         continue;
-      goto fail2;
+      return err;
     }
 
     // Allow for partial writes - see Advanced Unix Programming (2nd Ed.),
@@ -503,49 +453,21 @@ copy_file_api(const std::string& from_p,
       ssize_t sz = ::write(outfile, buf.get() + sz_wrote, static_cast< std::size_t >(sz_read - sz_wrote));
       if (BOOST_UNLIKELY(sz < 0))
       {
-        err = errno;
+        int err = errno;
         if (err == EINTR)
           continue;
-        goto fail2;
+        return err;
       }
 
       sz_wrote += sz;
     }
   }
 
-  // If we created a new file with an explicitly added S_IWUSR permission,
-  // we may need to update its mode bits to match the source file.
-  if (to_stat.st_mode != from_stat.st_mode)
-  {
-    if (BOOST_UNLIKELY(::fchmod(outfile, from_stat.st_mode) != 0))
-    {
-      err = errno;
-      goto fail2;
-    }
-  }
-
-  // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
-  // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
-  // file descriptor upon its return. This means that if an error happens later, when the OS flushes data to the
-  // underlying media, this error will go unnoticed and we have no way to receive it from close. Calling fsync/fdatasync
-  // ensures that all data have been written, and even if close fails for some unfathomable reason, we don't really
-  // care at that point.
-#if defined(BOOST_FILESYSTEM_HAS_FDATASYNC)
-  err = ::fdatasync(outfile);
-#else
-  err = ::fsync(outfile);
-#endif
-  if (BOOST_UNLIKELY(err != 0))
-  {
-    err = errno;
-    goto fail2;
-  }
-
-  ::close(outfile);
-  ::close(infile);
-
-  return true;
+  return 0;
 }
+
+//! Pointer to the actual implementation of the copy_file_data implementation
+copy_file_data_t* copy_file_data = &copy_file_data_read_write;
 
 inline fs::file_type query_file_type(const path& p, error_code* ec)
 {
@@ -559,8 +481,6 @@ inline fs::file_type query_file_type(const path& p, error_code* ec)
 //                            Windows-specific helpers                                  //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
-
-BOOST_CONSTEXPR_OR_CONST std::size_t buf_size = 128;
 
 BOOST_CONSTEXPR_OR_CONST wchar_t dot = L'.';
 
@@ -627,13 +547,16 @@ void to_FILETIME(std::time_t t, FILETIME & ft)
 struct handle_wrapper
 {
   HANDLE handle;
-  handle_wrapper(HANDLE h)
-    : handle(h){}
-  ~handle_wrapper()
+
+  handle_wrapper() BOOST_NOEXCEPT : handle(INVALID_HANDLE_VALUE) {}
+  explicit handle_wrapper(HANDLE h) BOOST_NOEXCEPT : handle(h) {}
+  ~handle_wrapper() BOOST_NOEXCEPT
   {
     if (handle != INVALID_HANDLE_VALUE)
       ::CloseHandle(handle);
   }
+  BOOST_DELETED_FUNCTION(handle_wrapper(handle_wrapper const&))
+  BOOST_DELETED_FUNCTION(handle_wrapper& operator= (handle_wrapper const&))
 };
 
 HANDLE create_file_handle(const path& p, DWORD dwDesiredAccess,
@@ -950,7 +873,7 @@ void copy(const path& from, const path& to, system::error_code* ec)
   }
   else if (is_regular_file(s))
   {
-    detail::copy_file(from, to, detail::fail_if_exists, ec);
+    detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none), ec);
   }
   else
   {
@@ -972,11 +895,96 @@ void copy_directory(const path& from, const path& to, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
-void copy_file(const path& from, const path& to, copy_option option, error_code* ec)
+void copy_file(const path& from, const path& to, unsigned int options, error_code* ec)
 {
-  error(!BOOST_COPY_FILE(from.c_str(), to.c_str(),
-    option == fail_if_exists) ? BOOST_ERRNO : 0,
-      from, to, ec, "boost::filesystem::copy_file");
+  if (ec)
+    ec->clear();
+
+#if defined(BOOST_POSIX_API)
+
+  int err = 0;
+
+  fd_wrapper infile(::open(from.c_str(), O_RDONLY | O_CLOEXEC));
+  if (BOOST_UNLIKELY(infile.fd < 0))
+  {
+  fail_errno:
+    err = errno;
+  fail:
+    error(err, from, to, ec, "boost::filesystem::copy_file");
+    return;
+  }
+
+  struct ::stat from_stat = {};
+  if (BOOST_UNLIKELY(::fstat(infile.fd, &from_stat) != 0))
+    goto fail_errno;
+
+  if (BOOST_UNLIKELY(!S_ISREG(from_stat.st_mode)))
+  {
+    err = ENOSYS;
+    goto fail;
+  }
+
+  // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
+  // which checks the file permission on the server, even if the client's file descriptor supports writing.
+  mode_t to_mode = from_stat.st_mode | S_IWUSR;
+
+  int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
+  if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u)
+    oflag |= O_EXCL;
+  fd_wrapper outfile(::open(to.c_str(), oflag, to_mode));
+  if (BOOST_UNLIKELY(outfile.fd < 0))
+    goto fail_errno;
+
+  struct ::stat to_stat = {};
+  if (BOOST_UNLIKELY(::fstat(outfile.fd, &to_stat) != 0))
+    goto fail_errno;
+
+  if (BOOST_UNLIKELY(!S_ISREG(to_stat.st_mode)))
+  {
+    err = ENOSYS;
+    goto fail;
+  }
+
+  if (BOOST_UNLIKELY(detail::equivalent_stat(from_stat, to_stat)))
+  {
+    err = EEXIST;
+    goto fail;
+  }
+
+  err = detail::copy_file_data(infile.fd, from_stat, outfile.fd, to_stat);
+  if (BOOST_UNLIKELY(err != 0))
+    goto fail; // err already contains the error code
+
+  // If we created a new file with an explicitly added S_IWUSR permission,
+  // we may need to update its mode bits to match the source file.
+  if (to_stat.st_mode != from_stat.st_mode)
+  {
+    if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_stat.st_mode) != 0))
+      goto fail_errno;
+  }
+
+  // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
+  // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
+  // file descriptor upon its return. This means that if an error happens later, when the OS flushes data to the
+  // underlying media, this error will go unnoticed and we have no way to receive it from close. Calling fsync/fdatasync
+  // ensures that all data have been written, and even if close fails for some unfathomable reason, we don't really
+  // care at that point.
+#if defined(BOOST_FILESYSTEM_HAS_FDATASYNC)
+  err = ::fdatasync(outfile.fd);
+#else
+  err = ::fsync(outfile.fd);
+#endif
+  if (BOOST_UNLIKELY(err != 0))
+    goto fail_errno;
+
+#else // defined(BOOST_POSIX_API)
+
+  const bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u;
+  BOOL res = ::CopyFileW(from.c_str(), to.c_str(), fail_if_exists);
+  if (BOOST_UNLIKELY(!res))
+    error(BOOST_ERRNO, from, to, ec, "boost::filesystem::copy_file");
+
+#endif // defined(BOOST_POSIX_API)
 }
 
 BOOST_FILESYSTEM_DECL
@@ -2100,6 +2108,8 @@ path system_complete(const path& p, system::error_code* ec)
     if (ec != 0) ec->clear();
     return p;
   }
+
+  BOOST_CONSTEXPR_OR_CONST std::size_t buf_size = 128;
   wchar_t buf[buf_size];
   wchar_t* pfn;
   std::size_t len = get_full_path_name(p, buf_size, buf, &pfn);

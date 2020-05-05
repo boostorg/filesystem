@@ -748,7 +748,7 @@ nothing else.&quot;</p>
     {
       status_error, file_not_found, regular_file, directory_file,
       symlink_file, block_file, character_file, fifo_file, socket_file,
-      type_unknown
+      reparse_file, type_unknown
     };
 
     enum <a href="#Enum-perms">perms</a>
@@ -771,16 +771,23 @@ nothing else.&quot;</p>
       uintmax_t available; // free space available to non-privileged process
     };
 
+    enum class <a name="copy_options">copy_options</a>
+    {
+      none,
+      overwrite_existing
+    };
+
+    // Deprecated, use <a href="#copy_options">copy_options</a> instead
     enum class <a name="copy_option">copy_option</a>
     {
-      none
+      none = copy_options::none,
       fail_if_exists = none,
-      overwrite_if_exists
+      overwrite_if_exists = copy_options::overwrite_existing
     };
 
     enum class <a name="directory_options">directory_options</a>
     {
-      none
+      none,
       skip_permission_denied,
       follow_directory_symlink,
       pop_on_error
@@ -789,7 +796,7 @@ nothing else.&quot;</p>
     // Deprecated, use <a href="#directory_options">directory_options</a> instead
     enum class <a name="symlink_option">symlink_option</a>
     {
-      none = directory_options::none
+      none = directory_options::none,
       no_recurse = none,
       recurse = directory_options::follow_directory_symlink
     };
@@ -815,9 +822,14 @@ nothing else.&quot;</p>
     void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
                    system::error_code&amp; ec);
     void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
-                   <a href="#copy_option">copy_option</a> option);
+                   <a href="#copy_options">copy_options</a> options);
     void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
-                   <a href="#copy_option">copy_option</a> option, system::error_code&amp; ec);
+                   <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
+    // Deprecated, use overloads taking <a href="#copy_options">copy_options</a> instead
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+                   <a href="#copy_option">copy_option</a> options);
+    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+                   <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);
 
     void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink,
                    const path&amp; new_symlink);
@@ -3078,7 +3090,7 @@ if(is_symlink(s))
 else if(is_directory(s))
   copy_directory(from, to<i>[</i><code>, ec</code><i>]</i>);
 else if(is_regular_file(s))
-  copy_file(from, to, copy_option::fail_if_exists<i>[</i><code>, ec</code><i>]</i>);
+  copy_file(from, to, copy_options::none<i>[</i><code>, ec</code><i>]</i>);
 else
 <i> Report error as specified in <a href="#Error-reporting">Error reporting</a>.</i></pre>
   </blockquote>
@@ -3123,16 +3135,26 @@ void copy_directory(const path&amp; from, const path&amp; to, system::error_code
 <pre>void copy_file(const path&amp; from, const path&amp; to);
 void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects: </i><code>copy_file(from, to, copy_option::fail_if_exists</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
+  <p><i>Effects: </i><code>copy_file(from, to, copy_options::none</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
 
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
 </blockquote>
-<pre>void <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option);
-void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> option, system::error_code&amp; ec);</pre>
+<pre>void <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options);
+void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
+void <a name="copy_file3">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options);
+void <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects:</i> If <code>option == copy_option::</code><code>fail_if_exists &amp;&amp; exists(to)</code>, an error is reported. Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
+  <p><i>Effects:</i> Report an error if:
+    <ul>
+      <li><code>!is_regular_file(from)</code>, or</li>
+      <li><code>exists(to) &amp;&amp; !is_regular_file(to)</code>, or</li>
+      <li><code>exists(to) &amp;&amp; equivalent(from, to)</code>, or</li>
+      <li><code>exists(to) &amp;&amp; (options & copy_options::overwrite_existing) == copy_options::none</code>.</li>
+    </ul>
+    Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
+  <p>[<i>Note:</i> The overloads taking <a href="#copy_option"><code>copy_option</code></a> are deprecated. Their effect is equivalent to the corresponding overloads taking <a href="#copy_options"><code>copy_options</code></a> after casting the <code>options</code> argument to <a href="#copy_options"><code>copy_options</code></a>.]</p>
 </blockquote>
 <pre>void <a name="copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
 void copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);</pre>
