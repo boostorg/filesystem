@@ -904,7 +904,10 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
 
   int err = 0;
 
-  fd_wrapper infile(::open(from.c_str(), O_RDONLY | O_CLOEXEC));
+  // Note: Declare fd_wrappers here so that errno is not clobbered by close() that may be called in fd_wrapper destructors
+  fd_wrapper infile, outfile;
+
+  infile.fd = ::open(from.c_str(), O_RDONLY | O_CLOEXEC);
   if (BOOST_UNLIKELY(infile.fd < 0))
   {
   fail_errno:
@@ -931,7 +934,7 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
   if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u)
     oflag |= O_EXCL;
-  fd_wrapper outfile(::open(to.c_str(), oflag, to_mode));
+  outfile.fd = ::open(to.c_str(), oflag, to_mode);
   if (BOOST_UNLIKELY(outfile.fd < 0))
     goto fail_errno;
 
