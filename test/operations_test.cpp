@@ -1922,8 +1922,13 @@ namespace
 #   endif
 
     // Test that we can specify path to file
-    fs::space_info spi_file(fs::space(f0));
+    fs::path file = dir / "file";
+    create_file(file);
+
+    fs::space_info spi_file(fs::space(file));
     BOOST_TEST_EQ(spi_file.capacity, spi.capacity);
+
+    fs::remove(file);
   }
 
   //  equivalent_tests  ----------------------------------------------------------------//
