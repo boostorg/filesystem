@@ -122,6 +122,15 @@
 #     include <utime.h>
 #   endif
 #   include "limits.h"
+#   if defined(linux) || defined(__linux) || defined(__linux__)
+#     include <sys/utsname.h>
+#     include <sys/sendfile.h>
+#     include <sys/syscall.h>
+#     define BOOST_FILESYSTEM_USE_SENDFILE
+#     if defined(__NR_copy_file_range)
+#       define BOOST_FILESYSTEM_USE_COPY_FILE_RANGE
+#     endif
+#   endif
 
 # else // BOOST_WINDOWS_API
 
@@ -468,6 +477,109 @@ int copy_file_data_read_write(int infile, struct ::stat const& from_stat, int ou
 
 //! Pointer to the actual implementation of the copy_file_data implementation
 copy_file_data_t* copy_file_data = &copy_file_data_read_write;
+
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+
+//! copy_file implementation that uses sendfile loop. Requires sendfile to support file descriptors.
+int copy_file_data_sendfile(int infile, struct ::stat const& from_stat, int outfile, struct ::stat const& to_stat)
+{
+  // sendfile will not send more than this amount of data in one call
+  BOOST_CONSTEXPR_OR_CONST std::size_t max_send_size = 0x7ffff000u;
+  off_t size = from_stat.st_size;
+  off_t offset = 0;
+  while (offset < size)
+  {
+    off_t size_left = size - offset;
+    std::size_t size_to_copy = max_send_size;
+    if (size_left < static_cast< off_t >(max_send_size))
+      size_to_copy = static_cast< std::size_t >(size_left);
+    ssize_t sz = ::sendfile(outfile, infile, NULL, size_to_copy);
+    if (BOOST_UNLIKELY(sz < 0))
+    {
+      int err = errno;
+      if (err == EINTR)
+        continue;
+      return err;
+    }
+
+    offset += sz;
+  }
+
+  return 0;
+}
+
+#endif // defined(BOOST_FILESYSTEM_USE_SENDFILE)
+
+#if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
+//! copy_file implementation that uses copy_file_range loop. Requires copy_file_range to support cross-filesystem copying.
+int copy_file_data_copy_file_range(int infile, struct ::stat const& from_stat, int outfile, struct ::stat const& to_stat)
+{
+  // Although copy_file_range does not document any particular upper limit of one transfer, still use some upper bound to guarantee
+  // that size_t is not overflown in case if off_t is larger and the file size does not fit in size_t.
+  BOOST_CONSTEXPR_OR_CONST std::size_t max_send_size = 0x7ffff000u;
+  loff_t size = from_stat.st_size;
+  loff_t offset = 0;
+  while (offset < size)
+  {
+    loff_t size_left = size - offset;
+    std::size_t size_to_copy = max_send_size;
+    if (size_left < static_cast< off_t >(max_send_size))
+      size_to_copy = static_cast< std::size_t >(size_left);
+    // Note: Use syscall directly to avoid depending on libc version. copy_file_range is added in glibc 2.27.
+    // uClibc-ng does not have copy_file_range as of the time of this writing (the latest uClibc-ng release is 1.0.33).
+    loff_t sz = ::syscall(__NR_copy_file_range, infile, (loff_t*)NULL, outfile, (loff_t*)NULL, size_to_copy, (unsigned int)0u);
+    if (BOOST_UNLIKELY(sz < 0))
+    {
+      int err = errno;
+      if (err == EINTR)
+        continue;
+      return err;
+    }
+
+    offset += sz;
+  }
+
+  return 0;
+}
+
+#endif // defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
+struct copy_file_data_initializer
+{
+  copy_file_data_initializer()
+  {
+    struct ::utsname system_info;
+    if (BOOST_UNLIKELY(::uname(&system_info) < 0))
+      return;
+
+    unsigned int major = 0u, minor = 0u, patch = 0u;
+    int count = std::sscanf(system_info.release, "%u.%u.%u", &major, &minor, &patch);
+    if (BOOST_UNLIKELY(count < 3))
+      return;
+
+    copy_file_data_t* cfd = &copy_file_data_read_write;
+
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+    // sendfile started accepting file descriptors as the target in Linux 2.6.33
+    if (major > 2u || (major == 2u && (minor > 6u || (minor == 6u && patch >= 33u))))
+      cfd = &copy_file_data_sendfile;
+#endif
+
+#if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+    // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3
+    if (major > 5u || (major == 5u && minor >= 3u))
+      cfd = &copy_file_data_copy_file_range;
+#endif
+
+    copy_file_data = cfd;
+  }
+}
+const copy_file_data_init;
+
+#endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
 inline fs::file_type query_file_type(const path& p, error_code* ec)
 {
