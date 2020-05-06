@@ -1987,6 +1987,8 @@ file_status status(const path& p, error_code* ec)
     return process_status_failure(p, ec);
   }
 
+  if (ec != 0) ec->clear();
+
   perms permissions = make_permissions(p, attr);
 
   //  reparse point handling;
@@ -1994,6 +1996,12 @@ file_status status(const path& p, error_code* ec)
   //    handle to discover if the file exists
   if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
   {
+    if (!is_reparse_point_a_symlink(p))
+    {
+      return file_status(reparse_file, permissions);
+    }
+
+    // try to resolve symlink
     handle_wrapper h(
       create_file_handle(
           p.c_str(),
@@ -2003,16 +2011,22 @@ file_status status(const path& p, error_code* ec)
           OPEN_EXISTING,
           FILE_FLAG_BACKUP_SEMANTICS,
           0)); // hTemplateFile
+
     if (h.handle == INVALID_HANDLE_VALUE)
     {
       return process_status_failure(p, ec);
     }
 
-    if (!is_reparse_point_a_symlink(p))
-      return file_status(reparse_file, permissions);
+    // take attributes of target
+    BY_HANDLE_FILE_INFORMATION info;
+    if (!::GetFileInformationByHandle(h.handle, &info))
+    {
+      return process_status_failure(p, ec);
+    }
+
+    attr = info.dwFileAttributes;
   }
 
-  if (ec != 0) ec->clear();
   return (attr & FILE_ATTRIBUTE_DIRECTORY)
     ? file_status(directory_file, permissions)
     : file_status(regular_file, permissions);
