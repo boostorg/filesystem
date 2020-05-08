@@ -1009,6 +1009,9 @@ void copy_directory(const path& from, const path& to, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 void copy_file(const path& from, const path& to, unsigned int options, error_code* ec)
 {
+  BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)) <= 1u);
+
   if (ec)
     ec->clear();
 
