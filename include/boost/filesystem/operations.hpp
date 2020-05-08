@@ -56,7 +56,8 @@ struct space_info
 BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(copy_options, unsigned int)
 {
   none = 0u,                    // Default, error if the target file exists
-  overwrite_existing = 1u       // Overwrite existing file
+  skip_existing = 1u,           // Don't overwrite the existing target file, don't report an error
+  overwrite_existing = 1u << 1  // Overwrite existing file
 }
 BOOST_SCOPED_ENUM_DECLARE_END(copy_options)
 

@@ -1608,8 +1608,18 @@ namespace
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
 
+    fs::remove(d1x / "f2");
     create_file(d1x / "f2", "1234567890");
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    copy_ex_ok = true;
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::skip_existing); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = false; }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    verify_file(d1x / "f2", "1234567890");
+
+    // create_file(d1x / "f2", "1234567890");
+    // BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
     copy_ex_ok = true;
     try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::overwrite_existing); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }

@@ -774,6 +774,7 @@ nothing else.&quot;</p>
     enum class <a name="copy_options">copy_options</a>
     {
       none,
+      skip_existing,
       overwrite_existing
     };
 
@@ -3150,8 +3151,9 @@ void <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to
       <li><code>!is_regular_file(from)</code>, or</li>
       <li><code>exists(to) &amp;&amp; !is_regular_file(to)</code>, or</li>
       <li><code>exists(to) &amp;&amp; equivalent(from, to)</code>, or</li>
-      <li><code>exists(to) &amp;&amp; (options & copy_options::overwrite_existing) == copy_options::none</code>.</li>
+      <li><code>exists(to) &amp;&amp; (options & (copy_options::skip_existing | copy_options::overwrite_existing)) == copy_options::none</code>.</li>
     </ul>
+    Otherwise, if <code>exists(to) &amp;&amp; (options & copy_options::skip_existing) != copy_options::none</code>, return successfully with no effect.
     Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
   <p>[<i>Note:</i> The overloads taking <a href="#copy_option"><code>copy_option</code></a> are deprecated. Their effect is equivalent to the corresponding overloads taking <a href="#copy_options"><code>copy_options</code></a> after casting the <code>options</code> argument to <a href="#copy_options"><code>copy_options</code></a>.]</p>

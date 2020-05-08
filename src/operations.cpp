@@ -1044,11 +1044,19 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   mode_t to_mode = from_stat.st_mode | S_IWUSR;
 
   int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
-  if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u)
+  if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
+    (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+  {
     oflag |= O_EXCL;
+  }
   outfile.fd = ::open(to.c_str(), oflag, to_mode);
-  if (BOOST_UNLIKELY(outfile.fd < 0))
-    goto fail_errno;
+  if (outfile.fd < 0)
+  {
+    err = errno;
+    if (err == EEXIST && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+      return;
+    goto fail;
+  }
 
   struct ::stat to_stat = {};
   if (BOOST_UNLIKELY(::fstat(outfile.fd, &to_stat) != 0))
@@ -1094,10 +1102,16 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
 
 #else // defined(BOOST_POSIX_API)
 
-  const bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u;
+  const bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
+    (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u;
   BOOL res = ::CopyFileW(from.c_str(), to.c_str(), fail_if_exists);
-  if (BOOST_UNLIKELY(!res))
-    error(BOOST_ERRNO, from, to, ec, "boost::filesystem::copy_file");
+  if (!res)
+  {
+    DWORD err = ::GetLastError();
+    if ((err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+      return;
+    error(err, from, to, ec, "boost::filesystem::copy_file");
+  }
 
 #endif // defined(BOOST_POSIX_API)
 }
