@@ -57,7 +57,8 @@ BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(copy_options, unsigned int)
 {
   none = 0u,                    // Default, error if the target file exists
   skip_existing = 1u,           // Don't overwrite the existing target file, don't report an error
-  overwrite_existing = 1u << 1  // Overwrite existing file
+  overwrite_existing = 1u << 1, // Overwrite existing file
+  update_existing = 1u << 2     // Overwrite existing file if its last write time is older than the replacement file
 }
 BOOST_SCOPED_ENUM_DECLARE_END(copy_options)
 

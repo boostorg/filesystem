@@ -82,6 +82,7 @@ inline void unsetenv_(const char* name)
 
 #else
 
+#include <unistd.h>  // sleep
 #include <stdlib.h>  // allow unqualifed calls to env funcs on SunOS
 
 inline void setenv_(const char* name, const char* val, int ovw)
@@ -1618,8 +1619,33 @@ namespace
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
     verify_file(d1x / "f2", "1234567890");
 
-    // create_file(d1x / "f2", "1234567890");
-    // BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    copy_ex_ok = true;
+    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = false; }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    verify_file(d1x / "f2", "1234567890");
+
+    // Sleep for a while so that the last modify time is more recent for new files
+#if defined(BOOST_POSIX_API)
+    sleep(2);
+#else
+    Sleep(2000);
+#endif
+
+    create_file(d1x / "f2-more-recent", "x");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2-more-recent"), 1U);
+    copy_ex_ok = true;
+    try { fs::copy_file(d1x / "f2-more-recent", d1x / "f2", fs::copy_options::update_existing); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = false; }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 1U);
+    verify_file(d1x / "f2", "x");
+    fs::remove(d1x / "f2-more-recent");
+
+    fs::remove(d1x / "f2");
+    create_file(d1x / "f2", "1234567890");
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
     copy_ex_ok = true;
     try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::overwrite_existing); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }

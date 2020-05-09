@@ -1010,7 +1010,8 @@ BOOST_FILESYSTEM_DECL
 void copy_file(const path& from, const path& to, unsigned int options, error_code* ec)
 {
   BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
-    ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)) <= 1u);
+    ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1u);
 
   if (ec)
     ec->clear();
@@ -1022,19 +1023,30 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   // Note: Declare fd_wrappers here so that errno is not clobbered by close() that may be called in fd_wrapper destructors
   fd_wrapper infile, outfile;
 
-  infile.fd = ::open(from.c_str(), O_RDONLY | O_CLOEXEC);
-  if (BOOST_UNLIKELY(infile.fd < 0))
+  while (true)
   {
-  fail_errno:
-    err = errno;
-  fail:
-    error(err, from, to, ec, "boost::filesystem::copy_file");
-    return;
+    infile.fd = ::open(from.c_str(), O_RDONLY | O_CLOEXEC);
+    if (BOOST_UNLIKELY(infile.fd < 0))
+    {
+      err = errno;
+      if (err == EINTR)
+        continue;
+
+    fail:
+      error(err, from, to, ec, "boost::filesystem::copy_file");
+      return;
+    }
+
+    break;
   }
 
   struct ::stat from_stat = {};
   if (BOOST_UNLIKELY(::fstat(infile.fd, &from_stat) != 0))
-    goto fail_errno;
+  {
+  fail_errno:
+    err = errno;
+    goto fail;
+  }
 
   if (BOOST_UNLIKELY(!S_ISREG(from_stat.st_mode)))
   {
@@ -1045,20 +1057,57 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
   // which checks the file permission on the server, even if the client's file descriptor supports writing.
   mode_t to_mode = from_stat.st_mode | S_IWUSR;
+  int oflag = O_WRONLY | O_CLOEXEC;
 
-  int oflag = O_CREAT | O_WRONLY | O_TRUNC | O_CLOEXEC;
-  if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
-    (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+  if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
   {
-    oflag |= O_EXCL;
+    // Try opening the existing file without truncation to test the modification time later
+    while (true)
+    {
+      outfile.fd = ::open(to.c_str(), oflag, to_mode);
+      if (outfile.fd < 0)
+      {
+        err = errno;
+        if (err == EINTR)
+          continue;
+
+        if (err == ENOENT)
+          goto create_outfile;
+
+        goto fail;
+      }
+
+      break;
+    }
   }
-  outfile.fd = ::open(to.c_str(), oflag, to_mode);
-  if (outfile.fd < 0)
+  else
   {
-    err = errno;
-    if (err == EEXIST && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
-      return;
-    goto fail;
+  create_outfile:
+    oflag |= O_CREAT | O_TRUNC;
+    if (((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
+      (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) &&
+      (options & static_cast< unsigned int >(copy_options::update_existing)) == 0u)
+    {
+      oflag |= O_EXCL;
+    }
+
+    while (true)
+    {
+      outfile.fd = ::open(to.c_str(), oflag, to_mode);
+      if (outfile.fd < 0)
+      {
+        err = errno;
+        if (err == EINTR)
+          continue;
+
+        if (err == EEXIST && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+          return;
+
+        goto fail;
+      }
+
+      break;
+    }
   }
 
   struct ::stat to_stat = {};
@@ -1075,6 +1124,23 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   {
     err = EEXIST;
     goto fail;
+  }
+
+  if ((oflag & O_TRUNC) == 0)
+  {
+    // O_TRUNC is not set if copy_options::update_existing is set and an existing file was opened.
+    // We need to check the last write times.
+#if defined(st_mtime)
+    // Modify time is available with nanosecond precision.
+    if (from_stat.st_mtime < to_stat.st_mtime || (from_stat.st_mtime == to_stat.st_mtime && from_stat.st_mtim.tv_nsec <= to_stat.st_mtim.tv_nsec))
+      return;
+#else
+    if (from_stat.st_mtime <= to_stat.st_mtime)
+      return;
+#endif
+
+    if (BOOST_UNLIKELY(::ftruncate(outfile.fd, 0) != 0))
+      goto fail_errno;
   }
 
   err = detail::copy_file_data(infile.fd, from_stat, outfile.fd, to_stat);
@@ -1105,8 +1171,49 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
 
 #else // defined(BOOST_POSIX_API)
 
-  const bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
+  bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
     (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u;
+
+  if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
+  {
+    // Create handle_wrappers here so that CloseHandle calls don't clobber error code returned by GetLastError
+    handle_wrapper hw_from, hw_to;
+
+    hw_from.handle = create_file_handle(from.c_str(), 0,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+
+    FILETIME lwt_from;
+    if (hw_from.handle == INVALID_HANDLE_VALUE)
+    {
+    fail_last_error:
+      DWORD err = ::GetLastError();
+      error(err, from, to, ec, "boost::filesystem::copy_file");
+      return;
+    }
+
+    if (!::GetFileTime(hw_from.handle, 0, 0, &lwt_from))
+      goto fail_last_error;
+
+    hw_to.handle = create_file_handle(to.c_str(), 0,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+
+    if (hw_to.handle != INVALID_HANDLE_VALUE)
+    {
+      FILETIME lwt_to;
+      if (!::GetFileTime(hw_to.handle, 0, 0, &lwt_to))
+        goto fail_last_error;
+
+      ULONGLONG tfrom = (static_cast< ULONGLONG >(lwt_from.dwHighDateTime) << 32) | static_cast< ULONGLONG >(lwt_from.dwLowDateTime);
+      ULONGLONG tto = (static_cast< ULONGLONG >(lwt_to.dwHighDateTime) << 32) | static_cast< ULONGLONG >(lwt_to.dwLowDateTime);
+      if (tfrom <= tto)
+        return;
+    }
+
+    fail_if_exists = false;
+  }
+
   BOOL res = ::CopyFileW(from.c_str(), to.c_str(), fail_if_exists);
   if (!res)
   {
