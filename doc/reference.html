@@ -820,17 +820,17 @@ nothing else.&quot;</p>
     void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to,
                    system::error_code&amp; ec);
 
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+    bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
+    bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
                    system::error_code&amp; ec);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+    bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
                    <a href="#copy_options">copy_options</a> options);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+    bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
                    <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
     // Deprecated, use overloads taking <a href="#copy_options">copy_options</a> instead
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+    bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
                    <a href="#copy_option">copy_option</a> options);
-    void         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
+    bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to,
                    <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);
 
     void         <a href="#copy_symlink">copy_symlink</a>(const path&amp; existing_symlink,
@@ -3134,18 +3134,18 @@ void copy_directory(const path&amp; from, const path&amp; to, system::error_code
 
 </blockquote>
 
-<pre>void copy_file(const path&amp; from, const path&amp; to);
-void copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
+<pre>bool copy_file(const path&amp; from, const path&amp; to);
+bool copy_file(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects: </i><code>copy_file(from, to, copy_options::none</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
+  <p><i>Effects: </i><code>return copy_file(from, to, copy_options::none</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
 
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
 </blockquote>
-<pre>void <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options);
-void <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
-void <a name="copy_file3">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options);
-void <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);</pre>
+<pre>bool <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options);
+bool <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
+bool <a name="copy_file3">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options);
+bool <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Precondition:</i> At most one of <code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code> must be specified in <code>options</code>.</p>
   <p><i>Effects:</i> Report an error if:
@@ -3161,6 +3161,7 @@ void <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to
       <li><code>exists(to) &amp;&amp; (options & copy_options::update_existing) != copy_options::none</code> and last write time of <code>from</code> is more recent than that of <code>to</code>.</li>
     </ul>
     Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
+  <p><i>Returns:</i> <code>true</code> if the file was copied without error, otherwise <code>false</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
   <p>[<i>Note:</i> The overloads taking <a href="#copy_option"><code>copy_option</code></a> are deprecated. Their effect is equivalent to the corresponding overloads taking <a href="#copy_options"><code>copy_options</code></a> after casting the <code>options</code> argument to <a href="#copy_options"><code>copy_options</code></a>.]</p>
   <p>[<i>Note:</i> When <code>copy_options::update_existing</code> is specified, checking the write times of <code>from</code> and <code>to</code> may not be atomic with the copy operation. Another process may create or modify the file identified by <code>to</code> after the file modification times have been checked but before copying starts. In this case the target file will be overwritten.]</p>

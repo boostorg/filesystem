@@ -1007,7 +1007,7 @@ void copy_directory(const path& from, const path& to, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
-void copy_file(const path& from, const path& to, unsigned int options, error_code* ec)
+bool copy_file(const path& from, const path& to, unsigned int options, error_code* ec)
 {
   BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
     ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
@@ -1034,7 +1034,7 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
 
     fail:
       error(err, from, to, ec, "boost::filesystem::copy_file");
-      return;
+      return false;
     }
 
     break;
@@ -1101,7 +1101,7 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
           continue;
 
         if (err == EEXIST && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
-          return;
+          return false;
 
         goto fail;
       }
@@ -1133,10 +1133,10 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
 #if defined(st_mtime)
     // Modify time is available with nanosecond precision.
     if (from_stat.st_mtime < to_stat.st_mtime || (from_stat.st_mtime == to_stat.st_mtime && from_stat.st_mtim.tv_nsec <= to_stat.st_mtim.tv_nsec))
-      return;
+      return false;
 #else
     if (from_stat.st_mtime <= to_stat.st_mtime)
-      return;
+      return false;
 #endif
 
     if (BOOST_UNLIKELY(::ftruncate(outfile.fd, 0) != 0))
@@ -1169,6 +1169,8 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   if (BOOST_UNLIKELY(err != 0))
     goto fail_errno;
 
+  return true;
+
 #else // defined(BOOST_POSIX_API)
 
   bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
@@ -1189,7 +1191,7 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
     fail_last_error:
       DWORD err = ::GetLastError();
       error(err, from, to, ec, "boost::filesystem::copy_file");
-      return;
+      return false;
     }
 
     if (!::GetFileTime(hw_from.handle, 0, 0, &lwt_from))
@@ -1208,7 +1210,7 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
       ULONGLONG tfrom = (static_cast< ULONGLONG >(lwt_from.dwHighDateTime) << 32) | static_cast< ULONGLONG >(lwt_from.dwLowDateTime);
       ULONGLONG tto = (static_cast< ULONGLONG >(lwt_to.dwHighDateTime) << 32) | static_cast< ULONGLONG >(lwt_to.dwLowDateTime);
       if (tfrom <= tto)
-        return;
+        return false;
     }
 
     fail_if_exists = false;
@@ -1219,9 +1221,12 @@ void copy_file(const path& from, const path& to, unsigned int options, error_cod
   {
     DWORD err = ::GetLastError();
     if ((err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
-      return;
+      return false;
     error(err, from, to, ec, "boost::filesystem::copy_file");
+    return false;
   }
+
+  return true;
 
 #endif // defined(BOOST_POSIX_API)
 }

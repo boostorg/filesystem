@@ -95,7 +95,7 @@ void copy(const path& from, const path& to, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
 void copy_directory(const path& from, const path& to, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
-void copy_file(const path& from, const path& to,  // See ticket #2925
+bool copy_file(const path& from, const path& to,  // See ticket #2925
                unsigned int options, system::error_code* ec=0); // see copy_options for options
 BOOST_FILESYSTEM_DECL
 void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code* ec=0);
@@ -259,39 +259,39 @@ inline
 void copy_directory(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
                                      {detail::copy_directory(from, to, &ec);}
 inline
-void copy_file(const path& from, const path& to)
+bool copy_file(const path& from, const path& to)
 {
-  detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none));
+  return detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none));
 }
 inline
-void copy_file(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
+bool copy_file(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
 {
-  detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none), &ec);
+  return detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none), &ec);
 }
 inline
-void copy_file(const path& from, const path& to,   // See ticket #2925
+bool copy_file(const path& from, const path& to,   // See ticket #2925
                BOOST_SCOPED_ENUM_NATIVE(copy_options) options)
 {
-  detail::copy_file(from, to, static_cast< unsigned int >(options));
+  return detail::copy_file(from, to, static_cast< unsigned int >(options));
 }
 inline
-void copy_file(const path& from, const path& to,   // See ticket #2925
+bool copy_file(const path& from, const path& to,   // See ticket #2925
                BOOST_SCOPED_ENUM_NATIVE(copy_options) options, system::error_code& ec) BOOST_NOEXCEPT
 {
-  detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
+  return detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
 }
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 inline
-void copy_file(const path& from, const path& to,   // See ticket #2925
+bool copy_file(const path& from, const path& to,   // See ticket #2925
                BOOST_SCOPED_ENUM_NATIVE(copy_option) options)
 {
-  detail::copy_file(from, to, static_cast< unsigned int >(options));
+  return detail::copy_file(from, to, static_cast< unsigned int >(options));
 }
 inline
-void copy_file(const path& from, const path& to,   // See ticket #2925
+bool copy_file(const path& from, const path& to,   // See ticket #2925
                BOOST_SCOPED_ENUM_NATIVE(copy_option) options, system::error_code& ec) BOOST_NOEXCEPT
 {
-  detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
+  return detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
 }
 #endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 inline

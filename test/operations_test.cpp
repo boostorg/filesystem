@@ -1592,37 +1592,56 @@ namespace
     BOOST_TEST(fs::exists(d1x));
     BOOST_TEST(!fs::exists(d1x / "f2"));
     cout << " copy " << f1x << " to " << d1x / "f2" << endl;
-    fs::copy_file(f1x, d1x / "f2");
+    bool file_copied = fs::copy_file(f1x, d1x / "f2");
     cout << " copy complete" << endl;
+    BOOST_TEST(file_copied);
     BOOST_TEST(fs::exists(f1x));
     BOOST_TEST(fs::exists(d1x / "f2"));
     BOOST_TEST(!fs::is_directory(d1x / "f2"));
     verify_file(d1x / "f2", "file-f1");
 
     bool copy_ex_ok = false;
-    try { fs::copy_file(f1x, d1x / "f2"); }
+    file_copied = false;
+    try { file_copied = fs::copy_file(f1x, d1x / "f2"); }
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(!file_copied);
 
+    file_copied = false;
     copy_ex_ok = false;
-    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::none); }
+    try { file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::none); }
     catch (const fs::filesystem_error &) { copy_ex_ok = true; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(!file_copied);
 
     fs::remove(d1x / "f2");
     create_file(d1x / "f2", "1234567890");
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    file_copied = false;
     copy_ex_ok = true;
-    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::skip_existing); }
+    try { file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::skip_existing); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(!file_copied);
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
     verify_file(d1x / "f2", "1234567890");
 
+    file_copied = false;
     copy_ex_ok = true;
-    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing); }
+    try { file_copied = fs::copy_file(f1x, d1x / "f2-non-existing", fs::copy_options::skip_existing); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(file_copied);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2-non-existing"), 7U);
+    verify_file(d1x / "f2-non-existing", "file-f1");
+    fs::remove(d1x / "f2-non-existing");
+
+    file_copied = false;
+    copy_ex_ok = true;
+    try { file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing); }
+    catch (const fs::filesystem_error &) { copy_ex_ok = false; }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(!file_copied);
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
     verify_file(d1x / "f2", "1234567890");
 
@@ -1635,10 +1654,12 @@ namespace
 
     create_file(d1x / "f2-more-recent", "x");
     BOOST_TEST_EQ(fs::file_size(d1x / "f2-more-recent"), 1U);
+    file_copied = false;
     copy_ex_ok = true;
-    try { fs::copy_file(d1x / "f2-more-recent", d1x / "f2", fs::copy_options::update_existing); }
+    try { file_copied = fs::copy_file(d1x / "f2-more-recent", d1x / "f2", fs::copy_options::update_existing); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(file_copied);
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 1U);
     verify_file(d1x / "f2", "x");
     fs::remove(d1x / "f2-more-recent");
@@ -1646,10 +1667,12 @@ namespace
     fs::remove(d1x / "f2");
     create_file(d1x / "f2", "1234567890");
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
+    file_copied = false;
     copy_ex_ok = true;
-    try { fs::copy_file(f1x, d1x / "f2", fs::copy_options::overwrite_existing); }
+    try { file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::overwrite_existing); }
     catch (const fs::filesystem_error &) { copy_ex_ok = false; }
     BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(file_copied);
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 7U);
     verify_file(d1x / "f2", "file-f1");
   }
