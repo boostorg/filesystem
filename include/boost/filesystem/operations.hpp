@@ -55,10 +55,21 @@ struct space_info
 
 BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(copy_options, unsigned int)
 {
-  none = 0u,                    // Default, error if the target file exists
+  none = 0u,                    // Default. For copy_file: error if the target file exists. For copy: do not recurse, follow symlinks, copy file contents.
+
+  // copy_file options:
   skip_existing = 1u,           // Don't overwrite the existing target file, don't report an error
   overwrite_existing = 1u << 1, // Overwrite existing file
-  update_existing = 1u << 2     // Overwrite existing file if its last write time is older than the replacement file
+  update_existing = 1u << 2,    // Overwrite existing file if its last write time is older than the replacement file
+
+  // copy options:
+  recursive = 1u << 8,          // Recurse into sub-directories
+  copy_symlinks = 1u << 9,      // Copy symlinks as symlinks instead of copying the referenced file
+  skip_symlinks = 1u << 10,     // Don't copy symlinks
+  directories_only = 1u << 11,  // Only copy directory structure, do not copy non-directory files
+  create_symlinks = 1u << 12,   // Create symlinks instead of copying files
+  create_hard_links = 1u << 13, // Create hard links instead of copying files
+  _detail_recursing = 1u << 14  // Internal use only, do not use
 }
 BOOST_SCOPED_ENUM_DECLARE_END(copy_options)
 
@@ -91,9 +102,11 @@ path initial_path(system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
 path canonical(const path& p, const path& base, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
-void copy(const path& from, const path& to, system::error_code* ec=0);
+void copy(const path& from, const path& to, unsigned int options, system::error_code* ec=0);
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 BOOST_FILESYSTEM_DECL
 void copy_directory(const path& from, const path& to, system::error_code* ec=0);
+#endif
 BOOST_FILESYSTEM_DECL
 bool copy_file(const path& from, const path& to,  // See ticket #2925
                unsigned int options, system::error_code* ec=0); // see copy_options for options
@@ -102,7 +115,7 @@ void copy_symlink(const path& existing_symlink, const path& new_symlink, system:
 BOOST_FILESYSTEM_DECL
 bool create_directories(const path& p, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
-bool create_directory(const path& p, system::error_code* ec=0);
+bool create_directory(const path& p, const path* existing, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
 void create_directory_symlink(const path& to, const path& from,
                               system::error_code* ec=0);
@@ -247,17 +260,34 @@ path complete(const path& p, const path& base)
 #endif
 
 inline
-void copy(const path& from, const path& to) {detail::copy(from, to);}
-
+void copy(const path& from, const path& to)
+{
+  detail::copy(from, to, static_cast< unsigned int >(copy_options::none));
+}
 inline
 void copy(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
-                                     {detail::copy(from, to, &ec);}
+{
+  detail::copy(from, to, static_cast< unsigned int >(copy_options::none), &ec);
+}
+inline
+void copy(const path& from, const path& to, BOOST_SCOPED_ENUM_NATIVE(copy_options) options)
+{
+  detail::copy(from, to, static_cast< unsigned int >(options));
+}
+inline
+void copy(const path& from, const path& to, BOOST_SCOPED_ENUM_NATIVE(copy_options) options, system::error_code& ec) BOOST_NOEXCEPT
+{
+  detail::copy(from, to, static_cast< unsigned int >(options), &ec);
+}
+
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 inline
 void copy_directory(const path& from, const path& to)
                                      {detail::copy_directory(from, to);}
 inline
 void copy_directory(const path& from, const path& to, system::error_code& ec) BOOST_NOEXCEPT
                                      {detail::copy_directory(from, to, &ec);}
+#endif
 inline
 bool copy_file(const path& from, const path& to)
 {
@@ -309,11 +339,17 @@ inline
 bool create_directories(const path& p, system::error_code& ec) BOOST_NOEXCEPT
                                      {return detail::create_directories(p, &ec);}
 inline
-bool create_directory(const path& p) {return detail::create_directory(p);}
+bool create_directory(const path& p) {return detail::create_directory(p, 0);}
 
 inline
 bool create_directory(const path& p, system::error_code& ec) BOOST_NOEXCEPT
-                                     {return detail::create_directory(p, &ec);}
+                                     {return detail::create_directory(p, 0, &ec);}
+inline
+bool create_directory(const path& p, const path& existing)
+                                     {return detail::create_directory(p, &existing);}
+inline
+bool create_directory(const path& p, const path& existing, system::error_code& ec) BOOST_NOEXCEPT
+                                     {return detail::create_directory(p, &existing, &ec);}
 inline
 void create_directory_symlink(const path& to, const path& from)
                                      {detail::create_directory_symlink(to, from);}

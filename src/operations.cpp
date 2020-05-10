@@ -256,7 +256,6 @@ union reparse_data_buffer
 # if defined(BOOST_POSIX_API)
 
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::chdir(P)== 0)
-#   define BOOST_CREATE_DIRECTORY(P)(::mkdir(P, S_IRWXU|S_IRWXG|S_IRWXO)== 0)
 #   define BOOST_CREATE_HARD_LINK(F,T)(::link(T, F)== 0)
 #   define BOOST_CREATE_SYMBOLIC_LINK(F,T,Flag)(::symlink(T, F)== 0)
 #   define BOOST_REMOVE_DIRECTORY(P)(::rmdir(P)== 0)
@@ -269,7 +268,6 @@ union reparse_data_buffer
 # else  // BOOST_WINDOWS_API
 
 #   define BOOST_SET_CURRENT_DIRECTORY(P)(::SetCurrentDirectoryW(P)!= 0)
-#   define BOOST_CREATE_DIRECTORY(P)(::CreateDirectoryW(P, 0)!= 0)
 #   define BOOST_CREATE_HARD_LINK(F,T)(create_hard_link_api(F, T, 0)!= 0)
 #   define BOOST_CREATE_SYMBOLIC_LINK(F,T,Flag)(create_symbolic_link_api(F, T, Flag)!= 0)
 #   define BOOST_REMOVE_DIRECTORY(P)(::RemoveDirectoryW(P)!= 0)
@@ -304,8 +302,9 @@ fs::file_type query_file_type(const path& p, error_code* ec);
 
 bool is_empty_directory(const path& p, error_code* ec)
 {
-  return (ec != 0 ? fs::directory_iterator(p, *ec) : fs::directory_iterator(p))
-    == fs::directory_iterator();
+  fs::directory_iterator itr;
+  detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), ec);
+  return itr == fs::directory_iterator();
 }
 
 bool not_found_error(int errval) BOOST_NOEXCEPT; // forward declaration
@@ -356,19 +355,14 @@ bool remove_file_or_directory(const path& p, fs::file_type type, error_code* ec)
 boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
   error_code* ec)
 {
-  boost::uintmax_t count = 0;
+  boost::uintmax_t count = 0u;
 
   if (type == fs::directory_file)  // but not a directory symlink
   {
     fs::directory_iterator itr;
-    if (ec != 0)
-    {
-      itr = fs::directory_iterator(p, *ec);
-      if (*ec)
-        return count;
-    }
-    else
-      itr = fs::directory_iterator(p);
+    fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), ec);
+    if (ec && *ec)
+      return count;
 
     const fs::directory_iterator end_dit;
     while(itr != end_dit)
@@ -970,40 +964,145 @@ path canonical(const path& p, const path& base, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
-void copy(const path& from, const path& to, system::error_code* ec)
+void copy(const path& from, const path& to, unsigned int options, system::error_code* ec)
 {
-  file_status s(detail::symlink_status(from, ec));
-  if (ec != 0 && *ec) return;
+  BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1u);
 
-  if (is_symlink(s))
+  BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::copy_symlinks)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::skip_symlinks)) != 0u)) <= 1u);
+
+  BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::directories_only)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u) +
+    ((options & static_cast< unsigned int >(copy_options::create_hard_links)) != 0u)) <= 1u);
+
+  file_status from_stat;
+  if ((options & (static_cast< unsigned int >(copy_options::copy_symlinks) |
+    static_cast< unsigned int >(copy_options::skip_symlinks) |
+    static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
   {
-    detail::copy_symlink(from, to, ec);
-  }
-  else if (is_directory(s))
-  {
-    detail::copy_directory(from, to, ec);
-  }
-  else if (is_regular_file(s))
-  {
-    detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none), ec);
+    from_stat = detail::symlink_status(from, ec);
   }
   else
   {
-    if (ec == 0)
-      BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy",
-        from, to, error_code(BOOST_ERROR_NOT_SUPPORTED, system_category())));
-    ec->assign(BOOST_ERROR_NOT_SUPPORTED, system_category());
+    from_stat = detail::status(from, ec);
   }
-}
 
-BOOST_FILESYSTEM_DECL
-void copy_directory(const path& from, const path& to, system::error_code* ec)
-{
-# ifdef BOOST_POSIX_API
-  struct stat from_stat;
-# endif
-  error(!BOOST_COPY_DIRECTORY(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0,
-    from, to, ec, "boost::filesystem::copy_directory");
+  if (ec && *ec)
+    return;
+
+  if (!exists(from_stat))
+  {
+    emit_error(BOOST_ERROR_FILE_NOT_FOUND, from, to, ec, "boost::filesystem::copy");
+    return;
+  }
+
+  if (is_symlink(from_stat))
+  {
+    if ((options & static_cast< unsigned int >(copy_options::skip_symlinks)) != 0u)
+      return;
+
+    if ((options & static_cast< unsigned int >(copy_options::copy_symlinks)) == 0u)
+      goto fail;
+
+    detail::copy_symlink(from, to, ec);
+  }
+  else if (is_regular_file(from_stat))
+  {
+    if ((options & static_cast< unsigned int >(copy_options::directories_only)) != 0u)
+      return;
+
+    if ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u)
+    {
+      detail::create_symlink(from, to, ec);
+      return;
+    }
+
+    if ((options & static_cast< unsigned int >(copy_options::create_hard_links)) != 0u)
+    {
+      detail::create_hard_link(from, to, ec);
+      return;
+    }
+
+    file_status to_stat;
+    if ((options & (static_cast< unsigned int >(copy_options::skip_symlinks) |
+      static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
+    {
+      to_stat = detail::symlink_status(to, ec);
+    }
+    else
+    {
+      to_stat = detail::status(to, ec);
+    }
+
+    if (ec && *ec)
+      return;
+
+    if (is_directory(to_stat))
+      detail::copy_file(from, to / from.filename(), options, ec);
+    else
+      detail::copy_file(from, to, options, ec);
+  }
+  else if (is_directory(from_stat))
+  {
+    if ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u)
+    {
+      error_code err_code = make_error_code(system::errc::is_a_directory);
+      if (!ec)
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy", from, to, err_code));
+      *ec = err_code;
+      return;
+    }
+
+    file_status to_stat;
+    if ((options & (static_cast< unsigned int >(copy_options::skip_symlinks) |
+      static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
+    {
+      to_stat = detail::symlink_status(to, ec);
+    }
+    else
+    {
+      to_stat = detail::status(to, ec);
+    }
+
+    if (ec && *ec)
+      return;
+
+    if (!exists(to_stat))
+    {
+      detail::create_directory(to, &from, ec);
+      if (ec && *ec)
+        return;
+    }
+
+    if ((options & static_cast< unsigned int >(copy_options::recursive)) != 0u || options == 0u)
+    {
+      fs::directory_iterator itr;
+      detail::directory_iterator_construct(itr, from, static_cast< unsigned int >(directory_options::none), ec);
+      if (ec && *ec)
+        return;
+
+      const fs::directory_iterator end_dit;
+      while (itr != end_dit)
+      {
+        path const& p = itr->path();
+        // Set _detail_recursing flag so that we don't recurse more than for one level deeper into the directory if options are copy_options::none
+        detail::copy(p, to / p.filename(), options | static_cast< unsigned int >(copy_options::_detail_recursing), ec);
+        if (ec && *ec)
+          return;
+
+        detail::directory_iterator_increment(itr, ec);
+        if (ec && *ec)
+          return;
+      }
+    }
+  }
+  else
+  {
+  fail:
+    emit_error(BOOST_ERROR_NOT_SUPPORTED, from, to, ec, "boost::filesystem::copy");
+  }
 }
 
 BOOST_FILESYSTEM_DECL
@@ -1033,7 +1132,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
         continue;
 
     fail:
-      error(err, from, to, ec, "boost::filesystem::copy_file");
+      emit_error(err, from, to, ec, "boost::filesystem::copy_file");
       return false;
     }
 
@@ -1190,7 +1289,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     {
     fail_last_error:
       DWORD err = ::GetLastError();
-      error(err, from, to, ec, "boost::filesystem::copy_file");
+      emit_error(err, from, to, ec, "boost::filesystem::copy_file");
       return false;
     }
 
@@ -1222,7 +1321,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     DWORD err = ::GetLastError();
     if ((err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
       return false;
-    error(err, from, to, ec, "boost::filesystem::copy_file");
+    emit_error(err, from, to, ec, "boost::filesystem::copy_file");
     return false;
   }
 
@@ -1291,38 +1390,73 @@ bool create_directories(const path& p, system::error_code* ec)
   }
 
   // create the directory
-  return create_directory(p, ec);
+  return create_directory(p, NULL, ec);
 }
 
 BOOST_FILESYSTEM_DECL
-bool create_directory(const path& p, error_code* ec)
+bool create_directory(const path& p, const path* existing, error_code* ec)
 {
-  if (BOOST_CREATE_DIRECTORY(p.c_str()))
+  if (ec)
+    ec->clear();
+
+#if defined(BOOST_POSIX_API)
+
+  mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
+  if (existing)
   {
-    if (ec != 0)
-      ec->clear();
-    return true;
+    struct ::stat existing_stat = {};
+    if (::stat(existing->c_str(), &existing_stat) < 0)
+    {
+      emit_error(errno, p, *existing, ec, "boost::filesystem::create_directory");
+      return false;
+    }
+
+    if (!S_ISDIR(existing_stat.st_mode))
+    {
+      emit_error(ENOTDIR, p, *existing, ec, "boost::filesystem::create_directory");
+      return false;
+    }
+
+    mode = existing_stat.st_mode;
   }
 
+  if (::mkdir(p.c_str(), mode) == 0)
+    return true;
+
+#else // defined(BOOST_POSIX_API)
+
+  BOOL res;
+  if (existing)
+    res = ::CreateDirectoryExW(existing->c_str(), p.c_str(), NULL);
+  else
+    res = ::CreateDirectoryW(p.c_str(), NULL);
+
+  if (res)
+    return true;
+
+#endif // defined(BOOST_POSIX_API)
+
   //  attempt to create directory failed
-  int errval(BOOST_ERRNO);  // save reason for failure
+  err_t errval = BOOST_ERRNO;  // save reason for failure
   error_code dummy;
 
   if (is_directory(p, dummy))
-  {
-    if (ec != 0)
-      ec->clear();
     return false;
-  }
 
   //  attempt to create directory failed && it doesn't already exist
-  if (ec == 0)
-    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directory",
-      p, error_code(errval, system_category())));
-  else
-    ec->assign(errval, system_category());
-
+  emit_error(errval, p, ec, "boost::filesystem::create_directory");
   return false;
+}
+
+// Deprecated, to be removed in a future release
+BOOST_FILESYSTEM_DECL
+void copy_directory(const path& from, const path& to, system::error_code* ec)
+{
+# ifdef BOOST_POSIX_API
+  struct stat from_stat;
+# endif
+  error(!BOOST_COPY_DIRECTORY(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0,
+    from, to, ec, "boost::filesystem::copy_directory");
 }
 
 BOOST_FILESYSTEM_DECL
@@ -1401,11 +1535,7 @@ path current_path(error_code* ec)
     {
       if (BOOST_UNLIKELY(path_max > absolute_path_max))
       {
-        if (ec == 0)
-          BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::current_path",
-            error_code(ENAMETOOLONG, system_category())));
-        else
-          ec->assign(ENAMETOOLONG, system_category());
+        emit_error(ENAMETOOLONG, ec, "boost::filesystem::current_path");
         break;
       }
 

@@ -774,9 +774,17 @@ nothing else.&quot;</p>
     enum class <a name="copy_options">copy_options</a>
     {
       none = 0u,
+      // <a href="#copy_file">copy_file</a> options
       skip_existing,
       overwrite_existing,
-      update_existing
+      update_existing,
+      // <a href="#copy">copy</a> options
+      recursive,
+      copy_symlinks,
+      skip_symlinks,
+      directories_only,
+      create_symlinks,
+      create_hard_links
     };
 
     // Deprecated, use <a href="#copy_options">copy_options</a> instead
@@ -815,9 +823,14 @@ nothing else.&quot;</p>
     void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to);
     void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to,
                    system::error_code&amp; ec);
+    void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to,
+                   <a href="#copy_options">copy_options</a> options);
+    void         <a href="#copy">copy</a>(const path&amp; from, const path&amp; to,
+                   <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
 
-    void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
-    void         <a href="#create_directory">copy_directory</a>(const path&amp; from, const path&amp; to,
+    // Deprecated, use <a href="#create_directory">create_directory</a> instead
+    void         <a href="#copy_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
+    void         <a href="#copy_directory">copy_directory</a>(const path&amp; from, const path&amp; to,
                    system::error_code&amp; ec);
 
     bool         <a href="#copy_file">copy_file</a>(const path&amp; from, const path&amp; to);
@@ -844,6 +857,8 @@ nothing else.&quot;</p>
 
     bool         <a href="#create_directory">create_directory</a>(const path&amp; p);
     bool         <a href="#create_directory">create_directory</a>(const path&amp; p, system::error_code&amp; ec);
+    bool         <a href="#create_directory">create_directory</a>(const path&amp; p, const path&amp; existing);
+    bool         <a href="#create_directory">create_directory</a>(const path&amp; p, const path&amp; existing, system::error_code&amp; ec);
 
     void         <a href="#create_directory_symlink">create_directory_symlink</a>(const path&amp; to,
                    const path&amp; new_symlink);
@@ -3080,58 +3095,87 @@ without a <code>base</code> argument, <code>base</code> is <code>current_path()<
   does this path live in /home/goodguy or /home/badguy?)&nbsp; —end note]</p>
 
 </blockquote>
-<pre>void <a name="copy">copy</a>(const path&amp; from, const path&amp; to);
+<pre>void copy(const path&amp; from, const path&amp; to);
 void copy(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects:</i> As if</p>
+  <p><i>Effects: </i><code>copy(from, to, copy_options::none</code><i>[</i><code>, ec</code><i>]</i><code>)</code>.</p>
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
+</blockquote>
+<pre>void <a name="copy">copy</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options);
+void copy(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);</pre>
+<blockquote>
+  <p><i>Precondition:</i> <code>options</code> must contain at most one option from each of the following groups:
+    <ul>
+      <li><code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code>;</li>
+      <li><code>copy_options::recursive</code>;</li>
+      <li><code>copy_options::copy_symlinks</code> or <code>copy_options::skip_symlinks</code>;</li>
+      <li><code>copy_options::directories_only</code>, <code>copy_options::create_symlinks</code> or <code>copy_options::create_hard_links</code>.</li>
+    </ul></p>
+  <p><i>Effects:</i> Let <code>f</code> and <code>t</code> be <code>file_status</code> objects obtained the following way:
+    <ul>
+      <li>If <code>(options &amp; (copy_options::create_symlinks | copy_options::skip_symlinks)) != copy_options::none</code> then <code>f = <a href="#symlink_status">symlink_status</a>(from)</code> and <code>t = <a href="#symlink_status">symlink_status</a>(to)</code>;</li>
+      <li>Otherwise, if <code>(options &amp; copy_options::copy_symlinks) != copy_options::none</code> then <code>f = <a href="#symlink_status">symlink_status</a>(from)</code> and <code>t = <a href="#status">status</a>(to)</code>;</li>
+      <li>Otherwise, <code>f = <a href="#status">status</a>(from)</code> and <code>t = <a href="#status">status</a>(to)</code>.</li>
+    </ul>
+    Then, report an error if:
+    <ul>
+      <li><code>!exists(f)</code>, or</li>
+      <li><code>equivalent(from, to)</code>, or</li>
+      <li><code>is_other(f) || is_other(t)</code>, or</li>
+      <li><code>is_directory(f) &amp;&amp; is_regular_file(t)</code>.</li>
+    </ul>
+    Otherwise, if <code>is_symlink(f)</code>, then:
+    <ul>
+      <li>If <code>(options &amp; copy_options::skip_symlinks) != copy_options::none</code> then return;</li>
+      <li>Otherwise if <code>!exists(t) &amp;&amp; (options &amp; copy_options::copy_symlinks) != copy_options::none</code> then <code><a href="#copy_symlink">copy_symlink</a>(from, to)</code>;</li>
+      <li>Otherwise report error.</li>
+    </ul>
+    Otherwise, if <code>is_regular_file(f)</code>, then:
+    <ul>
+      <li>If <code>(options &amp; copy_options::directories_only) != copy_options::none</code> then return;</li>
+      <li>Otherwise if <code>(options &amp; copy_options::create_symlinks) != copy_options::none</code> then <code>create_symlink(from, to)</code>;</li>
+      <li>otherwise if <code>(options &amp; copy_options::create_hard_links) != copy_options::none</code> then <code>create_hard_link(from, to)</code>;</li>
+      <li>Otherwise if <code>is_directory(t)</code> then <code><a href="#copy_file">copy_file</a>(from, to / from.filename(), options)</code>;</li>
+      <li>Otherwise <code><a href="#copy_file">copy_file</a>(from, to, options)</code>.</li>
+    </ul>
+    Otherwise, if <code>is_directory(f)</code>, then:
+    <ul>
+      <li>If <code>(options &amp; copy_options::create_symlinks) != copy_options::none</code> then report error with error code equal to <code>make_error_code(system::errc::is_a_directory)</code>;</li>
+      <li>Otherwise if
+        <ul>
+          <li><code>(options &amp; copy_options::recursive) != copy_options::none</code>, or</li>
+          <li><code>options == copy_options::none</code> and this call to <code>copy</code> is not a recursive call from <code>copy</code></li>
+        </ul>
+        then:
+        <ul>
+          <li>If <code>!exists(t)</code>, then <code><a href="#create_directory">create_directory</a>(to, from)</code>.</li>
+          <li>Then, iterate over files in <code>from</code> and for each <code>directory_entry x</code> obtained during iteration invoke <code>copy(x.path(), to / x.path().filename(), options)</code>.</li>
+        </ul>
+      </li>
+      <li>Otherwise, return.</li>
+    </ul>
+    Otherwise, for all unsupported file types of <code>f</code> report error.</p>
 
-  <blockquote>
-    <pre>file_status s(symlink_status(from<i>[</i><code>, ec</code><i>]</i>));
-if(is_symlink(s))
-  copy_symlink(from, to<i>[</i><code>, ec</code><i>]</i>);
-else if(is_directory(s))
-  copy_directory(from, to<i>[</i><code>, ec</code><i>]</i>);
-else if(is_regular_file(s))
-  copy_file(from, to, copy_options::none<i>[</i><code>, ec</code><i>]</i>);
-else
-<i> Report error as specified in <a href="#Error-reporting">Error reporting</a>.</i></pre>
-  </blockquote>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
 </blockquote>
 <pre>void <a name="copy_directory">copy_directory</a>(const path&amp; from, const path&amp; to);
 void copy_directory(const path&amp; from, const path&amp; to, system::error_code&amp; ec);</pre>
 <blockquote>
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
-   bordercolor="#111111" width="90%" bgcolor="#E0E0E0">
-    <tr>
-      <td width="100%">
-      <p><i>This function is poorly named; it should probably be an overload of
-      <code>create_directory</code> with an additional argument.</i></td>
-    </tr>
-  </table>
-
   <p><i>Effects: </i>Creates directory <code>to</code>, with
   attributes copied from directory <code>from</code>. The set of attributes
   copied is operating system dependent.</p>
 
-<blockquote>
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse"
-   bordercolor="#111111" width="90%" bgcolor="#E8FFE8">
-    <tr>
-      <td width="100%">
-      <p>[<i>Note:</i> For ISO 9945/POSIX based operating systems the
-      attributes are those copied by native API <code>stat(from.c_str(), &amp;from_stat)</code>
-      followed by <code>mkdir(to.c_str(),from_stat.st_mode)</code>.&nbsp; For
-      Windows based operating systems the attributes are those copied by native
-      API <code>CreateDirectoryExW(from.c_str(), to.c_str(), 0)</code>.&nbsp; <i>
-      —end note</i>]</td>
-    </tr>
-  </table>
-</blockquote>
+  <p>[<i>Note:</i> For ISO 9945/POSIX based operating systems the
+  attributes are those copied by native API <code>stat(from.c_str(), &amp;from_stat)</code>
+  followed by <code>mkdir(to.c_str(),from_stat.st_mode)</code>.&nbsp; For
+  Windows based operating systems the attributes are those copied by native
+  API <code>CreateDirectoryExW(from.c_str(), to.c_str(), 0)</code>.&nbsp; <i>
+  —end note</i>]</td>
 
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
+  <p>[<i>Note:</i> This operation is deprecated, use <a href="#create_directory">create_directory</a> instead. —end note]</p>
 </blockquote>
 
 <pre>bool copy_file(const path&amp; from, const path&amp; to);
@@ -3143,9 +3187,9 @@ bool copy_file(const path&amp; from, const path&amp; to, system::error_code&amp;
 
 </blockquote>
 <pre>bool <a name="copy_file">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options);
-bool <a name="copy_file2">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
-bool <a name="copy_file3">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options);
-bool <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);</pre>
+bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_options">copy_options</a> options, system::error_code&amp; ec);
+bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options);
+bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Precondition:</i> At most one of <code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code> must be specified in <code>options</code>.</p>
   <p><i>Effects:</i> Report an error if:
@@ -3153,12 +3197,12 @@ bool <a name="copy_file4">copy_file</a>(const path&amp; from, const path&amp; to
       <li><code>!is_regular_file(from)</code>, or</li>
       <li><code>exists(to) &amp;&amp; !is_regular_file(to)</code>, or</li>
       <li><code>exists(to) &amp;&amp; equivalent(from, to)</code>, or</li>
-      <li><code>exists(to) &amp;&amp; (options & (copy_options::skip_existing | copy_options::overwrite_existing)) == copy_options::none</code>.</li>
+      <li><code>exists(to) &amp;&amp; (options &amp; (copy_options::skip_existing | copy_options::overwrite_existing)) == copy_options::none</code>.</li>
     </ul>
     Otherwise, return successfully with no effect if:
     <ul>
-      <li><code>exists(to) &amp;&amp; (options & copy_options::skip_existing) != copy_options::none</code>, or</li>
-      <li><code>exists(to) &amp;&amp; (options & copy_options::update_existing) != copy_options::none</code> and last write time of <code>from</code> is more recent than that of <code>to</code>.</li>
+      <li><code>exists(to) &amp;&amp; (options &amp; copy_options::skip_existing) != copy_options::none</code>, or</li>
+      <li><code>exists(to) &amp;&amp; (options &amp; copy_options::update_existing) != copy_options::none</code> and last write time of <code>from</code> is more recent than that of <code>to</code>.</li>
     </ul>
     Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
   <p><i>Returns:</i> <code>true</code> if the file was copied without error, otherwise <code>false</code>.</p>
@@ -3188,13 +3232,17 @@ bool <a name="create_directories2">create_directories</a>(const path&amp; p, sys
   of <code>p</code> that do not exist.</p>
 </blockquote>
 <pre>bool <a name="create_directory">create_directory</a>(const path&amp; p);
-bool <a name="create_directory2">create_directory</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+bool create_directory(const path&amp; p, system::error_code&amp; ec);
+bool create_directory(const path&amp; p, const path&amp; existing);
+bool create_directory(const path&amp; p, const path&amp; existing, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Effects:</i> Establishes the postcondition by attempting to create the
   directory <code>p</code> resolves to, as if by ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/mkdir.html">
-  mkdir()</a></code> with a second argument of S_IRWXU|S_IRWXG|S_IRWXO. Creation
-  failure because <code>p</code> resolves to an existing directory shall not be
-  treated as an error. </p>
+  mkdir()</a></code>. For overloads without <code>existing</code> argument, the new directory is created with <code>S_IRWXU|S_IRWXG|S_IRWXO</code> mode.
+  Overloads with <code>existing</code> argument obtain mode from <code>existing</code>, which must be a path to an existing directory. On Windows,
+  <code>CreateDirectoryW(p.c_str(), NULL)</code> is used when <code>existing</code> is not specified and <code>CreateDirectoryExW(existing.c_str(), p.c_str(), NULL)</code> otherwise.
+  Creation failure because <code>p</code> resolves to an existing directory shall not be
+  treated as an error.</p>
   <p><i>Postcondition:</i> <code>is_directory(p)</code></p>
   <p><i>Returns:</i> <code>true</code> if a new directory was created, otherwise <code>false</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
