@@ -4,6 +4,7 @@
 //  Copyright Jan Langer 2002
 //  Copyright Dietmar Kuehl 2001
 //  Copyright Vladimir Prus 2002
+//  Copyright Andrey Semashev 2020
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
