@@ -19,6 +19,7 @@
 #include <stdexcept>
 
 #include <boost/throw_exception.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 #include <boost/core/lightweight_test.hpp>
 
 //  on Windows, except for standard libaries known to have wchar_t overloads for
@@ -102,6 +103,8 @@ directory_tree collect_directory_tree(fs::path const& root_dir)
 
 void test_copy_file_default(fs::path const& root_dir)
 {
+    std::cout << "test_copy_file_default" << std::endl;
+
     fs::path target_dir = fs::unique_path();
     fs::create_directory(target_dir);
 
@@ -122,6 +125,8 @@ void test_copy_file_default(fs::path const& root_dir)
 
 void test_copy_dir_default(fs::path const& root_dir, bool with_symlinks)
 {
+    std::cout << "test_copy_dir_default" << std::endl;
+
     fs::path target_dir = fs::unique_path();
 
     fs::copy(root_dir, target_dir);
@@ -146,6 +151,8 @@ void test_copy_dir_default(fs::path const& root_dir, bool with_symlinks)
 
 void test_copy_dir_recursive(fs::path const& root_dir)
 {
+    std::cout << "test_copy_dir_recursive" << std::endl;
+
     fs::path target_dir = fs::unique_path();
 
     fs::copy(root_dir, target_dir, fs::copy_options::recursive);
@@ -174,6 +181,8 @@ void test_copy_dir_recursive(fs::path const& root_dir)
 
 void test_copy_dir_recursive_tree(fs::path const& root_dir)
 {
+    std::cout << "test_copy_dir_recursive_tree" << std::endl;
+
     fs::path target_dir = fs::unique_path();
 
     fs::copy(root_dir, target_dir, fs::copy_options::recursive | fs::copy_options::directories_only);
@@ -191,6 +200,8 @@ void test_copy_dir_recursive_tree(fs::path const& root_dir)
 
 void test_copy_file_symlinks(fs::path const& root_dir)
 {
+    std::cout << "test_copy_file_symlinks" << std::endl;
+
     fs::path target_dir = fs::unique_path();
     fs::create_directory(target_dir);
 
@@ -225,6 +236,8 @@ void test_copy_file_symlinks(fs::path const& root_dir)
 
 void test_copy_errors(fs::path const& root_dir, bool symlinks_supported)
 {
+    std::cout << "test_copy_errors" << std::endl;
+
     fs::path target_dir = fs::unique_path();
     fs::create_directory(target_dir);
 
@@ -252,37 +265,48 @@ void test_copy_errors(fs::path const& root_dir, bool symlinks_supported)
 
 int main()
 {
-    fs::path root_dir = create_tree();
-
-    test_copy_file_default(root_dir);
-    test_copy_dir_default(root_dir, false);
-    test_copy_dir_recursive(root_dir);
-    test_copy_dir_recursive_tree(root_dir);
-
-    bool symlinks_supported = false;
     try
     {
-        fs::create_symlink("d1", root_dir / "s1");
-        symlinks_supported = true;
+        fs::path root_dir = create_tree();
+
+        test_copy_file_default(root_dir);
+        test_copy_dir_default(root_dir, false);
+        test_copy_dir_recursive(root_dir);
+        test_copy_dir_recursive_tree(root_dir);
+
+        bool symlinks_supported = false;
+        try
+        {
+            fs::create_symlink("d1", root_dir / "s1");
+            symlinks_supported = true;
+            std::cout <<
+                "     *** For information only ***\n"
+                "     create_symlink() attempt succeeded" << std::endl;
+        }
+        catch (fs::filesystem_error& e)
+        {
+            std::cout <<
+                "     *** For information only ***\n"
+                "     create_symlink() attempt failed\n"
+                "     filesystem_error.what() reports: " << e.what() << "\n"
+                "     create_symlink() may not be supported on this operating system or file system" << std::endl;
+        }
+
+        if (symlinks_supported)
+        {
+            test_copy_dir_default(root_dir, true);
+            test_copy_file_symlinks(root_dir);
+        }
+
+        test_copy_errors(root_dir, symlinks_supported);
+
+        fs::remove_all(root_dir);
+
+        return boost::report_errors();
     }
-    catch (fs::filesystem_error& e)
+    catch (std::exception& e)
     {
-        std::cout <<
-            "     *** For information only ***\n"
-            "     create_symlink() attempt failed\n"
-            "     filesystem_error.what() reports: " << e.what() << "\n"
-            "     create_symlink() may not be supported on this operating system or file system" << std::endl;
+        std::cout << "FAIL, exception caught: " << boost::diagnostic_information(e) << std::endl;
+        return 1;
     }
-
-    if (symlinks_supported)
-    {
-        test_copy_dir_default(root_dir, true);
-        test_copy_file_symlinks(root_dir);
-    }
-
-    test_copy_errors(root_dir, symlinks_supported);
-
-    fs::remove_all(root_dir);
-
-    return boost::report_errors();
 }
