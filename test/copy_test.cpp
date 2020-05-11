@@ -277,7 +277,7 @@ int main()
         bool symlinks_supported = false;
         try
         {
-            fs::create_symlink("d1", root_dir / "s1");
+            fs::create_symlink("f1", root_dir / "s1");
             symlinks_supported = true;
             std::cout <<
                 "     *** For information only ***\n"
