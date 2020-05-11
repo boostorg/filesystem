@@ -992,14 +992,14 @@ void copy(const path& from, const path& to, unsigned int options, system::error_
 {
   BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
     ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
-    ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1u);
+    ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1);
 
   BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::copy_symlinks)) != 0u) +
-    ((options & static_cast< unsigned int >(copy_options::skip_symlinks)) != 0u)) <= 1u);
+    ((options & static_cast< unsigned int >(copy_options::skip_symlinks)) != 0u)) <= 1);
 
   BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::directories_only)) != 0u) +
     ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u) +
-    ((options & static_cast< unsigned int >(copy_options::create_hard_links)) != 0u)) <= 1u);
+    ((options & static_cast< unsigned int >(copy_options::create_hard_links)) != 0u)) <= 1);
 
   file_status from_stat;
   if ((options & (static_cast< unsigned int >(copy_options::copy_symlinks) |
@@ -1161,7 +1161,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
 {
   BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
     ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
-    ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1u);
+    ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1);
 
   if (ec)
     ec->clear();
