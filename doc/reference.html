@@ -142,7 +142,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#permissions">permissions</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#op-relative">relative</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#relative">relative</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br>
@@ -814,6 +814,9 @@ nothing else.&quot;</p>
     // <a href="#Operational-functions">operational functions</a>
 
     path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
+    path         <a href="#absolute">absolute</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#absolute">absolute</a>(const path&amp; p, const path&amp; base,
+                   system::error_code&amp; ec);
 
     path         <a href="#canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
     path         <a href="#canonical">canonical</a>(const path&amp; p, system::error_code&amp; ec);
@@ -925,9 +928,9 @@ nothing else.&quot;</p>
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p);
     path         <a href="#read_symlink">read_symlink</a>(const path&amp; p, system::error_code&amp; ec);
 
-    path         <a href="#op-relative">relative</a>(const path&amp; p, system::error_code&amp; ec);
-    path         <a href="#op-relative">relative</a>(const path&amp; p, const path&amp; base=current_path());
-    path         <a href="#op-relative">relative</a>(const path&amp; p,
+    path         <a href="#relative">relative</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#relative">relative</a>(const path&amp; p, const path&amp; base=current_path());
+    path         <a href="#relative">relative</a>(const path&amp; p,
                      const path&amp; base, system::error_code&amp; ec);
 
     bool         <a href="#remove">remove</a>(const path&amp; p);
@@ -1537,7 +1540,7 @@ forward slashes, but that
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
 
   <p>[<i>Note:</i> If symlink following semantics are desired, use the operational function <code>
-  <a href="#op-relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
+  <a href="#relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
 
   <p>[<i>Note:</i> If <a href="#lexically_normal">normalization</a> is needed to ensure
   consistent matching of elements, apply <code><a href="#lexically_normal">lexically_normal()</a></code>
@@ -1549,7 +1552,7 @@ does not affect <code>path</code> equality.<i> —end example</i>]</p>
 Otherwise returns <code>*this</code>.</p>
 
   <p>[<i>Note:</i> If symlink following semantics are desired, use the operational function <code>
-  <a href="#op-relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
+  <a href="#relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
 
   <p>[<i>Note:</i> If <a href="#lexically_normal">normalization</a> is needed to ensure
   consistent matching of elements, apply <code><a href="#lexically_normal">lexically_normal()</a></code>
@@ -2053,7 +2056,7 @@ const string_type  external_directory_string() const { return native(); }</pre>
   example</i>]</p>
   <p>[<i>Note:</i> If symlink following semantics are desired, use the
   operational function <code>
-  <a href="#op-relative">
+  <a href="#relative">
   relative</a></code>&nbsp; <i>—end note</i>]</p>
   <p>[<i>Note:</i> If <a href="#normal-form">normalization</a> is needed to ensure consistent matching of elements, wrap
   <code>p</code>, <code>base</code>, or both in calls <code>
@@ -3041,7 +3044,9 @@ path is resolved as if by the ISO/IEC 9945 <a href="http://www.opengroup.org/onl
 other kinds of errors occur frequently in file system operations, users should be aware
 that any filesystem operational function, no matter how apparently innocuous, may encounter
 an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>—end note</i>]</p>
-<pre>path <a name="absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());</pre>
+<pre>path <a name="absolute">absolute</a>(const path&amp; p, const path&amp; base=current_path());
+path absolute(const path&amp; p, system::error_code&amp; ec);
+path absolute(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
   <blockquote>
   <p><i>Returns:</i> A <a href="#Absolute-path">absolute path</a> composed according to the
   following table</p>
@@ -3073,9 +3078,9 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>—end not
 &nbsp;/ p</code></td>
     </tr>
   </table>
-  <p>[<i>Note:</i> For the returned path, <code>rp,</code> <code>rp.is_absolute()</code> is true. <i>—end note</i>]</p>
-  <p><i>Throws:</i> If <code>base.is_absolute()</code> is true, throws only if
-  memory allocation fails.</p>
+  <p>For the overload without a <code>base</code> argument, <code>base</code> is <code>current_path()</code>.</p>
+  <p>[<i>Note:</i> For the returned path, <code>rp</code>, <code>rp.is_absolute()</code> is <code>true</code>. <i>—end note</i>]</p>
+  <p><i>Throws:</i>&nbsp; As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre>path <a name="canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
 path canonical(const path&amp; p, system::error_code&amp; ec);
@@ -3085,7 +3090,7 @@ path canonical(const path&amp; p, const path&amp; base, system::error_code&amp; 
 path that has no symbolic link, <a href="#Dot">dot</a>,
 or <a href="#Dot">dot-dot</a> elements. </p>
 <p><i>Returns:</i> A <a href="#canonical-path">canonical path</a> that refers to
-the same file system object as <code>absolute(p,base)</code>. For the overload
+the same file system object as <code>absolute(p, base)</code>. For the overload
 without a <code>base</code> argument, <code>base</code> is <code>current_path()</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
@@ -3133,8 +3138,13 @@ void copy(const path&amp; from, const path&amp; to, <a href="#copy_options">copy
     Otherwise, if <code>is_regular_file(f)</code>, then:
     <ul>
       <li>If <code>(options &amp; copy_options::directories_only) != copy_options::none</code> then return;</li>
-      <li>Otherwise if <code>(options &amp; copy_options::create_symlinks) != copy_options::none</code> then <code>create_symlink(from, to)</code>;</li>
-      <li>otherwise if <code>(options &amp; copy_options::create_hard_links) != copy_options::none</code> then <code>create_hard_link(from, to)</code>;</li>
+      <li>Otherwise if <code>(options &amp; copy_options::create_symlinks) != copy_options::none</code> then <code><a href="#create_symlink">create_symlink</a>(link, to)</code>, where <code>link</code> is determined as follows:
+        <ul>
+          <li>If <code>from.is_absolute()</code> then <code>link</code> equals to <code>from</code>;</li>
+          <li>Otherwise, <code>link</code> is equivalent to <code><a href="#relative">relative</a>(<a href="#absolute">absolute</a>(to.parent_path()), <a href="#absolute">absolute</a>(from.parent_path())) / from.filename()</code>.</li>
+        </ul>
+      </li>
+      <li>Otherwise if <code>(options &amp; copy_options::create_hard_links) != copy_options::none</code> then <code><a href="#create_hard_link">create_hard_link</a>(from, to)</code>;</li>
       <li>Otherwise if <code>is_directory(t)</code> then <code><a href="#copy_file">copy_file</a>(from, to / from.filename(), options)</code>;</li>
       <li>Otherwise <code><a href="#copy_file">copy_file</a>(from, to, options)</code>.</li>
     </ul>
@@ -3502,7 +3512,7 @@ path read_symlink(const path&amp; p, system::error_code&amp; ec);</pre>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>. [<i>Note:</i> It is an error if <code>p</code> does not
   resolve to a symbolic link. <i>—end note</i>]</p>
 </blockquote>
-<pre>path <a name="op-relative">relative</a>(const path&amp; p, system::error_code&amp; ec);</pre>
+<pre>path <a name="relative">relative</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Returns:</i> <code>relative(p, current_path(), ec)</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>

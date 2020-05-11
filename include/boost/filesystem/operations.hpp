@@ -93,6 +93,8 @@ BOOST_SCOPED_ENUM_DECLARE_END(copy_option)
 namespace detail {
 
 BOOST_FILESYSTEM_DECL
+path absolute(const path& p, const path& base, system::error_code* ec=0);
+BOOST_FILESYSTEM_DECL
 file_status status(const path&p, system::error_code* ec=0);
 BOOST_FILESYSTEM_DECL
 file_status symlink_status(const path& p, system::error_code* ec=0);
@@ -224,24 +226,56 @@ bool is_empty(const path& p, system::error_code& ec)
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                             operational functions                                    //
-//                  in alphabetical order, unless otherwise noted                       //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-//  forward declarations
-path current_path();  // fwd declaration
-path initial_path();
+inline
+path initial_path()                  {return detail::initial_path();}
 
-BOOST_FILESYSTEM_DECL
-path absolute(const path& p, const path& base=current_path());
-//  If base.is_absolute(), throws nothing. Thus no need for ec argument
+inline
+path initial_path(system::error_code& ec) {return detail::initial_path(&ec);}
+
+template <class Path>
+path initial_path() {return initial_path();}
+template <class Path>
+path initial_path(system::error_code& ec) {return detail::initial_path(&ec);}
+
+inline
+path current_path()                  {return detail::current_path();}
+
+inline
+path current_path(system::error_code& ec) {return detail::current_path(&ec);}
+
+inline
+void current_path(const path& p)     {detail::current_path(p);}
+
+inline
+void current_path(const path& p, system::error_code& ec) BOOST_NOEXCEPT {detail::current_path(p, &ec);}
+
+inline
+path absolute(const path& p, const path& base=current_path()) {return detail::absolute(p, base);}
+inline
+path absolute(const path& p, system::error_code& ec)
+{
+  path base = current_path(ec);
+  if (ec)
+    return path();
+  return detail::absolute(p, base, &ec);
+}
+inline
+path absolute(const path& p, const path& base, system::error_code& ec) {return detail::absolute(p, base, &ec);}
 
 inline
 path canonical(const path& p, const path& base=current_path())
                                      {return detail::canonical(p, base);}
 inline
 path canonical(const path& p, system::error_code& ec)
-                                     {return detail::canonical(p, current_path(), &ec);}
+{
+  path base = current_path(ec);
+  if (ec)
+    return path();
+  return detail::canonical(p, base, &ec);
+}
 inline
 path canonical(const path& p, const path& base, system::error_code& ec)
                                      {return detail::canonical(p, base, &ec);}
@@ -370,18 +404,6 @@ inline
 void create_symlink(const path& to, const path& new_symlink, system::error_code& ec) BOOST_NOEXCEPT
                                      {detail::create_symlink(to, new_symlink, &ec);}
 inline
-path current_path()                  {return detail::current_path();}
-
-inline
-path current_path(system::error_code& ec) {return detail::current_path(&ec);}
-
-inline
-void current_path(const path& p)     {detail::current_path(p);}
-
-inline
-void current_path(const path& p, system::error_code& ec) BOOST_NOEXCEPT {detail::current_path(p, &ec);}
-
-inline
 bool equivalent(const path& p1, const path& p2) {return detail::equivalent(p1, p2);}
 
 inline
@@ -399,17 +421,6 @@ boost::uintmax_t hard_link_count(const path& p) {return detail::hard_link_count(
 inline
 boost::uintmax_t hard_link_count(const path& p, system::error_code& ec) BOOST_NOEXCEPT
                                      {return detail::hard_link_count(p, &ec);}
-inline
-path initial_path()                  {return detail::initial_path();}
-
-inline
-path initial_path(system::error_code& ec) {return detail::initial_path(&ec);}
-
-template <class Path>
-path initial_path() {return initial_path();}
-template <class Path>
-path initial_path(system::error_code& ec) {return detail::initial_path(&ec);}
-
 inline
 std::time_t last_write_time(const path& p) {return detail::last_write_time(p);}
 
@@ -467,7 +478,12 @@ path relative(const path& p, const path& base=current_path())
                                      {return detail::relative(p, base);}
 inline
 path relative(const path& p, system::error_code& ec)
-                                     {return detail::relative(p, current_path(), &ec);}
+{
+  path base = current_path(ec);
+  if (ec)
+    return path();
+  return detail::relative(p, base, &ec);
+}
 inline
 path relative(const path& p, const path& base, system::error_code& ec)
                                      {return detail::relative(p, base, &ec);}

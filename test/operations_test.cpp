@@ -28,6 +28,7 @@
 # endif
 
 #include <boost/cerrno.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -155,7 +156,7 @@ namespace
   }
 
   template< typename F >
-    bool throws_fs_error(F func, errno_t en, int line)
+  bool throws_fs_error(F func, errno_t en, int line)
   {
     try { func(); }
 

@@ -62,6 +62,7 @@ run locale_info.cpp : : : <test-info>always_show_run_output ;
 run operations_test.cpp : : : <link>shared <test-info>always_show_run_output ;
 run operations_test.cpp : : : <link>static : operations_test_static ;
 run operations_unit_test.cpp : $(HERE) : : <link>shared <test-info>always_show_run_output ;
+run copy_test.cpp ;
 run path_test.cpp : : : <link>shared ;
 run path_test.cpp : : : <link>static : path_test_static ;
 run path_unit_test.cpp : : : <link>shared $(VIS) ;

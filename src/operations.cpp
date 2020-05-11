@@ -810,8 +810,20 @@ PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+namespace detail {
+
+BOOST_FILESYSTEM_DECL bool possible_large_file_size_support()
+{
+# ifdef BOOST_POSIX_API
+  typedef struct stat struct_stat;
+  return sizeof(struct_stat().st_size) > 4;
+# else
+  return true;
+# endif
+}
+
 BOOST_FILESYSTEM_DECL
-path absolute(const path& p, const path& base)
+path absolute(const path& p, const path& base, system::error_code* ec)
 {
 //  if ( p.empty() || p.is_absolute() )
 //    return p;
@@ -828,8 +840,24 @@ path absolute(const path& p, const path& base)
 //# endif
 //  return abs_base / p;
 
+  if (ec != 0)
+    ec->clear();
+
   //  recursively calling absolute is sub-optimal, but is sure and simple
-  path abs_base(base.is_absolute() ? base : absolute(base));
+  path abs_base = base;
+  if (!base.is_absolute())
+  {
+    if (ec)
+    {
+      abs_base = absolute(base, *ec);
+      if (*ec)
+        return path();
+    }
+    else
+    {
+      abs_base = absolute(base);
+    }
+  }
 
   //  store expensive to compute values that are needed multiple times
   path p_root_name (p.root_name());
@@ -863,24 +891,22 @@ path absolute(const path& p, const path& base)
   return p;  // p.is_absolute() is true
 }
 
-namespace detail {
-
-BOOST_FILESYSTEM_DECL bool possible_large_file_size_support()
-{
-# ifdef BOOST_POSIX_API
-  typedef struct stat struct_stat;
-  return sizeof(struct_stat().st_size) > 4;
-# else
-  return true;
-# endif
-}
-
 BOOST_FILESYSTEM_DECL
 path canonical(const path& p, const path& base, system::error_code* ec)
 {
-  path source (p.is_absolute() ? p : absolute(p, base));
-  path root(source.root_path());
+  if (ec != 0)
+    ec->clear();
+
   path result;
+  path source = p;
+  if (!p.is_absolute())
+  {
+    source = detail::absolute(p, base, ec);
+    if (ec && *ec)
+      return result;
+  }
+
+  path root(source.root_path());
 
   system::error_code local_ec;
   file_status stat (status(source, local_ec));
@@ -957,8 +983,6 @@ path canonical(const path& p, const path& base, system::error_code* ec)
       }
     }
   }
-  if (ec != 0)
-    ec->clear();
   BOOST_ASSERT_MSG(result.is_absolute(), "canonical() implementation error; please report");
   return result;
 }
@@ -1015,7 +1039,34 @@ void copy(const path& from, const path& to, unsigned int options, system::error_
 
     if ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u)
     {
-      detail::create_symlink(from, to, ec);
+      const path* pfrom = &from;
+      path relative_from;
+      if (!from.is_absolute())
+      {
+        // Try to generate a relative path from the target location to the original file
+        path cur_dir = detail::current_path(ec);
+        if (ec && *ec)
+          return;
+        path abs_from = detail::absolute(from.parent_path(), cur_dir, ec);
+        if (ec && *ec)
+          return;
+        path abs_to = to.parent_path();
+        if (!abs_to.is_absolute())
+        {
+          abs_to = detail::absolute(abs_to, cur_dir, ec);
+          if (ec && *ec)
+            return;
+        }
+        relative_from = detail::relative(abs_from, abs_to, ec);
+        if (ec && *ec)
+          return;
+        if (relative_from != dot_path())
+          relative_from /= from.filename();
+        else
+          relative_from = from.filename();
+        pfrom = &relative_from;
+      }
+      detail::create_symlink(*pfrom, to, ec);
       return;
     }
 
