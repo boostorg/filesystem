@@ -99,8 +99,7 @@
 
 #   include <sys/types.h>
 #   include <sys/stat.h>
-#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) \
- && !defined(__VXWORKS__)
+#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
@@ -130,6 +129,14 @@
 #     if defined(__NR_copy_file_range)
 #       define BOOST_FILESYSTEM_USE_COPY_FILE_RANGE
 #     endif
+#   endif
+
+#   if defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
+#     define BOOST_FILESYSTEM_STAT_ST_MTIMENSEC st_mtim.tv_nsec
+#   elif defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC)
+#     define BOOST_FILESYSTEM_STAT_ST_MTIMENSEC st_mtimespec.tv_nsec
+#   elif defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC)
+#     define BOOST_FILESYSTEM_STAT_ST_MTIMENSEC st_mtimensec
 #   endif
 
 # else // BOOST_WINDOWS_API
@@ -1280,9 +1287,9 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
   {
     // O_TRUNC is not set if copy_options::update_existing is set and an existing file was opened.
     // We need to check the last write times.
-#if defined(st_mtime)
+#if defined(BOOST_FILESYSTEM_STAT_ST_MTIMENSEC)
     // Modify time is available with nanosecond precision.
-    if (from_stat.st_mtime < to_stat.st_mtime || (from_stat.st_mtime == to_stat.st_mtime && from_stat.st_mtim.tv_nsec <= to_stat.st_mtim.tv_nsec))
+    if (from_stat.st_mtime < to_stat.st_mtime || (from_stat.st_mtime == to_stat.st_mtime && from_stat.BOOST_FILESYSTEM_STAT_ST_MTIMENSEC <= to_stat.BOOST_FILESYSTEM_STAT_ST_MTIMENSEC))
       return false;
 #else
     if (from_stat.st_mtime <= to_stat.st_mtime)
