@@ -7,11 +7,14 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+#include <iostream>
+
+#if defined(BOOST_FILESYSTEM_HAS_MKLINK)
+
 #include <boost/filesystem.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <cstdlib>
-#include <iostream>
 #include <vector>
 
 namespace fs = boost::filesystem;
@@ -34,6 +37,7 @@ struct TmpDir
 // This failed before due to broken handling of absolute paths and ignored ReparseTag
 int main()
 {
+
   const fs::path cwd = fs::current_path();
   const TmpDir tmp(cwd);
   const fs::path junction = tmp.path / "junction";
@@ -68,3 +72,14 @@ int main()
 
   return boost::report_errors();
 }
+
+#else // defined(BOOST_FILESYSTEM_HAS_MKLINK)
+
+int main()
+{
+  std::cout << "Skipping test as the target system does not support mklink." << std::endl;
+  return 0;
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_MKLINK)
+

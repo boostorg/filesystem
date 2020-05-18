@@ -1,4 +1,4 @@
-//  Boost operations_test.cpp  ---------------------------------------------------------//
+//  Boost reparse_tag_file_placeholder.cpp  ---------------------------------------------------------//
 
 //  Copyright Roman Savchenko 2020
 
@@ -7,11 +7,14 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+#include <iostream>
+
+#if defined(BOOST_FILESYSTEM_HAS_MKLINK)
+
 #include <boost/filesystem.hpp>
 #include <boost/core/lightweight_test.hpp>
 
 #include <cstddef>
-#include <iostream>
 
 # include <windows.h>
 # include <winnt.h>
@@ -140,3 +143,13 @@ int main()
 
   return boost::report_errors();
 }
+
+#else // defined(BOOST_FILESYSTEM_HAS_MKLINK)
+
+int main()
+{
+  std::cout << "Skipping test as the target system does not support mklink." << std::endl;
+  return 0;
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_MKLINK)

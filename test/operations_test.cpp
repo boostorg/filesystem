@@ -1859,6 +1859,7 @@ namespace
       BOOST_TEST(fs::system_complete(fs::path("//share")).generic_string()
         ==  "//share");
 
+#if defined(BOOST_FILESYSTEM_HAS_MKLINK)
       // Issue 9016 asked that NTFS directory junctions be recognized as directories.
       // That is equivalent to recognizing them as symlinks, and then the normal symlink
       // mechanism takes care of recognizing them as directories.
@@ -1867,13 +1868,6 @@ namespace
       // and other advantages over symlinks. They can be created from the command line
       // with "mklink /j junction-name target-path".
 
-      // Make sure that mklink does exist, it doesn't for e.g. cygwin
-      if(std::system("mklink /?") != 0)
-      {
-        cout << "  junction point could not be created." << endl;
-        cout << "  Skipping junction tests." << endl;
-      }
-      else
       {
         cout << "  directory junction tests..." << endl;
         BOOST_TEST(fs::exists(dir));
@@ -1929,7 +1923,7 @@ namespace
         BOOST_TEST(fs::exists(dir));
         BOOST_TEST(fs::exists(dir / "d1/d1f1"));
       }
-
+#endif // defined(BOOST_FILESYSTEM_HAS_MKLINK)
     } // Windows
 
     else if (platform == "POSIX")
