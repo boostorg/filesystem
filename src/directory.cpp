@@ -54,7 +54,8 @@
   && !(defined(linux) || defined(__linux) || defined(__linux__))\
   && !defined(__ANDROID__)\
   && (!defined(__hpux) || defined(_REENTRANT)) \
-  && (!defined(_AIX) || defined(__THREAD_SAFE))
+  && (!defined(_AIX) || defined(__THREAD_SAFE))\
+  && !defined(__wasm)
 #define BOOST_FILESYSTEM_USE_READDIR_R
 #endif
 
