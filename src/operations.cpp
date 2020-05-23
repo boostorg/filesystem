@@ -99,7 +99,9 @@
 
 #   include <sys/types.h>
 #   include <sys/stat.h>
-#   if !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
+#   if defined(__wasm)
+// WASI does not have statfs or statvfs.
+#   elif !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
@@ -1564,7 +1566,11 @@ void create_symlink(const path& to, const path& from, error_code* ec)
 BOOST_FILESYSTEM_DECL
 path current_path(error_code* ec)
 {
-# ifdef BOOST_POSIX_API
+# if defined(__wasm)
+  error(BOOST_ERROR_NOT_SUPPORTED, ec,
+    "boost::filesystem::current_path");
+  return path();
+# elif defined(BOOST_POSIX_API)
   struct local
   {
     static bool getcwd_error(error_code* ec)
@@ -1632,7 +1638,7 @@ path current_path(error_code* ec)
 BOOST_FILESYSTEM_DECL
 void current_path(const path& p, system::error_code* ec)
 {
-# ifdef UNDER_CE
+# if defined(UNDER_CE) || defined(__wasm)
   error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
     "boost::filesystem::current_path");
 # else
@@ -1932,7 +1938,10 @@ void permissions(const path& p, perms prms, system::error_code* ec)
   if ((prms & add_perms) && (prms & remove_perms))  // precondition failed
     return;
 
-# ifdef BOOST_POSIX_API
+# if defined(__wasm)
+  error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
+    "boost::filesystem::permissions");
+# elif defined(BOOST_POSIX_API)
   error_code local_ec;
   file_status current_status((prms & symlink_perms)
                              ? fs::symlink_status(p, local_ec)
@@ -2186,7 +2195,11 @@ space_info space(const path& p, error_code* ec)
   if (ec)
     ec->clear();
 
-# ifdef BOOST_POSIX_API
+# if defined(__wasm)
+
+  emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::space");
+
+# elif defined(BOOST_POSIX_API)
 
   struct BOOST_STATVFS vfs;
   if (!error(::BOOST_STATVFS(p.c_str(), &vfs) ? BOOST_ERRNO : 0,
