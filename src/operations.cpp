@@ -1567,8 +1567,7 @@ BOOST_FILESYSTEM_DECL
 path current_path(error_code* ec)
 {
 # if defined(__wasm)
-  error(BOOST_ERROR_NOT_SUPPORTED, ec,
-    "boost::filesystem::current_path");
+  emit_error(BOOST_ERROR_NOT_SUPPORTED, ec, "boost::filesystem::current_path");
   return path();
 # elif defined(BOOST_POSIX_API)
   struct local
@@ -1639,8 +1638,7 @@ BOOST_FILESYSTEM_DECL
 void current_path(const path& p, system::error_code* ec)
 {
 # if defined(UNDER_CE) || defined(__wasm)
-  error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
-    "boost::filesystem::current_path");
+  emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::current_path");
 # else
   error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0,
     p, ec, "boost::filesystem::current_path");
@@ -1939,8 +1937,7 @@ void permissions(const path& p, perms prms, system::error_code* ec)
     return;
 
 # if defined(__wasm)
-  error(BOOST_ERROR_NOT_SUPPORTED, p, ec,
-    "boost::filesystem::permissions");
+  emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::permissions");
 # elif defined(BOOST_POSIX_API)
   error_code local_ec;
   file_status current_status((prms & symlink_perms)
@@ -2109,7 +2106,7 @@ path read_symlink(const path& p, system::error_code* ec)
       //       -> resulting path is relative to the source
       break;
     default:
-      error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "Unknown ReparseTag in boost::filesystem::read_symlink");
+      emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "Unknown ReparseTag in boost::filesystem::read_symlink");
       return symlink_path;
     }
     symlink_path.assign(
