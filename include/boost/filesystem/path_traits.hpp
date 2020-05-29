@@ -22,11 +22,11 @@
 #include <boost/system/error_code.hpp>
 #include <boost/core/enable_if.hpp>
 #include <cwchar>  // for mbstate_t
+#include <iterator>
+#include <list>
+#include <locale>
 #include <string>
 #include <vector>
-#include <list>
-#include <iterator>
-#include <locale>
 #include <boost/assert.hpp>
 // #include <iostream>   //**** comment me out ****
 
@@ -226,25 +226,25 @@ namespace path_traits {
   template <class U> inline
     void dispatch(const std::string& c, U& to, const codecvt_type& cvt)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
   }
   template <class U> inline
     void dispatch(const std::wstring& c, U& to, const codecvt_type& cvt)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
   }
   template <class U> inline
     void dispatch(const std::vector<char>& c, U& to, const codecvt_type& cvt)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
   }
   template <class U> inline
     void dispatch(const std::vector<wchar_t>& c, U& to, const codecvt_type& cvt)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
   }
 
@@ -252,25 +252,25 @@ namespace path_traits {
   template <class U> inline
     void dispatch(const std::string& c, U& to)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to);
   }
   template <class U> inline
     void dispatch(const std::wstring& c, U& to)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to);
   }
   template <class U> inline
     void dispatch(const std::vector<char>& c, U& to)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to);
   }
   template <class U> inline
     void dispatch(const std::vector<wchar_t>& c, U& to)
   {
-    if (c.size())
+    if (!c.empty())
       convert(&*c.begin(), &*c.begin() + c.size(), to);
   }
 
@@ -281,7 +281,7 @@ namespace path_traits {
     typename boost::disable_if<boost::is_array<Container>, void>::type
     dispatch(const Container & c, U& to, const codecvt_type& cvt)
   {
-    if (c.size())
+    if (!c.empty())
     {
       std::basic_string<typename Container::value_type> s(c.begin(), c.end());
       convert(s.c_str(), s.c_str()+s.size(), to, cvt);
@@ -316,7 +316,7 @@ namespace path_traits {
     typename boost::disable_if<boost::is_array<Container>, void>::type
     dispatch(const Container & c, U& to)
   {
-    if (c.size())
+    if (!c.empty())
     {
       std::basic_string<typename Container::value_type> seq(c.begin(), c.end());
       convert(seq.c_str(), seq.c_str()+seq.size(), to);

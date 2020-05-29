@@ -30,12 +30,6 @@
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
-#include <algorithm>
-#include <iterator>
-#include <utility>
-#include <cstddef>
-#include <cstring>
-#include <cassert>
 
 #ifdef BOOST_WINDOWS_API
 # include "windows_file_codecvt.hpp"
@@ -45,10 +39,16 @@
 # include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
 #endif
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #ifdef BOOST_FILESYSTEM_DEBUG
 # include <iostream>
 # include <iomanip>
 #endif
+#include <iterator>
+#include <utility>
 
 namespace fs = boost::filesystem;
 
@@ -310,7 +310,7 @@ namespace filesystem
   {
     size_type end_pos(filename_pos(m_pathname, m_pathname.size()));
 
-    bool filename_was_separator(m_pathname.size()
+    bool filename_was_separator((!m_pathname.empty())
       && detail::is_directory_separator(m_pathname[end_pos]));
 
     // skip separators unless root directory
@@ -338,7 +338,7 @@ namespace filesystem
   BOOST_FILESYSTEM_DECL path path::filename() const
   {
     size_type pos(filename_pos(m_pathname, m_pathname.size()));
-    return (m_pathname.size()
+    return ((!m_pathname.empty())
               && pos
               && detail::is_directory_separator(m_pathname[pos])
               && !is_root_separator(m_pathname, pos))
@@ -442,7 +442,7 @@ namespace filesystem
         && (itr->native())[1] == dot) // dot dot
       {
         string_type lf(temp.filename().native());
-        if (lf.size() > 0
+        if ((!lf.empty())
           && (lf.size() != 1
             || (lf[0] != dot
               && lf[0] != separator))
@@ -482,7 +482,7 @@ namespace filesystem
       }
 
       temp /= *itr;
-    };
+    }
 
     if (temp.empty())
       temp /= detail::dot_path();
@@ -669,8 +669,6 @@ namespace
     if (src[cur] == colon)
       { ++element_size; }
 #   endif
-
-    return;
   }
 
 }  // unnamed namespace

@@ -58,7 +58,7 @@ public:
   filesystem_error(filesystem_error const& that);
   filesystem_error& operator= (filesystem_error const& that);
 
-  ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW;
+  ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW BOOST_OVERRIDE;
 
   const path& path1() const BOOST_NOEXCEPT
   {

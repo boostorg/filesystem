@@ -56,7 +56,7 @@ namespace boost
 #   else
     BOOST_FILESYSTEM_DECL bool native(const std::string & name)
     {
-      return  name.size() != 0
+      return (!name.empty())
         && name[0] != ' '
         && name.find('/') == std::string::npos;
     }
@@ -64,13 +64,13 @@ namespace boost
 
     BOOST_FILESYSTEM_DECL bool portable_posix_name(const std::string & name)
     {
-      return name.size() != 0
+      return (!name.empty())
         && name.find_first_not_of(valid_posix) == std::string::npos;
     }
 
     BOOST_FILESYSTEM_DECL bool windows_name(const std::string & name)
     {
-      return name.size() != 0
+      return (!name.empty())
         && name[0] != ' '
         && name.find_first_of(windows_invalid_chars) == std::string::npos
         && *(name.end()-1) != ' '
@@ -81,7 +81,7 @@ namespace boost
     BOOST_FILESYSTEM_DECL bool portable_name(const std::string & name)
     {
       return
-        name.size() != 0
+        (!name.empty())
         && (name == "."
           || name == ".."
           || (windows_name(name)

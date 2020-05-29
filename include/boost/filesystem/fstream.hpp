@@ -19,8 +19,8 @@
 # endif
 
 #include <boost/filesystem/path.hpp>
-#include <iosfwd>
 #include <fstream>
+#include <iosfwd>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
@@ -97,7 +97,7 @@ namespace filesystem
     void open(const path& p, std::ios_base::openmode mode)
       { std::basic_ifstream<charT,traits>::open(p.BOOST_FILESYSTEM_C_STR, mode); }
 
-    virtual ~basic_ifstream() {}
+    ~basic_ifstream() BOOST_OVERRIDE {}
   };
 
 //--------------------------------------------------------------------------------------//
@@ -129,7 +129,7 @@ namespace filesystem
     void open(const path& p, std::ios_base::openmode mode)
       { std::basic_ofstream<charT,traits>::open(p.BOOST_FILESYSTEM_C_STR, mode); }
 
-    virtual ~basic_ofstream() {}
+    ~basic_ofstream() BOOST_OVERRIDE {}
   };
 
 //--------------------------------------------------------------------------------------//

@@ -39,7 +39,6 @@ void fail(int err, boost::system::error_code* ec)
       "boost::filesystem::unique_path"));
 
   ec->assign(err, boost::system::system_category());
-  return;
 }
 
 #ifdef BOOST_WINDOWS_API
