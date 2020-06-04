@@ -170,7 +170,7 @@ inline bool        status_known   (const directory_entry& e) BOOST_NOEXCEPT { re
 inline bool        exists         (const directory_entry& e) BOOST_NOEXCEPT { return filesystem::exists(e.status()); }
 inline bool        is_regular_file(const directory_entry& e) BOOST_NOEXCEPT { return filesystem::is_regular_file(e.status()); }
 inline bool        is_directory   (const directory_entry& e) BOOST_NOEXCEPT { return filesystem::is_directory(e.status()); }
-inline bool        is_symlink     (const directory_entry& e) BOOST_NOEXCEPT { return filesystem::is_symlink(e.status()); }
+inline bool        is_symlink     (const directory_entry& e) BOOST_NOEXCEPT { return filesystem::is_symlink(e.symlink_status()); }
 inline bool        is_other       (const directory_entry& e) BOOST_NOEXCEPT { return filesystem::is_other(e.status()); }
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 inline bool        is_regular     (const directory_entry& e) BOOST_NOEXCEPT { return filesystem::is_regular(e.status()); }
