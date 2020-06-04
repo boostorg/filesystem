@@ -734,6 +734,7 @@ namespace
       {
         BOOST_TEST(fs::is_regular_file(it->status()));
         BOOST_TEST(fs::is_symlink(it->symlink_status()));
+        BOOST_TEST(fs::is_symlink(*it));
       }
       else if (it->path().filename() == "dangling_symlink")
       {
