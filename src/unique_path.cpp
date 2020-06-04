@@ -19,6 +19,9 @@
 #include <boost/winapi/config.hpp>
 #endif
 
+#include <boost/predef/library/c/cloudabi.h>
+#include <boost/predef/os/bsd/open.h>
+#include <boost/predef/os/bsd/free.h>
 #include <boost/filesystem/config.hpp>
 
 #ifdef BOOST_POSIX_API
@@ -27,6 +30,10 @@
 #   include <fcntl.h>
 #   ifdef BOOST_HAS_UNISTD_H
 #      include <unistd.h>
+#   endif
+#   if BOOST_OS_BSD_OPEN >= BOOST_VERSION_NUMBER(2, 1, 0) || BOOST_OS_BSD_FREE >= BOOST_VERSION_NUMBER(8, 0, 0) || BOOST_LIB_C_CLOUDABI
+#      include <stdlib.h>
+#      define BOOST_FILESYSTEM_HAS_ARC4RANDOM
 #   endif
 #   if (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
 #      include <sys/syscall.h>
@@ -116,7 +123,11 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
     buf = static_cast<char*>(buf) + n;
   }
 
-#else // defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_SYS_GETRANDOM)
+#elif defined(BOOST_FILESYSTEM_HAS_ARC4RANDOM)
+
+  arc4random_buf(buf, len);
+
+#else
 
   int file = open("/dev/urandom", O_RDONLY);
   if (file == -1)
@@ -148,7 +159,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
   close(file);
 
-#endif // defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_SYS_GETRANDOM)
+#endif
 
 #else // BOOST_WINDOWS_API
 
