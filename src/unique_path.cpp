@@ -21,19 +21,38 @@
 
 #include <boost/filesystem/config.hpp>
 
-# ifdef BOOST_POSIX_API
+#ifdef BOOST_POSIX_API
 #   include <cerrno>
+#   include <stddef.h>
 #   include <fcntl.h>
 #   ifdef BOOST_HAS_UNISTD_H
 #      include <unistd.h>
 #   endif
-# else // BOOST_WINDOWS_API
+#   if (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
+#      include <sys/syscall.h>
+#      if defined(SYS_getrandom)
+#          define BOOST_FILESYSTEM_HAS_SYS_GETRANDOM
+#      endif // defined(SYS_getrandom)
+#      if defined(__has_include)
+#          if __has_include(<sys/random.h>)
+#              define BOOST_FILESYSTEM_HAS_GETRANDOM
+#          endif
+#      elif defined(__GLIBC__)
+#          if __GLIBC_PREREQ(2, 25)
+#              define BOOST_FILESYSTEM_HAS_GETRANDOM
+#          endif
+#      endif
+#      if defined(BOOST_FILESYSTEM_HAS_GETRANDOM)
+#          include <sys/random.h>
+#      endif
+#   endif // (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
+#else // BOOST_WINDOWS_API
 #   include <windows.h>
 #   include <wincrypt.h>
 #   ifdef _MSC_VER
 #      pragma comment(lib, "Advapi32.lib")
 #   endif
-# endif
+#endif
 
 #include <cstddef>
 #include <boost/filesystem/operations.hpp>
@@ -72,7 +91,32 @@ DWORD acquire_crypt_handle(HCRYPTPROV& handle)
 
 void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
 {
-# ifdef BOOST_POSIX_API
+#if defined(BOOST_POSIX_API)
+
+#if defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_SYS_GETRANDOM)
+
+  std::size_t bytes_read = 0;
+  while (bytes_read < len)
+  {
+#if defined(BOOST_FILESYSTEM_HAS_GETRANDOM)
+    ssize_t n = ::getrandom(buf, len - bytes_read, 0u);
+#else
+    ssize_t n = ::syscall(SYS_getrandom, buf, len - bytes_read, 0u);
+#endif
+    if (BOOST_UNLIKELY(n < 0))
+    {
+      int err = errno;
+      if (err == EINTR)
+        continue;
+      emit_error(err, ec, "boost::filesystem::unique_path");
+      return;
+    }
+
+    bytes_read += n;
+    buf = static_cast<char*>(buf) + n;
+  }
+
+#else // defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_SYS_GETRANDOM)
 
   int file = open("/dev/urandom", O_RDONLY);
   if (file == -1)
@@ -88,8 +132,8 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   std::size_t bytes_read = 0;
   while (bytes_read < len)
   {
-    ssize_t n = read(file, buf, len - bytes_read);
-    if (n == -1)
+    ssize_t n = read(file, buf + bytes_read, len - bytes_read);
+    if (BOOST_UNLIKELY(n == -1))
     {
       int err = errno;
       if (err == EINTR)
@@ -104,7 +148,9 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
   close(file);
 
-# else // BOOST_WINDOWS_API
+#endif // defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_SYS_GETRANDOM)
+
+#else // BOOST_WINDOWS_API
 
   HCRYPTPROV handle;
   DWORD errval = acquire_crypt_handle(handle);
@@ -120,7 +166,8 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   if (!errval) return;
 
   emit_error(errval, ec, "boost::filesystem::unique_path");
-# endif
+
+#endif
 }
 
 #ifdef BOOST_WINDOWS_API
