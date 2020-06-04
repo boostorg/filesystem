@@ -54,10 +54,15 @@
 #      endif
 #   endif // (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
 #else // BOOST_WINDOWS_API
-#   include <windows.h>
-#   include <wincrypt.h>
+#   include <boost/winapi/basic_types.hpp>
+#   include <boost/winapi/get_last_error.hpp>
+#   include <boost/winapi/crypt.hpp>
 #   ifdef _MSC_VER
-#      pragma comment(lib, "Advapi32.lib")
+#      if defined(_WIN32_WCE)
+#          pragma comment(lib, "coredll.lib")
+#      else
+#          pragma comment(lib, "Advapi32.lib")
+#      endif
 #   endif
 #endif
 
@@ -68,33 +73,6 @@
 namespace boost { namespace filesystem { namespace detail {
 
 namespace {
-
-#ifdef BOOST_WINDOWS_API
-
-DWORD acquire_crypt_handle(HCRYPTPROV& handle)
-{
-  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-    return 0;
-
-  DWORD errval = ::GetLastError();
-  if (errval != NTE_BAD_KEYSET)
-    return errval;
-
-  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_NEWKEYSET | CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-    return 0;
-
-  errval = ::GetLastError();
-  // Another thread could have attempted to create the keyset at the same time.
-  if (errval != NTE_EXISTS)
-    return errval;
-
-  if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-    return 0;
-
-  return ::GetLastError();
-}
-
-#endif
 
 void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
 {
@@ -163,20 +141,26 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 #else // BOOST_WINDOWS_API
 
-  HCRYPTPROV handle;
-  DWORD errval = acquire_crypt_handle(handle);
-
-  if (!errval)
+  boost::winapi::HCRYPTPROV_ handle;
+  boost::winapi::DWORD_ err = 0u;
+  if (BOOST_UNLIKELY(!boost::winapi::CryptAcquireContextW(&handle, NULL, NULL, boost::winapi::PROV_RSA_FULL_, boost::winapi::CRYPT_VERIFYCONTEXT_ | boost::winapi::CRYPT_SILENT_)))
   {
-    BOOL gen_ok = ::CryptGenRandom(handle, static_cast<DWORD>(len), static_cast<unsigned char*>(buf));
-    if (!gen_ok)
-      errval = ::GetLastError();
-    ::CryptReleaseContext(handle, 0);
+    err = boost::winapi::GetLastError();
+
+  fail:
+    emit_error(err, ec, "boost::filesystem::unique_path");
+    return;
   }
 
-  if (!errval) return;
+  boost::winapi::BOOL_ gen_ok = boost::winapi::CryptGenRandom(handle, static_cast<boost::winapi::DWORD_>(len), static_cast<boost::winapi::BYTE_*>(buf));
 
-  emit_error(errval, ec, "boost::filesystem::unique_path");
+  if (BOOST_UNLIKELY(!gen_ok))
+    err = boost::winapi::GetLastError();
+
+  boost::winapi::CryptReleaseContext(handle, 0);
+
+  if (BOOST_UNLIKELY(!gen_ok))
+    goto fail;
 
 #endif
 }
