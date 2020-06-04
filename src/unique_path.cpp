@@ -13,10 +13,16 @@
 # define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
-#include <boost/filesystem/operations.hpp>
-#include <cassert>
+// Include Boost.Predef first so that windows.h is guaranteed to be not included
+#include <boost/predef/os/windows.h>
+#if BOOST_OS_WINDOWS
+#include <boost/winapi/config.hpp>
+#endif
+
+#include <boost/filesystem/config.hpp>
 
 # ifdef BOOST_POSIX_API
+#   include <cerrno>
 #   include <fcntl.h>
 #   ifdef BOOST_HAS_UNISTD_H
 #      include <unistd.h>
@@ -29,27 +35,22 @@
 #   endif
 # endif
 
+#include <cstddef>
+#include <boost/filesystem/operations.hpp>
+#include "error_handling.hpp"
+
+namespace boost { namespace filesystem { namespace detail {
+
 namespace {
-
-void fail(int err, boost::system::error_code* ec)
-{
-  if (ec == 0)
-    BOOST_FILESYSTEM_THROW( boost::system::system_error(err,
-      boost::system::system_category(),
-      "boost::filesystem::unique_path"));
-
-  ec->assign(err, boost::system::system_category());
-  return;
-}
 
 #ifdef BOOST_WINDOWS_API
 
-int acquire_crypt_handle(HCRYPTPROV& handle)
+DWORD acquire_crypt_handle(HCRYPTPROV& handle)
 {
   if (::CryptAcquireContextW(&handle, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
     return 0;
 
-  int errval = ::GetLastError();
+  DWORD errval = ::GetLastError();
   if (errval != NTE_BAD_KEYSET)
     return errval;
 
@@ -79,19 +80,22 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
     file = open("/dev/random", O_RDONLY);
     if (file == -1)
     {
-      fail(errno, ec);
+      emit_error(errno, ec, "boost::filesystem::unique_path");
       return;
     }
   }
 
-  size_t bytes_read = 0;
+  std::size_t bytes_read = 0;
   while (bytes_read < len)
   {
     ssize_t n = read(file, buf, len - bytes_read);
     if (n == -1)
     {
+      int err = errno;
+      if (err == EINTR)
+        continue;
       close(file);
-      fail(errno, ec);
+      emit_error(err, ec, "boost::filesystem::unique_path");
       return;
     }
     bytes_read += n;
@@ -103,7 +107,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 # else // BOOST_WINDOWS_API
 
   HCRYPTPROV handle;
-  int errval = acquire_crypt_handle(handle);
+  DWORD errval = acquire_crypt_handle(handle);
 
   if (!errval)
   {
@@ -115,13 +119,19 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
   if (!errval) return;
 
-  fail(errval, ec);
+  emit_error(errval, ec, "boost::filesystem::unique_path");
 # endif
 }
 
-}  // unnamed namespace
+#ifdef BOOST_WINDOWS_API
+BOOST_CONSTEXPR_OR_CONST wchar_t hex[] = L"0123456789abcdef";
+BOOST_CONSTEXPR_OR_CONST wchar_t percent = L'%';
+#else
+BOOST_CONSTEXPR_OR_CONST char hex[] = "0123456789abcdef";
+BOOST_CONSTEXPR_OR_CONST char percent = '%';
+#endif
 
-namespace boost { namespace filesystem { namespace detail {
+}  // unnamed namespace
 
 BOOST_FILESYSTEM_DECL
 path unique_path(const path& model, system::error_code* ec)
@@ -134,21 +144,12 @@ path unique_path(const path& model, system::error_code* ec)
 
   path::string_type s( model.native() );
 
-#ifdef BOOST_WINDOWS_API
-  const wchar_t hex[] = L"0123456789abcdef";
-  const wchar_t percent = L'%';
-#else
-  const char hex[] = "0123456789abcdef";
-  const char percent = '%';
-#endif
+  char ran[16] = {};  // init to avoid clang static analyzer message
+                      // see ticket #8954
+  BOOST_CONSTEXPR_OR_CONST unsigned int max_nibbles = 2u * sizeof(ran);   // 4-bits per nibble
 
-  char ran[] = "123456789abcdef";  // init to avoid clang static analyzer message
-                                   // see ticket #8954
-  assert(sizeof(ran) == 16);
-  const int max_nibbles = 2 * sizeof(ran);   // 4-bits per nibble
-
-  int nibbles_used = max_nibbles;
-  for(path::string_type::size_type i=0; i < s.size(); ++i)
+  unsigned int nibbles_used = max_nibbles;
+  for (path::string_type::size_type i = 0, n = s.size(); i < n; ++i)
   {
     if (s[i] == percent)                     // digit request
     {
@@ -156,12 +157,12 @@ path unique_path(const path& model, system::error_code* ec)
       {
         system_crypt_random(ran, sizeof(ran), ec);
         if (ec != 0 && *ec)
-          return "";
+          return path();
         nibbles_used = 0;
       }
-      int c = ran[nibbles_used/2];
-      c >>= 4 * (nibbles_used++ & 1);  // if odd, shift right 1 nibble
-      s[i] = hex[c & 0xf];             // convert to hex digit and replace
+      unsigned int c = ran[nibbles_used / 2u];
+      c >>= 4u * (nibbles_used++ & 1u);  // if odd, shift right 1 nibble
+      s[i] = hex[c & 0xf];               // convert to hex digit and replace
     }
   }
 
