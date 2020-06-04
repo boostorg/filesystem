@@ -310,8 +310,8 @@ namespace filesystem
   {
     size_type end_pos(filename_pos(m_pathname, m_pathname.size()));
 
-    bool filename_was_separator(m_pathname.size()
-      && detail::is_directory_separator(m_pathname[end_pos]));
+    bool filename_was_separator = !m_pathname.empty()
+      && detail::is_directory_separator(m_pathname[end_pos]);
 
     // skip separators unless root directory
     size_type root_dir_pos(root_directory_start(m_pathname, end_pos));
@@ -338,7 +338,7 @@ namespace filesystem
   BOOST_FILESYSTEM_DECL path path::filename() const
   {
     size_type pos(filename_pos(m_pathname, m_pathname.size()));
-    return (m_pathname.size()
+    return (!m_pathname.empty()
               && pos
               && detail::is_directory_separator(m_pathname[pos])
               && !is_root_separator(m_pathname, pos))
@@ -442,11 +442,12 @@ namespace filesystem
         && (itr->native())[1] == dot) // dot dot
       {
         string_type lf(temp.filename().native());
-        if (lf.size() > 0
-          && (lf.size() != 1
+        string_type::size_type lf_size = lf.size();
+        if (lf_size > 0
+          && (lf_size != 1
             || (lf[0] != dot
               && lf[0] != separator))
-          && (lf.size() != 2
+          && (lf_size != 2
             || (lf[0] != dot
               && lf[1] != dot
 #             ifdef BOOST_WINDOWS_API
@@ -482,7 +483,7 @@ namespace filesystem
       }
 
       temp /= *itr;
-    };
+    }
 
     if (temp.empty())
       temp /= detail::dot_path();
@@ -616,7 +617,7 @@ namespace
       size_type & element_pos,
       size_type & element_size,
       size_type size
-)
+  )
   {
     if (size == string_type::npos) size = src.size();
     element_pos = 0;
@@ -669,8 +670,6 @@ namespace
     if (src[cur] == colon)
       { ++element_size; }
 #   endif
-
-    return;
   }
 
 }  // unnamed namespace
