@@ -9,7 +9,8 @@
 
 // Include Boost.Predef first so that windows.h is guaranteed to be not included
 #include <boost/predef/os/windows.h>
-#if BOOST_OS_WINDOWS
+#include <boost/predef/os/cygwin.h>
+#if BOOST_OS_WINDOWS || BOOST_OS_CYGWIN
 #include <boost/winapi/config.hpp>
 #endif
 

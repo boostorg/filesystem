@@ -1,6 +1,7 @@
 //  filesystem unique_path.cpp  --------------------------------------------------------//
 
 //  Copyright Beman Dawes 2010
+//  Copyright Andrey Semashev 2020
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -15,7 +16,8 @@
 
 // Include Boost.Predef first so that windows.h is guaranteed to be not included
 #include <boost/predef/os/windows.h>
-#if BOOST_OS_WINDOWS
+#include <boost/predef/os/cygwin.h>
+#if BOOST_OS_WINDOWS || BOOST_OS_CYGWIN
 #include <boost/winapi/config.hpp>
 #endif
 
