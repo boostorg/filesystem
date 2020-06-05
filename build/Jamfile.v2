@@ -15,7 +15,7 @@ rule select-windows-crypto-api ( properties * )
 {
     local result ;
 
-    if <target-os>windows in $(properties)
+    if <target-os>windows in $(properties) || <target-os>cygwin in $(properties)
     {
         if [ configure.builds ../config//has_bcrypt : $(properties) : "has BCrypt API" ]
         {
