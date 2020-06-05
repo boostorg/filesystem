@@ -389,6 +389,24 @@ matrix:
     - os: freebsd
       env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,17
 
+# cmake self-test
+    - os: linux
+      env: TEST_CMAKE=1
+      addons:
+        apt:
+          packages:
+            - cmake
+      script:
+        - BUILD_JOBS=`(nproc || sysctl -n hw.ncpu) 2> /dev/null`
+        - mkdir __build_static__ && cd __build_static__
+        - cmake ../libs/filesystem/test/test_cmake
+        - cmake --build . --target boost_filesystem_cmake_self_test -j $BUILD_JOBS
+        - cd ..
+        - mkdir __build_shared__ && cd __build_shared__
+        - cmake -DBUILD_SHARED_LIBS=On ../libs/filesystem/test/test_cmake
+        - cmake --build . --target boost_filesystem_cmake_self_test -j $BUILD_JOBS
+
+
 install:
   - GIT_FETCH_JOBS=8
   - BOOST_BRANCH=develop

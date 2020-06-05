@@ -53,6 +53,8 @@ environment:
       CXXSTD: 03,11,14,1z
       ADDPATH: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin;
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - TEST_CMAKE: 1
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 
 install:
   - set GIT_FETCH_JOBS=8
@@ -79,3 +81,17 @@ test_script:
   - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
   - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
   - b2 -j %NUMBER_OF_PROCESSORS% libs/filesystem/test toolset=%TOOLSET% %CXXSTD% %ADDRMD%
+
+for:
+  - matrix:
+      only: [TEST_CMAKE: 1]
+    test_script:
+      - mkdir __build_static__
+      - cd __build_static__
+      - cmake ../libs/filesystem/test/test_cmake
+      - cmake --build . --target boost_filesystem_cmake_self_test -j %NUMBER_OF_PROCESSORS%
+      - cd ..
+      - mkdir __build_shared__
+      - cd __build_shared__
+      - cmake -DBUILD_SHARED_LIBS=On ../libs/filesystem/test/test_cmake
+      - cmake --build . --target boost_filesystem_cmake_self_test -j %NUMBER_OF_PROCESSORS%
