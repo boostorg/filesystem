@@ -10,6 +10,9 @@
 import project ;
 import configure ;
 
+lib bcrypt ;
+lib advapi32 ;
+
 # The rule checks we're building for Windows and selects crypto API to be used
 rule select-windows-crypto-api ( properties * )
 {
@@ -19,12 +22,10 @@ rule select-windows-crypto-api ( properties * )
     {
         if [ configure.builds ../config//has_bcrypt : $(properties) : "has BCrypt API" ]
         {
-            lib bcrypt ;
             result = <define>BOOST_FILESYSTEM_HAS_BCRYPT <library>bcrypt ;
         }
         else
         {
-            lib advapi32 ;
             result = <define>BOOST_FILESYSTEM_HAS_WINCRYPT <library>advapi32 ;
         }
     }
