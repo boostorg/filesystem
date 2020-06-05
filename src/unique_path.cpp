@@ -56,25 +56,13 @@
 #else // BOOST_WINDOWS_API
 #   include <boost/predef/platform.h>
 #   include <boost/winapi/basic_types.hpp>
-#   if BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WIN6 && BOOST_WINAPI_PARTITION_APP_SYSTEM
+#   if defined(BOOST_FILESYSTEM_HAS_BCRYPT) // defined on the command line by the project
 #      include <boost/winapi/error_codes.hpp>
 #      include <boost/winapi/bcrypt.hpp>
-#      ifdef _MSC_VER
-#          pragma comment(lib, "bcrypt.lib")
-#      endif
-#      define BOOST_FILESYSTEM_HAS_BCRYPT
-#   else // BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WIN6 && BOOST_WINAPI_PARTITION_APP_SYSTEM
+#   else // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 #      include <boost/winapi/crypt.hpp>
 #      include <boost/winapi/get_last_error.hpp>
-#      ifdef _MSC_VER
-#          if defined(_WIN32_WCE)
-#              pragma comment(lib, "coredll.lib")
-#          else
-#              pragma comment(lib, "Advapi32.lib")
-#          endif
-#      endif
-#      define BOOST_FILESYSTEM_HAS_WINCRYPT
-#   endif // BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WIN6 && BOOST_WINAPI_PARTITION_APP_SYSTEM
+#   endif // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 #endif
 
 #include <cstddef>

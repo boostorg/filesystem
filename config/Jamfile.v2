@@ -11,3 +11,5 @@ obj has_stat_st_mtimensec : has_stat_st_mtimensec.cpp ;
 explicit has_stat_st_mtimensec ;
 obj has_stat_st_mtimespec : has_stat_st_mtimespec.cpp ;
 explicit has_stat_st_mtimespec ;
+obj has_bcrypt : has_bcrypt.cpp ;
+explicit has_bcrypt ;
