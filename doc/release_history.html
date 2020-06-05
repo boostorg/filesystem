@@ -63,7 +63,7 @@
   <li><code>space</code> on Windows now accepts paths referring to arbitrary files, not only directories. This is similar to POSIX systems and corresponds to the operation description in C++20. (<a href="https://github.com/boostorg/filesystem/issues/73">#73</a>)</li>
   <li><b>New:</b> Added implementation of <code>temp_directory_path</code> for Windows CE. (<a href="https://github.com/boostorg/filesystem/pull/25">PR#25</a>)</li>
   <li><b>New:</b> Improved compatibility with <a href="https://wasi.dev/">WASI</a> platform. (<a href="https://github.com/boostorg/filesystem/pull/144">PR#144</a>)</li>
-  <li><b>New:</b> Added implementations of <code>unique_path</code> operation based on Linux <code>getrandom</code> and OpenBSD/FreeBSD/CloudABI <code>arc4random_buf</code> system calls.</li>
+  <li><b>New:</b> Added implementations of <code>unique_path</code> operation based on <code>getrandom</code> (Linux), <code>arc4random_buf</code> (OpenBSD/FreeBSD/CloudABI) and BCrypt (Windows) system APIs.</li>
 </ul>
 
 <h2>1.72.0</h2>

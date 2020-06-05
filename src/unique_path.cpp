@@ -54,16 +54,27 @@
 #      endif
 #   endif // (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
 #else // BOOST_WINDOWS_API
+#   include <boost/predef/platform.h>
 #   include <boost/winapi/basic_types.hpp>
-#   include <boost/winapi/get_last_error.hpp>
-#   include <boost/winapi/crypt.hpp>
-#   ifdef _MSC_VER
-#      if defined(_WIN32_WCE)
-#          pragma comment(lib, "coredll.lib")
-#      else
-#          pragma comment(lib, "Advapi32.lib")
+#   if BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WIN6 && BOOST_WINAPI_PARTITION_APP_SYSTEM
+#      include <boost/winapi/error_codes.hpp>
+#      include <boost/winapi/bcrypt.hpp>
+#      ifdef _MSC_VER
+#          pragma comment(lib, "bcrypt.lib")
 #      endif
-#   endif
+#      define BOOST_FILESYSTEM_HAS_BCRYPT
+#   else // BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WIN6 && BOOST_WINAPI_PARTITION_APP_SYSTEM
+#      include <boost/winapi/crypt.hpp>
+#      include <boost/winapi/get_last_error.hpp>
+#      ifdef _MSC_VER
+#          if defined(_WIN32_WCE)
+#              pragma comment(lib, "coredll.lib")
+#          else
+#              pragma comment(lib, "Advapi32.lib")
+#          endif
+#      endif
+#      define BOOST_FILESYSTEM_HAS_WINCRYPT
+#   endif // BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WIN6 && BOOST_WINAPI_PARTITION_APP_SYSTEM
 #endif
 
 #include <cstddef>
@@ -73,6 +84,26 @@
 namespace boost { namespace filesystem { namespace detail {
 
 namespace {
+
+#if defined(BOOST_FILESYSTEM_HAS_BCRYPT)
+//! Converts NTSTATUS error codes to Win32 error codes for reporting
+inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
+{
+  // Note: Legacy MinGW doesn't have ntstatus.h and doesn't define NTSTATUS error codes other than STATUS_SUCCESS.
+  //       Because of this we have to use hardcoded integer literals here.
+  switch (status)
+  {
+  case 0xC0000017l: // STATUS_NO_MEMORY
+    return boost::winapi::ERROR_OUTOFMEMORY_;
+  case 0xC0000008l: // STATUS_INVALID_HANDLE
+    return boost::winapi::ERROR_INVALID_HANDLE_;
+  case 0xC000000Dl: // STATUS_INVALID_PARAMETER
+    return boost::winapi::ERROR_INVALID_PARAMETER_;
+  default:
+    return boost::winapi::ERROR_NOT_SUPPORTED_;
+  }
+}
+#endif // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 
 void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
 {
@@ -139,7 +170,27 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 #endif
 
-#else // BOOST_WINDOWS_API
+#else // defined(BOOST_POSIX_API)
+
+#if defined(BOOST_FILESYSTEM_HAS_BCRYPT)
+
+  boost::winapi::BCRYPT_ALG_HANDLE_ handle;
+  boost::winapi::NTSTATUS_ status = boost::winapi::BCryptOpenAlgorithmProvider(&handle, boost::winapi::BCRYPT_RNG_ALGORITHM_, NULL, 0);
+  if (BOOST_UNLIKELY(status != 0))
+  {
+  fail:
+    emit_error(translate_ntstatus(status), ec, "boost::filesystem::unique_path");
+    return;
+  }
+
+  status = boost::winapi::BCryptGenRandom(handle, static_cast<boost::winapi::PUCHAR_>(buf), static_cast<boost::winapi::ULONG_>(len), 0);
+
+  boost::winapi::BCryptCloseAlgorithmProvider(handle, 0);
+
+  if (BOOST_UNLIKELY(status != 0))
+    goto fail;
+
+#else // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 
   boost::winapi::HCRYPTPROV_ handle;
   boost::winapi::DWORD_ err = 0u;
@@ -162,7 +213,9 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   if (BOOST_UNLIKELY(!gen_ok))
     goto fail;
 
-#endif
+#endif // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
+
+#endif // defined(BOOST_POSIX_API)
 }
 
 #ifdef BOOST_WINDOWS_API
