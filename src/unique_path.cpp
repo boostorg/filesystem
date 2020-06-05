@@ -152,7 +152,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
   std::size_t bytes_read = 0;
   while (bytes_read < len)
   {
-    ssize_t n = read(file, buf + bytes_read, len - bytes_read);
+    ssize_t n = read(file, buf, len - bytes_read);
     if (BOOST_UNLIKELY(n == -1))
     {
       int err = errno;
