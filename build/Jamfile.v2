@@ -12,6 +12,7 @@ import configure ;
 
 lib bcrypt ;
 lib advapi32 ;
+explicit bcrypt advapi32 ;
 
 # The rule checks we're building for Windows and selects crypto API to be used
 rule select-windows-crypto-api ( properties * )
