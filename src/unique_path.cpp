@@ -80,14 +80,17 @@ namespace {
 inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
 {
   // Note: Legacy MinGW doesn't have ntstatus.h and doesn't define NTSTATUS error codes other than STATUS_SUCCESS.
-  //       Because of this we have to use hardcoded integer literals here.
+  //       So define those here instead. Using the literals in the switch would trigger clangs Wc++11-narrowing
+  BOOST_CONSTEXPR_OR_CONST NTSTATUS_ STATUS_NO_MEMORY_ = 0xC0000017l;
+  BOOST_CONSTEXPR_OR_CONST NTSTATUS_ STATUS_INVALID_HANDLE_ = 0xC0000008l;
+  BOOST_CONSTEXPR_OR_CONST NTSTATUS_ STATUS_INVALID_PARAMETER_ = 0xC000000Dl;
   switch (status)
   {
-  case 0xC0000017l: // STATUS_NO_MEMORY
+  case STATUS_NO_MEMORY_:
     return boost::winapi::ERROR_OUTOFMEMORY_;
-  case 0xC0000008l: // STATUS_INVALID_HANDLE
+  case STATUS_INVALID_HANDLE_:
     return boost::winapi::ERROR_INVALID_HANDLE_;
-  case 0xC000000Dl: // STATUS_INVALID_PARAMETER
+  case STATUS_INVALID_PARAMETER_:
     return boost::winapi::ERROR_INVALID_PARAMETER_;
   default:
     return boost::winapi::ERROR_NOT_SUPPORTED_;
