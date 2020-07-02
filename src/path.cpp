@@ -7,12 +7,7 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-// Include Boost.Predef first so that windows.h is guaranteed to be not included
-#include <boost/predef/os/windows.h>
-#include <boost/predef/os/cygwin.h>
-#if BOOST_OS_WINDOWS || BOOST_OS_CYGWIN
-#include <boost/winapi/config.hpp>
-#endif
+#include "platform_config.hpp"
 
 //  Old standard library configurations, particularly MingGW, don't support wide strings.
 //  Report this with an explicit error message.
@@ -21,11 +16,6 @@
 #   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
 # endif
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-# define BOOST_SYSTEM_NO_DEPRECATED
-#endif
-
-#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>  // for filesystem_error
 #include <boost/scoped_array.hpp>

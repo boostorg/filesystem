@@ -64,6 +64,7 @@ SOURCES =
 lib boost_filesystem
     : $(SOURCES).cpp
     : <define>BOOST_FILESYSTEM_SOURCE
+      <include>../src
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1
     :

@@ -8,6 +8,8 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+#include "platform_config.hpp"
+
 #include <string>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>

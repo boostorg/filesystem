@@ -10,21 +10,11 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-# define BOOST_SYSTEM_NO_DEPRECATED
-#endif
-
-// Include Boost.Predef first so that windows.h is guaranteed to be not included
-#include <boost/predef/os/windows.h>
-#include <boost/predef/os/cygwin.h>
-#if BOOST_OS_WINDOWS || BOOST_OS_CYGWIN
-#include <boost/winapi/config.hpp>
-#endif
+#include "platform_config.hpp"
 
 #include <boost/predef/library/c/cloudabi.h>
 #include <boost/predef/os/bsd/open.h>
 #include <boost/predef/os/bsd/free.h>
-#include <boost/filesystem/config.hpp>
 
 #ifdef BOOST_POSIX_API
 #   include <cerrno>

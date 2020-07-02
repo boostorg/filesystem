@@ -9,13 +9,10 @@
 
 //--------------------------------------------------------------------------------------//
 
+#include "platform_config.hpp"
+
 #include <boost/config/warning_disable.hpp>
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-#  define BOOST_SYSTEM_NO_DEPRECATED
-#endif
-
-#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path_traits.hpp>
 #include <boost/system/error_code.hpp>
 #include <locale>

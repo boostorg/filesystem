@@ -1,4 +1,4 @@
-//  operations.cpp  --------------------------------------------------------------------//
+//  directory.cpp  --------------------------------------------------------------------//
 
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
@@ -11,20 +11,7 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-# define BOOST_SYSTEM_NO_DEPRECATED
-#endif
-
-#ifndef _POSIX_PTHREAD_SEMANTICS
-# define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
-#endif
-
-// Include Boost.Predef first so that windows.h is guaranteed to be not included
-#include <boost/predef/os/windows.h>
-#include <boost/predef/os/cygwin.h>
-#if BOOST_OS_WINDOWS || BOOST_OS_CYGWIN
-#include <boost/winapi/config.hpp>
-#endif
+#include "platform_config.hpp"
 
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>

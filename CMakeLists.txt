@@ -40,6 +40,7 @@ add_library(boost_filesystem
 add_library(Boost::filesystem ALIAS boost_filesystem)
 
 target_include_directories(boost_filesystem PUBLIC include)
+target_include_directories(boost_filesystem PRIVATE src)
 
 target_compile_definitions(boost_filesystem
     PUBLIC

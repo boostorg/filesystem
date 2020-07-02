@@ -9,11 +9,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-# define BOOST_SYSTEM_NO_DEPRECATED
-#endif
+#include "platform_config.hpp"
 
-#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path_traits.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/scoped_array.hpp>
