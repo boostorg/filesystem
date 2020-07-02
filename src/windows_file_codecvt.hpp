@@ -11,6 +11,7 @@
 #define BOOST_FILESYSTEM3_WIN_FILE_CODECVT_HPP
 
 #include <boost/filesystem/config.hpp>
+#include <cstddef>
 #include <locale>
 
 //------------------------------------------------------------------------------------//
@@ -22,7 +23,7 @@
 //                                                                                    //
 //------------------------------------------------------------------------------------//
 
-class BOOST_FILESYSTEM_DECL windows_file_codecvt
+class BOOST_SYMBOL_VISIBLE windows_file_codecvt
   : public std::codecvt< wchar_t, char, std::mbstate_t >
 {
 public:
