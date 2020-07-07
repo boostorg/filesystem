@@ -11,6 +11,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <set>
 #include <string>
@@ -130,6 +131,37 @@ void test_copy_dir_default(fs::path const& root_dir, bool with_symlinks)
     fs::path target_dir = fs::unique_path();
 
     fs::copy(root_dir, target_dir);
+
+    directory_tree tree = collect_directory_tree(target_dir);
+
+    BOOST_TEST_EQ(tree.size(), 4u + with_symlinks);
+    BOOST_TEST(tree.find("f1") != tree.end());
+    BOOST_TEST(tree.find("f2") != tree.end());
+    BOOST_TEST(tree.find("d1") != tree.end());
+    BOOST_TEST(tree.find("d2") != tree.end());
+    if (with_symlinks)
+    {
+        BOOST_TEST(tree.find("s1") != tree.end());
+    }
+
+    verify_file(target_dir / "f1", "f1");
+    verify_file(target_dir / "f2", "f2");
+
+    fs::remove_all(target_dir);
+}
+
+void test_copy_dir_default_ec(fs::path const& root_dir, bool with_symlinks)
+{
+    // This test is similar to test_copy_dir_default, but uses an error_code overload of the operation.
+    // Tests for https://github.com/boostorg/filesystem/issues/152 fix.
+
+    std::cout << "test_copy_dir_default" << std::endl;
+
+    fs::path target_dir = fs::unique_path();
+
+    boost::system::error_code ec;
+    fs::copy(root_dir, target_dir, ec);
+    BOOST_TEST(!ec);
 
     directory_tree tree = collect_directory_tree(target_dir);
 
@@ -271,6 +303,7 @@ int main()
 
         test_copy_file_default(root_dir);
         test_copy_dir_default(root_dir, false);
+        test_copy_dir_default_ec(root_dir, false);
         test_copy_dir_recursive(root_dir);
         test_copy_dir_recursive_tree(root_dir);
 
