@@ -1029,19 +1029,27 @@ void copy(const path& from, const path& to, unsigned int options, system::error_
       return;
     }
 
+    error_code local_ec;
     file_status to_stat;
     if ((options & (static_cast< unsigned int >(copy_options::skip_symlinks) |
       static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
     {
-      to_stat = detail::symlink_status(to, ec);
+      to_stat = detail::symlink_status(to, &local_ec);
     }
     else
     {
-      to_stat = detail::status(to, ec);
+      to_stat = detail::status(to, &local_ec);
     }
 
-    if (ec && *ec)
+    // Note: local_ec may be set by (symlink_)status() even in some non-fatal situations, e.g. when the file does not exist.
+    //       OTOH, when it returns status_error, then a real error have happened and it must have set local_ec.
+    if (to_stat.type() == fs::status_error)
+    {
+      if (!ec)
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy", from, to, local_ec));
+      *ec = local_ec;
       return;
+    }
 
     if (is_directory(to_stat))
       detail::copy_file(from, to / from.filename(), options, ec);
@@ -1050,12 +1058,13 @@ void copy(const path& from, const path& to, unsigned int options, system::error_
   }
   else if (is_directory(from_stat))
   {
+    error_code local_ec;
     if ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u)
     {
-      error_code err_code = make_error_code(system::errc::is_a_directory);
+      local_ec = make_error_code(system::errc::is_a_directory);
       if (!ec)
-        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy", from, to, err_code));
-      *ec = err_code;
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy", from, to, local_ec));
+      *ec = local_ec;
       return;
     }
 
@@ -1063,15 +1072,22 @@ void copy(const path& from, const path& to, unsigned int options, system::error_
     if ((options & (static_cast< unsigned int >(copy_options::skip_symlinks) |
       static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
     {
-      to_stat = detail::symlink_status(to, ec);
+      to_stat = detail::symlink_status(to, &local_ec);
     }
     else
     {
-      to_stat = detail::status(to, ec);
+      to_stat = detail::status(to, &local_ec);
     }
 
-    if (ec && *ec)
+    // Note: ec may be set by (symlink_)status() even in some non-fatal situations, e.g. when the file does not exist.
+    //       OTOH, when it returns status_error, then a real error have happened and it must have set local_ec.
+    if (to_stat.type() == fs::status_error)
+    {
+      if (!ec)
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::copy", from, to, local_ec));
+      *ec = local_ec;
       return;
+    }
 
     if (!exists(to_stat))
     {
@@ -1339,7 +1355,8 @@ void copy_symlink(const path& existing_symlink, const path& new_symlink,
   system::error_code* ec)
 {
   path p(read_symlink(existing_symlink, ec));
-  if (ec != 0 && *ec) return;
+  if (ec && *ec)
+    return;
   create_symlink(p, new_symlink, ec);
 }
 
@@ -1348,12 +1365,13 @@ bool create_directories(const path& p, system::error_code* ec)
 {
  if (p.empty())
  {
-   if (ec == 0)
+   if (!ec)
+   {
      BOOST_FILESYSTEM_THROW(filesystem_error(
        "boost::filesystem::create_directories", p,
        system::errc::make_error_code(system::errc::invalid_argument)));
-   else
-     ec->assign(system::errc::invalid_argument, system::generic_category());
+   }
+   ec->assign(system::errc::invalid_argument, system::generic_category());
    return false;
  }
 
@@ -1361,11 +1379,11 @@ bool create_directories(const path& p, system::error_code* ec)
     return create_directories(p.parent_path(), ec);
 
   error_code local_ec;
-  file_status p_status = status(p, local_ec);
+  file_status p_status = detail::status(p, &local_ec);
 
   if (p_status.type() == directory_file)
   {
-    if (ec != 0)
+    if (ec)
       ec->clear();
     return false;
   }
@@ -1375,7 +1393,7 @@ bool create_directories(const path& p, system::error_code* ec)
   if (!parent.empty())
   {
     // determine if the parent exists
-    file_status parent_status = status(parent, local_ec);
+    file_status parent_status = detail::status(parent, &local_ec);
 
     // if the parent does not exist, create the parent
     if (parent_status.type() == file_not_found)
@@ -1383,11 +1401,9 @@ bool create_directories(const path& p, system::error_code* ec)
       create_directories(parent, local_ec);
       if (local_ec)
       {
-        if (ec == 0)
-          BOOST_FILESYSTEM_THROW(filesystem_error(
-            "boost::filesystem::create_directories", parent, local_ec));
-        else
-          *ec = local_ec;
+        if (!ec)
+          BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", parent, local_ec));
+        *ec = local_ec;
         return false;
       }
     }
@@ -2158,9 +2174,16 @@ space_info space(const path& p, error_code* ec)
 
   // GetDiskFreeSpaceExW requires a directory path, which is unlike statvfs, which accepts any file.
   // To work around this, test if the path refers to a directory and use the parent directory if not.
-  file_status status = detail::status(p, ec);
-  if (ec && *ec)
+  error_code local_ec;
+  file_status status = detail::status(p, &local_ec);
+  if (status.type() == fs::status_error)
+  {
+  fail_local_ec:
+    if (!ec)
+      BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::space", p, local_ec));
+    *ec = local_ec;
     return info;
+  }
 
   path dir_path = p;
   if (!is_directory(status))
@@ -2169,9 +2192,9 @@ space_info space(const path& p, error_code* ec)
     if (ec && *ec)
       return info;
 
-    status = detail::symlink_status(p, ec);
-    if (ec && *ec)
-      return info;
+    status = detail::symlink_status(p, &local_ec);
+    if (status.type() == fs::status_error)
+      goto fail_local_ec;
     if (is_symlink(status))
     {
       // We need to resolve the symlink so that we report the space for the symlink target
