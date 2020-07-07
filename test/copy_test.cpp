@@ -155,7 +155,7 @@ void test_copy_dir_default_ec(fs::path const& root_dir, bool with_symlinks)
     // This test is similar to test_copy_dir_default, but uses an error_code overload of the operation.
     // Tests for https://github.com/boostorg/filesystem/issues/152 fix.
 
-    std::cout << "test_copy_dir_default" << std::endl;
+    std::cout << "test_copy_dir_default_ec" << std::endl;
 
     fs::path target_dir = fs::unique_path();
 
