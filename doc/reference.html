@@ -3722,17 +3722,16 @@ path <a name="system_complete2">system_complete</a>(const path&amp; p, system::e
   same rules used by the operating system to resolve a path passed as the
   filename argument to standard library open functions.</p>
   <p><i>Returns:</i> The composed path.</p>
-  <p><i>Postcondition:</i> For the returned path, <code>rp,</code> <code>rp.is_absolute()</code> is true.</p>
+  <p><i>Postcondition:</i> For the returned path, <code>rp</code>, <code>rp.is_absolute()</code> is true.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
-  <p>[<i>Note:</i> For ISO/IEC 9945, <code>system_complete(p)</code> has the same semantics as <code>complete(p, current_path())</code>.</p>
+  <p>[<i>Note:</i> For ISO/IEC 9945, <code>system_complete(p)</code> has the same semantics as <code><a href="#absolute">absolute</a>(p, <a href="#current_path">current_path</a>())</code>.</p>
   <p><a name="windows_effects">For <i>Windows</i></a>, <code>system_complete(p)</code> has the
-  same semantics as <code>complete(ph, current_path())</code> if <code>p.is_absolute() || !p.has_root_name()</code> or <code>p</code> and <code>base</code> have the same <code>root_name()</code>.
-  Otherwise it acts like <code>complete(p, kinky)</code>, where <code>kinky</code> is the current directory for the <code>p.root_name()</code> drive. This will
+  same semantics as <code><a href="#absolute">absolute</a>(p, <a href="#current_path">current_path</a>())</code> if <code>p.is_absolute() || !p.has_root_name()</code> or <code>p</code> and <code>base</code> have the same <code>root_name()</code>.
+  Otherwise it acts like <code><a href="#absolute">absolute</a>(p, kinky)</code>, where <code>kinky</code> is the current directory for the <code>p.root_name()</code> drive. This will
   be the current directory of that drive the last time it was set, and thus may
   be <b>residue left over from a prior program</b> run by the command
   processor! Although these semantics are often useful, they are also very
   error-prone.</p>
-  <p>See <a href="#complete_note"><i>complete()</i> note</a> for usage suggestions. <i>—end note</i>]</p>
 </blockquote>
 <pre>path <a name="temp_directory_path">temp_directory_path</a>();
 path temp_directory_path(system::error_code&amp; ec);</pre>
