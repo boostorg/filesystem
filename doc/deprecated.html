@@ -420,6 +420,19 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
     <td style="font-size: 10pt" valign="top">
     <i>No longer supported; native path format selection is always automatic.</i></td>
   </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    Build system</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>Auto-linking on Windows</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>No longer supported. When users are linking against static library of Boost.Filesystem,
+    they are recommended to explicitly add Boost.Filesystem dependencies to their linker command
+    line. Shared library of Boost.Filesystem is not affected by this as it is already linked with
+    all its dependencies.</i></td>
+  </tr>
 </table>
 
 <h2>Deprecation rationale</h2>

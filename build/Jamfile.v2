@@ -12,7 +12,8 @@ import configure ;
 
 lib bcrypt ;
 lib advapi32 ;
-explicit bcrypt advapi32 ;
+lib coredll ;
+explicit bcrypt advapi32 coredll ;
 
 # The rule checks we're building for Windows and selects crypto API to be used
 rule select-windows-crypto-api ( properties * )
@@ -27,7 +28,15 @@ rule select-windows-crypto-api ( properties * )
         }
         else
         {
-            result = <define>BOOST_FILESYSTEM_HAS_WINCRYPT <library>advapi32 ;
+            result = <define>BOOST_FILESYSTEM_HAS_WINCRYPT ;
+            if [ configure.builds ../config//is_windows_ce : $(properties) : "is Windows CE" ]
+            {
+                result += <library>coredll ;
+            }
+            else
+            {
+                result += <library>advapi32 ;
+            }
         }
     }
 

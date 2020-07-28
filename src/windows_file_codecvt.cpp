@@ -59,5 +59,4 @@ std::codecvt_base::result windows_file_codecvt::do_out(
   return ok;
 }
 
-# endif  // BOOST_WINDOWS_API
-
+#endif  // BOOST_WINDOWS_API

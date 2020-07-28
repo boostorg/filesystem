@@ -65,6 +65,7 @@
   <li><b>New:</b> Improved compatibility with <a href="https://wasi.dev/">WASI</a> platform. (<a href="https://github.com/boostorg/filesystem/pull/144">PR#144</a>)</li>
   <li><b>New:</b> Improved support for Embarcadero compilers. (<a href="https://github.com/boostorg/filesystem/pull/130">PR#130</a>)</li>
   <li><b>New:</b> Added implementations of <code>unique_path</code> operation based on <code>getrandom</code> (Linux), <code>arc4random_buf</code> (OpenBSD/FreeBSD/CloudABI) and BCrypt (Windows) system APIs.</li>
+  <li><b>Deprecated:</b> Auto-linking against system libraries on Windows with MSVC-compatible compilers is deprecated and will be removed in a future release. This affects users linking against static library of Boost.Filesystem. Users are advised to update their project build systems to either use a shared library of Boost.Filesystem, or explicitly specify the dependencies of Boost.Filesystem in the linker command line. In the future, the dependency information may also be exposed through CMake config files.</li>
 </ul>
 
 <h2>1.72.0</h2>

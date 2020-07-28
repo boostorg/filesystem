@@ -13,3 +13,5 @@ obj has_stat_st_mtimespec : has_stat_st_mtimespec.cpp ;
 explicit has_stat_st_mtimespec ;
 obj has_bcrypt : has_bcrypt.cpp ;
 explicit has_bcrypt ;
+obj is_windows_ce : is_windows_ce.cpp ;
+explicit is_windows_ce ;

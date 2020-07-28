@@ -89,7 +89,11 @@ if(WIN32)
         target_link_libraries(boost_filesystem PRIVATE bcrypt)
     else()
         target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_WINCRYPT)
-        target_link_libraries(boost_filesystem PRIVATE advapi32)
+        if(NOT WINCE)
+            target_link_libraries(boost_filesystem PRIVATE advapi32)
+        else()
+            target_link_libraries(boost_filesystem PRIVATE coredll)
+        endif()
     endif()
 
     target_link_libraries(boost_filesystem
