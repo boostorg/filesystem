@@ -58,7 +58,7 @@
 #      include <boost/winapi/bcrypt.hpp>
 #      if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && defined(_MSC_VER)
 #          pragma comment(lib, "bcrypt.lib")
-#      endif // defined(_MSC_VER)
+#      endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && defined(_MSC_VER)
 #   else // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 #      include <boost/winapi/crypt.hpp>
 #      include <boost/winapi/get_last_error.hpp>
@@ -68,7 +68,7 @@
 #          else
 #              pragma comment(lib, "coredll.lib")
 #          endif
-#      endif // defined(_MSC_VER)
+#      endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && defined(_MSC_VER)
 #   endif // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 #endif
 
