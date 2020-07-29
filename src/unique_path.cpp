@@ -76,6 +76,13 @@
 #include <boost/filesystem/operations.hpp>
 #include "error_handling.hpp"
 
+#if defined(BOOST_POSIX_API)
+// At least Mac OS X 10.6 and older doesn't support O_CLOEXEC
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
+#endif // defined(BOOST_POSIX_API)
+
 namespace boost { namespace filesystem { namespace detail {
 
 namespace {
@@ -134,10 +141,10 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 #else
 
-  int file = open("/dev/urandom", O_RDONLY);
+  int file = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
   if (file == -1)
   {
-    file = open("/dev/random", O_RDONLY);
+    file = open("/dev/random", O_RDONLY | O_CLOEXEC);
     if (file == -1)
     {
       emit_error(errno, ec, "boost::filesystem::unique_path");
