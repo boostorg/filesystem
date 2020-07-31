@@ -34,8 +34,9 @@ typedef int err_t;
 //  POSIX uses a 0 return to indicate success
 #define BOOST_ERRNO    errno
 
-#define BOOST_ERROR_NOT_SUPPORTED ENOSYS
+#define BOOST_ERROR_FILE_NOT_FOUND ENOENT
 #define BOOST_ERROR_ALREADY_EXISTS EEXIST
+#define BOOST_ERROR_NOT_SUPPORTED ENOSYS
 
 #else
 
@@ -44,6 +45,7 @@ typedef boost::winapi::DWORD_ err_t;
 //  Windows uses a non-0 return to indicate success
 #define BOOST_ERRNO    boost::winapi::GetLastError()
 
+#define BOOST_ERROR_FILE_NOT_FOUND boost::winapi::ERROR_FILE_NOT_FOUND_
 #define BOOST_ERROR_ALREADY_EXISTS boost::winapi::ERROR_ALREADY_EXISTS_
 #define BOOST_ERROR_NOT_SUPPORTED boost::winapi::ERROR_NOT_SUPPORTED_
 

@@ -295,6 +295,16 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
+    <code>operations.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>copy_directory(const path&amp; from, const path&amp; to)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>Function removed, use <code>create_directory(const path&amp; to, const path&amp; from)</code> instead (note the reversed order of arguments)</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
     <code>class directory_entry</code></td>
     <td style="font-size: 10pt" valign="top">
     <code>filename()</code></td>
@@ -409,6 +419,19 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
     &nbsp;</td>
     <td style="font-size: 10pt" valign="top">
     <i>No longer supported; native path format selection is always automatic.</i></td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    Build system</td>
+    <td style="font-size: 10pt" valign="top">
+    <code>Auto-linking on Windows</code></td>
+    <td style="font-size: 10pt" valign="top">
+    &nbsp;</td>
+    <td style="font-size: 10pt" valign="top">
+    <i>No longer supported. When users are linking against static library of Boost.Filesystem,
+    they are recommended to explicitly add Boost.Filesystem dependencies to their linker command
+    line. Shared library of Boost.Filesystem is not affected by this as it is already linked with
+    all its dependencies.</i></td>
   </tr>
 </table>
 

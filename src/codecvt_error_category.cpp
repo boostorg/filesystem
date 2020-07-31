@@ -9,13 +9,10 @@
 
 //--------------------------------------------------------------------------------------//
 
+#include "platform_config.hpp"
+
 #include <boost/config/warning_disable.hpp>
 
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-#  define BOOST_SYSTEM_NO_DEPRECATED
-#endif
-
-#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path_traits.hpp>
 #include <boost/system/error_code.hpp>
 #include <locale>
@@ -31,8 +28,8 @@ namespace
   {
   public:
     codecvt_error_cat(){}
-    const char*   name() const BOOST_SYSTEM_NOEXCEPT;
-    std::string    message(int ev) const;
+    const char*   name() const BOOST_SYSTEM_NOEXCEPT BOOST_OVERRIDE;
+    std::string    message(int ev) const BOOST_OVERRIDE;
   };
 
   const char* codecvt_error_cat::name() const BOOST_SYSTEM_NOEXCEPT
