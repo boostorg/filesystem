@@ -77,11 +77,8 @@
 #     include <utime.h>
 #   endif
 #   ifdef __linux__
-#     ifdef __GLIBC__
-#       include <gnu/libc-version.h>
-#       if __GLIBC_PREREQ(2, 27)
-#         define BOOST_HAS_NATIVE_STATX 1
-#       endif
+#     if defined(__GLIBC__) && defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 27)
+#       define BOOST_HAS_NATIVE_STATX 1
 #     endif
 #   endif
 #   include "limits.h"

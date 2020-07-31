@@ -50,10 +50,6 @@ using std::endl;
 #include <ctime>
 #include <cstdlib> // for system(), getenv(), etc.
 
-#if defined(BOOST_POSIX_API) && defined(__linux__)
-# include <linux/version.h>
-#endif
-
 #ifdef BOOST_WINDOWS_API
 # include <windows.h>
 
@@ -1828,7 +1824,7 @@ namespace
     create_file(f1x, "foobar2");
 
 # ifdef BOOST_POSIX_API
-#   if !(defined(__linux__) && __GLIBC_PREREQ(2, 27))
+#   if !(defined(__linux__) && defined(__GLIBC__) && defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 27))
     BOOST_TEST(CHECK_EXCEPTION([f1x]() -> void {fs::creation_time(f1x);}, BOOST_ERROR_NOT_SUPPORTED));
 #   endif
 # else
