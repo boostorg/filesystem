@@ -83,9 +83,6 @@
 #         define BOOST_HAS_NATIVE_STATX 1
 #       endif
 #     endif
-#     ifndef BOOST_HAS_NATIVE_STATX
-#       include "linux_statx.hpp"
-#     endif
 #   endif
 #   include "limits.h"
 #   if defined(linux) || defined(__linux) || defined(__linux__)
@@ -1908,12 +1905,17 @@ std::time_t creation_time(const path& p, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
 # ifdef __linux__
+#   ifdef BOOST_HAS_NATIVE_STATX
   struct statx path_stat;
   if (error(::statx(AT_FDCWD, p.c_str(), AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT |
 	AT_STATX_SYNC_AS_STAT, STATX_BTIME, &path_stat)!= 0 ? BOOST_ERRNO : 0,
     p, ec, "boost::filesystem::creation_time"))
       return std::time_t(-1);
   return std::time_t(path_stat.stx_btime.tv_sec);
+#   else
+  error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::creation_time does not support on this version of glibc");
+  return std::time_t(-1);
+#   endif
 # elif defined(__APPLE__)
   // The stat64() system calls first appeared in Mac OS X 10.5 (Leopard)
 #   if (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060)
