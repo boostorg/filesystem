@@ -1939,7 +1939,7 @@ std::time_t creation_time(const path& p, system::error_code* ec)
   return std::time_t(path_stat.st_birthtim.tv_sec);
 # else
   // TODO: Check for symbolic file
-  error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time does not support on this platform");
+  error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::creation_time does not support on this platform");
   return std::time_t(-1);
 # endif
 # else
