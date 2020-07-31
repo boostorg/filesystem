@@ -259,11 +259,6 @@ namespace
     fs::path to;
   };
 
-  void bad_creation_time()
-  {
-    fs::creation_time(".");
-  }
-
   //------------------------------ debugging aids --------------------------------------//
 
   //std::ostream& operator<<(std::ostream& os, const fs::file_status& s)
@@ -1833,11 +1828,9 @@ namespace
     create_file(f1x, "foobar2");
 
 # ifdef BOOST_POSIX_API
-#  ifdef __linux__
-#    if LINUX_VERSION_CODE < KERNEL_VERSION(4,11,0)
-    BOOST_TEST(CHECK_EXCEPTION(bad_creation_time, ENOSYS));
-#    endif
-#  endif
+#   if !(defined(__linux__) && __GLIBC_PREREQ(2, 27))
+    BOOST_TEST(CHECK_EXCEPTION([f1x]() -> void {fs::creation_time(f1x);}, BOOST_ERROR_NOT_SUPPORTED));
+#   endif
 # else
     std::time_t ft = fs::last_write_time(f1x);
     BOOST_TEST(ft == fs::creation_time(f1x));

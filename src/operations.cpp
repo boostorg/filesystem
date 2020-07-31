@@ -79,7 +79,7 @@
 #   ifdef __linux__
 #     ifdef __GLIBC__
 #       include <gnu/libc-version.h>
-#       if __GLIBC_MINOR__ > 27
+#       if __GLIBC_PREREQ(2, 27)
 #         define BOOST_HAS_NATIVE_STATX 1
 #       endif
 #     endif
