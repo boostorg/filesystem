@@ -241,6 +241,11 @@ namespace
     fs::remove(bad_remove_dir);
   }
 
+  void normal_creation_time()
+  {
+    fs::creation_time(".");
+  }
+
   class renamer
   {
   public:
@@ -1824,8 +1829,13 @@ namespace
     create_file(f1x, "foobar2");
 
 # ifdef BOOST_POSIX_API
-#   if !(defined(__linux__) && defined(__GLIBC__) && defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 27))
-    BOOST_TEST(CHECK_EXCEPTION([f1x]() -> void {fs::creation_time(f1x);}, BOOST_ERROR_NOT_SUPPORTED));
+#   if defined(__linux__) && defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#     if __GLIBC_PREREQ(2, 28)
+    BOOST_TEST(CHECK_EXCEPTION(normal_creation_time, ENOSYS));
+#     else
+    std::time_t ft = fs::last_write_time(f1x);
+    BOOST_TEST(ft == fs::creation_time(f1x));
+#     endif 
 #   endif
 # else
     std::time_t ft = fs::last_write_time(f1x);

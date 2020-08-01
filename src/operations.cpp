@@ -77,7 +77,7 @@
 #     include <utime.h>
 #   endif
 #   ifdef __linux__
-#     if defined(__GLIBC__) && defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 27)
+#     if defined(__GLIBC__) && defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2, 28)
 #       define BOOST_HAS_NATIVE_STATX 1
 #     endif
 #   endif
