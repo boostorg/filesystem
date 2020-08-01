@@ -1831,10 +1831,10 @@ namespace
 # ifdef BOOST_POSIX_API
 #   if defined(__linux__) && defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #     if __GLIBC_PREREQ(2, 28)
-    BOOST_TEST(CHECK_EXCEPTION(normal_creation_time, ENOSYS));
-#     else
     std::time_t ft = fs::last_write_time(f1x);
     BOOST_TEST(ft == fs::creation_time(f1x));
+#     else
+    BOOST_TEST(CHECK_EXCEPTION(normal_creation_time, ENOSYS));
 #     endif 
 #   endif
 # else

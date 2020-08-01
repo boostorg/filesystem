@@ -158,6 +158,28 @@ matrix:
           sources:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
 
+    - os: linux
+      dist: focal
+      compiler: gcc-9
+      env: TOOLSET=gcc COMPILER=g++-10 CXXSTD=03,11,14,17,20
+      addons:
+        apt:
+          packages:
+            - g++-9
+          sources:
+            - ubuntu-toolchain-r-test
+
+    - os: linux
+      dist: focal
+      compiler: gcc-10
+      env: TOOLSET=gcc COMPILER=g++-10 CXXSTD=03,11,14,17,20
+      addons:
+        apt:
+          packages:
+            - g++-10
+          sources:
+            - ubuntu-toolchain-r-test
+
 # clang, Linux
     - os: linux
       dist: trusty
