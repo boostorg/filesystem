@@ -161,7 +161,7 @@ matrix:
     - os: linux
       dist: focal
       compiler: gcc-9
-      env: TOOLSET=gcc COMPILER=g++-9 CXXSTD=03,11,14,17,20
+      env: TOOLSET=gcc COMPILER=g++-9 CXXSTD=03,11,14,17,2a
       addons:
         apt:
           packages:
