@@ -1916,18 +1916,15 @@ std::time_t creation_time(const path& p, system::error_code* ec)
 # elif defined(__APPLE__)
   // The stat64() system calls first appeared in Mac OS X 10.5 (Leopard)
 #   if (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060)
-#     ifdef _DARWIN_USE_64_BIT_INODE
+#     ifdef _DARWIN_FEATURE_64_BIT_INODE
   struct stat path_stat;
   if (error(::stat(p.c_str(), &path_stat) != 0 ? BOOST_ERRNO : 0, p, ec,
 	"boost::filesystem::creation_time"))
       return std::time_t(-1);
   return std::time_t(path_stat.st_birthtimespec.tv_sec);
 #     else
-  struct stat64 path_stat;
-  if (error(::stat64(p.c_str(), &path_stat) != 0 ? BOOST_ERRNO : 0, p, ec,
-	"boost::filesystem::creation_time"))
-      return std::time_t(-1);
-  return std::time_t(path_stat.st_birthtimespec.tv_sec);
+  error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::creation_time does not support on this platform");
+  return std::time_t(-1);
 #     endif
 #   endif
 # elif defined(__FreeBSD__)
