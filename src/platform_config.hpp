@@ -69,6 +69,12 @@
 #include <boost/winapi/config.hpp>
 #endif
 
+// The stat64() system calls first appeared in Mac OS X 10.5 (Leopard)
+#if defined(__APPLE__) && (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060)
+// Set the _DARWIN_USE_64_BIT_INODE macro before including header files to force 64-bit inode support.
+#  define _DARWIN_USE_64_BIT_INODE
+#endif
+
 #ifndef BOOST_SYSTEM_NO_DEPRECATED
 #define BOOST_SYSTEM_NO_DEPRECATED
 #endif
