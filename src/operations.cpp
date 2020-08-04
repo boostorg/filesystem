@@ -41,17 +41,7 @@
 
 # ifdef BOOST_POSIX_API
 #   include <sys/types.h>
-#   if defined(__APPLE__)
-// The stat64() system calls first appeared in Mac OS X 10.5 (Leopard)
-#     if (defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1060)
-#       define _DARWIN_USE_64_BIT_INODE
-#       include <sys/stat.h>
-#     else
-#       include <sys/stat.h>
-#     endif
-#   else
-#     include <sys/stat.h>
-#   endif
+#   include <sys/stat.h>
 #   if defined(__wasm)
 // WASI does not have statfs or statvfs.
 #   elif !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) \
