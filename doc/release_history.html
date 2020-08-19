@@ -42,6 +42,9 @@
 <ul>
   <li><b>New:</b> Added <code>creation_time</code> operation, which allows to obtain file creation time. (Inspired by <a href="https://github.com/boostorg/filesystem/pull/134">PR#134</a>)</li>
   <li>The returned value of <code>last_write_time(p, ec)</code> operation in case of failure has been changed to a minimal value representable by <code>std::time_t</code> instead of -1.</li>
+  <li>The returned value of <code>hard_link_count(p, ec)</code> operation in case of failure has been changed to <code>static_cast&lt;uintmax_t&gt;(-1)</code> instead of 0.</li>
+  <li>On POSIX systems, <code>file_size</code> will now indicate error code <code>errc::function_not_supported</code> if the path resolves to a non-regular file. Previously, <code>errc::operation_not_permitted</code> was reported.</li>
+  <li>On Linux, many operations now use <code>statx</code> system call internally, when possible, which allows to reduce the amount of information queried from the filesystem and potentially improve performance. The <code>statx</code> system call was introduced in Linux kernel 4.11.</li>
 </ul>
 
 <h2>1.74.0</h2>
