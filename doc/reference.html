@@ -126,6 +126,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_hard_link">create_hard_link</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_symlink">create_symlink</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#creation_time">creation_time</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#current_path">current_path</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
 &nbsp;&nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br>
@@ -875,6 +876,9 @@ nothing else.&quot;</p>
     void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink);
     void         <a href="#create_symlink">create_symlink</a>(const path&amp; to, const path&amp; new_symlink,
                                 system::error_code&amp; ec);
+
+    std::time_t  <a href="#creation_time">creation_time</a>(const path&amp; p);
+    std::time_t  <a href="#creation_time">creation_time</a>(const path&amp; p, system::error_code&amp; ec);
 
     path         <a href="#current_path">current_path</a>();
     path         <a href="#current_path">current_path</a>(system::error_code&amp; ec);
@@ -3453,16 +3457,24 @@ bool <a name="is_symlink3">is_symlink</a>(const path&amp; p, system::error_code&
   <p><i>Throws:</i> <code>filesystem_error</code>; overload with <code>error_code&amp;</code> throws
   nothing.</p>
 </blockquote>
-<pre>std::time_t <a name="last_write_time">last_write_time</a>(const path&amp; p);
-std::time_t <a name="last_write_time2">last_write_time</a>(const path&amp; p<code>, system::error_code&amp; ec</code>);</pre>
+<pre><code>std::time_t <a name="creation_time">creation_time</a>(const path&amp; p);
+std::time_t <a name="creation_time2">creation_time</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
+<blockquote>
+  <p><i>Returns:</i> The time of creation of the file to which <code>p</code> resolves.</p>
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
+  <p>[<i>Note:</i> Not all platforms support querying file creation time. Where not supported, the operation will fail with
+  <code>errc::function_not_supported</code> error code. <i>—end note</i>]</p>
+</blockquote>
+<pre><code>std::time_t <a name="last_write_time">last_write_time</a>(const path&amp; p);
+std::time_t <a name="last_write_time2">last_write_time</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
 <blockquote>
   <p><i>Returns:</i> The time of last data modification of <code>p</code>, determined as if by the
   value of the ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">stat</a></code> structure member <code>st_mtime</code>&nbsp; obtained
   as if by ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
-<pre>void <a name="last_write_time3">last_write_time</a>(const path&amp; p, const std::time_t new_time);
-void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std::time_t new_time<code>, system::error_code&amp; ec</code>);</pre>
+<pre><code>void <a name="last_write_time3">last_write_time</a>(const path&amp; p, const std::time_t new_time);
+void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std::time_t new_time, system::error_code&amp; ec);</code></pre>
 <blockquote>
   <p><i>Effects:</i> Sets the time of last data modification of the file
   resolved to by <code>p</code> to <code>new_time</code>, as if by ISO/IEC
@@ -3472,8 +3484,8 @@ void <a name="last_write_time4">last_write_time</a>(const path&amp; p, const std
   <p>[<i>Note:</i> A postcondition of <code>last_write_time(p) == new_time</code> is not specified since it might not hold for file systems
   with coarse time granularity. <i>—end note</i>]</p>
 </blockquote>
-<pre>void <a name="permissions">permissions</a>(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
-void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, system::error_code&amp; ec);</pre>
+<pre><code>void <a name="permissions">permissions</a>(const path&amp; p, <a href="#symlink_perms">perms</a> prms);
+void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, system::error_code&amp; ec);</code></pre>
 <blockquote>
   <p>
   <i>Requires:</i> <code>!((prms &amp; add_perms) &amp;&amp; (prms &amp; remove_perms))</code>.</p>
@@ -3500,7 +3512,7 @@ void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, sys
     </tr>
   </table>
   <p>[<i>Note:</i> Conceptually permissions are viewed as bits, but the actual
-  implementation may use some other mechanism. -- <i>end note</i>]</p>
+  implementation may use some other mechanism. <i>—end note</i>]</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre>path <a name="read_symlink">read_symlink</a>(const path&amp; p);

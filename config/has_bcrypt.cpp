@@ -5,7 +5,9 @@
 
 //  See library home page at http://www.boost.org/libs/filesystem
 
-// Include Boost.Predef first so that windows.h is guaranteed to be not included
+// Include platform_config.hpp first so that windows.h is guaranteed to be not included
+#include "platform_config.hpp"
+
 #include <boost/predef/os/windows.h>
 #include <boost/predef/os/cygwin.h>
 #if !BOOST_OS_WINDOWS && !BOOST_OS_CYGWIN

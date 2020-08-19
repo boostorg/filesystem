@@ -10,9 +10,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 int main()
 {
-    struct stat st;
-    st.st_mtimespec.tv_nsec = 10;
+    struct statx st;
+    int res = statx(AT_FDCWD, ".", AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT, STATX_BTIME, &st);
+    st.stx_btime.tv_sec = 1;
+    st.stx_btime.tv_nsec = 10;
 }

@@ -14,5 +14,6 @@
 int main()
 {
     struct stat st;
-    st.st_mtimespec.tv_nsec = 10;
+    st.st_birthtimespec.tv_sec = 1;
+    st.st_birthtimespec.tv_nsec = 10;
 }

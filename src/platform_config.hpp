@@ -53,6 +53,11 @@
 #define _FILE_OFFSET_BITS 64
 #endif
 
+#if defined(__APPLE__) || defined(__MACH__)
+// Enable newer ABI on Mac OS 10.5 and later, which is needed for struct stat to have birthtime members
+#define _DARWIN_USE_64_BIT_INODE 1
+#endif
+
 #ifndef _POSIX_PTHREAD_SEMANTICS
 #define _POSIX_PTHREAD_SEMANTICS  // Sun readdir_r() needs this
 #endif

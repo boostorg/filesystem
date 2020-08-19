@@ -66,7 +66,7 @@
 #   if _POSIX_C_SOURCE < 200809L
 #     include <utime.h>
 #   endif
-#   include "limits.h"
+#   include <limits.h>
 #   if defined(linux) || defined(__linux) || defined(__linux__)
 #     include <sys/utsname.h>
 #     include <sys/sendfile.h>
@@ -74,6 +74,9 @@
 #     define BOOST_FILESYSTEM_USE_SENDFILE
 #     if defined(__NR_copy_file_range)
 #       define BOOST_FILESYSTEM_USE_COPY_FILE_RANGE
+#     endif
+#     if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#       include <linux/stat.h>
 #     endif
 #   endif
 
@@ -83,6 +86,17 @@
 #     define BOOST_FILESYSTEM_STAT_ST_MTIMENSEC st_mtimespec.tv_nsec
 #   elif defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC)
 #     define BOOST_FILESYSTEM_STAT_ST_MTIMENSEC st_mtimensec
+#   endif
+
+#   if defined(BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIM)
+#     define BOOST_FILESYSTEM_STAT_ST_BIRTHTIME st_birthtim.tv_sec
+#     define BOOST_FILESYSTEM_STAT_ST_BIRTHTIMENSEC st_birthtim.tv_nsec
+#   elif defined(BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMESPEC)
+#     define BOOST_FILESYSTEM_STAT_ST_BIRTHTIME st_birthtimespec.tv_sec
+#     define BOOST_FILESYSTEM_STAT_ST_BIRTHTIMENSEC st_birthtimespec.tv_nsec
+#   elif defined(BOOST_FILESYSTEM_HAS_STAT_ST_BIRTHTIMENSEC)
+#     define BOOST_FILESYSTEM_STAT_ST_BIRTHTIME st_birthtime
+#     define BOOST_FILESYSTEM_STAT_ST_BIRTHTIMENSEC st_birthtimensec
 #   endif
 
 # else // BOOST_WINDOWS_API
@@ -350,6 +364,14 @@ boost::uintmax_t remove_all_aux(const path& p, fs::file_type type,
 //--------------------------------------------------------------------------------------//
 
 BOOST_CONSTEXPR_OR_CONST char dot = '.';
+
+#if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+//! A wrapper for the statx syscall
+inline int statx(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx) BOOST_NOEXCEPT
+{
+  return ::syscall(__NR_statx, dirfd, path, flags, mask, stx);
+}
+#endif // !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 
 struct fd_wrapper
 {
@@ -1796,6 +1818,64 @@ bool is_empty(const path& p, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
+std::time_t creation_time(const path& p, system::error_code* ec)
+{
+  if (ec)
+    ec->clear();
+
+#if defined(BOOST_POSIX_API)
+
+#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+  struct ::statx stx;
+  if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_BTIME, &stx) < 0))
+  {
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time");
+    return (std::numeric_limits< std::time_t >::min)();
+  }
+  if (BOOST_UNLIKELY((stx.stx_mask & STATX_BTIME) != STATX_BTIME))
+  {
+    emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::creation_time");
+    return (std::numeric_limits< std::time_t >::min)();
+  }
+  return stx.stx_btime.tv_sec;
+#elif defined(BOOST_FILESYSTEM_STAT_ST_BIRTHTIME) && defined(BOOST_FILESYSTEM_STAT_ST_BIRTHTIMENSEC)
+  struct ::stat st;
+  if (BOOST_UNLIKELY(::stat(p.c_str(), &st) < 0))
+  {
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time");
+    return (std::numeric_limits< std::time_t >::min)();
+  }
+  return st.BOOST_FILESYSTEM_STAT_ST_BIRTHTIME;
+#else
+  emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::creation_time");
+  return (std::numeric_limits< std::time_t >::min)();
+#endif
+
+#else // defined(BOOST_POSIX_API)
+
+  handle_wrapper hw(
+    create_file_handle(p.c_str(), 0,
+      FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
+      OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+
+  if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
+  {
+  fail:
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time");
+    return (std::numeric_limits< std::time_t >::min)();
+  }
+
+  FILETIME ct;
+
+  if (BOOST_UNLIKELY(!::GetFileTime(hw.handle, &ct, NULL, NULL)))
+    goto fail;
+
+  return to_time_t(ct);
+
+#endif // defined(BOOST_POSIX_API)
+}
+
+BOOST_FILESYSTEM_DECL
 std::time_t last_write_time(const path& p, system::error_code* ec)
 {
 # ifdef BOOST_POSIX_API
@@ -1844,7 +1924,7 @@ void last_write_time(const path& p, const std::time_t new_time,
 
   if (BOOST_UNLIKELY(::utimensat(AT_FDCWD, p.c_str(), times, 0) != 0))
   {
-    error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
     return;
   }
 

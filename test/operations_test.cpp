@@ -1774,6 +1774,40 @@ namespace
     BOOST_TEST(copy_ex_ok);
   }
 
+  //  creation_time_tests  -------------------------------------------------------------//
+
+  void creation_time_tests(const fs::path& dirx)
+  {
+    cout << "creation_time_tests..." << endl;
+
+    fs::path f1x = dirx / "creation_time_file";
+
+    std::time_t start = std::time(NULL);
+    create_file(f1x, "creation_time_file");
+    BOOST_TEST(fs::is_regular_file(f1x));
+    try
+    {
+      std::time_t ft = fs::creation_time(f1x);
+      std::time_t finish = std::time(NULL);
+
+      BOOST_TEST(ft >= start && ft <= finish);
+    }
+    catch (fs::filesystem_error& e)
+    {
+      if (e.code() == make_error_condition(boost::system::errc::function_not_supported))
+      {
+        cout << "creation_time is not supported by the current system" << endl;
+      }
+      else
+      {
+        cout << "creation_time failed: " << e.what() << endl;
+        BOOST_TEST(false);
+      }
+    }
+
+    fs::remove(f1x);
+  }
+
   //  write_time_tests  ----------------------------------------------------------------//
 
   void write_time_tests(const fs::path& dirx)
@@ -2368,6 +2402,7 @@ int cpp_main(int argc, char* argv[])
   remove_tests(dir);
   if (create_symlink_ok)  // only if symlinks supported
     remove_symlink_tests();
+  creation_time_tests(dir);
   write_time_tests(dir);
   temp_directory_path_tests();
 
