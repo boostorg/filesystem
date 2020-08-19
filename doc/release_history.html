@@ -41,6 +41,7 @@
 <h2>1.75.0</h2>
 <ul>
   <li><b>New:</b> Added <code>creation_time</code> operation, which allows to obtain file creation time. (Inspired by <a href="https://github.com/boostorg/filesystem/pull/134">PR#134</a>)</li>
+  <li>The returned value of <code>last_write_time(p, ec)</code> operation in case of failure has been changed to a minimal value representable by <code>std::time_t</code> instead of -1.</li>
 </ul>
 
 <h2>1.74.0</h2>

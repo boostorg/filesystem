@@ -1878,42 +1878,52 @@ std::time_t creation_time(const path& p, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 std::time_t last_write_time(const path& p, system::error_code* ec)
 {
-# ifdef BOOST_POSIX_API
+  if (ec)
+    ec->clear();
 
-  struct ::stat path_stat;
-  if (error(::stat(p.c_str(), &path_stat)!= 0 ? BOOST_ERRNO : 0,
-    p, ec, "boost::filesystem::last_write_time"))
-      return std::time_t(-1);
-  return path_stat.st_mtime;
+#if defined(BOOST_POSIX_API)
 
-# else
+  struct ::stat st;
+  if (BOOST_UNLIKELY(::stat(p.c_str(), &st) < 0))
+  {
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+    return (std::numeric_limits< std::time_t >::min)();
+  }
+  return st.st_mtime;
+
+#else // defined(BOOST_POSIX_API)
 
   handle_wrapper hw(
     create_file_handle(p.c_str(), 0,
       FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
       OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
 
-  if (error(hw.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
-    p, ec, "boost::filesystem::last_write_time"))
-      return std::time_t(-1);
+  if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
+  {
+  fail:
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+    return (std::numeric_limits< std::time_t >::min)();
+  }
 
   FILETIME lwt;
 
-  if (error(::GetFileTime(hw.handle, 0, 0, &lwt)== 0 ? BOOST_ERRNO : 0,
-    p, ec, "boost::filesystem::last_write_time"))
-      return std::time_t(-1);
+  if (BOOST_UNLIKELY(!::GetFileTime(hw.handle, NULL, NULL, &lwt)))
+    goto fail;
 
   return to_time_t(lwt);
 
-# endif
+#endif // defined(BOOST_POSIX_API)
 }
 
 BOOST_FILESYSTEM_DECL
-void last_write_time(const path& p, const std::time_t new_time,
-                      system::error_code* ec)
+void last_write_time(const path& p, const std::time_t new_time, system::error_code* ec)
 {
-# ifdef BOOST_POSIX_API
-#   if _POSIX_C_SOURCE >= 200809L
+  if (ec)
+    ec->clear();
+
+#if defined(BOOST_POSIX_API)
+
+#if _POSIX_C_SOURCE >= 200809L
 
   struct timespec times[2] = {};
 
@@ -1928,44 +1938,50 @@ void last_write_time(const path& p, const std::time_t new_time,
     return;
   }
 
-#   else // _POSIX_C_SOURCE >= 200809L
+#else // _POSIX_C_SOURCE >= 200809L
 
-  struct ::stat path_stat;
-  if (error(::stat(p.c_str(), &path_stat)!= 0,
-    p, ec, "boost::filesystem::last_write_time"))
-      return;
+  struct ::stat st;
+  if (BOOST_UNLIKELY(::stat(p.c_str(), &st) < 0))
+  {
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+    return;
+  }
+
   ::utimbuf buf;
-  buf.actime = path_stat.st_atime; // utime()updates access time too:-(
+  buf.actime = st.st_atime; // utime()updates access time too:-(
   buf.modtime = new_time;
-  error(::utime(p.c_str(), &buf)!= 0 ? BOOST_ERRNO : 0,
-    p, ec, "boost::filesystem::last_write_time");
+  if (BOOST_UNLIKELY(::utime(p.c_str(), &buf) < 0))
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
 
-#   endif // _POSIX_C_SOURCE >= 200809L
+#endif // _POSIX_C_SOURCE >= 200809L
 
-# else
+#else // defined(BOOST_POSIX_API)
 
   handle_wrapper hw(
     create_file_handle(p.c_str(), FILE_WRITE_ATTRIBUTES,
       FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0,
       OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
 
-  if (error(hw.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0,
-    p, ec, "boost::filesystem::last_write_time"))
-      return;
+  if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
+  {
+  fail:
+    emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+    return;
+  }
 
   FILETIME lwt;
   to_FILETIME(new_time, lwt);
 
-  error(::SetFileTime(hw.handle, 0, 0, &lwt)== 0 ? BOOST_ERRNO : 0,
-    p, ec, "boost::filesystem::last_write_time");
+  if (BOOST_UNLIKELY(!::SetFileTime(hw.handle, 0, 0, &lwt)))
+    goto fail;
 
-# endif
+#endif // defined(BOOST_POSIX_API)
 }
 
-# ifdef BOOST_POSIX_API
+#ifdef BOOST_POSIX_API
 const perms active_bits(all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit);
 inline mode_t mode_cast(perms prms) { return prms & active_bits; }
-# endif
+#endif
 
 BOOST_FILESYSTEM_DECL
 void permissions(const path& p, perms prms, system::error_code* ec)
