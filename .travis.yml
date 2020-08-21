@@ -389,7 +389,7 @@ matrix:
 
 # clang, FreeBSD
     - os: freebsd
-      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,17
+      env: TOOLSET=clang COMPILER=clang++ CXXSTD=03,11,14,17,2a
 
 # cmake self-test
     - os: linux
