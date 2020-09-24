@@ -16,6 +16,7 @@ branches:
 environment:
   matrix:
     - TOOLSET: msvc-9.0,msvc-10.0,msvc-11.0,msvc-12.0
+      ADDRMD: 32
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: msvc-14.0
       ADDRMD: 32,64
