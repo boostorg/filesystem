@@ -45,14 +45,12 @@
 #   include <sys/stat.h>
 #   if defined(__wasm)
 // WASI does not have statfs or statvfs.
-#   elif !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
+#   elif !defined(__APPLE__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
 #   else
-#     ifdef __OpenBSD__
-#       include <sys/param.h>
-#     elif defined(__ANDROID__)
+#     if defined(__ANDROID__)
 #       include <sys/vfs.h>
 #     endif
 #     if !defined(__VXWORKS__)
