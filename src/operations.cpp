@@ -13,6 +13,7 @@
 
 #include "platform_config.hpp"
 
+#include <boost/predef/os/bsd/open.h>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/file_status.hpp>
 #include <boost/filesystem/exception.hpp>
@@ -45,7 +46,7 @@
 #   include <sys/stat.h>
 #   if defined(__wasm)
 // WASI does not have statfs or statvfs.
-#   elif !defined(__APPLE__) && !defined(__OpenBSD__) && !defined(__ANDROID__) && !defined(__VXWORKS__)
+#   elif !defined(__APPLE__) && (!defined(__OpenBSD__) || BOOST_OS_BSD_OPEN >= BOOST_VERSION_NUMBER(4, 4, 0)) && !defined(__ANDROID__) && !defined(__VXWORKS__)
 #     include <sys/statvfs.h>
 #     define BOOST_STATVFS statvfs
 #     define BOOST_STATVFS_F_FRSIZE vfs.f_frsize
