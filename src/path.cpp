@@ -887,9 +887,8 @@ namespace
     std::locale global_loc = std::locale();
     return std::locale(global_loc, new boost::filesystem::detail::utf8_codecvt_facet);
 # else  // Other POSIX
-    // ISO C calls std::locale("") "the locale-specific native environment", and this
-    // locale is the default for many POSIX-based operating systems such as Linux.
-    return std::locale("");
+    // Return a default locale object.
+    return std::locale();
 # endif
   }
 
