@@ -241,6 +241,11 @@ namespace
     fs::remove(bad_remove_dir);
   }
 
+  void bad_space()
+  {
+    fs::space("no-such-path");
+  }
+
   class renamer
   {
   public:
@@ -2018,6 +2023,9 @@ namespace
     BOOST_TEST_EQ(spi_file.capacity, spi.capacity);
 
     fs::remove(file);
+
+    // Test that an error is indicated if a path to a non-existing file is passed
+    BOOST_TEST(CHECK_EXCEPTION(bad_space, ENOENT));
   }
 
   //  equivalent_tests  ----------------------------------------------------------------//

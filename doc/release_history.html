@@ -47,6 +47,7 @@
   <li>On Linux, many operations now use <code>statx</code> system call internally, when possible, which allows to reduce the amount of information queried from the filesystem and potentially improve performance. The <code>statx</code> system call was introduced in Linux kernel 4.11.</li>
   <li>Removed <code>const</code>-qualification from return types of some <code>path</code> methods. This could prevent move construction and move assignment at the call site in some cases. (<a href="https://github.com/boostorg/filesystem/issues/160">#160</a>)</li>
   <li>On OpenBSD 4.4 and newer, use <code>statvfs</code> system call to obtain filesystem space information. (Inspired by <a href="https://github.com/boostorg/filesystem/pull/162">PR#162</a>)</li>
+  <li>On Windows, <code>space</code> now returns with an error if the provided path does not idendify an existing file. (<a href="https://github.com/boostorg/filesystem/issues/167">#167</a>)</li>
 </ul>
 
 <h2>1.74.0</h2>

@@ -2513,7 +2513,7 @@ space_info space(const path& p, error_code* ec)
   // To work around this, test if the path refers to a directory and use the parent directory if not.
   error_code local_ec;
   file_status status = detail::status(p, &local_ec);
-  if (status.type() == fs::status_error)
+  if (status.type() == fs::status_error || status.type() == fs::file_not_found)
   {
   fail_local_ec:
     if (!ec)
