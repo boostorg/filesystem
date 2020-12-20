@@ -1237,9 +1237,13 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     goto fail;
   }
 
+#if defined(__wasm)
+  mode_t to_mode = from_mode;
+#else
   // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
   // which checks the file permission on the server, even if the client's file descriptor supports writing.
   mode_t to_mode = from_mode | S_IWUSR;
+#endif
   int oflag = O_WRONLY | O_CLOEXEC;
 
   if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
@@ -1353,6 +1357,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
   if (BOOST_UNLIKELY(err != 0))
     goto fail; // err already contains the error code
 
+#if !defined(__wasm)
   // If we created a new file with an explicitly added S_IWUSR permission,
   // we may need to update its mode bits to match the source file.
   if (to_mode != from_mode)
@@ -1360,6 +1365,7 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0))
       goto fail_errno;
   }
+#endif
 
   // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
   // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
