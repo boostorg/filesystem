@@ -1237,12 +1237,11 @@ bool copy_file(const path& from, const path& to, unsigned int options, error_cod
     goto fail;
   }
 
-#if defined(__wasm)
   mode_t to_mode = from_mode;
-#else
+#if !defined(__wasm)
   // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
   // which checks the file permission on the server, even if the client's file descriptor supports writing.
-  mode_t to_mode = from_mode | S_IWUSR;
+  to_mode |= S_IWUSR;
 #endif
   int oflag = O_WRONLY | O_CLOEXEC;
 
