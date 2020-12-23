@@ -1788,12 +1788,27 @@ namespace
     fs::path f1x = dirx / "creation_time_file";
 
     std::time_t start = std::time(NULL);
+
+    // These pauses are inserted because the test spuriously fails on Windows, presumably because of
+    // different converting FILETIME to seconds in time() and Boost.Filesystem or some sort of quirk
+    // in the Windows implementation of filesystem API.
+#if defined(BOOST_POSIX_API)
+    sleep(1);
+#else
+    Sleep(1000);
+#endif
     create_file(f1x, "creation_time_file");
     BOOST_TEST(fs::is_regular_file(f1x));
     try
     {
       std::time_t ft = fs::creation_time(f1x);
+#if defined(BOOST_POSIX_API)
+      sleep(1);
+#else
+      Sleep(1000);
+#endif
       std::time_t finish = std::time(NULL);
+      cout << "  start time: " << start << ", file creation time: " << ft << ", finish time: " << finish << endl;
 
       BOOST_TEST(ft >= start && ft <= finish);
     }
