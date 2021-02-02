@@ -45,20 +45,20 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-class BOOST_FILESYSTEM_DECL filesystem_error :
+class BOOST_SYMBOL_VISIBLE filesystem_error :
   public system::system_error
 {
   // see http://www.boost.org/more/error_handling.html for design rationale
 
 public:
-  filesystem_error(const std::string& what_arg, system::error_code ec);
-  filesystem_error(const std::string& what_arg, const path& path1_arg, system::error_code ec);
-  filesystem_error(const std::string& what_arg, const path& path1_arg, const path& path2_arg, system::error_code ec);
+  BOOST_FILESYSTEM_DECL filesystem_error(const std::string& what_arg, system::error_code ec);
+  BOOST_FILESYSTEM_DECL filesystem_error(const std::string& what_arg, const path& path1_arg, system::error_code ec);
+  BOOST_FILESYSTEM_DECL filesystem_error(const std::string& what_arg, const path& path1_arg, const path& path2_arg, system::error_code ec);
 
-  filesystem_error(filesystem_error const& that);
-  filesystem_error& operator= (filesystem_error const& that);
+  BOOST_FILESYSTEM_DECL filesystem_error(filesystem_error const& that);
+  BOOST_FILESYSTEM_DECL filesystem_error& operator= (filesystem_error const& that);
 
-  ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW;
+  BOOST_FILESYSTEM_DECL ~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW;
 
   const path& path1() const BOOST_NOEXCEPT
   {
@@ -69,10 +69,10 @@ public:
     return m_imp_ptr.get() ? m_imp_ptr->m_path2 : get_empty_path();
   }
 
-  const char* what() const BOOST_NOEXCEPT_OR_NOTHROW BOOST_OVERRIDE;
+  BOOST_FILESYSTEM_DECL const char* what() const BOOST_NOEXCEPT_OR_NOTHROW BOOST_OVERRIDE;
 
 private:
-  static const path& get_empty_path() BOOST_NOEXCEPT;
+  BOOST_FILESYSTEM_DECL static const path& get_empty_path() BOOST_NOEXCEPT;
 
 private:
   struct impl :

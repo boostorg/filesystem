@@ -22,7 +22,7 @@
 namespace boost {
 namespace filesystem {
 
-filesystem_error::filesystem_error(const std::string& what_arg, system::error_code ec) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what_arg, system::error_code ec) :
   system::system_error(ec, what_arg)
 {
   try
@@ -35,7 +35,7 @@ filesystem_error::filesystem_error(const std::string& what_arg, system::error_co
   }
 }
 
-filesystem_error::filesystem_error(const std::string& what_arg, const path& path1_arg, system::error_code ec) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what_arg, const path& path1_arg, system::error_code ec) :
   system::system_error(ec, what_arg)
 {
   try
@@ -48,7 +48,7 @@ filesystem_error::filesystem_error(const std::string& what_arg, const path& path
   }
 }
 
-filesystem_error::filesystem_error(const std::string& what_arg, const path& path1_arg, const path& path2_arg, system::error_code ec) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what_arg, const path& path1_arg, const path& path2_arg, system::error_code ec) :
   system::system_error(ec, what_arg)
 {
   try
@@ -61,24 +61,24 @@ filesystem_error::filesystem_error(const std::string& what_arg, const path& path
   }
 }
 
-filesystem_error::filesystem_error(filesystem_error const& that) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(filesystem_error const& that) :
   system::system_error(static_cast< system::system_error const& >(that)),
   m_imp_ptr(that.m_imp_ptr)
 {
 }
 
-filesystem_error& filesystem_error::operator= (filesystem_error const& that)
+BOOST_FILESYSTEM_DECL filesystem_error& filesystem_error::operator= (filesystem_error const& that)
 {
   static_cast< system::system_error& >(*this) = static_cast< system::system_error const& >(that);
   m_imp_ptr = that.m_imp_ptr;
   return *this;
 }
 
-filesystem_error::~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW
+BOOST_FILESYSTEM_DECL filesystem_error::~filesystem_error() BOOST_NOEXCEPT_OR_NOTHROW
 {
 }
 
-const char* filesystem_error::what() const BOOST_NOEXCEPT_OR_NOTHROW
+BOOST_FILESYSTEM_DECL const char* filesystem_error::what() const BOOST_NOEXCEPT_OR_NOTHROW
 {
   if (m_imp_ptr.get()) try
   {
@@ -109,7 +109,7 @@ const char* filesystem_error::what() const BOOST_NOEXCEPT_OR_NOTHROW
   return system::system_error::what();
 }
 
-const path& filesystem_error::get_empty_path() BOOST_NOEXCEPT
+BOOST_FILESYSTEM_DECL const path& filesystem_error::get_empty_path() BOOST_NOEXCEPT
 {
   static const path empty_path;
   return empty_path;
