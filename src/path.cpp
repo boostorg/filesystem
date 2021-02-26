@@ -205,7 +205,11 @@ namespace filesystem
 #      ifdef BOOST_WINDOWS_API
        || m_pathname[sep_pos+1] == preferred_separator  // or preferred_separator
 #      endif
-)) { m_pathname.erase(sep_pos, 1); } // erase the added separator
+         )
+      )
+    {
+      m_pathname.erase(m_pathname.begin() + sep_pos); // erase the added separator
+    }
   }
 
   //  modifiers  -----------------------------------------------------------------------//
@@ -220,7 +224,10 @@ namespace filesystem
 
   BOOST_FILESYSTEM_DECL path& path::remove_filename()
   {
-    m_pathname.erase(m_parent_path_end());
+    size_type end_pos(m_parent_path_end());
+    if (end_pos == string_type::npos)
+      end_pos = 0u;
+    m_pathname.erase(m_pathname.begin() + end_pos, m_pathname.end());
     return *this;
   }
 
@@ -228,7 +235,7 @@ namespace filesystem
   {
     if (!m_pathname.empty()
       && detail::is_directory_separator(m_pathname[m_pathname.size() - 1]))
-      m_pathname.erase(m_pathname.size() - 1);
+      m_pathname.erase(m_pathname.end() - 1);
     return *this;
   }
 

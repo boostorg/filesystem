@@ -734,7 +734,8 @@ namespace
     BOOST_TEST_EQ(path("..").remove_filename(), path(""));
     BOOST_TEST_EQ(path("../..").remove_filename(), path(".."));
     BOOST_TEST_EQ(path("/..").remove_filename(), path("/"));
-
+    BOOST_TEST_EQ(path("//").remove_filename(), path(""));
+    BOOST_TEST_EQ(path("////").remove_filename(), path(""));
   }
 
   //  test_decompositions  -------------------------------------------------------------//
