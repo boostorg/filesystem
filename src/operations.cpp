@@ -1454,17 +1454,17 @@ void copy_symlink(const path& existing_symlink, const path& new_symlink, system:
 BOOST_FILESYSTEM_DECL
 bool create_directories(const path& p, system::error_code* ec)
 {
- if (p.empty())
- {
-   if (!ec)
-   {
-     BOOST_FILESYSTEM_THROW(filesystem_error(
-       "boost::filesystem::create_directories", p,
-       system::errc::make_error_code(system::errc::invalid_argument)));
-   }
-   ec->assign(system::errc::invalid_argument, system::generic_category());
-   return false;
- }
+  if (p.empty())
+  {
+    if (!ec)
+    {
+      BOOST_FILESYSTEM_THROW(filesystem_error(
+        "boost::filesystem::create_directories", p,
+        system::errc::make_error_code(system::errc::invalid_argument)));
+    }
+    ec->assign(system::errc::invalid_argument, system::generic_category());
+    return false;
+  }
 
   if (p.filename_is_dot() || p.filename_is_dot_dot())
     return create_directories(p.parent_path(), ec);
@@ -1476,6 +1476,13 @@ bool create_directories(const path& p, system::error_code* ec)
   {
     if (ec)
       ec->clear();
+    return false;
+  }
+  else if (BOOST_UNLIKELY(p_status.type() == status_error))
+  {
+    if (!ec)
+      BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", p, local_ec));
+    *ec = local_ec;
     return false;
   }
 
@@ -1490,13 +1497,18 @@ bool create_directories(const path& p, system::error_code* ec)
     if (parent_status.type() == file_not_found)
     {
       create_directories(parent, local_ec);
-      if (local_ec)
+      if (BOOST_UNLIKELY(!!local_ec))
       {
+      parent_fail_local_ec:
         if (!ec)
           BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", parent, local_ec));
         *ec = local_ec;
         return false;
       }
+    }
+    else if (BOOST_UNLIKELY(parent_status.type() == status_error))
+    {
+      goto parent_fail_local_ec;
     }
   }
 
