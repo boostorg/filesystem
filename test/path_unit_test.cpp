@@ -66,10 +66,6 @@ using std::wstring;
 
 namespace {
 
-boost::system::error_code ec;
-const boost::system::error_code ok;
-const boost::system::error_code ng(-1, boost::system::system_category());
-
 std::string platform(BOOST_PLATFORM);
 
 void check_path(const path& source, const wstring& expected, const char* file, int line)
