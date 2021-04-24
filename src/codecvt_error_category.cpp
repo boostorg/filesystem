@@ -33,7 +33,12 @@ class codecvt_error_cat BOOST_FINAL :
     public boost::system::error_category
 {
 public:
+#if !defined(BOOST_CLANG) || __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ > 8)
     BOOST_DEFAULTED_FUNCTION(codecvt_error_cat(), {})
+#else
+    // clang up to version 3.8 requires a user-defined default constructor in order to be able to declare a static constant of the error category.
+    codecvt_error_cat() {}
+#endif
     const char* name() const BOOST_SYSTEM_NOEXCEPT BOOST_OVERRIDE;
     std::string message(int ev) const BOOST_OVERRIDE;
 };
@@ -71,15 +76,7 @@ std::string codecvt_error_cat::message(int ev) const
 
 BOOST_FILESYSTEM_DECL boost::system::error_category const& codecvt_error_category()
 {
-    static const codecvt_error_cat codecvt_error_cat_const
-#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-        {}
-#elif defined(BOOST_CLANG) && (__clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ <= 8))
-        // clang up to version 3.8 requires a user-defined default constructor in order to be able to declare a static constant of the error category.
-        // Work around it by providing an initializer for the constant.
-        = codecvt_error_cat()
-#endif
-    ;
+    static const codecvt_error_cat codecvt_error_cat_const;
     return codecvt_error_cat_const;
 }
 
