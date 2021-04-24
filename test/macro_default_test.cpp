@@ -15,22 +15,21 @@
 #undef BOOST_SYSTEM_STATIC_LINK
 
 #ifndef BOOST_ALL_NO_LIB
-# define BOOST_ALL_NO_LIB
+#define BOOST_ALL_NO_LIB
 #endif
 
 #include <boost/filesystem/config.hpp>
 #include <boost/system/config.hpp>
 
 #ifndef BOOST_FILESYSTEM_STATIC_LINK
-# error BOOST_FILESYSTEM_STATIC_LINK not set by default
+#error BOOST_FILESYSTEM_STATIC_LINK not set by default
 #endif
 
-
 #ifndef BOOST_SYSTEM_STATIC_LINK
-# error BOOST_SYSTEM_STATIC_LINK not set by default
+#error BOOST_SYSTEM_STATIC_LINK not set by default
 #endif
 
 int main()
 {
-  return 0;
+    return 0;
 }

@@ -14,9 +14,9 @@
 #include <boost/filesystem/operations.hpp>
 
 #include <boost/config.hpp>
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
+#if defined(BOOST_NO_STD_WSTRING)
+#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+#endif
 
 namespace fs = boost::filesystem;
 
@@ -24,19 +24,19 @@ namespace fs = boost::filesystem;
 
 int main()
 {
-  if ( fs::detail::possible_large_file_size_support() )
-  {
-    std::cout << "It appears that file sizes greater that 2 gigabytes are possible\n"
-                 "for this configuration on this platform since the operating system\n"
-                 "does use a large enough integer type to report large file sizes.\n\n"
-                 "Whether or not such support is actually present depends on the OS\n";
-    return 0;
-  }
-  std::cout << "The operating system is using an integer type to report file sizes\n"
-               "that can not represent file sizes greater that 2 gigabytes (31-bits).\n"
-               "Thus the Filesystem Library will not correctly deal with such large\n"
-               "files. If you think that this operatiing system should be able to\n"
-               "support large files, please report the problem to the Boost developers\n"
-               "mailing list.\n";
-  return 1;
+    if (fs::detail::possible_large_file_size_support())
+    {
+        std::cout << "It appears that file sizes greater that 2 gigabytes are possible\n"
+                     "for this configuration on this platform since the operating system\n"
+                     "does use a large enough integer type to report large file sizes.\n\n"
+                     "Whether or not such support is actually present depends on the OS\n";
+        return 0;
+    }
+    std::cout << "The operating system is using an integer type to report file sizes\n"
+                 "that can not represent file sizes greater that 2 gigabytes (31-bits).\n"
+                 "Thus the Filesystem Library will not correctly deal with such large\n"
+                 "files. If you think that this operatiing system should be able to\n"
+                 "support large files, please report the problem to the Boost developers\n"
+                 "mailing list.\n";
+    return 1;
 }

@@ -25,11 +25,10 @@
 
 //  on Windows, except for standard libaries known to have wchar_t overloads for
 //  file stream I/O, use path::string() to get a narrow character c_str()
-#if defined(BOOST_WINDOWS_API) \
-  && (!defined(_CPPLIB_VER) || _CPPLIB_VER < 405)  // not Dinkumware || no wide overloads
-# define BOOST_FILESYSTEM_C_STR string().c_str()  // use narrow, since wide not available
-#else  // use the native c_str, which will be narrow on POSIX, wide on Windows
-# define BOOST_FILESYSTEM_C_STR c_str()
+#if defined(BOOST_WINDOWS_API) && (!defined(_CPPLIB_VER) || _CPPLIB_VER < 405) // not Dinkumware || no wide overloads
+#define BOOST_FILESYSTEM_C_STR string().c_str()                                // use narrow, since wide not available
+#else                                                                          // use the native c_str, which will be narrow on POSIX, wide on Windows
+#define BOOST_FILESYSTEM_C_STR c_str()
 #endif
 
 namespace fs = boost::filesystem;
@@ -55,7 +54,7 @@ void verify_file(fs::path const& ph, std::string const& expected)
     BOOST_TEST_EQ(contents, expected);
     if (contents != expected)
     {
-        BOOST_THROW_EXCEPTION(std::runtime_error("verify_file failed: contents \"" + contents  + "\" != \"" + expected + "\" in " + ph.string()));
+        BOOST_THROW_EXCEPTION(std::runtime_error("verify_file failed: contents \"" + contents + "\" != \"" + expected + "\" in " + ph.string()));
     }
 }
 
@@ -88,7 +87,9 @@ directory_tree collect_directory_tree(fs::path const& root_dir)
     std::cout << "Collecting directory tree in: " << root_dir << '\n';
 
     directory_tree tree;
-    fs::recursive_directory_iterator it(root_dir, fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink | fs::directory_options::skip_dangling_symlinks), end;
+    fs::recursive_directory_iterator it(root_dir, fs::directory_options::skip_permission_denied |
+        fs::directory_options::follow_directory_symlink | fs::directory_options::skip_dangling_symlinks);
+    fs::recursive_directory_iterator end;
     while (it != end)
     {
         fs::path p = fs::relative(it->path(), root_dir);
@@ -312,17 +313,18 @@ int main()
         {
             fs::create_symlink("f1", root_dir / "s1");
             symlinks_supported = true;
-            std::cout <<
-                "     *** For information only ***\n"
-                "     create_symlink() attempt succeeded" << std::endl;
+            std::cout << "     *** For information only ***\n"
+                         "     create_symlink() attempt succeeded"
+                      << std::endl;
         }
         catch (fs::filesystem_error& e)
         {
-            std::cout <<
-                "     *** For information only ***\n"
-                "     create_symlink() attempt failed\n"
-                "     filesystem_error.what() reports: " << e.what() << "\n"
-                "     create_symlink() may not be supported on this operating system or file system" << std::endl;
+            std::cout << "     *** For information only ***\n"
+                         "     create_symlink() attempt failed\n"
+                         "     filesystem_error.what() reports: "
+                      << e.what() << "\n"
+                                     "     create_symlink() may not be supported on this operating system or file system"
+                      << std::endl;
         }
 
         if (symlinks_supported)

@@ -9,10 +9,12 @@
 
 #include <boost/filesystem.hpp>
 
-namespace boost
+namespace boost {
+namespace filesystem {
+
+void tu2()
 {
-  namespace filesystem
-  {
-    void tu2() {}
-  }
 }
+
+} // namespace filesystem
+} // namespace boost

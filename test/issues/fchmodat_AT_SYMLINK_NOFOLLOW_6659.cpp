@@ -19,12 +19,15 @@
 #include <cerrno>
 
 #ifdef NDEBUG
-# error This program depends on assert() so makes no sense if NDEBUG is defined
+#error This program depends on assert() so makes no sense if NDEBUG is defined
 #endif
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-    { std::ofstream file("out"); file << "contents"; }
+    {
+        std::ofstream file("out");
+        file << "contents";
+    }
 
     assert(!::symlink("out", "sym"));
 

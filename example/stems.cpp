@@ -12,20 +12,20 @@
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
-  {
-    std::cout << "Usage: stems <path>\n";
-    return 1;
-  }
+    if (argc < 2)
+    {
+        std::cout << "Usage: stems <path>\n";
+        return 1;
+    }
 
-  boost::filesystem::path p(argv[1]), name(p.filename());
+    boost::filesystem::path p(argv[1]), name(p.filename());
 
-  for(;;)
-  {
-    std::cout << "filename " << name  << " has stem " << name.stem()
-      << " and extension " << name.extension() << "\n";
-    if (name.stem().empty() || name.extension().empty())
-      return 0;
-    name = name.stem();
-  }
+    for (;;)
+    {
+        std::cout << "filename " << name << " has stem " << name.stem()
+                  << " and extension " << name.extension() << "\n";
+        if (name.stem().empty() || name.extension().empty())
+            return 0;
+        name = name.stem();
+    }
 }

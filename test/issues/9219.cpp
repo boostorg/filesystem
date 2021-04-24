@@ -31,10 +31,10 @@ namespace fs = boost::filesystem;
 
 int cpp_main(int argc, char* argv[])
 {
-  cout << "Hello, 9219" << endl;
-  cout << "This is a test for non-Windows systems" << endl;
+    cout << "Hello, 9219" << endl;
+    cout << "This is a test for non-Windows systems" << endl;
 
-  BOOST_TEST(fs::exists(const_cast<char*>(".")));
+    BOOST_TEST(fs::exists(const_cast< char* >(".")));
 
-  return ::boost::report_errors();
+    return ::boost::report_errors();
 } // cpp_main

@@ -16,9 +16,9 @@
 #include <boost/filesystem.hpp>
 
 #include <boost/config.hpp>
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
+#if defined(BOOST_NO_STD_WSTRING)
+#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+#endif
 
 #include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
@@ -28,24 +28,23 @@ using boost::filesystem::path;
 
 #define PATH_CHECK(a, b) check(a, b, __LINE__)
 
-namespace
-{
-  std::string platform(BOOST_PLATFORM);
+namespace {
+std::string platform(BOOST_PLATFORM);
 
-  void check(const fs::path & source,
-              const std::string & expected, int line)
-  {
-    if (source.generic_string()== expected) return;
+void check(const fs::path& source, const std::string& expected, int line)
+{
+    if (source.generic_string() == expected)
+        return;
 
     ++::boost::detail::test_errors();
 
     std::cout << '(' << line << ") source.string(): \"" << source.string()
               << "\" != expected: \"" << expected
               << "\"" << std::endl;
-  }
+}
 
-  void normalize_test()
-  {
+void normalize_test()
+{
     PATH_CHECK(path("").normalize(), "");
     PATH_CHECK(path("/").normalize(), "/");
     PATH_CHECK(path("//").normalize(), "//");
@@ -63,14 +62,14 @@ namespace
     PATH_CHECK(path("../foo").normalize(), "../foo");
     PATH_CHECK(path("foo/..").normalize(), ".");
     PATH_CHECK(path("foo/../").normalize(), "./.");
-    PATH_CHECK((path("foo") / "..").normalize() , ".");
+    PATH_CHECK((path("foo") / "..").normalize(), ".");
     PATH_CHECK(path("foo/...").normalize(), "foo/...");
     PATH_CHECK(path("foo/.../").normalize(), "foo/.../.");
     PATH_CHECK(path("foo/..bar").normalize(), "foo/..bar");
     PATH_CHECK(path("../f").normalize(), "../f");
     PATH_CHECK(path("/../f").normalize(), "/../f");
     PATH_CHECK(path("f/..").normalize(), ".");
-    PATH_CHECK((path("f") / "..").normalize() , ".");
+    PATH_CHECK((path("f") / "..").normalize(), ".");
     PATH_CHECK(path("foo/../..").normalize(), "..");
     PATH_CHECK(path("foo/../../").normalize(), "../.");
     PATH_CHECK(path("foo/../../..").normalize(), "../..");
@@ -114,59 +113,59 @@ namespace
 
     if (platform == "Windows")
     {
-      PATH_CHECK(path("c:..").normalize(), "c:..");
-      PATH_CHECK(path("c:foo/..").normalize(), "c:");
+        PATH_CHECK(path("c:..").normalize(), "c:..");
+        PATH_CHECK(path("c:foo/..").normalize(), "c:");
 
-      PATH_CHECK(path("c:foo/../").normalize(), "c:.");
+        PATH_CHECK(path("c:foo/../").normalize(), "c:.");
 
-      PATH_CHECK(path("c:/foo/..").normalize(), "c:/");
-      PATH_CHECK(path("c:/foo/../").normalize(), "c:/.");
-      PATH_CHECK(path("c:/..").normalize(), "c:/..");
-      PATH_CHECK(path("c:/../").normalize(), "c:/../.");
-      PATH_CHECK(path("c:/../..").normalize(), "c:/../..");
-      PATH_CHECK(path("c:/../../").normalize(), "c:/../../.");
-      PATH_CHECK(path("c:/../foo").normalize(), "c:/../foo");
-      PATH_CHECK(path("c:/../foo/").normalize(), "c:/../foo/.");
-      PATH_CHECK(path("c:/../../foo").normalize(), "c:/../../foo");
-      PATH_CHECK(path("c:/../../foo/").normalize(), "c:/../../foo/.");
-      PATH_CHECK(path("c:/..foo").normalize(), "c:/..foo");
+        PATH_CHECK(path("c:/foo/..").normalize(), "c:/");
+        PATH_CHECK(path("c:/foo/../").normalize(), "c:/.");
+        PATH_CHECK(path("c:/..").normalize(), "c:/..");
+        PATH_CHECK(path("c:/../").normalize(), "c:/../.");
+        PATH_CHECK(path("c:/../..").normalize(), "c:/../..");
+        PATH_CHECK(path("c:/../../").normalize(), "c:/../../.");
+        PATH_CHECK(path("c:/../foo").normalize(), "c:/../foo");
+        PATH_CHECK(path("c:/../foo/").normalize(), "c:/../foo/.");
+        PATH_CHECK(path("c:/../../foo").normalize(), "c:/../../foo");
+        PATH_CHECK(path("c:/../../foo/").normalize(), "c:/../../foo/.");
+        PATH_CHECK(path("c:/..foo").normalize(), "c:/..foo");
     }
     else // POSIX
     {
-      PATH_CHECK(path("c:..").normalize(), "c:..");
-      PATH_CHECK(path("c:foo/..").normalize(), ".");
-      PATH_CHECK(path("c:foo/../").normalize(), "./.");
-      PATH_CHECK(path("c:/foo/..").normalize(), "c:");
-      PATH_CHECK(path("c:/foo/../").normalize(), "c:/.");
-      PATH_CHECK(path("c:/..").normalize(), ".");
-      PATH_CHECK(path("c:/../").normalize(), "./.");
-      PATH_CHECK(path("c:/../..").normalize(), "..");
-      PATH_CHECK(path("c:/../../").normalize(), "../.");
-      PATH_CHECK(path("c:/../foo").normalize(), "foo");
-      PATH_CHECK(path("c:/../foo/").normalize(), "foo/.");
-      PATH_CHECK(path("c:/../../foo").normalize(), "../foo");
-      PATH_CHECK(path("c:/../../foo/").normalize(), "../foo/.");
-      PATH_CHECK(path("c:/..foo").normalize(), "c:/..foo");
+        PATH_CHECK(path("c:..").normalize(), "c:..");
+        PATH_CHECK(path("c:foo/..").normalize(), ".");
+        PATH_CHECK(path("c:foo/../").normalize(), "./.");
+        PATH_CHECK(path("c:/foo/..").normalize(), "c:");
+        PATH_CHECK(path("c:/foo/../").normalize(), "c:/.");
+        PATH_CHECK(path("c:/..").normalize(), ".");
+        PATH_CHECK(path("c:/../").normalize(), "./.");
+        PATH_CHECK(path("c:/../..").normalize(), "..");
+        PATH_CHECK(path("c:/../../").normalize(), "../.");
+        PATH_CHECK(path("c:/../foo").normalize(), "foo");
+        PATH_CHECK(path("c:/../foo/").normalize(), "foo/.");
+        PATH_CHECK(path("c:/../../foo").normalize(), "../foo");
+        PATH_CHECK(path("c:/../../foo/").normalize(), "../foo/.");
+        PATH_CHECK(path("c:/..foo").normalize(), "c:/..foo");
     }
-  }
+}
 
-  //  misc_test ------------------------------------------------------------------------//
+//  misc_test ------------------------------------------------------------------------//
 
-  void misc_test()
-  {
+void misc_test()
+{
     fs::path p;
 
-    fs::initial_path<fs::path>();
-    fs::initial_path<fs::wpath>();
+    fs::initial_path< fs::path >();
+    fs::initial_path< fs::wpath >();
 
     p.file_string();
     p.directory_string();
-  }
+}
 
-  //  path_rename_test -----------------------------------------------------------------//
+//  path_rename_test -----------------------------------------------------------------//
 
-  void path_rename_test()
-  {
+void path_rename_test()
+{
     fs::path p("foo/bar/blah");
 
     BOOST_TEST_EQ(path("foo/bar/blah").remove_leaf(), "foo/bar");
@@ -178,74 +177,71 @@ namespace
 
     if (platform == "Windows")
     {
-      BOOST_TEST_EQ(path("foo\\bar\\blah").remove_leaf(), "foo\\bar");
-      p = "foo\\bar\\blah";
-      BOOST_TEST_EQ(p.branch_path(), "foo\\bar");
+        BOOST_TEST_EQ(path("foo\\bar\\blah").remove_leaf(), "foo\\bar");
+        p = "foo\\bar\\blah";
+        BOOST_TEST_EQ(p.branch_path(), "foo\\bar");
     }
-  }
+}
 
 } // unnamed namespace
-
 
 //--------------------------------------------------------------------------------------//
 
 int cpp_main(int /*argc*/, char* /*argv*/[])
 {
-  // The choice of platform is make at runtime rather than compile-time
-  // so that compile errors for all platforms will be detected even though
-  // only the current platform is runtime tested.
-  platform = (platform == "Win32" || platform == "Win64" || platform == "Cygwin")
-               ? "Windows"
-               : "POSIX";
-  std::cout << "Platform is " << platform << '\n';
+    // The choice of platform is make at runtime rather than compile-time
+    // so that compile errors for all platforms will be detected even though
+    // only the current platform is runtime tested.
+    platform = (platform == "Win32" || platform == "Win64" || platform == "Cygwin") ? "Windows" : "POSIX";
+    std::cout << "Platform is " << platform << '\n';
 
-  BOOST_TEST(fs::initial_path() == fs::current_path());
+    BOOST_TEST(fs::initial_path() == fs::current_path());
 
-  //path::default_name_check(fs::no_check);
+    //path::default_name_check(fs::no_check);
 
-  fs::directory_entry de("foo/bar");
+    fs::directory_entry de("foo/bar");
 
-  de.replace_leaf("", fs::file_status(), fs::file_status());
+    de.replace_leaf("", fs::file_status(), fs::file_status());
 
-  //de.leaf();
-  //de.string();
+    //de.leaf();
+    //de.string();
 
-  fs::path ng(" no-way, Jose");
-  BOOST_TEST(!fs::is_regular(ng));  // verify deprecated name still works
-  BOOST_TEST(!fs::symbolic_link_exists("nosuchfileordirectory"));
+    fs::path ng(" no-way, Jose");
+    BOOST_TEST(!fs::is_regular(ng)); // verify deprecated name still works
+    BOOST_TEST(!fs::symbolic_link_exists("nosuchfileordirectory"));
 
-  misc_test();
-  path_rename_test();
-  normalize_test();
-  BOOST_TEST(fs::path("foo/bar").generic() == fs::path("foo/bar"));
+    misc_test();
+    path_rename_test();
+    normalize_test();
+    BOOST_TEST(fs::path("foo/bar").generic() == fs::path("foo/bar"));
 
-// extension() tests ---------------------------------------------------------//
+    // extension() tests ---------------------------------------------------------//
 
-  BOOST_TEST(fs::extension("a/b") == "");
-  BOOST_TEST(fs::extension("a/b.txt") == ".txt");
-  BOOST_TEST(fs::extension("a/b.") == ".");
-  BOOST_TEST(fs::extension("a.b.c") == ".c");
-  BOOST_TEST(fs::extension("a.b.c.") == ".");
-  BOOST_TEST(fs::extension("") == "");
-  BOOST_TEST(fs::extension("a/") == "");
+    BOOST_TEST(fs::extension("a/b") == "");
+    BOOST_TEST(fs::extension("a/b.txt") == ".txt");
+    BOOST_TEST(fs::extension("a/b.") == ".");
+    BOOST_TEST(fs::extension("a.b.c") == ".c");
+    BOOST_TEST(fs::extension("a.b.c.") == ".");
+    BOOST_TEST(fs::extension("") == "");
+    BOOST_TEST(fs::extension("a/") == "");
 
-// basename() tests ----------------------------------------------------------//
+    // basename() tests ----------------------------------------------------------//
 
-  BOOST_TEST(fs::basename("b") == "b");
-  BOOST_TEST(fs::basename("a/b.txt") == "b");
-  BOOST_TEST(fs::basename("a/b.") == "b");
-  BOOST_TEST(fs::basename("a.b.c") == "a.b");
-  BOOST_TEST(fs::basename("a.b.c.") == "a.b.c");
-  BOOST_TEST(fs::basename("") == "");
+    BOOST_TEST(fs::basename("b") == "b");
+    BOOST_TEST(fs::basename("a/b.txt") == "b");
+    BOOST_TEST(fs::basename("a/b.") == "b");
+    BOOST_TEST(fs::basename("a.b.c") == "a.b");
+    BOOST_TEST(fs::basename("a.b.c.") == "a.b.c");
+    BOOST_TEST(fs::basename("") == "");
 
-// change_extension tests ---------------------------------------------------//
+    // change_extension tests ---------------------------------------------------//
 
-  BOOST_TEST(fs::change_extension("a.txt", ".tex").string() == "a.tex");
-  BOOST_TEST(fs::change_extension("a.", ".tex").string() == "a.tex");
-  BOOST_TEST(fs::change_extension("a", ".txt").string() == "a.txt");
-  BOOST_TEST(fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex");
-  // see the rationale in html docs for explanation why this works
-  BOOST_TEST(fs::change_extension("", ".png").string() == ".png");
+    BOOST_TEST(fs::change_extension("a.txt", ".tex").string() == "a.tex");
+    BOOST_TEST(fs::change_extension("a.", ".tex").string() == "a.tex");
+    BOOST_TEST(fs::change_extension("a", ".txt").string() == "a.txt");
+    BOOST_TEST(fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex");
+    // see the rationale in html docs for explanation why this works
+    BOOST_TEST(fs::change_extension("", ".png").string() == ".png");
 
-  return ::boost::report_errors();
+    return ::boost::report_errors();
 }

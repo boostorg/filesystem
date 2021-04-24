@@ -18,9 +18,9 @@
 #include <string>
 #include <cstring>
 #ifndef BOOST_LIGHTWEIGHT_MAIN
-#  include <boost/test/prg_exec_monitor.hpp>
+#include <boost/test/prg_exec_monitor.hpp>
 #else
-#  include <boost/detail/lightweight_main.hpp>
+#include <boost/detail/lightweight_main.hpp>
 #endif
 
 namespace fs = boost::filesystem;
@@ -30,34 +30,33 @@ using std::endl;
 using std::string;
 using std::wstring;
 
-namespace
-{
-  bool cleanup = true;
+namespace {
+bool cleanup = true;
 }
 
 //  cpp_main  ----------------------------------------------------------------//
 
 int cpp_main(int argc, char* argv[])
 {
-  if (argc > 1 && std::strcmp(argv[1], "--no-cleanup") == 0)
-    cleanup = false;
+    if (argc > 1 && std::strcmp(argv[1], "--no-cleanup") == 0)
+        cleanup = false;
 
-  //  Test cases go after this block of comments
-  //    Use test case macros from boost/core/lightweight_test.hpp:
-  //
-  //    BOOST_TEST(predicate);  // test passes if predicate evaluates to true
-  //    BOOST_TEST_EQ(x, y);    // test passes if x == y
-  //    BOOST_TEST_NE(x, y);    // test passes if x != y
-  //    BOOST_ERROR(msg);       // test fails, outputs msg
-  //    Examples:
-  //      BOOST_TEST(path("f00").size() == 3);   // test passes
-  //      BOOST_TEST_EQ(path("f00").size(), 3);  // test passes
-  //      BOOST_MSG("Oops!");  // test fails, outputs "Oops!"
+    //  Test cases go after this block of comments
+    //    Use test case macros from boost/core/lightweight_test.hpp:
+    //
+    //    BOOST_TEST(predicate);  // test passes if predicate evaluates to true
+    //    BOOST_TEST_EQ(x, y);    // test passes if x == y
+    //    BOOST_TEST_NE(x, y);    // test passes if x != y
+    //    BOOST_ERROR(msg);       // test fails, outputs msg
+    //    Examples:
+    //      BOOST_TEST(path("f00").size() == 3);   // test passes
+    //      BOOST_TEST_EQ(path("f00").size(), 3);  // test passes
+    //      BOOST_MSG("Oops!");  // test fails, outputs "Oops!"
 
-  if (cleanup)
-  {
-    // Remove any test files or directories here
-  }
+    if (cleanup)
+    {
+        // Remove any test files or directories here
+    }
 
-  return ::boost::report_errors();
+    return ::boost::report_errors();
 }

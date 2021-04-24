@@ -9,15 +9,16 @@
 
 #include <iostream>
 #include <boost/filesystem.hpp>
+
 namespace fs = boost::filesystem;
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
-  {
-    std::cout << "Usage: tut0 path\n";
-    return 1;
-  }
-  std::cout << argv[1] << '\n';
-  return 0;
+    if (argc < 2)
+    {
+        std::cout << "Usage: tut0 path\n";
+        return 1;
+    }
+    std::cout << argv[1] << '\n';
+    return 0;
 }

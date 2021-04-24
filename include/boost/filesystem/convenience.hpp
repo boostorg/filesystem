@@ -15,44 +15,42 @@
 
 #include <boost/config.hpp>
 
-# if defined( BOOST_NO_STD_WSTRING )
-#   error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-# endif
+#if defined(BOOST_NO_STD_WSTRING)
+#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
+#endif
 
 #include <boost/filesystem/operations.hpp>
 #include <boost/system/error_code.hpp>
 
 #include <boost/config/abi_prefix.hpp> // must be the last #include
 
-namespace boost
+namespace boost {
+namespace filesystem {
+
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+
+inline std::string extension(const path& p)
 {
-  namespace filesystem
-  {
+    return p.extension().string();
+}
 
-# ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+inline std::string basename(const path& p)
+{
+    return p.stem().string();
+}
 
-    inline std::string extension(const path & p)
-    {
-      return p.extension().string();
-    }
+inline path change_extension(const path& p, const path& new_extension)
+{
+    path new_p(p);
+    new_p.replace_extension(new_extension);
+    return new_p;
+}
 
-    inline std::string basename(const path & p)
-    {
-      return p.stem().string();
-    }
+#endif
 
-    inline path change_extension( const path & p, const path & new_extension )
-    {
-      path new_p( p );
-      new_p.replace_extension( new_extension );
-      return new_p;
-    }
-
-# endif
-
-
-  } // namespace filesystem
+} // namespace filesystem
 } // namespace boost
 
 #include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+
 #endif // BOOST_FILESYSTEM3_CONVENIENCE_HPP

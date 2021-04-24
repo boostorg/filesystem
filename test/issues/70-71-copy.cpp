@@ -15,6 +15,6 @@ namespace fs = boost::filesystem;
 
 int main()
 {
-    BOOST_TEST_THROWS( fs::copy( "/tmp/non-existent-a", "/tmp/non-existent-b" ), std::exception );
+    BOOST_TEST_THROWS(fs::copy("/tmp/non-existent-a", "/tmp/non-existent-b"), std::exception);
     return boost::report_errors();
 }

@@ -8,7 +8,7 @@
 
 int main()
 {
-  boost::filesystem::path dir("/");
-  for (char c : dir.filename().string())
-    printf("%c\n", c);
+    boost::filesystem::path dir("/");
+    for (char c : dir.filename().string())
+        printf("%c\n", c);
 }

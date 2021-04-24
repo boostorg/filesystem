@@ -32,7 +32,7 @@ namespace filesystem {
 typedef int err_t;
 
 //  POSIX uses a 0 return to indicate success
-#define BOOST_ERRNO    errno
+#define BOOST_ERRNO errno
 
 #define BOOST_ERROR_FILE_NOT_FOUND ENOENT
 #define BOOST_ERROR_ALREADY_EXISTS EEXIST
@@ -43,7 +43,7 @@ typedef int err_t;
 typedef boost::winapi::DWORD_ err_t;
 
 //  Windows uses a non-0 return to indicate success
-#define BOOST_ERRNO    boost::winapi::GetLastError()
+#define BOOST_ERRNO boost::winapi::GetLastError()
 
 #define BOOST_ERROR_FILE_NOT_FOUND boost::winapi::ERROR_FILE_NOT_FOUND_
 #define BOOST_ERROR_ALREADY_EXISTS boost::winapi::ERROR_ALREADY_EXISTS_
@@ -55,52 +55,52 @@ typedef boost::winapi::DWORD_ err_t;
 
 // Implemented in exception.cpp
 void emit_error(err_t error_num, system::error_code* ec, const char* message);
-void emit_error(err_t error_num, const path& p, system::error_code* ec, const char* message);
-void emit_error(err_t error_num, const path& p1, const path& p2, system::error_code* ec, const char* message);
+void emit_error(err_t error_num, path const& p, system::error_code* ec, const char* message);
+void emit_error(err_t error_num, path const& p1, path const& p2, system::error_code* ec, const char* message);
 
 inline bool error(err_t error_num, system::error_code* ec, const char* message)
 {
-  if (BOOST_LIKELY(!error_num))
-  {
-    if (ec)
-      ec->clear();
-    return false;
-  }
-  else
-  { //  error
-    filesystem::emit_error(error_num, ec, message);
-    return true;
-  }
+    if (BOOST_LIKELY(!error_num))
+    {
+        if (ec)
+            ec->clear();
+        return false;
+    }
+    else
+    { //  error
+        filesystem::emit_error(error_num, ec, message);
+        return true;
+    }
 }
 
-inline bool error(err_t error_num, const path& p, system::error_code* ec, const char* message)
+inline bool error(err_t error_num, path const& p, system::error_code* ec, const char* message)
 {
-  if (BOOST_LIKELY(!error_num))
-  {
-    if (ec)
-      ec->clear();
-    return false;
-  }
-  else
-  { //  error
-    filesystem::emit_error(error_num, p, ec, message);
-    return true;
-  }
+    if (BOOST_LIKELY(!error_num))
+    {
+        if (ec)
+            ec->clear();
+        return false;
+    }
+    else
+    { //  error
+        filesystem::emit_error(error_num, p, ec, message);
+        return true;
+    }
 }
 
-inline bool error(err_t error_num, const path& p1, const path& p2, system::error_code* ec, const char* message)
+inline bool error(err_t error_num, path const& p1, path const& p2, system::error_code* ec, const char* message)
 {
-  if (BOOST_LIKELY(!error_num))
-  {
-    if (ec)
-      ec->clear();
-    return false;
-  }
-  else
-  { //  error
-    filesystem::emit_error(error_num, p1, p2, ec, message);
-    return true;
-  }
+    if (BOOST_LIKELY(!error_num))
+    {
+        if (ec)
+            ec->clear();
+        return false;
+    }
+    else
+    { //  error
+        filesystem::emit_error(error_num, p1, p2, ec, message);
+        return true;
+    }
 }
 
 } // namespace filesystem

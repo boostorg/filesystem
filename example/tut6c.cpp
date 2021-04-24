@@ -17,24 +17,23 @@ using namespace boost::system;
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
-  {
-    std::cout << "Usage: tut6c path\n";
-    return 1;
-  }
+    if (argc < 2)
+    {
+        std::cout << "Usage: tut6c path\n";
+        return 1;
+    }
 
-  error_code ec;
-  for (recursive_directory_iterator it (argv[1], ec);
-        it != recursive_directory_iterator();
-      )
-  {
-    for (int i = 0; i <= it.level(); ++i)
-      std::cout << "  ";
+    error_code ec;
+    for (recursive_directory_iterator it(argv[1], ec);
+         it != recursive_directory_iterator();)
+    {
+        for (int i = 0; i <= it.level(); ++i)
+            std::cout << "  ";
 
-    std::cout << it->path() << '\n';
+        std::cout << it->path() << '\n';
 
-    it.increment(ec);
-  }
+        it.increment(ec);
+    }
 
-  return 0;
-}  
+    return 0;
+}

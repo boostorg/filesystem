@@ -13,55 +13,54 @@
 #include <boost/filesystem.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
-using std::cout; using std::endl;
+using std::cout;
+using std::endl;
 using namespace boost::filesystem;
 
-namespace
+namespace {
+
+path p;
+
+void print_boost_macros()
 {
-  path p;
-  
-  void print_boost_macros()
-  {
     std::cout << "Boost "
               << BOOST_VERSION / 100000 << '.'
               << BOOST_VERSION / 100 % 1000 << '.'
               << BOOST_VERSION % 100 << ", "
-#           ifndef _WIN64
+#ifndef _WIN64
               << BOOST_COMPILER << ", "
-#           else
+#else
               << BOOST_COMPILER << " with _WIN64 defined, "
-#           endif
+#endif
               << BOOST_STDLIB << ", "
               << BOOST_PLATFORM
               << std::endl;
-  }
+}
 
-  const char* file_type_tab[] = 
-    { "status_error", "file_not_found", "regular_file", "directory_file",
-      "symlink_file", "block_file", "character_file", "fifo_file", "socket_file",
-      "type_unknown"
-    };
+const char* file_type_tab[] = { "status_error", "file_not_found", "regular_file", "directory_file",
+                                "symlink_file", "block_file", "character_file", "fifo_file", "socket_file",
+                                "type_unknown" };
 
-  const char* file_type_c_str(enum file_type t)
-  {
+const char* file_type_c_str(enum file_type t)
+{
     return file_type_tab[t];
-  }
+}
 
-  void show_status(file_status s, boost::system::error_code ec)
-  {
+void show_status(file_status s, boost::system::error_code ec)
+{
     boost::system::error_condition econd;
 
     if (ec)
     {
-      econd = ec.default_error_condition();
-      cout << "sets ec to indicate an error:\n"
-           << "   ec.value() is " << ec.value() << '\n'
-           << "   ec.message() is \"" << ec.message() << "\"\n"
-           << "   ec.default_error_condition().value() is " << econd.value() << '\n'
-           << "   ec.default_error_condition().message() is \"" << econd.message() << "\"\n";
+        econd = ec.default_error_condition();
+        cout << "sets ec to indicate an error:\n"
+             << "   ec.value() is " << ec.value() << '\n'
+             << "   ec.message() is \"" << ec.message() << "\"\n"
+             << "   ec.default_error_condition().value() is " << econd.value() << '\n'
+             << "   ec.default_error_condition().message() is \"" << econd.message() << "\"\n";
     }
     else
-      cout << "clears ec.\n";
+        cout << "clears ec.\n";
 
     cout << "s.type() is " << s.type()
          << ", which is defined as \"" << file_type_c_str(s.type()) << "\"\n";
@@ -72,46 +71,46 @@ namespace
     cout << "is_directory(s) is " << (is_directory(s) ? "true" : "false") << "\n";
     cout << "is_other(s) is " << (is_other(s) ? "true" : "false") << "\n";
     cout << "is_symlink(s) is " << (is_symlink(s) ? "true" : "false") << "\n";
-  }
+}
 
-  void try_exists()
-  {
+void try_exists()
+{
     cout << "\nexists(" << p << ") ";
     try
     {
-      bool result = exists(p);
-      cout << "is " << (result ? "true" : "false") << "\n";
+        bool result = exists(p);
+        cout << "is " << (result ? "true" : "false") << "\n";
     }
     catch (const filesystem_error& ex)
     {
-      cout << "throws a filesystem_error exception: " << ex.what() << "\n";
+        cout << "throws a filesystem_error exception: " << ex.what() << "\n";
     }
-  }
-
 }
+
+} // namespace
 
 int cpp_main(int argc, char* argv[])
 {
-  print_boost_macros();
+    print_boost_macros();
 
-  if (argc < 2)
-  {
-    std::cout << "Usage: file_status <path>\n";
-    p = argv[0];
-  }
-  else
-    p = argv[1];
+    if (argc < 2)
+    {
+        std::cout << "Usage: file_status <path>\n";
+        p = argv[0];
+    }
+    else
+        p = argv[1];
 
-  boost::system::error_code ec;
-  file_status s = status(p, ec);
-  cout << "\nfile_status s = status(" << p << ", ec) ";
-  show_status(s, ec);
+    boost::system::error_code ec;
+    file_status s = status(p, ec);
+    cout << "\nfile_status s = status(" << p << ", ec) ";
+    show_status(s, ec);
 
-  s = symlink_status(p, ec);
-  cout << "\nfile_status s = symlink_status(" << p << ", ec) ";
-  show_status(s, ec);
+    s = symlink_status(p, ec);
+    cout << "\nfile_status s = symlink_status(" << p << ", ec) ";
+    show_status(s, ec);
 
-  try_exists();
+    try_exists();
 
-  return 0;
+    return 0;
 }

@@ -5,13 +5,13 @@
 
 namespace fs = boost::filesystem;
 
-int test_main(int, char*[])     // note name
+int test_main(int, char*[]) // note name
 {
-  BOOST_TEST(2 + 2 == 5);       // one convertible-to-bool argument
-  BOOST_TEST_EQ(4 + 4, 9);      // two EqualityComparible arguments
-  BOOST_TEST(fs::exists("."));  // should pass, so nothing reported
+    BOOST_TEST(2 + 2 == 5);      // one convertible-to-bool argument
+    BOOST_TEST_EQ(4 + 4, 9);     // two EqualityComparible arguments
+    BOOST_TEST(fs::exists(".")); // should pass, so nothing reported
 
-  return ::boost::report_errors();   // required
+    return ::boost::report_errors(); // required
 }
 
 //  Copyright Beman Dawes 2014

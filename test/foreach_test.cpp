@@ -19,7 +19,7 @@ int main()
     {
         fs::directory_iterator const it;
 
-        BOOST_FOREACH( fs::path const& p, it )
+        BOOST_FOREACH(fs::path const& p, it)
         {
             p.string();
         }
@@ -30,7 +30,7 @@ int main()
     {
         fs::directory_iterator const it;
 
-        for( fs::path const& p: it )
+        for (fs::path const& p : it)
         {
             p.string();
         }
@@ -41,7 +41,7 @@ int main()
     {
         fs::recursive_directory_iterator it;
 
-        BOOST_FOREACH( fs::path const& p, it )
+        BOOST_FOREACH(fs::path const& p, it)
         {
             p.string();
         }
@@ -52,7 +52,7 @@ int main()
     {
         fs::recursive_directory_iterator const it;
 
-        for( fs::path const& p: it )
+        for (fs::path const& p : it)
         {
             p.string();
         }

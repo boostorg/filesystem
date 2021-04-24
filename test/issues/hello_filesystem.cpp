@@ -31,9 +31,9 @@ namespace fs = boost::filesystem;
 
 int cpp_main(int argc, char* argv[])
 {
-  cout << "Hello, filesystem world" << endl;
+    cout << "Hello, filesystem world" << endl;
 
-  BOOST_TEST(fs::exists("."));
+    BOOST_TEST(fs::exists("."));
 
-  return ::boost::report_errors();
+    return ::boost::report_errors();
 } // cpp_main

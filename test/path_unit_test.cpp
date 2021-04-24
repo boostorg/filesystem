@@ -23,18 +23,18 @@
 
 //  See deprecated_test for tests of deprecated features
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-# define BOOST_FILESYSTEM_NO_DEPRECATED
+#define BOOST_FILESYSTEM_NO_DEPRECATED
 #endif
 #ifndef BOOST_SYSTEM_NO_DEPRECATED
-# define BOOST_SYSTEM_NO_DEPRECATED
+#define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
 #include <boost/filesystem/path.hpp>
 
-#include <boost/filesystem/detail/utf8_codecvt_facet.hpp>  // for imbue tests
-#include "test_codecvt.hpp"                                // for codecvt arg tests
+#include <boost/filesystem/detail/utf8_codecvt_facet.hpp> // for imbue tests
+#include "test_codecvt.hpp"                               // for codecvt arg tests
 #include <boost/detail/lightweight_test_report.hpp>
-#include <boost/smart_ptr.hpp>  // used constructor tests
+#include <boost/smart_ptr.hpp> // used constructor tests
 #include <boost/functional/hash.hpp>
 
 #include <iostream>
@@ -57,26 +57,25 @@ using std::wstring;
 #define CHECK(x) check(x, __FILE__, __LINE__)
 #define PATH_IS(a, b) check_path(a, b, __FILE__, __LINE__)
 #define NATIVE_IS(p, s, ws) check_native(p, s, ws, __FILE__, __LINE__)
-#define IS(a,b) check_equal(a, b, __FILE__, __LINE__)
+#define IS(a, b) check_equal(a, b, __FILE__, __LINE__)
 
 #if defined(_MSC_VER)
-# pragma warning(push) // Save warning settings.
-# pragma warning(disable : 4428) // Disable universal-character-name encountered in source warning.
+#pragma warning(push)           // Save warning settings.
+#pragma warning(disable : 4428) // Disable universal-character-name encountered in source warning.
 #endif
 
-namespace
+namespace {
+
+boost::system::error_code ec;
+const boost::system::error_code ok;
+const boost::system::error_code ng(-1, boost::system::system_category());
+
+std::string platform(BOOST_PLATFORM);
+
+void check_path(const path& source, const wstring& expected, const char* file, int line)
 {
-
-  boost::system::error_code ec;
-  const boost::system::error_code ok;
-  const boost::system::error_code ng(-1, boost::system::system_category());
-
-  std::string platform(BOOST_PLATFORM);
-
-  void check_path(const path& source,
-              const wstring& expected, const char* file, int line)
-  {
-    if (source == expected) return;
+    if (source == expected)
+        return;
 
     ++::boost::detail::test_errors();
 
@@ -84,37 +83,37 @@ namespace
     std::wcout << L'(' << line << L"): source.wstring(): \""
                << source.wstring()
                << L"\" != expected: \"" << expected
-               << L"\"\n" ;
-  }
+               << L"\"\n";
+}
 
-# ifdef BOOST_WINDOWS_API
-  void check_native(const path& p,
-    const string&, const wstring& expected, const char* file, int line)
-# else
-  void check_native(const path& p,
-    const string& expected, const wstring&, const char* file, int line)
-# endif
-  {
-    if (p.native() == expected) return;
+#ifdef BOOST_WINDOWS_API
+void check_native(const path& p, const string&, const wstring& expected, const char* file, int line)
+#else
+void check_native(const path& p, const string& expected, const wstring&, const char* file, int line)
+#endif
+{
+    if (p.native() == expected)
+        return;
 
     ++::boost::detail::test_errors();
 
-    std::cout << file  << '(' << line << "): native() is not equal expected\n"
-      "  native---: " << std::hex;
+    std::cout << file << '(' << line << "): native() is not equal expected\n"
+                                        "  native---: "
+              << std::hex;
     path::string_type nat(p.native());
     for (path::string_type::const_iterator it = nat.begin(); it != nat.end(); ++it)
-      std::cout << long(*it) << ' ';
+        std::cout << long(*it) << ' ';
     std::cout << "\n  expected-: ";
     for (path::string_type::const_iterator it = expected.begin(); it != expected.end(); ++it)
-      std::cout << long(*it) << ' ';
+        std::cout << long(*it) << ' ';
     std::cout << std::dec << std::endl;
-  }
+}
 
-  template< class T1, class T2 >
-  void check_equal(const T1& value,
-                    const T2& expected, const char* file, int line)
-  {
-    if (value == expected) return;
+template< class T1, class T2 >
+void check_equal(const T1& value, const T2& expected, const char* file, int line)
+{
+    if (value == expected)
+        return;
 
     ++::boost::detail::test_errors();
 
@@ -122,325 +121,330 @@ namespace
 
     std::wcout << L'(' << line << L"): value: \"" << value
                << L"\" != expected: \"" << expected
-               << L"\"\n" ;
-  }
+               << L"\"\n";
+}
 
-  void check(bool ok_, const char* file, int line)
-  {
-    if (ok_) return;
+void check(bool ok_, const char* file, int line)
+{
+    if (ok_)
+        return;
 
     ++::boost::detail::test_errors();
 
     std::cout << file << '(' << line << "): test failed\n";
-  }
+}
 
-  string s("string");
-  wstring ws(L"wstring");
-  std::list<char> l;      // see main() for initialization to s, t, r, i, n, g
-  std::list<wchar_t> wl;  // see main() for initialization to w, s, t, r, i, n, g
-  std::vector<char> v;      // see main() for initialization to f, u, z
-  std::vector<wchar_t> wv;  // see main() for initialization to w, f, u, z
+string s("string");
+wstring ws(L"wstring");
+std::list< char > l;       // see main() for initialization to s, t, r, i, n, g
+std::list< wchar_t > wl;   // see main() for initialization to w, s, t, r, i, n, g
+std::vector< char > v;     // see main() for initialization to f, u, z
+std::vector< wchar_t > wv; // see main() for initialization to w, f, u, z
 
-  class Base {};
-  class Derived : public Base {};
-  void fun(const boost::shared_ptr< Base >&) {}
+class Base
+{
+};
+class Derived : public Base
+{
+};
+void fun(const boost::shared_ptr< Base >&)
+{
+}
 
-  //  test_constructors  ---------------------------------------------------------------//
+//  test_constructors  ---------------------------------------------------------------//
 
-  void test_constructors()
-  {
+void test_constructors()
+{
     std::cout << "testing constructors..." << std::endl;
 
-    path x0;                                           // default constructor
+    path x0; // default constructor
     PATH_IS(x0, L"");
     BOOST_TEST_EQ(x0.native().size(), 0U);
 
-    path x1(l.begin(), l.end());                       // iterator range char
+    path x1(l.begin(), l.end()); // iterator range char
     PATH_IS(x1, L"string");
     BOOST_TEST_EQ(x1.native().size(), 6U);
 
-    path x2(x1);                                       // copy constructor
+    path x2(x1); // copy constructor
     PATH_IS(x2, L"string");
     BOOST_TEST_EQ(x2.native().size(), 6U);
 
-    path x3(wl.begin(), wl.end());                     // iterator range wchar_t
+    path x3(wl.begin(), wl.end()); // iterator range wchar_t
     PATH_IS(x3, L"wstring");
     BOOST_TEST_EQ(x3.native().size(), 7U);
 
     // contiguous containers
-    path x4(string("std::string"));                    // std::string
+    path x4(string("std::string")); // std::string
     PATH_IS(x4, L"std::string");
     BOOST_TEST_EQ(x4.native().size(), 11U);
 
-    path x5(wstring(L"std::wstring"));                 // std::wstring
+    path x5(wstring(L"std::wstring")); // std::wstring
     PATH_IS(x5, L"std::wstring");
     BOOST_TEST_EQ(x5.native().size(), 12U);
 
-    path x4v(v);                                       // std::vector<char>
+    path x4v(v); // std::vector<char>
     PATH_IS(x4v, L"fuz");
     BOOST_TEST_EQ(x4v.native().size(), 3U);
 
-    path x5v(wv);                                      // std::vector<wchar_t>
+    path x5v(wv); // std::vector<wchar_t>
     PATH_IS(x5v, L"wfuz");
     BOOST_TEST_EQ(x5v.native().size(), 4U);
 
-    path x6("array char");                             // array char
+    path x6("array char"); // array char
     PATH_IS(x6, L"array char");
     BOOST_TEST_EQ(x6.native().size(), 10U);
 
-    path x7(L"array wchar_t");                         // array wchar_t
+    path x7(L"array wchar_t"); // array wchar_t
     PATH_IS(x7, L"array wchar_t");
     BOOST_TEST_EQ(x7.native().size(), 13U);
 
     char char_array[100];
     std::strcpy(char_array, "big array char");
-    path x6o(char_array);                              // array char, only partially full
+    path x6o(char_array); // array char, only partially full
     PATH_IS(x6o, L"big array char");
     BOOST_TEST_EQ(x6o.native().size(), 14U);
 
     wchar_t wchar_array[100];
     std::wcscpy(wchar_array, L"big array wchar_t");
-    path x7o(wchar_array);                             // array char, only partially full
+    path x7o(wchar_array); // array char, only partially full
     PATH_IS(x7o, L"big array wchar_t");
     BOOST_TEST_EQ(x7o.native().size(), 17U);
 
-    path x8(s.c_str());                                // const char* null terminated
+    path x8(s.c_str()); // const char* null terminated
     PATH_IS(x8, L"string");
     BOOST_TEST_EQ(x8.native().size(), 6U);
 
-    path x9(ws.c_str());                               // const wchar_t* null terminated
+    path x9(ws.c_str()); // const wchar_t* null terminated
     PATH_IS(x9, L"wstring");
     BOOST_TEST_EQ(x9.native().size(), 7U);
 
-    path x8nc(const_cast<char*>(s.c_str()));           // char* null terminated
+    path x8nc(const_cast< char* >(s.c_str())); // char* null terminated
     PATH_IS(x8nc, L"string");
     BOOST_TEST_EQ(x8nc.native().size(), 6U);
 
-    path x9nc(const_cast<wchar_t*>(ws.c_str()));       // wchar_t* null terminated
+    path x9nc(const_cast< wchar_t* >(ws.c_str())); // wchar_t* null terminated
     PATH_IS(x9nc, L"wstring");
     BOOST_TEST_EQ(x9nc.native().size(), 7U);
 
     // non-contiguous containers
-    path x10(l);                                       // std::list<char>
+    path x10(l); // std::list<char>
     PATH_IS(x10, L"string");
     BOOST_TEST_EQ(x10.native().size(), 6U);
 
-    path xll(wl);                                      // std::list<wchar_t>
+    path xll(wl); // std::list<wchar_t>
     PATH_IS(xll, L"wstring");
     BOOST_TEST_EQ(xll.native().size(), 7U);
 
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK
 
-    boost::shared_ptr< Derived > pDerived( new Derived() );
-    fun( pDerived );  // tests constructor member template enable_if working correctly;
-                      // will fail to compile if enable_if not taking path off the table
-  }
+    boost::shared_ptr< Derived > pDerived(new Derived());
+    fun(pDerived); // tests constructor member template enable_if working correctly;
+                   // will fail to compile if enable_if not taking path off the table
+}
 
-  path x;
-  path y;
+path x;
+path y;
 
-  //  test_assignments  ----------------------------------------------------------------//
+//  test_assignments  ----------------------------------------------------------------//
 
-  void test_assignments()
-  {
+void test_assignments()
+{
     std::cout << "testing assignments..." << std::endl;
 
-    x = path("yet another path");                      // another path
+    x = path("yet another path"); // another path
     PATH_IS(x, L"yet another path");
     BOOST_TEST_EQ(x.native().size(), 16U);
 
-    x = x;                                             // self-assignment
+    x = x; // self-assignment
     PATH_IS(x, L"yet another path");
     BOOST_TEST_EQ(x.native().size(), 16U);
 
-    x.assign(l.begin(), l.end());                      // iterator range char
+    x.assign(l.begin(), l.end()); // iterator range char
     PATH_IS(x, L"string");
 
-    x.assign(wl.begin(), wl.end());                    // iterator range wchar_t
+    x.assign(wl.begin(), wl.end()); // iterator range wchar_t
     PATH_IS(x, L"wstring");
 
-    x = string("std::string");                         // container char
+    x = string("std::string"); // container char
     PATH_IS(x, L"std::string");
 
-    x = wstring(L"std::wstring");                      // container wchar_t
+    x = wstring(L"std::wstring"); // container wchar_t
     PATH_IS(x, L"std::wstring");
 
-    x = "array char";                                  // array char
+    x = "array char"; // array char
     PATH_IS(x, L"array char");
 
-    x = L"array wchar";                                // array wchar_t
+    x = L"array wchar"; // array wchar_t
     PATH_IS(x, L"array wchar");
 
-    x = s.c_str();                                     // const char* null terminated
+    x = s.c_str(); // const char* null terminated
     PATH_IS(x, L"string");
 
-    x = ws.c_str();                                    // const wchar_t* null terminated
+    x = ws.c_str(); // const wchar_t* null terminated
     PATH_IS(x, L"wstring");
-   }
+}
 
-  //  test_move_construction_and_assignment  -------------------------------------------//
+//  test_move_construction_and_assignment  -------------------------------------------//
 
-  void test_move_construction_and_assignment()
-  {
+void test_move_construction_and_assignment()
+{
     std::cout << "testing move_construction_and_assignment..." << std::endl;
 
-# if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     path from("long enough to avoid small object optimization");
     path to(std::move(from));
     BOOST_TEST(to == "long enough to avoid small object optimization");
     if (!from.empty())
-      cout << "Note: move construction did not result in empty source path" << endl;
+        cout << "Note: move construction did not result in empty source path" << endl;
 
     path from2("long enough to avoid small object optimization");
     path to2;
     to2 = std::move(from2);
     BOOST_TEST(to2 == "long enough to avoid small object optimization");
     if (!from2.empty())
-      cout << "Note: move assignment did not result in empty rhs path" << endl;
-# else
-    std::cout <<
-      "Test skipped because compiler does not support move semantics" << std::endl;
-# endif
+        cout << "Note: move assignment did not result in empty rhs path" << endl;
+#else
+    std::cout << "Test skipped because compiler does not support move semantics" << std::endl;
+#endif
+}
 
-  }
+//  test_appends  --------------------------------------------------------------------//
 
-  //  test_appends  --------------------------------------------------------------------//
-
-  void test_appends()
-  {
+void test_appends()
+{
     std::cout << "testing appends..." << std::endl;
 
-# ifdef BOOST_WINDOWS_API
-#   define BOOST_FS_FOO L"/foo\\"
-# else   // POSIX paths
-#   define BOOST_FS_FOO L"/foo/"
-# endif
+#ifdef BOOST_WINDOWS_API
+#define BOOST_FS_FOO L"/foo\\"
+#else // POSIX paths
+#define BOOST_FS_FOO L"/foo/"
+#endif
 
     x = "/foo";
-    x /= path("");                                      // empty path
+    x /= path(""); // empty path
     PATH_IS(x, L"/foo");
 
     x = "/foo";
-    x /= path("/");                                     // slash path
+    x /= path("/"); // slash path
     PATH_IS(x, L"/foo/");
 
     x = "/foo";
-    x /= path("/boo");                                  // slash path
+    x /= path("/boo"); // slash path
     PATH_IS(x, L"/foo/boo");
 
     x = "/foo";
-    x /= x;                                             // self-append
+    x /= x; // self-append
     PATH_IS(x, L"/foo/foo");
 
     x = "/foo";
-    x /= path("yet another path");                      // another path
+    x /= path("yet another path"); // another path
     PATH_IS(x, BOOST_FS_FOO L"yet another path");
 
     x = "/foo";
-    x.append(l.begin(), l.end());                      // iterator range char
+    x.append(l.begin(), l.end()); // iterator range char
     PATH_IS(x, BOOST_FS_FOO L"string");
 
     x = "/foo";
-    x.append(wl.begin(), wl.end());                    // iterator range wchar_t
+    x.append(wl.begin(), wl.end()); // iterator range wchar_t
     PATH_IS(x, BOOST_FS_FOO L"wstring");
 
     x = "/foo";
-    x /= string("std::string");                         // container char
+    x /= string("std::string"); // container char
     PATH_IS(x, BOOST_FS_FOO L"std::string");
 
     x = "/foo";
-    x /= wstring(L"std::wstring");                      // container wchar_t
+    x /= wstring(L"std::wstring"); // container wchar_t
     PATH_IS(x, BOOST_FS_FOO L"std::wstring");
 
     x = "/foo";
-    x /= "array char";                                  // array char
+    x /= "array char"; // array char
     PATH_IS(x, BOOST_FS_FOO L"array char");
 
     x = "/foo";
-    x /= L"array wchar";                                // array wchar_t
+    x /= L"array wchar"; // array wchar_t
     PATH_IS(x, BOOST_FS_FOO L"array wchar");
 
     x = "/foo";
-    x /= s.c_str();                                     // const char* null terminated
+    x /= s.c_str(); // const char* null terminated
     PATH_IS(x, BOOST_FS_FOO L"string");
 
     x = "/foo";
-    x /= ws.c_str();                                    // const wchar_t* null terminated
+    x /= ws.c_str(); // const wchar_t* null terminated
     PATH_IS(x, BOOST_FS_FOO L"wstring");
-   }
+}
 
-  //  test_concats  --------------------------------------------------------------------//
+//  test_concats  --------------------------------------------------------------------//
 
-  void test_concats()
-  {
+void test_concats()
+{
     std::cout << "testing concats..." << std::endl;
 
     x = "/foo";
-    x += path("");                                      // empty path
+    x += path(""); // empty path
     PATH_IS(x, L"/foo");
 
     x = "/foo";
-    x += path("/");                                     // slash path
+    x += path("/"); // slash path
     PATH_IS(x, L"/foo/");
 
     x = "/foo";
-    x += path("boo");                                  // slash path
+    x += path("boo"); // slash path
     PATH_IS(x, L"/fooboo");
 
     x = "foo";
-    x += x;                                             // self-append
+    x += x; // self-append
     PATH_IS(x, L"foofoo");
 
     x = "foo-";
-    x += path("yet another path");                      // another path
+    x += path("yet another path"); // another path
     PATH_IS(x, L"foo-yet another path");
 
     x = "foo-";
-    x.concat(l.begin(), l.end());                      // iterator range char
+    x.concat(l.begin(), l.end()); // iterator range char
     PATH_IS(x, L"foo-string");
 
     x = "foo-";
-    x.concat(wl.begin(), wl.end());                    // iterator range wchar_t
+    x.concat(wl.begin(), wl.end()); // iterator range wchar_t
     PATH_IS(x, L"foo-wstring");
 
     x = "foo-";
-    x += string("std::string");                         // container char
+    x += string("std::string"); // container char
     PATH_IS(x, L"foo-std::string");
 
     x = "foo-";
-    x += wstring(L"std::wstring");                      // container wchar_t
+    x += wstring(L"std::wstring"); // container wchar_t
     PATH_IS(x, L"foo-std::wstring");
 
     x = "foo-";
-    x += "array char";                                  // array char
+    x += "array char"; // array char
     PATH_IS(x, L"foo-array char");
 
     x = "foo-";
-    x += L"array wchar";                                // array wchar_t
+    x += L"array wchar"; // array wchar_t
     PATH_IS(x, L"foo-array wchar");
 
     x = "foo-";
-    x += s.c_str();                                     // const char* null terminated
+    x += s.c_str(); // const char* null terminated
     PATH_IS(x, L"foo-string");
 
     x = "foo-";
-    x += ws.c_str();                                    // const wchar_t* null terminated
+    x += ws.c_str(); // const wchar_t* null terminated
     PATH_IS(x, L"foo-wstring");
 
     x = "foo-";
-    x += 'x';                                           // char
+    x += 'x'; // char
     PATH_IS(x, L"foo-x");
 
     x = "foo-";
-    x += L'x';                                          // wchar
+    x += L'x'; // wchar
     PATH_IS(x, L"foo-x");
-   }
+}
 
-  //  test_observers  ------------------------------------------------------------------//
+//  test_observers  ------------------------------------------------------------------//
 
-  void test_observers()
-  {
+void test_observers()
+{
     std::cout << "testing observers..." << std::endl;
 
     path p0("abc");
@@ -456,7 +460,7 @@ namespace
     CHECK(p0.native().size() == 0);
     CHECK(p0.size() == 0);
 
-# ifdef BOOST_WINDOWS_API
+#ifdef BOOST_WINDOWS_API
 
     path p("abc\\def/ghi");
 
@@ -469,11 +473,11 @@ namespace
     CHECK(p.generic_string() == "abc/def/ghi");
     CHECK(p.generic_wstring() == L"abc/def/ghi");
 
-    CHECK(p.generic_string<string>() == "abc/def/ghi");
-    CHECK(p.generic_string<wstring>() == L"abc/def/ghi");
-    CHECK(p.generic_string<path::string_type>() == L"abc/def/ghi");
+    CHECK(p.generic_string< string >() == "abc/def/ghi");
+    CHECK(p.generic_string< wstring >() == L"abc/def/ghi");
+    CHECK(p.generic_string< path::string_type >() == L"abc/def/ghi");
 
-# else  // BOOST_POSIX_API
+#else // BOOST_POSIX_API
 
     path p("abc\\def/ghi");
 
@@ -486,26 +490,26 @@ namespace
     CHECK(p.generic_string() == "abc\\def/ghi");
     CHECK(p.generic_wstring() == L"abc\\def/ghi");
 
-    CHECK(p.generic_string<string>() == "abc\\def/ghi");
-    CHECK(p.generic_string<wstring>() == L"abc\\def/ghi");
-    CHECK(p.generic_string<path::string_type>() == "abc\\def/ghi");
+    CHECK(p.generic_string< string >() == "abc\\def/ghi");
+    CHECK(p.generic_string< wstring >() == L"abc\\def/ghi");
+    CHECK(p.generic_string< path::string_type >() == "abc\\def/ghi");
 
-# endif
-  }
+#endif
+}
 
-  //  test_relationals  ----------------------------------------------------------------//
+//  test_relationals  ----------------------------------------------------------------//
 
-  void test_relationals()
-  {
+void test_relationals()
+{
     std::cout << "testing relationals..." << std::endl;
 
-    boost::hash<path> hash;
+    boost::hash< path > hash;
 
-# ifdef BOOST_WINDOWS_API
+#ifdef BOOST_WINDOWS_API
     // this is a critical use case to meet user expectations
     CHECK(path("c:\\abc") == path("c:/abc"));
     CHECK(hash(path("c:\\abc")) == hash(path("c:/abc")));
-# endif
+#endif
 
     const path p("bar");
     const path p2("baz");
@@ -554,13 +558,13 @@ namespace
     CHECK(p2 >= p);
 }
 
-  //  test_inserter_and_extractor  -----------------------------------------------------//
+//  test_inserter_and_extractor  -----------------------------------------------------//
 
-  void test_inserter_and_extractor()
-  {
+void test_inserter_and_extractor()
+{
     std::cout << "testing inserter and extractor..." << std::endl;
 
-    path p1("foo bar");  // verify space in path roundtrips per ticket #3863
+    path p1("foo bar"); // verify space in path roundtrips per ticket #3863
     path p2;
 
     std::stringstream ss;
@@ -579,12 +583,12 @@ namespace
     wss << wp1;
     wss >> wp2;
     CHECK(wp1 == wp2);
-  }
+}
 
-  //  test_other_non_members  ----------------------------------------------------------//
+//  test_other_non_members  ----------------------------------------------------------//
 
-  void test_other_non_members()
-  {
+void test_other_non_members()
+{
     std::cout << "testing other_non_members..." << std::endl;
 
     path p1("foo");
@@ -624,17 +628,17 @@ namespace
     CHECK(path("foo/").filename_is_dot());
     CHECK(path("/").filename() == path("/"));
     CHECK(!path("/").filename_is_dot());
-# ifdef BOOST_WINDOWS_API
+#ifdef BOOST_WINDOWS_API
     CHECK(path("c:.").filename() == path("."));
     CHECK(path("c:.").filename_is_dot());
     CHECK(path("c:/").filename() == path("/"));
     CHECK(!path("c:\\").filename_is_dot());
-# else
+#else
     CHECK(path("c:.").filename() == path("c:."));
     CHECK(!path("c:.").filename_is_dot());
     CHECK(path("c:/").filename() == path("."));
     CHECK(path("c:/").filename_is_dot());
-# endif
+#endif
 
     // check that the implementation code to make the edge cases above work right
     // doesn't cause some non-edge cases to fail
@@ -642,16 +646,16 @@ namespace
     CHECK(!path("c:").filename_is_dot());
 
     // examples from reference.html
-    std::cout << path(".").filename_is_dot();            // outputs 1
-    std::cout << path("/.").filename_is_dot();           // outputs 1
-    std::cout << path("foo/.").filename_is_dot();        // outputs 1
-    std::cout << path("foo/").filename_is_dot();         // outputs 1
-    std::cout << path("/").filename_is_dot();            // outputs 0
-    std::cout << path("/foo").filename_is_dot();         // outputs 0
-    std::cout << path("/foo.").filename_is_dot();        // outputs 0
-    std::cout << path("..").filename_is_dot();           // outputs 0
+    std::cout << path(".").filename_is_dot();     // outputs 1
+    std::cout << path("/.").filename_is_dot();    // outputs 1
+    std::cout << path("foo/.").filename_is_dot(); // outputs 1
+    std::cout << path("foo/").filename_is_dot();  // outputs 1
+    std::cout << path("/").filename_is_dot();     // outputs 0
+    std::cout << path("/foo").filename_is_dot();  // outputs 0
+    std::cout << path("/foo.").filename_is_dot(); // outputs 0
+    std::cout << path("..").filename_is_dot();    // outputs 0
     cout << std::endl;
-  }
+}
 
 //  //  test_modifiers  ------------------------------------------------------------------//
 //
@@ -661,10 +665,10 @@ namespace
 //
 //  }
 
-  //  test_iterators  ------------------------------------------------------------------//
+//  test_iterators  ------------------------------------------------------------------//
 
-  void test_iterators()
-  {
+void test_iterators()
+{
     std::cout << "testing iterators..." << std::endl;
 
     path p1;
@@ -687,12 +691,12 @@ namespace
     CHECK(*++it == "bar");
     CHECK(*++it == "baz");
     CHECK(++it == p3.end());
-  }
+}
 
-  //  test_reverse_iterators  ----------------------------------------------------------//
+//  test_reverse_iterators  ----------------------------------------------------------//
 
-  void test_reverse_iterators()
-  {
+void test_reverse_iterators()
+{
     std::cout << "testing reverse_iterators..." << std::endl;
 
     path p1;
@@ -715,12 +719,12 @@ namespace
     CHECK(*++it == "bar");
     CHECK(*++it == "foo");
     CHECK(++it == p3.rend());
-  }
+}
 
-  //  test_modifiers  ------------------------------------------------------------------//
+//  test_modifiers  ------------------------------------------------------------------//
 
-  void test_modifiers()
-  {
+void test_modifiers()
+{
     std::cout << "testing modifiers..." << std::endl;
 
     CHECK(path("").remove_filename() == "");
@@ -736,12 +740,12 @@ namespace
     BOOST_TEST_EQ(path("/..").remove_filename(), path("/"));
     BOOST_TEST_EQ(path("//").remove_filename(), path(""));
     BOOST_TEST_EQ(path("////").remove_filename(), path(""));
-  }
+}
 
-  //  test_decompositions  -------------------------------------------------------------//
+//  test_decompositions  -------------------------------------------------------------//
 
-  void test_decompositions()
-  {
+void test_decompositions()
+{
     std::cout << "testing decompositions..." << std::endl;
 
     CHECK(path("").root_name().string() == "");
@@ -764,9 +768,9 @@ namespace
     CHECK(path("//netname").root_path().string() == "//netname");
     CHECK(path("//netname/foo").root_path().string() == "//netname/");
 
-#   ifdef BOOST_WINDOWS_API
+#ifdef BOOST_WINDOWS_API
     CHECK(path("c:/foo").root_path().string() == "c:/");
-#   endif
+#endif
 
     CHECK(path("").relative_path().string() == "");
     CHECK(path("/").relative_path().string() == "");
@@ -785,12 +789,12 @@ namespace
     CHECK(path("foo.bar.baz.tar.bz2").extension().string() == ".bz2");
     CHECK(path("/foo/bar/baz.zoo").extension().string() == ".zoo");
     CHECK(path("/foo/bar.woo/baz").extension().string() == "");
-  }
+}
 
-  //  test_queries  --------------------------------------------------------------------//
+//  test_queries  --------------------------------------------------------------------//
 
-  void test_queries()
-  {
+void test_queries()
+{
     std::cout << "testing queries..." << std::endl;
 
     path p1("");
@@ -819,13 +823,12 @@ namespace
     CHECK(p2.has_extension());
     CHECK(p2.is_absolute());
     CHECK(!p2.is_relative());
+}
 
-  }
+//  test_imbue_locale  ---------------------------------------------------------------//
 
-  //  test_imbue_locale  ---------------------------------------------------------------//
-
-  void test_imbue_locale()
-  {
+void test_imbue_locale()
+{
     std::cout << "testing imbue locale..." << std::endl;
 
     //  weak test case for before/after states since we don't know what characters the
@@ -853,22 +856,22 @@ namespace
     CHECK(before == after);
 
     std::cout << "  locale testing complete" << std::endl;
-  }
+}
 
-  //  test_codecvt_argument  -----------------------------------------------------------//
+//  test_codecvt_argument  -----------------------------------------------------------//
 
-  void test_codecvt_argument()
-  {
+void test_codecvt_argument()
+{
     std::cout << "testing codecvt arguments..." << std::endl;
 
-    const char * c1 = "a1";
+    const char* c1 = "a1";
     const std::string s1(c1);
-    const std::wstring ws1(L"b2");  // off-by-one mimics test_codecvt
+    const std::wstring ws1(L"b2"); // off-by-one mimics test_codecvt
     const std::string s2("y8");
     const std::wstring ws2(L"z9");
 
-    test_codecvt cvt;  // produces off-by-one values that will always differ from
-                       // the system's default locale codecvt facet
+    test_codecvt cvt; // produces off-by-one values that will always differ from
+                      // the system's default locale codecvt facet
 
     int t = 0;
 
@@ -894,7 +897,7 @@ namespace
     //  assigns
     p1.clear();
     std::cout << "  assigns test " << ++t << std::endl;
-    p1.assign(s1,cvt);
+    p1.assign(s1, cvt);
     NATIVE_IS(p1, s1, ws1);
     p1.clear();
     std::cout << "  test " << ++t << std::endl;
@@ -905,7 +908,7 @@ namespace
     //  appends
     p1.clear();
     std::cout << "  appends test " << ++t << std::endl;
-    p1.append(s1,cvt);
+    p1.append(s1, cvt);
     NATIVE_IS(p1, s1, ws1);
     p1.clear();
     std::cout << "  test " << ++t << std::endl;
@@ -915,31 +918,31 @@ namespace
 
     //  native observers
     std::cout << "  native observers test " << ++t << std::endl;
-    CHECK(p.string<std::string>(cvt) == s1);
+    CHECK(p.string< std::string >(cvt) == s1);
     std::cout << "  test " << ++t << std::endl;
     CHECK(p.string(cvt) == s1);
     std::cout << "  test " << ++t << std::endl;
-    CHECK(p.string<std::wstring>(cvt) == ws1);
+    CHECK(p.string< std::wstring >(cvt) == ws1);
     std::cout << "  test " << ++t << std::endl;
     CHECK(p.wstring(cvt) == ws1);
 
     //  generic observers
     std::cout << "  generic observers test " << ++t << std::endl;
-    CHECK(p.generic_string<std::string>(cvt) == s1);
+    CHECK(p.generic_string< std::string >(cvt) == s1);
     std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_string(cvt) == s1);
     std::cout << "  test " << ++t << std::endl;
-    CHECK(p.generic_string<std::wstring>(cvt) == ws1);
+    CHECK(p.generic_string< std::wstring >(cvt) == ws1);
     std::cout << "  test " << ++t << std::endl;
     CHECK(p.generic_wstring(cvt) == ws1);
 
     std::cout << "  codecvt arguments testing complete" << std::endl;
-  }
+}
 
-  //  test_overloads  ------------------------------------------------------------------//
+//  test_overloads  ------------------------------------------------------------------//
 
-  void test_overloads()
-  {
+void test_overloads()
+{
     std::cout << "testing overloads..." << std::endl;
     std::string sto("hello");
     const char a[] = "goodbye";
@@ -954,52 +957,54 @@ namespace
     path wp2(wsto.c_str());
     path wp3(wa);
     path wp4(L"foo");
-  }
+}
 
-  //  test_error_handling  -------------------------------------------------------------//
+//  test_error_handling  -------------------------------------------------------------//
 
-  class error_codecvt
-    : public std::codecvt< wchar_t, char, std::mbstate_t >
-  {
-  public:
-    explicit error_codecvt()
-        : std::codecvt<wchar_t, char, std::mbstate_t>() {}
-  protected:
+class error_codecvt :
+    public std::codecvt< wchar_t, char, std::mbstate_t >
+{
+public:
+    explicit error_codecvt() :
+        std::codecvt< wchar_t, char, std::mbstate_t >()
+    {
+    }
 
+protected:
     virtual bool do_always_noconv() const throw() { return false; }
     virtual int do_encoding() const throw() { return 0; }
 
-    virtual std::codecvt_base::result do_in(std::mbstate_t&,
-      const char*, const char*, const char*&,
-      wchar_t*, wchar_t*, wchar_t*&) const
+    virtual std::codecvt_base::result do_in(std::mbstate_t&, const char*, const char*, const char*&, wchar_t*, wchar_t*, wchar_t*&) const
     {
-      static std::codecvt_base::result r = std::codecvt_base::noconv;
-      if (r == std::codecvt_base::partial) r = std::codecvt_base::error;
-      else if (r == std::codecvt_base::error) r = std::codecvt_base::noconv;
-      else r = std::codecvt_base::partial;
-      return r;
+        static std::codecvt_base::result r = std::codecvt_base::noconv;
+        if (r == std::codecvt_base::partial)
+            r = std::codecvt_base::error;
+        else if (r == std::codecvt_base::error)
+            r = std::codecvt_base::noconv;
+        else
+            r = std::codecvt_base::partial;
+        return r;
     }
 
-    virtual std::codecvt_base::result do_out(std::mbstate_t &,
-      const wchar_t*, const wchar_t*, const wchar_t*&,
-      char*, char*, char*&) const
+    virtual std::codecvt_base::result do_out(std::mbstate_t&, const wchar_t*, const wchar_t*, const wchar_t*&, char*, char*, char*&) const
     {
-      static std::codecvt_base::result r = std::codecvt_base::noconv;
-      if (r == std::codecvt_base::partial) r = std::codecvt_base::error;
-      else if (r == std::codecvt_base::error) r = std::codecvt_base::noconv;
-      else r = std::codecvt_base::partial;
-      return r;
+        static std::codecvt_base::result r = std::codecvt_base::noconv;
+        if (r == std::codecvt_base::partial)
+            r = std::codecvt_base::error;
+        else if (r == std::codecvt_base::error)
+            r = std::codecvt_base::noconv;
+        else
+            r = std::codecvt_base::partial;
+        return r;
     }
 
-    virtual std::codecvt_base::result do_unshift(std::mbstate_t&,
-        char*, char*, char* &) const  { return ok; }
-    virtual int do_length(std::mbstate_t &,
-      const char*, const char*, std::size_t) const  { return 0; }
-    virtual int do_max_length() const throw () { return 0; }
-  };
+    virtual std::codecvt_base::result do_unshift(std::mbstate_t&, char*, char*, char*&) const { return ok; }
+    virtual int do_length(std::mbstate_t&, const char*, const char*, std::size_t) const { return 0; }
+    virtual int do_max_length() const throw() { return 0; }
+};
 
-  void test_error_handling()
-  {
+void test_error_handling()
+{
     std::cout << "testing error handling..." << std::endl;
 
     std::locale global_loc = std::locale();
@@ -1010,126 +1015,137 @@ namespace
     //  These tests rely on a path constructor that fails in the locale conversion.
     //  Thus construction has to call codecvt. Force that by using a narrow string
     //  for Windows, and a wide string for POSIX.
-#   ifdef BOOST_WINDOWS_API
-#     define STRING_FOO_ "foo"
-#   else
-#     define STRING_FOO_ L"foo"
-#   endif
+#ifdef BOOST_WINDOWS_API
+#define STRING_FOO_ "foo"
+#else
+#define STRING_FOO_ L"foo"
+#endif
 
     {
-      std::cout << "    testing std::codecvt_base::partial error..." << std::endl;
-      bool exception_thrown (false);
-      try { path(STRING_FOO_); }
-      catch (const bs::system_error & ex)
-      {
-        exception_thrown = true;
-        BOOST_TEST_EQ(ex.code(), bs::error_code(std::codecvt_base::partial,
-          fs::codecvt_error_category()));
-      }
-      catch (...) { std::cout << "***** unexpected exception type *****" << std::endl; }
-      BOOST_TEST(exception_thrown);
+        std::cout << "    testing std::codecvt_base::partial error..." << std::endl;
+        bool exception_thrown(false);
+        try
+        {
+            path(STRING_FOO_);
+        }
+        catch (const bs::system_error& ex)
+        {
+            exception_thrown = true;
+            BOOST_TEST_EQ(ex.code(), bs::error_code(std::codecvt_base::partial, fs::codecvt_error_category()));
+        }
+        catch (...)
+        {
+            std::cout << "***** unexpected exception type *****" << std::endl;
+        }
+        BOOST_TEST(exception_thrown);
     }
 
     {
-      std::cout << "    testing std::codecvt_base::error error..." << std::endl;
-      bool exception_thrown (false);
-      try { path(STRING_FOO_); }
-      catch (const bs::system_error & ex)
-      {
-        exception_thrown = true;
-        BOOST_TEST_EQ(ex.code(), bs::error_code(std::codecvt_base::error,
-          fs::codecvt_error_category()));
-      }
-      catch (...) { std::cout << "***** unexpected exception type *****" << std::endl; }
-      BOOST_TEST(exception_thrown);
+        std::cout << "    testing std::codecvt_base::error error..." << std::endl;
+        bool exception_thrown(false);
+        try
+        {
+            path(STRING_FOO_);
+        }
+        catch (const bs::system_error& ex)
+        {
+            exception_thrown = true;
+            BOOST_TEST_EQ(ex.code(), bs::error_code(std::codecvt_base::error, fs::codecvt_error_category()));
+        }
+        catch (...)
+        {
+            std::cout << "***** unexpected exception type *****" << std::endl;
+        }
+        BOOST_TEST(exception_thrown);
     }
 
     {
-      std::cout << "    testing std::codecvt_base::noconv error..." << std::endl;
-      bool exception_thrown (false);
-      try { path(STRING_FOO_); }
-      catch (const bs::system_error & ex)
-      {
-        exception_thrown = true;
-        BOOST_TEST_EQ(ex.code(), bs::error_code(std::codecvt_base::noconv,
-          fs::codecvt_error_category()));
-      }
-      catch (...) { std::cout << "***** unexpected exception type *****" << std::endl; }
-      BOOST_TEST(exception_thrown);
+        std::cout << "    testing std::codecvt_base::noconv error..." << std::endl;
+        bool exception_thrown(false);
+        try
+        {
+            path(STRING_FOO_);
+        }
+        catch (const bs::system_error& ex)
+        {
+            exception_thrown = true;
+            BOOST_TEST_EQ(ex.code(), bs::error_code(std::codecvt_base::noconv, fs::codecvt_error_category()));
+        }
+        catch (...)
+        {
+            std::cout << "***** unexpected exception type *****" << std::endl;
+        }
+        BOOST_TEST(exception_thrown);
     }
 
     std::cout << "  restoring original locale ..." << std::endl;
     path::imbue(old_loc);
     std::cout << "  testing error handling complete" << std::endl;
- }
+}
 
-# if 0
+#if 0
 
-//  //  test_locales  --------------------------------------------------------------------//
+// //  test_locales  --------------------------------------------------------------------//
 //
-//  void test_locales()
-//  {
-//    std::cout << "testing locales..." << std::endl;
+// void test_locales()
+// {
+//     std::cout << "testing locales..." << std::endl;
 //
-//  }
+// }
 
-  //  test_user_supplied_type  ---------------------------------------------------------//
+//  test_user_supplied_type  ---------------------------------------------------------//
 
-  typedef std::basic_string<int> user_string;
+typedef std::basic_string<int> user_string;
 
 }  // unnamed namespace
 
-namespace boost
-{
-namespace filesystem
-{
-  namespace path_traits
-  {
-    template<> struct is_iterator<const user_string::value_type *> { static const bool value = true; };
-    template<> struct is_iterator<user_string::value_type *> { static const bool value = true; };
-    template<> struct is_iterator<user_string::iterator> { static const bool value = true; };
-    template<> struct is_iterator<user_string::const_iterator> { static const bool value = true; };
-    template<> struct is_container<user_string> { static const bool value = true; };
+namespace boost {
+namespace filesystem {
+namespace path_traits {
 
-    template<>
-    void append<user_string::value_type>(const user_string::value_type * begin,
-      const user_string::value_type * end, string_type & target, system::error_code & ec)
-    {
-      for (; begin != end && *begin; ++begin)
+template<> struct is_iterator< const user_string::value_type* > { static const bool value = true; };
+template<> struct is_iterator< user_string::value_type* > { static const bool value = true; };
+template<> struct is_iterator< user_string::iterator > { static const bool value = true; };
+template<> struct is_iterator< user_string::const_iterator > { static const bool value = true; };
+template<> struct is_container< user_string > { static const bool value = true; };
+
+template<>
+void append< user_string::value_type >(const user_string::value_type* begin,
+    const user_string::value_type* end, string_type& target, system::error_code& ec)
+{
+    for (; begin != end && *begin; ++begin)
         target += *begin + 1;  // change so that results distinguishable from char cvts
-    }
+}
 
-#  ifdef __GNUC__
-    //  This specialization shouldn't be needed, and VC++, Intel, and others work
-    //  fine without it. But gcc 4.3.2, and presumably other versions, need it.
-    template<>
-    void append<user_string::value_type>(const user_string::value_type * begin,
-      string_type & target, system::error_code & ec)
-    {
-      path_traits::append<user_string::value_type>(begin,
-        static_cast<const user_string::value_type *>(0), target, ec);
-    }
-#  endif
+#ifdef __GNUC__
+//  This specialization shouldn't be needed, and VC++, Intel, and others work
+//  fine without it. But gcc 4.3.2, and presumably other versions, need it.
+template<>
+void append< user_string::value_type >(const user_string::value_type* begin,
+    string_type& target, system::error_code& ec)
+{
+    path_traits::append<user_string::value_type>(begin,
+      static_cast<const user_string::value_type *>(0), target, ec);
+}
+#endif
 
-    template<>
-    user_string convert<user_string>(const string_type & source,
-      system::error_code & ec)
-    {
-      user_string temp;
-      for (string_type::const_iterator it = source.begin();
-            it != source.end(); ++it)
+template<>
+user_string convert< user_string >(string_type const& source, system::error_code& ec)
+{
+    user_string temp;
+    for (string_type::const_iterator it = source.begin(); it != source.end(); ++it)
         temp += *it - 1;
-      return temp;
-    }
-  }  // namespace path_traits
+    return temp;
+}
+
+}  // namespace path_traits
 }  // namespace filesystem
 }  // namespace boost
 
-namespace
-{
+namespace {
 
-  void test_user_supplied_type()
-  {
+void test_user_supplied_type()
+{
     std::cout << "testing user supplied type..." << std::endl;
 
     user_string::value_type usr_c_str[] = { 'a', 'b', 'c', 0 };
@@ -1140,12 +1156,12 @@ namespace
     CHECK(p1 == "bcd");
     user_string s1(p1.string<user_string>());
     CHECK(s1 == usr);
-  }
+}
 
-# endif
+#endif
 
-  inline const char* macro_value(const char* name, const char* value)
-  {
+inline const char* macro_value(const char* name, const char* value)
+{
     static const char* no_value = "[no value]";
     static const char* not_defined = "[not defined]";
 
@@ -1158,14 +1174,12 @@ namespace
     //}
     //return not_defined;
 
-    return 0 == strcmp(name, value + 1)
-      ? not_defined
-      : (value[1] ? value : no_value);
-  }
+    return 0 == strcmp(name, value + 1) ? not_defined : (value[1] ? value : no_value);
+}
 
 #define BOOST_MACRO_VALUE(X) macro_value(#X, BOOST_STRINGIZE(=X))
 
-}  // unnamed namespace
+} // unnamed namespace
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -1177,78 +1191,76 @@ int test_main(int, char*[])
 {
 // document state of critical macros
 #ifdef BOOST_POSIX_API
-  cout << "BOOST_POSIX_API" << endl;
-  BOOST_TEST(path::preferred_separator == '/');
+    cout << "BOOST_POSIX_API" << endl;
+    BOOST_TEST(path::preferred_separator == '/');
 #endif
 #ifdef BOOST_WINDOWS_API
-  cout << "BOOST_WINDOWS_API" << endl;
-  BOOST_TEST(path::preferred_separator == '\\');
+    cout << "BOOST_WINDOWS_API" << endl;
+    BOOST_TEST(path::preferred_separator == '\\');
 #endif
 
-  cout << "BOOST_FILESYSTEM_DECL "
-    << BOOST_MACRO_VALUE(BOOST_FILESYSTEM_DECL) << endl;
+    cout << "BOOST_FILESYSTEM_DECL "
+         << BOOST_MACRO_VALUE(BOOST_FILESYSTEM_DECL) << endl;
 
-//#ifdef BOOST_FILESYSTEM_DECL
-//  cout << "BOOST_FILESYSTEM_DECL is defined as "
-//    << BOOST_STRINGIZE(BOOST_FILESYSTEM_DECL) << endl;
-//#else
-//  cout << "BOOST_FILESYSTEM_DECL is not defined" << endl;
-//#endif
+    //#ifdef BOOST_FILESYSTEM_DECL
+    //  cout << "BOOST_FILESYSTEM_DECL is defined as "
+    //    << BOOST_STRINGIZE(BOOST_FILESYSTEM_DECL) << endl;
+    //#else
+    //  cout << "BOOST_FILESYSTEM_DECL is not defined" << endl;
+    //#endif
 
-  l.push_back('s');
-  l.push_back('t');
-  l.push_back('r');
-  l.push_back('i');
-  l.push_back('n');
-  l.push_back('g');
+    l.push_back('s');
+    l.push_back('t');
+    l.push_back('r');
+    l.push_back('i');
+    l.push_back('n');
+    l.push_back('g');
 
-  wl.push_back(L'w');
-  wl.push_back(L's');
-  wl.push_back(L't');
-  wl.push_back(L'r');
-  wl.push_back(L'i');
-  wl.push_back(L'n');
-  wl.push_back(L'g');
+    wl.push_back(L'w');
+    wl.push_back(L's');
+    wl.push_back(L't');
+    wl.push_back(L'r');
+    wl.push_back(L'i');
+    wl.push_back(L'n');
+    wl.push_back(L'g');
 
-  v.push_back('f');
-  v.push_back('u');
-  v.push_back('z');
+    v.push_back('f');
+    v.push_back('u');
+    v.push_back('z');
 
-  wv.push_back(L'w');
-  wv.push_back(L'f');
-  wv.push_back(L'u');
-  wv.push_back(L'z');
+    wv.push_back(L'w');
+    wv.push_back(L'f');
+    wv.push_back(L'u');
+    wv.push_back(L'z');
 
-  test_overloads();
-  test_constructors();
-  test_assignments();
-  test_move_construction_and_assignment();
-  test_appends();
-  test_concats();
-  test_modifiers();
-  test_observers();
-  test_relationals();
-  test_inserter_and_extractor();
-  test_other_non_members();
-  test_iterators();
-  test_reverse_iterators();
-  test_decompositions();
-  test_queries();
-  test_imbue_locale();
-  test_codecvt_argument();
-  test_error_handling();
+    test_overloads();
+    test_constructors();
+    test_assignments();
+    test_move_construction_and_assignment();
+    test_appends();
+    test_concats();
+    test_modifiers();
+    test_observers();
+    test_relationals();
+    test_inserter_and_extractor();
+    test_other_non_members();
+    test_iterators();
+    test_reverse_iterators();
+    test_decompositions();
+    test_queries();
+    test_imbue_locale();
+    test_codecvt_argument();
+    test_error_handling();
 
 #if 0
-
-  test_user_supplied_type();
-
+    test_user_supplied_type();
 #endif
 
-  std::string foo("\\abc");
-  const char* bar = "/abc";
+    std::string foo("\\abc");
+    const char* bar = "/abc";
 
-  if (foo == bar)
-    cout << "unintended consequence\n";
+    if (foo == bar)
+        cout << "unintended consequence\n";
 
-  return ::boost::report_errors();
+    return ::boost::report_errors();
 }

@@ -15,10 +15,10 @@ namespace fs = boost::filesystem;
 
 int main()
 {
-    fs::path p1( "a" );
+    fs::path p1("a");
     fs::path p2 = p1 / "b";
 
-    BOOST_TEST_EQ( p2, "a/b" );
+    BOOST_TEST_EQ(p2, "a/b");
 
     return boost::report_errors();
 }

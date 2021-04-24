@@ -14,26 +14,26 @@
 
 namespace fs = boost::filesystem;
 
-typedef std::basic_string<TCHAR> tstring;
+typedef std::basic_string< TCHAR > tstring;
 
-void func( const fs::path & p )
+void func(fs::path const& p)
 {
-  assert( fs::exists( p ) );
+    assert(fs::exists(p));
 }
 
 int main()
 {
-  // get a path that is known to exist
-  fs::path cp = fs::current_path(); 
+    // get a path that is known to exist
+    fs::path cp = fs::current_path();
 
-  // demo: get tstring from the path
-  tstring cp_as_tstring = cp.string<tstring>();
+    // demo: get tstring from the path
+    tstring cp_as_tstring = cp.string< tstring >();
 
-  // demo: pass tstring to filesystem function taking path
-  assert( fs::exists( cp_as_tstring ) );
+    // demo: pass tstring to filesystem function taking path
+    assert(fs::exists(cp_as_tstring));
 
-  // demo: pass tstring to user function taking path
-  func( cp_as_tstring );
+    // demo: pass tstring to user function taking path
+    func(cp_as_tstring);
 
-  return 0;
+    return 0;
 }

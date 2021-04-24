@@ -14,26 +14,26 @@
 #include <iostream>
 #include <exception>
 
-int main( int argc, char * argv[] )
+int main(int argc, char* argv[])
 {
-  boost::filesystem::path::default_name_check( boost::filesystem::native );
-  if ( argc != 3 )
-  {
-    std::cout << "Usage: equivalent path1 path2\n";
-    return 2;
-  }
+    boost::filesystem::path::default_name_check(boost::filesystem::native);
+    if (argc != 3)
+    {
+        std::cout << "Usage: equivalent path1 path2\n";
+        return 2;
+    }
 
-  bool eq;
-  try
-  {
-    eq = boost::filesystem::equivalent( argv[1], argv[2] );
-  }
-  catch ( const std::exception & ex )
-  {
-    std::cout << ex.what() << "\n";
-    return 3;
-  }
+    bool eq;
+    try
+    {
+        eq = boost::filesystem::equivalent(argv[1], argv[2]);
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << ex.what() << "\n";
+        return 3;
+    }
 
-  std::cout << (eq ? "Paths are equivalent\n" : "Paths are not equivalent\n");
-  return !eq;
+    std::cout << (eq ? "Paths are equivalent\n" : "Paths are not equivalent\n");
+    return !eq;
 }
