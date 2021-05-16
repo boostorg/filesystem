@@ -2560,13 +2560,13 @@ file_status status(path const& p, error_code* ec)
     if (err != 0)
     {
         err = errno;
-        if (ec != 0)                            // always report errno, even though some
+        if (ec)                                 // always report errno, even though some
             ec->assign(err, system_category()); // errno values are not status_errors
 
         if (not_found_error(err))
             return fs::file_status(fs::file_not_found, fs::no_perms);
 
-        if (ec == 0)
+        if (!ec)
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status", p, error_code(err, system_category())));
 
         return fs::file_status(fs::status_error);
