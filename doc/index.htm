@@ -243,7 +243,7 @@ the POSIX or Windows API's.</p>
 Microsoft Windows, SGI IRIX, and Sun Solaris operating systems using a variety
 of compilers. It is also used by several smart phone operating systems.</p>
 <h2><a name="Macros">Macros</a></h2>
-<p>Users may defined the following macros if desired. Sensible defaults are
+<p>Users may define the following macros if desired. Sensible defaults are
 provided, so users can ignore these macros unless they have special needs.</p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
@@ -270,7 +270,37 @@ provided, so users can ignore these macros unless they have special needs.</p>
     <td valign="top">Boost.Filesystem library does not use the Boost auto-link
     facility.</td>
   </tr>
-  </table>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DISABLE_SENDFILE</code></td>
+    <td valign="top">Not defined. <code>sendfile</code> API presence detected at library build time.</td>
+    <td valign="top">Boost.Filesystem library does not use the <code>sendfile</code> system call on Linux. The <code>sendfile</code> system call started accepting regular file descriptors as the target in Linux 2.6.33.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE</code></td>
+    <td valign="top">Not defined. <code>copy_file_range</code> API presence detected at library build time.</td>
+    <td valign="top">Boost.Filesystem library does not use the <code>copy_file_range</code> system call on Linux. The <code>copy_file_range</code> system call was introduced in Linux kernel 4.5 and started operating across filesystems in 5.3.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DISABLE_STATX</code></td>
+    <td valign="top">Not defined. <code>statx</code> presence detected at library build time.</td>
+    <td valign="top">Boost.Filesystem library does not use the <code>statx</code> system call on Linux. The <code>statx</code> system call was introduced in Linux kernel 4.11.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DISABLE_GETRANDOM</code></td>
+    <td valign="top">Not defined. <code>getrandom</code> API presence detected at library build time.</td>
+    <td valign="top">Boost.Filesystem library does not use the <code>getrandom</code> system call on Linux. The <code>getrandom</code> system call was introduced in Linux kernel 3.17.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DISABLE_ARC4RANDOM</code></td>
+    <td valign="top">Not defined. <code>arc4random</code> API presence detected at library build time.</td>
+    <td valign="top">Boost.Filesystem library does not use the <code>arc4random_buf</code> system call on BSD systems. The <code>arc4random</code> API was introduced in OpenBSD 2.1 and FreeBSD 8.0.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_DISABLE_BCRYPT</code></td>
+    <td valign="top">Not defined. BCrypt API presence detected at library build time.</td>
+    <td valign="top">Boost.Filesystem library does not use the BCrypt API on Windows. Has no effect on other platforms.</td>
+  </tr>
+</table>
 <p>User-defined BOOST_POSIX_API and BOOST_WINDOWS_API macros are no longer
 supported.</p>
 <h2><a name="Building">Building</a> the object-library</h2>

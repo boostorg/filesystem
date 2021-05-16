@@ -77,15 +77,20 @@
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
 #include <sys/utsname.h>
-#include <sys/sendfile.h>
 #include <sys/syscall.h>
+#if !defined(BOOST_FILESYSTEM_DISABLE_SENDFILE)
+#include <sys/sendfile.h>
 #define BOOST_FILESYSTEM_USE_SENDFILE
-#if defined(__NR_copy_file_range)
+#endif // !defined(BOOST_FILESYSTEM_DISABLE_SENDFILE)
+#if !defined(BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE) && defined(__NR_copy_file_range)
 #define BOOST_FILESYSTEM_USE_COPY_FILE_RANGE
-#endif
+#endif // !defined(BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE) && defined(__NR_copy_file_range)
+#if !defined(BOOST_FILESYSTEM_DISABLE_STATX) && (defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL))
 #if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 #include <linux/stat.h>
 #endif
+#define BOOST_FILESYSTEM_USE_STATX
+#endif // !defined(BOOST_FILESYSTEM_DISABLE_STATX) && (defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL))
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
 
 #if defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
@@ -400,7 +405,7 @@ inline bool not_found_error(int errval) BOOST_NOEXCEPT
     return errval == ENOENT || errval == ENOTDIR;
 }
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
 
 //! Returns \c true if the two \c statx structures refer to the same file
 inline bool equivalent_stat(struct ::statx const& s1, struct ::statx const& s2) BOOST_NOEXCEPT
@@ -420,7 +425,7 @@ inline uintmax_t get_size(struct ::statx const& st) BOOST_NOEXCEPT
     return st.stx_size;
 }
 
-#else // defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#else // defined(BOOST_FILESYSTEM_USE_STATX)
 
 //! Returns \c true if the two \c stat structures refer to the same file
 inline bool equivalent_stat(struct ::stat const& s1, struct ::stat const& s2) BOOST_NOEXCEPT
@@ -442,7 +447,7 @@ inline uintmax_t get_size(struct ::stat const& st) BOOST_NOEXCEPT
     return st.st_size;
 }
 
-#endif // defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#endif // defined(BOOST_FILESYSTEM_USE_STATX)
 
 typedef int(copy_file_data_t)(int infile, int outfile, uintmax_t size);
 
@@ -1196,7 +1201,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         break;
     }
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     unsigned int statx_data_mask = STATX_TYPE | STATX_MODE | STATX_INO | STATX_SIZE;
     if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
         statx_data_mask |= STATX_MTIME;
@@ -1290,7 +1295,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         }
     }
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     statx_data_mask = STATX_TYPE | STATX_MODE | STATX_INO;
     if ((oflag & O_TRUNC) == 0)
     {
@@ -1330,7 +1335,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     {
         // O_TRUNC is not set if copy_options::update_existing is set and an existing file was opened.
         // We need to check the last write times.
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
         if (from_stat.stx_mtime.tv_sec < to_stat.stx_mtime.tv_sec || (from_stat.stx_mtime.tv_sec == to_stat.stx_mtime.tv_sec && from_stat.stx_mtime.tv_nsec <= to_stat.stx_mtime.tv_nsec))
             return false;
 #elif defined(BOOST_FILESYSTEM_STAT_ST_MTIMENSEC)
@@ -1517,7 +1522,7 @@ bool create_directory(path const& p, const path* existing, error_code* ec)
     mode_t mode = S_IRWXU | S_IRWXG | S_IRWXO;
     if (existing)
     {
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
         struct ::statx existing_stat;
         if (BOOST_UNLIKELY(statx(AT_FDCWD, existing->c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &existing_stat) < 0))
         {
@@ -1586,7 +1591,7 @@ void copy_directory(path const& from, path const& to, system::error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     int err;
     struct ::statx from_stat;
     if (BOOST_UNLIKELY(statx(AT_FDCWD, from.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &from_stat) < 0))
@@ -1748,7 +1753,7 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
 #if defined(BOOST_POSIX_API)
 
     // p2 is done first, so any error reported is for p1
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx s2;
     int e2 = statx(AT_FDCWD, p2.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s2);
     if (BOOST_LIKELY(e2 == 0))
@@ -1856,7 +1861,7 @@ uintmax_t file_size(path const& p, error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
     if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_SIZE, &path_stat) < 0))
     {
@@ -1919,7 +1924,7 @@ uintmax_t hard_link_count(path const& p, system::error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
     if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &path_stat) < 0))
     {
@@ -1986,7 +1991,7 @@ bool is_empty(path const& p, system::error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
     if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_SIZE, &path_stat) < 0))
     {
@@ -2041,7 +2046,7 @@ std::time_t creation_time(path const& p, system::error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx stx;
     if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_BTIME, &stx) < 0))
     {
@@ -2097,7 +2102,7 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx stx;
     if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_MTIME, &stx) < 0))
     {
@@ -2544,7 +2549,7 @@ file_status status(path const& p, error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
     int err = statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &path_stat);
 #else
@@ -2567,7 +2572,7 @@ file_status status(path const& p, error_code* ec)
         return fs::file_status(fs::status_error);
     }
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     if (BOOST_UNLIKELY((path_stat.stx_mask & (STATX_TYPE | STATX_MODE)) != (STATX_TYPE | STATX_MODE)))
     {
         emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::status");
@@ -2649,7 +2654,7 @@ file_status symlink_status(path const& p, error_code* ec)
 
 #if defined(BOOST_POSIX_API)
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
     int err = statx(AT_FDCWD, p.c_str(), AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &path_stat);
 #else
@@ -2672,7 +2677,7 @@ file_status symlink_status(path const& p, error_code* ec)
         return fs::file_status(fs::status_error);
     }
 
-#if defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+#if defined(BOOST_FILESYSTEM_USE_STATX)
     if (BOOST_UNLIKELY((path_stat.stx_mask & (STATX_TYPE | STATX_MODE)) != (STATX_TYPE | STATX_MODE)))
     {
         emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::symlink_status");

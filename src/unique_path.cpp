@@ -25,13 +25,16 @@
 #include <unistd.h>
 #endif
 
+#if !defined(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM)
 #if BOOST_OS_BSD_OPEN >= BOOST_VERSION_NUMBER(2, 1, 0) || \
     BOOST_OS_BSD_FREE >= BOOST_VERSION_NUMBER(8, 0, 0) || \
     BOOST_LIB_C_CLOUDABI
 #include <stdlib.h>
 #define BOOST_FILESYSTEM_HAS_ARC4RANDOM
 #endif
+#endif // !defined(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM)
 
+#if !defined(BOOST_FILESYSTEM_DISABLE_GETRANDOM)
 #if (defined(__linux__) || defined(__linux) || defined(linux)) && \
     (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
 #include <sys/syscall.h>
@@ -51,6 +54,7 @@
 #include <sys/random.h>
 #endif
 #endif // (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
+#endif // !defined(BOOST_FILESYSTEM_DISABLE_GETRANDOM)
 
 #else  // BOOST_WINDOWS_API
 
