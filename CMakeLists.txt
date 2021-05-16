@@ -1,5 +1,5 @@
 # Copyright 2019 Mike Dev
-# Copyright 2020 Andrey Semashev
+# Copyright 2020, 2021 Andrey Semashev
 #
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
@@ -12,17 +12,33 @@ project(BoostFilesystem VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
 include(CheckCXXSourceCompiles)
 
+set(BOOST_FILESYSTEM_NO_DEPRECATED OFF CACHE BOOL "Disable deprecated functionality of Boost.Filesystem")
+set(BOOST_FILESYSTEM_DISABLE_SENDFILE OFF CACHE BOOL "Disable usage of sendfile API in Boost.Filesystem")
+set(BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE OFF CACHE BOOL "Disable usage of copy_file_range API in Boost.Filesystem")
+set(BOOST_FILESYSTEM_DISABLE_STATX OFF CACHE BOOL "Disable usage of statx API in Boost.Filesystem")
+set(BOOST_FILESYSTEM_DISABLE_GETRANDOM OFF CACHE BOOL "Disable usage of getrandom API in Boost.Filesystem")
+set(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM OFF CACHE BOOL "Disable usage of arc4random API in Boost.Filesystem")
+set(BOOST_FILESYSTEM_DISABLE_BCRYPT OFF CACHE BOOL "Disable usage of BCrypt API in Boost.Filesystem")
+
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_stat_st_mtim.cpp>" BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_stat_st_mtimensec.cpp>" BOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_stat_st_mtimespec.cpp>" BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC)
-if(WIN32)
+if(NOT BOOST_FILESYSTEM_DISABLE_STATX)
+    check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_statx.cpp>" BOOST_FILESYSTEM_HAS_STATX)
+    if(NOT BOOST_FILESYSTEM_HAS_STATX)
+        check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_statx_syscall.cpp>" BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+    endif()
+endif()
+if(WIN32 AND NOT BOOST_FILESYSTEM_DISABLE_BCRYPT)
     # Note: We can't use the Boost::library targets here as they may not yet be included by the superproject when this CMakeLists.txt is included.
-    set(CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/../..")
     set(CMAKE_REQUIRED_LIBRARIES bcrypt)
     check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_bcrypt.cpp>" BOOST_FILESYSTEM_HAS_BCRYPT)
     unset(CMAKE_REQUIRED_LIBRARIES)
-    unset(CMAKE_REQUIRED_INCLUDES)
 endif()
+
+unset(CMAKE_REQUIRED_INCLUDES)
 
 add_library(boost_filesystem
     src/codecvt_error_category.cpp
@@ -56,6 +72,29 @@ target_compile_definitions(boost_filesystem
         BOOST_FILESYSTEM_SOURCE
 )
 
+if(BOOST_FILESYSTEM_NO_DEPRECATED)
+    target_compile_definitions(boost_filesystem PUBLIC BOOST_FILESYSTEM_NO_DEPRECATED)
+endif()
+
+if(BOOST_FILESYSTEM_DISABLE_SENDFILE)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_DISABLE_SENDFILE)
+endif()
+if(BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE)
+endif()
+if(BOOST_FILESYSTEM_DISABLE_STATX)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_DISABLE_STATX)
+endif()
+if(BOOST_FILESYSTEM_DISABLE_GETRANDOM)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_DISABLE_GETRANDOM)
+endif()
+if(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_DISABLE_ARC4RANDOM)
+endif()
+if(BOOST_FILESYSTEM_DISABLE_BCRYPT)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_DISABLE_BCRYPT)
+endif()
+
 if(BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
     target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
 endif()
@@ -64,6 +103,12 @@ if(BOOST_FILESYSTEM_HAS_STAT_ST_MTIMENSEC)
 endif()
 if(BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC)
     target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC)
+endif()
+if(BOOST_FILESYSTEM_HAS_STATX)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_STATX)
+endif()
+if(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 endif()
 
 target_link_libraries(boost_filesystem
