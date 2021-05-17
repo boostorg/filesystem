@@ -779,6 +779,8 @@ nothing else.&quot;</p>
       skip_existing,
       overwrite_existing,
       update_existing,
+      synchronize_data,
+      synchronize,
       // <a href="#copy">copy</a> options
       recursive,
       copy_symlinks,
@@ -3116,6 +3118,7 @@ void copy(const path&amp; from, const path&amp; to, <a href="#copy_options">copy
   <p><i>Precondition:</i> <code>options</code> must contain at most one option from each of the following groups:
     <ul>
       <li><code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code>;</li>
+      <li><code>copy_options::synchronize_data</code> or <code>copy_options::synchronize</code>;</li>
       <li><code>copy_options::recursive</code>;</li>
       <li><code>copy_options::copy_symlinks</code> or <code>copy_options::skip_symlinks</code>;</li>
       <li><code>copy_options::directories_only</code>, <code>copy_options::create_symlinks</code> or <code>copy_options::create_hard_links</code>.</li>
@@ -3205,7 +3208,12 @@ bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_options"
 bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options);
 bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">copy_option</a> options, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Precondition:</i> At most one of <code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code> must be specified in <code>options</code>.</p>
+  <p><i>Precondition:</i> <code>options</code> must contain at most one option from each of the following groups:
+    <ul>
+      <li><code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code>;</li>
+      <li><code>copy_options::synchronize_data</code> or <code>copy_options::synchronize</code>.</li>
+    </ul>
+  </p>
   <p><i>Effects:</i> Report an error if:
     <ul>
       <li><code>!is_regular_file(from)</code>, or</li>
@@ -3218,11 +3226,18 @@ bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">
       <li><code>exists(to) &amp;&amp; (options &amp; copy_options::skip_existing) != copy_options::none</code>, or</li>
       <li><code>exists(to) &amp;&amp; (options &amp; copy_options::update_existing) != copy_options::none</code> and last write time of <code>from</code> is more recent than that of <code>to</code>.</li>
     </ul>
-    Otherwise, the contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to.</p>
+    Otherwise:
+    <ul>
+     <li>The contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to; then</li>
+     <li>If <code>(options &amp; copy_options::synchronize) != copy_options::none</code>, the written data and attributes are synchronized with the permanent storage; otherwise</li>
+     <li>If <code>(options &amp; copy_options::synchronize_data) != copy_options::none</code>, the written data is synchronized with the permanent storage.</li>
+    </ul>
+  </p>
   <p><i>Returns:</i> <code>true</code> if the file was copied without error, otherwise <code>false</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
   <p>[<i>Note:</i> The overloads taking <a href="#copy_option"><code>copy_option</code></a> are deprecated. Their effect is equivalent to the corresponding overloads taking <a href="#copy_options"><code>copy_options</code></a> after casting the <code>options</code> argument to <a href="#copy_options"><code>copy_options</code></a>.]</p>
   <p>[<i>Note:</i> When <code>copy_options::update_existing</code> is specified, checking the write times of <code>from</code> and <code>to</code> may not be atomic with the copy operation. Another process may create or modify the file identified by <code>to</code> after the file modification times have been checked but before copying starts. In this case the target file will be overwritten.]</p>
+  <p>[<i>Note:</i> The <code>copy_options::synchronize_data</code> and <code>copy_options::synchronize</code> options may have a significant performance impact. The <code>copy_options::synchronize_data</code> option may be less expensive than <code>copy_options::synchronize</code>. However, without these options, upon returning from <code>copy_file</code> it is not guaranteed that the copied file is completely written and preserved in case of a system failure. Any delayed write operations may fail after the function returns, at the point of physically writing the data to the underlying media, and this error will not be reported to the caller.]</p>
 </blockquote>
 <pre>void <a name="copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
 void copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);</pre>

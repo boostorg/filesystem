@@ -451,6 +451,61 @@ inline uintmax_t get_size(struct ::stat const& st) BOOST_NOEXCEPT
 
 #endif // defined(BOOST_FILESYSTEM_USE_STATX)
 
+//! Flushes buffered data and attributes written to the file to permanent storage
+inline int full_sync(int fd)
+{
+    while (true)
+    {
+#if defined(__APPLE__) && defined(__MACH__) && defined(F_FULLFSYNC)
+        // Mac OS does not flush data to physical storage with fsync()
+        int err = ::fcntl(fd, F_FULLFSYNC);
+#else
+        int err = ::fsync(fd);
+#endif
+        if (BOOST_UNLIKELY(err < 0))
+        {
+            err = errno;
+            // POSIX says fsync can return EINTR (https://pubs.opengroup.org/onlinepubs/9699919799/functions/fsync.html).
+            // fcntl(F_FULLFSYNC) isn't documented to return EINTR, but it doesn't hurt to check.
+            if (err == EINTR)
+                continue;
+
+            return err;
+        }
+
+        break;
+    }
+
+    return 0;
+}
+
+//! Flushes buffered data written to the file to permanent storage
+inline int data_sync(int fd)
+{
+#if defined(BOOST_FILESYSTEM_HAS_FDATASYNC) && !(defined(__APPLE__) && defined(__MACH__) && defined(F_FULLFSYNC))
+    while (true)
+    {
+        int err = ::fdatasync(fd);
+        if (BOOST_UNLIKELY(err != 0))
+        {
+            err = errno;
+            // POSIX says fsync can return EINTR (https://pubs.opengroup.org/onlinepubs/9699919799/functions/fsync.html).
+            // It doesn't say so for fdatasync, but it is reasonable to expect it as well.
+            if (err == EINTR)
+                continue;
+
+            return err;
+        }
+
+        break;
+    }
+
+    return 0;
+#else
+    return full_sync(fd);
+#endif
+}
+
 typedef int(copy_file_data_t)(int infile, int outfile, uintmax_t size);
 
 //! copy_file implementation that uses read/write loop
@@ -1366,41 +1421,34 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     }
 #endif
 
-    // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
-    // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
-    // file descriptor upon its return. Future POSIX standards will likely fix this by introducing posix_close
-    // (see https://www.austingroupbugs.net/view.php?id=529) but we still have to support older systems where it
-    // is not available and the behavior of close is varying between systems.
-    // Also, syncing is useful if an error happens later, when the OS flushes data to the underlying media, as this
-    // error would go unnoticed and we have no way to receive it from close. Calling fsync/fdatasync ensures that all
-    // data have been written, and even if close fails for some unfathomable reason, we don't really care at that point.
-    while (true)
+    if ((options & (static_cast< unsigned int >(copy_options::synchronize_data) | static_cast< unsigned int >(copy_options::synchronize))) != 0u)
     {
-#if defined(BOOST_FILESYSTEM_HAS_FDATASYNC)
-        err = ::fdatasync(outfile.fd);
-#else
-        err = ::fsync(outfile.fd);
-#endif
+        if ((options & static_cast< unsigned int >(copy_options::synchronize)) != 0u)
+            err = full_sync(outfile.fd);
+        else
+            err = data_sync(outfile.fd);
+
         if (BOOST_UNLIKELY(err != 0))
-        {
-            err = errno;
-            // POSIX says fsync can return EINTR (https://pubs.opengroup.org/onlinepubs/9699919799/functions/fsync.html).
-            // It doesn't say so for fdatasync, but it is reasonable to expect it as well.
-            if (err == EINTR)
-                continue;
-
             goto fail;
-        }
-
-        break;
     }
+
+    // We have to explicitly close the output file descriptor in order to handle a possible error returned from it. The error may indicate
+    // a failure of a prior write operation.
+    err = close_fd(outfile.fd);
+    outfile.fd = -1;
+    if (BOOST_UNLIKELY(err < 0))
+        goto fail_errno;
 
     return true;
 
 #else // defined(BOOST_POSIX_API)
 
-    bool fail_if_exists = (options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
-        (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u;
+    DWORD copy_flags = 0u;
+    if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
+        (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+    {
+        copy_flags |= COPY_FILE_FAIL_IF_EXISTS;
+    }
 
     if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
     {
@@ -1435,10 +1483,14 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
                 return false;
         }
 
-        fail_if_exists = false;
+        copy_flags &= ~static_cast< DWORD >(COPY_FILE_FAIL_IF_EXISTS);
     }
 
-    BOOL res = ::CopyFileW(from.c_str(), to.c_str(), fail_if_exists);
+    if ((options & (static_cast< unsigned int >(copy_options::synchronize_data) | static_cast< unsigned int >(copy_options::synchronize))) != 0u)
+        copy_flags |= COPY_FILE_NO_BUFFERING;
+
+    BOOL cancelled = FALSE;
+    BOOL res = ::CopyFileExW(from.c_str(), to.c_str(), NULL, NULL, &cancelled, copy_flags);
     if (!res)
     {
         DWORD err = ::GetLastError();

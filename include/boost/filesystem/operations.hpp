@@ -62,6 +62,8 @@ BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(copy_options, unsigned int)
     skip_existing = 1u,           // Don't overwrite the existing target file, don't report an error
     overwrite_existing = 1u << 1, // Overwrite existing file
     update_existing = 1u << 2,    // Overwrite existing file if its last write time is older than the replacement file
+    synchronize_data = 1u << 3,   // Flush all buffered data written to the target file to permanent storage
+    synchronize = 1u << 4,        // Flush all buffered data and attributes written to the target file to permanent storage
 
     // copy options:
     recursive = 1u << 8,          // Recurse into sub-directories
