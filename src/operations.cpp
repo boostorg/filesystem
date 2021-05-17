@@ -112,6 +112,8 @@
 #define BOOST_FILESYSTEM_STAT_ST_BIRTHTIMENSEC st_birthtimensec
 #endif
 
+#include "posix_tools.hpp"
+
 #else // BOOST_WINDOWS_API
 
 #include <boost/winapi/dll.hpp> // get_proc_address, GetModuleHandleW
@@ -394,7 +396,7 @@ struct fd_wrapper
     ~fd_wrapper() BOOST_NOEXCEPT
     {
         if (fd >= 0)
-            ::close(fd);
+            close_fd(fd);
     }
     BOOST_DELETED_FUNCTION(fd_wrapper(fd_wrapper const&))
     BOOST_DELETED_FUNCTION(fd_wrapper& operator=(fd_wrapper const&))

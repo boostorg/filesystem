@@ -56,6 +56,8 @@
 #endif // (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
 #endif // !defined(BOOST_FILESYSTEM_DISABLE_GETRANDOM)
 
+#include "posix_tools.hpp"
+
 #else  // BOOST_WINDOWS_API
 
 // We use auto-linking below to help users of static builds of Boost.Filesystem to link to whatever Windows SDK library we selected.
@@ -178,7 +180,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
             int err = errno;
             if (err == EINTR)
                 continue;
-            close(file);
+            close_fd(file);
             emit_error(err, ec, "boost::filesystem::unique_path");
             return;
         }
@@ -186,7 +188,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
         buf = static_cast< char* >(buf) + n;
     }
 
-    close(file);
+    close_fd(file);
 
 #endif
 

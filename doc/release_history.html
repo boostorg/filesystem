@@ -40,7 +40,8 @@
 
 <h2>1.77.0</h2>
 <ul>
-  <li>Added support for disabling usage of various system APIs at library build time. This can be useful when a certain API is detected as present by the library configuration scripts but must not be used for some reason (for example, when it is known to fail on the target system). See the description of <a href="index.htm#Macros">configuration macros</a> for more details.</li>
+  <li><b>New:</b> Added support for disabling usage of various system APIs at library build time. This can be useful when a certain API is detected as present by the library configuration scripts but must not be used for some reason (for example, when it is known to fail on the target system). See the description of <a href="index.htm#Macros">configuration macros</a> for more details.</li>
+  <li>Added handling of <code>EINTR</code> error code on POSIX systems for some system calls issued internally. In particular, <code>EINTR</code> could have been ignored on <code>close</code>, which on HP-UX would result in a leaked file descriptor.</li>
 </ul>
 
 <h2>1.76.0</h2>
