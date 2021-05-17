@@ -91,7 +91,7 @@ file_status directory_entry::get_status(system::error_code* ec) const
         if (status_known(m_symlink_status) && !is_symlink(m_symlink_status))
         {
             m_status = m_symlink_status;
-            if (ec != 0)
+            if (ec)
                 ec->clear();
         }
         else
@@ -99,7 +99,7 @@ file_status directory_entry::get_status(system::error_code* ec) const
             m_status = detail::status(m_path, ec);
         }
     }
-    else if (ec != 0)
+    else if (ec)
     {
         ec->clear();
     }
@@ -112,7 +112,7 @@ file_status directory_entry::get_symlink_status(system::error_code* ec) const
 {
     if (!status_known(m_symlink_status))
         m_symlink_status = detail::symlink_status(m_path, ec);
-    else if (ec != 0)
+    else if (ec)
         ec->clear();
 
     return m_symlink_status;
@@ -526,11 +526,9 @@ void directory_iterator_increment(directory_iterator& it, system::error_code* ec
                 boost::intrusive_ptr< detail::dir_itr_imp > imp;
                 imp.swap(it.m_imp);
                 path error_path(imp->dir_entry.path().parent_path()); // fix ticket #5900
-                if (ec == NULL)
-                {
-                    BOOST_FILESYSTEM_THROW(
-                        filesystem_error("boost::filesystem::directory_iterator::operator++", error_path, increment_ec));
-                }
+                if (!ec)
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::directory_iterator::operator++", error_path, increment_ec));
+
                 *ec = increment_ec;
                 return;
             }
@@ -672,11 +670,8 @@ void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::
                     it.m_imp.reset(); // done, so make end iterator
             }
 
-            if (ec == NULL)
-            {
-                BOOST_FILESYSTEM_THROW(
-                    filesystem_error("boost::filesystem::recursive_directory_iterator::pop", increment_ec));
-            }
+            if (!ec)
+                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::recursive_directory_iterator::pop", increment_ec));
 
             *ec = increment_ec;
             return;
@@ -826,12 +821,8 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
         }
 
     on_error_return:
-        if (ec == NULL)
-        {
-            BOOST_FILESYSTEM_THROW(filesystem_error(
-                "filesystem::recursive_directory_iterator increment error",
-                local_ec));
-        }
+        if (!ec)
+            BOOST_FILESYSTEM_THROW(filesystem_error("filesystem::recursive_directory_iterator increment error", local_ec));
 
         *ec = local_ec;
         return;

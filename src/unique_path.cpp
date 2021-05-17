@@ -271,7 +271,7 @@ path unique_path(const path& model, system::error_code* ec)
             if (nibbles_used == max_nibbles)
             {
                 system_crypt_random(ran, sizeof(ran), ec);
-                if (ec != 0 && *ec)
+                if (ec && *ec)
                     return path();
                 nibbles_used = 0;
             }
@@ -281,7 +281,7 @@ path unique_path(const path& model, system::error_code* ec)
         }
     }
 
-    if (ec != 0)
+    if (ec)
         ec->clear();
 
     return s;

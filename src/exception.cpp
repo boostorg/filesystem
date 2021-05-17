@@ -136,7 +136,7 @@ void emit_error(err_t error_num, path const& p, system::error_code* ec, const ch
 
 void emit_error(err_t error_num, path const& p1, path const& p2, system::error_code* ec, const char* message)
 {
-    if (ec == 0)
+    if (!ec)
         BOOST_FILESYSTEM_THROW(filesystem_error(message, p1, p2, system::error_code(error_num, system::system_category())));
     else
         ec->assign(error_num, system::system_category());

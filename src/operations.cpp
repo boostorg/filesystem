@@ -310,7 +310,7 @@ bool remove_file_or_directory(path const& p, fs::file_type type, error_code* ec)
 {
     if (type == fs::file_not_found)
     {
-        if (ec != 0)
+        if (ec)
             ec->clear();
         return false;
     }
@@ -347,21 +347,21 @@ uintmax_t remove_all_aux(path const& p, fs::file_type type, error_code* ec)
         while (itr != end_dit)
         {
             fs::file_type tmp_type = query_file_type(itr->path(), ec);
-            if (ec != 0 && *ec)
+            if (ec && *ec)
                 return count;
 
             count += remove_all_aux(itr->path(), tmp_type, ec);
-            if (ec != 0 && *ec)
+            if (ec && *ec)
                 return count;
 
             fs::detail::directory_iterator_increment(itr, ec);
-            if (ec != 0 && *ec)
+            if (ec && *ec)
                 return count;
         }
     }
 
     remove_file_or_directory(p, type, ec);
-    if (ec != 0 && *ec)
+    if (ec && *ec)
         return count;
 
     return ++count;
@@ -714,7 +714,7 @@ inline std::size_t get_full_path_name(
 fs::file_status process_status_failure(path const& p, error_code* ec)
 {
     int errval(::GetLastError());
-    if (ec != 0)                               // always report errval, even though some
+    if (ec)                                    // always report errval, even though some
         ec->assign(errval, system_category()); // errval values are not status_errors
 
     if (not_found_error(errval))
@@ -725,7 +725,7 @@ fs::file_status process_status_failure(path const& p, error_code* ec)
     {
         return fs::file_status(fs::type_unknown);
     }
-    if (ec == 0)
+    if (!ec)
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status", p, error_code(errval, system_category())));
     return fs::file_status(fs::status_error);
 }
@@ -740,7 +740,7 @@ fs::file_type query_file_type(path const& p, error_code* ec)
         return process_status_failure(p, ec).type();
     }
 
-    if (ec != 0)
+    if (ec)
         ec->clear();
 
     if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
@@ -832,7 +832,7 @@ path absolute(path const& p, path const& base, system::error_code* ec)
     //# endif
     //  return abs_base / p;
 
-    if (ec != 0)
+    if (ec)
         ec->clear();
 
     //  recursively calling absolute is sub-optimal, but is sure and simple
@@ -885,7 +885,7 @@ path absolute(path const& p, path const& base, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path canonical(path const& p, path const& base, system::error_code* ec)
 {
-    if (ec != 0)
+    if (ec)
         ec->clear();
 
     path result;
@@ -904,7 +904,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
 
     if (stat.type() == fs::file_not_found)
     {
-        if (ec == 0)
+        if (!ec)
         {
             BOOST_FILESYSTEM_THROW(filesystem_error(
                 "boost::filesystem::canonical", source,
@@ -915,11 +915,9 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     }
     else if (local_ec)
     {
-        if (ec == 0)
-        {
-            BOOST_FILESYSTEM_THROW(filesystem_error(
-                "boost::filesystem::canonical", source, local_ec));
-        }
+        if (!ec)
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::canonical", source, local_ec));
+
         *ec = local_ec;
         return result;
     }
@@ -978,6 +976,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
             }
         }
     }
+
     BOOST_ASSERT_MSG(result.is_absolute(), "canonical() implementation error; please report");
     return result;
 }
@@ -1708,7 +1707,7 @@ path current_path(error_code* ec)
     if (BOOST_LIKELY(!!p))
     {
         cur = p;
-        if (ec != 0)
+        if (ec)
             ec->clear();
     }
     else if (BOOST_LIKELY(!local::getcwd_error(ec)))
@@ -1726,7 +1725,7 @@ path current_path(error_code* ec)
             if (BOOST_LIKELY(!!p))
             {
                 cur = buf.get();
-                if (ec != 0)
+                if (ec)
                     ec->clear();
                 break;
             }
@@ -1993,7 +1992,7 @@ path initial_path(error_code* ec)
     static path init_path;
     if (init_path.empty())
         init_path = current_path(ec);
-    else if (ec != 0)
+    else if (ec)
         ec->clear();
     return init_path;
 }
@@ -2246,11 +2245,10 @@ void permissions(path const& p, perms prms, system::error_code* ec)
     file_status current_status((prms & symlink_perms) ? fs::symlink_status(p, local_ec) : fs::status(p, local_ec));
     if (local_ec)
     {
-        if (ec == 0)
-            BOOST_FILESYSTEM_THROW(filesystem_error(
-                "boost::filesystem::permissions", p, local_ec));
-        else
-            *ec = local_ec;
+        if (!ec)
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::permissions", p, local_ec));
+
+        *ec = local_ec;
         return;
     }
 
@@ -2282,13 +2280,13 @@ void permissions(path const& p, perms prms, system::error_code* ec)
 #endif
     {
         const int err = errno;
-        if (ec == 0)
+        if (!ec)
         {
             BOOST_FILESYSTEM_THROW(filesystem_error(
                 "boost::filesystem::permissions", p, error_code(err, system::generic_category())));
         }
-        else
-            ec->assign(err, system::generic_category());
+
+        ec->assign(err, system::generic_category());
     }
 
 #else // Windows
@@ -2328,15 +2326,15 @@ path read_symlink(path const& p, system::error_code* ec)
     {
     fail:
         const int err = errno;
-        if (ec == 0)
+        if (!ec)
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::read_symlink", p, error_code(err, system_category())));
-        else
-            ec->assign(err, system_category());
+
+        ec->assign(err, system_category());
     }
     else if (BOOST_LIKELY(static_cast< std::size_t >(result) < sizeof(small_buf)))
     {
         symlink_path.assign(small_buf, small_buf + result);
-        if (ec != 0)
+        if (ec)
             ec->clear();
     }
     else
@@ -2345,10 +2343,10 @@ path read_symlink(path const& p, system::error_code* ec)
         {
             if (BOOST_UNLIKELY(path_max > absolute_path_max))
             {
-                if (ec == 0)
+                if (!ec)
                     BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::read_symlink", p, error_code(ENAMETOOLONG, system_category())));
-                else
-                    ec->assign(ENAMETOOLONG, system_category());
+
+                ec->assign(ENAMETOOLONG, system_category());
                 break;
             }
 
@@ -2361,7 +2359,7 @@ path read_symlink(path const& p, system::error_code* ec)
             else if (BOOST_LIKELY(static_cast< std::size_t >(result) < path_max))
             {
                 symlink_path.assign(buf.get(), buf.get() + result);
-                if (ec != 0)
+                if (ec)
                     ec->clear();
                 break;
             }
@@ -2680,13 +2678,13 @@ file_status symlink_status(path const& p, error_code* ec)
     if (err != 0)
     {
         err = errno;
-        if (ec != 0)                            // always report errno, even though some
+        if (ec)                                 // always report errno, even though some
             ec->assign(err, system_category()); // errno values are not status_errors
 
         if (not_found_error(err)) // these are not errors
             return fs::file_status(fs::file_not_found, fs::no_perms);
 
-        if (ec == 0)
+        if (!ec)
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::symlink_status", p, error_code(err, system_category())));
 
         return fs::file_status(fs::status_error);
@@ -2865,7 +2863,7 @@ path system_complete(path const& p, system::error_code* ec)
 #else
     if (p.empty())
     {
-        if (ec != 0)
+        if (ec)
             ec->clear();
         return p;
     }
