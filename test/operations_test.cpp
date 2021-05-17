@@ -1750,6 +1750,36 @@ void copy_file_tests(const fs::path& f1x, const fs::path& d1x)
     BOOST_TEST(file_copied);
     BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 7U);
     verify_file(d1x / "f2", "file-f1");
+
+    fs::remove(d1x / "f2");
+    file_copied = false;
+    copy_ex_ok = true;
+    try
+    {
+        file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::synchronize_data);
+    }
+    catch (const fs::filesystem_error&)
+    {
+        copy_ex_ok = false;
+    }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(file_copied);
+    verify_file(d1x / "f2", "file-f1");
+
+    fs::remove(d1x / "f2");
+    file_copied = false;
+    copy_ex_ok = true;
+    try
+    {
+        file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::synchronize);
+    }
+    catch (const fs::filesystem_error&)
+    {
+        copy_ex_ok = false;
+    }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(file_copied);
+    verify_file(d1x / "f2", "file-f1");
 }
 
 //  symlink_status_tests  -------------------------------------------------------------//
