@@ -1367,17 +1367,32 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 
     // Note: Use fsync/fdatasync followed by close to avoid dealing with the possibility of close failing with EINTR.
     // Even if close fails, including with EINTR, most operating systems (presumably, except HP-UX) will close the
-    // file descriptor upon its return. This means that if an error happens later, when the OS flushes data to the
-    // underlying media, this error will go unnoticed and we have no way to receive it from close. Calling fsync/fdatasync
-    // ensures that all data have been written, and even if close fails for some unfathomable reason, we don't really
-    // care at that point.
+    // file descriptor upon its return. Future POSIX standards will likely fix this by introducing posix_close
+    // (see https://www.austingroupbugs.net/view.php?id=529) but we still have to support older systems where it
+    // is not available and the behavior of close is varying between systems.
+    // Also, syncing is useful if an error happens later, when the OS flushes data to the underlying media, as this
+    // error would go unnoticed and we have no way to receive it from close. Calling fsync/fdatasync ensures that all
+    // data have been written, and even if close fails for some unfathomable reason, we don't really care at that point.
+    while (true)
+    {
 #if defined(BOOST_FILESYSTEM_HAS_FDATASYNC)
-    err = ::fdatasync(outfile.fd);
+        err = ::fdatasync(outfile.fd);
 #else
-    err = ::fsync(outfile.fd);
+        err = ::fsync(outfile.fd);
 #endif
-    if (BOOST_UNLIKELY(err != 0))
-        goto fail_errno;
+        if (BOOST_UNLIKELY(err != 0))
+        {
+            err = errno;
+            // POSIX says fsync can return EINTR (https://pubs.opengroup.org/onlinepubs/9699919799/functions/fsync.html).
+            // It doesn't say so for fdatasync, but it is reasonable to expect it as well.
+            if (err == EINTR)
+                continue;
+
+            goto fail;
+        }
+
+        break;
+    }
 
     return true;
 
