@@ -1437,7 +1437,11 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     err = close_fd(outfile.fd);
     outfile.fd = -1;
     if (BOOST_UNLIKELY(err < 0))
-        goto fail_errno;
+    {
+        err = errno;
+        if (err != EINTR)
+            goto fail;
+    }
 
     return true;
 
