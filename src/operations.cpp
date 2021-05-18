@@ -719,6 +719,7 @@ int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
         // Some filesystems have regular files with generated content. Such files have arbitrary size, including zero,
         // but have actual content. Linux system calls sendfile or copy_file_range will not copy contents of such files,
         // so we must use a read/write loop to handle them.
+        // https://lore.kernel.org/linux-fsdevel/20210212044405.4120619-1-drinkcat@chromium.org/T/
         struct statfs sfs;
         while (true)
         {
