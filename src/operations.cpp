@@ -37,10 +37,6 @@
 #endif
 #include <cerrno>
 
-#ifdef BOOST_FILEYSTEM_INCLUDE_IOSTREAM
-#include <iostream>
-#endif
-
 #ifdef BOOST_POSIX_API
 
 #include <sys/types.h>
