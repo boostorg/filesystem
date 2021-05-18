@@ -544,6 +544,10 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
     if (BOOST_UNLIKELY(!buf.get()))
         return ENOMEM;
 
+#if defined(POSIX_FADV_SEQUENTIAL)
+    ::posix_fadvise(infile, 0, 0, POSIX_FADV_SEQUENTIAL);
+#endif
+
     // Don't use file size to limit the amount of data to copy since some filesystems, like procfs or sysfs,
     // provide files with generated content and indicate that their size is zero or 4096. Just copy as much data
     // as we can read from the input file.
