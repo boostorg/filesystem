@@ -135,6 +135,7 @@ using std::time_t;
 #endif // BOOST_WINDOWS_API
 
 #include "error_handling.hpp"
+#include "atomic.hpp"
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -511,7 +512,7 @@ inline int data_sync(int fd)
 #endif
 }
 
-typedef int(copy_file_data_t)(int infile, int outfile, uintmax_t size);
+typedef int (copy_file_data_t)(int infile, int outfile, uintmax_t size);
 
 //! copy_file implementation that uses read/write loop
 int copy_file_data_read_write(int infile, int outfile, uintmax_t size)
@@ -521,6 +522,9 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size)
     if (BOOST_UNLIKELY(!buf.get()))
         return ENOMEM;
 
+    // Don't use file size to limit the amount of data to copy since some filesystems, like procfs or sysfs,
+    // provide files with generated content and indicate that their size is zero or 4096. Just copy as much data
+    // as we can read from the input file.
     while (true)
     {
         ssize_t sz_read = ::read(infile, buf.get(), buf_sz);
@@ -555,7 +559,7 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size)
 }
 
 //! Pointer to the actual implementation of the copy_file_data implementation
-copy_file_data_t* copy_file_data = &copy_file_data_read_write;
+atomic_ns::atomic< copy_file_data_t* > copy_file_data(&copy_file_data_read_write);
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
@@ -577,6 +581,23 @@ int copy_file_data_sendfile(int infile, int outfile, uintmax_t size)
             int err = errno;
             if (err == EINTR)
                 continue;
+
+            if (offset == 0u)
+            {
+                // sendfile may fail with EINVAL if the underlying filesystem does not support it
+                if (err == EINVAL)
+                {
+                fallback_to_read_write:
+                    return copy_file_data_read_write(infile, outfile, size);
+                }
+
+                if (err == ENOSYS)
+                {
+                    copy_file_data.store(&copy_file_data_read_write, atomic_ns::memory_order_relaxed);
+                    goto fallback_to_read_write;
+                }
+            }
+
             return err;
         }
 
@@ -611,6 +632,44 @@ int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size)
             int err = errno;
             if (err == EINTR)
                 continue;
+
+            if (offset == 0u)
+            {
+                // copy_file_range may fail with EINVAL if the underlying filesystem does not support it.
+                // In some RHEL/CentOS 7.7-7.8 kernel versions, copy_file_range on NFSv4 is also known to return EOPNOTSUPP
+                // if the remote server does not support COPY, despite that it is not a documented error code.
+                // See https://patchwork.kernel.org/project/linux-nfs/patch/20190411183418.4510-1-olga.kornievskaia@gmail.com/
+                // and https://bugzilla.redhat.com/show_bug.cgi?id=1783554.
+                if (err == EINVAL || err == EOPNOTSUPP)
+                {
+#if !defined(BOOST_FILESYSTEM_USE_SENDFILE)
+                fallback_to_read_write:
+#endif
+                    return copy_file_data_read_write(infile, outfile, size);
+                }
+
+                if (err == EXDEV)
+                {
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+                fallback_to_sendfile:
+                    return copy_file_data_sendfile(infile, outfile, size);
+#else
+                    goto fallback_to_read_write;
+#endif
+                }
+
+                if (err == ENOSYS)
+                {
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+                    copy_file_data.store(&copy_file_data_sendfile, atomic_ns::memory_order_relaxed);
+                    goto fallback_to_sendfile;
+#else
+                    copy_file_data.store(&copy_file_data_read_write, atomic_ns::memory_order_relaxed);
+                    goto fallback_to_read_write;
+#endif
+                }
+            }
+
             return err;
         }
 
@@ -646,12 +705,13 @@ struct copy_file_data_initializer
 #endif
 
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
-        // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3
-        if (major > 5u || (major == 5u && minor >= 3u))
+        // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
+        // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
+        if (major > 4u || (major == 4u && minor >= 5u))
             cfd = &copy_file_data_copy_file_range;
 #endif
 
-        copy_file_data = cfd;
+        copy_file_data.store(cfd, atomic_ns::memory_order_relaxed);
     }
 } const copy_file_data_init;
 
@@ -1412,7 +1472,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
             goto fail_errno;
     }
 
-    err = detail::copy_file_data(infile.fd, outfile.fd, get_size(from_stat));
+    err = detail::copy_file_data.load(atomic_ns::memory_order_relaxed)(infile.fd, outfile.fd, get_size(from_stat));
     if (BOOST_UNLIKELY(err != 0))
         goto fail; // err already contains the error code
 

@@ -42,6 +42,12 @@ endif()
 
 unset(CMAKE_REQUIRED_INCLUDES)
 
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+set(CMAKE_REQUIRED_DEFINITIONS "-DTEST_BOOST_NO_CXX11_HDR_ATOMIC")
+check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/../config/checks/test_case.cpp>" BOOST_FILESYSTEM_HAS_CXX11_HDR_ATOMIC)
+unset(CMAKE_REQUIRED_DEFINITIONS)
+unset(CMAKE_REQUIRED_INCLUDES)
+
 add_library(boost_filesystem
     src/codecvt_error_category.cpp
     src/exception.cpp
@@ -135,6 +141,10 @@ target_link_libraries(boost_filesystem
     PRIVATE
         Boost::predef
 )
+
+if(NOT BOOST_FILESYSTEM_HAS_CXX11_HDR_ATOMIC)
+    target_link_libraries(boost_filesystem PRIVATE Boost::atomic)
+endif()
 
 if(WIN32)
     if(BOOST_FILESYSTEM_HAS_BCRYPT)
