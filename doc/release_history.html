@@ -45,6 +45,7 @@
   <li>Added handling of <code>EINTR</code> error code on POSIX systems for some system calls issued internally. In particular, <code>EINTR</code> could have been ignored on <code>close</code>, which on HP-UX would result in a leaked file descriptor.</li>
   <li>In the <code>copy_file</code> implementations based on Linux <code>sendfile</code> and <code>copy_file_range</code> system calls, added handling of error codes indicating that a particular filesystem does not support the system call and fall back to the generic <code>read</code>/<code>write</code> loop. This should fix <code>copy_file</code> failing on <a href="https://www.ecryptfs.org/">eCryptFS</a> and possibly other filesystems. (<a href="https://github.com/boostorg/filesystem/issues/184">#184</a>)</li>
   <li>The <code>copy_file_range</code> system call is now used since Linux kernel 4.5, whereas previously it was only enabled since 5.3. The <code>copy_file</code> implementation will fall back to <code>sendfile</code> or <code>read</code>/<code>write</code> loop if <code>copy_file_range</code> fails to copy a given file across filesystems.</li>
+  <li>In the <code>copy_file</code> implementation based on <code>read</code>/<code>write</code> loop, increased the minimum size of the buffer used for temporary storage and take into account the target filesystem block size for more optimal performance.</li>
 </ul>
 
 <h2>1.76.0</h2>

@@ -1,10 +1,12 @@
 #
-#             Copyright Andrey Semashev 2020.
+#          Copyright Andrey Semashev 2020 - 2021.
 # Distributed under the Boost Software License, Version 1.0.
 #    (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 #
 
+obj has_stat_st_blksize : has_stat_st_blksize.cpp : <include>../src ;
+explicit has_stat_st_blksize ;
 obj has_stat_st_mtim : has_stat_st_mtim.cpp : <include>../src ;
 explicit has_stat_st_mtim ;
 obj has_stat_st_mtimensec : has_stat_st_mtimensec.cpp : <include>../src ;

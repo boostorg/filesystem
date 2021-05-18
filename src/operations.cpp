@@ -433,6 +433,12 @@ inline uintmax_t get_size(struct ::statx const& st) BOOST_NOEXCEPT
     return st.stx_size;
 }
 
+//! Returns optimal block size from \c statx structure
+inline std::size_t get_blksize(struct ::statx const& st) BOOST_NOEXCEPT
+{
+    return st.stx_blksize;
+}
+
 #else // defined(BOOST_FILESYSTEM_USE_STATX)
 
 //! Returns \c true if the two \c stat structures refer to the same file
@@ -453,6 +459,16 @@ inline mode_t get_mode(struct ::stat const& st) BOOST_NOEXCEPT
 inline uintmax_t get_size(struct ::stat const& st) BOOST_NOEXCEPT
 {
     return st.st_size;
+}
+
+//! Returns optimal block size from \c stat structure
+inline std::size_t get_blksize(struct ::stat const& st) BOOST_NOEXCEPT
+{
+#if defined(BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE)
+    return st.st_blksize;
+#else
+    return 4096u; // a suitable default used on most modern SSDs/HDDs
+#endif
 }
 
 #endif // defined(BOOST_FILESYSTEM_USE_STATX)
@@ -512,12 +528,18 @@ inline int data_sync(int fd)
 #endif
 }
 
-typedef int (copy_file_data_t)(int infile, int outfile, uintmax_t size);
+typedef int (copy_file_data_t)(int infile, int outfile, uintmax_t size, std::size_t blksize);
 
 //! copy_file implementation that uses read/write loop
-int copy_file_data_read_write(int infile, int outfile, uintmax_t size)
+int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size_t blksize)
 {
-    BOOST_CONSTEXPR_OR_CONST std::size_t buf_sz = 65536u;
+    // Min buffer size is selected to minimize the overhead from system calls.
+    // The value is picked based on coreutils cp(1) data, as described in:
+    // https://github.com/coreutils/coreutils/blob/d1b0257077c0b0f0ee25087efd46270345d1dd1f/src/ioblksize.h#L23-L72
+    BOOST_CONSTEXPR_OR_CONST std::size_t min_buf_sz = 256u * 1024u;
+    std::size_t buf_sz = min_buf_sz;
+    if (buf_sz < blksize)
+        buf_sz = blksize;
     boost::scoped_array< char > buf(new (std::nothrow) char[buf_sz]);
     if (BOOST_UNLIKELY(!buf.get()))
         return ENOMEM;
@@ -564,7 +586,7 @@ atomic_ns::atomic< copy_file_data_t* > copy_file_data(&copy_file_data_read_write
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
 //! copy_file implementation that uses sendfile loop. Requires sendfile to support file descriptors.
-int copy_file_data_sendfile(int infile, int outfile, uintmax_t size)
+int copy_file_data_sendfile(int infile, int outfile, uintmax_t size, std::size_t blksize)
 {
     // sendfile will not send more than this amount of data in one call
     BOOST_CONSTEXPR_OR_CONST std::size_t max_send_size = 0x7ffff000u;
@@ -588,7 +610,7 @@ int copy_file_data_sendfile(int infile, int outfile, uintmax_t size)
                 if (err == EINVAL)
                 {
                 fallback_to_read_write:
-                    return copy_file_data_read_write(infile, outfile, size);
+                    return copy_file_data_read_write(infile, outfile, size, blksize);
                 }
 
                 if (err == ENOSYS)
@@ -612,7 +634,7 @@ int copy_file_data_sendfile(int infile, int outfile, uintmax_t size)
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
 //! copy_file implementation that uses copy_file_range loop. Requires copy_file_range to support cross-filesystem copying.
-int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size)
+int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size, std::size_t blksize)
 {
     // Although copy_file_range does not document any particular upper limit of one transfer, still use some upper bound to guarantee
     // that size_t is not overflown in case if off_t is larger and the file size does not fit in size_t.
@@ -645,14 +667,14 @@ int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size)
 #if !defined(BOOST_FILESYSTEM_USE_SENDFILE)
                 fallback_to_read_write:
 #endif
-                    return copy_file_data_read_write(infile, outfile, size);
+                    return copy_file_data_read_write(infile, outfile, size, blksize);
                 }
 
                 if (err == EXDEV)
                 {
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
                 fallback_to_sendfile:
-                    return copy_file_data_sendfile(infile, outfile, size);
+                    return copy_file_data_sendfile(infile, outfile, size, blksize);
 #else
                     goto fallback_to_read_write;
 #endif
@@ -1472,7 +1494,8 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
             goto fail_errno;
     }
 
-    err = detail::copy_file_data.load(atomic_ns::memory_order_relaxed)(infile.fd, outfile.fd, get_size(from_stat));
+    // Note: Use block size of the target file since it is most important for writing performance.
+    err = detail::copy_file_data.load(atomic_ns::memory_order_relaxed)(infile.fd, outfile.fd, get_size(from_stat), get_blksize(to_stat));
     if (BOOST_UNLIKELY(err != 0))
         goto fail; // err already contains the error code
 
