@@ -76,8 +76,10 @@
 #include <limits.h>
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
+#include <sys/vfs.h>
 #include <sys/utsname.h>
 #include <sys/syscall.h>
+#include <linux/magic.h>
 #if !defined(BOOST_FILESYSTEM_DISABLE_SENDFILE)
 #include <sys/sendfile.h>
 #define BOOST_FILESYSTEM_USE_SENDFILE
@@ -709,6 +711,43 @@ int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size, std:
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
+//! copy_file_data wrapper that tests if a read/write loop must be used for a given filesystem
+template< copy_file_data_t* CopyFileData >
+int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
+{
+    {
+        // Some filesystems have regular files with generated content. Such files have arbitrary size, including zero,
+        // but have actual content. Linux system calls sendfile or copy_file_range will not copy contents of such files,
+        // so we must use a read/write loop to handle them.
+        struct statfs sfs;
+        while (true)
+        {
+            int err = ::fstatfs(infile, &sfs);
+            if (BOOST_UNLIKELY(err < 0))
+            {
+                err = errno;
+                if (err == EINTR)
+                    continue;
+
+                goto fallback_to_read_write;
+            }
+
+            break;
+        }
+
+        if (BOOST_UNLIKELY(sfs.f_type == PROC_SUPER_MAGIC ||
+            sfs.f_type == SYSFS_MAGIC ||
+            sfs.f_type == TRACEFS_MAGIC ||
+            sfs.f_type == DEBUGFS_MAGIC))
+        {
+        fallback_to_read_write:
+            return copy_file_data_read_write(infile, outfile, size, blksize);
+        }
+    }
+
+    return CopyFileData(infile, outfile, size, blksize);
+}
+
 struct copy_file_data_initializer
 {
     copy_file_data_initializer()
@@ -727,14 +766,14 @@ struct copy_file_data_initializer
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
         // sendfile started accepting file descriptors as the target in Linux 2.6.33
         if (major > 2u || (major == 2u && (minor > 6u || (minor == 6u && patch >= 33u))))
-            cfd = &copy_file_data_sendfile;
+            cfd = &check_fs_type< &copy_file_data_sendfile >;
 #endif
 
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
         // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
         // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
         if (major > 4u || (major == 4u && minor >= 5u))
-            cfd = &copy_file_data_copy_file_range;
+            cfd = &check_fs_type< &copy_file_data_copy_file_range >;
 #endif
 
         copy_file_data.store(cfd, atomic_ns::memory_order_relaxed);

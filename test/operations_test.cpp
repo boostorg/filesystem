@@ -1780,6 +1780,25 @@ void copy_file_tests(const fs::path& f1x, const fs::path& d1x)
     BOOST_TEST(copy_ex_ok);
     BOOST_TEST(file_copied);
     verify_file(d1x / "f2", "file-f1");
+
+    // Test copy_file with special files with generated content. Such files have zero size,
+    // but have contents.
+    if (fs::is_regular_file("/proc/self/cmdline"))
+    {
+        file_copied = false;
+        copy_ex_ok = true;
+        try
+        {
+            file_copied = fs::copy_file("/proc/self/cmdline", d1x / "cmdline");
+        }
+        catch (const fs::filesystem_error&)
+        {
+            copy_ex_ok = false;
+        }
+        BOOST_TEST(copy_ex_ok);
+        BOOST_TEST(file_copied);
+        BOOST_TEST_GT(fs::file_size(d1x / "cmdline"), 0u);
+    }
 }
 
 //  symlink_status_tests  -------------------------------------------------------------//
