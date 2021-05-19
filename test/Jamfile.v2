@@ -82,3 +82,8 @@ run issues/70-71-copy.cpp ;
 
 run issues/99_canonical_with_junction_point.cpp ;
 run issues/reparse_tag_file_placeholder.cpp ;
+
+if ! [ os.environ BOOST_FILESYSTEM_TEST_WITHOUT_EXAMPLES ]
+{
+    build-project ../example ;
+}
