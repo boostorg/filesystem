@@ -16,10 +16,10 @@ project
 exe tut0 : tut0.cpp ;
 exe tut1 : tut1.cpp ;
 exe tut2 : tut2.cpp ;
-exe tut3 : tut3.cpp ;
-exe tut4 : tut4.cpp ;
+exe tut3 : tut3.cpp : <cxxstd>11 ;
+exe tut4 : tut4.cpp : <cxxstd>11 ;
 exe tut5 : tut5.cpp ;
-exe path_info : path_info.cpp ;
+exe path_info : path_info.cpp : <cxxstd>11 ;
 exe file_status : file_status.cpp ;
 exe file_size : file_size.cpp ;
 exe directory_symlink_parent_resolution : directory_symlink_parent_resolution.cpp ;
