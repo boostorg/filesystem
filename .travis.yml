@@ -29,7 +29,7 @@ matrix:
     - os: linux
       dist: trusty
       compiler: gcc-4.4
-      env: TOOLSET=gcc COMPILER=g++-4.4 CXXSTD=98,0x EXTRA_TESTS=1
+      env: TOOLSET=gcc COMPILER=g++-4.4 CXXSTD=98,0x
       addons:
         apt:
           packages:
@@ -73,7 +73,7 @@ matrix:
     - os: linux
       dist: xenial
       compiler: gcc-4.9
-      env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=03,11
+      env: TOOLSET=gcc COMPILER=g++-4.9 CXXSTD=03,11 EXTRA_TESTS=1
       addons:
         apt:
           packages:
