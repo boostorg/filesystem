@@ -23,6 +23,7 @@
 #include <boost/smart_ptr/scoped_ptr.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/core/bit.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/assert.hpp>
 #include <new> // std::bad_alloc, std::nothrow
@@ -548,13 +549,19 @@ typedef int (copy_file_data_t)(int infile, int outfile, uintmax_t size, std::siz
 //! copy_file implementation that uses read/write loop
 int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size_t blksize)
 {
-    // Min buffer size is selected to minimize the overhead from system calls.
-    // The value is picked based on coreutils cp(1) data, as described in:
+    // Min and max buffer sizes are selected to minimize the overhead from system calls.
+    // The values are picked based on coreutils cp(1) benchmarking data described here:
     // https://github.com/coreutils/coreutils/blob/d1b0257077c0b0f0ee25087efd46270345d1dd1f/src/ioblksize.h#L23-L72
-    BOOST_CONSTEXPR_OR_CONST std::size_t min_buf_sz = 256u * 1024u;
-    std::size_t buf_sz = min_buf_sz;
-    if (buf_sz < blksize)
-        buf_sz = blksize;
+    BOOST_CONSTEXPR_OR_CONST std::size_t min_buf_sz = 8u * 1024u;
+    BOOST_CONSTEXPR_OR_CONST std::size_t max_buf_sz = 256u * 1024u;
+    uintmax_t raw_buf_sz = size;
+    if (raw_buf_sz < blksize)
+        raw_buf_sz = blksize;
+    if (raw_buf_sz < min_buf_sz)
+        raw_buf_sz = min_buf_sz;
+    if (raw_buf_sz > max_buf_sz)
+        raw_buf_sz = max_buf_sz;
+    const std::size_t buf_sz = static_cast< std::size_t >(boost::core::bit_ceil(raw_buf_sz));
     boost::scoped_array< char > buf(new (std::nothrow) char[buf_sz]);
     if (BOOST_UNLIKELY(!buf.get()))
         return ENOMEM;
