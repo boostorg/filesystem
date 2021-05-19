@@ -76,10 +76,10 @@
 #include <limits.h>
 
 #if defined(linux) || defined(__linux) || defined(__linux__)
+
 #include <sys/vfs.h>
 #include <sys/utsname.h>
 #include <sys/syscall.h>
-#include <linux/magic.h>
 #if !defined(BOOST_FILESYSTEM_DISABLE_SENDFILE)
 #include <sys/sendfile.h>
 #define BOOST_FILESYSTEM_USE_SENDFILE
@@ -93,6 +93,23 @@
 #endif
 #define BOOST_FILESYSTEM_USE_STATX
 #endif // !defined(BOOST_FILESYSTEM_DISABLE_STATX) && (defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL))
+
+#include <linux/magic.h>
+
+// Some filesystem type magic constants are not defined in older kernel headers
+#ifndef PROC_SUPER_MAGIC
+#define PROC_SUPER_MAGIC 0x9fa0
+#endif
+#ifndef SYSFS_MAGIC
+#define SYSFS_MAGIC 0x62656572
+#endif
+#ifndef TRACEFS_MAGIC
+#define TRACEFS_MAGIC 0x74726163
+#endif
+#ifndef DEBUGFS_MAGIC
+#define DEBUGFS_MAGIC 0x64626720
+#endif
+
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
 
 #if defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
