@@ -29,6 +29,7 @@ environment:
     - TOOLSET: msvc-14.2
       ADDRMD: 32,64
       CXXSTD: 14,17
+      THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
 # clang-win fails to link the library
 #    - TOOLSET: clang-win
@@ -38,6 +39,7 @@ environment:
     - TOOLSET: gcc
       CXXSTD: 03,11,14,1z
       ADDPATH: C:\cygwin\bin;
+      THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: gcc
       CXXSTD: 03,11,14,1z
@@ -57,6 +59,7 @@ environment:
     - TOOLSET: gcc
       CXXSTD: 03,11,14,1z
       ADDPATH: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin;
+      THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TEST_CMAKE: 1
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
@@ -87,7 +90,8 @@ test_script:
   - if "%EXTRA_TESTS%" == "" set BOOST_FILESYSTEM_TEST_WITHOUT_EXAMPLES=1
   - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
   - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
-  - b2 -j %NUMBER_OF_PROCESSORS% libs/filesystem/test toolset=%TOOLSET% %CXXSTD% %ADDRMD%
+  - if not "%THREADING%" == "" set THREADING=threading=%THREADING%
+  - b2 -j %NUMBER_OF_PROCESSORS% libs/filesystem/test toolset=%TOOLSET% %CXXSTD% %ADDRMD% %THREADING%
 
 for:
   - matrix:
