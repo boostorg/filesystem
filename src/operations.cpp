@@ -546,26 +546,15 @@ inline int data_sync(int fd)
 
 typedef int (copy_file_data_t)(int infile, int outfile, uintmax_t size, std::size_t blksize);
 
-//! copy_file implementation that uses read/write loop
-int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size_t blksize)
-{
-    // Min and max buffer sizes are selected to minimize the overhead from system calls.
-    // The values are picked based on coreutils cp(1) benchmarking data described here:
-    // https://github.com/coreutils/coreutils/blob/d1b0257077c0b0f0ee25087efd46270345d1dd1f/src/ioblksize.h#L23-L72
-    BOOST_CONSTEXPR_OR_CONST std::size_t min_buf_sz = 8u * 1024u;
-    BOOST_CONSTEXPR_OR_CONST std::size_t max_buf_sz = 256u * 1024u;
-    uintmax_t raw_buf_sz = size;
-    if (raw_buf_sz < blksize)
-        raw_buf_sz = blksize;
-    if (raw_buf_sz < min_buf_sz)
-        raw_buf_sz = min_buf_sz;
-    if (raw_buf_sz > max_buf_sz)
-        raw_buf_sz = max_buf_sz;
-    const std::size_t buf_sz = static_cast< std::size_t >(boost::core::bit_ceil(raw_buf_sz));
-    boost::scoped_array< char > buf(new (std::nothrow) char[buf_sz]);
-    if (BOOST_UNLIKELY(!buf.get()))
-        return ENOMEM;
+// Min and max buffer sizes are selected to minimize the overhead from system calls.
+// The values are picked based on coreutils cp(1) benchmarking data described here:
+// https://github.com/coreutils/coreutils/blob/d1b0257077c0b0f0ee25087efd46270345d1dd1f/src/ioblksize.h#L23-L72
+BOOST_CONSTEXPR_OR_CONST uint_least32_t min_read_write_buf_size = 8u * 1024u;
+BOOST_CONSTEXPR_OR_CONST uint_least32_t max_read_write_buf_size = 256u * 1024u;
 
+//! copy_file read/write loop implementation
+int copy_file_data_read_write_impl(int infile, int outfile, char* buf, std::size_t buf_size)
+{
 #if defined(POSIX_FADV_SEQUENTIAL)
     ::posix_fadvise(infile, 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
@@ -575,7 +564,7 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
     // as we can read from the input file.
     while (true)
     {
-        ssize_t sz_read = ::read(infile, buf.get(), buf_sz);
+        ssize_t sz_read = ::read(infile, buf, buf_size);
         if (sz_read == 0)
             break;
         if (BOOST_UNLIKELY(sz_read < 0))
@@ -590,7 +579,7 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
         // Marc Rochkind, Addison-Wesley, 2004, page 94
         for (ssize_t sz_wrote = 0; sz_wrote < sz_read;)
         {
-            ssize_t sz = ::write(outfile, buf.get() + sz_wrote, static_cast< std::size_t >(sz_read - sz_wrote));
+            ssize_t sz = ::write(outfile, buf + sz_wrote, static_cast< std::size_t >(sz_read - sz_wrote));
             if (BOOST_UNLIKELY(sz < 0))
             {
                 int err = errno;
@@ -604,6 +593,33 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
     }
 
     return 0;
+}
+
+//! copy_file implementation that uses read/write loop (fallback using a stack buffer)
+int copy_file_data_read_write_stack_buf(int infile, int outfile)
+{
+    char stack_buf[min_read_write_buf_size];
+    return copy_file_data_read_write_impl(infile, outfile, stack_buf, sizeof(stack_buf));
+}
+
+//! copy_file implementation that uses read/write loop
+int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size_t blksize)
+{
+    {
+        uintmax_t buf_sz = size;
+        if (buf_sz < blksize)
+            buf_sz = blksize;
+        if (buf_sz < min_read_write_buf_size)
+            buf_sz = min_read_write_buf_size;
+        if (buf_sz > max_read_write_buf_size)
+            buf_sz = max_read_write_buf_size;
+        const std::size_t buf_size = static_cast< std::size_t >(boost::core::bit_ceil(static_cast< uint_least32_t >(buf_sz)));
+        boost::scoped_array< char > buf(new (std::nothrow) char[buf_size]);
+        if (BOOST_LIKELY(!!buf.get()))
+            return copy_file_data_read_write_impl(infile, outfile, buf.get(), buf_size);
+    }
+
+    return copy_file_data_read_write_stack_buf(infile, outfile);
 }
 
 //! Pointer to the actual implementation of the copy_file_data implementation
