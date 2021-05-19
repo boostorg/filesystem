@@ -84,9 +84,16 @@ rule check-cxx11-hdr-atomic ( properties * )
 {
     local result ;
 
-    if ! [ configure.builds ../../config/checks//cxx11_hdr_atomic : $(properties) : "has <atomic> header" ]
+    if ! <threading>single in $(properties)
     {
-        result = <library>/boost/atomic//boost_atomic ;
+        if ! [ configure.builds ../../config/checks//cxx11_hdr_atomic : $(properties) : "has <atomic> header" ]
+        {
+            result = <library>/boost/atomic//boost_atomic ;
+        }
+    }
+    else
+    {
+        result = <define>BOOST_FILESYSTEM_SINGLE_THREADED ;
     }
 
     #ECHO Result: $(result) ;

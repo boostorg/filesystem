@@ -151,7 +151,20 @@ using std::time_t;
 #endif // BOOST_WINDOWS_API
 
 #include "error_handling.hpp"
+
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+
 #include "atomic.hpp"
+
+#define BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(a) a.load(atomic_ns::memory_order_relaxed)
+#define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a.store(x, atomic_ns::memory_order_relaxed)
+
+#else // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+
+#define BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(a) a
+#define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a = x
+
+#endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -623,7 +636,11 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
 }
 
 //! Pointer to the actual implementation of the copy_file_data implementation
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
 atomic_ns::atomic< copy_file_data_t* > copy_file_data(&copy_file_data_read_write);
+#else
+copy_file_data_t* copy_file_data = &copy_file_data_read_write;
+#endif
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
@@ -657,7 +674,7 @@ int copy_file_data_sendfile(int infile, int outfile, uintmax_t size, std::size_t
 
                 if (err == ENOSYS)
                 {
-                    copy_file_data.store(&copy_file_data_read_write, atomic_ns::memory_order_relaxed);
+                    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, &copy_file_data_read_write);
                     goto fallback_to_read_write;
                 }
             }
@@ -725,10 +742,10 @@ int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size, std:
                 if (err == ENOSYS)
                 {
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-                    copy_file_data.store(&copy_file_data_sendfile, atomic_ns::memory_order_relaxed);
+                    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, &copy_file_data_sendfile);
                     goto fallback_to_sendfile;
 #else
-                    copy_file_data.store(&copy_file_data_read_write, atomic_ns::memory_order_relaxed);
+                    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, &copy_file_data_read_write);
                     goto fallback_to_read_write;
 #endif
                 }
@@ -813,7 +830,7 @@ struct copy_file_data_initializer
             cfd = &check_fs_type< &copy_file_data_copy_file_range >;
 #endif
 
-        copy_file_data.store(cfd, atomic_ns::memory_order_relaxed);
+        BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, cfd);
     }
 } const copy_file_data_init;
 
@@ -1575,7 +1592,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     }
 
     // Note: Use block size of the target file since it is most important for writing performance.
-    err = detail::copy_file_data.load(atomic_ns::memory_order_relaxed)(infile.fd, outfile.fd, get_size(from_stat), get_blksize(to_stat));
+    err = BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(detail::copy_file_data)(infile.fd, outfile.fd, get_size(from_stat), get_blksize(to_stat));
     if (BOOST_UNLIKELY(err != 0))
         goto fail; // err already contains the error code
 
