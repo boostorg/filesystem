@@ -631,13 +631,13 @@ atomic_ns::atomic< copy_file_data_t* > copy_file_data(&copy_file_data_read_write
 int copy_file_data_sendfile(int infile, int outfile, uintmax_t size, std::size_t blksize)
 {
     // sendfile will not send more than this amount of data in one call
-    BOOST_CONSTEXPR_OR_CONST std::size_t max_send_size = 0x7ffff000u;
+    BOOST_CONSTEXPR_OR_CONST std::size_t max_batch_size = 0x7ffff000u;
     uintmax_t offset = 0u;
     while (offset < size)
     {
         uintmax_t size_left = size - offset;
-        std::size_t size_to_copy = max_send_size;
-        if (size_left < static_cast< uintmax_t >(max_send_size))
+        std::size_t size_to_copy = max_batch_size;
+        if (size_left < static_cast< uintmax_t >(max_batch_size))
             size_to_copy = static_cast< std::size_t >(size_left);
         ssize_t sz = ::sendfile(outfile, infile, NULL, size_to_copy);
         if (BOOST_UNLIKELY(sz < 0))
@@ -680,13 +680,13 @@ int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size, std:
 {
     // Although copy_file_range does not document any particular upper limit of one transfer, still use some upper bound to guarantee
     // that size_t is not overflown in case if off_t is larger and the file size does not fit in size_t.
-    BOOST_CONSTEXPR_OR_CONST std::size_t max_send_size = 0x7ffff000u;
+    BOOST_CONSTEXPR_OR_CONST std::size_t max_batch_size = 0x7ffff000u;
     uintmax_t offset = 0u;
     while (offset < size)
     {
         uintmax_t size_left = size - offset;
-        std::size_t size_to_copy = max_send_size;
-        if (size_left < static_cast< uintmax_t >(max_send_size))
+        std::size_t size_to_copy = max_batch_size;
+        if (size_left < static_cast< uintmax_t >(max_batch_size))
             size_to_copy = static_cast< std::size_t >(size_left);
         // Note: Use syscall directly to avoid depending on libc version. copy_file_range is added in glibc 2.27.
         // uClibc-ng does not have copy_file_range as of the time of this writing (the latest uClibc-ng release is 1.0.33).
