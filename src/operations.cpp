@@ -1684,7 +1684,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     struct local
     {
         //! Callback that is called to report progress of \c CopyFileExW
-        static DWORD on_copy_file_progress(
+        static DWORD WINAPI on_copy_file_progress(
             LARGE_INTEGER total_file_size,
             LARGE_INTEGER total_bytes_transferred,
             LARGE_INTEGER stream_size,
@@ -1695,7 +1695,8 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
             HANDLE to_handle,
             LPVOID ctx)
         {
-            if (total_bytes_transferred.QuadPart == total_file_size.QuadPart)
+            // For each stream, CopyFileExW will open a separate pair of file handles, so we need to flush each stream separately.
+            if (stream_bytes_transferred.QuadPart == stream_size.QuadPart)
             {
                 BOOL res = ::FlushFileBuffers(to_handle);
                 if (BOOST_UNLIKELY(!res))
