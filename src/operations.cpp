@@ -1624,7 +1624,8 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     if (BOOST_UNLIKELY(err < 0))
     {
         err = errno;
-        if (err != EINTR)
+        // EINPROGRESS is an allowed error code in future POSIX revisions, according to https://www.austingroupbugs.net/view.php?id=529#c1200.
+        if (err != EINTR && err != EINPROGRESS)
             goto fail;
     }
 
