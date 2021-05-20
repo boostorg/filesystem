@@ -1676,18 +1676,68 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         copy_flags &= ~static_cast< DWORD >(COPY_FILE_FAIL_IF_EXISTS);
     }
 
+    struct callback_context
+    {
+        DWORD flush_error;
+    };
+
+    struct local
+    {
+        //! Callback that is called to report progress of \c CopyFileExW
+        static DWORD on_copy_file_progress(
+            LARGE_INTEGER total_file_size,
+            LARGE_INTEGER total_bytes_transferred,
+            LARGE_INTEGER stream_size,
+            LARGE_INTEGER stream_bytes_transferred,
+            DWORD stream_number,
+            DWORD callback_reason,
+            HANDLE from_handle,
+            HANDLE to_handle,
+            LPVOID ctx)
+        {
+            if (total_bytes_transferred.QuadPart == total_file_size.QuadPart)
+            {
+                BOOL res = ::FlushFileBuffers(to_handle);
+                if (BOOST_UNLIKELY(!res))
+                {
+                    callback_context* context = static_cast< callback_context* >(ctx);
+                    if (BOOST_LIKELY(context->flush_error == 0u))
+                        context->flush_error = ::GetLastError();
+                }
+            }
+
+            return PROGRESS_CONTINUE;
+        }
+    };
+
+    callback_context cb_context = {};
+    LPPROGRESS_ROUTINE cb = NULL;
+    LPVOID cb_ctx = NULL;
+
     if ((options & (static_cast< unsigned int >(copy_options::synchronize_data) | static_cast< unsigned int >(copy_options::synchronize))) != 0u)
-        copy_flags |= COPY_FILE_NO_BUFFERING;
+    {
+        cb = &local::on_copy_file_progress;
+        cb_ctx = &cb_context;
+    }
 
     BOOL cancelled = FALSE;
-    BOOL res = ::CopyFileExW(from.c_str(), to.c_str(), NULL, NULL, &cancelled, copy_flags);
-    if (!res)
+    BOOL res = ::CopyFileExW(from.c_str(), to.c_str(), cb, cb_ctx, &cancelled, copy_flags);
+    DWORD err;
+    if (BOOST_UNLIKELY(!res))
     {
-        DWORD err = ::GetLastError();
+        err = ::GetLastError();
         if ((err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
             return false;
+
+    copy_failed:
         emit_error(err, from, to, ec, "boost::filesystem::copy_file");
         return false;
+    }
+
+    if (BOOST_UNLIKELY(cb_context.flush_error != 0u))
+    {
+        err = cb_context.flush_error;
+        goto copy_failed;
     }
 
     return true;
