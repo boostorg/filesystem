@@ -253,11 +253,6 @@ typedef struct _REPARSE_DATA_BUFFER
 #define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
 #endif
 
-// This constant is not defined in Cygwin, MinGW and MinGW-w64. CopyFileEx supports unbuffered file IO since Windows Vista.
-#ifndef COPY_FILE_NO_BUFFERING
-#define COPY_FILE_NO_BUFFERING 0x00001000
-#endif
-
 // Our convenience type for allocating REPARSE_DATA_BUFFER along with sufficient space after it
 union reparse_data_buffer
 {
