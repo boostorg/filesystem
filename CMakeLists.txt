@@ -81,6 +81,10 @@ target_compile_definitions(boost_filesystem
         BOOST_FILESYSTEM_SOURCE
 )
 
+if(WIN32 OR CYGWIN)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_USE_WINDOWS_H WIN32_LEAN_AND_MEAN NOMINMAX)
+endif()
+
 if(BOOST_FILESYSTEM_NO_DEPRECATED)
     target_compile_definitions(boost_filesystem PUBLIC BOOST_FILESYSTEM_NO_DEPRECATED)
 endif()
