@@ -1799,6 +1799,75 @@ void copy_file_tests(const fs::path& f1x, const fs::path& d1x)
         BOOST_TEST(file_copied);
         BOOST_TEST_GT(fs::file_size(d1x / "cmdline"), 0u);
     }
+
+#ifdef BOOST_WINDOWS_API
+    // Test copying files with multiple NTFS streams
+    fs::path multi_stream_path = d1x / "multi-stream";
+    fs::path multi_stream_alt_path = d1x / "multi-stream:alt-stream";
+    fs::path multi_stream_copy_path = d1x / "multi-stream-copy";
+    fs::path multi_stream_alt_copy_path = d1x / "multi-stream-copy:alt-stream";
+    create_file(multi_stream_path, "multi-stream:default");
+    try
+    {
+        // Check that the filesystem supports alternate streams
+        create_file(multi_stream_alt_path, "multi-stream:alternate");
+        verify_file(multi_stream_alt_path, "multi-stream:alternate");
+
+        fs::remove(multi_stream_copy_path);
+        copy_ex_ok = true;
+        file_copied = false;
+        try
+        {
+            file_copied = fs::copy_file(multi_stream_path, multi_stream_copy_path);
+        }
+        catch (const fs::filesystem_error&)
+        {
+            copy_ex_ok = false;
+        }
+        BOOST_TEST(copy_ex_ok);
+        BOOST_TEST(file_copied);
+        verify_file(multi_stream_copy_path, "multi-stream:default");
+        verify_file(multi_stream_alt_copy_path, "multi-stream:alternate");
+
+        fs::remove(multi_stream_copy_path);
+        copy_ex_ok = true;
+        file_copied = false;
+        try
+        {
+            file_copied = fs::copy_file(multi_stream_path, multi_stream_copy_path, fs::copy_options::synchronize_data);
+        }
+        catch (const fs::filesystem_error&)
+        {
+            copy_ex_ok = false;
+        }
+        BOOST_TEST(copy_ex_ok);
+        BOOST_TEST(file_copied);
+        verify_file(multi_stream_copy_path, "multi-stream:default");
+        verify_file(multi_stream_alt_copy_path, "multi-stream:alternate");
+
+        fs::remove(multi_stream_copy_path);
+        copy_ex_ok = true;
+        file_copied = false;
+        try
+        {
+            file_copied = fs::copy_file(multi_stream_path, multi_stream_copy_path, fs::copy_options::synchronize);
+        }
+        catch (const fs::filesystem_error&)
+        {
+            copy_ex_ok = false;
+        }
+        BOOST_TEST(copy_ex_ok);
+        BOOST_TEST(file_copied);
+        verify_file(multi_stream_copy_path, "multi-stream:default");
+        verify_file(multi_stream_alt_copy_path, "multi-stream:alternate");
+
+        fs::remove(multi_stream_copy_path);
+    }
+    catch (const fs::filesystem_error& e)
+    {
+        cout << "Multiple streams per file are not supported: " << e.what() << "\nSkipping multi-stream tests..." << endl;
+    }
+#endif // BOOST_WINDOWS_API
 }
 
 //  symlink_status_tests  -------------------------------------------------------------//
