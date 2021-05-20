@@ -471,7 +471,7 @@ script:
   - |-
     echo "using $TOOLSET : : $COMPILER ;" > ~/user-config.jam
   - BUILD_JOBS=`(nproc || sysctl -n hw.ncpu) 2> /dev/null`
-  - if [ -z "$EXTRA_TESTS" ]; then export BOOST_FILESYSTEM_TEST_WITHOUT_EXAMPLES=1; fi
+  - if [ -n "$EXTRA_TESTS" ]; then export BOOST_FILESYSTEM_TEST_WITH_EXAMPLES=1; fi
   - ./b2 -j $BUILD_JOBS libs/filesystem/test toolset=$TOOLSET cxxstd=$CXXSTD ${THREADING:+threading="$THREADING"} ${UBSAN:+cxxflags=-fsanitize=undefined cxxflags=-fno-sanitize-recover=undefined linkflags=-fsanitize=undefined define=UBSAN=1 debug-symbols=on visibility=global} ${CXXFLAGS:+cxxflags="$CXXFLAGS"} ${LINKFLAGS:+linkflags="$LINKFLAGS"}
 
 notifications:

@@ -87,7 +87,7 @@ build: off
 
 test_script:
   - PATH=%ADDPATH%%PATH%
-  - if "%EXTRA_TESTS%" == "" set BOOST_FILESYSTEM_TEST_WITHOUT_EXAMPLES=1
+  - if not "%EXTRA_TESTS%" == "" set BOOST_FILESYSTEM_TEST_WITH_EXAMPLES=1
   - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
   - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
   - if not "%THREADING%" == "" set THREADING=threading=%THREADING%
