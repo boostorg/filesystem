@@ -615,6 +615,9 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
 {
     {
         uintmax_t buf_sz = size;
+        // Prefer the buffer to be larger than the file size so that we don't have
+        // to perform an extra read if the file fits in the buffer exactly.
+        buf_sz += (buf_sz < ~static_cast< uintmax_t >(0u));
         if (buf_sz < blksize)
             buf_sz = blksize;
         if (buf_sz < min_read_write_buf_size)
