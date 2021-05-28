@@ -11,6 +11,8 @@
 #include "platform_config.hpp"
 
 #include <string>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_category.hpp>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/exception.hpp>
@@ -22,7 +24,7 @@
 namespace boost {
 namespace filesystem {
 
-BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what_arg, system::error_code ec) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const char* what_arg, system::error_code ec) :
     system::system_error(ec, what_arg)
 {
     try
@@ -35,7 +37,20 @@ BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what
     }
 }
 
-BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what_arg, path const& path1_arg, system::error_code ec) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(std::string const& what_arg, system::error_code ec) :
+    system::system_error(ec, what_arg)
+{
+    try
+    {
+        m_imp_ptr.reset(new impl());
+    }
+    catch (...)
+    {
+        m_imp_ptr.reset();
+    }
+}
+
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const char* what_arg, path const& path1_arg, system::error_code ec) :
     system::system_error(ec, what_arg)
 {
     try
@@ -48,7 +63,33 @@ BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what
     }
 }
 
-BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const std::string& what_arg, path const& path1_arg, path const& path2_arg, system::error_code ec) :
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(std::string const& what_arg, path const& path1_arg, system::error_code ec) :
+    system::system_error(ec, what_arg)
+{
+    try
+    {
+        m_imp_ptr.reset(new impl(path1_arg));
+    }
+    catch (...)
+    {
+        m_imp_ptr.reset();
+    }
+}
+
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(const char* what_arg, path const& path1_arg, path const& path2_arg, system::error_code ec) :
+    system::system_error(ec, what_arg)
+{
+    try
+    {
+        m_imp_ptr.reset(new impl(path1_arg, path2_arg));
+    }
+    catch (...)
+    {
+        m_imp_ptr.reset();
+    }
+}
+
+BOOST_FILESYSTEM_DECL filesystem_error::filesystem_error(std::string const& what_arg, path const& path1_arg, path const& path2_arg, system::error_code ec) :
     system::system_error(ec, what_arg)
 {
     try
@@ -80,32 +121,31 @@ BOOST_FILESYSTEM_DECL filesystem_error::~filesystem_error() BOOST_NOEXCEPT_OR_NO
 
 BOOST_FILESYSTEM_DECL const char* filesystem_error::what() const BOOST_NOEXCEPT_OR_NOTHROW
 {
-    if (m_imp_ptr.get())
-        try
+    if (m_imp_ptr.get()) try
+    {
+        if (m_imp_ptr->m_what.empty())
         {
-            if (m_imp_ptr->m_what.empty())
+            m_imp_ptr->m_what = system::system_error::what();
+            if (!m_imp_ptr->m_path1.empty())
             {
-                m_imp_ptr->m_what = system::system_error::what();
-                if (!m_imp_ptr->m_path1.empty())
-                {
-                    m_imp_ptr->m_what += ": \"";
-                    m_imp_ptr->m_what += m_imp_ptr->m_path1.string();
-                    m_imp_ptr->m_what += "\"";
-                }
-                if (!m_imp_ptr->m_path2.empty())
-                {
-                    m_imp_ptr->m_what += ", \"";
-                    m_imp_ptr->m_what += m_imp_ptr->m_path2.string();
-                    m_imp_ptr->m_what += "\"";
-                }
+                m_imp_ptr->m_what += ": \"";
+                m_imp_ptr->m_what += m_imp_ptr->m_path1.string();
+                m_imp_ptr->m_what += "\"";
             }
+            if (!m_imp_ptr->m_path2.empty())
+            {
+                m_imp_ptr->m_what += ", \"";
+                m_imp_ptr->m_what += m_imp_ptr->m_path2.string();
+                m_imp_ptr->m_what += "\"";
+            }
+        }
 
-            return m_imp_ptr->m_what.c_str();
-        }
-        catch (...)
-        {
-            m_imp_ptr->m_what.clear();
-        }
+        return m_imp_ptr->m_what.c_str();
+    }
+    catch (...)
+    {
+        m_imp_ptr->m_what.clear();
+    }
 
     return system::system_error::what();
 }
