@@ -2023,7 +2023,7 @@ path current_path(error_code* ec)
     }
     else if (BOOST_LIKELY(!local::getcwd_error(ec)))
     {
-        for (std::size_t path_max = sizeof(small_buf);; path_max *= 2u) // loop 'til buffer large enough
+        for (std::size_t path_max = sizeof(small_buf) * 2u;; path_max *= 2u) // loop 'til buffer large enough
         {
             if (BOOST_UNLIKELY(path_max > absolute_path_max))
             {
