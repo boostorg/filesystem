@@ -1127,19 +1127,19 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     if (ec)
         ec->clear();
 
-    path result;
     path source = p;
     if (!p.is_absolute())
     {
         source = detail::absolute(p, base, ec);
         if (ec && *ec)
-            return result;
+        {
+        return_empty_path:
+            return path();
+        }
     }
 
-    path root(source.root_path());
-
     system::error_code local_ec;
-    file_status stat(status(source, local_ec));
+    file_status stat(detail::status(source, &local_ec));
 
     if (stat.type() == fs::file_not_found)
     {
@@ -1150,7 +1150,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 error_code(system::errc::no_such_file_or_directory, system::generic_category())));
         }
         ec->assign(system::errc::no_such_file_or_directory, system::generic_category());
-        return result;
+        goto return_empty_path;
     }
     else if (local_ec)
     {
@@ -1158,15 +1158,14 @@ path canonical(path const& p, path const& base, system::error_code* ec)
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::canonical", source, local_ec));
 
         *ec = local_ec;
-        return result;
+        goto return_empty_path;
     }
 
-    bool scan = true;
-    while (scan)
+    path root(source.root_path());
+    path result;
+    while (true)
     {
-        scan = false;
-        result.clear();
-        for (path::iterator itr = source.begin(); itr != source.end(); ++itr)
+        for (path::iterator itr = source.begin(), end = source.end(); itr != end; ++itr)
         {
             if (*itr == dot_path())
                 continue;
@@ -1185,35 +1184,42 @@ path canonical(path const& p, path const& base, system::error_code* ec)
             if (!result.is_absolute())
                 continue;
 
-            bool is_sym(is_symlink(detail::symlink_status(result, ec)));
+            bool is_sym = is_symlink(detail::symlink_status(result, ec));
             if (ec && *ec)
-                return path();
+                goto return_empty_path;
 
             if (is_sym)
             {
                 path link(detail::read_symlink(result, ec));
                 if (ec && *ec)
-                    return path();
+                    goto return_empty_path;
                 result.remove_filename();
 
                 if (link.is_absolute())
                 {
-                    for (++itr; itr != source.end(); ++itr)
+                    for (++itr; itr != end; ++itr)
                         link /= *itr;
                     source = link;
+                    root = source.root_path();
                 }
                 else // link is relative
                 {
                     path new_source(result);
                     new_source /= link;
-                    for (++itr; itr != source.end(); ++itr)
+                    for (++itr; itr != end; ++itr)
                         new_source /= *itr;
                     source = new_source;
                 }
-                scan = true; // symlink causes scan to be restarted
-                break;
+
+                // symlink causes scan to be restarted
+                goto restart_scan;
             }
         }
+
+        break;
+
+    restart_scan:
+        result.clear();
     }
 
     BOOST_ASSERT_MSG(result.is_absolute(), "canonical() implementation error; please report");
