@@ -1162,14 +1162,16 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     }
 
     path root(source.root_path());
+    path const& dot = dot_path();
+    path const& dot_dot = dot_dot_path();
     path result;
     while (true)
     {
         for (path::iterator itr = source.begin(), end = source.end(); itr != end; ++itr)
         {
-            if (*itr == dot_path())
+            if (*itr == dot)
                 continue;
-            if (*itr == dot_dot_path())
+            if (*itr == dot_dot)
             {
                 if (result != root)
                     result.remove_filename();
@@ -1198,16 +1200,26 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 if (link.is_absolute())
                 {
                     for (++itr; itr != end; ++itr)
-                        link /= *itr;
+                    {
+                        if (*itr != dot)
+                            link /= *itr;
+                    }
                     source = link;
                     root = source.root_path();
                 }
                 else // link is relative
                 {
+                    link.remove_trailing_separator();
+                    if (link == dot)
+                        continue;
+
                     path new_source(result);
                     new_source /= link;
                     for (++itr; itr != end; ++itr)
-                        new_source /= *itr;
+                    {
+                        if (*itr != dot)
+                            new_source /= *itr;
+                    }
                     source = new_source;
                 }
 
