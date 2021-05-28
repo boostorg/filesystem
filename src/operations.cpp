@@ -306,6 +306,9 @@ namespace detail {
 
 namespace {
 
+// Size of a small buffer for a path that can be placed on stack, in bytes
+BOOST_CONSTEXPR_OR_CONST std::size_t small_path_size = 1024u;
+
 // Absolute maximum path length, in bytes, that we're willing to accept from various system calls.
 // This value is arbitrary, it is supposed to be a hard limit to avoid memory exhaustion
 // in some of the algorithms below in case of some corrupted or maliciously broken filesystem.
@@ -2015,7 +2018,7 @@ path current_path(error_code* ec)
     };
 
     path cur;
-    char small_buf[1024];
+    char small_buf[small_path_size];
     const char* p = ::getcwd(small_buf, sizeof(small_buf));
     if (BOOST_LIKELY(!!p))
     {
@@ -2629,7 +2632,7 @@ path read_symlink(path const& p, system::error_code* ec)
 
 #ifdef BOOST_POSIX_API
     const char* const path_str = p.c_str();
-    char small_buf[1024];
+    char small_buf[small_path_size];
     ssize_t result = ::readlink(path_str, small_buf, sizeof(small_buf));
     if (BOOST_UNLIKELY(result < 0))
     {
