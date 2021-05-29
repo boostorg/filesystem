@@ -1169,17 +1169,17 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     }
 
     path root(source.root_path());
-    path const& dot = dot_path();
-    path const& dot_dot = dot_dot_path();
+    path const& dot_p = dot_path();
+    path const& dot_dot_p = dot_dot_path();
     unsigned int symlinks_allowed = symloop_max;
     path result;
     while (true)
     {
         for (path::iterator itr = source.begin(), end = source.end(); itr != end; ++itr)
         {
-            if (*itr == dot)
+            if (*itr == dot_p)
                 continue;
-            if (*itr == dot_dot)
+            if (*itr == dot_dot_p)
             {
                 if (result != root)
                     result.remove_filename();
@@ -1217,7 +1217,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 {
                     for (++itr; itr != end; ++itr)
                     {
-                        if (*itr != dot)
+                        if (*itr != dot_p)
                             link /= *itr;
                     }
                     source = link;
@@ -1226,14 +1226,14 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 else // link is relative
                 {
                     link.remove_trailing_separator();
-                    if (link == dot)
+                    if (link == dot_p)
                         continue;
 
                     path new_source(result);
                     new_source /= link;
                     for (++itr; itr != end; ++itr)
                     {
-                        if (*itr != dot)
+                        if (*itr != dot_p)
                             new_source /= *itr;
                     }
                     source = new_source;
@@ -3215,12 +3215,12 @@ path weakly_canonical(path const& p, system::error_code* ec)
 {
     path head(p);
     path tail;
-    system::error_code tmp_ec;
+    system::error_code local_ec;
     path::iterator itr = p.end();
 
     for (; !head.empty(); --itr)
     {
-        file_status head_status = detail::status(head, &tmp_ec);
+        file_status head_status = detail::status(head, &local_ec);
         if (error(head_status.type() == fs::status_error, head, ec, "boost::filesystem::weakly_canonical"))
             return path();
         if (head_status.type() != fs::file_not_found)
@@ -3228,19 +3228,22 @@ path weakly_canonical(path const& p, system::error_code* ec)
         head.remove_filename();
     }
 
+    path const& dot_p = dot_path();
+    path const& dot_dot_p = dot_dot_path();
     bool tail_has_dots = false;
     for (; itr != p.end(); ++itr)
     {
-        tail /= *itr;
+        path const& tail_elem = *itr;
+        tail /= tail_elem;
         // for a later optimization, track if any dot or dot-dot elements are present
-        if (itr->native().size() <= 2 && itr->native()[0] == dot && (itr->native().size() == 1 || itr->native()[1] == dot))
+        if (tail_elem == dot_p || tail_elem == dot_dot_p)
             tail_has_dots = true;
     }
 
     if (head.empty())
         return p.lexically_normal();
-    head = canonical(head, tmp_ec);
-    if (error(tmp_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
+    head = canonical(head, local_ec);
+    if (error(local_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
         return path();
     return tail.empty() ? head : (tail_has_dots // optimization: only normalize if tail had dot or dot-dot element
         ? (head / tail).lexically_normal() : head / tail);
