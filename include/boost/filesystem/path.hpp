@@ -439,7 +439,7 @@ public:
 #endif
     BOOST_FILESYSTEM_DECL path& remove_filename();
     BOOST_FILESYSTEM_DECL path& remove_trailing_separator();
-    BOOST_FILESYSTEM_DECL path& replace_extension(const path& new_extension = path());
+    BOOST_FILESYSTEM_DECL path& replace_extension(path const& new_extension = path());
     void swap(path& rhs) BOOST_NOEXCEPT { m_pathname.swap(rhs.m_pathname); }
 
     //  -----  observers  -----
@@ -463,7 +463,7 @@ public:
 
     //  -----  native format observers  -----
 
-    const string_type& native() const BOOST_NOEXCEPT { return m_pathname; }
+    string_type const& native() const BOOST_NOEXCEPT { return m_pathname; }
     const value_type* c_str() const BOOST_NOEXCEPT { return m_pathname.c_str(); }
     string_type::size_type size() const BOOST_NOEXCEPT { return m_pathname.size(); }
 
@@ -490,12 +490,12 @@ public:
     }
 
     //  string_type is std::wstring, so there is no conversion
-    const std::wstring& wstring() const { return m_pathname; }
-    const std::wstring& wstring(codecvt_type const&) const { return m_pathname; }
+    std::wstring const& wstring() const { return m_pathname; }
+    std::wstring const& wstring(codecvt_type const&) const { return m_pathname; }
 #else // BOOST_POSIX_API
     //  string_type is std::string, so there is no conversion
-    const std::string& string() const { return m_pathname; }
-    const std::string& string(codecvt_type const&) const { return m_pathname; }
+    std::string const& string() const { return m_pathname; }
+    std::string const& string(codecvt_type const&) const { return m_pathname; }
 
     std::wstring wstring() const
     {
@@ -537,8 +537,8 @@ public:
     std::wstring generic_wstring(codecvt_type const&) const { return generic_wstring(); }
 #else // BOOST_POSIX_API
     //  On POSIX-like systems, the generic format is the same as the native format
-    const std::string& generic_string() const { return m_pathname; }
-    const std::string& generic_string(codecvt_type const&) const { return m_pathname; }
+    std::string const& generic_string() const { return m_pathname; }
+    std::string const& generic_string(codecvt_type const&) const { return m_pathname; }
     std::wstring generic_wstring() const { return this->wstring(); }
     std::wstring generic_wstring(codecvt_type const& cvt) const { return this->wstring(cvt); }
 #endif
@@ -588,8 +588,8 @@ public:
     //  -----  lexical operations  -----
 
     BOOST_FILESYSTEM_DECL path lexically_normal() const;
-    BOOST_FILESYSTEM_DECL path lexically_relative(const path& base) const;
-    path lexically_proximate(const path& base) const
+    BOOST_FILESYSTEM_DECL path lexically_relative(path const& base) const;
+    path lexically_proximate(path const& base) const
     {
         path tmp(lexically_relative(base));
         return tmp.empty() ? *this : tmp;
@@ -647,7 +647,7 @@ public:
 
     //  older functions no longer supported
     //typedef bool (*name_check)(const std::string & name);
-    //basic_path(const string_type& str, name_check) { operator/=(str); }
+    //basic_path(string_type const& str, name_check) { operator/=(str); }
     //basic_path(const typename string_type::value_type* s, name_check)
     //  { operator/=(s);}
     //static bool default_name_check_writable() { return false; }
@@ -700,8 +700,8 @@ private:
 
 namespace detail {
 BOOST_FILESYSTEM_DECL int lex_compare(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
-BOOST_FILESYSTEM_DECL const path& dot_path();
-BOOST_FILESYSTEM_DECL const path& dot_dot_path();
+BOOST_FILESYSTEM_DECL path const& dot_path();
+BOOST_FILESYSTEM_DECL path const& dot_dot_path();
 } // namespace detail
 
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
@@ -726,7 +726,7 @@ private:
     friend void m_path_iterator_increment(path::iterator& it);
     friend void m_path_iterator_decrement(path::iterator& it);
 
-    const path& dereference() const { return m_element; }
+    path const& dereference() const { return m_element; }
 
     bool equal(const iterator& rhs) const
     {
@@ -774,7 +774,7 @@ private:
     friend class boost::iterator_core_access;
     friend class boost::filesystem::path;
 
-    const path& dereference() const { return m_element; }
+    path const& dereference() const { return m_element; }
     bool equal(const reverse_iterator& rhs) const { return m_itr == rhs.m_itr; }
 
     void increment()

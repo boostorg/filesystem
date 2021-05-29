@@ -118,7 +118,7 @@ void first_element(
 namespace boost {
 namespace filesystem {
 
-BOOST_FILESYSTEM_DECL path& path::operator/=(const path& p)
+BOOST_FILESYSTEM_DECL path& path::operator/=(path const& p)
 {
     if (p.empty())
         return *this;
@@ -169,7 +169,7 @@ BOOST_FILESYSTEM_DECL path path::generic_path() const
 
 #endif // BOOST_WINDOWS_API
 
-BOOST_FILESYSTEM_DECL int path::compare(const path& p) const BOOST_NOEXCEPT
+BOOST_FILESYSTEM_DECL int path::compare(path const& p) const BOOST_NOEXCEPT
 {
     return detail::lex_compare(begin(), end(), p.begin(), p.end());
 }
@@ -233,7 +233,7 @@ BOOST_FILESYSTEM_DECL path& path::remove_trailing_separator()
     return *this;
 }
 
-BOOST_FILESYSTEM_DECL path& path::replace_extension(const path& new_extension)
+BOOST_FILESYSTEM_DECL path& path::replace_extension(path const& new_extension)
 {
     // erase existing extension, including the dot, if any
     m_pathname.erase(m_pathname.size() - extension().m_pathname.size());
@@ -363,7 +363,7 @@ inline std::pair< path::iterator, path::iterator > mismatch(path::iterator it1, 
 }
 } // namespace detail
 
-BOOST_FILESYSTEM_DECL path path::lexically_relative(const path& base) const
+BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
 {
     path::iterator b = begin(), e = end(), base_b = base.begin(), base_e = base.end();
     std::pair< path::iterator, path::iterator > mm = detail::mismatch(b, e, base_b, base_e);
@@ -651,7 +651,7 @@ int lex_compare(path::iterator first1, path::iterator last1, path::iterator firs
 }
 
 BOOST_FILESYSTEM_DECL
-const path& dot_path()
+path const& dot_path()
 {
 #ifdef BOOST_WINDOWS_API
     static const fs::path dot_pth(L".");
@@ -662,7 +662,7 @@ const path& dot_path()
 }
 
 BOOST_FILESYSTEM_DECL
-const path& dot_dot_path()
+path const& dot_dot_path()
 {
 #ifdef BOOST_WINDOWS_API
     static const fs::path dot_dot(L"..");
