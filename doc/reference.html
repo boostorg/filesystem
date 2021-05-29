@@ -974,8 +974,10 @@ nothing else.&quot;</p>
     path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
     path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
 
-    path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p);
+    path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p, const path&amp; base=current_path());
     path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p, system::error_code&amp; ec);
+    path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p, const path&amp; base,
+                   system::error_code&amp; ec);
 
   }  // namespace filesystem
 }  // namespace boost</pre>
@@ -3795,15 +3797,18 @@ path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
   provided by the operating system. [<i>Note</i>: Such generators may block
   until sufficient entropy develops. <i>—end note</i>]</p>
 </blockquote>
-<pre>path <a name="weakly_canonical">weakly_canonical</a>(const path&amp; p);
-path weakly_canonical(const path&amp; p, system::error_code&amp; ec);</pre>
+<pre>path <a name="weakly_canonical">weakly_canonical</a>(const path&amp; p, const path&amp; base=current_path());
+path weakly_canonical(const path&amp; p, system::error_code&amp; ec);
+path weakly_canonical(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
 <blockquote>
   <p><i>Overview:</i> Returns <code>p</code> with symlinks resolved and the
   result normalized.</p>
-  <p><i>Returns: </i>A path composed of the result of calling the <code>
-  canonical</code> function on a path composed of the leading elements of <code>
-  p</code> that exist, if any, followed by the elements of <code>p</code> that
-  do not exist, if any.</p>
+  <p><i>Effects:</i> Let <code>head</code> be the path composed of the leading
+  elements of <code>p</code> that exist and <code>tail</code> &mdash; from the rest of <code>p</code>.
+  Where not specified, <code>base</code> is obtained from <code>current_path()</code> or <code>current_path(ec)</code>
+  Calls <a href="#canonical"><code>canonical(head, base)</code></a> or <a href="#canonical"><code>canonical(head, base, ec)</code></a>,
+  appends <code>tail</code> to the returned path using <code>operator/</code>.
+  The result is then normalized and returned.</p>
   <p><i>Postcondition:</i> The returned path is in
   <a href="#normal-form">
   normal form</a>.</p>

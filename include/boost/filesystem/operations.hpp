@@ -166,7 +166,7 @@ path temp_directory_path(system::error_code* ec = 0);
 BOOST_FILESYSTEM_DECL
 path unique_path(path const& p, system::error_code* ec = 0);
 BOOST_FILESYSTEM_DECL
-path weakly_canonical(path const& p, system::error_code* ec = 0);
+path weakly_canonical(path const& p, path const& base, system::error_code* ec = 0);
 
 } // namespace detail
 
@@ -687,14 +687,22 @@ inline path unique_path(path const& p, system::error_code& ec)
     return detail::unique_path(p, &ec);
 }
 
-inline path weakly_canonical(path const& p)
+inline path weakly_canonical(path const& p, path const& base = current_path())
 {
-    return detail::weakly_canonical(p);
+    return detail::weakly_canonical(p, base);
 }
 
 inline path weakly_canonical(path const& p, system::error_code& ec)
 {
-    return detail::weakly_canonical(p, &ec);
+    path base = current_path(ec);
+    if (ec)
+        return path();
+    return detail::weakly_canonical(p, base, &ec);
+}
+
+inline path weakly_canonical(path const& p, path const& base, system::error_code& ec)
+{
+    return detail::weakly_canonical(p, base, &ec);
 }
 
 //  test helper  -----------------------------------------------------------------------//

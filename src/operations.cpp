@@ -2738,13 +2738,31 @@ path read_symlink(path const& p, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path relative(path const& p, path const& base, error_code* ec)
 {
-    error_code tmp_ec;
-    path wc_base(detail::weakly_canonical(base, &tmp_ec));
-    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
-        return path();
-    path wc_p(detail::weakly_canonical(p, &tmp_ec));
-    if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
-        return path();
+    if (ec)
+        ec->clear();
+
+    error_code local_ec;
+    path cur_path;
+    if (!p.is_absolute() || !base.is_absolute())
+    {
+        cur_path = detail::current_path(&local_ec);
+        if (BOOST_UNLIKELY(!!local_ec))
+        {
+        fail_local_ec:
+            if (!ec)
+                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::relative", p, base, local_ec));
+
+            *ec = local_ec;
+            return path();
+        }
+    }
+
+    path wc_base(detail::weakly_canonical(base, cur_path, &local_ec));
+    if (BOOST_UNLIKELY(!!local_ec))
+        goto fail_local_ec;
+    path wc_p(detail::weakly_canonical(p, cur_path, &local_ec));
+    if (BOOST_UNLIKELY(!!local_ec))
+        goto fail_local_ec;
     return wc_p.lexically_relative(wc_base);
 }
 
@@ -3211,7 +3229,7 @@ path system_complete(path const& p, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
-path weakly_canonical(path const& p, system::error_code* ec)
+path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 {
     path head(p);
     path tail;
@@ -3242,7 +3260,7 @@ path weakly_canonical(path const& p, system::error_code* ec)
 
     if (head.empty())
         return p.lexically_normal();
-    head = canonical(head, local_ec);
+    head = detail::canonical(head, base, &local_ec);
     if (error(local_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
         return path();
     return tail.empty() ? head : (tail_has_dots // optimization: only normalize if tail had dot or dot-dot element
