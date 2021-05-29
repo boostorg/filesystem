@@ -314,6 +314,15 @@ BOOST_CONSTEXPR_OR_CONST std::size_t small_path_size = 1024u;
 // in some of the algorithms below in case of some corrupted or maliciously broken filesystem.
 BOOST_CONSTEXPR_OR_CONST std::size_t absolute_path_max = 16u * 1024u * 1024u;
 
+// Maximum number of resolved symlinks before we register a loop
+BOOST_CONSTEXPR_OR_CONST unsigned int symloop_max =
+#if defined(SYMLOOP_MAX)
+    SYMLOOP_MAX < 40 ? 40 : SYMLOOP_MAX
+#else
+    40
+#endif
+;
+
 fs::file_type query_file_type(path const& p, error_code* ec);
 
 //  general helpers  -----------------------------------------------------------------//
@@ -1146,17 +1155,12 @@ path canonical(path const& p, path const& base, system::error_code* ec)
 
     if (stat.type() == fs::file_not_found)
     {
-        if (!ec)
-        {
-            BOOST_FILESYSTEM_THROW(filesystem_error(
-                "boost::filesystem::canonical", source,
-                error_code(system::errc::no_such_file_or_directory, system::generic_category())));
-        }
-        ec->assign(system::errc::no_such_file_or_directory, system::generic_category());
-        goto return_empty_path;
+        local_ec = system::errc::make_error_code(system::errc::no_such_file_or_directory);
+        goto fail_local_ec;
     }
     else if (local_ec)
     {
+    fail_local_ec:
         if (!ec)
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::canonical", source, local_ec));
 
@@ -1167,6 +1171,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     path root(source.root_path());
     path const& dot = dot_path();
     path const& dot_dot = dot_dot_path();
+    unsigned int symlinks_allowed = symloop_max;
     path result;
     while (true)
     {
@@ -1195,6 +1200,14 @@ path canonical(path const& p, path const& base, system::error_code* ec)
 
             if (is_sym)
             {
+                if (symlinks_allowed == 0)
+                {
+                    local_ec = system::errc::make_error_code(system::errc::too_many_symbolic_link_levels);
+                    goto fail_local_ec;
+                }
+
+                --symlinks_allowed;
+
                 path link(detail::read_symlink(result, ec));
                 if (ec && *ec)
                     goto return_empty_path;
@@ -2726,10 +2739,10 @@ BOOST_FILESYSTEM_DECL
 path relative(path const& p, path const& base, error_code* ec)
 {
     error_code tmp_ec;
-    path wc_base(weakly_canonical(base, &tmp_ec));
+    path wc_base(detail::weakly_canonical(base, &tmp_ec));
     if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
         return path();
-    path wc_p(weakly_canonical(p, &tmp_ec));
+    path wc_p(detail::weakly_canonical(p, &tmp_ec));
     if (error(tmp_ec.value(), base, ec, "boost::filesystem::relative"))
         return path();
     return wc_p.lexically_relative(wc_base);
@@ -3207,7 +3220,7 @@ path weakly_canonical(path const& p, system::error_code* ec)
 
     for (; !head.empty(); --itr)
     {
-        file_status head_status = status(head, tmp_ec);
+        file_status head_status = detail::status(head, &tmp_ec);
         if (error(head_status.type() == fs::status_error, head, ec, "boost::filesystem::weakly_canonical"))
             return path();
         if (head_status.type() != fs::file_not_found)
