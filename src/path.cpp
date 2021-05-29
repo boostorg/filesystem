@@ -96,16 +96,14 @@ size_type filename_pos(string_type const& str, size_type end_pos);
 // Returns: npos if no root_directory found
 size_type root_directory_start(string_type const& path, size_type size);
 
-void first_element(
-    string_type const& src,
-    size_type& element_pos,
-    size_type& element_size,
-#if !BOOST_WORKAROUND(BOOST_MSVC, <= 1310) // VC++ 7.1
-    size_type size = string_type::npos
-#else
-    size_type size = -1
-#endif
-);
+// Finds position and size of the first element of the path
+void first_element(string_type const& src, size_type& element_pos, size_type& element_size, size_type size);
+
+// Finds position and size of the first element of the path
+inline void first_element(string_type const& src, size_type& element_pos, size_type& element_size)
+{
+    first_element(src, element_pos, element_size, src.size());
+}
 
 } // unnamed namespace
 
@@ -120,41 +118,45 @@ namespace filesystem {
 
 BOOST_FILESYSTEM_DECL path& path::operator/=(path const& p)
 {
-    if (p.empty())
-        return *this;
-    if (this == &p) // self-append
+    if (!p.empty())
     {
-        path rhs(p);
-        if (!detail::is_directory_separator(rhs.m_pathname[0]))
-            m_append_separator_if_needed();
-        m_pathname += rhs.m_pathname;
+        if (this == &p) // self-append
+        {
+            path rhs(p);
+            if (!detail::is_directory_separator(rhs.m_pathname[0]))
+                m_append_separator_if_needed();
+            m_pathname += rhs.m_pathname;
+        }
+        else
+        {
+            if (!detail::is_directory_separator(*p.m_pathname.begin()))
+                m_append_separator_if_needed();
+            m_pathname += p.m_pathname;
+        }
     }
-    else
-    {
-        if (!detail::is_directory_separator(*p.m_pathname.begin()))
-            m_append_separator_if_needed();
-        m_pathname += p.m_pathname;
-    }
+
     return *this;
 }
 
 BOOST_FILESYSTEM_DECL path& path::operator/=(const value_type* ptr)
 {
-    if (!*ptr)
-        return *this;
-    if (ptr >= m_pathname.data() && ptr < m_pathname.data() + m_pathname.size()) // overlapping source
+    if (*ptr != static_cast< value_type >('\0'))
     {
-        path rhs(ptr);
-        if (!detail::is_directory_separator(rhs.m_pathname[0]))
-            m_append_separator_if_needed();
-        m_pathname += rhs.m_pathname;
+        if (ptr >= m_pathname.data() && ptr < m_pathname.data() + m_pathname.size()) // overlapping source
+        {
+            path rhs(ptr);
+            if (!detail::is_directory_separator(rhs.m_pathname[0]))
+                m_append_separator_if_needed();
+            m_pathname += rhs.m_pathname;
+        }
+        else
+        {
+            if (!detail::is_directory_separator(*ptr))
+                m_append_separator_if_needed();
+            m_pathname += ptr;
+        }
     }
-    else
-    {
-        if (!detail::is_directory_separator(*ptr))
-            m_append_separator_if_needed();
-        m_pathname += ptr;
-    }
+
     return *this;
 }
 
@@ -253,10 +255,12 @@ BOOST_FILESYSTEM_DECL path& path::replace_extension(path const& new_extension)
 
 BOOST_FILESYSTEM_DECL path path::root_path() const
 {
-    path temp(root_name());
-    if (!root_directory().empty())
-        temp.m_pathname += root_directory().c_str();
-    return temp;
+    path result(root_name());
+    size_type pos(root_directory_start(m_pathname, m_pathname.size()));
+    if (pos != string_type::npos)
+        result.m_pathname.append(m_pathname.c_str() + pos, m_pathname.c_str() + pos + 1);
+
+    return result;
 }
 
 BOOST_FILESYSTEM_DECL path path::root_name() const
@@ -279,6 +283,11 @@ BOOST_FILESYSTEM_DECL path path::root_directory() const
 {
     size_type pos(root_directory_start(m_pathname, m_pathname.size()));
     return pos == string_type::npos ? path() : path(m_pathname.c_str() + pos, m_pathname.c_str() + pos + 1);
+}
+
+BOOST_FILESYSTEM_DECL bool path::has_root_directory() const
+{
+    return root_directory_start(m_pathname, m_pathname.size()) != string_type::npos;
 }
 
 BOOST_FILESYSTEM_DECL path path::relative_path() const
@@ -528,7 +537,6 @@ size_type filename_pos(string_type const& str, size_type end_pos)
 // return npos if no root_directory found
 size_type root_directory_start(string_type const& path, size_type size)
 {
-
 #ifdef BOOST_WINDOWS_API
     // case "c:/"
     if (size > 2 && path[1] == colon && fs::detail::is_directory_separator(path[2]))
@@ -572,8 +580,6 @@ void first_element(
     size_type& element_size,
     size_type size)
 {
-    if (size == string_type::npos)
-        size = src.size();
     element_pos = 0;
     element_size = 0;
     if (src.empty())
@@ -875,7 +881,7 @@ std::locale& path_locale()
 namespace boost {
 namespace filesystem {
 
-BOOST_FILESYSTEM_DECL const path::codecvt_type& path::codecvt()
+BOOST_FILESYSTEM_DECL path::codecvt_type const& path::codecvt()
 {
 #ifdef BOOST_FILESYSTEM_DEBUG
     std::cout << "***** path::codecvt() called" << std::endl;
@@ -885,7 +891,7 @@ BOOST_FILESYSTEM_DECL const path::codecvt_type& path::codecvt()
     return std::use_facet< std::codecvt< wchar_t, char, std::mbstate_t > >(path_locale());
 }
 
-BOOST_FILESYSTEM_DECL std::locale path::imbue(const std::locale& loc)
+BOOST_FILESYSTEM_DECL std::locale path::imbue(std::locale const& loc)
 {
 #ifdef BOOST_FILESYSTEM_DEBUG
     std::cout << "***** path::imbue() called" << std::endl;

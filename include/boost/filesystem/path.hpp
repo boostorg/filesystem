@@ -568,7 +568,7 @@ public:
     bool filename_is_dot_dot() const;
     bool has_root_path() const { return has_root_directory() || has_root_name(); }
     bool has_root_name() const { return !root_name().empty(); }
-    bool has_root_directory() const { return !root_directory().empty(); }
+    BOOST_FILESYSTEM_DECL bool has_root_directory() const;
     bool has_relative_path() const { return !relative_path().empty(); }
     bool has_parent_path() const { return !parent_path().empty(); }
     bool has_filename() const { return !m_pathname.empty(); }
@@ -609,8 +609,8 @@ public:
 
     //  -----  static member functions  -----
 
-    static BOOST_FILESYSTEM_DECL std::locale imbue(const std::locale& loc);
-    static BOOST_FILESYSTEM_DECL const codecvt_type& codecvt();
+    static BOOST_FILESYSTEM_DECL std::locale imbue(std::locale const& loc);
+    static BOOST_FILESYSTEM_DECL codecvt_type const& codecvt();
 
     //  -----  deprecated functions  -----
 
@@ -728,7 +728,7 @@ private:
 
     path const& dereference() const { return m_element; }
 
-    bool equal(const iterator& rhs) const
+    bool equal(iterator const& rhs) const
     {
         return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos;
     }
@@ -775,7 +775,7 @@ private:
     friend class boost::filesystem::path;
 
     path const& dereference() const { return m_element; }
-    bool equal(const reverse_iterator& rhs) const { return m_itr == rhs.m_itr; }
+    bool equal(reverse_iterator const& rhs) const { return m_itr == rhs.m_itr; }
 
     void increment()
     {
