@@ -884,8 +884,9 @@ inline bool not_found_error(int errval) BOOST_NOEXCEPT
         || errval == ERROR_INVALID_DRIVE                                                                    // USB card reader with no card inserted
         || errval == ERROR_NOT_READY                                                                        // CD/DVD drive with no disc inserted
         || errval == ERROR_INVALID_PARAMETER                                                                // ":sys:stat.h"
-        || errval == ERROR_BAD_PATHNAME                                                                     // "//nosuch" on Win64
-        || errval == ERROR_BAD_NETPATH;                                                                     // "//nosuch" on Win32
+        || errval == ERROR_BAD_PATHNAME                                                                     // "//no-host" on Win64
+        || errval == ERROR_BAD_NETPATH                                                                      // "//no-host" on Win32
+        || errval == ERROR_BAD_NET_NAME;                                                                    // "//no-host/no-share" on Win10 x64
 }
 
 // these constants come from inspecting some Microsoft sample code
