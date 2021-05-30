@@ -31,7 +31,7 @@ inline bool equal_extension(wchar_t const* p, wchar_t const (&x1)[5], wchar_t co
         p[4] == 0;
 }
 
-inline boost::filesystem::perms make_permissions(const boost::filesystem::path& p, DWORD attr)
+inline boost::filesystem::perms make_permissions(boost::filesystem::path const& p, DWORD attr)
 {
     boost::filesystem::perms prms = boost::filesystem::owner_read | boost::filesystem::group_read | boost::filesystem::others_read;
     if ((attr & FILE_ATTRIBUTE_READONLY) == 0u)
