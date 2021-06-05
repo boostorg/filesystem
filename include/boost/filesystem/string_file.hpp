@@ -17,6 +17,8 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
+
 namespace boost {
 namespace filesystem {
 
@@ -40,5 +42,7 @@ inline void load_string_file(path const& p, std::string& str)
 
 } // namespace filesystem
 } // namespace boost
+
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM_STRING_FILE_HPP

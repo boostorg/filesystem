@@ -16,16 +16,10 @@
 #ifndef BOOST_FILESYSTEM3_FILE_STATUS_HPP
 #define BOOST_FILESYSTEM3_FILE_STATUS_HPP
 
-#include <boost/config.hpp>
-
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/filesystem/config.hpp>
 #include <boost/detail/bitmask.hpp>
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 //--------------------------------------------------------------------------------------//
 
@@ -246,6 +240,6 @@ inline bool is_regular(file_status f) BOOST_NOEXCEPT
 } // namespace filesystem
 } // namespace boost
 
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+#include <boost/filesystem/detail/footer.hpp> // pops abi_prefix.hpp pragmas
 
 #endif // BOOST_FILESYSTEM3_FILE_STATUS_HPP

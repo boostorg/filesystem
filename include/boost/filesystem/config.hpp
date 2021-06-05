@@ -36,6 +36,10 @@
 #undef BOOST_FILESYSTEM_NO_DEPRECATED // fixes #9454, src bld fails if NO_DEP defined
 #endif
 
+#if defined(BOOST_FILESYSTEM_DEPRECATED) && defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+#error Both BOOST_FILESYSTEM_DEPRECATED and BOOST_FILESYSTEM_NO_DEPRECATED are defined
+#endif
+
 //  throw an exception  ----------------------------------------------------------------//
 //
 //  Exceptions were originally thrown via boost::throw_exception().

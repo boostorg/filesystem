@@ -16,12 +16,6 @@
 #ifndef BOOST_FILESYSTEM3_DIRECTORY_HPP
 #define BOOST_FILESYSTEM3_DIRECTORY_HPP
 
-#include <boost/config.hpp>
-
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/file_status.hpp>
@@ -39,7 +33,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 //--------------------------------------------------------------------------------------//
 
@@ -63,12 +57,12 @@ public:
 
     directory_entry() BOOST_NOEXCEPT {}
 
-    explicit directory_entry(const boost::filesystem::path& p) :
+    explicit directory_entry(boost::filesystem::path const& p) :
         m_path(p), m_status(file_status()), m_symlink_status(file_status())
     {
     }
 
-    directory_entry(const boost::filesystem::path& p, file_status st, file_status symlink_st = file_status()) :
+    directory_entry(boost::filesystem::path const& p, file_status st, file_status symlink_st = file_status()) :
         m_path(p), m_status(st), m_symlink_status(symlink_st)
     {
     }
@@ -107,14 +101,14 @@ public:
     }
 #endif
 
-    void assign(const boost::filesystem::path& p, file_status st = file_status(), file_status symlink_st = file_status())
+    void assign(boost::filesystem::path const& p, file_status st = file_status(), file_status symlink_st = file_status())
     {
         m_path = p;
         m_status = st;
         m_symlink_status = symlink_st;
     }
 
-    void replace_filename(const boost::filesystem::path& p, file_status st = file_status(), file_status symlink_st = file_status())
+    void replace_filename(boost::filesystem::path const& p, file_status st = file_status(), file_status symlink_st = file_status())
     {
         m_path.remove_filename();
         m_path /= p;
@@ -123,13 +117,13 @@ public:
     }
 
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    void replace_leaf(const boost::filesystem::path& p, file_status st, file_status symlink_st)
+    void replace_leaf(boost::filesystem::path const& p, file_status st, file_status symlink_st)
     {
         replace_filename(p, st, symlink_st);
     }
 #endif
 
-    const boost::filesystem::path& path() const BOOST_NOEXCEPT
+    boost::filesystem::path const& path() const BOOST_NOEXCEPT
     {
         return m_path;
     }
@@ -163,7 +157,7 @@ private:
 //--------------------------------------------------------------------------------------//
 
 //  Without these functions, calling (for example) 'is_directory' with a 'directory_entry' results in:
-//  - a conversion to 'path' using 'operator const boost::filesystem::path&()',
+//  - a conversion to 'path' using 'operator boost::filesystem::path const&()',
 //  - then a call to 'is_directory(path const& p)' which recomputes the status with 'detail::status(p)'.
 //
 //  These functions avoid a costly recomputation of the status if one calls 'is_directory(e)' instead of 'is_directory(e.status())'
@@ -299,7 +293,6 @@ struct dir_itr_imp :
     }
 };
 
-// see path::iterator: comment below
 BOOST_FILESYSTEM_DECL void directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, system::error_code* ec);
 BOOST_FILESYSTEM_DECL void directory_iterator_increment(directory_iterator& it, system::error_code* ec);
 
@@ -378,7 +371,7 @@ private:
 
     void increment() { detail::directory_iterator_increment(*this, 0); }
 
-    bool equal(const directory_iterator& rhs) const BOOST_NOEXCEPT
+    bool equal(directory_iterator const& rhs) const BOOST_NOEXCEPT
     {
         return m_imp == rhs.m_imp || (is_end() && rhs.is_end());
     }
@@ -657,7 +650,7 @@ private:
 
     void increment() { detail::recursive_directory_iterator_increment(*this, 0); }
 
-    bool equal(const recursive_directory_iterator& rhs) const BOOST_NOEXCEPT
+    bool equal(recursive_directory_iterator const& rhs) const BOOST_NOEXCEPT
     {
         return m_imp == rhs.m_imp || (is_end() && rhs.is_end());
     }
@@ -744,6 +737,6 @@ struct range_const_iterator< boost::filesystem::recursive_directory_iterator, vo
 
 } // namespace boost
 
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM3_DIRECTORY_HPP

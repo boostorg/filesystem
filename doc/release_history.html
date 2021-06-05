@@ -51,6 +51,8 @@
   <li>In <code>canonical</code>, fixed the check for a symlink referencing a directory above root, if an earlier symlink was resolved to an absolute path with a different root from the original path.</li>
   <li>In <code>canonical</code>, added a limit for the maximum number of symlinks that can be resolved during the call. The limit is currently at least 40 symlinks.</li>
   <li><b>New:</b> Added <code>weakly_canonical</code> overloads taking <code>base</code> path as an argument.</li>
+  <li><b>Breaking change:</b><code>path::filename</code>, <code>path::stem</code> and <code>path::extension</code> no longer consider root name of the path as a filename if the path only consists of a root name. For example, <code>path("C:").filename()</code> used to return "C:" on Windows and will return an empty path now.</li>
+  <li><b>New:</b> Improved support for various path prefixes on Windows. Added support for local device prefix ("\\.\") and experimental support for NT path prefix ("\??\"). The prefixes will be included in the root name of a path.</li>
 </ul>
 
 <h2>1.76.0</h2>

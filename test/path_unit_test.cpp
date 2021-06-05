@@ -36,6 +36,8 @@
 #include <boost/detail/lightweight_test_report.hpp>
 #include <boost/smart_ptr.hpp> // used constructor tests
 #include <boost/functional/hash.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <iostream>
 #include <iomanip>

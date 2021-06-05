@@ -19,19 +19,13 @@
 
 #include <boost/filesystem/operations.hpp>
 
-#include <boost/config.hpp>
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/cerrno.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
 namespace fs = boost::filesystem;
 using boost::system::error_code;
-using boost::system::system_category;
-using boost::system::system_error;
 
 #include <iostream>
 

@@ -11,12 +11,6 @@
 #ifndef BOOST_FILESYSTEM3_EXCEPTION_HPP
 #define BOOST_FILESYSTEM3_EXCEPTION_HPP
 
-#include <boost/config.hpp>
-
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -26,15 +20,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
-
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-// 'm_A' : class 'A' needs to have dll-interface to be used by clients of class 'B'
-#pragma warning(disable : 4251)
-// non dll-interface class 'A' used as base for dll-interface class 'B'
-#pragma warning(disable : 4275)
-#endif
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 namespace boost {
 namespace filesystem {
@@ -101,10 +87,6 @@ private:
 } // namespace filesystem
 } // namespace boost
 
-#if defined(BOOST_MSVC)
-#pragma warning(pop)
-#endif
-
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM3_EXCEPTION_HPP

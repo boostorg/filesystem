@@ -10,16 +10,10 @@
 #ifndef BOOST_FILESYSTEM_PATH_TRAITS_HPP
 #define BOOST_FILESYSTEM_PATH_TRAITS_HPP
 
-#include <boost/config.hpp>
-
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/filesystem/config.hpp>
+#include <boost/system/error_category.hpp>
 #include <boost/type_traits/is_array.hpp>
 #include <boost/type_traits/decay.hpp>
-#include <boost/system/error_code.hpp>
 #include <boost/core/enable_if.hpp>
 #include <cstddef>
 #include <cwchar> // for mbstate_t
@@ -29,9 +23,8 @@
 #include <iterator>
 #include <locale>
 #include <boost/assert.hpp>
-// #include <iostream>   //**** comment me out ****
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 namespace boost {
 namespace filesystem {
@@ -386,6 +379,6 @@ void dispatch(directory_entry const& de,
 } // namespace filesystem
 } // namespace boost
 
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM_PATH_TRAITS_HPP

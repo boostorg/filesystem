@@ -13,16 +13,11 @@
 #ifndef BOOST_FILESYSTEM3_CONVENIENCE_HPP
 #define BOOST_FILESYSTEM3_CONVENIENCE_HPP
 
-#include <boost/config.hpp>
-
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
+#include <boost/filesystem/config.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/system/error_code.hpp>
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 namespace boost {
 namespace filesystem {
@@ -51,6 +46,6 @@ inline path change_extension(const path& p, const path& new_extension)
 } // namespace filesystem
 } // namespace boost
 
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM3_CONVENIENCE_HPP

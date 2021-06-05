@@ -18,14 +18,10 @@
 #define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
+#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>
-
-#include <boost/config.hpp>
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
 
 #include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>

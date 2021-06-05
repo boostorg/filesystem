@@ -18,12 +18,6 @@
 #endif
 
 #include <boost/filesystem/fstream.hpp>
-
-#include <boost/config.hpp>
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/filesystem/operations.hpp>
 #include <string>
 #include <iostream>

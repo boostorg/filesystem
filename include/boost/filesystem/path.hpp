@@ -15,33 +15,24 @@
 #ifndef BOOST_FILESYSTEM_PATH_HPP
 #define BOOST_FILESYSTEM_PATH_HPP
 
-#include <boost/config.hpp>
-
-#if defined(BOOST_NO_STD_WSTRING)
-#error Configuration not supported: Boost.Filesystem V3 and later requires std::wstring support
-#endif
-
 #include <boost/assert.hpp>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path_traits.hpp> // includes <cwchar>
-#include <boost/system/error_code.hpp>
-#include <boost/system/system_error.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/core/enable_if.hpp>
 #include <boost/io/quoted.hpp>
 #include <boost/functional/hash_fwd.hpp>
 #include <boost/type_traits/is_integral.hpp>
+#include <cstddef>
+#include <cwchar> // for mbstate_t
 #include <string>
-#include <iterator>
-#include <cstring>
 #include <iosfwd>
-#include <stdexcept>
-#include <cassert>
+#include <iterator>
 #include <locale>
-#include <algorithm>
+#include <utility>
 
-#include <boost/config/abi_prefix.hpp> // must be the last #include
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 namespace boost {
 namespace filesystem {
@@ -69,6 +60,13 @@ template< typename Char, Char Separator, Char PreferredSeparator, Char Dot >
 BOOST_CONSTEXPR_OR_CONST typename path_constants< Char, Separator, PreferredSeparator, Dot >::value_type
 path_constants< Char, Separator, PreferredSeparator, Dot >::dot;
 #endif
+
+// A struct that denotes a contiguous range of characters in a string. A lightweight alternative to string_view.
+struct substring
+{
+    std::size_t pos;
+    std::size_t size;
+};
 
 } // namespace path_detail
 
@@ -551,12 +549,27 @@ public:
 
     //  -----  decomposition  -----
 
-    BOOST_FILESYSTEM_DECL path root_path() const;
-    BOOST_FILESYSTEM_DECL path root_name() const;      // returns 0 or 1 element path
-                                                       // even on POSIX, root_name() is non-empty() for network paths
-    BOOST_FILESYSTEM_DECL path root_directory() const; // returns 0 or 1 element path
-    BOOST_FILESYSTEM_DECL path relative_path() const;
-    BOOST_FILESYSTEM_DECL path parent_path() const;
+    path root_path() const { return path(m_pathname.c_str(), m_pathname.c_str() + find_root_path_size()); }
+    // returns 0 or 1 element path even on POSIX, root_name() is non-empty() for network paths
+    path root_name() const { return path(m_pathname.c_str(), m_pathname.c_str() + find_root_name_size()); }
+
+    // returns 0 or 1 element path
+    path root_directory() const
+    {
+        path_detail::substring root_dir = find_root_directory();
+        const value_type* p = m_pathname.c_str() + root_dir.pos;
+        return path(p, p + root_dir.size);
+    }
+
+    path relative_path() const
+    {
+        path_detail::substring root_dir = find_relative_path();
+        const value_type* p = m_pathname.c_str() + root_dir.pos;
+        return path(p, p + root_dir.size);
+    }
+
+    path parent_path() const { return path(m_pathname.c_str(), m_pathname.c_str() + find_parent_path_size()); }
+
     BOOST_FILESYSTEM_DECL path filename() const;       // returns 0 or 1 element path
     BOOST_FILESYSTEM_DECL path stem() const;           // returns 0 or 1 element path
     BOOST_FILESYSTEM_DECL path extension() const;      // returns 0 or 1 element path
@@ -566,12 +579,12 @@ public:
     bool empty() const BOOST_NOEXCEPT { return m_pathname.empty(); }
     bool filename_is_dot() const;
     bool filename_is_dot_dot() const;
-    bool has_root_path() const { return has_root_directory() || has_root_name(); }
-    bool has_root_name() const { return !root_name().empty(); }
-    BOOST_FILESYSTEM_DECL bool has_root_directory() const;
-    bool has_relative_path() const { return !relative_path().empty(); }
-    bool has_parent_path() const { return !parent_path().empty(); }
-    bool has_filename() const { return !m_pathname.empty(); }
+    bool has_root_path() const { return find_root_path_size() > 0; }
+    bool has_root_name() const { return find_root_name_size() > 0; }
+    bool has_root_directory() const { return find_root_directory().size > 0; }
+    bool has_relative_path() const { return find_relative_path().size > 0; }
+    bool has_parent_path() const { return find_parent_path_size() > 0; }
+    BOOST_FILESYSTEM_DECL bool has_filename() const;
     bool has_stem() const { return !stem().empty(); }
     bool has_extension() const { return !extension().empty(); }
     bool is_relative() const { return !is_absolute(); }
@@ -598,6 +611,7 @@ public:
     //  -----  iterators  -----
 
     class iterator;
+    friend class iterator;
     typedef iterator const_iterator;
     class reverse_iterator;
     typedef reverse_iterator const_reverse_iterator;
@@ -613,10 +627,6 @@ public:
     static BOOST_FILESYSTEM_DECL codecvt_type const& codecvt();
 
     //  -----  deprecated functions  -----
-
-#if defined(BOOST_FILESYSTEM_DEPRECATED) && defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-#error both BOOST_FILESYSTEM_DEPRECATED and BOOST_FILESYSTEM_NO_DEPRECATED are defined
-#endif
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
@@ -644,28 +654,24 @@ public:
     std::string native_directory_string() const { return string(); }
     string_type external_file_string() const { return native(); }
     string_type external_directory_string() const { return native(); }
-
-    //  older functions no longer supported
-    //typedef bool (*name_check)(const std::string & name);
-    //basic_path(string_type const& str, name_check) { operator/=(str); }
-    //basic_path(const typename string_type::value_type* s, name_check)
-    //  { operator/=(s);}
-    //static bool default_name_check_writable() { return false; }
-    //static void default_name_check(name_check) {}
-    //static name_check default_name_check() { return 0; }
-    //basic_path& canonize();
 #endif
 
     //--------------------------------------------------------------------------------------//
     //                            class path private members                                //
     //--------------------------------------------------------------------------------------//
+private:
+    //  Returns: If separator is to be appended, m_pathname.size() before append. Otherwise 0.
+    //  Note: An append is never performed if size()==0, so a returned 0 is unambiguous.
+    BOOST_FILESYSTEM_DECL string_type::size_type append_separator_if_needed();
+    BOOST_FILESYSTEM_DECL void erase_redundant_separator(string_type::size_type sep_pos);
+
+    BOOST_FILESYSTEM_DECL string_type::size_type find_root_name_size() const;
+    BOOST_FILESYSTEM_DECL string_type::size_type find_root_path_size() const;
+    BOOST_FILESYSTEM_DECL path_detail::substring find_root_directory() const;
+    BOOST_FILESYSTEM_DECL path_detail::substring find_relative_path() const;
+    BOOST_FILESYSTEM_DECL string_type::size_type find_parent_path_size() const;
 
 private:
-#if defined(_MSC_VER)
-#pragma warning(push)           // Save warning settings
-#pragma warning(disable : 4251) // disable warning: class 'std::basic_string<_Elem,_Traits,_Ax>'
-#endif                          // needs to have dll-interface...
-
     /*
      * m_pathname has the type, encoding, and format required by the native
      * operating system. Thus for POSIX and Windows there is no conversion for
@@ -676,27 +682,7 @@ private:
      */
     string_type m_pathname;     // Windows: as input; backslashes NOT converted to slashes,
                                 // slashes NOT converted to backslashes
-#if defined(_MSC_VER)
-#pragma warning(pop) // restore warning settings.
-#endif
-
-    //  Returns: If separator is to be appended, m_pathname.size() before append. Otherwise 0.
-    //  Note: An append is never performed if size()==0, so a returned 0 is unambiguous.
-    BOOST_FILESYSTEM_DECL string_type::size_type m_append_separator_if_needed();
-
-    BOOST_FILESYSTEM_DECL void m_erase_redundant_separator(string_type::size_type sep_pos);
-    BOOST_FILESYSTEM_DECL string_type::size_type m_parent_path_end() const;
-
-    // Was qualified; como433beta8 reports:
-    //    warning #427-D: qualified name is not allowed in member declaration
-    friend class iterator;
-    friend bool operator<(path const& lhs, path const& rhs);
-
-    // see path::iterator::increment/decrement comment below
-    static BOOST_FILESYSTEM_DECL void m_path_iterator_increment(path::iterator& it);
-    static BOOST_FILESYSTEM_DECL void m_path_iterator_decrement(path::iterator& it);
-
-}; // class path
+};
 
 namespace detail {
 BOOST_FILESYSTEM_DECL int lex_compare(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
@@ -723,8 +709,6 @@ private:
     friend class boost::iterator_core_access;
     friend class boost::filesystem::path;
     friend class boost::filesystem::path::reverse_iterator;
-    friend void m_path_iterator_increment(path::iterator& it);
-    friend void m_path_iterator_decrement(path::iterator& it);
 
     path const& dereference() const { return m_element; }
 
@@ -733,10 +717,8 @@ private:
         return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos;
     }
 
-    // iterator_facade derived classes don't seem to like implementations in
-    // separate translation unit dll's, so forward to class path static members
-    void increment() { m_path_iterator_increment(*this); }
-    void decrement() { m_path_iterator_decrement(*this); }
+    BOOST_FILESYSTEM_DECL void increment();
+    BOOST_FILESYSTEM_DECL void decrement();
 
 private:
     // current element
@@ -1008,11 +990,11 @@ path& path::append(InputIterator begin, InputIterator end)
 {
     if (begin == end)
         return *this;
-    string_type::size_type sep_pos(m_append_separator_if_needed());
+    string_type::size_type sep_pos = append_separator_if_needed();
     std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
     path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
     if (sep_pos)
-        m_erase_redundant_separator(sep_pos);
+        erase_redundant_separator(sep_pos);
     return *this;
 }
 
@@ -1021,11 +1003,11 @@ path& path::append(InputIterator begin, InputIterator end, codecvt_type const& c
 {
     if (begin == end)
         return *this;
-    string_type::size_type sep_pos(m_append_separator_if_needed());
+    string_type::size_type sep_pos = append_separator_if_needed();
     std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
     path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
     if (sep_pos)
-        m_erase_redundant_separator(sep_pos);
+        erase_redundant_separator(sep_pos);
     return *this;
 }
 
@@ -1034,10 +1016,10 @@ path& path::append(Source const& source)
 {
     if (path_traits::empty(source))
         return *this;
-    string_type::size_type sep_pos(m_append_separator_if_needed());
+    string_type::size_type sep_pos = append_separator_if_needed();
     path_traits::dispatch(source, m_pathname);
     if (sep_pos)
-        m_erase_redundant_separator(sep_pos);
+        erase_redundant_separator(sep_pos);
     return *this;
 }
 
@@ -1046,10 +1028,10 @@ path& path::append(Source const& source, codecvt_type const& cvt)
 {
     if (path_traits::empty(source))
         return *this;
-    string_type::size_type sep_pos(m_append_separator_if_needed());
+    string_type::size_type sep_pos = append_separator_if_needed();
     path_traits::dispatch(source, m_pathname, cvt);
     if (sep_pos)
-        m_erase_redundant_separator(sep_pos);
+        erase_redundant_separator(sep_pos);
     return *this;
 }
 
@@ -1144,6 +1126,6 @@ inline void convert(const wchar_t* from, std::string& to)
 
 //----------------------------------------------------------------------------//
 
-#include <boost/config/abi_suffix.hpp> // pops abi_prefix.hpp pragmas
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM_PATH_HPP
