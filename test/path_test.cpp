@@ -601,7 +601,7 @@ void non_member_tests()
         PATH_TEST_EQ(path(".") / "..", "./..");
         PATH_TEST_EQ(path("foo") / ".", "foo/.");
         PATH_TEST_EQ(path("..") / ".", "../.");
-        PATH_TEST_EQ(path(".") / ".", "./.");
+        PATH_TEST_EQ(path(".") / ".", ".");
         PATH_TEST_EQ(path(".") / "." / ".", "././.");
         PATH_TEST_EQ(path(".") / "foo" / ".", "./foo/.");
         PATH_TEST_EQ(path("foo") / "." / "bar", "foo/./bar");
@@ -2061,9 +2061,9 @@ void lexically_normal_tests()
 {
     std::cout << "lexically_normal_tests..." << std::endl;
 
-    //  Note: lexically_lexically_normal() uses /= to build up some results, so these results will
+    //  Note: lexically_normal() uses /= to build up some results, so these results will
     //  have the platform's preferred separator. Since that is immaterial to the correct
-    //  functioning of lexically_lexically_normal(), the test results are converted to generic form,
+    //  functioning of lexically_normal(), the test results are converted to generic form,
     //  and the expected results are also given in generic form. Otherwise many of the
     //  tests would incorrectly be reported as failing on Windows.
 
@@ -2085,7 +2085,7 @@ void lexically_normal_tests()
     PATH_TEST_EQ(path("/../..").lexically_normal().generic_path(), "/../..");
     PATH_TEST_EQ(path("../foo").lexically_normal().generic_path(), "../foo");
     PATH_TEST_EQ(path("foo/..").lexically_normal().generic_path(), ".");
-    PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), "./.");
+    PATH_TEST_EQ(path("foo/../").lexically_normal().generic_path(), ".");
     PATH_TEST_EQ((path("foo") / "..").lexically_normal().generic_path(), ".");
     PATH_TEST_EQ(path("foo/...").lexically_normal().generic_path(), "foo/...");
     PATH_TEST_EQ(path("foo/.../").lexically_normal().generic_path(), "foo/.../.");
@@ -2107,7 +2107,7 @@ void lexically_normal_tests()
     PATH_TEST_EQ(path("foo/./bar/../").lexically_normal().generic_path(), "foo/.");
     std::cout << path("foo/./bar/../").lexically_normal() << std::endl; // POSIX: "foo/.", Windows: "foo\."
     PATH_TEST_EQ(path("foo/bar/../..").lexically_normal().generic_path(), ".");
-    PATH_TEST_EQ(path("foo/bar/../../").lexically_normal().generic_path(), "./.");
+    PATH_TEST_EQ(path("foo/bar/../../").lexically_normal().generic_path(), ".");
     PATH_TEST_EQ(path("foo/bar/../blah").lexically_normal().generic_path(), "foo/blah");
     PATH_TEST_EQ(path("f/../b").lexically_normal().generic_path(), "b");
     PATH_TEST_EQ(path("f/b/..").lexically_normal().generic_path(), "f");
@@ -2163,11 +2163,11 @@ void lexically_normal_tests()
     {
         PATH_TEST_EQ(path("c:..").lexically_normal(), "c:..");
         PATH_TEST_EQ(path("c:foo/..").lexically_normal(), ".");
-        PATH_TEST_EQ(path("c:foo/../").lexically_normal(), "./.");
+        PATH_TEST_EQ(path("c:foo/../").lexically_normal(), ".");
         PATH_TEST_EQ(path("c:/foo/..").lexically_normal(), "c:");
         PATH_TEST_EQ(path("c:/foo/../").lexically_normal(), "c:/.");
         PATH_TEST_EQ(path("c:/..").lexically_normal(), ".");
-        PATH_TEST_EQ(path("c:/../").lexically_normal(), "./.");
+        PATH_TEST_EQ(path("c:/../").lexically_normal(), ".");
         PATH_TEST_EQ(path("c:/../..").lexically_normal(), "..");
         PATH_TEST_EQ(path("c:/../../").lexically_normal(), "../.");
         PATH_TEST_EQ(path("c:/../foo").lexically_normal(), "foo");

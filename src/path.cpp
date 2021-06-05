@@ -431,60 +431,80 @@ BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
 
 BOOST_FILESYSTEM_DECL path path::lexically_normal() const
 {
-    if (m_pathname.empty())
-        return *this;
+    const size_type root_path_size = find_root_path_size();
+    path normal(m_pathname.c_str(), m_pathname.c_str() + root_path_size);
+    size_type i = root_path_size, n = m_pathname.size();
 
-    path temp;
-    iterator start(begin());
-    iterator last(end());
-    iterator stop(last--);
-    for (iterator itr(start); itr != stop; ++itr)
+    // Skip redundant directory separators after the root directory
+    while (i < n && detail::is_directory_separator(m_pathname[i]))
+        ++i;
+
+    if (i < n)
     {
-        // ignore "." except at start and last
-        if (itr->native().size() == 1 && (itr->native())[0] == dot && itr != start && itr != last)
-            continue;
-
-        // ignore a name and following ".."
-        if (!temp.empty() && itr->native().size() == 2 && (itr->native())[0] == dot && (itr->native())[1] == dot) // dot dot
+        bool last_element_was_dot = false;
+        while (true)
         {
-            string_type lf(temp.filename().native());
-            string_type::size_type lf_size = lf.size();
-            if (lf_size > 0 && (lf_size != 1 || (lf[0] != dot && lf[0] != separator)) && (lf_size != 2 || (lf[0] != dot && lf[1] != dot
-#ifdef BOOST_WINDOWS_API
-                                                                                                           && lf[1] != colon
-#endif
-                                                                                                           )))
             {
-                temp.remove_filename();
-                //// if not root directory, must also remove "/" if any
-                //if (temp.native().size() > 0
-                //  && temp.native()[temp.native().size()-1]
-                //    == separator)
-                //{
-                //  size_type rns = 0, rds =
-                //    find_root_directory_start(temp.native(), temp.native().size(), rns);
-                //  if (rds == string_type::npos
-                //    || rds != temp.native().size()-1)
-                //  {
-                //    temp.m_pathname.erase(temp.native().size()-1);
-                //  }
-                //}
+                const size_type start_pos = i;
 
-                iterator next(itr);
-                if (temp.empty() && ++next != stop && next == last && *last == detail::dot_path())
+                // Find next separator
+                while (i < n && !detail::is_directory_separator(m_pathname[i]))
+                    ++i;
+
+                const size_type size = i - start_pos;
+
+                // Skip dot elements
+                if (size == 1u && m_pathname[start_pos] == dot)
                 {
-                    temp /= detail::dot_path();
+                    last_element_was_dot = true;
+                    goto skip_append;
                 }
-                continue;
+
+                last_element_was_dot = false;
+
+                // Process dot dot elements
+                if (size == 2u && m_pathname[start_pos] == dot && m_pathname[start_pos + 1] == dot && normal.size() > root_path_size)
+                {
+                    // Don't remove previous dot dot elements
+                    size_type pos = filename_pos(normal.m_pathname, root_path_size, normal.m_pathname.size());
+                    if ((normal.m_pathname.size() - pos) != 2 || normal.m_pathname[pos] != dot || normal.m_pathname[pos + 1] != dot)
+                    {
+                        if (pos > root_path_size && detail::is_directory_separator(normal.m_pathname[pos - 1]))
+                            --pos;
+                        normal.m_pathname.erase(normal.m_pathname.begin() + pos , normal.m_pathname.end());
+                        goto skip_append;
+                    }
+                }
+
+                // Append the element
+                normal.append_separator_if_needed();
+                normal.m_pathname.append(m_pathname.c_str() + start_pos, size);
+            }
+
+        skip_append:
+            if (i == n)
+                break;
+
+            // Skip directory separators, including duplicates
+            while (i < n && detail::is_directory_separator(m_pathname[i]))
+                ++i;
+
+            if (i == n)
+            {
+                // If a path ends with a separator, add a trailing dot element
+                goto append_trailing_dot;
             }
         }
 
-        temp /= *itr;
+        if (normal.empty() || last_element_was_dot)
+        {
+        append_trailing_dot:
+            normal.append_separator_if_needed();
+            normal.m_pathname.push_back(dot);
+        }
     }
 
-    if (temp.empty())
-        temp /= detail::dot_path();
-    return temp;
+    return normal;
 }
 
 } // namespace filesystem
