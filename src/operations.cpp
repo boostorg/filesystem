@@ -1352,6 +1352,18 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 continue;
             }
 
+            if (itr->size() == 1u && detail::is_directory_separator(itr->native()[0]))
+            {
+                // Convert generic separator returned by the iterator for the root directory to
+                // the preferred separator. This is important on Windows, as in some cases,
+                // like paths for network shares and cloud storage mount points GetFileAttributesW
+                // will return "file not found" if the path contains forward slashes.
+                path::value_type sep[2] = { path::preferred_separator, static_cast< path::value_type >('\0') };
+                result /= sep;
+                // We don't need to check for a symlink after adding a separator.
+                continue;
+            }
+
             result /= *itr;
 
             // If we don't have an absolute path yet then don't check symlink status.
@@ -3396,6 +3408,10 @@ BOOST_FILESYSTEM_DECL
 path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 {
     path head(p);
+    // Operate on paths with preferred separators. This can be important on Windows since
+    // GetFileAttributesW, which is called in status() may return "file not found" for paths
+    // to network shares and mounted cloud storages that have forward slashes as separators.
+    head.make_preferred();
     path tail;
     system::error_code local_ec;
     path::iterator itr = p.end();
@@ -3416,6 +3432,14 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
     for (; itr != p.end(); ++itr)
     {
         path const& tail_elem = *itr;
+        if (tail_elem.size() == 1u && detail::is_directory_separator(tail_elem.native()[0]))
+        {
+            // Convert generic separator returned by the iterator for the root directory to
+            // the preferred separator.
+            path::value_type sep[2] = { path::preferred_separator, static_cast< path::value_type >('\0') };
+            tail /= sep;
+            continue;
+        }
         tail /= tail_elem;
         // for a later optimization, track if any dot or dot-dot elements are present
         if (tail_elem == dot_p || tail_elem == dot_dot_p)
