@@ -601,7 +601,7 @@ void non_member_tests()
         PATH_TEST_EQ(path(".") / "..", "./..");
         PATH_TEST_EQ(path("foo") / ".", "foo/.");
         PATH_TEST_EQ(path("..") / ".", "../.");
-        PATH_TEST_EQ(path(".") / ".", ".");
+        PATH_TEST_EQ(path(".") / ".", "./.");
         PATH_TEST_EQ(path(".") / "." / ".", "././.");
         PATH_TEST_EQ(path(".") / "foo" / ".", "./foo/.");
         PATH_TEST_EQ(path("foo") / "." / "bar", "foo/./bar");
@@ -1207,17 +1207,6 @@ void query_and_decomposition_tests()
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(p.has_filename());
 
-    //  test some similar cases that both POSIX and Windows should handle identically
-    p = path("c:");
-    PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(p.filename(), "");
-    BOOST_TEST(!p.has_parent_path());
-    BOOST_TEST(!p.has_filename());
-    p = path("cc:");
-    PATH_TEST_EQ(p.parent_path().string(), "");
-    PATH_TEST_EQ(p.filename(), "");
-    BOOST_TEST(!p.has_parent_path());
-    BOOST_TEST(!p.has_filename());
 
     //  Windows specific tests
     if (platform == "Windows")
@@ -1621,6 +1610,18 @@ void query_and_decomposition_tests()
 
     else
     { // POSIX
+        p = path("c:");
+        PATH_TEST_EQ(p.parent_path().string(), "");
+        PATH_TEST_EQ(p.filename(), "c:");
+        BOOST_TEST(!p.has_parent_path());
+        BOOST_TEST(p.has_filename());
+
+        p = path("cc:");
+        PATH_TEST_EQ(p.parent_path().string(), "");
+        PATH_TEST_EQ(p.filename(), "cc:");
+        BOOST_TEST(!p.has_parent_path());
+        BOOST_TEST(p.has_filename());
+
         PATH_TEST_EQ(path("/foo/bar/"), "/foo/bar/");
         PATH_TEST_EQ(path("//foo//bar//"), "//foo//bar//");
         PATH_TEST_EQ(path("///foo///bar///"), "///foo///bar///");
