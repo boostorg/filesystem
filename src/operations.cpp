@@ -324,13 +324,18 @@ namespace detail {
 
 namespace {
 
-// Size of a small buffer for a path that can be placed on stack, in bytes
+// Size of a small buffer for a path that can be placed on stack, in character code units
 BOOST_CONSTEXPR_OR_CONST std::size_t small_path_size = 1024u;
 
-// Absolute maximum path length, in bytes, that we're willing to accept from various system calls.
+// Absolute maximum path length, in character code units, that we're willing to accept from various system calls.
 // This value is arbitrary, it is supposed to be a hard limit to avoid memory exhaustion
 // in some of the algorithms below in case of some corrupted or maliciously broken filesystem.
-BOOST_CONSTEXPR_OR_CONST std::size_t absolute_path_max = 16u * 1024u * 1024u;
+// A few examples of path size limits:
+// - Windows: 32767 UTF-16 code units or 260 bytes for legacy multibyte APIs.
+// - Linux: 4096 bytes
+// - IRIX, HP-UX, Mac OS, QNX, FreeBSD, OpenBSD: 1024 bytes
+// - GNU/Hurd: no hard limit
+BOOST_CONSTEXPR_OR_CONST std::size_t absolute_path_max = 32u * 1024u;
 
 // Maximum number of resolved symlinks before we register a loop
 BOOST_CONSTEXPR_OR_CONST unsigned int symloop_max =
