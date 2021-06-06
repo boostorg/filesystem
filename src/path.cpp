@@ -23,6 +23,7 @@
 
 #ifdef BOOST_WINDOWS_API
 #include "windows_file_codecvt.hpp"
+#include "windows_tools.hpp"
 #include <windows.h>
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__)
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
@@ -63,17 +64,12 @@ using boost::filesystem::path_detail::substring;
 const wchar_t separators[] = L"/\\";
 const wchar_t separator_string[] = L"/";
 const wchar_t preferred_separator_string[] = L"\\";
-BOOST_CONSTEXPR_OR_CONST wchar_t colon = L':';
-BOOST_CONSTEXPR_OR_CONST wchar_t questionmark = L'?';
-
-inline bool is_letter(wchar_t c)
-{
-    return (c >= L'A' && c <= L'Z') || (c >= L'a' && c <= L'z');
-}
+using boost::filesystem::detail::colon;
+using boost::filesystem::detail::questionmark;
 
 inline bool is_alnum(wchar_t c)
 {
-    return is_letter(c) || (c >= L'0' && c <= L'9');
+    return boost::filesystem::detail::is_letter(c) || (c >= L'0' && c <= L'9');
 }
 
 inline bool is_device_name_char(wchar_t c)
@@ -632,7 +628,7 @@ size_type find_root_directory_start(string_type const& path, size_type size, siz
     // case "c:" or "prn:"
     // Note: There is ambiguity in a "c:x" path interpretation. It could either mean a file "x" located at the current directory for drive C:,
     //       or an alternative stream "x" of a file "c". Windows API resolve this as the former, and so do we.
-    if ((size - pos) >= 2 && is_letter(path[pos]))
+    if ((size - pos) >= 2 && fs::detail::is_letter(path[pos]))
     {
         size_type i = pos + 1;
         for (; i < size; ++i)

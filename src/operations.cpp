@@ -201,14 +201,32 @@ typedef struct _REPARSE_DATA_BUFFER
     USHORT Reserved;
     union
     {
+        /*
+         * In SymbolicLink and MountPoint reparse points, there are two names.
+         * SubstituteName is the effective replacement path for the reparse point.
+         * This is what should be used for path traversal.
+         * PrintName is intended for presentation to the user and may omit some
+         * elements of the path or be absent entirely.
+         *
+         * Examples of substitute and print names:
+         * mklink /D ldrive c:\
+         * SubstituteName: "\??\c:\"
+         * PrintName: "c:\"
+         *
+         * mklink /J ldrive c:\
+         * SubstituteName: "\??\C:\"
+         * PrintName: "c:\"
+         *
+         * junction ldrive c:\
+         * SubstituteName: "\??\C:\"
+         * PrintName: ""
+         *
+         * box.com mounted cloud storage
+         * SubstituteName: "\??\Volume{<UUID>}\"
+         * PrintName: ""
+         */
         struct
         {
-            /*
-             * Example of distinction between substitute and print names:
-             * mklink /d ldrive c:\
-             * SubstituteName: c:\\??\
-             * PrintName: c:\
-             */
             USHORT SubstituteNameOffset;
             USHORT SubstituteNameLength;
             USHORT PrintNameOffset;
@@ -418,8 +436,6 @@ uintmax_t remove_all_aux(path const& p, fs::file_type type, error_code* ec)
 //                            POSIX-specific helpers                                    //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
-
-BOOST_CONSTEXPR_OR_CONST char dot = '.';
 
 #if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 //! A wrapper for the statx syscall
@@ -851,15 +867,13 @@ inline fs::file_type query_file_type(path const& p, error_code* ec)
     return fs::detail::symlink_status(p, ec).type();
 }
 
-#else
+#else // defined(BOOST_POSIX_API)
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                            Windows-specific helpers                                  //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
-
-BOOST_CONSTEXPR_OR_CONST wchar_t dot = L'.';
 
 // Windows CE has no environment variables
 #if !defined(UNDER_CE)
@@ -1013,10 +1027,156 @@ inline BOOL resize_file_api(const wchar_t* p, uintmax_t size)
     return h.handle != INVALID_HANDLE_VALUE && ::SetFilePointerEx(h.handle, sz, 0, FILE_BEGIN) && ::SetEndOfFile(h.handle);
 }
 
+//! Converts NT path to a Win32 path
+inline path convert_nt_path_to_win32_path(const wchar_t* nt_path, std::size_t size)
+{
+    // https://googleprojectzero.blogspot.com/2016/02/the-definitive-guide-on-win32-to-nt.html
+    // https://stackoverflow.com/questions/23041983/path-prefixes-and
+    //
+    // NT paths can be used to identify practically any named objects, devices, files, local and remote shares, etc.
+    // The path starts with a leading backslash and consists of one or more path elements separated with backslashes.
+    // The set of characters allowed in NT path elements is significantly larger than that of Win32 paths - basically,
+    // any character except the backslash is allowed. Path elements are case-insensitive.
+    //
+    // NT paths that start with the "\??\" prefix are used to indicate the current user's session namespace. The prefix
+    // indicates to the NT object manager to lookup the object relative to "\Sessions\0\DosDevices\[Logon Authentication ID]".
+    //
+    // There is also a special "\Global??\" prefix that refers to the system logon. User's session directory shadows
+    // the system logon directory, so that when the referenced object is not found in the user's namespace,
+    // system logon is looked up instead.
+    //
+    // There is a symlink "Global" in the user's session namespace that refers to the global namespace, so "\??\Global"
+    // effectively resolves to "\Global??". This allows Win32 applications to directly refer to the system objects,
+    // even if shadowed by the current user's logon object.
+    //
+    // NT paths can be used to reference not only local filesystems, but also devices and remote shares identifiable via
+    // UNC paths. For this, there is a special "UNC" device (which is a symlink to "\Device\Mup") in the system logon
+    // namespace, so "\??\UNC\host\share" (or "\??\Global\UNC\host\share", or "\Global??\UNC\host\share") is equivalent
+    // to "\\host\share".
+    //
+    // NT paths are not universally accepted by Win32 applications and APIs. For example, Far supports paths starting
+    // with "\??\" and "\??\Global\" but not with "\Global??\". As of Win10 21H1, File Explorer, cmd.exe and PowerShell
+    // don't support any of these. Given this, and that NT paths have a different set of allowed characters from Win32 paths,
+    // we should normally avoid exposing NT paths to users that expect Win32 paths.
+    //
+    // In Boost.Filesystem we only deal with NT paths that come from reparse points, such as symlinks and mount points,
+    // including directory junctions. It was observed that reparse points created by junction.exe and mklink use the "\??\"
+    // prefix for directory junctions and absolute symlink and unqualified relative path for relative symlinks.
+    // Absolute paths are using drive letters for mounted drives (e.g. "\??\C:\directory"), although it is possible
+    // to create a junction to an directory using a different way of identifying the filesystem (e.g.
+    // "\??\Volume{00000000-0000-0000-0000-000000000000}\directory").
+    // mklink does not support creating junctions pointing to a UNC path. junction.exe does create a junction that
+    // uses a seemingly invalid syntax like "\??\\\host\share", i.e. it basically does not expect an UNC path. It is not known
+    // if reparse points that refer to a UNC path are considered valid.
+    // There are reparse points created as mount points for local and remote filsystems (for example, a cloud storage mounted
+    // in the local filesystem). Such mount points have the form of "\??\Volume{00000000-0000-0000-0000-000000000000}\",
+    // "\??\Harddisk0Partition1\" or "\??\HarddiskVolume1\".
+    // Reparse points that refer directly to a global namespace (through "\??\Global\" or "\Global??\" prefixes) or
+    // devices (e.g. "\Device\HarddiskVolume1") have not been observed so far.
+
+    path win32_path;
+    std::size_t pos = 0u;
+    bool global_namespace = false;
+
+    // Check for the "\??\" prefix
+    if (size >= 4u &&
+        nt_path[0] == path::preferred_separator &&
+        nt_path[1] == questionmark &&
+        nt_path[2] == questionmark &&
+        nt_path[3] == path::preferred_separator)
+    {
+        pos = 4u;
+
+        // Check "Global"
+        if ((size - pos) >= 6u &&
+            (nt_path[pos] == L'G' || nt_path[pos] == L'g') &&
+            (nt_path[pos + 1] == L'l' || nt_path[pos + 1] == L'L') &&
+            (nt_path[pos + 2] == L'o' || nt_path[pos + 2] == L'O') &&
+            (nt_path[pos + 3] == L'b' || nt_path[pos + 3] == L'B') &&
+            (nt_path[pos + 4] == L'a' || nt_path[pos + 4] == L'A') &&
+            (nt_path[pos + 5] == L'l' || nt_path[pos + 5] == L'L'))
+        {
+            if ((size - pos) == 6u)
+            {
+                pos += 6u;
+                global_namespace = true;
+            }
+            else if (detail::is_directory_separator(nt_path[pos + 6u]))
+            {
+                pos += 7u;
+                global_namespace = true;
+            }
+        }
+    }
+    // Check for the "\Global??\" prefix
+    else if (size >= 10u &&
+        nt_path[0] == path::preferred_separator &&
+        (nt_path[1] == L'G' || nt_path[1] == L'g') &&
+        (nt_path[2] == L'l' || nt_path[2] == L'L') &&
+        (nt_path[3] == L'o' || nt_path[3] == L'O') &&
+        (nt_path[4] == L'b' || nt_path[4] == L'B') &&
+        (nt_path[5] == L'a' || nt_path[5] == L'A') &&
+        (nt_path[6] == L'l' || nt_path[6] == L'L') &&
+        nt_path[7] == questionmark &&
+        nt_path[8] == questionmark &&
+        nt_path[9] == path::preferred_separator)
+    {
+        pos = 10u;
+        global_namespace = true;
+    }
+
+    if (pos > 0u)
+    {
+        if ((size - pos) >= 2u &&
+        (
+            // Check if the following is a drive letter
+            (
+                detail::is_letter(nt_path[pos]) && nt_path[pos + 1u] == colon &&
+                ((size - pos) == 2u || detail::is_directory_separator(nt_path[pos + 2u]))
+            ) ||
+            // Check for an "incorrect" syntax for UNC path junction points
+            (
+                detail::is_directory_separator(nt_path[pos]) && detail::is_directory_separator(nt_path[pos + 1u]) &&
+                ((size - pos) == 2u || !detail::is_directory_separator(nt_path[pos + 2u]))
+            )
+        ))
+        {
+            // Strip the NT path prefix
+            goto done;
+        }
+
+        static const wchar_t win32_path_prefix[4u] = { path::preferred_separator, path::preferred_separator, questionmark, path::preferred_separator };
+
+        // Check for a UNC path
+        if ((size - pos) >= 4u &&
+            (nt_path[pos] == L'U' || nt_path[pos] == L'u') &&
+            (nt_path[pos + 1] == L'N' || nt_path[pos + 1] == L'n') &&
+            (nt_path[pos + 2] == L'C' || nt_path[pos + 2] == L'c') &&
+            nt_path[pos + 3] == path::preferred_separator)
+        {
+            win32_path.assign(win32_path_prefix, win32_path_prefix + 2);
+            pos += 4u;
+            goto done;
+        }
+
+        // This is some other NT path, possibly a volume mount point. Replace the NT prefix with a Win32 filesystem prefix "\\?\".
+        win32_path.assign(win32_path_prefix, win32_path_prefix + 4);
+        if (global_namespace)
+        {
+            static const wchar_t win32_path_global_prefix[7u] = { L'G', L'l', L'o', L'b', L'a', L'l', path::preferred_separator };
+            win32_path.concat(win32_path_global_prefix, win32_path_global_prefix + 7);
+        }
+    }
+
+done:
+    win32_path.concat(nt_path + pos, nt_path + size);
+    return win32_path;
+}
+
 //  Windows kernel32.dll functions that may or may not be present
 //  must be accessed through pointers
 
-typedef BOOL(WINAPI* PtrCreateHardLinkW)(
+typedef BOOL (WINAPI* PtrCreateHardLinkW)(
     /*__in*/ LPCWSTR lpFileName,
     /*__in*/ LPCWSTR lpExistingFileName,
     /*__reserved*/ LPSECURITY_ATTRIBUTES lpSecurityAttributes);
@@ -1025,7 +1185,7 @@ PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
     boost::winapi::get_proc_address(
         boost::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
 
-typedef BOOLEAN(WINAPI* PtrCreateSymbolicLinkW)(
+typedef BOOLEAN (WINAPI* PtrCreateSymbolicLinkW)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
     /*__in*/ LPCWSTR lpTargetFileName,
     /*__in*/ DWORD dwFlags);
@@ -1034,7 +1194,7 @@ PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
     boost::winapi::get_proc_address(
         boost::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
 
-#endif
+#endif // defined(BOOST_POSIX_API)
 
 //#ifdef BOOST_WINDOWS_API
 //
@@ -2710,14 +2870,14 @@ path read_symlink(path const& p, system::error_code* ec)
         {
         case IO_REPARSE_TAG_MOUNT_POINT:
             buffer = buf->rdb.MountPointReparseBuffer.PathBuffer;
-            offset = buf->rdb.MountPointReparseBuffer.PrintNameOffset;
-            len = buf->rdb.MountPointReparseBuffer.PrintNameLength;
+            offset = buf->rdb.MountPointReparseBuffer.SubstituteNameOffset;
+            len = buf->rdb.MountPointReparseBuffer.SubstituteNameLength;
             break;
 
         case IO_REPARSE_TAG_SYMLINK:
             buffer = buf->rdb.SymbolicLinkReparseBuffer.PathBuffer;
-            offset = buf->rdb.SymbolicLinkReparseBuffer.PrintNameOffset;
-            len = buf->rdb.SymbolicLinkReparseBuffer.PrintNameLength;
+            offset = buf->rdb.SymbolicLinkReparseBuffer.SubstituteNameOffset;
+            len = buf->rdb.SymbolicLinkReparseBuffer.SubstituteNameLength;
             // Note: iff info.rdb.SymbolicLinkReparseBuffer.Flags & SYMLINK_FLAG_RELATIVE
             //       -> resulting path is relative to the source
             break;
@@ -2727,9 +2887,7 @@ path read_symlink(path const& p, system::error_code* ec)
             return symlink_path;
         }
 
-        symlink_path.assign(
-            buffer + offset / sizeof(wchar_t),
-            buffer + (offset + len) / sizeof(wchar_t));
+        symlink_path = convert_nt_path_to_win32_path(buffer + offset / sizeof(wchar_t), len / sizeof(wchar_t));
     }
 #endif
 
