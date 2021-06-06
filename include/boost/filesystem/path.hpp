@@ -169,13 +169,21 @@ public:
     //  functions. GCC is not even consistent for the same release on different platforms.
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    path(string_type&& s) BOOST_NOEXCEPT : m_pathname(std::move(s)) {}
     path(path&& p) BOOST_NOEXCEPT : m_pathname(std::move(p.m_pathname))
     {
     }
     path& operator=(path&& p) BOOST_NOEXCEPT
     {
         m_pathname = std::move(p.m_pathname);
+        return *this;
+    }
+
+    path(string_type&& s) BOOST_NOEXCEPT : m_pathname(std::move(s))
+    {
+    }
+    path& operator=(string_type&& p) BOOST_NOEXCEPT
+    {
+        m_pathname = std::move(p);
         return *this;
     }
 #endif
