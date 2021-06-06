@@ -636,13 +636,13 @@ size_type find_root_directory_start(string_type const& path, size_type size, siz
             if (!is_device_name_char(path[i]))
                 break;
         }
-        
+
         if (i < size && path[i] == colon)
         {
             pos = i + 1;
             root_name_size = pos;
             parsing_root_name = false;
-            
+
             if (pos < size && fs::detail::is_directory_separator(path[pos]))
                 return pos;
         }
