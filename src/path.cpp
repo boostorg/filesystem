@@ -353,7 +353,7 @@ BOOST_FILESYSTEM_DECL path path::filename() const
 BOOST_FILESYSTEM_DECL bool path::has_filename() const
 {
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
     size_type pos = filename_pos(m_pathname, root_name_size, m_pathname.size());
     return pos >= root_name_size && pos < m_pathname.size();
 }
