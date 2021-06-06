@@ -19,12 +19,21 @@
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
-//  on Windows, except for standard libaries known to have wchar_t overloads for
-//  file stream I/O, use path::string() to get a narrow character c_str()
-#if defined(BOOST_WINDOWS_API) && (!defined(_CPPLIB_VER) || _CPPLIB_VER < 405 || defined(_STLPORT_VERSION))
-// !Dinkumware || early Dinkumware || STLPort masquerading as Dinkumware
-#define BOOST_FILESYSTEM_C_STR string().c_str() // use narrow, since wide not available
-#else                                           // use the native c_str, which will be narrow on POSIX, wide on Windows
+#if defined(BOOST_WINDOWS_API)
+// On Windows, except for standard libaries known to have wchar_t overloads for
+// file stream I/O, use path::string() to get a narrow character c_str()
+#if (defined(_CPPLIB_VER) && _CPPLIB_VER >= 405 && !defined(_STLPORT_VERSION)) || \
+    (defined(BOOST_LIBSTDCXX_VERSION) && BOOST_LIBSTDCXX_VERSION >= 80100 && __cplusplus >= 201703) || \
+    (defined(_LIBCPP_VERSION) && _LIBCPP_VERSION >= 7000 && (defined(_LIBCPP_HAS_OPEN_WITH_WCHAR) || (__cplusplus >= 201703 && !defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY))))
+// Use wide characters
+#define BOOST_FILESYSTEM_C_STR c_str()
+#else
+// Use narrow characters, since wide not available
+#define BOOST_FILESYSTEM_C_STR string().c_str()
+#endif
+#endif // defined(BOOST_WINDOWS_API)
+
+#if !defined(BOOST_FILESYSTEM_C_STR)
 #define BOOST_FILESYSTEM_C_STR c_str()
 #endif
 
