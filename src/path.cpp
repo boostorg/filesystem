@@ -361,19 +361,45 @@ BOOST_FILESYSTEM_DECL bool path::has_filename() const
 BOOST_FILESYSTEM_DECL path path::stem() const
 {
     path name(filename());
-    if (name == detail::dot_path() || name == detail::dot_dot_path())
-        return name;
-    size_type pos = name.m_pathname.rfind(dot);
-    return pos == string_type::npos ? name : path(name.m_pathname.c_str(), name.m_pathname.c_str() + pos);
+    if (name != detail::dot_path() && name != detail::dot_dot_path())
+    {
+        size_type pos = name.m_pathname.rfind(dot);
+        if (pos != 0 && pos != string_type::npos)
+            name.m_pathname.erase(name.m_pathname.begin() + pos, name.m_pathname.end());
+    }
+    return name;
 }
 
 BOOST_FILESYSTEM_DECL path path::extension() const
 {
-    path name(filename());
-    if (name == detail::dot_path() || name == detail::dot_dot_path())
-        return path();
-    size_type pos = name.m_pathname.rfind(dot);
-    return pos == string_type::npos ? path() : path(name.m_pathname.c_str() + pos, name.m_pathname.c_str() + name.m_pathname.size());
+    path ext;
+    const size_type size = m_pathname.size();
+    size_type root_name_size = 0;
+    find_root_directory_start(m_pathname, size, root_name_size);
+    size_type fname_pos = filename_pos(m_pathname, root_name_size, size);
+    if
+    (
+        fname_pos >= root_name_size && fname_pos < size &&
+        // Check for the trailing separator
+        !detail::is_directory_separator(m_pathname[fname_pos]) &&
+        // Check for "." and ".." filenames
+        !(m_pathname[fname_pos] == dot &&
+            ((size - fname_pos) == 1 || ((size - fname_pos) == 2 && m_pathname[fname_pos + 1] == dot)))
+    )
+    {
+        size_type ext_pos = size;
+        while (ext_pos > fname_pos)
+        {
+            --ext_pos;
+            if (m_pathname[ext_pos] == dot)
+                break;
+        }
+
+        if (ext_pos > fname_pos)
+            ext.assign(m_pathname.c_str() + ext_pos, m_pathname.c_str() + size);
+    }
+
+    return ext;
 }
 
 //  lexical operations  --------------------------------------------------------------//

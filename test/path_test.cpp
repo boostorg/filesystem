@@ -823,7 +823,7 @@ void query_and_decomposition_tests()
     // stem() tests not otherwise covered
     BOOST_TEST(path(".").stem() == ".");
     BOOST_TEST(path("..").stem() == "..");
-    BOOST_TEST(path(".a").stem() == "");
+    BOOST_TEST(path(".a").stem() == ".a");
     BOOST_TEST(path("b").stem() == "b");
     BOOST_TEST(path("a/b.txt").stem() == "b");
     BOOST_TEST(path("a/b.").stem() == "b");
@@ -833,7 +833,7 @@ void query_and_decomposition_tests()
     // extension() tests not otherwise covered
     BOOST_TEST(path(".").extension() == "");
     BOOST_TEST(path("..").extension() == "");
-    BOOST_TEST(path(".a").extension() == ".a");
+    BOOST_TEST(path(".a").extension() == "");
     BOOST_TEST(path("a/b").extension() == "");
     BOOST_TEST(path("a.b/c").extension() == "");
     BOOST_TEST(path("a/b.txt").extension() == ".txt");
