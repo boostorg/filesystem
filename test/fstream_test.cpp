@@ -138,8 +138,8 @@ int cpp_main(int argc, char*[])
     if (argc > 1)
         cleanup = false;
 
-    std::cout << "BOOST_FILESYSTEM_C_STR defined as \""
-              << BOOST_STRINGIZE(BOOST_FILESYSTEM_C_STR) << "\"\n";
+    std::cout << "BOOST_FILESYSTEM_C_STR(p) defined as \""
+              << BOOST_STRINGIZE(BOOST_FILESYSTEM_C_STR(p)) << "\"\n";
 
     // test narrow characters
     std::cout << "narrow character tests:\n";
@@ -147,7 +147,7 @@ int cpp_main(int argc, char*[])
 
     // So that tests are run with known encoding, use Boost UTF-8 codecvt
     std::locale global_loc = std::locale();
-    std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
+    std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet());
     fs::path::imbue(loc);
 
     // test with some wide characters

@@ -11,6 +11,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>
+#include <boost/filesystem/fstream.hpp> // for BOOST_FILESYSTEM_C_STR
 #include <boost/system/error_code.hpp>
 
 #include <set>
@@ -23,21 +24,13 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/core/lightweight_test.hpp>
 
-//  on Windows, except for standard libaries known to have wchar_t overloads for
-//  file stream I/O, use path::string() to get a narrow character c_str()
-#if defined(BOOST_WINDOWS_API) && (!defined(_CPPLIB_VER) || _CPPLIB_VER < 405) // not Dinkumware || no wide overloads
-#define BOOST_FILESYSTEM_C_STR string().c_str()                                // use narrow, since wide not available
-#else                                                                          // use the native c_str, which will be narrow on POSIX, wide on Windows
-#define BOOST_FILESYSTEM_C_STR c_str()
-#endif
-
 namespace fs = boost::filesystem;
 
 namespace {
 
 void create_file(fs::path const& ph, std::string const& contents = std::string())
 {
-    std::ofstream f(ph.BOOST_FILESYSTEM_C_STR, std::ios_base::out | std::ios_base::trunc);
+    std::ofstream f(BOOST_FILESYSTEM_C_STR(ph), std::ios_base::out | std::ios_base::trunc);
     if (!f)
         BOOST_THROW_EXCEPTION(std::runtime_error("Failed to create file: " + ph.string()));
     if (!contents.empty())
@@ -46,7 +39,7 @@ void create_file(fs::path const& ph, std::string const& contents = std::string()
 
 void verify_file(fs::path const& ph, std::string const& expected)
 {
-    std::ifstream f(ph.BOOST_FILESYSTEM_C_STR);
+    std::ifstream f(BOOST_FILESYSTEM_C_STR(ph));
     if (!f)
         BOOST_THROW_EXCEPTION(std::runtime_error("Failed to open file: " + ph.string()));
     std::string contents;

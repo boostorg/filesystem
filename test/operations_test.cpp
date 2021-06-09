@@ -21,6 +21,7 @@
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>
 #include <boost/filesystem/file_status.hpp>
+#include <boost/filesystem/fstream.hpp> // for BOOST_FILESYSTEM_C_STR
 
 #include <boost/cerrno.hpp>
 #include <boost/system/error_code.hpp>
@@ -95,14 +96,6 @@ inline void unsetenv_(const char* name)
 
 #endif
 
-//  on Windows, except for standard libaries known to have wchar_t overloads for
-//  file stream I/O, use path::string() to get a narrow character c_str()
-#if defined(BOOST_WINDOWS_API) && (!defined(_CPPLIB_VER) || _CPPLIB_VER < 405) // not Dinkumware || no wide overloads
-#define BOOST_FILESYSTEM_C_STR string().c_str()                                // use narrow, since wide not available
-#else                                                                          // use the native c_str, which will be narrow on POSIX, wide on Windows
-#define BOOST_FILESYSTEM_C_STR c_str()
-#endif
-
 #define CHECK_EXCEPTION(Functor, Expect) throws_fs_error(Functor, Expect, __LINE__)
 
 namespace {
@@ -130,7 +123,7 @@ const fs::path temp_dir(fs::unique_path("op-test-%%%%-%%%%"));
 
 void create_file(const fs::path& ph, const std::string& contents = std::string())
 {
-    std::ofstream f(ph.BOOST_FILESYSTEM_C_STR);
+    std::ofstream f(BOOST_FILESYSTEM_C_STR(ph));
     if (!f)
         throw fs::filesystem_error("operations_test create_file", ph, error_code(errno, system_category()));
     if (!contents.empty())
@@ -139,7 +132,7 @@ void create_file(const fs::path& ph, const std::string& contents = std::string()
 
 void verify_file(const fs::path& ph, const std::string& expected)
 {
-    std::ifstream f(ph.BOOST_FILESYSTEM_C_STR);
+    std::ifstream f(BOOST_FILESYSTEM_C_STR(ph));
     if (!f)
         throw fs::filesystem_error("operations_test verify_file", ph, error_code(errno, system_category()));
     std::string contents;
@@ -2342,12 +2335,12 @@ void temp_directory_path_tests()
         {
             if (exists(ph))
                 remove(ph);
-            std::ofstream f(ph.BOOST_FILESYSTEM_C_STR);
+            std::ofstream f(BOOST_FILESYSTEM_C_STR(ph));
             f << "passed";
         }
         BOOST_TEST(exists(ph));
         {
-            std::ifstream f(ph.BOOST_FILESYSTEM_C_STR);
+            std::ifstream f(BOOST_FILESYSTEM_C_STR(ph));
             std::string s;
             f >> s;
             BOOST_TEST(s == "passed");
