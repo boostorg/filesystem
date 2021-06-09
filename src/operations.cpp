@@ -271,6 +271,10 @@ typedef struct _REPARSE_DATA_BUFFER
 #define SYMBOLIC_LINK_FLAG_DIRECTORY 0x1
 #endif
 
+#ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
+#define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE 0x2
+#endif
+
 // Our convenience type for allocating REPARSE_DATA_BUFFER along with sufficient space after it
 union reparse_data_buffer
 {
@@ -293,7 +297,6 @@ union reparse_data_buffer
 
 #define BOOST_SET_CURRENT_DIRECTORY(P) (::chdir(P) == 0)
 #define BOOST_CREATE_HARD_LINK(F, T) (::link(T, F) == 0)
-#define BOOST_CREATE_SYMBOLIC_LINK(F, T, Flag) (::symlink(T, F) == 0)
 #define BOOST_REMOVE_DIRECTORY(P) (::rmdir(P) == 0)
 #define BOOST_DELETE_FILE(P) (::unlink(P) == 0)
 #define BOOST_MOVE_FILE(OLD, NEW) (::rename(OLD, NEW) == 0)
@@ -303,7 +306,6 @@ union reparse_data_buffer
 
 #define BOOST_SET_CURRENT_DIRECTORY(P) (::SetCurrentDirectoryW(P) != 0)
 #define BOOST_CREATE_HARD_LINK(F, T) (create_hard_link_api(F, T, 0) != 0)
-#define BOOST_CREATE_SYMBOLIC_LINK(F, T, Flag) (create_symbolic_link_api(F, T, Flag) != 0)
 #define BOOST_REMOVE_DIRECTORY(P) (::RemoveDirectoryW(P) != 0)
 #define BOOST_DELETE_FILE(P) (::DeleteFileW(P) != 0)
 #define BOOST_MOVE_FILE(OLD, NEW) (::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) != 0)
@@ -2151,13 +2153,29 @@ void copy_directory(path const& from, path const& to, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 void create_directory_symlink(path const& to, path const& from, system::error_code* ec)
 {
-#if defined(BOOST_WINDOWS_API)
-    // see if actually supported by Windows runtime dll
-    if (error(!create_symbolic_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec, "boost::filesystem::create_directory_symlink"))
-        return;
-#endif
+    if (ec)
+        ec->clear();
 
-    error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY) ? BOOST_ERRNO : 0, to, from, ec, "boost::filesystem::create_directory_symlink");
+#if defined(BOOST_POSIX_API)
+    int err = ::symlink(to.c_str(), from.c_str());
+    if (BOOST_UNLIKELY(err < 0))
+    {
+        err = errno;
+        emit_error(err, to, from, ec, "boost::filesystem::create_directory_symlink");
+    }
+#else
+    // see if actually supported by Windows runtime dll
+    if (!create_symbolic_link_api)
+    {
+        emit_error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec, "boost::filesystem::create_directory_symlink");
+        return;
+    }
+
+    if (!create_symbolic_link_api(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_DIRECTORY | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))
+    {
+        emit_error(BOOST_ERRNO, to, from, ec, "boost::filesystem::create_directory_symlink");
+    }
+#endif
 }
 
 BOOST_FILESYSTEM_DECL
@@ -2175,13 +2193,29 @@ void create_hard_link(path const& to, path const& from, error_code* ec)
 BOOST_FILESYSTEM_DECL
 void create_symlink(path const& to, path const& from, error_code* ec)
 {
-#if defined(BOOST_WINDOWS_API)
-    // see if actually supported by Windows runtime dll
-    if (error(!create_symbolic_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec, "boost::filesystem::create_symlink"))
-        return;
-#endif
+    if (ec)
+        ec->clear();
 
-    error(!BOOST_CREATE_SYMBOLIC_LINK(from.c_str(), to.c_str(), 0) ? BOOST_ERRNO : 0, to, from, ec, "boost::filesystem::create_symlink");
+#if defined(BOOST_POSIX_API)
+    int err = ::symlink(to.c_str(), from.c_str());
+    if (BOOST_UNLIKELY(err < 0))
+    {
+        err = errno;
+        emit_error(err, to, from, ec, "boost::filesystem::create_symlink");
+    }
+#else
+    // see if actually supported by Windows runtime dll
+    if (!create_symbolic_link_api)
+    {
+        emit_error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec, "boost::filesystem::create_symlink");
+        return;
+    }
+
+    if (!create_symbolic_link_api(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))
+    {
+        emit_error(BOOST_ERRNO, to, from, ec, "boost::filesystem::create_symlink");
+    }
+#endif
 }
 
 BOOST_FILESYSTEM_DECL
