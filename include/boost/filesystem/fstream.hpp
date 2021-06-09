@@ -24,9 +24,8 @@
 // file stream I/O, use path::string() to get a narrow character c_str()
 #if (defined(_CPPLIB_VER) && _CPPLIB_VER >= 405 && !defined(_STLPORT_VERSION)) || \
     (defined(_LIBCPP_VERSION) && _LIBCPP_VERSION >= 7000 && defined(_LIBCPP_HAS_OPEN_WITH_WCHAR))
-// Use wide characters
-#define BOOST_FILESYSTEM_C_STR(p) p.c_str()
-// Note: We don't use std::filesystem::path as a means to pass wide paths
+// Use wide characters directly
+// Note: We don't use C++17 std::filesystem::path as a means to pass wide paths
 // to file streams because of various problems:
 // - std::filesystem is available in gcc 8 but it is broken there (fails to compile path definition
 //   on Windows). Compilation errors seem to be fixed since gcc 9.
@@ -35,11 +34,7 @@
 //   is against the purpose of using std::filesystem::path anyway.
 // - Other std::filesystem implementations were not tested, so it is not known if they actually work
 //   with wide paths.
-// #elif (defined(BOOST_LIBSTDCXX_VERSION) && BOOST_LIBSTDCXX_VERSION >= 90100 && __cplusplus >= 201703) || \
-//     (defined(_LIBCPP_VERSION) && _LIBCPP_VERSION >= 7000 && (__cplusplus >= 201703 && !defined(_LIBCPP_HAS_NO_FILESYSTEM_LIBRARY)))
-// // Use std::filesystem::path
-// #include <filesystem>
-// #define BOOST_FILESYSTEM_C_STR(p) std::filesystem::path(p.native())
+#define BOOST_FILESYSTEM_C_STR(p) p.c_str()
 #else
 // Use narrow characters, since wide not available
 #define BOOST_FILESYSTEM_C_STR(p) p.string().c_str()
