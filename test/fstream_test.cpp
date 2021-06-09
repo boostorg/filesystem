@@ -156,8 +156,8 @@ int cpp_main(int argc, char*[])
     //  \u263A is a white smiling face
     std::cout << "\nwide character tests:\n";
     std::wstring ws(L"wide_fstream_test_");
-    ws += 0x2780;
-    ws += 0x263A;
+    ws.push_back(static_cast< wchar_t >(0x2780));
+    ws.push_back(static_cast< wchar_t >(0x263A));
     test(ws);
 
     return ::boost::report_errors();
