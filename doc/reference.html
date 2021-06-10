@@ -1692,8 +1692,8 @@ with the first <i>filename</i> after <i>root-path</i>. Otherwise, <code>path()</
 <pre>path <a name="path-parent_path">parent_path</a>() const;</pre>
 
 <blockquote>
-  <p><i>Returns:</i> <code>(empty() || begin() == —end()) ? path() : <i>pp</i></code>, where <code><i>pp</i></code> is constructed as if by
-  starting with an empty <code>path</code> and successively applying <code>operator/=</code> for each element in the range <code>begin()</code>, <code>—end()</code>.</p>
+  <p><i>Returns:</i> <code>(empty() || begin() == --end()) ? path() : <i>pp</i></code>, where <code><i>pp</i></code> is constructed as if by
+  starting with an empty <code>path</code> and successively applying <code>operator/=</code> for each element in the range <code>begin()</code>, <code>--end()</code>.</p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
@@ -1714,7 +1714,7 @@ std::cout &lt;&lt; path(&quot;..&quot;).parent_path();           // outputs &quo
 <pre>path <a name="path-filename">filename</a>() const;</pre>
 
 <blockquote>
-  <p><i>Returns:</i> <code>empty() ? path() : *—end()</code></p>
+  <p><i>Returns:</i> <code>empty() ? path() : *--end()</code></p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
@@ -1735,15 +1735,15 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;.
 <pre>path <a name="path-stem">stem</a>() const;</pre>
 
 <blockquote>
-  <p><i>Returns:</i> if <code>p.filename()</code> contains a dot but does not
-  consist solely of one or to two dots, returns
-  the substring of <code>p.filename()</code> starting at its beginning and
-  ending at the last dot (the dot is not included). Otherwise,
-  returns <code>p.filename()</code>.</p>
+  <p><i>Returns:</i> If <code>p.<a href="path-filename">filename</a>()</code> does not contain dots, consist solely of one
+  or to two dots, or contains exactly one dot as the initial character, returns <code>p.filename()</code>.
+  Otherwise returns the substring of <code>p.filename()</code> starting at its beginning and
+  ending at the last dot (the dot is not included).</p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
-    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).stem();</code> // outputs &quot;<code>bar</code>&quot;
+    <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).stem() &lt;&lt; '\n'; // outputs &quot;bar&quot;
+std::cout &lt;&lt; path(&quot;.hidden&quot;).stem() &lt;&lt; '\n'; // outputs &quot;.hidden&quot;
 path p = &quot;foo.bar.baz.tar&quot;;
 for (; !p.extension().empty(); p = p.stem())
   std::cout &lt;&lt; p.extension() &lt;&lt; '\n';
@@ -1758,17 +1758,15 @@ for (; !p.extension().empty(); p = p.stem())
 <pre>path <a name="path-extension">extension</a>() const;</pre>
 
 <blockquote>
-  <p><i>Returns:</i> if <code>p.filename()</code> contains a dot but does not
-  consist solely of one or to two dots, returns
-  the substring of <code>p.filename()</code> starting at the rightmost dot
-  and ending at the path's end. Otherwise, returns an empty <code>path</code> object. </p>
+  <p><i>Returns:</i> The substring of <code>p.<a href="path-filename">filename</a>()</code> that is not included
+  in <code>p.<a href="#path-stem">stem</a>()</code>.</p>
   <p><i>Remarks:</i> Implementations are permitted but not required to define additional
   behavior for file systems which append additional elements to extensions, such
   as alternate data streams or partitioned dataset names.</p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
-    <pre><code>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).extension(); //</code> outputs &quot;<code>.txt</code>&quot;</pre>
+    <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).extension(); // outputs &quot;.txt&quot;</pre>
 
   </blockquote>
   <p> <i>—end example</i>]</p>
