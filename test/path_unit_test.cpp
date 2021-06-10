@@ -624,12 +624,12 @@ void test_other_non_members()
     // edge cases
     CHECK(path("foo/").filename() == path("."));
     CHECK(path("foo/").filename_is_dot());
-    CHECK(path("/").filename() == path("/"));
+    CHECK(path("/").filename() == path(""));
     CHECK(!path("/").filename_is_dot());
 #ifdef BOOST_WINDOWS_API
     CHECK(path("c:.").filename() == path("."));
     CHECK(path("c:.").filename_is_dot());
-    CHECK(path("c:/").filename() == path("/"));
+    CHECK(path("c:/").filename() == path(""));
     CHECK(!path("c:\\").filename_is_dot());
 #else
     CHECK(path("c:.").filename() == path("c:."));

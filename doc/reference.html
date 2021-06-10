@@ -1714,14 +1714,14 @@ std::cout &lt;&lt; path(&quot;..&quot;).parent_path();           // outputs &quo
 <pre>path <a name="path-filename">filename</a>() const;</pre>
 
 <blockquote>
-  <p><i>Returns:</i> <code>empty() ? path() : *--end()</code></p>
+  <p><i>Returns:</i> <code>*this == <a href="#path-root_path">root_path</a>() ? path() : *--end()</code></p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
     <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).filename(); // outputs &quot;bar.txt&quot;
 std::cout &lt;&lt; path(&quot;/foo/bar&quot;).filename();     // outputs &quot;bar&quot;
 std::cout &lt;&lt; path(&quot;/foo/bar/&quot;).filename();    // outputs &quot;.&quot;
-std::cout &lt;&lt; path(&quot;/&quot;).filename();            // outputs &quot;/&quot;
+std::cout &lt;&lt; path(&quot;/&quot;).filename();            // outputs &quot;&quot;
 std::cout &lt;&lt; path(&quot;.&quot;).filename();            // outputs &quot;.&quot;
 std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;..&quot;</pre>
 
