@@ -19,6 +19,10 @@
 
 #include <windows.h>
 
+namespace boost {
+namespace filesystem {
+namespace detail {
+
 std::codecvt_base::result windows_file_codecvt::do_in(
     std::mbstate_t&,
     const char* from, const char* from_end, const char*& from_next,
@@ -56,5 +60,9 @@ std::codecvt_base::result windows_file_codecvt::do_out(
     *to_next = '\0';
     return ok;
 }
+
+} // namespace detail
+} // namespace filesystem
+} // namespace boost
 
 #endif // BOOST_WINDOWS_API

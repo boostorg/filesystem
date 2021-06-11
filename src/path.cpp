@@ -951,7 +951,7 @@ std::locale default_locale()
 {
 #if defined(BOOST_WINDOWS_API)
     std::locale global_loc = std::locale();
-    return std::locale(global_loc, new windows_file_codecvt);
+    return std::locale(global_loc, new boost::filesystem::detail::windows_file_codecvt());
 #elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__)
     // "All BSD system functions expect their string parameters to be in UTF-8 encoding
     // and nothing else." See
@@ -973,7 +973,7 @@ std::locale default_locale()
     // Many thanks to Peter Dimov for digging out the above references!
 
     std::locale global_loc = std::locale();
-    return std::locale(global_loc, new boost::filesystem::detail::utf8_codecvt_facet);
+    return std::locale(global_loc, new boost::filesystem::detail::utf8_codecvt_facet());
 #else // Other POSIX
     // ISO C calls std::locale("") "the locale-specific native environment", and this
     // locale is the default for many POSIX-based operating systems such as Linux.
