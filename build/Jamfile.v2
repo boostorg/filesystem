@@ -135,12 +135,24 @@ SOURCES =
     portability
     unique_path
     utf8_codecvt_facet
-    windows_file_codecvt
     ;
+
+rule select-platform-specific-sources ( properties * )
+{
+    local result ;
+
+    if <target-os>windows in $(properties) || <target-os>cygwin in $(properties)
+    {
+        result += <source>windows_file_codecvt.cpp ;
+    }
+
+    return $(result) ;
+}
 
 lib boost_filesystem
     : $(SOURCES).cpp
     : <define>BOOST_FILESYSTEM_SOURCE
+      <conditional>@select-platform-specific-sources
       <include>../src
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <link>static:<define>BOOST_FILESYSTEM_STATIC_LINK=1

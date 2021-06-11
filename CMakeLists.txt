@@ -49,7 +49,7 @@ check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/../config/check
 unset(CMAKE_REQUIRED_DEFINITIONS)
 unset(CMAKE_REQUIRED_INCLUDES)
 
-add_library(boost_filesystem
+set(BOOST_FILESYSTEM_SOURCES
     src/codecvt_error_category.cpp
     src/exception.cpp
     src/operations.cpp
@@ -59,9 +59,12 @@ add_library(boost_filesystem
     src/portability.cpp
     src/unique_path.cpp
     src/utf8_codecvt_facet.cpp
-    src/windows_file_codecvt.cpp
 )
+if(WIN32 OR CYGWIN)
+    list(APPEND BOOST_FILESYSTEM_SOURCES src/windows_file_codecvt.cpp)
+endif()
 
+add_library(boost_filesystem ${BOOST_FILESYSTEM_SOURCES})
 add_library(Boost::filesystem ALIAS boost_filesystem)
 
 target_include_directories(boost_filesystem PUBLIC include)
