@@ -1,6 +1,7 @@
 //  filesystem path.cpp  -------------------------------------------------------------  //
 
 //  Copyright Beman Dawes 2008
+//  Copyright Andrey Semashev 2021
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -352,7 +353,37 @@ BOOST_FILESYSTEM_DECL string_type::size_type path::find_parent_path_size() const
     return end_pos;
 }
 
-BOOST_FILESYSTEM_DECL path path::filename() const
+BOOST_FILESYSTEM_DECL path path::filename_v3() const
+{
+    const size_type size = m_pathname.size();
+    size_type root_name_size = 0;
+    size_type root_dir_pos = find_root_directory_start(m_pathname, size, root_name_size);
+    size_type filename_size, pos;
+    if (root_dir_pos < size && detail::is_directory_separator(m_pathname[size - 1]) && is_root_separator(m_pathname, root_dir_pos, size - 1))
+    {
+        // Return root directory
+        pos = root_dir_pos;
+        filename_size = 1u;
+    }
+    else if (root_name_size == size)
+    {
+        // Return root name
+        pos = 0u;
+        filename_size = root_name_size;
+    }
+    else
+    {
+        filename_size = find_filename_size(m_pathname, root_name_size, size);
+        pos = size - filename_size;
+        if (filename_size == 0u && pos > root_name_size && detail::is_directory_separator(m_pathname[pos - 1]) && !is_root_separator(m_pathname, root_dir_pos, pos - 1))
+            return detail::dot_path();
+    }
+
+    const value_type* p = m_pathname.c_str() + pos;
+    return path(p, p + filename_size);
+}
+
+BOOST_FILESYSTEM_DECL path path::filename_v4() const
 {
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
@@ -361,10 +392,11 @@ BOOST_FILESYSTEM_DECL path path::filename() const
     size_type pos = size - filename_size;
     if (filename_size == 0u && pos > root_name_size && detail::is_directory_separator(m_pathname[pos - 1]) && !is_root_separator(m_pathname, root_dir_pos, pos - 1))
         return detail::dot_path();
-    return path(m_pathname.c_str() + pos, m_pathname.c_str() + size);
+    const value_type* p = m_pathname.c_str() + pos;
+    return path(p, p + filename_size);
 }
 
-BOOST_FILESYSTEM_DECL bool path::has_filename() const
+BOOST_FILESYSTEM_DECL bool path::has_filename_v4() const
 {
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
@@ -376,9 +408,21 @@ BOOST_FILESYSTEM_DECL bool path::has_filename() const
     return pos > root_name_size && detail::is_directory_separator(m_pathname[pos - 1]) && !is_root_separator(m_pathname, root_dir_pos, pos - 1);
 }
 
-BOOST_FILESYSTEM_DECL path path::stem() const
+BOOST_FILESYSTEM_DECL path path::stem_v3() const
 {
-    path name(filename());
+    path name(filename_v3());
+    if (name != detail::dot_path() && name != detail::dot_dot_path())
+    {
+        size_type pos = name.m_pathname.rfind(dot);
+        if (pos != string_type::npos)
+            name.m_pathname.erase(name.m_pathname.begin() + pos, name.m_pathname.end());
+    }
+    return name;
+}
+
+BOOST_FILESYSTEM_DECL path path::stem_v4() const
+{
+    path name(filename_v4());
     if (name != detail::dot_path() && name != detail::dot_dot_path())
     {
         size_type pos = name.m_pathname.rfind(dot);
@@ -388,7 +432,16 @@ BOOST_FILESYSTEM_DECL path path::stem() const
     return name;
 }
 
-BOOST_FILESYSTEM_DECL path path::extension() const
+BOOST_FILESYSTEM_DECL path path::extension_v3() const
+{
+    path name(filename_v3());
+    if (name == detail::dot_path() || name == detail::dot_dot_path())
+        return path();
+    size_type pos(name.m_pathname.rfind(dot));
+    return pos == string_type::npos ? path() : path(name.m_pathname.c_str() + pos);
+}
+
+BOOST_FILESYSTEM_DECL path path::extension_v4() const
 {
     path ext;
     const size_type size = m_pathname.size();

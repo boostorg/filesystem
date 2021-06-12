@@ -26,8 +26,7 @@
 <img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
     <td align="middle">
     <font size="7">Filesystem Library<br>
-    </font>
-    <font size="6">Version 3</font></td>
+    Version 4</font></td>
   </tr>
 </table>
 
@@ -40,6 +39,7 @@
     <a href="faq.htm">FAQ</a> &nbsp;&nbsp;
     <a href="release_history.html">Releases</a> &nbsp;&nbsp;
     <a href="portability_guide.htm">Portability</a> &nbsp;&nbsp;
+    <a href="v4.html">V4</a> &nbsp;&nbsp;
     <a href="v3.html">V3 Intro</a> &nbsp;&nbsp;
     <a href="v3_design.html">V3 Design</a> &nbsp;&nbsp;
     <a href="deprecated.html">Deprecated</a> &nbsp;&nbsp;
@@ -271,7 +271,7 @@ limitations of actual operating systems and file systems. If an implementation c
 reasonable behavior, the implementation shall report an error in an
 implementation-defined manner.</p>
 <blockquote>
-<p>[<i>Note:</i> Such errors might be reported by an #error directive, a <code>
+<p>[<i>Note:</i> Such errors might be reported by an <code>#error</code> directive, a <code>
 static_assert</code>, a <code>filesystem_error</code> exception, a special
 return value, or some other manner. <i>—end note</i>]</p>
 </blockquote>
@@ -696,7 +696,7 @@ nothing else.&quot;</p>
 
     bool lexicographical_compare(path::iterator first1, path::iterator last1,
       path::iterator first2, path::iterator last2);
-    void swap(path&amp; lhs, path&amp; rhs);
+    void swap(path&amp; lhs, path&amp; rhs) noexcept;
     std::size_t <a href="#hash_value">hash_value</a>(const path&amp; p);
 
     bool operator==(const path&amp; lhs, const path&amp; rhs);
@@ -1122,7 +1122,7 @@ system or for a particular file system.</p>
         path&amp; <a href="#path-make_preferred">make_preferred</a>();
         path&amp; <a href="#path-remove_filename">remove_filename</a>();
         path&amp; <a href="#path-replace_extension">replace_extension</a>(const path&amp; new_extension = path());
-        void  <a href="#path-swap">swap</a>(path&amp; rhs);
+        void  <a href="#path-swap">swap</a>(path&amp; rhs) noexcept;
 
         // lexical operations
         path <a href="#lexically_normal">lexically_normal</a>() const;
@@ -1224,7 +1224,7 @@ library</i> [res.on.objects] would thus apply.&nbsp; <i>—end note</i>]</p>
 
 <p>Visual C++ at least through version 2012 does not employ C++11-style static
 initialization locks, so the initialization of <code>path::codecvt()</code> can
-race, either with itself or <code>path::imbue::()</code> if they are called from
+race, either with itself or <code>path::imbue()</code> if they are called from
 a different thread. A workaround is to call:</p>
 
 <blockquote>
@@ -1714,14 +1714,16 @@ std::cout &lt;&lt; path(&quot;..&quot;).parent_path();           // outputs &quo
 <pre>path <a name="path-filename">filename</a>() const;</pre>
 
 <blockquote>
-  <p><i>Returns:</i> <code>*this == <a href="#path-root_path">root_path</a>() ? path() : *--end()</code></p>
+  <p><i>Returns:</i> <b>v3:</b> <code>empty() ? path() : *--end()</code><br/>
+    <b>v4:</b> <code>*this == <a href="#path-root_path">root_path</a>() ? path() : *--end()</code></p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
     <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).filename(); // outputs &quot;bar.txt&quot;
 std::cout &lt;&lt; path(&quot;/foo/bar&quot;).filename();     // outputs &quot;bar&quot;
 std::cout &lt;&lt; path(&quot;/foo/bar/&quot;).filename();    // outputs &quot;.&quot;
-std::cout &lt;&lt; path(&quot;/&quot;).filename();            // outputs &quot;&quot;
+std::cout &lt;&lt; path(&quot;/&quot;).filename();            // v3 outputs &quot;/&quot;
+                                              // v4 outputs &quot;&quot;
 std::cout &lt;&lt; path(&quot;.&quot;).filename();            // outputs &quot;.&quot;
 std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;..&quot;</pre>
 
@@ -1736,14 +1738,15 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;.
 
 <blockquote>
   <p><i>Returns:</i> If <code>p.<a href="path-filename">filename</a>()</code> does not contain dots, consist solely of one
-  or to two dots, or contains exactly one dot as the initial character, returns <code>p.filename()</code>.
+  or to two dots, <i>[Since <b>v4</b>:</i> or contains exactly one dot as the initial character,<i>]</i> returns <code>p.filename()</code>.
   Otherwise returns the substring of <code>p.filename()</code> starting at its beginning and
   ending at the last dot (the dot is not included).</p>
   <p>[<i>Example:</i></p>
   <blockquote>
 
     <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).stem() &lt;&lt; '\n'; // outputs &quot;bar&quot;
-std::cout &lt;&lt; path(&quot;.hidden&quot;).stem() &lt;&lt; '\n'; // outputs &quot;.hidden&quot;
+std::cout &lt;&lt; path(&quot;.hidden&quot;).stem() &lt;&lt; '\n';      // v3 outputs &quot;&quot;
+                                                  // v4 outputs &quot;.hidden&quot;
 path p = &quot;foo.bar.baz.tar&quot;;
 for (; !p.extension().empty(); p = p.stem())
   std::cout &lt;&lt; p.extension() &lt;&lt; '\n';
@@ -2066,14 +2069,13 @@ const string_type  external_directory_string() const { return native(); }</pre>
   relative</a></code>&nbsp; <i>—end note</i>]</p>
   <p>[<i>Note:</i> If <a href="#normal-form">normalization</a> is needed to ensure consistent matching of elements, wrap
   <code>p</code>, <code>base</code>, or both in calls <code>
-  <a href="#lex-normal">
-  lexically_normal()</a></code>. <i>—end note</i>]</p>
+  <a href="#lex-normal">lexically_normal</a>()</code>. <i>—end note</i>]</p>
 </blockquote>
-<pre>void swap( path&amp; lhs, path&amp; rhs )</pre>
+<pre>void swap(path&amp; lhs, path&amp; rhs) noexcept;</pre>
 <blockquote>
   <p><i>Effects: </i><code>lhs.swap(rhs)</code>.</p>
 </blockquote>
-<pre>std::size_t <a name="hash_value">hash_value</a> (const path&amp; p);</pre>
+<pre>std::size_t <a name="hash_value">hash_value</a>(const path&amp; p);</pre>
 <blockquote>
   <p><i>Returns:</i> A hash value for the path <code>p</code>. If
   for two paths, <code>p1 == p2</code> then <code>hash_value(p1) == hash_value(p2)</code>.</p>

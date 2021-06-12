@@ -4,7 +4,7 @@
 //  Copyright Jan Langer 2002
 //  Copyright Dietmar Kuehl 2001
 //  Copyright Vladimir Prus 2002
-//  Copyright Andrey Semashev 2020
+//  Copyright Andrey Semashev 2020-2021
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -13,8 +13,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_OPERATIONS_HPP
-#define BOOST_FILESYSTEM3_OPERATIONS_HPP
+#ifndef BOOST_FILESYSTEM_OPERATIONS_HPP
+#define BOOST_FILESYSTEM_OPERATIONS_HPP
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
@@ -716,4 +716,4 @@ BOOST_FILESYSTEM_DECL bool possible_large_file_size_support();
 
 #include <boost/filesystem/detail/footer.hpp>
 
-#endif // BOOST_FILESYSTEM3_OPERATIONS_HPP
+#endif // BOOST_FILESYSTEM_OPERATIONS_HPP

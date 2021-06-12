@@ -1,6 +1,7 @@
 //  boost/filesystem/fstream.hpp  ------------------------------------------------------//
 
 //  Copyright Beman Dawes 2002
+//  Copyright Andrey Semashev 2021
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -9,8 +10,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_FSTREAM_HPP
-#define BOOST_FILESYSTEM3_FSTREAM_HPP
+#ifndef BOOST_FILESYSTEM_FSTREAM_HPP
+#define BOOST_FILESYSTEM_FSTREAM_HPP
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
@@ -202,4 +203,4 @@ typedef basic_fstream< wchar_t > wfstream;
 
 #include <boost/filesystem/detail/footer.hpp>
 
-#endif // BOOST_FILESYSTEM3_FSTREAM_HPP
+#endif // BOOST_FILESYSTEM_FSTREAM_HPP

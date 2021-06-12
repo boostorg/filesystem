@@ -8,8 +8,8 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-#ifndef BOOST_FILESYSTEM3_EXCEPTION_HPP
-#define BOOST_FILESYSTEM3_EXCEPTION_HPP
+#ifndef BOOST_FILESYSTEM_EXCEPTION_HPP
+#define BOOST_FILESYSTEM_EXCEPTION_HPP
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
@@ -89,4 +89,4 @@ private:
 
 #include <boost/filesystem/detail/footer.hpp>
 
-#endif // BOOST_FILESYSTEM3_EXCEPTION_HPP
+#endif // BOOST_FILESYSTEM_EXCEPTION_HPP

@@ -1,7 +1,8 @@
 //  filesystem path.hpp  ---------------------------------------------------------------//
 
-//  Copyright Beman Dawes 2002-2005, 2009
 //  Copyright Vladimir Prus 2002
+//  Copyright Beman Dawes 2002-2005, 2009
+//  Copyright Andrey Semashev 2021
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -579,9 +580,9 @@ public:
 
     path parent_path() const { return path(m_pathname.c_str(), m_pathname.c_str() + find_parent_path_size()); }
 
-    BOOST_FILESYSTEM_DECL path filename() const;       // returns 0 or 1 element path
-    BOOST_FILESYSTEM_DECL path stem() const;           // returns 0 or 1 element path
-    BOOST_FILESYSTEM_DECL path extension() const;      // returns 0 or 1 element path
+    BOOST_FORCEINLINE path filename() const { return BOOST_FILESYSTEM_VERSIONED_SYM(filename)(); }   // returns 0 or 1 element path
+    BOOST_FORCEINLINE path stem() const { return BOOST_FILESYSTEM_VERSIONED_SYM(stem)(); }           // returns 0 or 1 element path
+    BOOST_FORCEINLINE path extension() const { return BOOST_FILESYSTEM_VERSIONED_SYM(extension)(); } // returns 0 or 1 element path
 
     //  -----  query  -----
 
@@ -593,7 +594,7 @@ public:
     bool has_root_directory() const { return find_root_directory().size > 0; }
     bool has_relative_path() const { return find_relative_path().size > 0; }
     bool has_parent_path() const { return find_parent_path_size() > 0; }
-    BOOST_FILESYSTEM_DECL bool has_filename() const;
+    BOOST_FORCEINLINE bool has_filename() const { return BOOST_FILESYSTEM_VERSIONED_SYM(has_filename)(); }
     bool has_stem() const { return !stem().empty(); }
     bool has_extension() const { return !extension().empty(); }
     bool is_relative() const { return !is_absolute(); }
@@ -669,6 +670,15 @@ public:
     //                            class path private members                                //
     //--------------------------------------------------------------------------------------//
 private:
+    bool has_filename_v3() const { return !m_pathname.empty(); }
+    BOOST_FILESYSTEM_DECL bool has_filename_v4() const;
+    BOOST_FILESYSTEM_DECL path filename_v3() const;
+    BOOST_FILESYSTEM_DECL path filename_v4() const;
+    BOOST_FILESYSTEM_DECL path stem_v3() const;
+    BOOST_FILESYSTEM_DECL path stem_v4() const;
+    BOOST_FILESYSTEM_DECL path extension_v3() const;
+    BOOST_FILESYSTEM_DECL path extension_v4() const;
+
     //  Returns: If separator is to be appended, m_pathname.size() before append. Otherwise 0.
     //  Note: An append is never performed if size()==0, so a returned 0 is unambiguous.
     BOOST_FILESYSTEM_DECL string_type::size_type append_separator_if_needed();

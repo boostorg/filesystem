@@ -20,7 +20,7 @@
  width="300" height="86" border="0"></a></td>
     <td align="middle">
     <font size="7">Filesystem Library<br>
-    Version 3</font>
+    Version 4</font>
     </td>
   </tr>
 </table>
@@ -34,6 +34,7 @@
     <a href="faq.htm">FAQ</a> &nbsp;&nbsp;
     <a href="release_history.html">Releases</a> &nbsp;&nbsp;
     <a href="portability_guide.htm">Portability</a> &nbsp;&nbsp;
+    <a href="v4.html">V4</a> &nbsp;&nbsp;
     <a href="v3.html">V3 Intro</a> &nbsp;&nbsp;
     <a href="v3_design.html">V3 Design</a> &nbsp;&nbsp;
     <a href="deprecated.html">Deprecated</a> &nbsp;&nbsp;
@@ -147,6 +148,9 @@ concerned with writing code to run on multiple operating systems.</p>
 <p><b><a href="deprecated.html">Deprecated Features</a></b> - Identifies
 deprecated features and their replacements.</p>
 
+<p><b><a href="v4.html">Version 4 Description</a></b> - Summary of changes from
+Version 3.</p>
+
 <p><b><a href="v3.html">Version 3 Introduction</a></b> - Aimed at users of prior
 Boost.Filesystem versions.</p>
 
@@ -229,11 +233,12 @@ noexcept</code> never throw exceptions.</p>
   <li>Header &lt;<a href="../../../boost/filesystem.hpp">boost/filesystem.hpp</a>&gt;
   provides access to all features of the library, except file streams.<br>
 &nbsp;</li>
-  <li>Header &lt;<a href="../../../boost/filesystem/fstream.hpp">boost/filesystem<i>/</i>fstream.hpp</a>&gt;
+  <li>Header &lt;<a href="../../../boost/filesystem/fstream.hpp">boost/filesystem/fstream.hpp</a>&gt;
   inherits the same components as the C++ Standard
   Library's <i>fstream</i> header, but files are identified by <code>const path&amp;</code>
   arguments rather that <code>const char*</code> arguments.</li>
 </ul>
+
 <h2><a name="Examples">Example programs</a></h2>
 <p>See the <a href="tutorial.html">tutorial</a> for example programs.</p>
 <h2><a name="Implementation">Implementation</a></h2>
@@ -242,6 +247,7 @@ the POSIX or Windows API's.</p>
 <p>The library is in regular use on Apple  OS X, HP-UX, IBM AIX, Linux,
 Microsoft Windows, SGI IRIX, and Sun Solaris operating systems using a variety
 of compilers. It is also used by several smart phone operating systems.</p>
+
 <h2><a name="Macros">Macros</a></h2>
 <p>Users may define the following macros if desired. Sensible defaults are
 provided, so users can ignore these macros unless they have special needs.</p>
@@ -250,6 +256,12 @@ provided, so users can ignore these macros unless they have special needs.</p>
     <td><b><i>Macro Name</i></b></td>
     <td><b><i>Default</i></b></td>
     <td><b><i>Effect if defined</i></b></td>
+  </tr>
+  <tr>
+    <td valign="top"><code>BOOST_FILESYSTEM_VERSION</code></td>
+    <td valign="top">3</td>
+    <td valign="top">Selects the Boost.Filesystem library version. Can have values of 3 or 4.
+      Defining to 4 also implies <code>BOOST_FILESYSTEM_NO_DEPRECATED</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>BOOST_FILESYSTEM_NO_DEPRECATED</code></td>
@@ -321,7 +333,7 @@ systems and so will work with the Filesystem Library.</p>
 This is controlled by the BOOST_ALL_DYN_LINK or BOOST_FILESYSTEM_DYN_LINK
 macros. See the <a href="http://www.boost.org/development/separate_compilation.html">Separate
 Compilation</a> page for a description of the techniques used.</p>
-<h3>Note for <a name="Cgywin">Cygwin</a> users</h3>
+<h3>Note for <a name="Cygwin">Cygwin</a> users</h3>
 <p> <a href="http://www.cygwin.com/">Cygwin</a> version 1.7 or later is
 required because only versions of GCC with wide character strings are supported.</p>
 
@@ -333,11 +345,12 @@ syntax.</p>
 
 <h3>Version 4</h3>
 
-<p><b>Under development </b>- Add support for the
-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4099.html">ISO
-C++ File System Technical Specification</a>. The Filesystem TS is based on
+<p><b>Under development</b> - Improve compatibility with std::filesystem introduced in C++17
+(original proposal: <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4099.html">ISO
+C++ File System Technical Specification</a>). The Filesystem TS was based on
 Boost.Filesystem Version 3, with only a small number of changes. Most user code
-written for Version 3 should work unchanged with Version 4.</p>
+written for Version 3 should work unchanged with Version 4. The differences can be seen in a
+<a href="v4.html">separate section</a>.</p>
 
 <h3>Version 3</h3>
 

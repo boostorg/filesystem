@@ -1,6 +1,7 @@
 //  boost/filesystem/v3/config.hpp  ----------------------------------------------------//
 
 //  Copyright Beman Dawes 2003
+//  Copyright Andrey Semashev 2021
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -9,18 +10,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_CONFIG_HPP
-#define BOOST_FILESYSTEM3_CONFIG_HPP
-
-#if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3
-#error Compiling Filesystem version 3 file with BOOST_FILESYSTEM_VERSION defined != 3
-#endif
-
-#if !defined(BOOST_FILESYSTEM_VERSION)
-#define BOOST_FILESYSTEM_VERSION 3
-#endif
-
-#define BOOST_FILESYSTEM_I18N // aid users wishing to compile several versions
+#ifndef BOOST_FILESYSTEM_CONFIG_HPP
+#define BOOST_FILESYSTEM_CONFIG_HPP
 
 // This header implements separate compilation features as described in
 // http://www.boost.org/more/separate_compilation.html
@@ -28,6 +19,28 @@
 #include <boost/config.hpp>
 #include <boost/system/api_config.hpp> // for BOOST_POSIX_API or BOOST_WINDOWS_API
 #include <boost/detail/workaround.hpp>
+
+#if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3 && BOOST_FILESYSTEM_VERSION != 4
+#error Compiling Boost.Filesystem file with BOOST_FILESYSTEM_VERSION defined != 3 or 4
+#endif
+
+#if defined(BOOST_FILESYSTEM_SOURCE)
+#undef BOOST_FILESYSTEM_VERSION
+#define BOOST_FILESYSTEM_VERSION 4
+#elif !defined(BOOST_FILESYSTEM_VERSION)
+#define BOOST_FILESYSTEM_VERSION 3
+#endif
+
+#define BOOST_FILESYSTEM_VERSIONED_SYM(sym) BOOST_JOIN(sym, BOOST_JOIN(_v, BOOST_FILESYSTEM_VERSION))
+
+#if BOOST_FILESYSTEM_VERSION == 4
+#undef BOOST_FILESYSTEM_DEPRECATED
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+#define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#endif
+
+#define BOOST_FILESYSTEM_I18N // aid users wishing to compile several versions
 
 //  BOOST_FILESYSTEM_DEPRECATED needed for source compiles -----------------------------//
 
@@ -109,4 +122,4 @@
 #include <boost/config/auto_link.hpp>
 #endif // auto-linking disabled
 
-#endif // BOOST_FILESYSTEM3_CONFIG_HPP
+#endif // BOOST_FILESYSTEM_CONFIG_HPP

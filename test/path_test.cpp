@@ -816,14 +816,22 @@ void query_and_decomposition_tests()
     BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
     BOOST_TEST(path("/foo/bar").filename() == "bar");
     BOOST_TEST(path("/foo/bar/").filename() == ".");
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(path("/").filename() == "/");
+#else
     BOOST_TEST(path("/").filename() == "");
+#endif
     BOOST_TEST(path(".").filename() == ".");
     BOOST_TEST(path("..").filename() == "..");
 
     // stem() tests not otherwise covered
     BOOST_TEST(path(".").stem() == ".");
     BOOST_TEST(path("..").stem() == "..");
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(path(".a").stem() == "");
+#else
     BOOST_TEST(path(".a").stem() == ".a");
+#endif
     BOOST_TEST(path("b").stem() == "b");
     BOOST_TEST(path("a/b.txt").stem() == "b");
     BOOST_TEST(path("a/b.").stem() == "b");
@@ -833,7 +841,11 @@ void query_and_decomposition_tests()
     // extension() tests not otherwise covered
     BOOST_TEST(path(".").extension() == "");
     BOOST_TEST(path("..").extension() == "");
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(path(".a").extension() == ".a");
+#else
     BOOST_TEST(path(".a").extension() == "");
+#endif
     BOOST_TEST(path("a/b").extension() == "");
     BOOST_TEST(path("a.b/c").extension() == "");
     BOOST_TEST(path("a/b.txt").extension() == ".txt");
@@ -870,8 +882,13 @@ void query_and_decomposition_tests()
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.filename() == "/");
+    BOOST_TEST(p.stem() == "/");
+#else
     BOOST_TEST(p.filename() == "");
     BOOST_TEST(p.stem() == "");
+#endif
     BOOST_TEST(p.extension() == "");
     BOOST_TEST(p.root_name() == "");
     BOOST_TEST(p.root_directory() == "/");
@@ -880,8 +897,13 @@ void query_and_decomposition_tests()
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.has_filename());
+    BOOST_TEST(p.has_stem());
+#else
     BOOST_TEST(!p.has_filename());
     BOOST_TEST(!p.has_stem());
+#endif
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(!p.has_parent_path());
     if (platform == "POSIX")
@@ -893,8 +915,13 @@ void query_and_decomposition_tests()
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(p.filename(), "//");
+    PATH_TEST_EQ(p.stem(), "//");
+#else
     PATH_TEST_EQ(p.filename(), "");
     PATH_TEST_EQ(p.stem(), "");
+#endif
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "//");
     PATH_TEST_EQ(p.root_directory(), "");
@@ -903,8 +930,13 @@ void query_and_decomposition_tests()
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.has_filename());
+    BOOST_TEST(p.has_stem());
+#else
     BOOST_TEST(!p.has_filename());
     BOOST_TEST(!p.has_stem());
+#endif
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(!p.is_absolute());
@@ -913,8 +945,13 @@ void query_and_decomposition_tests()
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(p.parent_path().string(), "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(p.filename(), "/");
+    PATH_TEST_EQ(p.stem(), "/");
+#else
     PATH_TEST_EQ(p.filename(), "");
     PATH_TEST_EQ(p.stem(), "");
+#endif
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "");
     PATH_TEST_EQ(p.root_directory(), "/");
@@ -923,8 +960,13 @@ void query_and_decomposition_tests()
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.has_filename());
+    BOOST_TEST(p.has_stem());
+#else
     BOOST_TEST(!p.has_filename());
     BOOST_TEST(!p.has_stem());
+#endif
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(!p.has_parent_path());
     if (platform == "POSIX")
@@ -1139,7 +1181,11 @@ void query_and_decomposition_tests()
     PATH_TEST_EQ(p.relative_path().string(), "");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
     PATH_TEST_EQ(p.parent_path().string(), "");
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(p.filename(), "//net");
+#else
     PATH_TEST_EQ(p.filename(), "");
+#endif
     PATH_TEST_EQ(p.root_name(), "//net");
     PATH_TEST_EQ(p.root_directory(), "");
     PATH_TEST_EQ(p.root_path().string(), "//net");
@@ -1147,7 +1193,11 @@ void query_and_decomposition_tests()
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(!p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.has_filename());
+#else
     BOOST_TEST(!p.has_filename());
+#endif
     BOOST_TEST(!p.has_parent_path());
     BOOST_TEST(!p.is_absolute());
 
@@ -1155,7 +1205,11 @@ void query_and_decomposition_tests()
     BOOST_TEST(p.relative_path().string() == "");
     BOOST_TEST(p.parent_path().string() == "//net");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.filename() == "/");
+#else
     BOOST_TEST(p.filename() == "");
+#endif
     BOOST_TEST(p.root_name() == "//net");
     BOOST_TEST(p.root_directory() == "/");
     BOOST_TEST(p.root_path().string() == "//net/");
@@ -1163,7 +1217,11 @@ void query_and_decomposition_tests()
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.has_filename());
+#else
     BOOST_TEST(!p.has_filename());
+#endif
     BOOST_TEST(p.has_parent_path());
     BOOST_TEST(p.is_absolute());
 
@@ -1215,8 +1273,13 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\\\?\\");
+        PATH_TEST_EQ(p.stem(), "\\\\?\\");
+#else
         PATH_TEST_EQ(p.filename(), "");
         PATH_TEST_EQ(p.stem(), "");
+#endif
         PATH_TEST_EQ(p.extension(), "");
         PATH_TEST_EQ(p.root_name(), "\\\\?\\");
         PATH_TEST_EQ(p.root_directory(), "");
@@ -1225,8 +1288,13 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_stem());
+#else
         BOOST_TEST(!p.has_filename());
         BOOST_TEST(!p.has_stem());
+#endif
         BOOST_TEST(!p.has_extension());
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
@@ -1235,9 +1303,15 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\\\.\\");
+        PATH_TEST_EQ(p.stem(), "\\\\");
+        PATH_TEST_EQ(p.extension(), ".\\");
+#else
         PATH_TEST_EQ(p.filename(), "");
         PATH_TEST_EQ(p.stem(), "");
         PATH_TEST_EQ(p.extension(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\\\.\\");
         PATH_TEST_EQ(p.root_directory(), "");
         PATH_TEST_EQ(p.root_path().string(), "\\\\.\\");
@@ -1245,9 +1319,15 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_stem());
+        BOOST_TEST(p.has_extension());
+#else
         BOOST_TEST(!p.has_filename());
         BOOST_TEST(!p.has_stem());
         BOOST_TEST(!p.has_extension());
+#endif
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
@@ -1255,8 +1335,13 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\??\\");
+        PATH_TEST_EQ(p.stem(), "\\??\\");
+#else
         PATH_TEST_EQ(p.filename(), "");
         PATH_TEST_EQ(p.stem(), "");
+#endif
         PATH_TEST_EQ(p.extension(), "");
         PATH_TEST_EQ(p.root_name(), "\\??\\");
         PATH_TEST_EQ(p.root_directory(), "");
@@ -1265,8 +1350,13 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_stem());
+#else
         BOOST_TEST(!p.has_filename());
         BOOST_TEST(!p.has_stem());
+#endif
         BOOST_TEST(!p.has_extension());
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
@@ -1275,7 +1365,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "c:");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "c:");
         PATH_TEST_EQ(p.root_directory(), "");
         PATH_TEST_EQ(p.root_path().string(), "c:");
@@ -1283,7 +1377,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
@@ -1291,7 +1389,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\\\?\\c:");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\\\?\\c:");
         PATH_TEST_EQ(p.root_directory(), "");
         PATH_TEST_EQ(p.root_path().string(), "\\\\?\\c:");
@@ -1299,7 +1401,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
@@ -1307,7 +1413,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\\\.\\c:");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\\\.\\c:");
         PATH_TEST_EQ(p.root_directory(), "");
         PATH_TEST_EQ(p.root_path().string(), "\\\\.\\c:");
@@ -1315,7 +1425,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
@@ -1323,7 +1437,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\??\\c:");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\??\\c:");
         PATH_TEST_EQ(p.root_directory(), "");
         PATH_TEST_EQ(p.root_path().string(), "\\??\\c:");
@@ -1331,7 +1449,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
@@ -1403,7 +1525,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "/");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "c:");
         PATH_TEST_EQ(p.root_directory(), "/");
         PATH_TEST_EQ(p.root_path().string(), "c:/");
@@ -1411,7 +1537,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(p.has_parent_path());
         BOOST_TEST(p.is_absolute());
 
@@ -1419,7 +1549,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "\\\\?\\c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\\\?\\c:\\");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\\\?\\c:");
         PATH_TEST_EQ(p.root_directory(), "\\");
         PATH_TEST_EQ(p.root_path().string(), "\\\\?\\c:\\");
@@ -1427,7 +1561,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(p.has_parent_path());
         BOOST_TEST(p.is_absolute());
 
@@ -1435,7 +1573,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "\\\\.\\c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\\\.\\c:\\");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\\\.\\c:");
         PATH_TEST_EQ(p.root_directory(), "\\");
         PATH_TEST_EQ(p.root_path().string(), "\\\\.\\c:\\");
@@ -1443,7 +1585,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(p.has_parent_path());
         BOOST_TEST(p.is_absolute());
 
@@ -1451,7 +1597,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "\\??\\c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "\\??\\c:\\");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "\\??\\c:");
         PATH_TEST_EQ(p.root_directory(), "\\");
         PATH_TEST_EQ(p.root_path().string(), "\\??\\c:\\");
@@ -1459,7 +1609,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(p.has_parent_path());
         BOOST_TEST(p.is_absolute());
 
@@ -1579,7 +1733,11 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(p.filename(), "prn:");
+#else
         PATH_TEST_EQ(p.filename(), "");
+#endif
         PATH_TEST_EQ(p.root_name(), "prn:");
         PATH_TEST_EQ(p.root_directory(), "");
         PATH_TEST_EQ(p.root_path().string(), "prn:");
@@ -1587,7 +1745,11 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(!p.has_root_directory());
         BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
         BOOST_TEST(!p.has_filename());
+#endif
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 

@@ -13,8 +13,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_FILE_STATUS_HPP
-#define BOOST_FILESYSTEM3_FILE_STATUS_HPP
+#ifndef BOOST_FILESYSTEM_FILE_STATUS_HPP
+#define BOOST_FILESYSTEM_FILE_STATUS_HPP
 
 #include <boost/filesystem/config.hpp>
 #include <boost/detail/bitmask.hpp>
@@ -242,4 +242,4 @@ inline bool is_regular(file_status f) BOOST_NOEXCEPT
 
 #include <boost/filesystem/detail/footer.hpp> // pops abi_prefix.hpp pragmas
 
-#endif // BOOST_FILESYSTEM3_FILE_STATUS_HPP
+#endif // BOOST_FILESYSTEM_FILE_STATUS_HPP

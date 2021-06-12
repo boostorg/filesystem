@@ -10,8 +10,8 @@
 
 //--------------------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_SRC_ERROR_HANDLING_HPP_
-#define BOOST_FILESYSTEM3_SRC_ERROR_HANDLING_HPP_
+#ifndef BOOST_FILESYSTEM_SRC_ERROR_HANDLING_HPP_
+#define BOOST_FILESYSTEM_SRC_ERROR_HANDLING_HPP_
 
 #include <cerrno>
 #include <boost/system/error_code.hpp>
@@ -106,4 +106,4 @@ inline bool error(err_t error_num, path const& p1, path const& p2, system::error
 } // namespace filesystem
 } // namespace boost
 
-#endif // BOOST_FILESYSTEM3_SRC_ERROR_HANDLING_HPP_
+#endif // BOOST_FILESYSTEM_SRC_ERROR_HANDLING_HPP_

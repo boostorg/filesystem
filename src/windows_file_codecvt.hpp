@@ -7,8 +7,8 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-#ifndef BOOST_FILESYSTEM3_WINDOWS_FILE_CODECVT_HPP
-#define BOOST_FILESYSTEM3_WINDOWS_FILE_CODECVT_HPP
+#ifndef BOOST_FILESYSTEM_WINDOWS_FILE_CODECVT_HPP
+#define BOOST_FILESYSTEM_WINDOWS_FILE_CODECVT_HPP
 
 #include <boost/filesystem/config.hpp>
 
@@ -65,4 +65,4 @@ protected:
 
 #endif // BOOST_WINDOWS_API
 
-#endif // BOOST_FILESYSTEM3_WINDOWS_FILE_CODECVT_HPP
+#endif // BOOST_FILESYSTEM_WINDOWS_FILE_CODECVT_HPP

@@ -2,6 +2,7 @@
 
 //  Copyright Beman Dawes, 2002-2005
 //  Copyright Vladimir Prus, 2002
+
 //  Use, modification, and distribution is subject to the Boost Software
 //  License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -10,8 +11,8 @@
 
 //----------------------------------------------------------------------------//
 
-#ifndef BOOST_FILESYSTEM3_CONVENIENCE_HPP
-#define BOOST_FILESYSTEM3_CONVENIENCE_HPP
+#ifndef BOOST_FILESYSTEM_CONVENIENCE_HPP
+#define BOOST_FILESYSTEM_CONVENIENCE_HPP
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -48,4 +49,4 @@ inline path change_extension(const path& p, const path& new_extension)
 
 #include <boost/filesystem/detail/footer.hpp>
 
-#endif // BOOST_FILESYSTEM3_CONVENIENCE_HPP
+#endif // BOOST_FILESYSTEM_CONVENIENCE_HPP
