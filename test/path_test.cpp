@@ -1550,7 +1550,7 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.parent_path().string(), "\\\\?\\c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
 #if BOOST_FILESYSTEM_VERSION == 3
-        PATH_TEST_EQ(p.filename(), "\\\\?\\c:\\");
+        PATH_TEST_EQ(p.filename(), "\\");
 #else
         PATH_TEST_EQ(p.filename(), "");
 #endif
@@ -1574,7 +1574,7 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.parent_path().string(), "\\\\.\\c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
 #if BOOST_FILESYSTEM_VERSION == 3
-        PATH_TEST_EQ(p.filename(), "\\\\.\\c:\\");
+        PATH_TEST_EQ(p.filename(), "\\");
 #else
         PATH_TEST_EQ(p.filename(), "");
 #endif
@@ -1598,7 +1598,7 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.parent_path().string(), "\\??\\c:");
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
 #if BOOST_FILESYSTEM_VERSION == 3
-        PATH_TEST_EQ(p.filename(), "\\??\\c:\\");
+        PATH_TEST_EQ(p.filename(), "\\");
 #else
         PATH_TEST_EQ(p.filename(), "");
 #endif
