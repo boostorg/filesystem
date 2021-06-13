@@ -63,8 +63,6 @@ using boost::filesystem::path_detail::substring;
 #ifdef BOOST_WINDOWS_API
 
 const wchar_t separators[] = L"/\\";
-const wchar_t separator_string[] = L"/";
-const wchar_t preferred_separator_string[] = L"\\";
 using boost::filesystem::detail::colon;
 using boost::filesystem::detail::questionmark;
 
@@ -845,8 +843,8 @@ BOOST_FILESYSTEM_DECL path::iterator path::begin() const
     {
         itr.m_element = m_pathname.substr(itr.m_pos, element_size);
 #ifdef BOOST_WINDOWS_API
-        if (itr.m_element.m_pathname == preferred_separator_string)
-            itr.m_element.m_pathname = separator_string;
+        if (itr.m_element.m_pathname.size() == 1u && itr.m_element.m_pathname[0] == preferred_separator)
+            itr.m_element.m_pathname[0] = separator;
 #endif
     }
 
