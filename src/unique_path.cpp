@@ -39,7 +39,7 @@
     (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
 #include <sys/syscall.h>
 #if defined(SYS_getrandom)
-#define BOOST_FILESYSTEM_HAS_SYS_GETRANDOM
+#define BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL
 #endif // defined(SYS_getrandom)
 #if defined(__has_include)
 #if __has_include(<sys/random.h>)
@@ -91,6 +91,8 @@
 #include <cstddef>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/operations.hpp>
+#include "private_config.hpp"
+#include "atomic_tools.hpp"
 #include "error_handling.hpp"
 
 #if defined(BOOST_POSIX_API)
@@ -127,13 +129,56 @@ inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
 }
 #endif // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 
-void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
+#if defined(BOOST_POSIX_API) && !defined(BOOST_FILESYSTEM_HAS_ARC4RANDOM)
+
+//! Fills buffer with cryptographically random data obtained from /dev/(u)random
+int fill_random_dev_random(void* buf, std::size_t len)
 {
-#if defined(BOOST_POSIX_API)
+    int file = ::open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+    if (file == -1)
+    {
+        file = ::open("/dev/random", O_RDONLY | O_CLOEXEC);
+        if (file == -1)
+            return errno;
+    }
 
-#if defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_SYS_GETRANDOM)
+    std::size_t bytes_read = 0u;
+    while (bytes_read < len)
+    {
+        ssize_t n = ::read(file, buf, len - bytes_read);
+        if (BOOST_UNLIKELY(n == -1))
+        {
+            int err = errno;
+            if (err == EINTR)
+                continue;
+            close_fd(file);
+            return err;
+        }
+        bytes_read += n;
+        buf = static_cast< char* >(buf) + n;
+    }
 
-    std::size_t bytes_read = 0;
+    close_fd(file);
+    return 0;
+}
+
+#if defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL)
+
+typedef int fill_random_t(void* buf, std::size_t len);
+
+#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+//! Pointer to the implementation of fill_random.
+//! Since the variable may be a boost::atomic with a non-constexpr constructor, dynamic initialization may be happening.
+//! To avoid dynamic initialization order issues, initialization priority must be supported by the compiler so that
+//! this pointer is initialized before the syscall initializer in operations.cpp.
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
+BOOST_FILESYSTEM_ATOMIC_VAR(fill_random_t*, fill_random, &fill_random_dev_random);
+#endif // defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+
+//! Fills buffer with cryptographically random data obtained from getrandom()
+int fill_random_getrandom(void* buf, std::size_t len)
+{
+    std::size_t bytes_read = 0u;
     while (bytes_read < len)
     {
 #if defined(BOOST_FILESYSTEM_HAS_GETRANDOM)
@@ -143,16 +188,45 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 #endif
         if (BOOST_UNLIKELY(n < 0))
         {
-            int err = errno;
+            const int err = errno;
             if (err == EINTR)
                 continue;
-            emit_error(err, ec, "boost::filesystem::unique_path");
-            return;
+
+            if (err == ENOSYS && bytes_read == 0u)
+            {
+#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+                BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(fill_random, &fill_random_dev_random);
+#endif
+                return fill_random_dev_random(buf, len);
+            }
+
+            return err;
         }
 
         bytes_read += n;
         buf = static_cast< char* >(buf) + n;
     }
+
+    return 0;
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL)
+
+#endif // defined(BOOST_POSIX_API) && !defined(BOOST_FILESYSTEM_HAS_ARC4RANDOM)
+
+void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* ec)
+{
+#if defined(BOOST_POSIX_API)
+
+#if defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL)
+
+#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+    int err = BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(fill_random)(buf, len);
+#else
+    int err = fill_random_getrandom(buf, len);
+#endif
+    if (BOOST_UNLIKELY(err != 0))
+        emit_error(err, ec, "boost::filesystem::unique_path");
 
 #elif defined(BOOST_FILESYSTEM_HAS_ARC4RANDOM)
 
@@ -160,35 +234,9 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 #else
 
-    int file = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
-    if (file == -1)
-    {
-        file = open("/dev/random", O_RDONLY | O_CLOEXEC);
-        if (file == -1)
-        {
-            emit_error(errno, ec, "boost::filesystem::unique_path");
-            return;
-        }
-    }
-
-    std::size_t bytes_read = 0;
-    while (bytes_read < len)
-    {
-        ssize_t n = read(file, buf, len - bytes_read);
-        if (BOOST_UNLIKELY(n == -1))
-        {
-            int err = errno;
-            if (err == EINTR)
-                continue;
-            close_fd(file);
-            emit_error(err, ec, "boost::filesystem::unique_path");
-            return;
-        }
-        bytes_read += n;
-        buf = static_cast< char* >(buf) + n;
-    }
-
-    close_fd(file);
+    int err = fill_random_dev_random(buf, len);
+    if (BOOST_UNLIKELY(err != 0))
+        emit_error(err, ec, "boost::filesystem::unique_path");
 
 #endif
 
@@ -250,8 +298,26 @@ BOOST_CONSTEXPR_OR_CONST char percent = '%';
 
 } // unnamed namespace
 
+#if defined(linux) || defined(__linux) || defined(__linux__)
+
+//! Initializes fill_random implementation pointer
+void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsigned int patch_ver)
+{
+#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY) && \
+    (defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL))
+    fill_random_t* fr = &fill_random_dev_random;
+
+    if (major_ver > 3u || (major_ver == 3u && minor_ver >= 17u))
+        fr = &fill_random_getrandom;
+
+    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(fill_random, fr);
+#endif
+}
+
+#endif // defined(linux) || defined(__linux) || defined(__linux__)
+
 BOOST_FILESYSTEM_DECL
-path unique_path(const path& model, system::error_code* ec)
+path unique_path(path const& model, system::error_code* ec)
 {
     // This function used wstring for fear of misidentifying
     // a part of a multibyte character as a percent sign.

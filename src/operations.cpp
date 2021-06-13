@@ -151,31 +151,9 @@ using std::time_t;
 
 #endif // BOOST_WINDOWS_API
 
+#include "atomic_tools.hpp"
 #include "error_handling.hpp"
-
-#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
-
-#include "atomic.hpp"
-
-#define BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(a) a.load(atomic_ns::memory_order_relaxed)
-#define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a.store(x, atomic_ns::memory_order_relaxed)
-
-#else // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
-
-#define BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(a) a
-#define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a = x
-
-#endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
-
-#if defined(__has_feature) && defined(__has_attribute)
-#if __has_feature(memory_sanitizer) && __has_attribute(no_sanitize)
-#define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY __attribute__ ((no_sanitize("memory")))
-#endif
-#endif // defined(__has_feature) && defined(__has_attribute)
-
-#ifndef BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
-#define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
-#endif
+#include "private_config.hpp"
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -329,6 +307,11 @@ namespace boost {
 namespace filesystem {
 namespace detail {
 
+#if defined(linux) || defined(__linux) || defined(__linux__)
+//! Initializes fill_random implementation pointer. Implemented in unique_path.cpp.
+void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsigned int patch_ver);
+#endif // defined(linux) || defined(__linux) || defined(__linux__)
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                        helpers (all operating systems)                               //
@@ -455,6 +438,26 @@ uintmax_t remove_all_aux(path const& p, fs::file_type type, error_code* ec)
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+struct fd_wrapper
+{
+    int fd;
+
+    fd_wrapper() BOOST_NOEXCEPT : fd(-1) {}
+    explicit fd_wrapper(int fd) BOOST_NOEXCEPT : fd(fd) {}
+    ~fd_wrapper() BOOST_NOEXCEPT
+    {
+        if (fd >= 0)
+            close_fd(fd);
+    }
+    BOOST_DELETED_FUNCTION(fd_wrapper(fd_wrapper const&))
+    BOOST_DELETED_FUNCTION(fd_wrapper& operator=(fd_wrapper const&))
+};
+
+inline bool not_found_error(int errval) BOOST_NOEXCEPT
+{
+    return errval == ENOENT || errval == ENOTDIR;
+}
+
 #if defined(BOOST_FILESYSTEM_HAS_STATX)
 
 //! A wrapper for statx libc function. Disable MSAN since at least on clang 10 it doesn't
@@ -503,11 +506,8 @@ int statx_fstatat(int dirfd, const char* path, int flags, unsigned int mask, str
 typedef int statx_t(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx);
 
 //! Pointer to the actual implementation of the statx implementation
-#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
-atomic_ns::atomic< statx_t* > statx_ptr(&statx_fstatat);
-#else
-statx_t* statx_ptr = &statx_fstatat;
-#endif
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
+BOOST_FILESYSTEM_ATOMIC_VAR(statx_t*, statx_ptr, &statx_fstatat);
 
 inline int invoke_statx(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx) BOOST_NOEXCEPT
 {
@@ -535,25 +535,21 @@ int statx_syscall(int dirfd, const char* path, int flags, unsigned int mask, str
 
 #endif // defined(BOOST_FILESYSTEM_HAS_STATX)
 
-struct fd_wrapper
-{
-    int fd;
+#if defined(linux) || defined(__linux) || defined(__linux__)
 
-    fd_wrapper() BOOST_NOEXCEPT : fd(-1) {}
-    explicit fd_wrapper(int fd) BOOST_NOEXCEPT : fd(fd) {}
-    ~fd_wrapper() BOOST_NOEXCEPT
-    {
-        if (fd >= 0)
-            close_fd(fd);
-    }
-    BOOST_DELETED_FUNCTION(fd_wrapper(fd_wrapper const&))
-    BOOST_DELETED_FUNCTION(fd_wrapper& operator=(fd_wrapper const&))
-};
-
-inline bool not_found_error(int errval) BOOST_NOEXCEPT
+//! Initializes statx implementation pointer
+inline void init_statx_impl(unsigned int major_ver, unsigned int minor_ver, unsigned int patch_ver)
 {
-    return errval == ENOENT || errval == ENOTDIR;
+#if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+    statx_t* stx = &statx_fstatat;
+    if (major_ver > 4u || (major_ver == 4u && minor_ver >= 11u))
+        stx = &statx_syscall;
+
+    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(statx_ptr, stx);
+#endif // !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 }
+
+#endif // defined(linux) || defined(__linux) || defined(__linux__)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
 
@@ -670,8 +666,6 @@ inline int data_sync(int fd)
 #endif
 }
 
-typedef int (copy_file_data_t)(int infile, int outfile, uintmax_t size, std::size_t blksize);
-
 // Min and max buffer sizes are selected to minimize the overhead from system calls.
 // The values are picked based on coreutils cp(1) benchmarking data described here:
 // https://github.com/coreutils/coreutils/blob/d1b0257077c0b0f0ee25087efd46270345d1dd1f/src/ioblksize.h#L23-L72
@@ -751,12 +745,11 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
     return copy_file_data_read_write_stack_buf(infile, outfile);
 }
 
+typedef int copy_file_data_t(int infile, int outfile, uintmax_t size, std::size_t blksize);
+
 //! Pointer to the actual implementation of the copy_file_data implementation
-#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
-atomic_ns::atomic< copy_file_data_t* > copy_file_data(&copy_file_data_read_write);
-#else
-copy_file_data_t* copy_file_data = &copy_file_data_read_write;
-#endif
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
+BOOST_FILESYSTEM_ATOMIC_VAR(copy_file_data_t*, copy_file_data, &copy_file_data_read_write);
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
@@ -920,8 +913,34 @@ int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
 
 #endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
-#if (!defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)) || \
-    defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+#if defined(linux) || defined(__linux) || defined(__linux__)
+
+//! Initializes copy_file_data implementation pointer
+inline void init_copy_file_data_impl(unsigned int major_ver, unsigned int minor_ver, unsigned int patch_ver)
+{
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+    copy_file_data_t* cfd = &copy_file_data_read_write;
+
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+    // sendfile started accepting file descriptors as the target in Linux 2.6.33
+    if (major_ver > 2u || (major_ver == 2u && (minor_ver > 6u || (minor_ver == 6u && patch_ver >= 33u))))
+        cfd = &check_fs_type< &copy_file_data_sendfile >;
+#endif
+
+#if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+    // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
+    // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
+    if (major_ver > 4u || (major_ver == 4u && minor_ver >= 5u))
+        cfd = &check_fs_type< &copy_file_data_copy_file_range >;
+#endif
+
+    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, cfd);
+#endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+}
+
+#endif // defined(linux) || defined(__linux) || defined(__linux__)
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
 
 struct syscall_initializer
 {
@@ -931,45 +950,21 @@ struct syscall_initializer
         if (BOOST_UNLIKELY(::uname(&system_info) < 0))
             return;
 
-        unsigned int major = 0u, minor = 0u, patch = 0u;
-        int count = std::sscanf(system_info.release, "%u.%u.%u", &major, &minor, &patch);
+        unsigned int major_ver = 0u, minor_ver = 0u, patch_ver = 0u;
+        int count = std::sscanf(system_info.release, "%u.%u.%u", &major_ver, &minor_ver, &patch_ver);
         if (BOOST_UNLIKELY(count < 3))
             return;
 
-#if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
-        {
-            statx_t* stx = &statx_fstatat;
-            if (major > 4u || (major == 4u && minor >= 11u))
-                stx = &statx_syscall;
-
-            BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(statx_ptr, stx);
-        }
-#endif
-
-#if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
-        {
-            copy_file_data_t* cfd = &copy_file_data_read_write;
-
-#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-            // sendfile started accepting file descriptors as the target in Linux 2.6.33
-            if (major > 2u || (major == 2u && (minor > 6u || (minor == 6u && patch >= 33u))))
-                cfd = &check_fs_type< &copy_file_data_sendfile >;
-#endif
-
-#if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
-            // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
-            // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
-            if (major > 4u || (major == 4u && minor >= 5u))
-                cfd = &check_fs_type< &copy_file_data_copy_file_range >;
-#endif
-
-            BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, cfd);
-        }
-#endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+        init_statx_impl(major_ver, minor_ver, patch_ver);
+        init_copy_file_data_impl(major_ver, minor_ver, patch_ver);
+        init_fill_random_impl(major_ver, minor_ver, patch_ver);
     }
-} const syscall_init;
+};
 
-#endif
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_INIT_PRIORITY)
+const syscall_initializer syscall_init;
+
+#endif // defined(linux) || defined(__linux) || defined(__linux__)
 
 inline fs::file_type query_file_type(path const& p, error_code* ec)
 {

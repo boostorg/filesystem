@@ -1,0 +1,50 @@
+//  private_config.hpp  ----------------------------------------------------------------//
+
+//  Copyright 2021 Andrey Semashev
+
+//  Distributed under the Boost Software License, Version 1.0.
+//  See http://www.boost.org/LICENSE_1_0.txt
+
+//  See library home page at http://www.boost.org/libs/filesystem
+
+//--------------------------------------------------------------------------------------//
+
+#ifndef BOOST_FILESYSTEM_SRC_PRIVATE_CONFIG_HPP_
+#define BOOST_FILESYSTEM_SRC_PRIVATE_CONFIG_HPP_
+
+#include <boost/filesystem/config.hpp>
+
+#if defined(BOOST_GCC) && BOOST_GCC >= 30300
+#define BOOST_FILESYSTEM_INIT_PRIORITY(n) __attribute__ ((init_priority(n)))
+#elif defined(__has_attribute)
+#if __has_attribute(init_priority)
+#define BOOST_FILESYSTEM_INIT_PRIORITY(n) __attribute__ ((init_priority(n)))
+#endif
+#endif
+
+#ifndef BOOST_FILESYSTEM_INIT_PRIORITY
+#define BOOST_FILESYSTEM_INIT_PRIORITY(n)
+#else
+#define BOOST_FILESYSTEM_HAS_INIT_PRIORITY
+#endif
+
+// According to https://gcc.gnu.org/bugzilla//show_bug.cgi?id=65115,
+// the default C++ object initializers priority is 65535. We want to
+// initialize function pointers earlier than that (with lower priority values),
+// and construct the function pointers initializer after that but preferably
+// before the other global objects initializers. Other than this,
+// these priority values are arbitrary.
+#define BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY 32766
+#define BOOST_FILESYSTEM_FUNC_PTR_INIT_INIT_PRIORITY 32767
+
+#if defined(__has_feature) && defined(__has_attribute)
+#if __has_feature(memory_sanitizer) && __has_attribute(no_sanitize)
+#define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY __attribute__ ((no_sanitize("memory")))
+#endif
+#endif // defined(__has_feature) && defined(__has_attribute)
+
+#ifndef BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
+#define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
+#endif
+
+#endif // BOOST_FILESYSTEM_SRC_PRIVATE_CONFIG_HPP_
