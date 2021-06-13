@@ -77,6 +77,7 @@
 #include <sys/vfs.h>
 #include <sys/utsname.h>
 #include <sys/syscall.h>
+#include <sys/sysmacros.h>
 #if !defined(BOOST_FILESYSTEM_DISABLE_SENDFILE)
 #include <sys/sendfile.h>
 #define BOOST_FILESYSTEM_USE_SENDFILE
@@ -165,6 +166,16 @@ using std::time_t;
 #define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a = x
 
 #endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+
+#if defined(__has_feature) && defined(__has_attribute)
+#if __has_feature(memory_sanitizer) && __has_attribute(no_sanitize)
+#define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY __attribute__ ((no_sanitize("memory")))
+#endif
+#endif // defined(__has_feature) && defined(__has_attribute)
+
+#ifndef BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
+#define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
+#endif
 
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
@@ -444,13 +455,85 @@ uintmax_t remove_all_aux(path const& p, fs::file_type type, error_code* ec)
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-#if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
-//! A wrapper for the statx syscall
-inline int statx(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx) BOOST_NOEXCEPT
+#if defined(BOOST_FILESYSTEM_HAS_STATX)
+
+//! A wrapper for statx libc function. Disable MSAN since at least on clang 10 it doesn't
+//! know which fields of struct statx are initialized by the syscall and misdetects errors.
+BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
+BOOST_FORCEINLINE int invoke_statx(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx)
 {
-    return ::syscall(__NR_statx, dirfd, path, flags, mask, stx);
+    return ::statx(dirfd, path, flags, mask, stx);
 }
-#endif // !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+
+#elif defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+
+//! statx emulation through fstatat
+int statx_fstatat(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx)
+{
+    struct ::stat st;
+    flags &= AT_EMPTY_PATH | AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW;
+    int res = ::fstatat(dirfd, path, &st, flags);
+    if (BOOST_LIKELY(res == 0))
+    {
+        std::memset(stx, 0, sizeof(*stx));
+        stx->stx_mask = STATX_BASIC_STATS;
+        stx->stx_blksize = st.st_blksize;
+        stx->stx_nlink = st.st_nlink;
+        stx->stx_uid = st.st_uid;
+        stx->stx_gid = st.st_gid;
+        stx->stx_mode = st.st_mode;
+        stx->stx_ino = st.st_ino;
+        stx->stx_size = st.st_size;
+        stx->stx_blocks = st.st_blocks;
+        stx->stx_atime.tv_sec = st.st_atim.tv_sec;
+        stx->stx_atime.tv_nsec = st.st_atim.tv_nsec;
+        stx->stx_ctime.tv_sec = st.st_ctim.tv_sec;
+        stx->stx_ctime.tv_nsec = st.st_ctim.tv_nsec;
+        stx->stx_mtime.tv_sec = st.st_mtim.tv_sec;
+        stx->stx_mtime.tv_nsec = st.st_mtim.tv_nsec;
+        stx->stx_rdev_major = major(st.st_rdev);
+        stx->stx_rdev_minor = minor(st.st_rdev);
+        stx->stx_dev_major = major(st.st_dev);
+        stx->stx_dev_minor = minor(st.st_dev);
+    }
+
+    return res;
+}
+
+typedef int statx_t(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx);
+
+//! Pointer to the actual implementation of the statx implementation
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+atomic_ns::atomic< statx_t* > statx_ptr(&statx_fstatat);
+#else
+statx_t* statx_ptr = &statx_fstatat;
+#endif
+
+inline int invoke_statx(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx) BOOST_NOEXCEPT
+{
+    return BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(statx_ptr)(dirfd, path, flags, mask, stx);
+}
+
+//! A wrapper for the statx syscall. Disable MSAN since at least on clang 10 it doesn't
+//! know which fields of struct statx are initialized by the syscall and misdetects errors.
+BOOST_FILESYSTEM_NO_SANITIZE_MEMORY
+int statx_syscall(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx)
+{
+    int res = ::syscall(__NR_statx, dirfd, path, flags, mask, stx);
+    if (res < 0)
+    {
+        const int err = errno;
+        if (BOOST_UNLIKELY(err == ENOSYS))
+        {
+            BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(statx_ptr, &statx_fstatat);
+            return statx_fstatat(dirfd, path, flags, mask, stx);
+        }
+    }
+
+    return res;
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_STATX)
 
 struct fd_wrapper
 {
@@ -835,9 +918,14 @@ int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
     return CopyFileData(infile, outfile, size, blksize);
 }
 
-struct copy_file_data_initializer
+#endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
+#if (!defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)) || \
+    defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
+struct syscall_initializer
 {
-    copy_file_data_initializer()
+    syscall_initializer()
     {
         struct ::utsname system_info;
         if (BOOST_UNLIKELY(::uname(&system_info) < 0))
@@ -848,26 +936,40 @@ struct copy_file_data_initializer
         if (BOOST_UNLIKELY(count < 3))
             return;
 
-        copy_file_data_t* cfd = &copy_file_data_read_write;
+#if !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+        {
+            statx_t* stx = &statx_fstatat;
+            if (major > 4u || (major == 4u && minor >= 11u))
+                stx = &statx_syscall;
+
+            BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(statx_ptr, stx);
+        }
+#endif
+
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+        {
+            copy_file_data_t* cfd = &copy_file_data_read_write;
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-        // sendfile started accepting file descriptors as the target in Linux 2.6.33
-        if (major > 2u || (major == 2u && (minor > 6u || (minor == 6u && patch >= 33u))))
-            cfd = &check_fs_type< &copy_file_data_sendfile >;
+            // sendfile started accepting file descriptors as the target in Linux 2.6.33
+            if (major > 2u || (major == 2u && (minor > 6u || (minor == 6u && patch >= 33u))))
+                cfd = &check_fs_type< &copy_file_data_sendfile >;
 #endif
 
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
-        // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
-        // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
-        if (major > 4u || (major == 4u && minor >= 5u))
-            cfd = &check_fs_type< &copy_file_data_copy_file_range >;
+            // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
+            // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
+            if (major > 4u || (major == 4u && minor >= 5u))
+                cfd = &check_fs_type< &copy_file_data_copy_file_range >;
 #endif
 
-        BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, cfd);
-    }
-} const copy_file_data_init;
-
+            BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, cfd);
+        }
 #endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+    }
+} const syscall_init;
+
+#endif
 
 inline fs::file_type query_file_type(path const& p, error_code* ec)
 {
@@ -1659,7 +1761,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         statx_data_mask |= STATX_MTIME;
 
     struct ::statx from_stat;
-    if (BOOST_UNLIKELY(statx(infile.fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &from_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(infile.fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &from_stat) < 0))
     {
     fail_errno:
         err = errno;
@@ -1756,7 +1858,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     }
 
     struct ::statx to_stat;
-    if (BOOST_UNLIKELY(statx(outfile.fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &to_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(outfile.fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &to_stat) < 0))
         goto fail_errno;
 
     if (BOOST_UNLIKELY((to_stat.stx_mask & statx_data_mask) != statx_data_mask))
@@ -2045,7 +2147,7 @@ bool create_directory(path const& p, const path* existing, error_code* ec)
     {
 #if defined(BOOST_FILESYSTEM_USE_STATX)
         struct ::statx existing_stat;
-        if (BOOST_UNLIKELY(statx(AT_FDCWD, existing->c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &existing_stat) < 0))
+        if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, existing->c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &existing_stat) < 0))
         {
             emit_error(errno, p, *existing, ec, "boost::filesystem::create_directory");
             return false;
@@ -2115,7 +2217,7 @@ void copy_directory(path const& from, path const& to, system::error_code* ec)
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     int err;
     struct ::statx from_stat;
-    if (BOOST_UNLIKELY(statx(AT_FDCWD, from.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &from_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, from.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &from_stat) < 0))
     {
     fail_errno:
         err = errno;
@@ -2306,7 +2408,7 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
     // p2 is done first, so any error reported is for p1
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx s2;
-    int e2 = statx(AT_FDCWD, p2.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s2);
+    int e2 = invoke_statx(AT_FDCWD, p2.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s2);
     if (BOOST_LIKELY(e2 == 0))
     {
         if (BOOST_UNLIKELY((s2.stx_mask & STATX_INO) != STATX_INO))
@@ -2318,7 +2420,7 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
     }
 
     struct ::statx s1;
-    int e1 = statx(AT_FDCWD, p1.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s1);
+    int e1 = invoke_statx(AT_FDCWD, p1.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s1);
     if (BOOST_LIKELY(e1 == 0))
     {
         if (BOOST_UNLIKELY((s1.stx_mask & STATX_INO) != STATX_INO))
@@ -2414,7 +2516,7 @@ uintmax_t file_size(path const& p, error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
-    if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_SIZE, &path_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_SIZE, &path_stat) < 0))
     {
         emit_error(errno, p, ec, "boost::filesystem::file_size");
         return static_cast< uintmax_t >(-1);
@@ -2477,7 +2579,7 @@ uintmax_t hard_link_count(path const& p, system::error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
-    if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &path_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_NLINK, &path_stat) < 0))
     {
         emit_error(errno, p, ec, "boost::filesystem::hard_link_count");
         return static_cast< uintmax_t >(-1);
@@ -2544,7 +2646,7 @@ bool is_empty(path const& p, system::error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
-    if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_SIZE, &path_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_SIZE, &path_stat) < 0))
     {
         emit_error(errno, p, ec, "boost::filesystem::is_empty");
         return false;
@@ -2599,7 +2701,7 @@ std::time_t creation_time(path const& p, system::error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx stx;
-    if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_BTIME, &stx) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_BTIME, &stx) < 0))
     {
         emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time");
         return (std::numeric_limits< std::time_t >::min)();
@@ -2655,7 +2757,7 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx stx;
-    if (BOOST_UNLIKELY(statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_MTIME, &stx) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_MTIME, &stx) < 0))
     {
         emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
         return (std::numeric_limits< std::time_t >::min)();
@@ -3117,7 +3219,7 @@ file_status status(path const& p, error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
-    int err = statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &path_stat);
+    int err = invoke_statx(AT_FDCWD, p.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &path_stat);
 #else
     struct ::stat path_stat;
     int err = ::stat(p.c_str(), &path_stat);
@@ -3222,7 +3324,7 @@ file_status symlink_status(path const& p, error_code* ec)
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     struct ::statx path_stat;
-    int err = statx(AT_FDCWD, p.c_str(), AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &path_stat);
+    int err = invoke_statx(AT_FDCWD, p.c_str(), AT_SYMLINK_NOFOLLOW | AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &path_stat);
 #else
     struct ::stat path_stat;
     int err = ::lstat(p.c_str(), &path_stat);
