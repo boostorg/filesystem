@@ -92,9 +92,6 @@ inline bool is_device_name_char(wchar_t c)
 #else
 
 const char separators[] = "/";
-typedef const char* const_char_ptr;
-BOOST_CONSTEXPR_OR_CONST const_char_ptr separator_string = separators;
-BOOST_CONSTEXPR_OR_CONST const_char_ptr preferred_separator_string = separators;
 
 #endif
 
@@ -651,6 +648,7 @@ inline size_type find_filename_size(string_type const& str, size_type root_name_
 // Returns: starting position of root directory or size if not found
 size_type find_root_directory_start(string_type const& path, size_type size, size_type& root_name_size)
 {
+    BOOST_ASSERT(size <= path.size());
     root_name_size = 0;
     if (size == 0)
         return 0;
