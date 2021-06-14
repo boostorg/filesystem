@@ -20,7 +20,30 @@ set(BOOST_FILESYSTEM_DISABLE_GETRANDOM OFF CACHE BOOL "Disable usage of getrando
 set(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM OFF CACHE BOOL "Disable usage of arc4random API in Boost.Filesystem")
 set(BOOST_FILESYSTEM_DISABLE_BCRYPT OFF CACHE BOOL "Disable usage of BCrypt API in Boost.Filesystem")
 
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/../..")
+# Generates a list of include paths for all Boost libraries in \a result variable. Uses unified Boost include tree, if available.
+function(generate_boost_include_paths result)
+    if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../../boost" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../boost/version.hpp")
+        set(${result} "${CMAKE_CURRENT_SOURCE_DIR}/../.." PARENT_SCOPE)
+        return()
+    endif()
+    file(GLOB path_list LIST_DIRECTORIES True "${CMAKE_CURRENT_SOURCE_DIR}/../*")
+    foreach(path IN LISTS path_list)
+        if (IS_DIRECTORY "${path}/include")
+            list(APPEND include_list "${path}/include")
+        endif()
+    endforeach()
+    set(${result} ${include_list} PARENT_SCOPE)
+endfunction()
+
+# Note: We can't use the Boost::library targets in the configure checks as they may not yet be included
+# by the superproject when this CMakeLists.txt is included. We also don't want to hardcode include paths
+# of the needed libraries and their dependencies, recursively, as this is too fragile and requires maintenance.
+# Instead, we collect include paths of all libraries and use them in the configure checks. This works faster
+# if there is a unified Boost include tree in the filesystem (i.e. if `b2 headers` was run or we're in the
+# official monolithic Boost distribution tree).
+generate_boost_include_paths(BOOST_LIBRARY_INCLUDES)
+
+set(CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/src" ${BOOST_LIBRARY_INCLUDES})
 
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_cxx20_atomic_ref.cpp>" BOOST_FILESYSTEM_HAS_CXX20_ATOMIC_REF)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_stat_st_blksize.cpp>" BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE)
@@ -36,7 +59,6 @@ if(NOT BOOST_FILESYSTEM_DISABLE_STATX)
     endif()
 endif()
 if(WIN32 AND NOT BOOST_FILESYSTEM_DISABLE_BCRYPT)
-    # Note: We can't use the Boost::library targets here as they may not yet be included by the superproject when this CMakeLists.txt is included.
     set(CMAKE_REQUIRED_LIBRARIES bcrypt)
     check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_bcrypt.cpp>" BOOST_FILESYSTEM_HAS_BCRYPT)
     unset(CMAKE_REQUIRED_LIBRARIES)
