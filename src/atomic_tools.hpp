@@ -16,17 +16,53 @@
 
 #if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
 
-#include "atomic.hpp"
+#include "atomic_ref.hpp"
 
-#define BOOST_FILESYSTEM_ATOMIC_VAR(type, name, init) atomic_ns::atomic< type > name(init)
-#define BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(a) a.load(atomic_ns::memory_order_relaxed)
-#define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a.store(x, atomic_ns::memory_order_relaxed)
+namespace boost {
+namespace filesystem {
+namespace detail {
+
+//! Atomically loads the value
+template< typename T >
+BOOST_FORCEINLINE T atomic_load_relaxed(T& a)
+{
+    return atomic_ns::atomic_ref< T >(a).load(atomic_ns::memory_order_relaxed);
+}
+
+//! Atomically stores the value
+template< typename T >
+BOOST_FORCEINLINE void atomic_store_relaxed(T& a, T val)
+{
+    atomic_ns::atomic_ref< T >(a).store(val, atomic_ns::memory_order_relaxed);
+}
+
+} // namespace detail
+} // namespace filesystem
+} // namespace boost
 
 #else // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
 
-#define BOOST_FILESYSTEM_ATOMIC_VAR(type, name, init) type name = init
-#define BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(a) a
-#define BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(a, x) a = x
+namespace boost {
+namespace filesystem {
+namespace detail {
+
+//! Atomically loads the value
+template< typename T >
+BOOST_FORCEINLINE T atomic_load_relaxed(T const& a)
+{
+    return a;
+}
+
+//! Atomically stores the value
+template< typename T >
+BOOST_FORCEINLINE void atomic_store_relaxed(T& a, T val)
+{
+    a = val;
+}
+
+} // namespace detail
+} // namespace filesystem
+} // namespace boost
 
 #endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
 

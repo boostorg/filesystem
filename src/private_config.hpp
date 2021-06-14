@@ -29,13 +29,11 @@
 #endif
 
 // According to https://gcc.gnu.org/bugzilla//show_bug.cgi?id=65115,
-// the default C++ object initializers priority is 65535. We want to
+// the default C++ object initializers priority is 65535. We would like to
 // initialize function pointers earlier than that (with lower priority values),
-// and construct the function pointers initializer after that but preferably
-// before the other global objects initializers. Other than this,
+// before the other global objects initializers are run. Other than this,
 // these priority values are arbitrary.
-#define BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY 32766
-#define BOOST_FILESYSTEM_FUNC_PTR_INIT_INIT_PRIORITY 32767
+#define BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY 32767
 
 #if defined(__has_feature) && defined(__has_attribute)
 #if __has_feature(memory_sanitizer) && __has_attribute(no_sanitize)

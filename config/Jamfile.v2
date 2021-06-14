@@ -5,6 +5,8 @@
 #          http://www.boost.org/LICENSE_1_0.txt)
 #
 
+obj has_cxx20_atomic_ref : has_cxx20_atomic_ref.cpp : <include>../src ;
+explicit has_cxx20_atomic_ref ;
 obj has_stat_st_blksize : has_stat_st_blksize.cpp : <include>../src ;
 explicit has_stat_st_blksize ;
 obj has_stat_st_mtim : has_stat_st_mtim.cpp : <include>../src ;

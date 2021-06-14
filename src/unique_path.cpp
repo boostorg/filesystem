@@ -166,14 +166,8 @@ int fill_random_dev_random(void* buf, std::size_t len)
 
 typedef int fill_random_t(void* buf, std::size_t len);
 
-#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 //! Pointer to the implementation of fill_random.
-//! Since the variable may be a boost::atomic with a non-constexpr constructor, dynamic initialization may be happening.
-//! To avoid dynamic initialization order issues, initialization priority must be supported by the compiler so that
-//! this pointer is initialized before the syscall initializer in operations.cpp.
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
-BOOST_FILESYSTEM_ATOMIC_VAR(fill_random_t*, fill_random, &fill_random_dev_random);
-#endif // defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+fill_random_t* fill_random = &fill_random_dev_random;
 
 //! Fills buffer with cryptographically random data obtained from getrandom()
 int fill_random_getrandom(void* buf, std::size_t len)
@@ -194,9 +188,7 @@ int fill_random_getrandom(void* buf, std::size_t len)
 
             if (err == ENOSYS && bytes_read == 0u)
             {
-#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
-                BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(fill_random, &fill_random_dev_random);
-#endif
+                filesystem::detail::atomic_store_relaxed(fill_random, &fill_random_dev_random);
                 return fill_random_dev_random(buf, len);
             }
 
@@ -220,11 +212,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
 #if defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL)
 
-#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
-    int err = BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(fill_random)(buf, len);
-#else
-    int err = fill_random_getrandom(buf, len);
-#endif
+    int err = filesystem::detail::atomic_load_relaxed(fill_random)(buf, len);
     if (BOOST_UNLIKELY(err != 0))
         emit_error(err, ec, "boost::filesystem::unique_path");
 
@@ -310,7 +298,7 @@ void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsig
     if (major_ver > 3u || (major_ver == 3u && minor_ver >= 17u))
         fr = &fill_random_getrandom;
 
-    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(fill_random, fr);
+    filesystem::detail::atomic_store_relaxed(fill_random, fr);
 #endif
 }
 

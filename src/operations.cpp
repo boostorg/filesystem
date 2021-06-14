@@ -506,12 +506,11 @@ int statx_fstatat(int dirfd, const char* path, int flags, unsigned int mask, str
 typedef int statx_t(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx);
 
 //! Pointer to the actual implementation of the statx implementation
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
-BOOST_FILESYSTEM_ATOMIC_VAR(statx_t*, statx_ptr, &statx_fstatat);
+statx_t* statx_ptr = &statx_fstatat;
 
 inline int invoke_statx(int dirfd, const char* path, int flags, unsigned int mask, struct ::statx* stx) BOOST_NOEXCEPT
 {
-    return BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(statx_ptr)(dirfd, path, flags, mask, stx);
+    return filesystem::detail::atomic_load_relaxed(statx_ptr)(dirfd, path, flags, mask, stx);
 }
 
 //! A wrapper for the statx syscall. Disable MSAN since at least on clang 10 it doesn't
@@ -525,7 +524,7 @@ int statx_syscall(int dirfd, const char* path, int flags, unsigned int mask, str
         const int err = errno;
         if (BOOST_UNLIKELY(err == ENOSYS))
         {
-            BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(statx_ptr, &statx_fstatat);
+            filesystem::detail::atomic_store_relaxed(statx_ptr, &statx_fstatat);
             return statx_fstatat(dirfd, path, flags, mask, stx);
         }
     }
@@ -545,7 +544,7 @@ inline void init_statx_impl(unsigned int major_ver, unsigned int minor_ver, unsi
     if (major_ver > 4u || (major_ver == 4u && minor_ver >= 11u))
         stx = &statx_syscall;
 
-    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(statx_ptr, stx);
+    filesystem::detail::atomic_store_relaxed(statx_ptr, stx);
 #endif // !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 }
 
@@ -748,8 +747,7 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
 typedef int copy_file_data_t(int infile, int outfile, uintmax_t size, std::size_t blksize);
 
 //! Pointer to the actual implementation of the copy_file_data implementation
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
-BOOST_FILESYSTEM_ATOMIC_VAR(copy_file_data_t*, copy_file_data, &copy_file_data_read_write);
+copy_file_data_t* copy_file_data = &copy_file_data_read_write;
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
@@ -783,7 +781,7 @@ int copy_file_data_sendfile(int infile, int outfile, uintmax_t size, std::size_t
 
                 if (err == ENOSYS)
                 {
-                    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, &copy_file_data_read_write);
+                    filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
                     goto fallback_to_read_write;
                 }
             }
@@ -851,10 +849,10 @@ int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size, std:
                 if (err == ENOSYS)
                 {
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-                    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, &copy_file_data_sendfile);
+                    filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_sendfile);
                     goto fallback_to_sendfile;
 #else
-                    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, &copy_file_data_read_write);
+                    filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
                     goto fallback_to_read_write;
 #endif
                 }
@@ -934,7 +932,7 @@ inline void init_copy_file_data_impl(unsigned int major_ver, unsigned int minor_
         cfd = &check_fs_type< &copy_file_data_copy_file_range >;
 #endif
 
-    BOOST_FILESYSTEM_ATOMIC_STORE_RELAXED(copy_file_data, cfd);
+    filesystem::detail::atomic_store_relaxed(copy_file_data, cfd);
 #endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 }
 
@@ -961,7 +959,7 @@ struct syscall_initializer
     }
 };
 
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_INIT_PRIORITY)
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
 const syscall_initializer syscall_init;
 
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
@@ -1901,7 +1899,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     }
 
     // Note: Use block size of the target file since it is most important for writing performance.
-    err = BOOST_FILESYSTEM_ATOMIC_LOAD_RELAXED(detail::copy_file_data)(infile.fd, outfile.fd, get_size(from_stat), get_blksize(to_stat));
+    err = filesystem::detail::atomic_load_relaxed(filesystem::detail::copy_file_data)(infile.fd, outfile.fd, get_size(from_stat), get_blksize(to_stat));
     if (BOOST_UNLIKELY(err != 0))
         goto fail; // err already contains the error code
 
