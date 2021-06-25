@@ -1721,7 +1721,8 @@ std::cout &lt;&lt; path(&quot;..&quot;).parent_path();           // outputs &quo
 
     <pre>std::cout &lt;&lt; path(&quot;/foo/bar.txt&quot;).filename(); // outputs &quot;bar.txt&quot;
 std::cout &lt;&lt; path(&quot;/foo/bar&quot;).filename();     // outputs &quot;bar&quot;
-std::cout &lt;&lt; path(&quot;/foo/bar/&quot;).filename();    // outputs &quot;.&quot;
+std::cout &lt;&lt; path(&quot;/foo/bar/&quot;).filename();    // v3 outputs &quot;.&quot;
+                                              // v4 outputs &quot;&quot;
 std::cout &lt;&lt; path(&quot;/&quot;).filename();            // v3 outputs &quot;/&quot;
                                               // v4 outputs &quot;&quot;
 std::cout &lt;&lt; path(&quot;.&quot;).filename();            // outputs &quot;.&quot;
@@ -1730,7 +1731,7 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename();           // outputs &quot;.
   </blockquote>
   <p> See the last bullet item in the <a href="#path-iterators">
   forward traversal order</a> list for why the <code>&quot;/foo/bar/&quot;</code> example
-  doesn&#39;t output <code>&quot;bar&quot;</code>.</p>
+  doesn&apos;t output <code>&quot;bar&quot;</code>.</p>
   <p> <i>—end example</i>]</p>
 </blockquote>
 
@@ -1797,7 +1798,7 @@ for (; !p.extension().empty(); p = p.stem())
     <pre>std::cout &lt;&lt; path(&quot;.&quot;).filename_is_dot();     // outputs 1
 std::cout &lt;&lt; path(&quot;/.&quot;).filename_is_dot();    // outputs 1
 std::cout &lt;&lt; path(&quot;foo/.&quot;).filename_is_dot(); // outputs 1
-std::cout &lt;&lt; path(&quot;foo/&quot;).filename_is_dot();  // outputs 1
+std::cout &lt;&lt; path(&quot;foo/&quot;).filename_is_dot();  // v3 outputs 1, v4 outputs 0
 std::cout &lt;&lt; path(&quot;/&quot;).filename_is_dot();     // outputs 0
 std::cout &lt;&lt; path(&quot;/foo&quot;).filename_is_dot();  // outputs 0
 std::cout &lt;&lt; path(&quot;/foo.&quot;).filename_is_dot(); // outputs 0
@@ -1805,7 +1806,7 @@ std::cout &lt;&lt; path(&quot;..&quot;).filename_is_dot();    // outputs 0</pre>
 
   </blockquote>
   <p> See the last bullet item in the <a href="#path-iterators">forward traversal order</a>
-  list for why <code>path(&quot;foo/&quot;).filename()</code> is a dot filename.</p>
+  list for why <code>path(&quot;foo/&quot;).filename()</code> is a dot filename in <b>v3</b>.</p>
   <p> <i>—end example</i>]</p>
 </blockquote>
 
@@ -1898,11 +1899,11 @@ out-live the iterator itself. <i>—end note</i>] </p>
   [note:</i> the generic format is required to ensure lexicographical
   comparison works correctly. <i>—end note</i>]</li>
   <li>Each successive <i>filename</i> element, if present.</li>
-  <li><i>Dot</i>, if one or more trailing non-root <i>slash</i>
-  characters are present.|</li>
+  <li>[<b>v3:</b> <i>Dot</i>] [<b>v4:</b> Empty path], if one or more trailing non-root directory separators
+  are present.</li>
 </ul>
   <blockquote>
-  <p>[<i>Note:</i> Treating the last element during iteration as <i>dot</i> when
+  <p>[<i>Note:</i> Treating the last element during iteration as [<b>v3:</b> <i>dot</i>] [<b>v4:</b> an empty path] when
   there is a trailing directory separator enables lexical (i.e. syntactic)
   distinction between paths to directories versus paths to regular files. Such a
   distinction is usually irrelevant on POSIX and Windows based operating
@@ -1954,7 +1955,7 @@ out-live the iterator itself. <i>—end note</i>] </p>
 </blockquote>
 
 
-<h3> <a name="path-deprecated-functions"><code><font size="4"> path</font></code> deprecated functions</a></h3>
+<h3> <a name="path-deprecated-functions"><code>path</code> deprecated functions</a></h3>
 <p> Several member functions from previous versions of <code>class path</code> have been deprecated, either because they have been renamed or because the
 functionality is no longer desirable or has become obsolete.</p>
 <p> Deprecated functions available by default; will be suppressed if <code>BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined:</p>
@@ -1981,9 +1982,9 @@ const string_type  external_directory_string() const { return native(); }</pre>
   <pre>bool lexicographical_compare(path::iterator first1, path::iterator last1,
                              path::iterator first2, path::iterator last2);</pre>
 <blockquote>
-  <p><i>Returns:</i> <code>true</code> if the sequence of <code>native()</code> strings for the elements defined by the half-open range <code>[first1,last1)</code> is
+  <p><i>Returns:</i> <code>true</code> if the sequence of <code>native()</code> strings for the elements defined by the half-open range <code>[first1, last1)</code> is
   lexicographically less than the sequence of <code>native()</code> strings for
-  the elements defined by the half-open range <code>[first2,last2)</code>. Returns <code>false</code> otherwise.</p>
+  the elements defined by the half-open range <code>[first2, last2)</code>. Returns <code>false</code> otherwise.</p>
   <p><i>Remarks:</i> If two sequences have the same number of elements and their
   corresponding elements are equivalent, then neither sequence is
   lexicographically less than the other. If one sequence is a prefix of the
@@ -2020,7 +2021,7 @@ const string_type  external_directory_string() const { return native(); }</pre>
 
   <div>
 
-  <pre>path lexically_<a name="lex-relative">relative</a>(const path&amp; p, const path&amp; base);</pre>
+  <pre>path <a name="lex-relative">lexically_relative</a>(const path&amp; p, const path&amp; base);</pre>
 
   </div>
 
@@ -2125,7 +2126,7 @@ so that paths with embedded spaces will round trip correctly. Ampersand (<code>&
 is as an escape character, so the path can itself contain double quotes.</p>
 <pre>template &lt;class Char, class Traits&gt;
 std::basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(std::basic_ostream&lt;Char, Traits&gt;&amp; os,
-                                             const path&amp; p)
+                                             const path&amp; p);
 </pre>
 <blockquote>
   <p><i>Effects: </i>Insert characters into <code>os</code>:</p>
@@ -2146,8 +2147,8 @@ std::basic_ostream&lt;Char, Traits&gt;&amp; operator&lt;&lt;(std::basic_ostream&
   <p><i>Returns:</i> <code>os</code></p>
 </blockquote>
 <pre>template &lt;class Char, class Traits&gt;
-inline std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_istream&lt;Char, Traits&gt;&amp; is,
-                                                    path&amp; p)
+std::basic_istream&lt;Char, Traits&gt;&amp; operator&gt;&gt;(std::basic_istream&lt;Char, Traits&gt;&amp; is,
+                                                    path&amp; p);
 </pre>
 <blockquote>
   <p><i>Effects:&nbsp; </i><code>&nbsp;std::basic_string&lt;Char&gt; str;<br>

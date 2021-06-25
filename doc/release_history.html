@@ -41,6 +41,7 @@
 
 <h2>1.78.0</h2>
 <ul>
+  <li><b>v4:</b> <code>path::filename</code> and <code>path::iterator</code> no longer return an implicit trailing dot (".") element if the path ends with a directory separator. Instead, an empty path is returned, similar to C++17 std::filesystem. This also affects other methods that are defined in terms of iterators or filename, such as <code>path::stem</code>, <code>path::compare</code> or <code>lexicographical_compare</code>. For example, <code>path("a/b/") == path("a/b/.")</code> no longer holds true. (<a href="https://github.com/boostorg/filesystem/issues/193">#193</a>)</li>
   <li><code>create_directories</code> no longer reports an error if the input path consists entirely of dot (".") and dot-dot ("..") elements. The implementation is no longer using recursion internally and therefore is better protected from stack overflow on extremely long paths.</li>
 </ul>
 

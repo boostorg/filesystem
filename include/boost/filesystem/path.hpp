@@ -553,7 +553,10 @@ public:
 
     //  -----  compare  -----
 
-    BOOST_FILESYSTEM_DECL int compare(path const& p) const BOOST_NOEXCEPT; // generic, lexicographical
+    BOOST_FORCEINLINE int compare(path const& p) const BOOST_NOEXCEPT // generic, lexicographical
+    {
+        return BOOST_FILESYSTEM_VERSIONED_SYM(compare)(p);
+    }
     int compare(std::string const& s) const { return compare(path(s)); }
     int compare(const value_type* s) const { return compare(path(s)); }
 
@@ -671,13 +674,22 @@ public:
     //--------------------------------------------------------------------------------------//
 private:
     bool has_filename_v3() const { return !m_pathname.empty(); }
-    BOOST_FILESYSTEM_DECL bool has_filename_v4() const;
+    bool has_filename_v4() const { return find_filename_v4_size() > 0; }
     BOOST_FILESYSTEM_DECL path filename_v3() const;
-    BOOST_FILESYSTEM_DECL path filename_v4() const;
+    path filename_v4() const
+    {
+        string_type::size_type filename_size = find_filename_v4_size();
+        string_type::size_type pos = m_pathname.size() - filename_size;
+        const value_type* p = m_pathname.c_str() + pos;
+        return path(p, p + filename_size);
+    }
     BOOST_FILESYSTEM_DECL path stem_v3() const;
     BOOST_FILESYSTEM_DECL path stem_v4() const;
     BOOST_FILESYSTEM_DECL path extension_v3() const;
     BOOST_FILESYSTEM_DECL path extension_v4() const;
+
+    BOOST_FILESYSTEM_DECL int compare_v3(path const& p) const BOOST_NOEXCEPT;
+    BOOST_FILESYSTEM_DECL int compare_v4(path const& p) const BOOST_NOEXCEPT;
 
     //  Returns: If separator is to be appended, m_pathname.size() before append. Otherwise 0.
     //  Note: An append is never performed if size()==0, so a returned 0 is unambiguous.
@@ -689,6 +701,7 @@ private:
     BOOST_FILESYSTEM_DECL path_detail::substring find_root_directory() const;
     BOOST_FILESYSTEM_DECL path_detail::substring find_relative_path() const;
     BOOST_FILESYSTEM_DECL string_type::size_type find_parent_path_size() const;
+    BOOST_FILESYSTEM_DECL string_type::size_type find_filename_v4_size() const;
 
 private:
     /*
@@ -704,7 +717,8 @@ private:
 };
 
 namespace detail {
-BOOST_FILESYSTEM_DECL int lex_compare(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
+BOOST_FILESYSTEM_DECL int lex_compare_v3(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
+BOOST_FILESYSTEM_DECL int lex_compare_v4(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
 BOOST_FILESYSTEM_DECL path const& dot_path();
 BOOST_FILESYSTEM_DECL path const& dot_dot_path();
 } // namespace detail
@@ -728,6 +742,7 @@ private:
     friend class boost::iterator_core_access;
     friend class boost::filesystem::path;
     friend class boost::filesystem::path::reverse_iterator;
+    friend int detail::lex_compare_v3(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
 
     path const& dereference() const { return m_element; }
 
@@ -736,8 +751,14 @@ private:
         return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos;
     }
 
-    BOOST_FILESYSTEM_DECL void increment();
-    BOOST_FILESYSTEM_DECL void decrement();
+    BOOST_FORCEINLINE void increment() { BOOST_FILESYSTEM_VERSIONED_SYM(increment)(); }
+    BOOST_FORCEINLINE void decrement() { BOOST_FILESYSTEM_VERSIONED_SYM(decrement)(); }
+
+private:
+    BOOST_FILESYSTEM_DECL void increment_v3();
+    BOOST_FILESYSTEM_DECL void increment_v4();
+    BOOST_FILESYSTEM_DECL void decrement_v3();
+    BOOST_FILESYSTEM_DECL void decrement_v4();
 
 private:
     // current element
@@ -809,7 +830,7 @@ private:
 //  yield paths, so provide a path aware version
 inline bool lexicographical_compare(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2)
 {
-    return detail::lex_compare(first1, last1, first2, last2) < 0;
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::lex_compare)(first1, last1, first2, last2) < 0;
 }
 
 inline bool operator==(path const& lhs, path const& rhs)

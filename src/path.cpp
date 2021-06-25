@@ -185,9 +185,14 @@ BOOST_FILESYSTEM_DECL path path::generic_path() const
 
 #endif // BOOST_WINDOWS_API
 
-BOOST_FILESYSTEM_DECL int path::compare(path const& p) const BOOST_NOEXCEPT
+BOOST_FILESYSTEM_DECL int path::compare_v3(path const& p) const BOOST_NOEXCEPT
 {
-    return detail::lex_compare(begin(), end(), p.begin(), p.end());
+    return detail::lex_compare_v3(begin(), end(), p.begin(), p.end());
+}
+
+BOOST_FILESYSTEM_DECL int path::compare_v4(path const& p) const BOOST_NOEXCEPT
+{
+    return detail::lex_compare_v4(begin(), end(), p.begin(), p.end());
 }
 
 //  append_separator_if_needed  ----------------------------------------------------//
@@ -385,29 +390,12 @@ BOOST_FILESYSTEM_DECL path path::filename_v3() const
     return path(p, p + filename_size);
 }
 
-BOOST_FILESYSTEM_DECL path path::filename_v4() const
+BOOST_FILESYSTEM_DECL string_type::size_type path::find_filename_v4_size() const
 {
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, size, root_name_size);
-    size_type filename_size = find_filename_size(m_pathname, root_name_size, size);
-    size_type pos = size - filename_size;
-    if (filename_size == 0u && pos > root_name_size && detail::is_directory_separator(m_pathname[pos - 1]) && !is_root_separator(m_pathname, root_dir_pos, pos - 1))
-        return detail::dot_path();
-    const value_type* p = m_pathname.c_str() + pos;
-    return path(p, p + filename_size);
-}
-
-BOOST_FILESYSTEM_DECL bool path::has_filename_v4() const
-{
-    const size_type size = m_pathname.size();
-    size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, size, root_name_size);
-    size_type filename_size = find_filename_size(m_pathname, root_name_size, size);
-    if (filename_size > 0u)
-        return true;
-    size_type pos = size - filename_size;
-    return pos > root_name_size && detail::is_directory_separator(m_pathname[pos - 1]) && !is_root_separator(m_pathname, root_dir_pos, pos - 1);
+    find_root_directory_start(m_pathname, size, root_name_size);
+    return find_filename_size(m_pathname, root_name_size, size);
 }
 
 BOOST_FILESYSTEM_DECL path path::stem_v3() const
@@ -800,7 +788,25 @@ namespace filesystem {
 namespace detail {
 
 BOOST_FILESYSTEM_DECL
-int lex_compare(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2)
+int lex_compare_v3(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2)
+{
+    for (; first1 != last1 && first2 != last2;)
+    {
+        if (first1->native() < first2->native())
+            return -1;
+        if (first2->native() < first1->native())
+            return 1;
+        BOOST_ASSERT(first2->native() == first1->native());
+        first1.increment_v3();
+        first2.increment_v3();
+    }
+    if (first1 == last1 && first2 == last2)
+        return 0;
+    return first1 == last1 ? -1 : 1;
+}
+
+BOOST_FILESYSTEM_DECL
+int lex_compare_v4(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2)
 {
     for (; first1 != last1 && first2 != last2;)
     {
@@ -853,18 +859,19 @@ BOOST_FILESYSTEM_DECL path::iterator path::end() const
     return itr;
 }
 
-BOOST_FILESYSTEM_DECL void path::iterator::increment()
+BOOST_FILESYSTEM_DECL void path::iterator::increment_v3()
 {
-    BOOST_ASSERT_MSG(m_pos < m_path_ptr->m_pathname.size(), "path::iterator increment past end()");
+    const size_type size = m_path_ptr->m_pathname.size();
+    BOOST_ASSERT_MSG(m_pos < size, "path::iterator increment past end()");
 
     // increment to position past current element; if current element is implicit dot,
     // this will cause m_pos to represent the end iterator
     m_pos += m_element.m_pathname.size();
 
     // if the end is reached, we are done
-    if (m_pos >= m_path_ptr->m_pathname.size())
+    if (m_pos >= size)
     {
-        BOOST_ASSERT_MSG(m_pos == m_path_ptr->m_pathname.size(), "path::iterator increment after the referenced path was modified");
+        BOOST_ASSERT_MSG(m_pos == size, "path::iterator increment after the referenced path was modified");
         m_element.clear(); // aids debugging
         return;
     }
@@ -873,7 +880,7 @@ BOOST_FILESYSTEM_DECL void path::iterator::increment()
     if (detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
     {
         size_type root_name_size = 0;
-        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, m_path_ptr->m_pathname.size(), root_name_size);
+        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
 
         // detect root directory and set iterator value to the separator if it is
         if (m_pos == root_dir_pos && m_element.m_pathname.size() == root_name_size)
@@ -883,31 +890,91 @@ BOOST_FILESYSTEM_DECL void path::iterator::increment()
         }
 
         // skip separators until m_pos points to the start of the next element
-        while (m_pos != m_path_ptr->m_pathname.size() && detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
+        while (m_pos != size && detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
         {
             ++m_pos;
         }
 
         // detect trailing separator, and treat it as ".", per POSIX spec
-        if (m_pos == m_path_ptr->m_pathname.size())
+        if (m_pos == size &&
+            !is_root_separator(m_path_ptr->m_pathname, root_dir_pos, m_pos - 1))
         {
-            if (!is_root_separator(m_path_ptr->m_pathname, root_dir_pos, m_pos - 1))
-            {
-                --m_pos;
-                m_element = detail::dot_path();
-                return;
-            }
+            --m_pos;
+            m_element = detail::dot_path();
+            return;
         }
     }
 
     // get m_element
     size_type end_pos = m_path_ptr->m_pathname.find_first_of(separators, m_pos);
     if (end_pos == string_type::npos)
-        end_pos = m_path_ptr->m_pathname.size();
-    m_element.m_pathname.assign(m_path_ptr->m_pathname.c_str() + m_pos, m_path_ptr->m_pathname.c_str() + end_pos);
+        end_pos = size;
+    const path::value_type* p = m_path_ptr->m_pathname.c_str();
+    m_element.m_pathname.assign(p + m_pos, p + end_pos);
 }
 
-BOOST_FILESYSTEM_DECL void path::iterator::decrement()
+BOOST_FILESYSTEM_DECL void path::iterator::increment_v4()
+{
+    const size_type size = m_path_ptr->m_pathname.size();
+    BOOST_ASSERT_MSG(m_pos <= size, "path::iterator increment past end()");
+
+    if (m_element.m_pathname.empty() && (m_pos + 1) == size && detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
+    {
+        // The iterator was pointing to the last empty element of the path; set to end.
+        m_pos = size;
+        return;
+    }
+
+    // increment to position past current element; if current element is implicit dot,
+    // this will cause m_pos to represent the end iterator
+    m_pos += m_element.m_pathname.size();
+
+    // if the end is reached, we are done
+    if (m_pos >= size)
+    {
+        BOOST_ASSERT_MSG(m_pos == size, "path::iterator increment after the referenced path was modified");
+        m_element.clear(); // aids debugging
+        return;
+    }
+
+    // process separator (Windows drive spec is only case not a separator)
+    if (detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
+    {
+        size_type root_name_size = 0;
+        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
+
+        // detect root directory and set iterator value to the separator if it is
+        if (m_pos == root_dir_pos && m_element.m_pathname.size() == root_name_size)
+        {
+            m_element.m_pathname = separator; // generic format; see docs
+            return;
+        }
+
+        // skip separators until m_pos points to the start of the next element
+        while (m_pos != size && detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
+        {
+            ++m_pos;
+        }
+
+        // detect trailing separator
+        if (m_pos == size &&
+            !is_root_separator(m_path_ptr->m_pathname, root_dir_pos, m_pos - 1))
+        {
+            --m_pos;
+            m_element.m_pathname.clear();
+            return;
+        }
+    }
+
+    // get m_element
+    size_type end_pos = m_path_ptr->m_pathname.find_first_of(separators, m_pos);
+    if (end_pos == string_type::npos)
+        end_pos = size;
+    const path::value_type* p = m_path_ptr->m_pathname.c_str();
+    m_element.m_pathname.assign(p + m_pos, p + end_pos);
+}
+
+BOOST_FILESYSTEM_DECL void path::iterator::decrement_v3()
 {
     const size_type size = m_path_ptr->m_pathname.size();
     BOOST_ASSERT_MSG(m_pos > 0, "path::iterator decrement past begin()");
@@ -921,7 +988,8 @@ BOOST_FILESYSTEM_DECL void path::iterator::decrement()
         // Was pointing at root directory, decrement to root name
     set_to_root_name:
         m_pos = 0u;
-        m_element.m_pathname.assign(m_path_ptr->m_pathname.c_str(), m_path_ptr->m_pathname.c_str() + root_name_size);
+        const path::value_type* p = m_path_ptr->m_pathname.c_str();
+        m_element.m_pathname.assign(p, p + root_name_size);
         return;
     }
 
@@ -962,7 +1030,68 @@ BOOST_FILESYSTEM_DECL void path::iterator::decrement()
 
     size_type filename_size = find_filename_size(m_path_ptr->m_pathname, root_name_size, end_pos);
     m_pos = end_pos - filename_size;
-    m_element.m_pathname.assign(m_path_ptr->m_pathname.c_str() + m_pos, m_path_ptr->m_pathname.c_str() + end_pos);
+    const path::value_type* p = m_path_ptr->m_pathname.c_str();
+    m_element.m_pathname.assign(p + m_pos, p + end_pos);
+}
+
+BOOST_FILESYSTEM_DECL void path::iterator::decrement_v4()
+{
+    const size_type size = m_path_ptr->m_pathname.size();
+    BOOST_ASSERT_MSG(m_pos > 0, "path::iterator decrement past begin()");
+    BOOST_ASSERT_MSG(m_pos <= size, "path::iterator decrement after the referenced path was modified");
+
+    size_type root_name_size = 0;
+    size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
+
+    if (root_dir_pos < size && m_pos == root_dir_pos)
+    {
+        // Was pointing at root directory, decrement to root name
+    set_to_root_name:
+        m_pos = 0u;
+        const path::value_type* p = m_path_ptr->m_pathname.c_str();
+        m_element.m_pathname.assign(p, p + root_name_size);
+        return;
+    }
+
+    // if at end and there was a trailing '/', return ""
+    if (m_pos == size &&
+        size > 1 &&
+        detail::is_directory_separator(m_path_ptr->m_pathname[m_pos - 1]) &&
+        !is_root_separator(m_path_ptr->m_pathname, root_dir_pos, m_pos - 1))
+    {
+        --m_pos;
+        m_element.m_pathname.clear();
+        return;
+    }
+
+    // skip separators unless root directory
+    size_type end_pos = m_pos;
+    while (end_pos > root_name_size)
+    {
+        --end_pos;
+
+        if (end_pos == root_dir_pos)
+        {
+            // Decremented to the root directory
+            m_pos = end_pos;
+            m_element.m_pathname = separator; // generic format; see docs
+            return;
+        }
+
+        if (!detail::is_directory_separator(m_path_ptr->m_pathname[end_pos]))
+        {
+            ++end_pos;
+            break;
+        }
+    }
+
+    if (end_pos <= root_name_size)
+        goto set_to_root_name;
+
+    size_type filename_size = find_filename_size(m_path_ptr->m_pathname, root_name_size, end_pos);
+    m_pos = end_pos - filename_size;
+    const path::value_type* p = m_path_ptr->m_pathname.c_str();
+    m_element.m_pathname.assign(p + m_pos, p + end_pos);
 }
 
 } // namespace filesystem
