@@ -215,10 +215,18 @@ void iterator_tests()
     BOOST_TEST(itr != itr_ck.end());
     PATH_TEST_EQ(*++itr, "bar");
     BOOST_TEST(itr != itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*++itr, ".");
+#else
+    PATH_TEST_EQ(*++itr, "");
+#endif
     BOOST_TEST(itr != itr_ck.end()); // verify the . isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*--itr, ".");
+#else
+    PATH_TEST_EQ(*--itr, "");
+#endif
     PATH_TEST_EQ(*--itr, "bar");
     PATH_TEST_EQ(*--itr, "foo");
     PATH_TEST_EQ(*--itr, "/");
@@ -230,10 +238,18 @@ void iterator_tests()
     PATH_TEST_EQ(itr->string(), "/");
     PATH_TEST_EQ(*++itr, "f");
     PATH_TEST_EQ(*++itr, "b");
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*++itr, ".");
+#else
+    PATH_TEST_EQ(*++itr, "");
+#endif
     BOOST_TEST(itr != itr_ck.end()); // verify the . isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*--itr, ".");
+#else
+    PATH_TEST_EQ(*--itr, "");
+#endif
     PATH_TEST_EQ(*--itr, "b");
     PATH_TEST_EQ(*--itr, "f");
     PATH_TEST_EQ(*--itr, "/");
@@ -246,10 +262,18 @@ void iterator_tests()
     itr_begin = itr = itr_ck.begin();
     PATH_TEST_EQ(*itr, "a");
     PATH_TEST_EQ(*++itr, "b");
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*++itr, ".");
+#else
+    PATH_TEST_EQ(*++itr, "");
+#endif
     BOOST_TEST(itr != itr_ck.end()); // verify the . isn't also seen as end()
     BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*--itr, ".");
+#else
+    PATH_TEST_EQ(*--itr, "");
+#endif
     PATH_TEST_EQ(*--itr, "b");
     PATH_TEST_EQ(*--itr, "a");
     BOOST_TEST(itr == itr_begin);
@@ -277,9 +301,17 @@ void iterator_tests()
     PATH_TEST_EQ(itr->string(), "//foo");
     PATH_TEST_EQ(*++itr, "/");
     PATH_TEST_EQ(*++itr, "bar");
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*++itr, ".");
+#else
+    PATH_TEST_EQ(*++itr, "");
+#endif
     BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*--itr, ".");
+#else
+    PATH_TEST_EQ(*--itr, "");
+#endif
     PATH_TEST_EQ(*--itr, "bar");
     PATH_TEST_EQ(*--itr, "/");
     PATH_TEST_EQ(*--itr, "//foo");
@@ -291,9 +323,17 @@ void iterator_tests()
     PATH_TEST_EQ(itr->string(), "/");
     PATH_TEST_EQ(*++itr, "foo");
     PATH_TEST_EQ(*++itr, "bar");
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*++itr, ".");
+#else
+    PATH_TEST_EQ(*++itr, "");
+#endif
     BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(*--itr, ".");
+#else
+    PATH_TEST_EQ(*--itr, "");
+#endif
     PATH_TEST_EQ(*--itr, "bar");
     PATH_TEST_EQ(*--itr, "foo");
     PATH_TEST_EQ(*--itr, "/");
@@ -380,9 +420,17 @@ void iterator_tests()
         PATH_TEST_EQ(itr->string(), "/");
         PATH_TEST_EQ(*++itr, "foo");
         PATH_TEST_EQ(*++itr, "bar");
+#if BOOST_FILESYSTEM_VERSION == 3
         PATH_TEST_EQ(*++itr, ".");
+#else
+        PATH_TEST_EQ(*++itr, "");
+#endif
         BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
         PATH_TEST_EQ(*--itr, ".");
+#else
+        PATH_TEST_EQ(*--itr, "");
+#endif
         PATH_TEST_EQ(*--itr, "bar");
         PATH_TEST_EQ(*--itr, "foo");
         PATH_TEST_EQ(*--itr, "/");
@@ -401,9 +449,17 @@ void iterator_tests()
         itr_begin = itr = itr_ck.begin();
         BOOST_TEST(*itr == std::string("c:"));
         BOOST_TEST(*++itr == std::string("foo"));
+#if BOOST_FILESYSTEM_VERSION == 3
         BOOST_TEST(*++itr == std::string("."));
+#else
+        BOOST_TEST(*++itr == std::string());
+#endif
         BOOST_TEST(++itr == itr_ck.end());
+#if BOOST_FILESYSTEM_VERSION == 3
         BOOST_TEST(*--itr == std::string("."));
+#else
+        BOOST_TEST(*--itr == std::string());
+#endif
         BOOST_TEST(*--itr == std::string("foo"));
         BOOST_TEST(*--itr == std::string("c:"));
         BOOST_TEST(itr == itr_begin);
@@ -648,7 +704,11 @@ void non_member_tests()
     // verify compare is actually lexicographical
     BOOST_TEST(path("a/b") < path("a.b"));
     BOOST_TEST(path("a/b") == path("a///b"));
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST(path("a/b/") == path("a/b/."));
+#else
+    BOOST_TEST(path("a/b/") != path("a/b/."));
+#endif
     BOOST_TEST(path("a/b") != path("a/b/"));
 
     // make sure the derivative operators also work
@@ -815,10 +875,11 @@ void query_and_decomposition_tests()
     BOOST_TEST(path("..").parent_path() == "");
     BOOST_TEST(path("/foo/bar.txt").filename() == "bar.txt");
     BOOST_TEST(path("/foo/bar").filename() == "bar");
-    BOOST_TEST(path("/foo/bar/").filename() == ".");
 #if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(path("/foo/bar/").filename() == ".");
     BOOST_TEST(path("/").filename() == "/");
 #else
+    BOOST_TEST(path("/foo/bar/").filename() == "");
     BOOST_TEST(path("/").filename() == "");
 #endif
     BOOST_TEST(path(".").filename() == ".");
@@ -1061,8 +1122,13 @@ void query_and_decomposition_tests()
     PATH_TEST_EQ(p.relative_path().string(), "foo/");
     PATH_TEST_EQ(p.parent_path().string(), "/foo");
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(p.filename(), ".");
     PATH_TEST_EQ(p.stem(), ".");
+#else
+    PATH_TEST_EQ(p.filename(), "");
+    PATH_TEST_EQ(p.stem(), "");
+#endif
     PATH_TEST_EQ(p.extension(), "");
     PATH_TEST_EQ(p.root_name(), "");
     PATH_TEST_EQ(p.root_directory(), "/");
@@ -1071,8 +1137,13 @@ void query_and_decomposition_tests()
     BOOST_TEST(!p.has_root_name());
     BOOST_TEST(p.has_root_directory());
     BOOST_TEST(p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST(p.has_filename());
     BOOST_TEST(p.has_stem());
+#else
+    BOOST_TEST(!p.has_filename());
+    BOOST_TEST(!p.has_stem());
+#endif
     BOOST_TEST(!p.has_extension());
     BOOST_TEST(p.has_parent_path());
     if (platform == "POSIX")

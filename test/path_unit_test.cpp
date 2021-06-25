@@ -622,8 +622,13 @@ void test_other_non_members()
     CHECK(!path("a..").filename_is_dot_dot());
 
     // edge cases
+#if BOOST_FILESYSTEM_VERSION == 3
     CHECK(path("foo/").filename() == path("."));
     CHECK(path("foo/").filename_is_dot());
+#else
+    CHECK(path("foo/").filename() == path(""));
+    CHECK(!path("foo/").filename_is_dot());
+#endif
 #if BOOST_FILESYSTEM_VERSION == 3
     CHECK(path("/").filename() == path("/"));
 #else
@@ -639,12 +644,17 @@ void test_other_non_members()
     CHECK(path("c:/").filename() == path(""));
 #endif
     CHECK(!path("c:\\").filename_is_dot());
-#else
+#else // BOOST_WINDOWS_API
     CHECK(path("c:.").filename() == path("c:."));
     CHECK(!path("c:.").filename_is_dot());
+#if BOOST_FILESYSTEM_VERSION == 3
     CHECK(path("c:/").filename() == path("."));
     CHECK(path("c:/").filename_is_dot());
+#else
+    CHECK(path("c:/").filename() == path(""));
+    CHECK(!path("c:/").filename_is_dot());
 #endif
+#endif // BOOST_WINDOWS_API
 
     // check that the implementation code to make the edge cases above work right
     // doesn't cause some non-edge cases to fail
