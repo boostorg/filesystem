@@ -12,7 +12,6 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp> // for filesystem_error
 #include <boost/scoped_array.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/assert.hpp>
@@ -21,6 +20,7 @@
 #include <utility>
 #include <cstddef>
 #include <cstring>
+#include <cstdlib> // std::atexit
 
 #ifdef BOOST_WINDOWS_API
 #include "windows_file_codecvt.hpp"
@@ -34,6 +34,9 @@
 #include <iostream>
 #include <iomanip>
 #endif
+
+#include "atomic_tools.hpp"
+#include "private_config.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -62,6 +65,8 @@ using boost::filesystem::path_detail::substring;
 
 #ifdef BOOST_WINDOWS_API
 
+const wchar_t dot_path_literal[] = L".";
+const wchar_t dot_dot_path_literal[] = L"..";
 const wchar_t separators[] = L"/\\";
 using boost::filesystem::detail::colon;
 using boost::filesystem::detail::questionmark;
@@ -87,11 +92,13 @@ inline bool is_device_name_char(wchar_t c)
     return is_alnum(c) || c == L'$';
 }
 
-#else
+#else // BOOST_WINDOWS_API
 
+const char dot_path_literal[] = ".";
+const char dot_dot_path_literal[] = "..";
 const char separators[] = "/";
 
-#endif
+#endif // BOOST_WINDOWS_API
 
 // pos is position of the separator
 bool is_root_separator(string_type const& str, size_type root_dir_pos, size_type pos);
@@ -801,28 +808,6 @@ int lex_compare(path::iterator first1, path::iterator last1, path::iterator firs
     return first1 == last1 ? -1 : 1;
 }
 
-BOOST_FILESYSTEM_DECL
-path const& dot_path()
-{
-#ifdef BOOST_WINDOWS_API
-    static const fs::path dot_pth(L".");
-#else
-    static const fs::path dot_pth(".");
-#endif
-    return dot_pth;
-}
-
-BOOST_FILESYSTEM_DECL
-path const& dot_dot_path()
-{
-#ifdef BOOST_WINDOWS_API
-    static const fs::path dot_dot(L"..");
-#else
-    static const fs::path dot_dot("..");
-#endif
-    return dot_dot;
-}
-
 } // namespace detail
 
 //--------------------------------------------------------------------------------------//
@@ -1030,25 +1015,215 @@ std::locale default_locale()
 #endif
 }
 
+std::locale* g_path_locale = NULL;
+
+void schedule_path_locale_cleanup() BOOST_NOEXCEPT;
+
 // std::locale("") construction, needed on non-Apple POSIX systems, can throw
 // (if environmental variables LC_MESSAGES or LANG are wrong, for example), so
-// path_locale() provides lazy initialization via a local static to ensure that any
+// get_path_locale() provides lazy initialization to ensure that any
 // exceptions occur after main() starts and so can be caught. Furthermore,
-// path_locale() is only called if path::codecvt() or path::imbue() are themselves
+// g_path_locale is only initialized if path::codecvt() or path::imbue() are themselves
 // actually called, ensuring that an exception will only be thrown if std::locale("")
 // is really needed.
-std::locale& path_locale()
+inline std::locale& get_path_locale()
 {
-    // [locale] paragraph 6: Once a facet reference is obtained from a locale object by
-    // calling use_facet<>, that reference remains usable, and the results from member
-    // functions of it may be cached and re-used, as long as some locale object refers
-    // to that facet.
-    static std::locale loc(default_locale());
-#ifdef BOOST_FILESYSTEM_DEBUG
-    std::cout << "***** path_locale() called" << std::endl;
-#endif
-    return loc;
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    atomic_ns::atomic_ref< std::locale* > a(g_path_locale);
+    std::locale* p = a.load(atomic_ns::memory_order_acquire);
+    if (BOOST_UNLIKELY(!p))
+    {
+        std::locale* new_p = new std::locale(default_locale());
+        if (a.compare_exchange_strong(p, new_p, atomic_ns::memory_order_acq_rel, atomic_ns::memory_order_acquire))
+        {
+            p = new_p;
+            schedule_path_locale_cleanup();
+        }
+        else
+        {
+            delete new_p;
+        }
+    }
+    return *p;
+#else // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    std::locale* p = g_path_locale;
+    if (BOOST_UNLIKELY(!p))
+    {
+        g_path_locale = p = new std::locale(default_locale());
+        schedule_path_locale_cleanup();
+    }
+    return *p;
+#endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
 }
+
+inline std::locale* replace_path_locale(std::locale const& loc)
+{
+    std::locale* new_p = new std::locale(loc);
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    std::locale* p = atomic_ns::atomic_ref< std::locale* >(g_path_locale).exchange(new_p, atomic_ns::memory_order_acq_rel);
+#else
+    std::locale* p = g_path_locale;
+    g_path_locale = new_p;
+#endif
+    if (!p)
+        schedule_path_locale_cleanup();
+    return p;
+}
+
+#if defined(_MSC_VER)
+
+const boost::filesystem::path* g_dot_path = NULL;
+const boost::filesystem::path* g_dot_dot_path = NULL;
+
+inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
+{
+}
+
+inline boost::filesystem::path const& get_dot_path()
+{
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    atomic_ns::atomic_ref< const boost::filesystem::path* > a(g_dot_path);
+    const boost::filesystem::path* p = a.load(atomic_ns::memory_order_acquire);
+    if (BOOST_UNLIKELY(!p))
+    {
+        const boost::filesystem::path* new_p = new boost::filesystem::path(dot_path_literal);
+        if (a.compare_exchange_strong(p, new_p, atomic_ns::memory_order_acq_rel, atomic_ns::memory_order_acquire))
+            p = new_p;
+        else
+            delete new_p;
+    }
+    return *p;
+#else // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    const boost::filesystem::path* p = g_dot_path;
+    if (BOOST_UNLIKELY(!p))
+        g_dot_path = p = new boost::filesystem::path(dot_path_literal);
+    return *p;
+#endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+}
+
+inline boost::filesystem::path const& get_dot_dot_path()
+{
+#if !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    atomic_ns::atomic_ref< const boost::filesystem::path* > a(g_dot_dot_path);
+    const boost::filesystem::path* p = a.load(atomic_ns::memory_order_acquire);
+    if (BOOST_UNLIKELY(!p))
+    {
+        const boost::filesystem::path* new_p = new boost::filesystem::path(dot_dot_path_literal);
+        if (a.compare_exchange_strong(p, new_p, atomic_ns::memory_order_acq_rel, atomic_ns::memory_order_acquire))
+            p = new_p;
+        else
+            delete new_p;
+    }
+    return *p;
+#else // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+    const boost::filesystem::path* p = g_dot_dot_path;
+    if (BOOST_UNLIKELY(!p))
+        g_dot_dot_path = p = new boost::filesystem::path(dot_dot_path_literal);
+    return *p;
+#endif // !defined(BOOST_FILESYSTEM_SINGLE_THREADED)
+}
+
+void __cdecl destroy_path_globals()
+{
+    delete g_dot_dot_path;
+    g_dot_dot_path = NULL;
+    delete g_dot_path;
+    g_dot_path = NULL;
+    delete g_path_locale;
+    g_path_locale = NULL;
+}
+
+#if _MSC_VER < 1300 || _MSC_VER > 1900 // 1300 == VC++ 7.0, 1900 == VC++ 14.0
+typedef void (__cdecl* init_func_ptr_t)();
+#define BOOST_FILESYSTEM_INIRETSUCCESS_V
+#define BOOST_FILESYSTEM_INIT_FUNC void __cdecl
+#else
+typedef int (__cdecl* init_func_ptr_t)();
+#define BOOST_FILESYSTEM_INIRETSUCCESS_V 0
+#define BOOST_FILESYSTEM_INIT_FUNC int __cdecl
+#endif
+
+BOOST_FILESYSTEM_INIT_FUNC init_path_globals()
+{
+    std::atexit(&destroy_path_globals);
+    return BOOST_FILESYSTEM_INIRETSUCCESS_V;
+}
+
+#if _MSC_VER >= 1400
+
+#pragma section(".CRT$XCM", long, read)
+__declspec(allocate(".CRT$XCM")) extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
+
+#else // _MSC_VER >= 1400
+
+#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
+#pragma data_seg(push, old_seg)
+#endif
+#pragma data_seg(".CRT$XCM")
+extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
+#pragma data_seg()
+#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
+#pragma data_seg(pop, old_seg)
+#endif
+
+#endif // _MSC_VER >= 1400
+
+#else // defined(_MSC_VER)
+
+struct path_locale_deleter
+{
+    ~path_locale_deleter()
+    {
+        delete g_path_locale;
+        g_path_locale = NULL;
+    }
+};
+
+#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
+const path_locale_deleter g_path_locale_deleter;
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
+const boost::filesystem::path g_dot_path(dot_path_literal);
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
+const boost::filesystem::path g_dot_dot_path(dot_dot_path_literal);
+
+inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
+{
+}
+
+inline boost::filesystem::path const& get_dot_path()
+{
+    return g_dot_path;
+}
+
+inline boost::filesystem::path const& get_dot_dot_path()
+{
+    return g_dot_dot_path;
+}
+
+#else // defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+
+inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
+{
+    static const path_locale_deleter g_path_locale_deleter;
+}
+
+inline boost::filesystem::path const& get_dot_path()
+{
+    static const boost::filesystem::path g_dot_path(dot_path_literal);
+    return g_dot_path;
+}
+
+inline boost::filesystem::path const& get_dot_dot_path()
+{
+    static const boost::filesystem::path g_dot_dot_path(dot_dot_path_literal);
+    return g_dot_dot_path;
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+
+#endif // defined(_MSC_VER)
 
 } // unnamed namespace
 
@@ -1064,9 +1239,7 @@ BOOST_FILESYSTEM_DECL path::codecvt_type const& path::codecvt()
 #ifdef BOOST_FILESYSTEM_DEBUG
     std::cout << "***** path::codecvt() called" << std::endl;
 #endif
-    BOOST_ASSERT_MSG(&path_locale(), "boost::filesystem::path locale initialization error");
-
-    return std::use_facet< std::codecvt< wchar_t, char, std::mbstate_t > >(path_locale());
+    return std::use_facet< std::codecvt< wchar_t, char, std::mbstate_t > >(get_path_locale());
 }
 
 BOOST_FILESYSTEM_DECL std::locale path::imbue(std::locale const& loc)
@@ -1074,10 +1247,34 @@ BOOST_FILESYSTEM_DECL std::locale path::imbue(std::locale const& loc)
 #ifdef BOOST_FILESYSTEM_DEBUG
     std::cout << "***** path::imbue() called" << std::endl;
 #endif
-    std::locale temp(path_locale());
-    path_locale() = loc;
-    return temp;
+    std::locale* p = replace_path_locale(loc);
+    if (BOOST_LIKELY(p != NULL))
+    {
+        // Note: copying/moving std::locale does not throw
+#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+        std::locale temp(std::move(*p));
+#else
+        std::locale temp(*p);
+#endif
+        delete p;
+        return temp;
+    }
+
+    return default_locale();
 }
 
+namespace detail {
+
+BOOST_FILESYSTEM_DECL path const& dot_path()
+{
+    return get_dot_path();
+}
+
+BOOST_FILESYSTEM_DECL path const& dot_dot_path()
+{
+    return get_dot_dot_path();
+}
+
+} // namespace detail
 } // namespace filesystem
 } // namespace boost

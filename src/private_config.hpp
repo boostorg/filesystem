@@ -35,6 +35,9 @@
 // these priority values are arbitrary.
 #define BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY 32767
 
+// Path globals initialization priority
+#define BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY 32768
+
 #if defined(__has_feature) && defined(__has_attribute)
 #if __has_feature(memory_sanitizer) && __has_attribute(no_sanitize)
 #define BOOST_FILESYSTEM_NO_SANITIZE_MEMORY __attribute__ ((no_sanitize("memory")))
