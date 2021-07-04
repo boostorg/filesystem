@@ -1182,7 +1182,7 @@ struct path_locale_deleter
 #if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 
 BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
-const path_locale_deleter g_path_locale_deleter;
+const path_locale_deleter g_path_locale_deleter = {};
 BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
 const boost::filesystem::path g_dot_path(dot_path_literal);
 BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
