@@ -110,6 +110,10 @@
 
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
 
+#if defined(POSIX_FADV_SEQUENTIAL) && (!defined(__ANDROID__) || __ANDROID_API__ >= 21)
+#define BOOST_FILESYSTEM_HAS_POSIX_FADVISE
+#endif
+
 #if defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
 #define BOOST_FILESYSTEM_STAT_ST_MTIMENSEC st_mtim.tv_nsec
 #elif defined(BOOST_FILESYSTEM_HAS_STAT_ST_MTIMESPEC)
@@ -674,7 +678,7 @@ BOOST_CONSTEXPR_OR_CONST uint_least32_t max_read_write_buf_size = 256u * 1024u;
 //! copy_file read/write loop implementation
 int copy_file_data_read_write_impl(int infile, int outfile, char* buf, std::size_t buf_size)
 {
-#if defined(POSIX_FADV_SEQUENTIAL)
+#if defined(BOOST_FILESYSTEM_HAS_POSIX_FADVISE)
     ::posix_fadvise(infile, 0, 0, POSIX_FADV_SEQUENTIAL);
 #endif
 
