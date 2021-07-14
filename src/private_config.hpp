@@ -14,18 +14,10 @@
 
 #include <boost/filesystem/config.hpp>
 
-#if defined(BOOST_GCC) && BOOST_GCC >= 30300
+#if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 #define BOOST_FILESYSTEM_INIT_PRIORITY(n) __attribute__ ((init_priority(n)))
-#elif defined(__has_attribute)
-#if __has_attribute(init_priority)
-#define BOOST_FILESYSTEM_INIT_PRIORITY(n) __attribute__ ((init_priority(n)))
-#endif
-#endif
-
-#ifndef BOOST_FILESYSTEM_INIT_PRIORITY
-#define BOOST_FILESYSTEM_INIT_PRIORITY(n)
 #else
-#define BOOST_FILESYSTEM_HAS_INIT_PRIORITY
+#define BOOST_FILESYSTEM_INIT_PRIORITY(n)
 #endif
 
 // According to https://gcc.gnu.org/bugzilla//show_bug.cgi?id=65115,

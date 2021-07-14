@@ -5,6 +5,8 @@
 #          http://www.boost.org/LICENSE_1_0.txt)
 #
 
+obj has_attribute_init_priority : has_attribute_init_priority.cpp : <include>../src ;
+explicit has_attribute_init_priority ;
 obj has_cxx20_atomic_ref : has_cxx20_atomic_ref.cpp : <include>../src ;
 explicit has_cxx20_atomic_ref ;
 obj has_stat_st_blksize : has_stat_st_blksize.cpp : <include>../src ;

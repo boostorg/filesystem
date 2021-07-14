@@ -45,6 +45,7 @@ generate_boost_include_paths(BOOST_LIBRARY_INCLUDES)
 
 set(CMAKE_REQUIRED_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/src" ${BOOST_LIBRARY_INCLUDES})
 
+check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_attribute_init_priority.cpp>" BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_cxx20_atomic_ref.cpp>" BOOST_FILESYSTEM_HAS_CXX20_ATOMIC_REF)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_stat_st_blksize.cpp>" BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE)
 check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_stat_st_mtim.cpp>" BOOST_FILESYSTEM_HAS_STAT_ST_MTIM)
@@ -107,6 +108,10 @@ endif()
 
 if(BOOST_FILESYSTEM_NO_DEPRECATED)
     target_compile_definitions(boost_filesystem PUBLIC BOOST_FILESYSTEM_NO_DEPRECATED)
+endif()
+
+if(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 endif()
 
 if(BOOST_FILESYSTEM_DISABLE_SENDFILE)
