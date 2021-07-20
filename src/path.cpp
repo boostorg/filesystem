@@ -525,8 +525,17 @@ BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
 
 BOOST_FILESYSTEM_DECL path path::lexically_normal() const
 {
-    const size_type root_path_size = find_root_path_size();
-    path normal(m_pathname.c_str(), m_pathname.c_str() + root_path_size);
+    size_type root_name_size = 0;
+    size_type root_dir_pos = find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    path normal(m_pathname.c_str(), m_pathname.c_str() + root_name_size);
+
+    size_type root_path_size = root_name_size;
+    if (root_dir_pos < m_pathname.size())
+    {
+        root_path_size = root_dir_pos + 1;
+        normal.m_pathname.push_back(preferred_separator);
+    }
+
     size_type i = root_path_size, n = m_pathname.size();
 
     // Skip redundant directory separators after the root directory

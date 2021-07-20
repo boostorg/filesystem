@@ -2304,6 +2304,8 @@ void lexically_normal_tests()
 
     if (platform == "Windows")
     {
+        BOOST_TEST_EQ(path("c:/foo/bar").lexically_normal().string(), "c:\\foo\\bar");
+
         PATH_TEST_EQ(path("c:foo").lexically_normal().generic_path(), "c:foo");
         PATH_TEST_EQ(path("c:..").lexically_normal().generic_path(), "c:..");
         PATH_TEST_EQ(path("c:foo/..").lexically_normal().generic_path(), "c:");
