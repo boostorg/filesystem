@@ -1406,7 +1406,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     if (ec)
         ec->clear();
 
-    path source = p;
+    path source(p);
     if (!p.is_absolute())
     {
         source = detail::absolute(p, base, ec);
@@ -1418,9 +1418,9 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     }
 
     system::error_code local_ec;
-    file_status stat(detail::status(source, &local_ec));
+    file_status st(detail::status(source, &local_ec));
 
-    if (stat.type() == fs::file_not_found)
+    if (st.type() == fs::file_not_found)
     {
         local_ec = system::errc::make_error_code(system::errc::no_such_file_or_directory);
         goto fail_local_ec;
@@ -1442,7 +1442,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     path result;
     while (true)
     {
-        for (path::iterator itr = source.begin(), end = source.end(); itr != end; ++itr)
+        for (path::iterator itr(source.begin()), end(source.end()); itr != end; ++itr)
         {
             if (*itr == dot_p)
                 continue;
@@ -1473,11 +1473,11 @@ path canonical(path const& p, path const& base, system::error_code* ec)
             if (!result.is_absolute())
                 continue;
 
-            bool is_sym = is_symlink(detail::symlink_status(result, ec));
+            st = detail::symlink_status(result, ec);
             if (ec && *ec)
                 goto return_empty_path;
 
-            if (is_sym)
+            if (is_symlink(st))
             {
                 if (symlinks_allowed == 0)
                 {
@@ -3540,31 +3540,84 @@ path system_complete(path const& p, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 {
-    path head(p);
-    // Operate on paths with preferred separators. This can be important on Windows since
-    // GetFileAttributesW, which is called in status() may return "file not found" for paths
-    // to network shares and mounted cloud storages that have forward slashes as separators.
-    head.make_preferred();
-    path tail;
     system::error_code local_ec;
-    path::iterator itr = p.end();
+    const path::iterator p_end(p.end());
 
+#if defined(BOOST_POSIX_API)
+
+    path::iterator itr(p_end);
+    path head(p);
     for (; !head.empty(); --itr)
     {
         file_status head_status = detail::status(head, &local_ec);
-        if (error(head_status.type() == fs::status_error, head, ec, "boost::filesystem::weakly_canonical"))
+        if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
+        {
+            if (!ec)
+                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
+
+            *ec = local_ec;
             return path();
+        }
+
         if (head_status.type() != fs::file_not_found)
             break;
+
         head.remove_filename();
     }
 
+#else
+
+    // On Windows, filesystem APIs such as GetFileAttributesW perform lexical path normalization internally.
+    // As a result, a path like "c:\a\.." can be reported as present even if "c:\a" is not. This would break
+    // canonical, as symlink_status that it calls internally would report an error that the file at the intermediate
+    // path does not exist. To avoid this, scan the initial path in the forward direction.
+    // Also, operate on paths with preferred separators. This can be important on Windows since GetFileAttributesW,
+    // which is called in status() may return "file not found" for paths to network shares and mounted cloud
+    // storages that have forward slashes as separators.
+    path::iterator itr(p.begin());
+    path head;
+    for (; itr != p_end; ++itr)
+    {
+        path const& p_elem = *itr;
+        if (p_elem.size() == 1u && detail::is_directory_separator(p_elem.native()[0]))
+        {
+            // Convert generic separator returned by the iterator for the root directory to
+            // the preferred separator.
+            path::value_type sep[2] = { path::preferred_separator, static_cast< path::value_type >('\0') };
+            head /= sep;
+        }
+        else
+        {
+            head /= p_elem;
+        }
+
+        file_status head_status = detail::status(head, &local_ec);
+        if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
+        {
+            if (!ec)
+                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
+
+            *ec = local_ec;
+            return path();
+        }
+
+        if (head_status.type() == fs::file_not_found)
+        {
+            head.remove_filename();
+            break;
+        }
+    }
+
+#endif
+
     path const& dot_p = dot_path();
     path const& dot_dot_p = dot_dot_path();
+    path tail;
     bool tail_has_dots = false;
-    for (; itr != p.end(); ++itr)
+    for (; itr != p_end; ++itr)
     {
         path const& tail_elem = *itr;
+#if defined(BOOST_WINDOWS_API)
         if (tail_elem.size() == 1u && detail::is_directory_separator(tail_elem.native()[0]))
         {
             // Convert generic separator returned by the iterator for the root directory to
@@ -3573,19 +3626,36 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
             tail /= sep;
             continue;
         }
+#endif
         tail /= tail_elem;
         // for a later optimization, track if any dot or dot-dot elements are present
-        if (tail_elem == dot_p || tail_elem == dot_dot_p)
+        if (!tail_has_dots && (tail_elem == dot_p || tail_elem == dot_dot_p))
             tail_has_dots = true;
     }
 
     if (head.empty())
         return p.lexically_normal();
+
     head = detail::canonical(head, base, &local_ec);
-    if (error(local_ec.value(), head, ec, "boost::filesystem::weakly_canonical"))
+    if (BOOST_UNLIKELY(!!local_ec))
+    {
+        if (!ec)
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
+
+        *ec = local_ec;
         return path();
-    return tail.empty() ? head : (tail_has_dots // optimization: only normalize if tail had dot or dot-dot element
-        ? (head / tail).lexically_normal() : head / tail);
+    }
+
+    if (BOOST_LIKELY(!tail.empty()))
+    {
+        head /= tail;
+
+        // optimization: only normalize if tail had dot or dot-dot element
+        if (tail_has_dots)
+            return head.lexically_normal();
+    }
+
+    return head;
 }
 
 } // namespace detail
