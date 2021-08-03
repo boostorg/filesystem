@@ -92,7 +92,12 @@
 #define BOOST_FILESYSTEM_USE_STATX
 #endif // !defined(BOOST_FILESYSTEM_DISABLE_STATX) && (defined(BOOST_FILESYSTEM_HAS_STATX) || defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL))
 
+#if defined(__has_include)
+#if __has_include(<linux/magic.h>)
+// This header was introduced in Linux kernel 2.6.19
 #include <linux/magic.h>
+#endif
+#endif
 
 // Some filesystem type magic constants are not defined in older kernel headers
 #ifndef PROC_SUPER_MAGIC
