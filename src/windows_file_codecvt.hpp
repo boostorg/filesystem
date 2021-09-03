@@ -49,7 +49,7 @@ protected:
     int do_encoding() const BOOST_NOEXCEPT_OR_NOTHROW BOOST_OVERRIDE { return 0; }
     std::codecvt_base::result do_in(std::mbstate_t& state, const char* from, const char* from_end, const char*& from_next, wchar_t* to, wchar_t* to_end, wchar_t*& to_next) const BOOST_OVERRIDE;
     std::codecvt_base::result do_out(std::mbstate_t& state, const wchar_t* from, const wchar_t* from_end, const wchar_t*& from_next, char* to, char* to_end, char*& to_next) const BOOST_OVERRIDE;
-    std::codecvt_base::result do_unshift(std::mbstate_t&, char* /*from*/, char* /*to*/, char*& /*next*/) const { return ok; }
+    std::codecvt_base::result do_unshift(std::mbstate_t&, char* /*from*/, char* /*to*/, char*& /*next*/) const BOOST_OVERRIDE { return ok; }
     int do_length(std::mbstate_t&, const char* /*from*/, const char* /*from_end*/, std::size_t /*max*/) const
 #if BOOST_WORKAROUND(__IBMCPP__, BOOST_TESTED_AT(600))
         throw()
