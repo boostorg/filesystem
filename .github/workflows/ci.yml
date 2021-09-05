@@ -191,7 +191,7 @@ jobs:
       - name: Setup container
         if: matrix.container
         run: |
-            echo "GHA_CONTAINER=${{ matrix.container }}" >> $GITHUB_ENV
+            echo "GHA_CONTAINER=${{matrix.container}}" >> $GITHUB_ENV
             apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 install -y sudo software-properties-common tzdata wget curl apt-transport-https make apt-file unzip libssl-dev build-essential autotools-dev autoconf automake g++ libc++-helpers python ruby cpio gcc-multilib g++-multilib pkgconf python3 ccache libpython-dev git cmake
 
       - uses: actions/checkout@v2
