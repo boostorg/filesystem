@@ -20,12 +20,12 @@ concurrency:
 env:
   GIT_FETCH_JOBS: 8
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   posix:
+    defaults:
+      run:
+        shell: bash
+
     strategy:
       fail-fast: false
       matrix:
@@ -180,12 +180,12 @@ jobs:
             cxxstd: "03,11,14,17,2a"
             os: macos-10.15
 
-          - name: CMake self-test
-            cmake_test: 1
+          - name: CMake tests
+            cmake_tests: 1
             os: ubuntu-20.04
 
-    runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
+    runs-on: ${{matrix.os}}
+    container: ${{matrix.container}}
 
     steps:
       - name: Setup container
@@ -252,7 +252,7 @@ jobs:
             ./b2 headers
 
       - name: Run CMake tests
-        if: matrix.cmake_test
+        if: matrix.cmake_tests
         run: |
             cd ../boost-root
             mkdir __build_static__ && cd __build_static__
@@ -264,7 +264,7 @@ jobs:
             cmake --build . --target boost_${LIBRARY}_cmake_self_test -j $BUILD_JOBS
 
       - name: Create user-config.jam
-        if: matrix.cmake_test == '' && matrix.compiler != ''
+        if: matrix.cmake_tests == '' && matrix.compiler != ''
         run: |
             echo -n "using ${{matrix.toolset}} : : ${{matrix.compiler}}" > ~/user-config.jam
             if [ -n "$GCC_TOOLCHAIN_ROOT" ]
@@ -274,7 +274,7 @@ jobs:
             echo " ;" >> ~/user-config.jam
 
       - name: Run tests
-        if: matrix.cmake_test == ''
+        if: matrix.cmake_tests == ''
         run: |
             cd ../boost-root
             if [ -n "${{matrix.extra_tests}}" ]
