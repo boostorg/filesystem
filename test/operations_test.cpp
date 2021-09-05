@@ -47,6 +47,9 @@ using std::endl;
 #include <cstring> // for strncmp, etc.
 #include <ctime>
 #include <cstdlib> // for system(), getenv(), etc.
+#ifdef BOOST_POSIX_API
+#include <unistd.h>
+#endif
 
 #ifdef BOOST_WINDOWS_API
 #include <windows.h>
@@ -1210,10 +1213,13 @@ void create_directories_tests()
     BOOST_TEST(ec);
 
 #ifdef BOOST_POSIX_API
-    ec.clear();
-    BOOST_TEST(!fs::create_directories("/foo", ec)); // may be OK on Windows
-                                                     //  but unlikely to be OK on POSIX
-    BOOST_TEST(ec);
+    if (geteuid() > 0)
+    {
+        ec.clear();
+        BOOST_TEST(!fs::create_directories("/foo", ec)); // may be OK on Windows
+                                                         //  but unlikely to be OK on POSIX, unless running as root
+        BOOST_TEST(ec);
+    }
 #endif
 
     fs::path p = dir / "level1/." / "level2/./.." / "level3/";
