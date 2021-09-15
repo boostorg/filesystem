@@ -240,6 +240,7 @@ jobs:
             cmake_tests: 1
             os: ubuntu-20.04
 
+    timeout-minutes: 60
     runs-on: ${{matrix.os}}
     container: ${{matrix.container}}
 
