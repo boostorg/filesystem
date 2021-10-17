@@ -120,8 +120,6 @@ bool create_symlink_ok(true);
 
 fs::path ng(" no-way, Jose");
 
-unsigned short language_id; // 0 except for Windows
-
 const fs::path temp_dir(fs::unique_path("op-test-%%%%-%%%%"));
 
 void create_file(const fs::path& ph, const std::string& contents = std::string())
@@ -317,12 +315,7 @@ void exception_tests()
     catch (std::runtime_error x)
     {
         exception_thrown = true;
-        if (report_throws)
-            cout << x.what() << endl;
-        if (platform == "Windows" && language_id == 0x0409) // English (United States)
-            // the stdcxx standard library apparently appends additional info
-            // to what(), so check only the initial portion:
-            BOOST_TEST(std::strncmp(x.what(), "boost::filesystem::create_directory", sizeof("boost::filesystem::create_directory") - 1) == 0);
+        cout << "    x.what() returns \"" << x.what() << "\"" << endl;
     }
     BOOST_TEST(exception_thrown);
 
@@ -337,10 +330,7 @@ void exception_tests()
     catch (system_error x)
     {
         exception_thrown = true;
-        if (report_throws)
-            cout << x.what() << endl;
-        if (platform == "Windows" && language_id == 0x0409) // English (United States)
-            BOOST_TEST(std::strcmp(x.what(), "boost::filesystem::create_directory: The system cannot find the path specified") == 0);
+        cout << "    x.what() returns \"" << x.what() << "\"" << endl;
     }
     BOOST_TEST(exception_thrown);
 
@@ -355,17 +345,7 @@ void exception_tests()
     catch (fs::filesystem_error x)
     {
         exception_thrown = true;
-        if (report_throws)
-            cout << x.what() << endl;
-        if (platform == "Windows" && language_id == 0x0409) // English (United States)
-        {
-            bool ok(std::strcmp(x.what(), "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir/foo/bar\"") == 0);
-            BOOST_TEST(ok);
-            if (!ok)
-            {
-                cout << "what returns \"" << x.what() << "\"" << endl;
-            }
-        }
+        cout << "    x.what() returns \"" << x.what() << "\"" << endl;
     }
     BOOST_TEST(exception_thrown);
 
@@ -380,17 +360,7 @@ void exception_tests()
     catch (const fs::filesystem_error& x)
     {
         exception_thrown = true;
-        if (report_throws)
-            cout << x.what() << endl;
-        if (platform == "Windows" && language_id == 0x0409) // English (United States)
-        {
-            bool ok(std::strcmp(x.what(), "boost::filesystem::create_directory: The system cannot find the path specified: \"no-such-dir/foo/bar\"") == 0);
-            BOOST_TEST(ok);
-            if (!ok)
-            {
-                cout << "what returns \"" << x.what() << "\"" << endl;
-            }
-        }
+        cout << "    x.what() returns \"" << x.what() << "\"" << endl;
     }
     BOOST_TEST(exception_thrown);
 
@@ -2518,7 +2488,6 @@ int cpp_main(int argc, char* argv[])
     platform = "POSIX";
 #elif defined(BOOST_WINDOWS_API)
     platform = "Windows";
-    language_id = ::GetUserDefaultUILanguage();
 #else
 #error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 #endif

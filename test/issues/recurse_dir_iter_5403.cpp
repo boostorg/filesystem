@@ -32,16 +32,12 @@ using boost::system::error_code;
 using std::cout;
 using std::endl;
 
-#ifdef BOOST_WINDOWS_API
-#include <windows.h>
-#endif
 namespace {
 typedef int errno_t;
 std::string platform(BOOST_PLATFORM);
 bool report_throws = false;
 bool cleanup = true;
 bool skip_long_windows_tests = false;
-unsigned short language_id; // 0 except for Windows
 
 } // unnamed namespace
 
@@ -78,11 +74,6 @@ int cpp_main(int argc, char* argv[])
     platform = "POSIX";
 #elif defined(BOOST_WINDOWS_API)
     platform = "Windows";
-#if !defined(__MINGW32__) && !defined(__CYGWIN__)
-    language_id = ::GetUserDefaultUILanguage();
-#else
-    language_id = 0x0409; // Assume US English
-#endif
 #else
 #error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 #endif
@@ -122,4 +113,4 @@ int cpp_main(int argc, char* argv[])
 
     cout << "returning from main()" << endl;
     return ::boost::report_errors();
-} // main
+}
