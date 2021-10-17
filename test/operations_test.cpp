@@ -1206,11 +1206,11 @@ void create_directories_tests()
 
     ec.clear();
     BOOST_TEST(!fs::create_directories(".", ec));
-    BOOST_TEST(ec);
+    BOOST_TEST(!ec);
 
     ec.clear();
     BOOST_TEST(!fs::create_directories("..", ec));
-    BOOST_TEST(ec);
+    BOOST_TEST(!ec);
 
 #ifdef BOOST_POSIX_API
     if (geteuid() > 0)

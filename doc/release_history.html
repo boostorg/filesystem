@@ -39,6 +39,11 @@
     </td>
 </table>
 
+<h2>1.78.0</h2>
+<ul>
+  <li><code>create_directories</code> no longer reports an error if the input path consists entirely of dot (".") and dot-dot ("..") elements. The implementation is no longer using recursion internally and therefore is better protected from stack overflow on extremely long paths.</li>
+</ul>
+
 <h2>1.77.0</h2>
 <ul>
   <li><b>Introducing Boost.Filesystem v4.</b> This new version of the library removes all deprecated features of v3 and also makes a number of breaking API changes intended to make Boost.Filesystem more compatible with std::filesystem introduced in C++17. The differences are described in the release notes and documentation using <b>v3</b> and <b>v4</b> tags and are also summarised in a <a href="v4.html">separate section</a>. Users can select Boost.Filesystem version by defining <code>BOOST_FILESYSTEM_VERSION</code> macro to either 3 or 4 when compiling their code. There is no need to separately compile Boost.Filesystem for each library version &mdash; a single binary supports both v3 and v4. Users should avoid using both v3 and v4 in the same application as this can lead to subtle bugs. Currently, v3 is the default. In a future release v4 will become the default, and eventually v3 will be removed. v4 is functional, but it is still a work in progress and there may be breaking API changes in the future.</li>

@@ -2086,54 +2086,59 @@ bool create_directories(path const& p, system::error_code* ec)
         return false;
     }
 
-    if (p.filename_is_dot() || p.filename_is_dot_dot())
-        return create_directories(p.parent_path(), ec);
+    if (ec)
+        ec->clear();
 
+    path::const_iterator e(p.end()), it(e);
+    path parent(p);
+    path const& dot_p = dot_path();
+    path const& dot_dot_p = dot_dot_path();
     error_code local_ec;
-    file_status p_status = detail::status(p, &local_ec);
 
-    if (p_status.type() == directory_file)
+    // Find the initial part of the path that exists
+    for (path fname = parent.filename(); parent.has_relative_path(); fname = parent.filename())
     {
-        if (ec)
-            ec->clear();
-        return false;
-    }
-    else if (BOOST_UNLIKELY(p_status.type() == status_error))
-    {
-        if (!ec)
-            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", p, local_ec));
-        *ec = local_ec;
-        return false;
-    }
-
-    path parent = p.parent_path();
-    BOOST_ASSERT_MSG(parent != p, "internal error: p == p.parent_path()");
-    if (!parent.empty())
-    {
-        // determine if the parent exists
-        file_status parent_status = detail::status(parent, &local_ec);
-
-        // if the parent does not exist, create the parent
-        if (parent_status.type() == file_not_found)
+        if (!fname.empty() && fname != dot_p && fname != dot_dot_p)
         {
-            create_directories(parent, local_ec);
-            if (BOOST_UNLIKELY(!!local_ec))
+            file_status existing_status = detail::status(parent, &local_ec);
+
+            if (existing_status.type() == directory_file)
             {
-            parent_fail_local_ec:
+                break;
+            }
+            else if (BOOST_UNLIKELY(existing_status.type() == status_error))
+            {
                 if (!ec)
-                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", parent, local_ec));
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", p, parent, local_ec));
                 *ec = local_ec;
                 return false;
             }
         }
-        else if (BOOST_UNLIKELY(parent_status.type() == status_error))
+
+        --it;
+        parent.remove_filename();
+    }
+
+    // Create missing directories
+    bool created = false;
+    for (; it != e; ++it)
+    {
+        path const& fname = *it;
+        parent /= fname;
+        if (!fname.empty() && fname != dot_p && fname != dot_dot_p)
         {
-            goto parent_fail_local_ec;
+            created = create_directory(parent, NULL, &local_ec);
+            if (BOOST_UNLIKELY(!!local_ec))
+            {
+                if (!ec)
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::create_directories", p, parent, local_ec));
+                *ec = local_ec;
+                return false;
+            }
         }
     }
 
-    // create the directory
-    return create_directory(p, NULL, ec);
+    return created;
 }
 
 BOOST_FILESYSTEM_DECL
