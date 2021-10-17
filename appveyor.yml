@@ -31,11 +31,16 @@ environment:
       CXXSTD: 14,17
       THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-# clang-win fails to link the library
-#    - TOOLSET: clang-win
-#      ADDRMD: 32,64
-#      CXXSTD: 14,17
-#      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - TOOLSET: clang-win
+      ADDRMD: 32
+      CXXSTD: 14,17
+      ENV_SCRIPT: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    - TOOLSET: clang-win
+      ADDRMD: 64
+      CXXSTD: 14,17
+      ENV_SCRIPT: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - TOOLSET: gcc
       CXXSTD: 03,11,14,1z
       ADDPATH: C:\cygwin\bin;
@@ -92,6 +97,7 @@ build: off
 
 test_script:
   - PATH=%ADDPATH%%PATH%
+  - if not "%ENV_SCRIPT%" == "" call "%ENV_SCRIPT%"
   - if not "%EXTRA_TESTS%" == "" set BOOST_FILESYSTEM_TEST_WITH_EXAMPLES=1
   - if not "%CXXSTD%" == "" set CXXSTD=cxxstd=%CXXSTD%
   - if not "%ADDRMD%" == "" set ADDRMD=address-model=%ADDRMD%
