@@ -742,7 +742,7 @@ private:
     friend class boost::iterator_core_access;
     friend class boost::filesystem::path;
     friend class boost::filesystem::path::reverse_iterator;
-    friend int detail::lex_compare_v3(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
+    friend BOOST_FILESYSTEM_DECL int detail::lex_compare_v3(path::iterator first1, path::iterator last1, path::iterator first2, path::iterator last2);
 
     path const& dereference() const { return m_element; }
 
