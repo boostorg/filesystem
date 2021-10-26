@@ -1287,10 +1287,25 @@ BOOST_FILESYSTEM_INIT_FUNC init_path_globals()
     return BOOST_FILESYSTEM_INIRETSUCCESS_V;
 }
 
+#if defined(__has_attribute)
+#if __has_attribute(__used__)
+#define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN __attribute__((__used__))
+#endif
+#endif
+
+#if !defined(BOOST_FILESYSTEM_ATTRIBUTE_RETAIN) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 402
+#define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN __attribute__((__used__))
+#endif
+
+#if !defined(BOOST_FILESYSTEM_ATTRIBUTE_RETAIN)
+#define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+#endif
+
 #if _MSC_VER >= 1400
 
 #pragma section(".CRT$XCM", long, read)
-__declspec(allocate(".CRT$XCM")) extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
+__declspec(allocate(".CRT$XCM")) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
 
 #else // _MSC_VER >= 1400
 
@@ -1298,6 +1313,7 @@ __declspec(allocate(".CRT$XCM")) extern const init_func_ptr_t p_init_path_global
 #pragma data_seg(push, old_seg)
 #endif
 #pragma data_seg(".CRT$XCM")
+BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
 extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
 #pragma data_seg()
 #if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
@@ -1319,7 +1335,7 @@ struct path_locale_deleter
 
 #if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED
 const path_locale_deleter g_path_locale_deleter = {};
 BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
 const boost::filesystem::path g_dot_path(dot_path_literal);
@@ -1344,7 +1360,7 @@ inline boost::filesystem::path const& get_dot_dot_path()
 
 inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
 {
-    static const path_locale_deleter g_path_locale_deleter;
+    BOOST_ATTRIBUTE_UNUSED static const path_locale_deleter g_path_locale_deleter;
 }
 
 inline boost::filesystem::path const& get_dot_path()
