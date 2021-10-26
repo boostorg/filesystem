@@ -102,8 +102,21 @@ target_compile_definitions(boost_filesystem
         BOOST_FILESYSTEM_SOURCE
 )
 
+if(WIN32)
+    target_compile_definitions(boost_filesystem PRIVATE
+        _SCL_SECURE_NO_WARNINGS
+        _SCL_SECURE_NO_DEPRECATE
+        _CRT_SECURE_NO_WARNINGS
+        _CRT_SECURE_NO_DEPRECATE
+    )
+endif()
+
 if(WIN32 OR CYGWIN)
-    target_compile_definitions(boost_filesystem PRIVATE BOOST_USE_WINDOWS_H WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_compile_definitions(boost_filesystem PRIVATE
+        BOOST_USE_WINDOWS_H
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+    )
 endif()
 
 if(BOOST_FILESYSTEM_NO_DEPRECATED)

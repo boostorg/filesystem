@@ -115,6 +115,10 @@ project boost/filesystem
       <conditional>@check-statx
       <conditional>@select-windows-crypto-api
       <conditional>@check-cxx20-atomic-ref
+      <target-os>windows:<define>_SCL_SECURE_NO_WARNINGS
+      <target-os>windows:<define>_SCL_SECURE_NO_DEPRECATE
+      <target-os>windows:<define>_CRT_SECURE_NO_WARNINGS
+      <target-os>windows:<define>_CRT_SECURE_NO_DEPRECATE
       <target-os>windows:<define>BOOST_USE_WINDOWS_H
       <target-os>windows:<define>WIN32_LEAN_AND_MEAN
       <target-os>windows:<define>NOMINMAX
