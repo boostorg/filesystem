@@ -28,7 +28,10 @@ explicit has_stat_st_birthtimensec ;
 obj has_stat_st_birthtimespec : has_stat_st_birthtimespec.cpp : <include>../src ;
 explicit has_stat_st_birthtimespec ;
 
-obj has_bcrypt : has_bcrypt.cpp : <include>../src ;
+lib bcrypt ;
+explicit bcrypt ;
+
+exe has_bcrypt : has_bcrypt.cpp : <include>../src <library>bcrypt ;
 explicit has_bcrypt ;
 obj is_windows_ce : is_windows_ce.cpp ;
 explicit is_windows_ce ;
