@@ -329,6 +329,8 @@ void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsig
 
 namespace {
 
+#if defined(BOOST_POSIX_API)
+
 // Size of a small buffer for a path that can be placed on stack, in character code units
 BOOST_CONSTEXPR_OR_CONST std::size_t small_path_size = 1024u;
 
@@ -341,6 +343,8 @@ BOOST_CONSTEXPR_OR_CONST std::size_t small_path_size = 1024u;
 // - IRIX, HP-UX, Mac OS, QNX, FreeBSD, OpenBSD: 1024 bytes
 // - GNU/Hurd: no hard limit
 BOOST_CONSTEXPR_OR_CONST std::size_t absolute_path_max = 32u * 1024u;
+
+#endif // defined(BOOST_POSIX_API)
 
 // Maximum number of resolved symlinks before we register a loop
 BOOST_CONSTEXPR_OR_CONST unsigned int symloop_max =
