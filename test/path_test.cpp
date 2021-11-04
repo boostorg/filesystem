@@ -571,6 +571,16 @@ void non_member_tests()
     // probe operator /
     PATH_TEST_EQ(path("") / ".", ".");
     PATH_TEST_EQ(path("") / "..", "..");
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(path("/") / "/", "//");
+    PATH_TEST_EQ(path("/") / "/foo", "//foo");
+    PATH_TEST_EQ(path("/foo") / "/bar", "/foo/bar");
+#else
+    PATH_TEST_EQ(path("/") / "/", "/");
+    PATH_TEST_EQ(path("/") / "/foo", "/foo");
+    PATH_TEST_EQ(path("/foo") / "/bar", "/bar");
+#endif
+
     if (platform == "Windows")
     {
         BOOST_TEST(path("foo\\bar") == "foo/bar");
@@ -618,6 +628,19 @@ void non_member_tests()
         PATH_TEST_EQ(path(".") / "." / "..", ".\\.\\..");
         PATH_TEST_EQ(path(".") / ".." / ".", ".\\..\\.");
         PATH_TEST_EQ(path("..") / "." / ".", "..\\.\\.");
+
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(path("\\\\net1\\foo") / "\\\\net2\\bar", "\\\\net1\\foo\\\\net2\\bar");
+        PATH_TEST_EQ(path("c:\\foo") / "d:\\bar", "c:\\foo\\d:\\bar");
+        PATH_TEST_EQ(path("c:\\foo") / "\\bar", "c:\\foo\\bar");
+        PATH_TEST_EQ(path("c:foo") / "\\bar", "c:foo\\bar");
+#else
+        PATH_TEST_EQ(path("\\\\net1\\foo") / "\\\\net2\\bar", "\\\\net2\\bar");
+        PATH_TEST_EQ(path("c:\\foo") / "d:\\bar", "d:\\bar");
+        PATH_TEST_EQ(path("c:\\foo") / "\\bar", "c:\\bar");
+        PATH_TEST_EQ(path("c:foo") / "\\bar", "c:\\bar");
+#endif
+        PATH_TEST_EQ(path("c:foo") / "bar", "c:foo\\bar");
     }
     else // POSIX
     {
@@ -666,6 +689,15 @@ void non_member_tests()
         PATH_TEST_EQ(path(".") / "." / "..", "././..");
         PATH_TEST_EQ(path(".") / ".." / ".", "./../.");
         PATH_TEST_EQ(path("..") / "." / ".", ".././.");
+
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(path("//net1/foo") / "//net2/bar", "//net1/foo//net2/bar");
+        PATH_TEST_EQ(path("//net1/foo") / "/bar", "//net1/foo/bar");
+#else
+        PATH_TEST_EQ(path("//net1/foo") / "//net2/bar", "//net2/bar");
+        PATH_TEST_EQ(path("//net1/foo") / "/bar", "//net1/bar");
+#endif
+        PATH_TEST_EQ(path("//net1/foo") / "bar", "//net1/foo/bar");
     }
 
     // probe operator <
@@ -2057,29 +2089,54 @@ void append_tests()
     PATH_TEST_EQ(path("/") / "", "/");
     append_test_aux("/", "", "/");
 
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(path("/") / "/", "//");
     append_test_aux("/", "/", "//");
+#else
+    PATH_TEST_EQ(path("/") / "/", "/");
+    append_test_aux("/", "/", "/");
+#endif
 
     PATH_TEST_EQ(path("/") / "bar", "/bar");
     append_test_aux("/", "bar", "/bar");
 
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(path("/") / "/bar", "//bar");
     append_test_aux("/", "/bar", "//bar");
+#else
+    PATH_TEST_EQ(path("/") / "/bar", "/bar");
+    append_test_aux("/", "/bar", "/bar");
+#endif
 
     PATH_TEST_EQ(path("foo") / "", "foo");
     append_test_aux("foo", "", "foo");
 
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(path("foo") / "/", "foo/");
     append_test_aux("foo", "/", "foo/");
+#else
+    PATH_TEST_EQ(path("foo") / "/", "/");
+    append_test_aux("foo", "/", "/");
+#endif
 
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(path("foo") / "/bar", "foo/bar");
     append_test_aux("foo", "/bar", "foo/bar");
+#else
+    PATH_TEST_EQ(path("foo") / "/bar", "/bar");
+    append_test_aux("foo", "/bar", "/bar");
+#endif
 
     PATH_TEST_EQ(path("foo/") / "", "foo/");
     append_test_aux("foo/", "", "foo/");
 
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(path("foo/") / "/", "foo//");
     append_test_aux("foo/", "/", "foo//");
+#else
+    PATH_TEST_EQ(path("foo/") / "/", "/");
+    append_test_aux("foo/", "/", "/");
+#endif
 
     PATH_TEST_EQ(path("foo/") / "bar", "foo/bar");
     append_test_aux("foo/", "bar", "foo/bar");
@@ -2089,8 +2146,13 @@ void append_tests()
         PATH_TEST_EQ(path("foo") / "bar", "foo\\bar");
         append_test_aux("foo", "bar", "foo\\bar");
 
+#if BOOST_FILESYSTEM_VERSION == 3
         PATH_TEST_EQ(path("foo\\") / "\\bar", "foo\\\\bar");
         append_test_aux("foo\\", "\\bar", "foo\\\\bar");
+#else
+        PATH_TEST_EQ(path("foo\\") / "\\bar", "\\bar");
+        append_test_aux("foo\\", "\\bar", "\\bar");
+#endif
 
         // hand created test case specific to Windows
         PATH_TEST_EQ(path("c:") / "bar", "c:bar");

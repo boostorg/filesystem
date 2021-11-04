@@ -325,15 +325,27 @@ void test_appends()
 
     x = "/foo";
     x /= path("/"); // slash path
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_IS(x, L"/foo/");
+#else
+    PATH_IS(x, L"/");
+#endif
 
     x = "/foo";
     x /= path("/boo"); // slash path
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_IS(x, L"/foo/boo");
+#else
+    PATH_IS(x, L"/boo");
+#endif
 
     x = "/foo";
     x /= x; // self-append
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_IS(x, L"/foo/foo");
+#else
+    PATH_IS(x, L"/foo");
+#endif
 
     x = "/foo";
     x /= path("yet another path"); // another path
@@ -348,12 +360,12 @@ void test_appends()
     PATH_IS(x, BOOST_FS_FOO L"wstring");
 
     x = "/foo";
-    x /= string("std::string"); // container char
-    PATH_IS(x, BOOST_FS_FOO L"std::string");
+    x /= string("std_string"); // container char
+    PATH_IS(x, BOOST_FS_FOO L"std_string");
 
     x = "/foo";
-    x /= wstring(L"std::wstring"); // container wchar_t
-    PATH_IS(x, BOOST_FS_FOO L"std::wstring");
+    x /= wstring(L"std_wstring"); // container wchar_t
+    PATH_IS(x, BOOST_FS_FOO L"std_wstring");
 
     x = "/foo";
     x /= "array char"; // array char

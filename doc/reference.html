@@ -1080,8 +1080,11 @@ system or for a particular file system.</p>
         template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator=(Source const&amp; source);
 
+        path&amp; assign(const path&amp; p);
+        path&amp; assign(path&amp;&amp; p) noexcept;
         template &lt;class <a href="#Source">Source</a>&gt;
-          path&amp; assign(Source const&amp; source, const codecvt_type&amp; cvt)
+          path&amp; assign(Source const&amp; source,
+            const codecvt_type&amp; cvt=codecvt())
 
         template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
           path&amp; assign(InputIterator begin, InputIterator end,
@@ -1093,8 +1096,10 @@ system or for a particular file system.</p>
         template &lt;class <a href="#Source">Source</a>&gt;
           path&amp; operator/=(Source const&amp; source);
 
+        path&amp; append(const path&amp; x);
         template &lt;class <a href="#Source">Source</a>&gt;
-          path&amp; append(Source const&amp; source, const codecvt_type&amp; cvt);
+          path&amp; append(Source const&amp; source,
+            const codecvt_type&amp; cvt=codecvt());
 
         template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
           path&amp; append(InputIterator begin, InputIterator end,
@@ -1102,20 +1107,19 @@ system or for a particular file system.</p>
 
         // <a href="#path-concatenation">concatenation</a>
         path&amp; operator+=(const path&amp; x);
-        path&amp; operator+=(const string_type&amp; x);
-        path&amp; operator+=(const value_type* x);
+        template &lt;class <a href="#Source">Source</a>&gt;
+          path&amp; operator+=(Source const&amp; source);
         path&amp; operator+=(value_type x);
-        template &lt;class Source&gt;
-          path&amp; operator+=(Source const&amp; x);
         template &lt;class CharT&gt;
           path&amp; operator+=(CharT x);
-        template &lt;class Source&gt;
-          path&amp; concat(Source const&amp; x, const codecvt_type&amp; cvt);
-        template &lt;class InputIterator&gt;
-          path&amp; concat(InputIterator begin, InputIterator end);
-        template &lt;class InputIterator&gt;
+
+        path&amp; concat(const path&amp; x);
+        template &lt;class <a href="#Source">Source</a>&gt;
+          path&amp; concat(Source const&amp; x,
+            const codecvt_type&amp; cvt=codecvt());
+        template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
           path&amp; concat(InputIterator begin, InputIterator end,
-            const codecvt_type&amp; cvt);
+            const codecvt_type&amp; cvt=codecvt());
 
         // <a href="#path-modifiers">modifiers</a>
         void  <a href="#path-clear">clear</a>();
@@ -1329,32 +1333,37 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
 <h3> <a name="path-assignments"> <code>
 <font size="4">path</font></code> assignments</a> [path.assign]</h3>
 
-<pre>template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; operator=(Source const&amp; source);
+<pre>path&amp; operator=(const path&amp; p);
+  path&amp; operator=(path&amp;&amp; p) noexcept;
   template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; assign(Source const&amp; source, const codecvt_type&amp; cvt);
+  path&amp; operator=(Source const&amp; source);
+  path&amp; assign(const path&amp; p);
+  path&amp; assign(path&amp;&amp; p) noexcept;
+  template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; assign(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());
   template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
   path&amp; assign(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());</pre>
 
 <blockquote>
   <p><i>Effects:</i> Stores the contents [<code>begin</code>,<code>end</code>)
-  or <code>source</code> in <code>pathname</code>, converting format and
+  or <code>source</code> or <code>p</code> in <code>pathname</code>, converting format and
   encoding if required ([<a href="#path.arg.convert">path.arg.convert</a>]). </p>
   <p>
   <i>Returns: </i><code>*this</code></p>
   </blockquote>
-<h3><a name="path-appends"><code><font size="4"> path</font></code> appends</a>
+<h3><a name="path-appends"><code>path</code> appends</a>
 [path.append]</h3>
   <p>The append operations use <code>
   operator/=</code> to denote their semantic effect of appending <i>
   preferred-separator</i> when needed. </p>
 
-<pre>path&amp; operator/=(const path&amp; p);</pre>
+<pre>path&amp; operator/=(const path&amp; p);
+  path&amp; append(const path&amp; p);</pre>
 
 <blockquote>
   <p><i>Effects:</i></p>
   <blockquote>
-    <p>Appends <code>path::preferred_separator</code> to <code>pathname</code>,
+    <p><b>v3:</b> Appends <code>path::preferred_separator</code> to <code>pathname</code>,
     converting format and encoding if required ([<a href="#path.arg.convert">path.arg.convert</a>]), unless:</p>
     <ul>
     <li>
@@ -1366,8 +1375,15 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
     <p><code>p.empty()</code>, or</li>
     <li>
     <p><code>*p.native().cbegin()</code> is a directory separator.</li>
-  </ul>
+    </ul>
     <p>Then appends <code>p.native()</code> to <code>pathname</code>.</p>
+    <p><b>v4:</b> If <code>p.<a href="#path-has_root_name">has_root_name</a>() &amp;&amp; p.<a href="#path-root_name">root_name</a>() != <a href="#path-root_name">root_name</a>()</code>, assigns <code>p</code> to <code>*this</code>. Otherwise, modifies <code>*this</code> as if by these steps:
+    <ul>
+      <li>If <code>p.<a href="#path-has_root_name">has_root_directory</a>()</code>, removes root directory and relative path, if any.</li>
+      <li>Let <code>x</code> be a <code>path</code> with contents of <code>p</code> without a root name. If <code>*this</code> does not end with a directory separator and <code>x</code> does not start with one, appends <code>path::preferred_separator</code>.</li>
+      <li>Appends <code>x.native()</code>.</li>
+    </ul>
+    </p>
   </blockquote>
   <p><i>Returns: </i><code>*this</code></p>
 </blockquote>
@@ -1375,53 +1391,37 @@ requirements for a C++ standard library <code>RandomIterator</code> compliant it
 <pre>template &lt;class <a href="#Source">Source</a>&gt;
   path&amp; operator/=(Source const &amp; source);
   template &lt;class <a href="#Source">Source</a>&gt;
-  path&amp; append(Source const &amp; source, const codecvt_type&amp; cvt);
+  path&amp; append(Source const &amp; source, const codecvt_type&amp; cvt=codecvt());
   template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
   path&amp; append(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());</pre>
 
 <blockquote>
   <p><i>Effects:</i></p>
   <blockquote>
-    <p>Appends <code>path::preferred_separator</code> to <code>pathname</code>, converting
-    format and encoding if required ([<a href="#path.arg.convert">path.arg.convert</a>]), unless:</p>
-    <ul>
-    <li>
-    <p>an added separator
-    would be redundant, or</li>
-    <li>
-    <p>would change a relative path to an absolute path, or</li>
-    <li>
-    <p><code>p.empty()</code>, or</li>
-    <li>
-    <p><code>*p.native().cbegin()</code> is a separator.</li>
-  </ul>
-    <p>Appends the contents [<code>begin</code>,<code>end</code>)
-  or <code>source</code> to <code>pathname</code>, converting format and
-    encoding if required ([<a href="#path.arg.convert">path.arg.convert</a>]).</p>
+    <p>As if <code>append(path(<i>args</i>))</code>, where <code><i>args</i></code> is the list of arguments passed to the operation.</p>
   </blockquote>
   <p><i>Returns: </i><code>*this</code></p>
   </blockquote>
 
 <h3><a name="path-concatenation"><code>path</code> concatenation</a> [path.concat]</h3>
 
-<pre>path&amp; operator+=(const path&amp; x);
-path&amp; operator+=(const string_type&amp; x);
-path&amp; operator+=(const value_type* x);
-path&amp; operator+=(value_type x);
-template &lt;class Source&gt;
-  path&amp; operator+=(Source const&amp; x);
-template &lt;class CharT&gt;
+<pre>path&amp; operator+=(const path&amp; p);
+  path&amp; operator+=(value_type x);
+  template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; operator+=(Source const&amp; source);
+  template &lt;class CharT&gt;
   path&amp; operator+=(CharT x);
-template &lt;class InputIterator&gt;
-  path&amp; concat(InputIterator begin, InputIterator end);
-template &lt;class InputIterator&gt;
-  path&amp; concat(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt);</pre>
+  path&amp; concat(const path&amp; p);
+  template &lt;class <a href="#Source">Source</a>&gt;
+  path&amp; concat(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());
+  template &lt;class <a href="#InputIterator">InputIterator</a>&gt;
+  path&amp; concat(InputIterator begin, InputIterator end, const codecvt_type&amp; cvt=codecvt());</pre>
 
 <blockquote><p><i>Postcondition:</i> <code>native() == prior_native + <i>effective-argument</i></code>,
  where <code>prior_native</code> is <code>native()</code> prior to the call to <code>operator+=</code>,
  and <code><i>effective-argument</i></code> is:</p>
  <ul><li>
-   <p><code>x.native()</code> if <code>x</code> is present and is <code>const path&amp;</code>, otherwise</li>
+   <p><code>p.native()</code> if <code>p</code> is present and is <code>const path&amp;</code>, otherwise</li>
  <li>
  <p><code>s</code>, where <code>s</code> is
   <code>std::basic_string&lt;typename std::iterator_traits&lt;InputIterator&gt;::value_type&gt;<br>s(begin, end)</code>,

@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
+#include <string>
 #include <cstddef>
 #include <cstring>
 #include <cstdlib> // std::atexit
@@ -41,10 +42,6 @@
 namespace fs = boost::filesystem;
 
 using boost::filesystem::path;
-
-using std::string;
-using std::wstring;
-
 using boost::system::error_code;
 
 //--------------------------------------------------------------------------------------//
@@ -92,11 +89,34 @@ inline bool is_device_name_char(wchar_t c)
     return is_alnum(c) || c == L'$';
 }
 
+//! Returns position of the first directory separator in the \a size initial characters of \a p, or \a size if not found
+inline size_type find_first_separator(const wchar_t* p, size_type size) BOOST_NOEXCEPT
+{
+    size_type pos = 0u;
+    for (; pos < size; ++pos)
+    {
+        const wchar_t c = p[pos];
+        if (c == '\\' || c == '/')
+            break;
+    }
+    return pos;
+}
+
 #else // BOOST_WINDOWS_API
 
 const char dot_path_literal[] = ".";
 const char dot_dot_path_literal[] = "..";
 const char separators[] = "/";
+
+//! Returns position of the first directory separator in the \a size initial characters of \a p, or \a size if not found
+inline size_type find_first_separator(const char* p, size_type size) BOOST_NOEXCEPT
+{
+    const char* sep = static_cast< const char* >(std::memchr(p, '/', size));
+    size_type pos = size;
+    if (BOOST_LIKELY(!!sep))
+        pos = sep - p;
+    return pos;
+}
 
 #endif // BOOST_WINDOWS_API
 
@@ -108,7 +128,7 @@ size_type find_filename_size(string_type const& str, size_type root_name_size, s
 
 // Returns: starting position of root directory or size if not found. Sets root_name_size to length
 // of the root name if the characters before the returned position (if any) are considered a root name.
-size_type find_root_directory_start(string_type const& path, size_type size, size_type& root_name_size);
+size_type find_root_directory_start(const value_type* path, size_type size, size_type& root_name_size);
 
 // Finds position and size of the first element of the path
 void first_element(string_type const& src, size_type& element_pos, size_type& element_size, size_type size);
@@ -130,48 +150,134 @@ inline void first_element(string_type const& src, size_type& element_pos, size_t
 namespace boost {
 namespace filesystem {
 
-BOOST_FILESYSTEM_DECL path& path::operator/=(path const& p)
+BOOST_FILESYSTEM_DECL void path::append_v3(path const& p)
 {
     if (!p.empty())
     {
-        if (this == &p) // self-append
-        {
-            path rhs(p);
-            if (!detail::is_directory_separator(rhs.m_pathname[0]))
-                append_separator_if_needed();
-            m_pathname += rhs.m_pathname;
-        }
-        else
+        if (BOOST_LIKELY(this != &p))
         {
             if (!detail::is_directory_separator(*p.m_pathname.begin()))
                 append_separator_if_needed();
             m_pathname += p.m_pathname;
         }
+        else
+        {
+            // self-append
+            path rhs(p);
+            append_v3(rhs);
+        }
     }
-
-    return *this;
 }
 
-BOOST_FILESYSTEM_DECL path& path::operator/=(const value_type* ptr)
+BOOST_FILESYSTEM_DECL void path::append_v3(const value_type* begin, const value_type* end)
 {
-    if (*ptr != static_cast< value_type >('\0'))
+    if (begin != end)
     {
-        if (ptr >= m_pathname.data() && ptr < m_pathname.data() + m_pathname.size()) // overlapping source
+        if (BOOST_LIKELY(begin < m_pathname.data() || begin >= (m_pathname.data() + m_pathname.size())))
         {
-            path rhs(ptr);
-            if (!detail::is_directory_separator(rhs.m_pathname[0]))
+            if (!detail::is_directory_separator(*begin))
                 append_separator_if_needed();
-            m_pathname += rhs.m_pathname;
+            m_pathname.append(begin, end);
         }
         else
         {
-            if (!detail::is_directory_separator(*ptr))
-                append_separator_if_needed();
-            m_pathname += ptr;
+            // overlapping source
+            path rhs(begin, end);
+            append_v3(rhs);
         }
     }
+}
 
-    return *this;
+BOOST_FILESYSTEM_DECL void path::append_v4(path const& p)
+{
+    if (!p.empty())
+    {
+        if (BOOST_LIKELY(this != &p))
+        {
+            const size_type that_size = p.m_pathname.size();
+            size_type that_root_name_size = 0;
+            size_type that_root_dir_pos = find_root_directory_start(p.m_pathname.c_str(), that_size, that_root_name_size);
+
+            size_type this_root_name_size = 0;
+            find_root_directory_start(m_pathname.c_str(), m_pathname.size(), this_root_name_size);
+
+            // Unlike C++20 std::filesystem, do not assign p if it is absolute. This breaks support for UNC paths on POSIX,
+            // where `path("//net/foo") / "/bar"` would result in "/bar" instead of "//net/bar".
+
+            if
+            (
+                that_root_name_size > 0 &&
+                (that_root_name_size != this_root_name_size || std::memcmp(m_pathname.c_str(), p.m_pathname.c_str(), this_root_name_size * sizeof(value_type)) != 0)
+            )
+            {
+                operator=(p);
+                return;
+            }
+
+            if (that_root_dir_pos < that_size)
+            {
+                // Remove root directory (if any) and relative path to replace with those from p
+                m_pathname.erase(m_pathname.begin() + this_root_name_size, m_pathname.end());
+            }
+
+            const value_type* const that_path = p.m_pathname.c_str() + that_root_name_size;
+            if (!detail::is_directory_separator(*that_path))
+                append_separator_if_needed();
+            m_pathname.append(that_path, that_size - that_root_name_size);
+        }
+        else
+        {
+            // self-append
+            path rhs(p);
+            append_v4(rhs);
+        }
+    }
+}
+
+BOOST_FILESYSTEM_DECL void path::append_v4(const value_type* begin, const value_type* end)
+{
+    if (begin != end)
+    {
+        if (BOOST_LIKELY(begin < m_pathname.data() || begin >= (m_pathname.data() + m_pathname.size())))
+        {
+            const size_type that_size = end - begin;
+            size_type that_root_name_size = 0;
+            size_type that_root_dir_pos = find_root_directory_start(begin, that_size, that_root_name_size);
+
+            // Unlike C++20 std::filesystem, do not assign path(begin, end) if it is absolute. This breaks support
+            // for UNC paths on POSIX, where `path("//net/foo") / "/bar"` would result in "/bar" instead of "//net/bar".
+
+            size_type this_root_name_size = 0;
+            find_root_directory_start(m_pathname.c_str(), m_pathname.size(), this_root_name_size);
+
+            if
+            (
+                that_root_name_size > 0 &&
+                (that_root_name_size != this_root_name_size || std::memcmp(m_pathname.c_str(), begin, this_root_name_size * sizeof(value_type)) != 0)
+            )
+            {
+                m_pathname.assign(begin, end);
+                return;
+            }
+
+            if (that_root_dir_pos < that_size)
+            {
+                // Remove root directory (if any) and relative path to replace with those from p
+                m_pathname.erase(m_pathname.begin() + this_root_name_size, m_pathname.end());
+            }
+
+            const value_type* const that_path = begin + that_root_name_size;
+            if (!detail::is_directory_separator(*that_path))
+                append_separator_if_needed();
+            m_pathname.append(that_path, end);
+        }
+        else
+        {
+            // overlapping source
+            path rhs(begin, end);
+            append_v4(rhs);
+        }
+    }
 }
 
 #ifdef BOOST_WINDOWS_API
@@ -273,14 +379,14 @@ BOOST_FILESYSTEM_DECL path& path::replace_extension(path const& new_extension)
 BOOST_FILESYSTEM_DECL size_type path::find_root_name_size() const
 {
     size_type root_name_size = 0;
-    find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    find_root_directory_start(m_pathname.c_str(), m_pathname.size(), root_name_size);
     return root_name_size;
 }
 
 BOOST_FILESYSTEM_DECL size_type path::find_root_path_size() const
 {
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_pathname.c_str(), m_pathname.size(), root_name_size);
 
     size_type size = root_name_size;
     if (root_dir_pos < m_pathname.size())
@@ -293,7 +399,7 @@ BOOST_FILESYSTEM_DECL substring path::find_root_directory() const
 {
     substring root_dir;
     size_type root_name_size = 0;
-    root_dir.pos = find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    root_dir.pos = find_root_directory_start(m_pathname.c_str(), m_pathname.size(), root_name_size);
     root_dir.size = static_cast< std::size_t >(root_dir.pos < m_pathname.size());
     return root_dir;
 }
@@ -301,7 +407,7 @@ BOOST_FILESYSTEM_DECL substring path::find_root_directory() const
 BOOST_FILESYSTEM_DECL substring path::find_relative_path() const
 {
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_pathname.c_str(), m_pathname.size(), root_name_size);
 
     // Skip root name, root directory and any duplicate separators
     size_type size = root_name_size;
@@ -327,7 +433,7 @@ BOOST_FILESYSTEM_DECL string_type::size_type path::find_parent_path_size() const
 {
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, size, root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_pathname.c_str(), size, root_name_size);
 
     size_type filename_size = find_filename_size(m_pathname, root_name_size, size);
     size_type end_pos = size - filename_size;
@@ -364,7 +470,7 @@ BOOST_FILESYSTEM_DECL path path::filename_v3() const
 {
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, size, root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_pathname.c_str(), size, root_name_size);
     size_type filename_size, pos;
     if (root_dir_pos < size && detail::is_directory_separator(m_pathname[size - 1]) && is_root_separator(m_pathname, root_dir_pos, size - 1))
     {
@@ -394,7 +500,7 @@ BOOST_FILESYSTEM_DECL string_type::size_type path::find_filename_v4_size() const
 {
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
-    find_root_directory_start(m_pathname, size, root_name_size);
+    find_root_directory_start(m_pathname.c_str(), size, root_name_size);
     return find_filename_size(m_pathname, root_name_size, size);
 }
 
@@ -436,7 +542,7 @@ BOOST_FILESYSTEM_DECL path path::extension_v4() const
     path ext;
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
-    find_root_directory_start(m_pathname, size, root_name_size);
+    find_root_directory_start(m_pathname.c_str(), size, root_name_size);
     size_type filename_size = find_filename_size(m_pathname, root_name_size, size);
     size_type filename_pos = size - filename_size;
     if
@@ -514,7 +620,7 @@ BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
 BOOST_FILESYSTEM_DECL path path::lexically_normal() const
 {
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname, m_pathname.size(), root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_pathname.c_str(), m_pathname.size(), root_name_size);
     path normal(m_pathname.c_str(), m_pathname.c_str() + root_name_size);
 
     size_type root_path_size = root_name_size;
@@ -648,9 +754,8 @@ inline size_type find_filename_size(string_type const& str, size_type root_name_
 //  find_root_directory_start  -------------------------------------------------------//
 
 // Returns: starting position of root directory or size if not found
-size_type find_root_directory_start(string_type const& path, size_type size, size_type& root_name_size)
+size_type find_root_directory_start(const value_type* path, size_type size, size_type& root_name_size)
 {
-    BOOST_ASSERT(size <= path.size());
     root_name_size = 0;
     if (size == 0)
         return 0;
@@ -736,9 +841,7 @@ size_type find_root_directory_start(string_type const& path, size_type size, siz
         return size;
 
 find_next_separator:
-    pos = path.find_first_of(separators, pos);
-    if (pos > size)
-        pos = size;
+    pos += find_first_separator(path + pos, size - pos);
     if (parsing_root_name)
         root_name_size = pos;
 
@@ -757,7 +860,7 @@ void first_element(string_type const& src, size_type& element_pos, size_type& el
         return;
 
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(src, size, root_name_size);
+    size_type root_dir_pos = find_root_directory_start(src.c_str(), size, root_name_size);
 
     // First element is the root name, if there is one
     if (root_name_size > 0)
@@ -880,7 +983,7 @@ BOOST_FILESYSTEM_DECL void path::iterator::increment_v3()
     if (detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
     {
         size_type root_name_size = 0;
-        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
+        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname.c_str(), size, root_name_size);
 
         // detect root directory and set iterator value to the separator if it is
         if (m_pos == root_dir_pos && m_element.m_pathname.size() == root_name_size)
@@ -941,7 +1044,7 @@ BOOST_FILESYSTEM_DECL void path::iterator::increment_v4()
     if (detail::is_directory_separator(m_path_ptr->m_pathname[m_pos]))
     {
         size_type root_name_size = 0;
-        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
+        size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname.c_str(), size, root_name_size);
 
         // detect root directory and set iterator value to the separator if it is
         if (m_pos == root_dir_pos && m_element.m_pathname.size() == root_name_size)
@@ -981,7 +1084,7 @@ BOOST_FILESYSTEM_DECL void path::iterator::decrement_v3()
     BOOST_ASSERT_MSG(m_pos <= size, "path::iterator decrement after the referenced path was modified");
 
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname.c_str(), size, root_name_size);
 
     if (root_dir_pos < size && m_pos == root_dir_pos)
     {
@@ -1041,7 +1144,7 @@ BOOST_FILESYSTEM_DECL void path::iterator::decrement_v4()
     BOOST_ASSERT_MSG(m_pos <= size, "path::iterator decrement after the referenced path was modified");
 
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname, size, root_name_size);
+    size_type root_dir_pos = find_root_directory_start(m_path_ptr->m_pathname.c_str(), size, root_name_size);
 
     if (root_dir_pos < size && m_pos == root_dir_pos)
     {
