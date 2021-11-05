@@ -1344,23 +1344,11 @@ BOOST_FILESYSTEM_DECL bool possible_large_file_size_support()
 BOOST_FILESYSTEM_DECL
 path absolute(path const& p, path const& base, system::error_code* ec)
 {
-    //  if ( p.empty() || p.is_absolute() )
-    //    return p;
-    //  //  recursively calling absolute is sub-optimal, but is simple
-    //  path abs_base(base.is_absolute() ? base : absolute(base));
-    //# ifdef BOOST_WINDOWS_API
-    //  if (p.has_root_directory())
-    //    return abs_base.root_name() / p;
-    //  //  !p.has_root_directory
-    //  if (p.has_root_name())
-    //    return p.root_name()
-    //      / abs_base.root_directory() / abs_base.relative_path() / p.relative_path();
-    //  //  !p.has_root_name()
-    //# endif
-    //  return abs_base / p;
-
     if (ec)
         ec->clear();
+
+    if (p.is_absolute())
+        return p;
 
     //  recursively calling absolute is sub-optimal, but is sure and simple
     path abs_base = base;
@@ -1378,35 +1366,30 @@ path absolute(path const& p, path const& base, system::error_code* ec)
         }
     }
 
-    //  store expensive to compute values that are needed multiple times
-    path p_root_name(p.root_name());
-    path base_root_name(abs_base.root_name());
-    path p_root_directory(p.root_directory());
-
     if (p.empty())
         return abs_base;
 
-    if (!p_root_name.empty()) // p.has_root_name()
+    path res;
+    if (p.has_root_name())
+        res = p.root_name();
+    else
+        res = abs_base.root_name();
+
+    if (p.has_root_directory())
     {
-        if (p_root_directory.empty()) // !p.has_root_directory()
-            return p_root_name / abs_base.root_directory() / abs_base.relative_path() / p.relative_path();
-        // p is absolute, so fall through to return p at end of block
-    }
-    else if (!p_root_directory.empty()) // p.has_root_directory()
-    {
-#ifdef BOOST_POSIX_API
-        // POSIX can have root name it it is a network path
-        if (base_root_name.empty()) // !abs_base.has_root_name()
-            return p;
-#endif
-        return base_root_name / p;
+        res.concat(p.root_directory());
     }
     else
     {
-        return abs_base / p;
+        res.concat(abs_base.root_directory());
+        res /= abs_base.relative_path();
     }
 
-    return p; // p.is_absolute() is true
+    path p_relative_path(p.relative_path());
+    if (!p_relative_path.empty())
+        res /= p_relative_path;
+
+    return res;
 }
 
 BOOST_FILESYSTEM_DECL

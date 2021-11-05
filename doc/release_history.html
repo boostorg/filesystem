@@ -45,6 +45,7 @@
   <li><b>v4:</b> <code>path</code> append operations now consider root name and root directory in the appended path. If the appended path is absolute, or root name is present and differs from the source path, the resulting path is equivalent to the appended path. If root directory is present, the result is the root directory and
   relative path rebased on top of the root name of the source path. Otherwise, the behavior is similar to v3.(<a href="https://github.com/boostorg/filesystem/issues/214">#214</a>)</li>
   <li>Optimized overloads of <code>path::assign</code>, <code>path::append</code>, <code>path::concat</code> and the corresponding operators to avoid unnecessary path copying and reduce the amount of code redundancy.</li>
+  <li>On POSIX systems, fixed <code>absolute(p, base)</code> returning a path with root name <code>base.root_name()</code> if <code>p</code> starts with a root directory. In such a case <code>p</code> is already an absolute path and should be returned as is.</li>
   <li><code>create_directories</code> no longer reports an error if the input path consists entirely of dot (".") and dot-dot ("..") elements. The implementation is no longer using recursion internally and therefore is better protected from stack overflow on extremely long paths.</li>
 </ul>
 

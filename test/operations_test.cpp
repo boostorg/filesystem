@@ -1475,10 +1475,17 @@ void absolute_tests()
     }
     // !p.has_root_name()
     //   p.has_root_directory()
+#ifdef BOOST_WINDOWS_API
     BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/"), fs::path("//xyz/"));
     BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/abc"), fs::path("//xyz/"));
     BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/"), fs::path("//xyz/foo"));
     BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/abc"), fs::path("//xyz/foo"));
+#else
+    BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/"), fs::path("/"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/abc"), fs::path("/"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/"), fs::path("/foo"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/abc"), fs::path("/foo"));
+#endif
     //   !p.has_root_directory()
     BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "//xyz/abc"), fs::path("//xyz/abc/foo"));
     BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "//xyz/abc"), fs::path("//xyz/abc/foo/bar"));
