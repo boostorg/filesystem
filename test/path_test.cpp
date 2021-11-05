@@ -695,7 +695,7 @@ void non_member_tests()
         PATH_TEST_EQ(path("//net1/foo") / "/bar", "//net1/foo/bar");
 #else
         PATH_TEST_EQ(path("//net1/foo") / "//net2/bar", "//net2/bar");
-        PATH_TEST_EQ(path("//net1/foo") / "/bar", "//net1/bar");
+        PATH_TEST_EQ(path("//net1/foo") / "/bar", "/bar");
 #endif
         PATH_TEST_EQ(path("//net1/foo") / "bar", "//net1/foo/bar");
     }

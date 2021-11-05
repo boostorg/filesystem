@@ -198,11 +198,22 @@ BOOST_FILESYSTEM_DECL void path::append_v4(path const& p)
             size_type that_root_name_size = 0;
             size_type that_root_dir_pos = find_root_directory_start(p.m_pathname.c_str(), that_size, that_root_name_size);
 
+            // if (p.is_absolute())
+            if
+            (
+#if defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
+                that_root_name_size > 0 &&
+#endif
+                that_root_dir_pos < that_size
+            )
+            {
+            return_assign:
+                assign(p);
+                return;
+            }
+
             size_type this_root_name_size = 0;
             find_root_directory_start(m_pathname.c_str(), m_pathname.size(), this_root_name_size);
-
-            // Unlike C++20 std::filesystem, do not assign p if it is absolute. This breaks support for UNC paths on POSIX,
-            // where `path("//net/foo") / "/bar"` would result in "/bar" instead of "//net/bar".
 
             if
             (
@@ -210,8 +221,7 @@ BOOST_FILESYSTEM_DECL void path::append_v4(path const& p)
                 (that_root_name_size != this_root_name_size || std::memcmp(m_pathname.c_str(), p.m_pathname.c_str(), this_root_name_size * sizeof(value_type)) != 0)
             )
             {
-                operator=(p);
-                return;
+                goto return_assign;
             }
 
             if (that_root_dir_pos < that_size)
@@ -244,8 +254,19 @@ BOOST_FILESYSTEM_DECL void path::append_v4(const value_type* begin, const value_
             size_type that_root_name_size = 0;
             size_type that_root_dir_pos = find_root_directory_start(begin, that_size, that_root_name_size);
 
-            // Unlike C++20 std::filesystem, do not assign path(begin, end) if it is absolute. This breaks support
-            // for UNC paths on POSIX, where `path("//net/foo") / "/bar"` would result in "/bar" instead of "//net/bar".
+            // if (p.is_absolute())
+            if
+            (
+#if defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
+                that_root_name_size > 0 &&
+#endif
+                that_root_dir_pos < that_size
+            )
+            {
+            return_assign:
+                assign(begin, end);
+                return;
+            }
 
             size_type this_root_name_size = 0;
             find_root_directory_start(m_pathname.c_str(), m_pathname.size(), this_root_name_size);
@@ -256,8 +277,7 @@ BOOST_FILESYSTEM_DECL void path::append_v4(const value_type* begin, const value_
                 (that_root_name_size != this_root_name_size || std::memcmp(m_pathname.c_str(), begin, this_root_name_size * sizeof(value_type)) != 0)
             )
             {
-                m_pathname.assign(begin, end);
-                return;
+                goto return_assign;
             }
 
             if (that_root_dir_pos < that_size)
