@@ -1438,62 +1438,62 @@ void absolute_tests()
     BOOST_TEST_EQ(fs::absolute("/foo"), fs::current_path().root_path().string() + "foo");
 
 #ifdef BOOST_WINDOWS_API
-    BOOST_TEST_EQ(fs::absolute("a:foo", "b:/bar"), "a:/bar/foo");
+    BOOST_TEST_EQ(fs::absolute("a:foo", "b:/bar"), fs::path(L"a:/bar/foo"));
 #endif
 
     // these tests were moved from elsewhere, so may duplicate some of the above tests
 
     // p.empty()
-    BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), "//foo/bar");
+    BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), fs::path("//foo/bar"));
     if (platform == "Windows")
     {
-        BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), "a:/bar");
+        BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), fs::path("a:/bar"));
     }
 
     // p.has_root_name()
     //   p.has_root_directory()
-    BOOST_TEST_EQ(fs::absolute(fs::path("//foo/bar"), "//uvw/xyz"), "//foo/bar");
+    BOOST_TEST_EQ(fs::absolute(fs::path("//foo/bar"), "//uvw/xyz"), fs::path("//foo/bar"));
     if (platform == "Windows")
     {
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:/bar"), "b:/xyz"), "a:/bar");
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:/bar"), "b:/xyz"), fs::path("a:/bar"));
     }
     //   !p.has_root_directory()
-    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/"), "//net/");
-    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc"), "//net/abc");
-    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc/def"), "//net/abc/def");
+    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/"), fs::path("//net/"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc"), fs::path("//net/abc"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc/def"), fs::path("//net/abc/def"));
     if (platform == "Windows")
     {
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/"), "a:/");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc"), "a:/abc");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc/def"), "a:/abc/def");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/"), "a:/foo");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc"), "a:/abc/foo");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc/def"), "a:/abc/def/foo");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/"), "a:/foo/bar");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/abc"), "a:/abc/foo/bar");
-        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/abc/def"), "a:/abc/def/foo/bar");
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/"), fs::path("a:/"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc"), fs::path("a:/abc"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc/def"), fs::path("a:/abc/def"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/"), fs::path("a:/foo"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc"), fs::path("a:/abc/foo"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc/def"), fs::path("a:/abc/def/foo"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/"), fs::path("a:/foo/bar"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/abc"), fs::path("a:/abc/foo/bar"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:foo/bar"), "b:/abc/def"), fs::path("a:/abc/def/foo/bar"));
     }
     // !p.has_root_name()
     //   p.has_root_directory()
-    BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/"), "//xyz/");
-    BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/abc"), "//xyz/");
-    BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/"), "//xyz/foo");
-    BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/abc"), "//xyz/foo");
+    BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/"), fs::path("//xyz/"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("/"), "//xyz/abc"), fs::path("//xyz/"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/"), fs::path("//xyz/foo"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("/foo"), "//xyz/abc"), fs::path("//xyz/foo"));
     //   !p.has_root_directory()
-    BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "//xyz/abc"), "//xyz/abc/foo");
-    BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "//xyz/abc"), "//xyz/abc/foo/bar");
-    BOOST_TEST_EQ(fs::absolute(fs::path("."), "//xyz/abc"), "//xyz/abc/.");
-    BOOST_TEST_EQ(fs::absolute(fs::path(".."), "//xyz/abc"), "//xyz/abc/..");
-    BOOST_TEST_EQ(fs::absolute(fs::path("./foo"), "//xyz/abc"), "//xyz/abc/./foo");
-    BOOST_TEST_EQ(fs::absolute(fs::path("../foo"), "//xyz/abc"), "//xyz/abc/../foo");
+    BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "//xyz/abc"), fs::path("//xyz/abc/foo"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "//xyz/abc"), fs::path("//xyz/abc/foo/bar"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("."), "//xyz/abc"), fs::path("//xyz/abc/."));
+    BOOST_TEST_EQ(fs::absolute(fs::path(".."), "//xyz/abc"), fs::path("//xyz/abc/.."));
+    BOOST_TEST_EQ(fs::absolute(fs::path("./foo"), "//xyz/abc"), fs::path("//xyz/abc/./foo"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("../foo"), "//xyz/abc"), fs::path("//xyz/abc/../foo"));
     if (platform == "POSIX")
     {
-        BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "/abc"), "/abc/foo");
-        BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "/abc"), "/abc/foo/bar");
-        BOOST_TEST_EQ(fs::absolute(fs::path("."), "/abc"), "/abc/.");
-        BOOST_TEST_EQ(fs::absolute(fs::path(".."), "/abc"), "/abc/..");
-        BOOST_TEST_EQ(fs::absolute(fs::path("./foo"), "/abc"), "/abc/./foo");
-        BOOST_TEST_EQ(fs::absolute(fs::path("../foo"), "/abc"), "/abc/../foo");
+        BOOST_TEST_EQ(fs::absolute(fs::path("foo"), "/abc"), fs::path("/abc/foo"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("foo/bar"), "/abc"), fs::path("/abc/foo/bar"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("."), "/abc"), fs::path("/abc/."));
+        BOOST_TEST_EQ(fs::absolute(fs::path(".."), "/abc"), fs::path("/abc/.."));
+        BOOST_TEST_EQ(fs::absolute(fs::path("./foo"), "/abc"), fs::path("/abc/./foo"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("../foo"), "/abc"), fs::path("/abc/../foo"));
     }
 }
 
@@ -2423,14 +2423,14 @@ void weakly_canonical_basic_tests()
     cout << "weakly_canonical_basic_tests..." << endl;
     cout << "  dir is " << dir << endl;
 
-    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), "no-such/foo/bar");
-    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), "no-such/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), fs::path("no-such/foo/bar"));
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), fs::path("no-such/bar"));
     BOOST_TEST_EQ(fs::weakly_canonical(dir), dir);
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/bar"), dir / "no-such/foo/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/../bar"), dir / "no-such/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "../no-such/foo/../bar"), dir.parent_path() / "no-such/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/../f0"), dir / "f0"); // dir / "f0" exists, dir / "no-such" does not
-    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), "c:/no-such/foo/bar");
+    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), fs::path("c:/no-such/foo/bar"));
 }
 
 //  weakly_canonical_symlink_tests  --------------------------------------------------//
@@ -2443,7 +2443,7 @@ void weakly_canonical_symlink_tests()
     fs::create_directory_symlink(dir / "d1", dir / "sld1");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "sld1/foo/bar"), dir / "d1/foo/bar");
 
-    BOOST_TEST_EQ(relative(dir / "sld1/foo/bar/baz", dir / "d1/foo"), "bar/baz");
+    BOOST_TEST_EQ(relative(dir / "sld1/foo/bar/baz", dir / "d1/foo"), fs::path("bar/baz"));
 }
 
 //  _tests  --------------------------------------------------------------------------//
