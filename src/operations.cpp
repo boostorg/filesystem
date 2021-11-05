@@ -1451,8 +1451,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 // the preferred separator. This is important on Windows, as in some cases,
                 // like paths for network shares and cloud storage mount points GetFileAttributesW
                 // will return "file not found" if the path contains forward slashes.
-                path::value_type sep[2] = { path::preferred_separator, static_cast< path::value_type >('\0') };
-                result /= sep;
+                result += path::preferred_separator;
                 // We don't need to check for a symlink after adding a separator.
                 continue;
             }
@@ -3580,8 +3579,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         {
             // Convert generic separator returned by the iterator for the root directory to
             // the preferred separator.
-            path::value_type sep[2] = { path::preferred_separator, static_cast< path::value_type >('\0') };
-            head /= sep;
+            head += path::preferred_separator;
         }
         else
         {
@@ -3619,8 +3617,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         {
             // Convert generic separator returned by the iterator for the root directory to
             // the preferred separator.
-            path::value_type sep[2] = { path::preferred_separator, static_cast< path::value_type >('\0') };
-            tail /= sep;
+            tail += path::preferred_separator;
             continue;
         }
 #endif
