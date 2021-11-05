@@ -321,7 +321,11 @@ void test_appends()
 
     x = "/foo";
     x /= path(""); // empty path
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_IS(x, L"/foo");
+#else
+    PATH_IS(x, L"/foo/");
+#endif
 
     x = "/foo";
     x /= path("/"); // slash path

@@ -1380,7 +1380,7 @@ path&amp; append(const path&amp; p);</pre>
     <p><b>v4:</b> If <code>p.<a href="#path-is_absolute">is_absolute</a>() || (p.<a href="#path-has_root_name">has_root_name</a>() &amp;&amp; p.<a href="#path-root_name">root_name</a>() != <a href="#path-root_name">root_name</a>())</code>, assigns <code>p</code> to <code>*this</code>. Otherwise, modifies <code>*this</code> as if by these steps:
     <ul>
       <li>If <code>p.<a href="#path-has_root_name">has_root_directory</a>()</code>, removes root directory and relative path, if any.</li>
-      <li>Let <code>x</code> be a <code>path</code> with contents of <code>p</code> without a root name. If <code>*this</code> does not end with a directory separator and <code>x</code> does not start with one, appends <code>path::preferred_separator</code>.</li>
+      <li>Let <code>x</code> be a <code>path</code> with contents of <code>p</code> without a root name. If <code><a href="#path-has_filename">has_filename</a>()</code> is <code>true</code> and <code>x</code> does not start with a directory separator, appends <code>path::preferred_separator</code>.</li>
       <li>Appends <code>x.native()</code>.</li>
     </ul>
     </p>

@@ -520,10 +520,11 @@ public:
     typename boost::disable_if< path_detail::is_native_char_ptr< InputIterator >, path& >::type
     concat(InputIterator begin, InputIterator end)
     {
-        if (begin == end)
-            return *this;
-        std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-        path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
+        if (begin != end)
+        {
+            std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
+            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
+        }
         return *this;
     }
 
@@ -537,10 +538,11 @@ public:
     typename boost::disable_if< path_detail::is_native_char_ptr< InputIterator >, path& >::type
     concat(InputIterator begin, InputIterator end, codecvt_type const& cvt)
     {
-        if (begin == end)
-            return *this;
-        std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-        path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
+        if (begin != end)
+        {
+            std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
+            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
+        }
         return *this;
     }
 
@@ -582,8 +584,6 @@ public:
         path&
     >::type append(Source const& source)
     {
-        if (path_traits::empty(source))
-            return *this;
         path p;
         path_traits::dispatch(source, p.m_pathname);
         return append(p);
@@ -613,8 +613,6 @@ public:
         path&
     >::type append(Source const& source, codecvt_type const& cvt)
     {
-        if (path_traits::empty(source))
-            return *this;
         path p;
         path_traits::dispatch(source, p.m_pathname, cvt);
         return append(p);
@@ -630,11 +628,12 @@ public:
     typename boost::disable_if< path_detail::is_native_char_ptr< InputIterator >, path& >::type
     append(InputIterator begin, InputIterator end)
     {
-        if (begin == end)
-            return *this;
-        std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
         path p;
-        path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname);
+        if (begin != end)
+        {
+            std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
+            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname);
+        }
         return append(p);
     }
 
@@ -648,11 +647,12 @@ public:
     typename boost::disable_if< path_detail::is_native_char_ptr< InputIterator >, path& >::type
     append(InputIterator begin, InputIterator end, const codecvt_type& cvt)
     {
-        if (begin == end)
-            return *this;
-        std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
         path p;
-        path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname, cvt);
+        if (begin != end)
+        {
+            std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
+            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname, cvt);
+        }
         return append(p);
     }
 

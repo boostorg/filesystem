@@ -242,6 +242,10 @@ BOOST_FILESYSTEM_DECL void path::append_v4(path const& p)
             append_v4(rhs);
         }
     }
+    else if (has_filename_v4())
+    {
+        m_pathname.push_back(preferred_separator);
+    }
 }
 
 BOOST_FILESYSTEM_DECL void path::append_v4(const value_type* begin, const value_type* end)
@@ -297,6 +301,10 @@ BOOST_FILESYSTEM_DECL void path::append_v4(const value_type* begin, const value_
             path rhs(begin, end);
             append_v4(rhs);
         }
+    }
+    else if (has_filename_v4())
+    {
+        m_pathname.push_back(preferred_separator);
     }
 }
 
