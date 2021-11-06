@@ -384,10 +384,10 @@ native pathname format.</p>
 <h3><a name="native-pathname-format">native pathname format</a> [fs.def.native]</h3>
 <p>The operating system dependent pathname format accepted by the host operating system.</p>
 <h3><a name="normal-form">normal form</a> path [fs.def.normal]</h3>
-<p>A path with no redundant current directory (<i>dot</i>) or parent directory (<i>dot-dot</i>)
-elements. The normal form for an empty path is an empty path. The normal form
+<p>A path with no redundant directory separators, current directory (<i>dot</i>) or parent directory (<i>dot-dot</i>)
+elements. The normal form for an empty path is an empty path. [<b>v3:</b> The normal form
 for a path ending in a <i>directory-separator</i> that is not the root directory
-is the same path with a current directory (<i>dot</i>) element appended.</p>
+is the same path with a current directory (<i>dot</i>) element appended.]</p>
 <h3><a name="link">link</a> [fs.def.link]</h3>
 <p>A directory entry object that associates a
 filename with a file. On some file systems, several directory entries can
@@ -1495,9 +1495,10 @@ path</code> modifiers</a> [path.modifiers]</h3>
 <p><i>Returns:</i> <code>*this</code> in <a href="#normal-form">normal form</a>.</p>
 <p><i>Remarks:</i> Uses <code>operator/=</code> to compose the returned path.</p>
 <p>[<i>Example:</i></p>
-<p><code>assert(path(&quot;foo/./bar/..&quot;).lexically_normal() == &quot;foo&quot;);<br>
-assert(path(&quot;foo/.///bar/../&quot;).lexically_normal() == &quot;foo/.&quot;);</code></p>
-<p>The above assertions will succeed.<i> </i>On Windows, the
+<p><pre>std::cout &lt;&lt; path(&quot;foo/./bar/..&quot;).lexically_normal() &lt;&lt; std::endl;    // outputs &quot;foo&quot;
+std::cout &lt;&lt; path(&quot;foo/.///bar/../&quot;).lexically_normal() &lt;&lt; std::endl; // v3: outputs &quot;foo/.&quot;
+                                                                      // v4: outputs &quot;foo/&quot;</pre></p>
+<p>On Windows, the
 returned path&#39;s <i>directory-separator</i> characters will be backslashes rather than slashes, but that
 does not affect <code>path</code> equality.<i> —end example</i>]</p>
 </blockquote>

@@ -440,7 +440,7 @@ public:
 
     path& operator+=(value_type c)
     {
-        m_pathname += c;
+        m_pathname.push_back(c);
         return *this;
     }
 
@@ -836,7 +836,7 @@ public:
 
     //  -----  lexical operations  -----
 
-    BOOST_FILESYSTEM_DECL path lexically_normal() const;
+    BOOST_FORCEINLINE path lexically_normal() const { return BOOST_FILESYSTEM_VERSIONED_SYM(lexically_normal)(); }
     BOOST_FILESYSTEM_DECL path lexically_relative(path const& base) const;
     path lexically_proximate(path const& base) const
     {
@@ -910,6 +910,9 @@ private:
     BOOST_FILESYSTEM_DECL path stem_v4() const;
     BOOST_FILESYSTEM_DECL path extension_v3() const;
     BOOST_FILESYSTEM_DECL path extension_v4() const;
+
+    BOOST_FILESYSTEM_DECL path lexically_normal_v3() const;
+    BOOST_FILESYSTEM_DECL path lexically_normal_v4() const;
 
     BOOST_FILESYSTEM_DECL int compare_v3(path const& p) const BOOST_NOEXCEPT;
     BOOST_FILESYSTEM_DECL int compare_v4(path const& p) const BOOST_NOEXCEPT;

@@ -90,13 +90,13 @@ inline bool is_device_name_char(wchar_t c)
 }
 
 //! Returns position of the first directory separator in the \a size initial characters of \a p, or \a size if not found
-inline size_type find_first_separator(const wchar_t* p, size_type size) BOOST_NOEXCEPT
+inline size_type find_separator(const wchar_t* p, size_type size) BOOST_NOEXCEPT
 {
     size_type pos = 0u;
     for (; pos < size; ++pos)
     {
         const wchar_t c = p[pos];
-        if (c == '\\' || c == '/')
+        if (boost::filesystem::detail::is_directory_separator(c))
             break;
     }
     return pos;
@@ -109,7 +109,7 @@ const char dot_dot_path_literal[] = "..";
 const char separators[] = "/";
 
 //! Returns position of the first directory separator in the \a size initial characters of \a p, or \a size if not found
-inline size_type find_first_separator(const char* p, size_type size) BOOST_NOEXCEPT
+inline size_type find_separator(const char* p, size_type size) BOOST_NOEXCEPT
 {
     const char* sep = static_cast< const char* >(std::memchr(p, '/', size));
     size_type pos = size;
@@ -645,26 +645,36 @@ BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
 
 //  normal  --------------------------------------------------------------------------//
 
-BOOST_FILESYSTEM_DECL path path::lexically_normal() const
+BOOST_FILESYSTEM_DECL path path::lexically_normal_v3() const
 {
+    const value_type* const pathname = m_pathname.c_str();
+    const size_type pathname_size = m_pathname.size();
     size_type root_name_size = 0;
-    size_type root_dir_pos = find_root_directory_start(m_pathname.c_str(), m_pathname.size(), root_name_size);
-    path normal(m_pathname.c_str(), m_pathname.c_str() + root_name_size);
+    size_type root_dir_pos = find_root_directory_start(pathname, pathname_size, root_name_size);
+    path normal(pathname, pathname + root_name_size);
+
+#if defined(BOOST_WINDOWS_API)
+    for (size_type i = 0; i < root_name_size; ++i)
+    {
+        if (normal.m_pathname[i] == path::separator)
+            normal.m_pathname[i] = path::preferred_separator;
+    }
+#endif
 
     size_type root_path_size = root_name_size;
-    if (root_dir_pos < m_pathname.size())
+    if (root_dir_pos < pathname_size)
     {
         root_path_size = root_dir_pos + 1;
         normal.m_pathname.push_back(preferred_separator);
     }
 
-    size_type i = root_path_size, n = m_pathname.size();
+    size_type i = root_path_size;
 
     // Skip redundant directory separators after the root directory
-    while (i < n && detail::is_directory_separator(m_pathname[i]))
+    while (i < pathname_size && detail::is_directory_separator(pathname[i]))
         ++i;
 
-    if (i < n)
+    if (i < pathname_size)
     {
         bool last_element_was_dot = false;
         while (true)
@@ -673,13 +683,12 @@ BOOST_FILESYSTEM_DECL path path::lexically_normal() const
                 const size_type start_pos = i;
 
                 // Find next separator
-                while (i < n && !detail::is_directory_separator(m_pathname[i]))
-                    ++i;
+                i += find_separator(pathname + i, pathname_size - i);
 
                 const size_type size = i - start_pos;
 
                 // Skip dot elements
-                if (size == 1u && m_pathname[start_pos] == dot)
+                if (size == 1u && pathname[start_pos] == dot)
                 {
                     last_element_was_dot = true;
                     goto skip_append;
@@ -688,7 +697,7 @@ BOOST_FILESYSTEM_DECL path path::lexically_normal() const
                 last_element_was_dot = false;
 
                 // Process dot dot elements
-                if (size == 2u && m_pathname[start_pos] == dot && m_pathname[start_pos + 1] == dot && normal.m_pathname.size() > root_path_size)
+                if (size == 2u && pathname[start_pos] == dot && pathname[start_pos + 1] == dot && normal.m_pathname.size() > root_path_size)
                 {
                     // Don't remove previous dot dot elements
                     const size_type normal_size = normal.m_pathname.size();
@@ -705,18 +714,18 @@ BOOST_FILESYSTEM_DECL path path::lexically_normal() const
 
                 // Append the element
                 normal.append_separator_if_needed();
-                normal.m_pathname.append(m_pathname.c_str() + start_pos, size);
+                normal.m_pathname.append(pathname + start_pos, size);
             }
 
         skip_append:
-            if (i == n)
+            if (i == pathname_size)
                 break;
 
             // Skip directory separators, including duplicates
-            while (i < n && detail::is_directory_separator(m_pathname[i]))
+            while (i < pathname_size && detail::is_directory_separator(pathname[i]))
                 ++i;
 
-            if (i == n)
+            if (i == pathname_size)
             {
                 // If a path ends with a separator, add a trailing dot element
                 goto append_trailing_dot;
@@ -729,6 +738,107 @@ BOOST_FILESYSTEM_DECL path path::lexically_normal() const
             normal.append_separator_if_needed();
             normal.m_pathname.push_back(dot);
         }
+    }
+
+    return normal;
+}
+
+BOOST_FILESYSTEM_DECL path path::lexically_normal_v4() const
+{
+    const value_type* const pathname = m_pathname.c_str();
+    const size_type pathname_size = m_pathname.size();
+    size_type root_name_size = 0;
+    size_type root_dir_pos = find_root_directory_start(pathname, pathname_size, root_name_size);
+    path normal(pathname, pathname + root_name_size);
+
+#if defined(BOOST_WINDOWS_API)
+    for (size_type i = 0; i < root_name_size; ++i)
+    {
+        if (normal.m_pathname[i] == path::separator)
+            normal.m_pathname[i] = path::preferred_separator;
+    }
+#endif
+
+    size_type root_path_size = root_name_size;
+    if (root_dir_pos < pathname_size)
+    {
+        root_path_size = root_dir_pos + 1;
+        normal.m_pathname.push_back(preferred_separator);
+    }
+
+    size_type i = root_path_size;
+
+    // Skip redundant directory separators after the root directory
+    while (i < pathname_size && detail::is_directory_separator(pathname[i]))
+        ++i;
+
+    if (i < pathname_size)
+    {
+        while (true)
+        {
+            bool last_element_was_dot = false;
+            {
+                const size_type start_pos = i;
+
+                // Find next separator
+                i += find_separator(pathname + i, pathname_size - i);
+
+                const size_type size = i - start_pos;
+
+                // Skip dot elements
+                if (size == 1u && pathname[start_pos] == dot)
+                {
+                    last_element_was_dot = true;
+                    goto skip_append;
+                }
+
+                // Process dot dot elements
+                if (size == 2u && pathname[start_pos] == dot && pathname[start_pos + 1] == dot && normal.m_pathname.size() > root_path_size)
+                {
+                    // Don't remove previous dot dot elements
+                    const size_type normal_size = normal.m_pathname.size();
+                    size_type filename_size = find_filename_size(normal.m_pathname, root_path_size, normal_size);
+                    size_type pos = normal_size - filename_size;
+                    if (filename_size != 2u || normal.m_pathname[pos] != dot || normal.m_pathname[pos + 1] != dot)
+                    {
+                        if (pos > root_path_size && detail::is_directory_separator(normal.m_pathname[pos - 1]))
+                            --pos;
+                        normal.m_pathname.erase(normal.m_pathname.begin() + pos, normal.m_pathname.end());
+                        goto skip_append;
+                    }
+                }
+
+                // Append the element
+                normal.append_separator_if_needed();
+                normal.m_pathname.append(pathname + start_pos, size);
+            }
+
+        skip_append:
+            if (i == pathname_size)
+            {
+                // If a path ends with a trailing dot after a directory element, add a trailing separator
+                if (last_element_was_dot && !normal.empty() && !normal.filename_is_dot_dot())
+                    normal.append_separator_if_needed();
+
+                break;
+            }
+
+            // Skip directory separators, including duplicates
+            while (i < pathname_size && detail::is_directory_separator(pathname[i]))
+                ++i;
+
+            if (i == pathname_size)
+            {
+                // If a path ends with a separator, add a trailing separator
+                if (!normal.empty() && !normal.filename_is_dot_dot())
+                    normal.append_separator_if_needed();
+                break;
+            }
+        }
+
+        // If the original path was not empty and normalized ended up being empty, make it a dot
+        if (normal.empty())
+            normal.m_pathname.push_back(dot);
     }
 
     return normal;
@@ -869,7 +979,7 @@ size_type find_root_directory_start(const value_type* path, size_type size, size
         return size;
 
 find_next_separator:
-    pos += find_first_separator(path + pos, size - pos);
+    pos += find_separator(path + pos, size - pos);
     if (parsing_root_name)
         root_name_size = pos;
 
