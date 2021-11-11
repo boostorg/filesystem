@@ -25,6 +25,7 @@
 #include <boost/io/quoted.hpp>
 #include <boost/functional/hash_fwd.hpp>
 #include <boost/type_traits/integral_constant.hpp>
+#include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_cv.hpp>
@@ -1133,15 +1134,17 @@ inline bool operator>=(path const& lhs, path const& rhs)
     return !(lhs < rhs);
 }
 
-inline std::size_t hash_value(path const& x) BOOST_NOEXCEPT
+// Note: Declared as a template to delay binding to Boost.ContainerHash functions and make the dependency optional
+template< typename T >
+inline typename boost::enable_if< boost::is_same< T, path >, std::size_t >::type hash_value(T const& p) BOOST_NOEXCEPT
 {
 #ifdef BOOST_WINDOWS_API
     std::size_t seed = 0;
-    for (const path::value_type* it = x.c_str(); *it; ++it)
+    for (typename T::value_type const* it = p.c_str(); *it; ++it)
         hash_combine(seed, *it == L'/' ? L'\\' : *it);
     return seed;
 #else // BOOST_POSIX_API
-    return hash_range(x.native().begin(), x.native().end());
+    return hash_range(p.native().begin(), p.native().end());
 #endif
 }
 
