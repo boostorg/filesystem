@@ -3388,18 +3388,18 @@ file_status status(path const& p, error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    DWORD attr(::GetFileAttributesW(p.c_str()));
-    if (attr == 0xFFFFFFFF)
+    DWORD attrs = ::GetFileAttributesW(p.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES)
     {
         return process_status_failure(p, ec);
     }
 
-    perms permissions = make_permissions(p, attr);
+    perms permissions = make_permissions(p, attrs);
 
     //  reparse point handling;
     //    since GetFileAttributesW does not resolve symlinks, try to open a file
     //    handle to discover if the file exists
-    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
     {
         if (!is_reparse_point_a_symlink(p))
         {
@@ -3429,10 +3429,10 @@ file_status status(path const& p, error_code* ec)
             return process_status_failure(p, ec);
         }
 
-        attr = info.dwFileAttributes;
+        attrs = info.dwFileAttributes;
     }
 
-    return (attr & FILE_ATTRIBUTE_DIRECTORY) ? file_status(directory_file, permissions) : file_status(regular_file, permissions);
+    return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? file_status(directory_file, permissions) : file_status(regular_file, permissions);
 
 #endif // defined(BOOST_POSIX_API)
 }
@@ -3495,18 +3495,18 @@ file_status symlink_status(path const& p, error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    DWORD attr(::GetFileAttributesW(p.c_str()));
-    if (attr == 0xFFFFFFFF)
+    DWORD attrs = ::GetFileAttributesW(p.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES)
     {
         return process_status_failure(p, ec);
     }
 
-    perms permissions = make_permissions(p, attr);
+    perms permissions = make_permissions(p, attrs);
 
-    if (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
         return is_reparse_point_a_symlink(p) ? file_status(symlink_file, permissions) : file_status(reparse_file, permissions);
 
-    return (attr & FILE_ATTRIBUTE_DIRECTORY) ? file_status(directory_file, permissions) : file_status(regular_file, permissions);
+    return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? file_status(directory_file, permissions) : file_status(regular_file, permissions);
 
 #endif // defined(BOOST_POSIX_API)
 }
