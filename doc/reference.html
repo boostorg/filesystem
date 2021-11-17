@@ -3577,14 +3577,13 @@ bool <a name="remove2">remove</a>(const path&amp; p, system::error_code&amp; ec)
   resolves to being removed. <i>—end note</i>]</p>
   </blockquote>
   <p><i>Postcondition:</i> <code>!exists(symlink_status(p))</code>.</p>
-  <p><i>Returns:</i>&nbsp; <code>false</code> if p did not exist in the first
-  place, otherwise <code>true</code>.</p>
+  <p><i>Returns:</i>&nbsp; <code>false</code> if <code>p</code> did not exist, otherwise <code>true</code>.</p>
   <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre>uintmax_t <a name="remove_all">remove_all</a>(const path&amp; p);
 uintmax_t <a name="remove_all2">remove_all</a>(const path&amp; p, system::error_code&amp; ec);</pre>
 <blockquote>
-  <p><i>Effects:</i>&nbsp; Recursively deletes the contents of p if it exists,
+  <p><i>Effects:</i>&nbsp; Recursively deletes the contents of <code>p</code> if it exists,
   then deletes file <code>p</code> itself,
   as if by ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/remove.html">remove()</a></code>.</p>
   <blockquote>

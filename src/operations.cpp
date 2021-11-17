@@ -959,7 +959,7 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
 
             *ec = local_ec;
-            return 0u;
+            return static_cast< uintmax_t >(-1);
         }
     }
 
@@ -970,24 +970,24 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         fs::directory_iterator itr;
         fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), ec);
         if (ec && *ec)
-            return count;
+            return static_cast< uintmax_t >(-1);
 
         const fs::directory_iterator end_dit;
         while (itr != end_dit)
         {
             count += fs::detail::remove_all_impl(itr->path(), ec);
             if (ec && *ec)
-                return count;
+                return static_cast< uintmax_t >(-1);
 
             fs::detail::directory_iterator_increment(itr, ec);
             if (ec && *ec)
-                return count;
+                return static_cast< uintmax_t >(-1);
         }
     }
 
     count += fs::detail::remove_impl(p, type, ec);
     if (ec && *ec)
-        return count;
+        return static_cast< uintmax_t >(-1);
 
     return count;
 }
@@ -1232,7 +1232,7 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
 
             *ec = local_ec;
-            return 0u;
+            return static_cast< uintmax_t >(-1);
         }
 
         // Some unknown file type
@@ -1251,24 +1251,24 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         fs::directory_iterator itr;
         fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), ec);
         if (ec && *ec)
-            return count;
+            return static_cast< uintmax_t >(-1);
 
         const fs::directory_iterator end_dit;
         while (itr != end_dit)
         {
             count += remove_all_impl(itr->path(), ec);
             if (ec && *ec)
-                return count;
+                return static_cast< uintmax_t >(-1);
 
             fs::detail::directory_iterator_increment(itr, ec);
             if (ec && *ec)
-                return count;
+                return static_cast< uintmax_t >(-1);
         }
     }
 
     count += remove_impl(p, attrs, ec);
     if (ec && *ec)
-        return count;
+        return static_cast< uintmax_t >(-1);
 
     return count;
 }
