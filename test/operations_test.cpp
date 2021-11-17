@@ -82,6 +82,24 @@ inline void unsetenv_(const char* name)
     SetEnvironmentVariableW(convert(name).c_str(), 0);
 }
 
+//! Sets read-only attribute on a file
+inline void set_read_only(fs::path const& p)
+{
+    DWORD attrs = GetFileAttributesW(p.c_str());
+    if (attrs == INVALID_FILE_ATTRIBUTES)
+    {
+        DWORD err = GetLastError();
+        throw fs::filesystem_error("operations_test set_read_only: failed to get file attributes", p, error_code(err, system_category()));
+    }
+
+    attrs |= FILE_ATTRIBUTE_READONLY;
+    if (!SetFileAttributesW(p.c_str(), attrs))
+    {
+        DWORD err = GetLastError();
+        throw fs::filesystem_error("operations_test set_read_only: failed to set file attributes", p, error_code(err, system_category()));
+    }
+}
+
 #else
 
 #include <unistd.h> // sleep
@@ -149,7 +167,6 @@ bool throws_fs_error(F func, errno_t en, int line)
     {
         func();
     }
-
     catch (const fs::filesystem_error& ex)
     {
         if (report_throws)
@@ -266,8 +283,7 @@ private:
 //  else if (s.type() == fs::fifo_file)      { os << "fifo_file"; }
 //  else if (s.type() == fs::socket_file)    { os << "socket_file"; }
 //  else if (s.type() == fs::reparse_file)   { os << "reparse_file"; }
-//  else if (s.type() == fs::type_unknown)   { os << "type_unknown"; }
-//  else                                     { os << "_detail_directory_symlink"; }
+//  else                                     { os << "type_unknown"; }
 //  return os;
 //}
 
@@ -1346,6 +1362,17 @@ void remove_tests(const fs::path& dirx)
     BOOST_TEST(!fs::remove("no-such-file"));
     BOOST_TEST(!fs::remove("no-such-directory/no-such-file"));
 
+#if defined(BOOST_WINDOWS_API)
+    // remove() read-only file
+    BOOST_TEST(!fs::exists(f1x));
+    create_file(f1x, "");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(!fs::is_directory(f1x));
+    set_read_only(f1x);
+    BOOST_TEST(fs::remove(f1x));
+    BOOST_TEST(!fs::exists(f1x));
+#endif // defined(BOOST_WINDOWS_API)
+
     // remove() directory
     fs::path d1x = dirx / "shortlife_dir";
     BOOST_TEST(!fs::exists(d1x));
@@ -1421,6 +1448,156 @@ void remove_symlink_tests()
     BOOST_TEST(!fs::is_symlink(link));
     BOOST_TEST(fs::remove(f1x));
     BOOST_TEST(!fs::exists(f1x));
+}
+
+//  remove_all_tests  ----------------------------------------------------------------//
+
+void remove_all_tests(const fs::path& dirx)
+{
+    cout << "remove_all_tests..." << endl;
+
+    // remove_all() file
+    {
+        fs::path f1x = dirx / "shortlife";
+        BOOST_TEST(!fs::exists(f1x));
+        create_file(f1x, "");
+        BOOST_TEST(fs::exists(f1x));
+        BOOST_TEST(!fs::is_directory(f1x));
+        BOOST_TEST_EQ(fs::remove_all(f1x), 1u);
+        BOOST_TEST(!fs::exists(f1x));
+        BOOST_TEST_EQ(fs::remove_all("no-such-file"), 0u);
+        BOOST_TEST_EQ(fs::remove_all("no-such-directory/no-such-file"), 0u);
+    }
+
+    // remove_all() directory tree
+    {
+        unsigned int created_count = 0u;
+        fs::path d1x = dirx / "shortlife_dir";
+        BOOST_TEST(!fs::exists(d1x));
+        fs::create_directory(d1x);
+        ++created_count;
+        BOOST_TEST(fs::exists(d1x));
+        BOOST_TEST(fs::is_directory(d1x));
+
+        fs::path d2x = d1x / "nested_dir";
+        BOOST_TEST(!fs::exists(d2x));
+        fs::create_directory(d2x);
+        ++created_count;
+        BOOST_TEST(fs::exists(d2x));
+        BOOST_TEST(fs::is_directory(d2x));
+
+        fs::path f1x = d1x / "shortlife";
+        BOOST_TEST(!fs::exists(f1x));
+        create_file(f1x, "");
+        ++created_count;
+        BOOST_TEST(fs::exists(f1x));
+        BOOST_TEST(!fs::is_directory(f1x));
+
+#if defined(BOOST_WINDOWS_API)
+        // read-only file
+        fs::path f2x = d1x / "shortlife_ro";
+        BOOST_TEST(!fs::exists(f2x));
+        create_file(f2x, "");
+        ++created_count;
+        BOOST_TEST(fs::exists(f2x));
+        BOOST_TEST(!fs::is_directory(f2x));
+        set_read_only(f2x);
+#endif // defined(BOOST_WINDOWS_API)
+
+        boost::uintmax_t removed_count = fs::remove_all(d1x);
+        BOOST_TEST_EQ(removed_count, created_count);
+
+        BOOST_TEST(!fs::exists(d1x));
+    }
+}
+
+//  remove_all_symlink_tests  --------------------------------------------------------//
+
+void remove_all_symlink_tests(const fs::path& dirx)
+{
+    cout << "remove_all_symlink_tests..." << endl;
+
+    // External directory tree
+    fs::path d1x = dirx / "shortlife_dir1";
+    BOOST_TEST(!fs::exists(d1x));
+    fs::create_directory(d1x);
+    BOOST_TEST(fs::exists(d1x));
+    BOOST_TEST(fs::is_directory(d1x));
+
+    fs::path f1x = d1x / "shortlife1";
+    BOOST_TEST(!fs::exists(f1x));
+    create_file(f1x, "");
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(!fs::is_directory(f1x));
+
+    fs::path f2x = d1x / "shortlife2";
+    BOOST_TEST(!fs::exists(f2x));
+    create_file(f2x, "");
+    BOOST_TEST(fs::exists(f2x));
+    BOOST_TEST(!fs::is_directory(f2x));
+
+    // remove_all() directory tree that has symlinks to external directories
+    unsigned int created_count = 0u;
+    fs::path d2x = dirx / "shortlife_dir2";
+    BOOST_TEST(!fs::exists(d2x));
+    fs::create_directory(d2x);
+    ++created_count;
+    BOOST_TEST(fs::exists(d2x));
+    BOOST_TEST(fs::is_directory(d2x));
+
+    fs::path f3x = d2x / "shortlife";
+    BOOST_TEST(!fs::exists(f3x));
+    create_file(f3x, "");
+    ++created_count;
+    BOOST_TEST(fs::exists(f3x));
+    BOOST_TEST(!fs::is_directory(f3x));
+
+    fs::path d3x = d2x / "symlink_dir";
+    BOOST_TEST(!fs::exists(d3x));
+    fs::create_directory_symlink(d1x, d3x);
+    ++created_count;
+    BOOST_TEST(fs::exists(d3x));
+    BOOST_TEST(fs::is_symlink(d3x));
+
+#if defined(BOOST_FILESYSTEM_HAS_MKLINK)
+    fs::path junc = d2x / "junc";
+    fs::path cur_path(fs::current_path());
+    fs::current_path(d2x);
+    BOOST_TEST(std::system("mklink /J junc ..\\shortlife_dir1") == 0);
+    fs::current_path(cur_path);
+    ++created_count;
+    BOOST_TEST(fs::exists(junc));
+#endif
+
+    fs::path f4x = d2x / "symlink";
+    BOOST_TEST(!fs::exists(f4x));
+    fs::create_symlink(f1x, f4x);
+    ++created_count;
+    BOOST_TEST(fs::exists(f4x));
+    BOOST_TEST(fs::is_symlink(f4x));
+
+    fs::path f5x = d2x / "hardlink";
+    BOOST_TEST(!fs::exists(f5x));
+    fs::create_hard_link(f2x, f5x);
+    ++created_count;
+    BOOST_TEST(fs::exists(f5x));
+    BOOST_TEST(!fs::is_directory(f5x));
+
+    boost::uintmax_t removed_count = fs::remove_all(d2x);
+    BOOST_TEST_EQ(removed_count, created_count);
+
+    BOOST_TEST(!fs::exists(d2x));
+
+    // Check that external directory and file are intact
+    BOOST_TEST(fs::exists(d1x));
+    BOOST_TEST(fs::is_directory(d1x));
+    BOOST_TEST(fs::exists(f1x));
+    BOOST_TEST(!fs::is_directory(f1x));
+    BOOST_TEST(fs::exists(f2x));
+    BOOST_TEST(!fs::is_directory(f2x));
+
+    // Cleanup
+    fs::remove_all(d1x);
 }
 
 //  absolute_tests  -----------------------------------------------------------------//
@@ -2085,7 +2262,7 @@ void platform_specific_tests()
         //
         // Directory junctions are very similar to symlinks, but have some performance
         // and other advantages over symlinks. They can be created from the command line
-        // with "mklink /j junction-name target-path".
+        // with "mklink /J junction-name target-path".
 
         {
             cout << "  directory junction tests..." << endl;
@@ -2106,7 +2283,7 @@ void platform_specific_tests()
             fs::path cur_path(fs::current_path());
             fs::current_path(dir);
             //cout << "    current_path() is " << fs::current_path() << endl;
-            BOOST_TEST(std::system("mklink /j junc d1") == 0);
+            BOOST_TEST(std::system("mklink /J junc d1") == 0);
             //std::system("dir");
             fs::current_path(cur_path);
             //cout << "    current_path() is " << fs::current_path() << endl;
@@ -2578,8 +2755,12 @@ int cpp_main(int argc, char* argv[])
     recursive_iterator_status_tests(); // lots of cases by now, so a good time to test
     rename_tests();
     remove_tests(dir);
+    remove_all_tests(dir);
     if (create_symlink_ok) // only if symlinks supported
+    {
         remove_symlink_tests();
+        remove_all_symlink_tests(dir);
+    }
     creation_time_tests(dir);
     write_time_tests(dir);
     temp_directory_path_tests();
@@ -2602,4 +2783,4 @@ int cpp_main(int argc, char* argv[])
 
     cout << "returning from main()" << endl;
     return ::boost::report_errors();
-} // main
+}

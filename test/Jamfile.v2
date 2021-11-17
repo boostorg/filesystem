@@ -25,6 +25,20 @@ rule check-mklink ( properties * )
         if [ MATCH (MKLINK) : $(output[1]) ]
         {
             result = <define>BOOST_FILESYSTEM_HAS_MKLINK ;
+
+            if ! $(.annouced-mklink)
+            {
+                ECHO "    - Boost.Filesystem: mklink found" ;
+                .annouced-mklink = 1 ;
+            }
+        }
+        else
+        {
+            if ! $(.annouced-mklink)
+            {
+                ECHO "    - Boost.Filesystem: mklink not found" ;
+                .annouced-mklink = 1 ;
+            }
         }
     }
 

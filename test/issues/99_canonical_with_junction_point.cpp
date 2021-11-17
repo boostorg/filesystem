@@ -46,7 +46,7 @@ int main()
     const fs::path subDir = "sub";
     fs::create_directories(real / subDir);
     fs::current_path(tmp.path);
-    BOOST_TEST(std::system("mklink /j junction real") == 0);
+    BOOST_TEST(std::system("mklink /J junction real") == 0);
     BOOST_TEST(fs::exists(junction));
 
     // Due to a bug there was a dependency on the current path so try the below for all:
