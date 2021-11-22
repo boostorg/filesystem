@@ -1539,6 +1539,7 @@ BOOST_FILESYSTEM_INIT_FUNC init_path_globals()
 #endif
 
 #if !defined(BOOST_FILESYSTEM_ATTRIBUTE_RETAIN)
+#define BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN
 #define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
 #endif
 
@@ -1562,6 +1563,23 @@ extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
 #endif
 
 #endif // _MSC_VER >= 1400
+
+#if defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
+//! Makes sure the global initializer pointers are referenced and not removed by linker
+struct globals_retainer
+{
+    const init_func_ptr_t* const m_p_init_path_globals;
+
+    globals_retainer() : m_p_init_path_globals(&p_init_path_globals) {}
+};
+BOOST_ATTRIBUTE_UNUSED
+static const globals_retainer g_globals_retainer
+#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+    {};
+#else // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+    = globals_retainer();
+#endif // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+#endif // defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
 
 #else // defined(_MSC_VER)
 

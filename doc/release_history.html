@@ -52,6 +52,7 @@
   <li>On Windows, <code>remove</code> now supports deleting read-only files. The operation will attempt to reset the read-only attribute prior to removal. Note that this introduces a possibility of the read-only attribute being left unset, if the operation fails and the original value of the attribute fails to be restored. This also affects <code>remove_all</code>. (<a href="https://github.com/boostorg/filesystem/issues/216">#216</a>)</li>
   <li><code>remove_all</code> now returns <code>static_cast&lt; uintmax_t &gt;(-1)</code> in case of error, similar to C++17 std::filesystem.</li>
   <li>Fixed a linking error about unresolved references to Boost.ContainerHash functions when user's code includes <code>boost/filesystem/path.hpp</code> but not <code>boost/container_hash/hash.hpp</code> and the compiler is set to preserve unused inline functions. (<a href="https://github.com/boostorg/filesystem/issues/215">#215</a>)</li>
+  <li>Added a workaround for MSVC and compatible compilers eliminating path globals cleanup in release builds. This could lead to a memory leak if Boost.Filesystem shared library was repeatedly loaded and unloaded in the process. (<a href="https://github.com/boostorg/filesystem/issues/217">#217</a>)</li>
 </ul>
 
 <h2>1.77.0</h2>
