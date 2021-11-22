@@ -1568,9 +1568,9 @@ extern const init_func_ptr_t p_init_path_globals = &init_path_globals;
 //! Makes sure the global initializer pointers are referenced and not removed by linker
 struct globals_retainer
 {
-    const init_func_ptr_t* const m_p_init_path_globals;
+    const init_func_ptr_t* volatile m_p_init_path_globals;
 
-    globals_retainer() : m_p_init_path_globals(&p_init_path_globals) {}
+    globals_retainer() { m_p_init_path_globals = &p_init_path_globals; }
 };
 BOOST_ATTRIBUTE_UNUSED
 static const globals_retainer g_globals_retainer
