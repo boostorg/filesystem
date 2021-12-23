@@ -49,6 +49,7 @@
 #define BOOST_SYSTEM_NO_DEPRECATED
 #endif
 
+#include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
 
@@ -2113,11 +2114,61 @@ void append_tests()
     BOOST_TEST_EQ(p6819, path("ab"));
 }
 
-//  self_assign_and_append_tests  ------------------------------------------------------//
+//  concat_tests  --------------------------------------------------------------------//
 
-void self_assign_and_append_tests()
+#define CONCAT_TEST(pth, appnd, expected)\
+    {\
+        const path p(pth);\
+        const std::string s(appnd);\
+        path p1(p);\
+        p1 += appnd;\
+        PATH_TEST_EQ(p1.string(), expected);\
+        path p2(p);\
+        p2 += path(appnd);\
+        PATH_TEST_EQ(p2.string(), expected);\
+        path p3(p);\
+        p3 += s;\
+        PATH_TEST_EQ(p3.string(), expected);\
+        path p4(p);\
+        p4 += s.c_str();\
+        PATH_TEST_EQ(p4.string(), expected);\
+        path p5(p);\
+        p5.concat(s.begin(), s.end());\
+        PATH_TEST_EQ(p5.string(), expected);\
+    }
+
+void concat_tests()
 {
-    std::cout << "self_assign_and_append_tests..." << std::endl;
+    std::cout << "concat_tests..." << std::endl;
+
+    CONCAT_TEST("", "", "");
+    CONCAT_TEST("", "/", "/");
+    CONCAT_TEST("", "bar", "bar");
+    CONCAT_TEST("", "/bar", "/bar");
+
+    CONCAT_TEST("/", "", "/");
+    CONCAT_TEST("/", "/", "//");
+    CONCAT_TEST("/", "bar", "/bar");
+    CONCAT_TEST("/", "/bar", "//bar");
+
+    CONCAT_TEST("foo", "/", "foo/");
+    CONCAT_TEST("foo", "/bar", "foo/bar");
+
+    CONCAT_TEST("foo/", "", "foo/");
+    CONCAT_TEST("foo/", "/", "foo//");
+    CONCAT_TEST("foo/", "bar", "foo/bar");
+
+    CONCAT_TEST("foo", "", "foo");
+    CONCAT_TEST("foo", "bar", "foobar");
+    CONCAT_TEST("foo\\", "\\bar", "foo\\\\bar");
+    CONCAT_TEST("c:", "bar", "c:bar");
+}
+
+//  self_assign_append_concat_tests  -------------------------------------------------//
+
+void self_assign_append_concat_tests()
+{
+    std::cout << "self_assign_append_concat_tests..." << std::endl;
 
     path p;
 
@@ -2152,6 +2203,21 @@ void self_assign_and_append_tests()
 
     p = "snafubar";
     PATH_TEST_EQ(p.append(p.c_str() + 5, p.c_str() + 7), "snafubar" BOOST_DIR_SEP "ba");
+
+    p = "snafubar";
+    p += p;
+    PATH_TEST_EQ(p, "snafubarsnafubar");
+
+    p = "snafubar";
+    p += p.c_str();
+    PATH_TEST_EQ(p, "snafubarsnafubar");
+
+    p = "snafubar";
+    p.concat(p.c_str(), path::codecvt());
+    PATH_TEST_EQ(p, "snafubarsnafubar");
+
+    p = "snafubar";
+    PATH_TEST_EQ(p.concat(p.c_str() + 5, p.c_str() + 7), "snafubarba");
 }
 
 //  name_function_tests  -------------------------------------------------------------//
@@ -2466,7 +2532,8 @@ int cpp_main(int, char*[])
 
     construction_tests();
     append_tests();
-    self_assign_and_append_tests();
+    concat_tests();
+    self_assign_append_concat_tests();
     overload_tests();
     query_and_decomposition_tests();
     composition_tests();
