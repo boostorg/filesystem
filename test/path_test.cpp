@@ -82,6 +82,56 @@ using boost::prior;
 #define PATH_TEST_EQ(a, b) check(a, b, __FILE__, __LINE__)
 
 namespace {
+
+class derived_from_path :
+    public fs::path
+{
+public:
+    derived_from_path() {}
+    derived_from_path(derived_from_path const& that) : fs::path(static_cast< fs::path const& >(that)) {}
+    template< typename T >
+    derived_from_path(T const& that) : fs::path(that) {}
+
+    derived_from_path& operator= (derived_from_path const& that)
+    {
+        *static_cast< fs::path* >(this) = that;
+        return *this;
+    }
+    template< typename T >
+    derived_from_path& operator= (T const& that)
+    {
+        *static_cast< fs::path* >(this) = that;
+        return *this;
+    }
+};
+
+class convertible_to_path
+{
+private:
+    fs::path m_path;
+
+public:
+    convertible_to_path() {}
+    convertible_to_path(convertible_to_path const& that) : m_path(that.m_path) {}
+    template< typename T >
+    convertible_to_path(T const& that) : m_path(that) {}
+
+    convertible_to_path& operator= (convertible_to_path const& that)
+    {
+        m_path = that.m_path;
+        return *this;
+    }
+    template< typename T >
+    convertible_to_path& operator= (T const& that)
+    {
+        m_path = that;
+        return *this;
+    }
+
+    operator fs::path() const { return m_path; }
+};
+
+
 std::string platform(BOOST_PLATFORM);
 
 void check(const fs::path& source, const std::string& expected, const char* file, int line)
@@ -2004,8 +2054,14 @@ void construction_tests()
         p1 /= appnd;\
         PATH_TEST_EQ(p1, expected);\
         path p2(p);\
-        p2.append(s.begin(), s.end());\
-        PATH_TEST_EQ(p2.string(), expected);\
+        p2 /= derived_from_path(appnd);\
+        PATH_TEST_EQ(p2, expected);\
+        path p3(p);\
+        p3 /= convertible_to_path(appnd);\
+        PATH_TEST_EQ(p3, expected);\
+        path p4(p);\
+        p4.append(s.begin(), s.end());\
+        PATH_TEST_EQ(p4.string(), expected);\
     }
 
 void append_tests()
@@ -2133,8 +2189,14 @@ void append_tests()
         p4 += s.c_str();\
         PATH_TEST_EQ(p4.string(), expected);\
         path p5(p);\
-        p5.concat(s.begin(), s.end());\
-        PATH_TEST_EQ(p5.string(), expected);\
+        p5 += derived_from_path(appnd);\
+        PATH_TEST_EQ(p5, expected);\
+        path p6(p);\
+        p6 += convertible_to_path(appnd);\
+        PATH_TEST_EQ(p6, expected);\
+        path p7(p);\
+        p7.concat(s.begin(), s.end());\
+        PATH_TEST_EQ(p7.string(), expected);\
     }
 
 void concat_tests()

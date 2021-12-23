@@ -430,9 +430,24 @@ public:
 
     //  -----  concatenation  -----
 
+    path& operator+=(path const& p)
+    {
+        return concat(p);
+    }
+
+    path& operator+=(const value_type* ptr)
+    {
+        return concat(ptr);
+    }
+
+    path& operator+=(string_type const& s)
+    {
+        return concat(s);
+    }
+
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value || path_detail::is_native_pathable< Source >::value,
+        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type operator+=(Source const& source)
     {
@@ -552,9 +567,24 @@ public:
     //  if a separator is added, it is the preferred separator for the platform;
     //  slash for POSIX, backslash for Windows
 
+    path& operator/=(path const& p)
+    {
+        return append(p);
+    }
+
+    path& operator/=(const value_type* ptr)
+    {
+        return append(ptr);
+    }
+
+    path& operator/=(string_type const& s)
+    {
+        return append(s);
+    }
+
     template< class Source >
     BOOST_FORCEINLINE typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value || path_detail::is_native_pathable< Source >::value,
+        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type operator/=(Source const& source)
     {
