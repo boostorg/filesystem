@@ -218,6 +218,30 @@ jobs:
               - libc++abi-12-dev
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
+          - toolset: clang
+            compiler: clang++-13
+            cxxstd: "03,11,14,17,20"
+            os: ubuntu-20.04
+            install:
+              - clang-13
+            sources:
+              - "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+            source_keys:
+              - "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - toolset: clang
+            compiler: clang++-13
+            cxxstd: "03,11,14,17,20"
+            os: ubuntu-20.04
+            install:
+              - clang-13
+              - libc++-13-dev
+              - libc++abi-13-dev
+            sources:
+              - "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+            source_keys:
+              - "https://apt.llvm.org/llvm-snapshot.gpg.key"
+            cxxflags: -stdlib=libc++
+            linkflags: -stdlib=libc++
           - name: UBSAN
             toolset: clang
             compiler: clang++-12
