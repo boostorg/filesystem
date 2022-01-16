@@ -1512,36 +1512,11 @@ void __cdecl destroy_path_globals()
     g_path_locale = NULL;
 }
 
-#if _MSC_VER < 1300 || _MSC_VER > 1900 // 1300 == VC++ 7.0, 1900 == VC++ 14.0
-typedef void (__cdecl* init_func_ptr_t)();
-#define BOOST_FILESYSTEM_INIRETSUCCESS_V
-#define BOOST_FILESYSTEM_INIT_FUNC void __cdecl
-#else
-typedef int (__cdecl* init_func_ptr_t)();
-#define BOOST_FILESYSTEM_INIRETSUCCESS_V 0
-#define BOOST_FILESYSTEM_INIT_FUNC int __cdecl
-#endif
-
 BOOST_FILESYSTEM_INIT_FUNC init_path_globals()
 {
     std::atexit(&destroy_path_globals);
-    return BOOST_FILESYSTEM_INIRETSUCCESS_V;
+    return BOOST_FILESYSTEM_INITRETSUCCESS_V;
 }
-
-#if defined(__has_attribute)
-#if __has_attribute(__used__)
-#define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN __attribute__((__used__))
-#endif
-#endif
-
-#if !defined(BOOST_FILESYSTEM_ATTRIBUTE_RETAIN) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 402
-#define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN __attribute__((__used__))
-#endif
-
-#if !defined(BOOST_FILESYSTEM_ATTRIBUTE_RETAIN)
-#define BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN
-#define BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
-#endif
 
 #if _MSC_VER >= 1400
 

@@ -2,7 +2,7 @@
 
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
-//  Copyright 2018-2021 Andrey Semashev
+//  Copyright 2018-2022 Andrey Semashev
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -890,7 +890,7 @@ struct syscall_initializer
     }
 };
 
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY)
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
 const syscall_initializer syscall_init;
 
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
@@ -1435,29 +1435,86 @@ typedef BOOL (WINAPI* PtrCreateHardLinkW)(
     /*__in*/ LPCWSTR lpExistingFileName,
     /*__reserved*/ LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
-PtrCreateHardLinkW create_hard_link_api = PtrCreateHardLinkW(
-    boost::winapi::get_proc_address(
-        boost::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateHardLinkW"));
+PtrCreateHardLinkW create_hard_link_api = NULL;
 
 typedef BOOLEAN (WINAPI* PtrCreateSymbolicLinkW)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
     /*__in*/ LPCWSTR lpTargetFileName,
     /*__in*/ DWORD dwFlags);
 
-PtrCreateSymbolicLinkW create_symbolic_link_api = PtrCreateSymbolicLinkW(
-    boost::winapi::get_proc_address(
-        boost::winapi::GetModuleHandleW(L"kernel32.dll"), "CreateSymbolicLinkW"));
+PtrCreateSymbolicLinkW create_symbolic_link_api = NULL;
+
+//! Initializes WinAPI function pointers
+BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
+{
+    boost::winapi::HMODULE_ h = boost::winapi::GetModuleHandleW(L"kernel32.dll");
+    if (BOOST_LIKELY(!!h))
+    {
+        create_hard_link_api = (PtrCreateHardLinkW)boost::winapi::get_proc_address(h, "CreateHardLinkW");
+        create_symbolic_link_api = (PtrCreateSymbolicLinkW)boost::winapi::get_proc_address(h, "CreateSymbolicLinkW");
+    }
+    return BOOST_FILESYSTEM_INITRETSUCCESS_V;
+}
+
+#if defined(_MSC_VER)
+
+#if _MSC_VER >= 1400
+
+#pragma section(".CRT$XCL", long, read)
+__declspec(allocate(".CRT$XCL")) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+extern const init_func_ptr_t p_init_winapi_func_ptrs = &init_winapi_func_ptrs;
+
+#else // _MSC_VER >= 1400
+
+#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
+#pragma data_seg(push, old_seg)
+#endif
+#pragma data_seg(".CRT$XCL")
+BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+extern const init_func_ptr_t p_init_winapi_func_ptrs = &init_winapi_func_ptrs;
+#pragma data_seg()
+#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
+#pragma data_seg(pop, old_seg)
+#endif
+
+#endif // _MSC_VER >= 1400
+
+#if defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
+//! Makes sure the global initializer pointers are referenced and not removed by linker
+struct globals_retainer
+{
+    const init_func_ptr_t* volatile m_p_init_winapi_func_ptrs;
+
+    globals_retainer() { m_p_init_winapi_func_ptrs = &p_init_winapi_func_ptrs; }
+};
+BOOST_ATTRIBUTE_UNUSED
+const globals_retainer g_globals_retainer
+#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+    {};
+#else // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+    = globals_retainer();
+#endif // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+#endif // defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
+
+#else // defined(_MSC_VER)
+
+//! Invokes WinAPI function pointers initialization
+struct winapi_func_ptrs_initializer
+{
+    winapi_func_ptrs_initializer() { init_winapi_func_ptrs(); }
+};
+
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+const winapi_func_ptrs_initializer winapi_func_ptrs_init
+#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+    {};
+#else // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+    = winapi_func_ptrs_initializer();
+#endif // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+
+#endif // defined(_MSC_VER)
 
 #endif // defined(BOOST_POSIX_API)
-
-//#ifdef BOOST_WINDOWS_API
-//
-//
-//  inline bool get_free_disk_space(const std::wstring& ph,
-//    PULARGE_INTEGER avail, PULARGE_INTEGER total, PULARGE_INTEGER free)
-//    { return ::GetDiskFreeSpaceExW(ph.c_str(), avail, total, free)!= 0; }
-//
-//#endif
 
 } // unnamed namespace
 } // namespace detail

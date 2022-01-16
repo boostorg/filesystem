@@ -42,6 +42,7 @@
 <h2>1.79.0</h2>
 <ul>
   <li>Fixed compilation of path appending and concatenation operators with arguments of types convertible to <code>path</code> or compatible string type. (<a href="https://github.com/boostorg/filesystem/issues/223">#223</a>)</li>
+  <li>On Windows, initialize internal WinAPI function pointers early, if possible, to allow Boost.Filesystem operations to be invoked in global constructors. This is only supported on MSVC, GCC, Clang and compatible compilers.</li>
 </ul>
 
 <h2>1.78.0</h2>
