@@ -2,7 +2,7 @@
 
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
-//  Copyright 2019 Andrey Semashev
+//  Copyright 2019, 2022 Andrey Semashev
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -33,6 +33,8 @@
 
 #ifdef BOOST_POSIX_API
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -46,6 +48,14 @@
     !defined(__wasm)
 #define BOOST_FILESYSTEM_USE_READDIR_R
 #endif
+
+// At least Mac OS X 10.6 and older doesn't support O_CLOEXEC
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 0
+#define BOOST_FILESYSTEM_NO_O_CLOEXEC
+#endif
+
+#include "posix_tools.hpp"
 
 #else // BOOST_WINDOWS_API
 
@@ -206,13 +216,46 @@ inline std::size_t path_max()
 
 #endif // BOOST_FILESYSTEM_USE_READDIR_R
 
-error_code dir_itr_first(void*& handle, void*& buffer, const char* dir, std::string& target, fs::file_status&, fs::file_status&)
+error_code dir_itr_first(void*& handle, void*& buffer, const char* dir, std::string& target, unsigned int opts, fs::file_status&, fs::file_status&)
 {
-    if ((handle = ::opendir(dir)) == 0)
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    int flags = O_DIRECTORY | O_RDONLY | O_NDELAY | O_CLOEXEC;
+    if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
+        flags |= O_NOFOLLOW;
+
+    int fd = ::open(dir, flags);
+    if (BOOST_UNLIKELY(fd < 0))
     {
         const int err = errno;
         return error_code(err, system_category());
     }
+
+#if defined(BOOST_FILESYSTEM_NO_O_CLOEXEC) && defined(FD_CLOEXEC)
+    int res = ::fcntl(fd, F_SETFD, FD_CLOEXEC);
+    if (BOOST_UNLIKELY(res < 0))
+    {
+        const int err = errno;
+        close_fd(fd);
+        return error_code(err, system_category());
+    }
+#endif
+
+    handle = ::fdopendir(fd);
+    if (BOOST_UNLIKELY(!handle))
+    {
+        const int err = errno;
+        close_fd(fd);
+        return error_code(err, system_category());
+    }
+#else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    handle = ::opendir(dir);
+    if (BOOST_UNLIKELY(!handle))
+    {
+        const int err = errno;
+        return error_code(err, system_category());
+    }
+#endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+
     target.assign("."); // string was static but caused trouble
                         // when iteration called from dtor, after
                         // static had already been destroyed
@@ -342,7 +385,7 @@ error_code dir_itr_increment(void*& handle, void*& buffer, std::string& target, 
 
 #else // BOOST_WINDOWS_API
 
-error_code dir_itr_first(void*& handle, fs::path const& dir, std::wstring& target, fs::file_status& sf, fs::file_status& symlink_sf)
+error_code dir_itr_first(void*& handle, fs::path const& dir, std::wstring& target, unsigned int opts, fs::file_status& sf, fs::file_status& symlink_sf)
 // Note: an empty root directory has no "." or ".." entries, so this
 // causes a ERROR_FILE_NOT_FOUND error which we do not considered an
 // error. It is treated as eof instead.
@@ -512,7 +555,7 @@ void directory_iterator_construct(directory_iterator& it, path const& p, unsigne
 #if defined(BOOST_POSIX_API)
                                           imp->buffer,
 #endif
-                                          p.c_str(), filename, file_stat, symlink_file_stat);
+                                          p.c_str(), filename, opts, file_stat, symlink_file_stat);
 
         if (result)
         {

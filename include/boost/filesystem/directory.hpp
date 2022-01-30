@@ -247,7 +247,8 @@ BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(directory_options, unsigned int)
     skip_dangling_symlinks = 1u << 2,   // non-standard extension for recursive_directory_iterator: don't follow dangling directory symlinks,
     pop_on_error = 1u << 3,             // non-standard extension for recursive_directory_iterator: instead of producing an end iterator on errors,
                                         // repeatedly invoke pop() until it succeeds or the iterator becomes equal to end iterator
-    _detail_no_push = 1u << 4           // internal use only
+    _detail_no_follow = 1u << 4,        // internal use only
+    _detail_no_push = 1u << 5           // internal use only
 }
 BOOST_SCOPED_ENUM_DECLARE_END(directory_options)
 

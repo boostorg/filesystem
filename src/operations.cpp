@@ -945,51 +945,73 @@ inline bool remove_impl(path const& p, error_code* ec)
 //! remove_all() implementation
 uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
-    fs::file_type type;
+    for (unsigned int attempt = 0u; attempt < 5u; ++attempt)
     {
-        error_code local_ec;
-        type = fs::detail::symlink_status(p, &local_ec).type();
-
-        if (type == fs::file_not_found)
-            return 0u;
-
-        if (BOOST_UNLIKELY(type == fs::status_error))
+        fs::file_type type;
         {
-            if (!ec)
-                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+            error_code local_ec;
+            type = fs::detail::symlink_status(p, &local_ec).type();
 
-            *ec = local_ec;
-            return static_cast< uintmax_t >(-1);
+            if (type == fs::file_not_found)
+                return 0u;
+
+            if (BOOST_UNLIKELY(type == fs::status_error))
+            {
+                if (!ec)
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+
+                *ec = local_ec;
+                return static_cast< uintmax_t >(-1);
+            }
         }
-    }
 
-    uintmax_t count = 0u;
+        uintmax_t count = 0u;
 
-    if (type == fs::directory_file) // but not a directory symlink
-    {
-        fs::directory_iterator itr;
-        fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), ec);
+        if (type == fs::directory_file) // but not a directory symlink
+        {
+            fs::directory_iterator itr;
+            error_code local_ec;
+            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &local_ec);
+            if (BOOST_UNLIKELY(!!local_ec))
+            {
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+                // If open(2) with O_NOFOLLOW fails with ELOOP, this means that either the path contains a loop
+                // of symbolic links, or the last element of the path is a symbolic link. Given that lstat(2) above
+                // did not fail, most likely it is the latter case. I.e. between the lstat above and this open call
+                // the filesystem was modified so that the path no longer refers to a directory file (as opposed to a symlink).
+                if (local_ec == error_code(ELOOP, system_category()))
+                    continue;
+#endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+
+                if (!ec)
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+
+                *ec = local_ec;
+                return static_cast< uintmax_t >(-1);
+            }
+
+            const fs::directory_iterator end_dit;
+            while (itr != end_dit)
+            {
+                count += fs::detail::remove_all_impl(itr->path(), ec);
+                if (ec && *ec)
+                    return static_cast< uintmax_t >(-1);
+
+                fs::detail::directory_iterator_increment(itr, ec);
+                if (ec && *ec)
+                    return static_cast< uintmax_t >(-1);
+            }
+        }
+
+        count += fs::detail::remove_impl(p, type, ec);
         if (ec && *ec)
             return static_cast< uintmax_t >(-1);
 
-        const fs::directory_iterator end_dit;
-        while (itr != end_dit)
-        {
-            count += fs::detail::remove_all_impl(itr->path(), ec);
-            if (ec && *ec)
-                return static_cast< uintmax_t >(-1);
-
-            fs::detail::directory_iterator_increment(itr, ec);
-            if (ec && *ec)
-                return static_cast< uintmax_t >(-1);
-        }
+        return count;
     }
 
-    count += fs::detail::remove_impl(p, type, ec);
-    if (ec && *ec)
-        return static_cast< uintmax_t >(-1);
-
-    return count;
+    emit_error(ELOOP, p, ec, "boost::filesystem::remove_all: path cannot be opened as a directory");
+    return static_cast< uintmax_t >(-1);
 }
 
 #else // defined(BOOST_POSIX_API)
