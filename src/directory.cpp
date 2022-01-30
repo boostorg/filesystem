@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS + 0 >= 0) && defined(_SC_THREAD_SAFE_FUNCTIONS) && \
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS >= 0) && defined(_SC_THREAD_SAFE_FUNCTIONS) && \
     !defined(__CYGWIN__) && \
     !(defined(linux) || defined(__linux) || defined(__linux__)) && \
     !defined(__ANDROID__) && \
@@ -56,7 +56,9 @@
 
 #endif // BOOST_WINDOWS_API
 
+#include "atomic_tools.hpp"
 #include "error_handling.hpp"
+#include "private_config.hpp"
 
 //  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
 //  dir_itr_increment. The config tests are placed here because some of the
@@ -218,33 +220,11 @@ error_code dir_itr_first(void*& handle, void*& buffer, const char* dir, std::str
 }
 
 // *result set to NULL on end of directory
-inline int readdir_r_simulator(DIR* dirp, void*& buffer, struct dirent** result)
-{
-#if defined(BOOST_FILESYSTEM_USE_READDIR_R)
-    errno = 0;
-
-    if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS) >= 0)
-    {
-        struct dirent* storage = static_cast< struct dirent* >(buffer);
-        if (BOOST_UNLIKELY(!storage))
-        {
-            // According to readdir description, there's no reliable way to predict the length of the d_name string.
-            // It may exceed NAME_MAX and pathconf(_PC_NAME_MAX) limits. We are being conservative here and allocate
-            // buffer that is enough for PATH_MAX as the directory name. Still, this doesn't guarantee there won't be
-            // a buffer overrun. The readdir_r API is fundamentally flawed and we should avoid it as much as possible
-            // in favor of readdir.
-            const std::size_t name_size = path_max();
-            const std::size_t buffer_size = (sizeof(dirent) - sizeof(dirent().d_name)) + name_size + 1; // + 1 for "\0"
-            buffer = storage = static_cast< struct dirent* >(std::malloc(buffer_size));
-            if (BOOST_UNLIKELY(!storage))
-                return boost::system::errc::not_enough_memory;
-            std::memset(storage, 0, buffer_size);
-        }
-
-        return ::readdir_r(dirp, storage, result);
-    }
+#if !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+inline
 #endif
-
+int readdir_impl(DIR* dirp, void*&, struct dirent** result)
+{
     errno = 0;
 
     struct dirent* p = ::readdir(dirp);
@@ -254,10 +234,80 @@ inline int readdir_r_simulator(DIR* dirp, void*& buffer, struct dirent** result)
     return 0;
 }
 
+#if !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+
+inline int invoke_readdir(DIR* dirp, void*& buffer, struct dirent** result)
+{
+    return readdir_impl(dirp, buffer, result);
+}
+
+#else // !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+
+int readdir_r_impl(DIR* dirp, void*& buffer, struct dirent** result)
+{
+    struct dirent* storage = static_cast< struct dirent* >(buffer);
+    if (BOOST_UNLIKELY(!storage))
+    {
+        // According to readdir description, there's no reliable way to predict the length of the d_name string.
+        // It may exceed NAME_MAX and pathconf(_PC_NAME_MAX) limits. We are being conservative here and allocate
+        // buffer that is enough for PATH_MAX as the directory name. Still, this doesn't guarantee there won't be
+        // a buffer overrun. The readdir_r API is fundamentally flawed and we should avoid it as much as possible
+        // in favor of readdir.
+        const std::size_t name_size = path_max();
+        const std::size_t buffer_size = (sizeof(dirent) - sizeof(dirent().d_name)) + name_size + 1; // + 1 for "\0"
+        buffer = storage = static_cast< struct dirent* >(std::malloc(buffer_size));
+        if (BOOST_UNLIKELY(!storage))
+            return boost::system::errc::not_enough_memory;
+        std::memset(storage, 0, buffer_size);
+    }
+
+    return ::readdir_r(dirp, storage, result);
+}
+
+int readdir_select_impl(DIR* dirp, void*& buffer, struct dirent** result);
+
+typedef int readdir_impl_t(DIR* dirp, void*& buffer, struct dirent** result);
+
+//! Pointer to the actual implementation of the copy_file_data implementation
+readdir_impl_t* readdir_impl_ptr = &readdir_select_impl;
+
+void init_readdir_impl()
+{
+    readdir_impl_t* impl = &readdir_impl;
+    if (::sysconf(_SC_THREAD_SAFE_FUNCTIONS) >= 0)
+        impl = &readdir_r_impl;
+
+    filesystem::detail::atomic_store_relaxed(readdir_impl_ptr, impl);
+}
+
+struct readdir_initializer
+{
+    readdir_initializer()
+    {
+        init_readdir_impl();
+    }
+};
+
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+const readdir_initializer readdir_init;
+
+int readdir_select_impl(DIR* dirp, void*& buffer, struct dirent** result)
+{
+    init_readdir_impl();
+    return filesystem::detail::atomic_load_relaxed(readdir_impl_ptr)(dirp, buffer, result);
+}
+
+inline int invoke_readdir(DIR* dirp, void*& buffer, struct dirent** result)
+{
+    return filesystem::detail::atomic_load_relaxed(readdir_impl_ptr)(dirp, buffer, result);
+}
+
+#endif // !defined(BOOST_FILESYSTEM_USE_READDIR_R)
+
 error_code dir_itr_increment(void*& handle, void*& buffer, std::string& target, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     dirent* result = NULL;
-    int err = readdir_r_simulator(static_cast< DIR* >(handle), buffer, &result);
+    int err = invoke_readdir(static_cast< DIR* >(handle), buffer, &result);
     if (BOOST_UNLIKELY(err != 0))
         return error_code(err, system_category());
     if (result == NULL)
