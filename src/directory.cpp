@@ -219,7 +219,7 @@ inline std::size_t path_max()
 error_code dir_itr_first(void*& handle, void*& buffer, const char* dir, std::string& target, unsigned int opts, fs::file_status&, fs::file_status&)
 {
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
-    int flags = O_DIRECTORY | O_RDONLY | O_NDELAY | O_CLOEXEC;
+    int flags = O_DIRECTORY | O_RDONLY | O_NONBLOCK | O_CLOEXEC;
     if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
         flags |= O_NOFOLLOW;
 
