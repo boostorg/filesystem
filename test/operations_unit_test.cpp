@@ -307,21 +307,6 @@ void error_handling_test()
     CHECK(!create_directory("/", ec));
 }
 
-//  string_file_tests  ---------------------------------------------------------------//
-
-void string_file_tests(const path& temp_dir)
-{
-    cout << "string_file_tests..." << endl;
-    std::string contents("0123456789");
-    path p(temp_dir / "string_file");
-    save_string_file(p, contents);
-    save_string_file(p, contents);
-    BOOST_TEST_EQ(file_size(p), 10u);
-    std::string round_trip;
-    load_string_file(p, round_trip);
-    BOOST_TEST_EQ(contents, round_trip);
-}
-
 } // unnamed namespace
 
 //--------------------------------------------------------------------------------------//
@@ -372,7 +357,6 @@ int cpp_main(int argc, char* argv[])
     directory_entry_test();
     directory_entry_overload_test();
     error_handling_test();
-    string_file_tests(temp_dir);
 
     cout << unique_path() << endl;
     cout << unique_path("foo-%%%%%-%%%%%-bar") << endl;

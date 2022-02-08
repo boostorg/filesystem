@@ -14,6 +14,7 @@
 #define BOOST_FILESYSTEM_DEPRECATED
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/string_file.hpp>
 
 #include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
@@ -178,6 +179,21 @@ void path_rename_test()
     }
 }
 
+//  string_file_tests  ---------------------------------------------------------------//
+
+void string_file_tests(const fs::path& temp_dir)
+{
+    std::cout << "string_file_tests..." << std::endl;
+    std::string contents("0123456789");
+    fs::path p(temp_dir / "string_file");
+    save_string_file(p, contents);
+    save_string_file(p, contents);
+    BOOST_TEST_EQ(file_size(p), 10u);
+    std::string round_trip;
+    load_string_file(p, round_trip);
+    BOOST_TEST_EQ(contents, round_trip);
+}
+
 } // unnamed namespace
 
 //--------------------------------------------------------------------------------------//
@@ -205,9 +221,16 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
     BOOST_TEST(!fs::is_regular(ng)); // verify deprecated name still works
     BOOST_TEST(!fs::symbolic_link_exists("nosuchfileordirectory"));
 
+    const fs::path temp_dir(fs::current_path() / ".." / fs::unique_path("deprecated_test-%%%%-%%%%-%%%%"));
+    std::cout << "temp_dir is " << temp_dir.string() << std::endl;
+
+    fs::create_directory(temp_dir);
+
     misc_test();
     path_rename_test();
     normalize_test();
+    string_file_tests(temp_dir);
+
     BOOST_TEST(fs::path("foo/bar").generic() == fs::path("foo/bar"));
 
     // extension() tests ---------------------------------------------------------//
@@ -237,6 +260,9 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
     BOOST_TEST(fs::change_extension("a.b.txt", ".tex").string() == "a.b.tex");
     // see the rationale in html docs for explanation why this works
     BOOST_TEST(fs::change_extension("", ".png").string() == ".png");
+
+    std::cout << "post-test removal of " << temp_dir << std::endl;
+    BOOST_TEST(fs::remove_all(temp_dir) != 0);
 
     return ::boost::report_errors();
 }

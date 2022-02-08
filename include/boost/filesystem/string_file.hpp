@@ -14,20 +14,22 @@
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 
+#if !defined(BOOST_FILESYSTEM_DEPRECATED)
+#include <boost/config/header_deprecated.hpp>
+BOOST_HEADER_DEPRECATED("your own implementation")
+#endif
+
 #include <cstddef>
 #include <limits>
 #include <string>
 #include <ios>
 #include <stdexcept>
 #include <boost/cstdint.hpp>
-#include <boost/config/header_deprecated.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
-
-BOOST_HEADER_DEPRECATED("your own implementation")
 
 namespace boost {
 namespace filesystem {
