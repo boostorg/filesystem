@@ -10,18 +10,24 @@
 #ifndef BOOST_FILESYSTEM_STRING_FILE_HPP
 #define BOOST_FILESYSTEM_STRING_FILE_HPP
 
+#include <boost/filesystem/config.hpp>
+
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+
 #include <cstddef>
 #include <limits>
 #include <string>
 #include <ios>
 #include <stdexcept>
 #include <boost/cstdint.hpp>
-#include <boost/filesystem/config.hpp>
+#include <boost/config/header_deprecated.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/operations.hpp>
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
+
+BOOST_HEADER_DEPRECATED("your own implementation")
 
 namespace boost {
 namespace filesystem {
@@ -54,5 +60,7 @@ inline void load_string_file(path const& p, std::string& str)
 } // namespace boost
 
 #include <boost/filesystem/detail/footer.hpp>
+
+#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 
 #endif // BOOST_FILESYSTEM_STRING_FILE_HPP

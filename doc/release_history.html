@@ -44,6 +44,7 @@
   <li>Fixed compilation of path appending and concatenation operators with arguments of types convertible to <code>path</code> or compatible string type. (<a href="https://github.com/boostorg/filesystem/issues/223">#223</a>)</li>
   <li>On POSIX systems that support <a href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/fdopendir.html"><code>fdopendir</code></a> and <a href="https://pubs.opengroup.org/onlinepubs/9699919799/functions/open.html"><code>O_NOFOLLOW</code></a>, <code>remove_all</code> is now protected against <a href="https://www.cve.org/CVERecord?id=CVE-2022-21658">CVE-2022-21658</a>. The vulnerability is a race condition that allows a third party process to replace a directory that is being concurrently processed by <code>remove_all</code> with a directory symlink and cause <code>remove_all</code> to follow the symlink and remove files in the linked directory instead of removing the symlink itself. (<a href="https://github.com/boostorg/filesystem/issues/224">#224</a>)</li>
   <li>On Windows, initialize internal WinAPI function pointers early, if possible, to allow Boost.Filesystem operations to be invoked in global constructors. This is only supported on MSVC, GCC, Clang and compatible compilers.</li>
+  <li><code>boost/filesystem/string_file.hpp</code> header is deprecated and will be removed in a future release. Users are advised to implement the functionality themselves or migrate to other implementations.</li>
 </ul>
 
 <h2>1.78.0</h2>
