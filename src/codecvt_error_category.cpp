@@ -1,6 +1,7 @@
 //  codecvt_error_category implementation file  ----------------------------------------//
 
-//  Copyright Beman Dawes 2009
+//  Copyright 2009 Beman Dawes
+//  Copyright 2022 Andrey Semashev
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt)
@@ -15,12 +16,11 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path_traits.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/system/error_category.hpp>
 #include <locale>
 #include <string>
-#include <vector>
-#include <cstdlib>
-#include <cassert>
+
+#include "private_config.hpp"
 
 //--------------------------------------------------------------------------------------//
 
@@ -33,17 +33,13 @@ class codecvt_error_cat BOOST_FINAL :
     public boost::system::error_category
 {
 public:
-#if !defined(BOOST_CLANG) || __clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ > 8)
-    BOOST_DEFAULTED_FUNCTION(codecvt_error_cat(), {})
-#else
     // clang up to version 3.8 requires a user-defined default constructor in order to be able to declare a static constant of the error category.
-    codecvt_error_cat() {}
-#endif
-    const char* name() const BOOST_SYSTEM_NOEXCEPT BOOST_OVERRIDE;
+    BOOST_SYSTEM_CONSTEXPR codecvt_error_cat() BOOST_NOEXCEPT {}
+    const char* name() const BOOST_NOEXCEPT BOOST_OVERRIDE;
     std::string message(int ev) const BOOST_OVERRIDE;
 };
 
-const char* codecvt_error_cat::name() const BOOST_SYSTEM_NOEXCEPT
+const char* codecvt_error_cat::name() const BOOST_NOEXCEPT
 {
     return "codecvt";
 }
@@ -74,11 +70,36 @@ std::string codecvt_error_cat::message(int ev) const
 
 } // unnamed namespace
 
-BOOST_FILESYSTEM_DECL boost::system::error_category const& codecvt_error_category()
+BOOST_FILESYSTEM_DECL boost::system::error_category const& codecvt_error_category() BOOST_NOEXCEPT
 {
-    static const codecvt_error_cat codecvt_error_cat_const;
+    static
+#if defined(BOOST_SYSTEM_HAS_CONSTEXPR)
+        constexpr
+#else
+        const
+#endif
+        codecvt_error_cat codecvt_error_cat_const;
     return codecvt_error_cat_const;
 }
+
+// Try to initialize the error category instance as early as possible to make sure it is
+// available during global deinitialization stage. For MSVC, codecvt_error_category() will
+// be called early by MSVC-specific initialization routine in path.cpp.
+#if !defined(BOOST_SYSTEM_HAS_CONSTEXPR) && !defined(_MSC_VER)
+
+namespace {
+
+struct codecvt_error_category_initializer
+{
+    codecvt_error_category_initializer() { boost::filesystem::codecvt_error_category(); }
+};
+
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+const codecvt_error_category_initializer g_codecvt_error_category_initializer;
+
+} // namespace
+
+#endif // !defined(BOOST_SYSTEM_HAS_CONSTEXPR) && !defined(_MSC_VER)
 
 } // namespace filesystem
 } // namespace boost

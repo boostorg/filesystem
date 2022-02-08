@@ -12,8 +12,9 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/path_traits.hpp> // codecvt_error_category()
 #include <boost/scoped_array.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/system/error_category.hpp> // for BOOST_SYSTEM_HAS_CONSTEXPR
 #include <boost/assert.hpp>
 #include <algorithm>
 #include <iterator>
@@ -42,7 +43,6 @@
 namespace fs = boost::filesystem;
 
 using boost::filesystem::path;
-using boost::system::error_code;
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -1514,6 +1514,10 @@ void __cdecl destroy_path_globals()
 
 BOOST_FILESYSTEM_INIT_FUNC init_path_globals()
 {
+#if !defined(BOOST_SYSTEM_HAS_CONSTEXPR)
+    // codecvt_error_category needs to be called early to dynamic-initialize the error category instance
+    boost::filesystem::codecvt_error_category();
+#endif
     std::atexit(&destroy_path_globals);
     return BOOST_FILESYSTEM_INITRETSUCCESS_V;
 }
