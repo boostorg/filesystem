@@ -1510,12 +1510,7 @@ struct globals_retainer
     globals_retainer() { m_p_init_winapi_func_ptrs = &p_init_winapi_func_ptrs; }
 };
 BOOST_ATTRIBUTE_UNUSED
-const globals_retainer g_globals_retainer
-#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-    {};
-#else // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-    = globals_retainer();
-#endif // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+const globals_retainer g_globals_retainer;
 #endif // defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
 
 #else // defined(_MSC_VER)
@@ -1527,12 +1522,7 @@ struct winapi_func_ptrs_initializer
 };
 
 BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
-const winapi_func_ptrs_initializer winapi_func_ptrs_init
-#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-    {};
-#else // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-    = winapi_func_ptrs_initializer();
-#endif // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+const winapi_func_ptrs_initializer winapi_func_ptrs_init;
 
 #endif // defined(_MSC_VER)
 

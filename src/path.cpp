@@ -1552,12 +1552,7 @@ struct globals_retainer
     globals_retainer() { m_p_init_path_globals = &p_init_path_globals; }
 };
 BOOST_ATTRIBUTE_UNUSED
-static const globals_retainer g_globals_retainer
-#if !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-    {};
-#else // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
-    = globals_retainer();
-#endif // !defined(BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX)
+static const globals_retainer g_globals_retainer;
 #endif // defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
 
 #else // defined(_MSC_VER)
