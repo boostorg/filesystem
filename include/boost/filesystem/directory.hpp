@@ -20,6 +20,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/file_status.hpp>
 
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <utility> // std::move
@@ -258,40 +259,29 @@ class directory_iterator;
 
 namespace detail {
 
-BOOST_FILESYSTEM_DECL
-system::error_code dir_itr_close( // never throws()
-    void*& handle
-#if defined(BOOST_POSIX_API)
-    , void*& buffer
-#endif
-    ) BOOST_NOEXCEPT;
-
 struct dir_itr_imp :
     public boost::intrusive_ref_counter< dir_itr_imp >
 {
+#ifdef BOOST_WINDOWS_API
+    unsigned char extra_data_format;
+    std::size_t current_offset;
+#endif
     directory_entry dir_entry;
     void* handle;
 
-#if defined(BOOST_POSIX_API)
-    void* buffer; // see dir_itr_increment implementation
-#endif
-
     dir_itr_imp() BOOST_NOEXCEPT :
-        handle(0)
-#if defined(BOOST_POSIX_API)
-        , buffer(0)
+#ifdef BOOST_WINDOWS_API
+        extra_data_format(0u),
+        current_offset(0u),
 #endif
+        handle(NULL)
     {
     }
+    BOOST_FILESYSTEM_DECL ~dir_itr_imp() BOOST_NOEXCEPT;
 
-    ~dir_itr_imp() BOOST_NOEXCEPT
-    {
-        dir_itr_close(handle
-#if defined(BOOST_POSIX_API)
-            , buffer
-#endif
-        );
-    }
+    BOOST_FILESYSTEM_DECL static void* operator new(std::size_t class_size, std::size_t extra_size) BOOST_NOEXCEPT;
+    BOOST_FILESYSTEM_DECL static void operator delete(void* p, std::size_t extra_size) BOOST_NOEXCEPT;
+    BOOST_FILESYSTEM_DECL static void operator delete(void* p) BOOST_NOEXCEPT;
 };
 
 BOOST_FILESYSTEM_DECL void directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, system::error_code* ec);

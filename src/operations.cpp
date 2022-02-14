@@ -184,74 +184,6 @@ using boost::system::system_category;
 
 #else // defined(BOOST_POSIX_API)
 
-//  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the
-//  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
-//  here. See http://msdn.microsoft.com/en-us/library/ms791514.aspx
-
-#if !defined(REPARSE_DATA_BUFFER_HEADER_SIZE) // mingw winnt.h does provide the defs
-
-#define SYMLINK_FLAG_RELATIVE 1
-
-typedef struct _REPARSE_DATA_BUFFER
-{
-    ULONG ReparseTag;
-    USHORT ReparseDataLength;
-    USHORT Reserved;
-    union
-    {
-        /*
-         * In SymbolicLink and MountPoint reparse points, there are two names.
-         * SubstituteName is the effective replacement path for the reparse point.
-         * This is what should be used for path traversal.
-         * PrintName is intended for presentation to the user and may omit some
-         * elements of the path or be absent entirely.
-         *
-         * Examples of substitute and print names:
-         * mklink /D ldrive c:\
-         * SubstituteName: "\??\c:\"
-         * PrintName: "c:\"
-         *
-         * mklink /J ldrive c:\
-         * SubstituteName: "\??\C:\"
-         * PrintName: "c:\"
-         *
-         * junction ldrive c:\
-         * SubstituteName: "\??\C:\"
-         * PrintName: ""
-         *
-         * box.com mounted cloud storage
-         * SubstituteName: "\??\Volume{<UUID>}\"
-         * PrintName: ""
-         */
-        struct
-        {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            ULONG Flags;
-            WCHAR PathBuffer[1];
-        } SymbolicLinkReparseBuffer;
-        struct
-        {
-            USHORT SubstituteNameOffset;
-            USHORT SubstituteNameLength;
-            USHORT PrintNameOffset;
-            USHORT PrintNameLength;
-            WCHAR PathBuffer[1];
-        } MountPointReparseBuffer;
-        struct
-        {
-            UCHAR DataBuffer[1];
-        } GenericReparseBuffer;
-    };
-} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
-
-#define REPARSE_DATA_BUFFER_HEADER_SIZE \
-    FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
-
-#endif // !defined(REPARSE_DATA_BUFFER_HEADER_SIZE)
-
 #ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 #define MAXIMUM_REPARSE_DATA_BUFFER_SIZE (16 * 1024)
 #endif
@@ -260,8 +192,8 @@ typedef struct _REPARSE_DATA_BUFFER
 #define FSCTL_GET_REPARSE_POINT 0x900a8
 #endif
 
-#ifndef IO_REPARSE_TAG_SYMLINK
-#define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
+#ifndef SYMLINK_FLAG_RELATIVE
+#define SYMLINK_FLAG_RELATIVE 1
 #endif
 
 // Fallback for MinGW/Cygwin
@@ -272,13 +204,6 @@ typedef struct _REPARSE_DATA_BUFFER
 #ifndef SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE
 #define SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE 0x2
 #endif
-
-// Our convenience type for allocating REPARSE_DATA_BUFFER along with sufficient space after it
-union reparse_data_buffer
-{
-    REPARSE_DATA_BUFFER rdb;
-    unsigned char storage[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
-};
 
 #endif // defined(BOOST_POSIX_API)
 
@@ -294,16 +219,14 @@ union reparse_data_buffer
 #if defined(BOOST_POSIX_API)
 
 #define BOOST_SET_CURRENT_DIRECTORY(P) (::chdir(P) == 0)
-#define BOOST_CREATE_HARD_LINK(F, T) (::link(T, F) == 0)
 #define BOOST_MOVE_FILE(OLD, NEW) (::rename(OLD, NEW) == 0)
 #define BOOST_RESIZE_FILE(P, SZ) (::truncate(P, SZ) == 0)
 
 #else // BOOST_WINDOWS_API
 
 #define BOOST_SET_CURRENT_DIRECTORY(P) (::SetCurrentDirectoryW(P) != 0)
-#define BOOST_CREATE_HARD_LINK(F, T) (create_hard_link_api(F, T, 0) != 0)
 #define BOOST_MOVE_FILE(OLD, NEW) (::MoveFileExW(OLD, NEW, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED) != 0)
-#define BOOST_RESIZE_FILE(P, SZ) (resize_file_api(P, SZ) != 0)
+#define BOOST_RESIZE_FILE(P, SZ) (resize_file_impl(P, SZ) != 0)
 
 #endif
 
@@ -316,6 +239,11 @@ namespace detail {
 void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsigned int patch_ver);
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
 
+#if defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
+//! Initializes directory iterator implementation. Implemented in directory.cpp.
+void init_directory_iterator_impl() BOOST_NOEXCEPT;
+#endif // defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
+
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                        helpers (all operating systems)                               //
@@ -323,6 +251,9 @@ void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsig
 //--------------------------------------------------------------------------------------//
 
 namespace {
+
+// The number of retries remove_all should make if it detects that the directory it is about to enter has been replaced with a symlink
+BOOST_CONSTEXPR_OR_CONST unsigned int remove_all_directory_replaced_retry_count = 5u;
 
 #if defined(BOOST_POSIX_API)
 
@@ -945,7 +876,7 @@ inline bool remove_impl(path const& p, error_code* ec)
 //! remove_all() implementation
 uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
-    for (unsigned int attempt = 0u; attempt < 5u; ++attempt)
+    for (unsigned int attempt = 0u; attempt < remove_all_directory_replaced_retry_count; ++attempt)
     {
         fs::file_type type;
         {
@@ -966,7 +897,6 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         }
 
         uintmax_t count = 0u;
-
         if (type == fs::directory_file) // but not a directory symlink
         {
             fs::directory_iterator itr;
@@ -1022,6 +952,71 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+//  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the
+//  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
+//  here. See http://msdn.microsoft.com/en-us/library/ms791514.aspx
+struct reparse_data_buffer
+{
+    ULONG ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
+    union
+    {
+        /*
+         * In SymbolicLink and MountPoint reparse points, there are two names.
+         * SubstituteName is the effective replacement path for the reparse point.
+         * This is what should be used for path traversal.
+         * PrintName is intended for presentation to the user and may omit some
+         * elements of the path or be absent entirely.
+         *
+         * Examples of substitute and print names:
+         * mklink /D ldrive c:\
+         * SubstituteName: "\??\c:\"
+         * PrintName: "c:\"
+         *
+         * mklink /J ldrive c:\
+         * SubstituteName: "\??\C:\"
+         * PrintName: "c:\"
+         *
+         * junction ldrive c:\
+         * SubstituteName: "\??\C:\"
+         * PrintName: ""
+         *
+         * box.com mounted cloud storage
+         * SubstituteName: "\??\Volume{<UUID>}\"
+         * PrintName: ""
+         */
+        struct
+        {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            ULONG Flags;
+            WCHAR PathBuffer[1];
+        } SymbolicLinkReparseBuffer;
+        struct
+        {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            WCHAR PathBuffer[1];
+        } MountPointReparseBuffer;
+        struct
+        {
+            UCHAR DataBuffer[1];
+        } GenericReparseBuffer;
+    };
+};
+
+// Our convenience type for allocating REPARSE_DATA_BUFFER along with sufficient space after it
+union reparse_data_buffer_with_storage
+{
+    reparse_data_buffer rdb;
+    unsigned char storage[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
+};
+
 // Windows CE has no environment variables
 #if !defined(UNDER_CE)
 inline std::wstring wgetenv(const wchar_t* name)
@@ -1068,53 +1063,40 @@ inline void to_FILETIME(std::time_t t, FILETIME& ft) BOOST_NOEXCEPT
     ft.dwHighDateTime = static_cast< DWORD >(temp >> 32);
 }
 
-// Thanks to Jeremy Maitin-Shepard for much help and for permission to
-// base the equivalent()implementation on portions of his
-// file-equivalence-win32.cpp experimental code.
-
-struct handle_wrapper
+inline bool is_reparse_point_a_symlink(path const& p)
 {
-    HANDLE handle;
+    handle_wrapper h(create_file_handle(p, 0u, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+    if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
+        return false;
 
-    handle_wrapper() BOOST_NOEXCEPT : handle(INVALID_HANDLE_VALUE) {}
-    explicit handle_wrapper(HANDLE h) BOOST_NOEXCEPT : handle(h) {}
-    ~handle_wrapper() BOOST_NOEXCEPT
+    ULONG reparse_point_tag;
+    GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
+    if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
     {
-        if (handle != INVALID_HANDLE_VALUE)
-            ::CloseHandle(handle);
+        file_attribute_tag_info info;
+        BOOL result = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
+        if (BOOST_UNLIKELY(!result))
+            return false;
+
+        if ((info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) == 0u)
+            return false;
+
+        reparse_point_tag = info.ReparseTag;
     }
-    BOOST_DELETED_FUNCTION(handle_wrapper(handle_wrapper const&))
-    BOOST_DELETED_FUNCTION(handle_wrapper& operator=(handle_wrapper const&))
-};
+    else
+    {
+        boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
 
-inline HANDLE create_file_handle(path const& p, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
-{
-    return ::CreateFileW(p.c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-}
+        // Query the reparse data
+        DWORD dwRetLen = 0u;
+        BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &dwRetLen, NULL);
+        if (BOOST_UNLIKELY(!result))
+            return false;
 
-bool is_reparse_point_a_symlink(path const& p)
-{
-    handle_wrapper h(create_file_handle(p, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL));
-    if (h.handle == INVALID_HANDLE_VALUE)
-        return false;
+        reparse_point_tag = buf->rdb.ReparseTag;
+    }
 
-    boost::scoped_ptr< reparse_data_buffer > buf(new reparse_data_buffer);
-
-    // Query the reparse data
-    DWORD dwRetLen = 0u;
-    BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &dwRetLen, NULL);
-    if (!result)
-        return false;
-
-    return buf->rdb.ReparseTag == IO_REPARSE_TAG_SYMLINK
-        // Issue 9016 asked that NTFS directory junctions be recognized as directories.
-        // That is equivalent to recognizing them as symlinks, and then the normal symlink
-        // mechanism will take care of recognizing them as directories.
-        //
-        // Directory junctions are very similar to symlinks, but have some performance
-        // and other advantages over symlinks. They can be created from the command line
-        // with "mklink /j junction-name target-path".
-        || buf->rdb.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT; // aka "directory junction" or "junction"
+    return is_reparse_point_tag_a_symlink(reparse_point_tag);
 }
 
 inline std::size_t get_full_path_name(path const& src, std::size_t len, wchar_t* buf, wchar_t** p)
@@ -1238,66 +1220,85 @@ inline bool remove_impl(path const& p, error_code* ec)
 //! remove_all() implementation
 uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
-    const DWORD attrs = ::GetFileAttributesW(p.c_str());
-    bool recurse;
-    if (BOOST_UNLIKELY(attrs == INVALID_FILE_ATTRIBUTES))
+    for (unsigned int attempt = 0u; attempt < remove_all_directory_replaced_retry_count; ++attempt)
     {
-        error_code local_ec;
-        file_type type = process_status_failure(p, &local_ec).type();
-
-        if (type == fs::file_not_found)
-            return 0u;
-
-        if (BOOST_UNLIKELY(type == fs::status_error))
+        const DWORD attrs = ::GetFileAttributesW(p.c_str());
+        bool recurse;
+        if (BOOST_UNLIKELY(attrs == INVALID_FILE_ATTRIBUTES))
         {
-            if (!ec)
-                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+            error_code local_ec;
+            file_type type = process_status_failure(p, &local_ec).type();
 
-            *ec = local_ec;
-            return static_cast< uintmax_t >(-1);
+            if (type == fs::file_not_found)
+                return 0u;
+
+            if (BOOST_UNLIKELY(type == fs::status_error))
+            {
+                if (!ec)
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+
+                *ec = local_ec;
+                return static_cast< uintmax_t >(-1);
+            }
+
+            // Some unknown file type
+            recurse = false;
+        }
+        else
+        {
+            // Recurse into directories, but not into junctions or directory symlinks
+            recurse = (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0 && (attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0;
         }
 
-        // Some unknown file type
-        recurse = false;
-    }
-    else
-    {
-        // Recurse into directories, but not into junctions or directory symlinks
-        recurse = (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0 && (attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0;
-    }
+        uintmax_t count = 0u;
+        if (recurse)
+        {
+            fs::directory_iterator itr;
+            error_code local_ec;
+            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &local_ec);
+            if (BOOST_UNLIKELY(!!local_ec))
+            {
+                if (local_ec == make_error_condition(system::errc::too_many_symbolic_link_levels))
+                    continue;
 
-    uintmax_t count = 0u;
+                if (!ec)
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
 
-    if (recurse)
-    {
-        fs::directory_iterator itr;
-        fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), ec);
+                *ec = local_ec;
+                return static_cast< uintmax_t >(-1);
+            }
+
+            const fs::directory_iterator end_dit;
+            while (itr != end_dit)
+            {
+                count += remove_all_impl(itr->path(), ec);
+                if (ec && *ec)
+                    return static_cast< uintmax_t >(-1);
+
+                fs::detail::directory_iterator_increment(itr, ec);
+                if (ec && *ec)
+                    return static_cast< uintmax_t >(-1);
+            }
+        }
+
+        count += remove_impl(p, attrs, ec);
         if (ec && *ec)
             return static_cast< uintmax_t >(-1);
 
-        const fs::directory_iterator end_dit;
-        while (itr != end_dit)
-        {
-            count += remove_all_impl(itr->path(), ec);
-            if (ec && *ec)
-                return static_cast< uintmax_t >(-1);
-
-            fs::detail::directory_iterator_increment(itr, ec);
-            if (ec && *ec)
-                return static_cast< uintmax_t >(-1);
-        }
+        return count;
     }
 
-    count += remove_impl(p, attrs, ec);
-    if (ec && *ec)
-        return static_cast< uintmax_t >(-1);
+    error_code local_ec(make_error_code(system::errc::too_many_symbolic_link_levels));
+    if (!ec)
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all: path cannot be opened as a directory", p, local_ec));
 
-    return count;
+    *ec = local_ec;
+    return static_cast< uintmax_t >(-1);
 }
 
-inline BOOL resize_file_api(const wchar_t* p, uintmax_t size)
+inline BOOL resize_file_impl(const wchar_t* p, uintmax_t size)
 {
-    handle_wrapper h(CreateFileW(p, GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0));
+    handle_wrapper h(CreateFileW(p, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
     LARGE_INTEGER sz;
     sz.QuadPart = size;
     return h.handle != INVALID_HANDLE_VALUE && ::SetFilePointerEx(h.handle, sz, 0, FILE_BEGIN) && ::SetEndOfFile(h.handle);
@@ -1452,19 +1453,29 @@ done:
 //  Windows kernel32.dll functions that may or may not be present
 //  must be accessed through pointers
 
-typedef BOOL (WINAPI* PtrCreateHardLinkW)(
+typedef BOOL (WINAPI CreateHardLinkW_t)(
     /*__in*/ LPCWSTR lpFileName,
     /*__in*/ LPCWSTR lpExistingFileName,
     /*__reserved*/ LPSECURITY_ATTRIBUTES lpSecurityAttributes);
 
-PtrCreateHardLinkW create_hard_link_api = NULL;
+CreateHardLinkW_t* create_hard_link_api = NULL;
 
-typedef BOOLEAN (WINAPI* PtrCreateSymbolicLinkW)(
+typedef BOOLEAN (WINAPI CreateSymbolicLinkW_t)(
     /*__in*/ LPCWSTR lpSymlinkFileName,
     /*__in*/ LPCWSTR lpTargetFileName,
     /*__in*/ DWORD dwFlags);
 
-PtrCreateSymbolicLinkW create_symbolic_link_api = NULL;
+CreateSymbolicLinkW_t* create_symbolic_link_api = NULL;
+
+} // unnamed namespace
+
+GetFileInformationByHandleEx_t* get_file_information_by_handle_ex_api = NULL;
+
+#if !defined(UNDER_CE)
+NtQueryDirectoryFile_t* nt_query_directory_file_api = NULL;
+#endif // !defined(UNDER_CE)
+
+namespace {
 
 //! Initializes WinAPI function pointers
 BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
@@ -1472,9 +1483,21 @@ BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
     boost::winapi::HMODULE_ h = boost::winapi::GetModuleHandleW(L"kernel32.dll");
     if (BOOST_LIKELY(!!h))
     {
-        create_hard_link_api = (PtrCreateHardLinkW)boost::winapi::get_proc_address(h, "CreateHardLinkW");
-        create_symbolic_link_api = (PtrCreateSymbolicLinkW)boost::winapi::get_proc_address(h, "CreateSymbolicLinkW");
+        filesystem::detail::atomic_store_relaxed(get_file_information_by_handle_ex_api, (GetFileInformationByHandleEx_t*)boost::winapi::get_proc_address(h, "GetFileInformationByHandleEx"));
+        filesystem::detail::atomic_store_relaxed(create_hard_link_api, (CreateHardLinkW_t*)boost::winapi::get_proc_address(h, "CreateHardLinkW"));
+        filesystem::detail::atomic_store_relaxed(create_symbolic_link_api, (CreateSymbolicLinkW_t*)boost::winapi::get_proc_address(h, "CreateSymbolicLinkW"));
     }
+
+#if !defined(UNDER_CE)
+    h = boost::winapi::GetModuleHandleW(L"ntdll.dll");
+    if (BOOST_LIKELY(!!h))
+    {
+        filesystem::detail::atomic_store_relaxed(nt_query_directory_file_api, (NtQueryDirectoryFile_t*)boost::winapi::get_proc_address(h, "NtQueryDirectoryFile"));
+    }
+
+    init_directory_iterator_impl();
+#endif // !defined(UNDER_CE)
+
     return BOOST_FILESYSTEM_INITRETSUCCESS_V;
 }
 
@@ -2155,7 +2178,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         // Create handle_wrappers here so that CloseHandle calls don't clobber error code returned by GetLastError
         handle_wrapper hw_from, hw_to;
 
-        hw_from.handle = create_file_handle(from.c_str(), 0, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+        hw_from.handle = create_file_handle(from.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
 
         FILETIME lwt_from;
         if (hw_from.handle == INVALID_HANDLE_VALUE)
@@ -2169,7 +2192,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         if (!::GetFileTime(hw_from.handle, 0, 0, &lwt_from))
             goto fail_last_error;
 
-        hw_to.handle = create_file_handle(to.c_str(), 0, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+        hw_to.handle = create_file_handle(to.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
 
         if (hw_to.handle != INVALID_HANDLE_VALUE)
         {
@@ -2484,13 +2507,30 @@ void create_directory_symlink(path const& to, path const& from, system::error_co
 BOOST_FILESYSTEM_DECL
 void create_hard_link(path const& to, path const& from, error_code* ec)
 {
-#if defined(BOOST_WINDOWS_API)
-    // see if actually supported by Windows runtime dll
-    if (error(!create_hard_link_api ? BOOST_ERROR_NOT_SUPPORTED : 0, to, from, ec, "boost::filesystem::create_hard_link"))
-        return;
-#endif
+    if (ec)
+        ec->clear();
 
-    error(!BOOST_CREATE_HARD_LINK(from.c_str(), to.c_str()) ? BOOST_ERRNO : 0, to, from, ec, "boost::filesystem::create_hard_link");
+#if defined(BOOST_POSIX_API)
+    int err = ::link(to.c_str(), from.c_str());
+    if (BOOST_UNLIKELY(err < 0))
+    {
+        err = errno;
+        emit_error(err, to, from, ec, "boost::filesystem::create_hard_link");
+    }
+#else
+    // see if actually supported by Windows runtime dll
+    CreateHardLinkW_t* chl_api = filesystem::detail::atomic_load_relaxed(create_hard_link_api);
+    if (BOOST_UNLIKELY(!chl_api))
+    {
+        emit_error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec, "boost::filesystem::create_hard_link");
+        return;
+    }
+
+    if (BOOST_UNLIKELY(!chl_api(from.c_str(), to.c_str(), NULL)))
+    {
+        emit_error(BOOST_ERRNO, to, from, ec, "boost::filesystem::create_hard_link");
+    }
+#endif
 }
 
 BOOST_FILESYSTEM_DECL
@@ -2508,13 +2548,14 @@ void create_symlink(path const& to, path const& from, error_code* ec)
     }
 #else
     // see if actually supported by Windows runtime dll
-    if (!create_symbolic_link_api)
+    CreateSymbolicLinkW_t* csl_api = filesystem::detail::atomic_load_relaxed(create_symbolic_link_api);
+    if (BOOST_UNLIKELY(!csl_api))
     {
         emit_error(BOOST_ERROR_NOT_SUPPORTED, to, from, ec, "boost::filesystem::create_symlink");
         return;
     }
 
-    if (!create_symbolic_link_api(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE))
+    if (BOOST_UNLIKELY(!csl_api(from.c_str(), to.c_str(), SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)))
     {
         emit_error(BOOST_ERRNO, to, from, ec, "boost::filesystem::create_symlink");
     }
@@ -2647,6 +2688,10 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
 
 #else // Windows
 
+    // Thanks to Jeremy Maitin-Shepard for much help and for permission to
+    // base the equivalent() implementation on portions of his
+    // file-equivalence-win32.cpp experimental code.
+
     // Note well: Physical location on external media is part of the
     // equivalence criteria. If there are no open handles, physical location
     // can change due to defragmentation or other relocations. Thus handles
@@ -2657,22 +2702,20 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
     handle_wrapper h2(
         create_file_handle(
             p2.c_str(),
-            0,
+            0u,
             FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-            0,
+            NULL,
             OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS,
-            0));
+            FILE_FLAG_BACKUP_SEMANTICS));
 
     handle_wrapper h1(
         create_file_handle(
             p1.c_str(),
-            0,
+            0u,
             FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-            0,
+            NULL,
             OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS,
-            0));
+            FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(h1.handle == INVALID_HANDLE_VALUE || h2.handle == INVALID_HANDLE_VALUE))
     {
@@ -2807,7 +2850,7 @@ uintmax_t hard_link_count(path const& p, system::error_code* ec)
 #else // defined(BOOST_POSIX_API)
 
     handle_wrapper h(
-        create_file_handle(p.c_str(), 0, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
     {
@@ -2929,7 +2972,7 @@ std::time_t creation_time(path const& p, system::error_code* ec)
 #else // defined(BOOST_POSIX_API)
 
     handle_wrapper hw(
-        create_file_handle(p.c_str(), 0, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
@@ -2982,7 +3025,7 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
 #else // defined(BOOST_POSIX_API)
 
     handle_wrapper hw(
-        create_file_handle(p.c_str(), 0, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
@@ -3044,7 +3087,7 @@ void last_write_time(path const& p, const std::time_t new_time, system::error_co
 #else // defined(BOOST_POSIX_API)
 
     handle_wrapper hw(
-        create_file_handle(p.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0));
+        create_file_handle(p.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
@@ -3156,6 +3199,9 @@ void permissions(path const& p, perms prms, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path read_symlink(path const& p, system::error_code* ec)
 {
+    if (ec)
+        ec->clear();
+
     path symlink_path;
 
 #ifdef BOOST_POSIX_API
@@ -3174,8 +3220,6 @@ path read_symlink(path const& p, system::error_code* ec)
     else if (BOOST_LIKELY(static_cast< std::size_t >(result) < sizeof(small_buf)))
     {
         symlink_path.assign(small_buf, small_buf + result);
-        if (ec)
-            ec->clear();
     }
     else
     {
@@ -3199,8 +3243,6 @@ path read_symlink(path const& p, system::error_code* ec)
             else if (BOOST_LIKELY(static_cast< std::size_t >(result) < path_max))
             {
                 symlink_path.assign(buf.get(), buf.get() + result);
-                if (ec)
-                    ec->clear();
                 break;
             }
         }
@@ -3209,40 +3251,50 @@ path read_symlink(path const& p, system::error_code* ec)
 #else
 
     handle_wrapper h(
-        create_file_handle(p.c_str(), 0, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, 0));
+        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
 
-    if (error(h.handle == INVALID_HANDLE_VALUE ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::read_symlink"))
-        return symlink_path;
-
-    boost::scoped_ptr< reparse_data_buffer > buf(new reparse_data_buffer);
-    DWORD sz = 0u;
-    if (!error(::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, 0, 0, buf.get(), sizeof(*buf), &sz, 0) == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::read_symlink"))
+    DWORD error;
+    if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
     {
-        const wchar_t* buffer;
-        std::size_t offset, len;
-        switch (buf->rdb.ReparseTag)
-        {
-        case IO_REPARSE_TAG_MOUNT_POINT:
-            buffer = buf->rdb.MountPointReparseBuffer.PathBuffer;
-            offset = buf->rdb.MountPointReparseBuffer.SubstituteNameOffset;
-            len = buf->rdb.MountPointReparseBuffer.SubstituteNameLength;
-            break;
+        error = ::GetLastError();
 
-        case IO_REPARSE_TAG_SYMLINK:
-            buffer = buf->rdb.SymbolicLinkReparseBuffer.PathBuffer;
-            offset = buf->rdb.SymbolicLinkReparseBuffer.SubstituteNameOffset;
-            len = buf->rdb.SymbolicLinkReparseBuffer.SubstituteNameLength;
-            // Note: iff info.rdb.SymbolicLinkReparseBuffer.Flags & SYMLINK_FLAG_RELATIVE
-            //       -> resulting path is relative to the source
-            break;
-
-        default:
-            emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "Unknown ReparseTag in boost::filesystem::read_symlink");
-            return symlink_path;
-        }
-
-        symlink_path = convert_nt_path_to_win32_path(buffer + offset / sizeof(wchar_t), len / sizeof(wchar_t));
+    return_error:
+        emit_error(error, p, ec, "boost::filesystem::read_symlink");
+        return symlink_path;
     }
+
+    boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
+    DWORD sz = 0u;
+    if (BOOST_UNLIKELY(!::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, 0, 0, buf.get(), sizeof(*buf), &sz, 0)))
+    {
+        error = ::GetLastError();
+        goto return_error;
+    }
+
+    const wchar_t* buffer;
+    std::size_t offset, len;
+    switch (buf->rdb.ReparseTag)
+    {
+    case IO_REPARSE_TAG_MOUNT_POINT:
+        buffer = buf->rdb.MountPointReparseBuffer.PathBuffer;
+        offset = buf->rdb.MountPointReparseBuffer.SubstituteNameOffset;
+        len = buf->rdb.MountPointReparseBuffer.SubstituteNameLength;
+        break;
+
+    case IO_REPARSE_TAG_SYMLINK:
+        buffer = buf->rdb.SymbolicLinkReparseBuffer.PathBuffer;
+        offset = buf->rdb.SymbolicLinkReparseBuffer.SubstituteNameOffset;
+        len = buf->rdb.SymbolicLinkReparseBuffer.SubstituteNameLength;
+        // Note: iff info.rdb.SymbolicLinkReparseBuffer.Flags & SYMLINK_FLAG_RELATIVE
+        //       -> resulting path is relative to the source
+        break;
+
+    default:
+        emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "Unknown ReparseTag in boost::filesystem::read_symlink");
+        return symlink_path;
+    }
+
+    symlink_path = convert_nt_path_to_win32_path(buffer + offset / sizeof(wchar_t), len / sizeof(wchar_t));
 #endif
 
     return symlink_path;
@@ -3479,12 +3531,11 @@ file_status status(path const& p, error_code* ec)
         handle_wrapper h(
             create_file_handle(
                 p.c_str(),
-                0, // dwDesiredAccess; attributes only
+                0u, // dwDesiredAccess; attributes only
                 FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                0, // lpSecurityAttributes
+                NULL, // lpSecurityAttributes
                 OPEN_EXISTING,
-                FILE_FLAG_BACKUP_SEMANTICS,
-                0)); // hTemplateFile
+                FILE_FLAG_BACKUP_SEMANTICS));
 
         if (h.handle == INVALID_HANDLE_VALUE)
         {

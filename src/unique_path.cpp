@@ -108,27 +108,6 @@ namespace detail {
 
 namespace {
 
-#if defined(BOOST_FILESYSTEM_HAS_BCRYPT)
-//! Converts NTSTATUS error codes to Win32 error codes for reporting
-inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
-{
-    // Note: Legacy MinGW doesn't have ntstatus.h and doesn't define NTSTATUS error codes other than STATUS_SUCCESS.
-    //       Because of this we have to use hardcoded integer literals here. Also, we have to cast to unsigned
-    //       integral type to avoid signed overflow and narrowing conversion in the constants.
-    switch (static_cast< boost::winapi::ULONG_ >(status))
-    {
-    case 0xC0000017ul: // STATUS_NO_MEMORY
-        return boost::winapi::ERROR_OUTOFMEMORY_;
-    case 0xC0000008ul: // STATUS_INVALID_HANDLE
-        return boost::winapi::ERROR_INVALID_HANDLE_;
-    case 0xC000000Dul: // STATUS_INVALID_PARAMETER
-        return boost::winapi::ERROR_INVALID_PARAMETER_;
-    default:
-        return boost::winapi::ERROR_NOT_SUPPORTED_;
-    }
-}
-#endif // defined(BOOST_FILESYSTEM_HAS_BCRYPT)
-
 #if defined(BOOST_POSIX_API) && !defined(BOOST_FILESYSTEM_HAS_ARC4RANDOM)
 
 //! Fills buffer with cryptographically random data obtained from /dev/(u)random
