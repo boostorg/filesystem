@@ -53,7 +53,7 @@ inline void load_string_file(path const& p, std::string& str)
     const boost::uintmax_t sz = filesystem::file_size(p);
     if (BOOST_UNLIKELY(sz > static_cast< boost::uintmax_t >((std::numeric_limits< std::streamsize >::max)())))
         BOOST_FILESYSTEM_THROW(std::length_error("File size exceeds max read size"));
-    str.resize(sz, '\0');
+    str.resize(static_cast< std::size_t >(sz), '\0');
     if (sz > 0u)
         file.read(&str[0], static_cast< std::streamsize >(sz));
 }
