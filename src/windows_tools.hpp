@@ -62,6 +62,8 @@ inline boost::filesystem::perms make_permissions(boost::filesystem::path const& 
     return prms;
 }
 
+bool is_reparse_point_a_symlink_ioctl(HANDLE h);
+
 inline bool is_reparse_point_tag_a_symlink(ULONG reparse_point_tag)
 {
     return reparse_point_tag == IO_REPARSE_TAG_SYMLINK

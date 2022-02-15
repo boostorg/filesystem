@@ -252,7 +252,7 @@ void init_directory_iterator_impl() BOOST_NOEXCEPT;
 
 namespace {
 
-// The number of retries remove_all should make if it detects that the directory it is about to enter has been replaced with a symlink
+// The number of retries remove_all should make if it detects that the directory it is about to enter has been replaced with a symlink or a regular file
 BOOST_CONSTEXPR_OR_CONST unsigned int remove_all_directory_replaced_retry_count = 5u;
 
 #if defined(BOOST_POSIX_API)
@@ -876,6 +876,7 @@ inline bool remove_impl(path const& p, error_code* ec)
 //! remove_all() implementation
 uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
+    error_code dit_create_ec;
     for (unsigned int attempt = 0u; attempt < remove_all_directory_replaced_retry_count; ++attempt)
     {
         fs::file_type type;
@@ -900,23 +901,25 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         if (type == fs::directory_file) // but not a directory symlink
         {
             fs::directory_iterator itr;
-            error_code local_ec;
-            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &local_ec);
+            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &dit_create_ec);
             if (BOOST_UNLIKELY(!!local_ec))
             {
+                if (dit_create_ec == error_code(ENOTDIR, system_category()))
+                    continue;
+
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
                 // If open(2) with O_NOFOLLOW fails with ELOOP, this means that either the path contains a loop
                 // of symbolic links, or the last element of the path is a symbolic link. Given that lstat(2) above
                 // did not fail, most likely it is the latter case. I.e. between the lstat above and this open call
                 // the filesystem was modified so that the path no longer refers to a directory file (as opposed to a symlink).
-                if (local_ec == error_code(ELOOP, system_category()))
+                if (dit_create_ec == error_code(ELOOP, system_category()))
                     continue;
 #endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
 
                 if (!ec)
-                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, dit_create_ec));
 
-                *ec = local_ec;
+                *ec = dit_create_ec;
                 return static_cast< uintmax_t >(-1);
             }
 
@@ -940,7 +943,10 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         return count;
     }
 
-    emit_error(ELOOP, p, ec, "boost::filesystem::remove_all: path cannot be opened as a directory");
+    if (!ec)
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all: path cannot be opened as a directory", p, dit_create_ec));
+
+    *ec = dit_create_ec;
     return static_cast< uintmax_t >(-1);
 }
 
@@ -1063,13 +1069,29 @@ inline void to_FILETIME(std::time_t t, FILETIME& ft) BOOST_NOEXCEPT
     ft.dwHighDateTime = static_cast< DWORD >(temp >> 32);
 }
 
+} // unnamed namespace
+
+bool is_reparse_point_a_symlink_ioctl(HANDLE h)
+{
+    boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
+
+    // Query the reparse data
+    DWORD dwRetLen = 0u;
+    BOOL result = ::DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &dwRetLen, NULL);
+    if (BOOST_UNLIKELY(!result))
+        return false;
+
+    return is_reparse_point_tag_a_symlink(buf->rdb.ReparseTag);
+}
+
+namespace {
+
 inline bool is_reparse_point_a_symlink(path const& p)
 {
     handle_wrapper h(create_file_handle(p, 0u, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
         return false;
 
-    ULONG reparse_point_tag;
     GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
     if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
     {
@@ -1081,22 +1103,10 @@ inline bool is_reparse_point_a_symlink(path const& p)
         if ((info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) == 0u)
             return false;
 
-        reparse_point_tag = info.ReparseTag;
-    }
-    else
-    {
-        boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
-
-        // Query the reparse data
-        DWORD dwRetLen = 0u;
-        BOOL result = ::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &dwRetLen, NULL);
-        if (BOOST_UNLIKELY(!result))
-            return false;
-
-        reparse_point_tag = buf->rdb.ReparseTag;
+        return is_reparse_point_tag_a_symlink(info.ReparseTag);
     }
 
-    return is_reparse_point_tag_a_symlink(reparse_point_tag);
+    return is_reparse_point_a_symlink_ioctl(h.handle);
 }
 
 inline std::size_t get_full_path_name(path const& src, std::size_t len, wchar_t* buf, wchar_t** p)
@@ -1220,6 +1230,7 @@ inline bool remove_impl(path const& p, error_code* ec)
 //! remove_all() implementation
 uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
+    error_code dit_create_ec;
     for (unsigned int attempt = 0u; attempt < remove_all_directory_replaced_retry_count; ++attempt)
     {
         const DWORD attrs = ::GetFileAttributesW(p.c_str());
@@ -1254,17 +1265,19 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         if (recurse)
         {
             fs::directory_iterator itr;
-            error_code local_ec;
-            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &local_ec);
-            if (BOOST_UNLIKELY(!!local_ec))
+            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &dit_create_ec);
+            if (BOOST_UNLIKELY(!!dit_create_ec))
             {
-                if (local_ec == make_error_condition(system::errc::too_many_symbolic_link_levels))
+                if (dit_create_ec == make_error_condition(system::errc::not_a_directory) ||
+                    dit_create_ec == make_error_condition(system::errc::too_many_symbolic_link_levels))
+                {
                     continue;
+                }
 
                 if (!ec)
-                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
+                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, dit_create_ec));
 
-                *ec = local_ec;
+                *ec = dit_create_ec;
                 return static_cast< uintmax_t >(-1);
             }
 
@@ -1288,11 +1301,10 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         return count;
     }
 
-    error_code local_ec(make_error_code(system::errc::too_many_symbolic_link_levels));
     if (!ec)
-        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all: path cannot be opened as a directory", p, local_ec));
+        BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all: path cannot be opened as a directory", p, dit_create_ec));
 
-    *ec = local_ec;
+    *ec = dit_create_ec;
     return static_cast< uintmax_t >(-1);
 }
 

@@ -402,7 +402,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
 
     boost::intrusive_ptr< detail::dir_itr_imp > pimpl(new (extra_size) detail::dir_itr_imp());
     if (BOOST_UNLIKELY(!pimpl))
-        return make_error_code(boost::system::errc::not_enough_memory);
+        return make_error_code(system::errc::not_enough_memory);
 
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
     int flags = O_DIRECTORY | O_RDONLY | O_NONBLOCK | O_CLOEXEC;
@@ -755,7 +755,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
 {
     boost::intrusive_ptr< detail::dir_itr_imp > pimpl(new (dir_itr_extra_size) detail::dir_itr_imp());
     if (BOOST_UNLIKELY(!pimpl))
-        return make_error_code(boost::system::errc::not_enough_memory);
+        return make_error_code(system::errc::not_enough_memory);
 
     DWORD flags = FILE_FLAG_BACKUP_SEMANTICS;
     if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
@@ -768,28 +768,37 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
         return error_code(error, system_category());
     }
 
-    if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
+    GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
+    if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
     {
-        GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
-        if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
-        {
-            file_attribute_tag_info info;
-            BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
-            if (BOOST_UNLIKELY(!res))
-                goto return_last_error;
+        file_attribute_tag_info info;
+        BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
+        if (BOOST_UNLIKELY(!res))
+            goto return_last_error;
 
+        if (BOOST_UNLIKELY((info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0u))
+            return make_error_code(system::errc::not_a_directory);
+
+        if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
+        {
             if ((info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u && is_reparse_point_tag_a_symlink(info.ReparseTag))
-                return make_error_code(boost::system::errc::too_many_symbolic_link_levels);
+                return make_error_code(system::errc::too_many_symbolic_link_levels);
         }
-        else
-        {
-            BY_HANDLE_FILE_INFORMATION info;
-            BOOL res = ::GetFileInformationByHandle(h.handle, &info);
-            if (BOOST_UNLIKELY(!res))
-                goto return_last_error;
+    }
+    else
+    {
+        BY_HANDLE_FILE_INFORMATION info;
+        BOOL res = ::GetFileInformationByHandle(h.handle, &info);
+        if (BOOST_UNLIKELY(!res))
+            goto return_last_error;
 
-            if ((info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u)
-                return make_error_code(boost::system::errc::too_many_symbolic_link_levels);
+        if (BOOST_UNLIKELY((info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0u))
+            return make_error_code(system::errc::not_a_directory);
+
+        if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
+        {
+            if ((info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u && is_reparse_point_a_symlink_ioctl(h.handle))
+                return make_error_code(system::errc::too_many_symbolic_link_levels);
         }
     }
 
@@ -798,7 +807,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
     {
     case file_id_extd_dir_info_format:
         {
-            if (!filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api)(h.handle, file_id_extd_directory_restart_info_class, extra_data, dir_itr_extra_size))
+            if (!get_file_information_by_handle_ex(h.handle, file_id_extd_directory_restart_info_class, extra_data, dir_itr_extra_size))
             {
                 DWORD error = ::GetLastError();
 
@@ -832,7 +841,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
     case file_full_dir_info_format:
     fallback_to_file_full_dir_info_format:
         {
-            if (!filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api)(h.handle, file_full_directory_restart_info_class, extra_data, dir_itr_extra_size))
+            if (!get_file_information_by_handle_ex(h.handle, file_full_directory_restart_info_class, extra_data, dir_itr_extra_size))
             {
                 DWORD error = ::GetLastError();
 
@@ -861,7 +870,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
     case file_id_both_dir_info_format:
     fallback_to_file_id_both_dir_info:
         {
-            if (!filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api)(h.handle, file_id_both_directory_restart_info_class, extra_data, dir_itr_extra_size))
+            if (!get_file_information_by_handle_ex(h.handle, file_id_both_directory_restart_info_class, extra_data, dir_itr_extra_size))
             {
                 DWORD error = ::GetLastError();
 
@@ -968,7 +977,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
 {
     boost::intrusive_ptr< detail::dir_itr_imp > pimpl(new (static_cast< std::size_t >(0u)) detail::dir_itr_imp());
     if (BOOST_UNLIKELY(!pimpl))
-        return make_error_code(boost::system::errc::not_enough_memory);
+        return make_error_code(system::errc::not_enough_memory);
 
     // use a form of search Sebastian Martel reports will work with Win98
     fs::path dirpath(dir);
@@ -1086,7 +1095,7 @@ void directory_iterator_construct(directory_iterator& it, path const& p, unsigne
         if (!ec)
             throw;
 
-        *ec = make_error_code(boost::system::errc::not_enough_memory);
+        *ec = make_error_code(system::errc::not_enough_memory);
         it.m_imp.reset();
     }
 }
@@ -1143,7 +1152,7 @@ void directory_iterator_increment(directory_iterator& it, system::error_code* ec
             throw;
 
         it.m_imp.reset();
-        *ec = make_error_code(boost::system::errc::not_enough_memory);
+        *ec = make_error_code(system::errc::not_enough_memory);
     }
 }
 
