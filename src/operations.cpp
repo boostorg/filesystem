@@ -902,7 +902,7 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
         {
             fs::directory_iterator itr;
             fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &dit_create_ec);
-            if (BOOST_UNLIKELY(!!local_ec))
+            if (BOOST_UNLIKELY(!!dit_create_ec))
             {
                 if (dit_create_ec == error_code(ENOTDIR, system_category()))
                     continue;
