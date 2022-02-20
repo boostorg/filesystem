@@ -3521,25 +3521,13 @@ file_status status(path const& p, error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    DWORD attrs = ::GetFileAttributesW(p.c_str());
-    if (attrs == INVALID_FILE_ATTRIBUTES)
+    // We should first test if the file is a symlink or a reparse point. Resolving some reparse
+    // points by opening the file may fail, and status() should return file_status(reparse_file) in this case.
+    // Which is what symlink_status() returns.
+    fs::file_status st(detail::symlink_status(p, ec));
+    if (st.type() == symlink_file)
     {
-        return process_status_failure(p, ec);
-    }
-
-    perms permissions = make_permissions(p, attrs);
-
-    //  reparse point handling;
-    //    since GetFileAttributesW does not resolve symlinks, try to open a file
-    //    handle to discover if the file exists
-    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    {
-        if (!is_reparse_point_a_symlink(p))
-        {
-            return file_status(reparse_file, permissions);
-        }
-
-        // try to resolve symlink
+        // Resolve the symlink
         handle_wrapper h(
             create_file_handle(
                 p.c_str(),
@@ -3551,20 +3539,36 @@ file_status status(path const& p, error_code* ec)
 
         if (h.handle == INVALID_HANDLE_VALUE)
         {
+        return_status_failure:
             return process_status_failure(p, ec);
         }
 
-        // take attributes of target
-        BY_HANDLE_FILE_INFORMATION info;
-        if (!::GetFileInformationByHandle(h.handle, &info))
+        DWORD attrs;
+        GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
+        if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
         {
-            return process_status_failure(p, ec);
+            file_attribute_tag_info info;
+            BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
+            if (BOOST_UNLIKELY(!res))
+                goto return_status_failure;
+
+            attrs = info.FileAttributes;
+        }
+        else
+        {
+            BY_HANDLE_FILE_INFORMATION info;
+            BOOL res = ::GetFileInformationByHandle(h.handle, &info);
+            if (BOOST_UNLIKELY(!res))
+                goto return_status_failure;
+
+            attrs = info.dwFileAttributes;
         }
 
-        attrs = info.dwFileAttributes;
+        st.permissions(make_permissions(p, attrs));
+        st.type((attrs & FILE_ATTRIBUTE_DIRECTORY) ? fs::directory_file : fs::regular_file);
     }
 
-    return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? file_status(directory_file, permissions) : file_status(regular_file, permissions);
+    return st;
 
 #endif // defined(BOOST_POSIX_API)
 }
@@ -3627,18 +3631,52 @@ file_status symlink_status(path const& p, error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    DWORD attrs = ::GetFileAttributesW(p.c_str());
-    if (attrs == INVALID_FILE_ATTRIBUTES)
+    handle_wrapper h(
+        create_file_handle(
+            p.c_str(),
+            0u, // dwDesiredAccess; attributes only
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL, // lpSecurityAttributes
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+
+    if (h.handle == INVALID_HANDLE_VALUE)
     {
+    return_status_failure:
         return process_status_failure(p, ec);
     }
 
-    perms permissions = make_permissions(p, attrs);
+    DWORD attrs;
+    fs::perms permissions;
+    GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
+    if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
+    {
+        file_attribute_tag_info info;
+        BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
+        if (BOOST_UNLIKELY(!res))
+            goto return_status_failure;
 
-    if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-        return is_reparse_point_a_symlink(p) ? file_status(symlink_file, permissions) : file_status(reparse_file, permissions);
+        attrs = info.FileAttributes;
+        permissions = make_permissions(p, attrs);
 
-    return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? file_status(directory_file, permissions) : file_status(regular_file, permissions);
+        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+            return is_reparse_point_tag_a_symlink(info.ReparseTag) ? fs::file_status(fs::symlink_file, permissions) : fs::file_status(fs::reparse_file, permissions);
+    }
+    else
+    {
+        BY_HANDLE_FILE_INFORMATION info;
+        BOOL res = ::GetFileInformationByHandle(h.handle, &info);
+        if (BOOST_UNLIKELY(!res))
+            goto return_status_failure;
+
+        attrs = info.dwFileAttributes;
+        permissions = make_permissions(p, attrs);
+
+        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+            return is_reparse_point_a_symlink_ioctl(h.handle) ? fs::file_status(fs::symlink_file, permissions) : fs::file_status(fs::reparse_file, permissions);
+    }
+
+    return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? fs::file_status(fs::directory_file, permissions) : fs::file_status(fs::regular_file, permissions);
 
 #endif // defined(BOOST_POSIX_API)
 }
