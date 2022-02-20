@@ -179,7 +179,10 @@ target_link_libraries(boost_filesystem
 
 if(NOT BOOST_FILESYSTEM_HAS_CXX20_ATOMIC_REF)
     target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF)
-    target_link_libraries(boost_filesystem PRIVATE Boost::atomic)
+    target_link_libraries(boost_filesystem
+        PRIVATE
+            Boost::atomic
+    )
 endif()
 
 if(WIN32)
