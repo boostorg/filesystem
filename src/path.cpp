@@ -386,10 +386,11 @@ BOOST_FILESYSTEM_DECL path& path::remove_trailing_separator()
     return *this;
 }
 
-BOOST_FILESYSTEM_DECL path& path::replace_extension(path const& new_extension)
+BOOST_FILESYSTEM_DECL void path::replace_extension_v3(path const& new_extension)
 {
     // erase existing extension, including the dot, if any
-    m_pathname.erase(m_pathname.size() - extension().m_pathname.size());
+    size_type ext_pos = m_pathname.size() - extension_v3().m_pathname.size();
+    m_pathname.erase(m_pathname.begin() + ext_pos, m_pathname.end());
 
     if (!new_extension.empty())
     {
@@ -398,8 +399,21 @@ BOOST_FILESYSTEM_DECL path& path::replace_extension(path const& new_extension)
             m_pathname.push_back(dot);
         m_pathname.append(new_extension.m_pathname);
     }
+}
 
-    return *this;
+BOOST_FILESYSTEM_DECL void path::replace_extension_v4(path const& new_extension)
+{
+    // erase existing extension, including the dot, if any
+    size_type ext_pos = m_pathname.size() - find_extension_v4_size();
+    m_pathname.erase(m_pathname.begin() + ext_pos, m_pathname.end());
+
+    if (!new_extension.empty())
+    {
+        // append new_extension, adding the dot if necessary
+        if (new_extension.m_pathname[0] != dot)
+            m_pathname.push_back(dot);
+        m_pathname.append(new_extension.m_pathname);
+    }
 }
 
 //  decomposition  -------------------------------------------------------------------//
@@ -565,9 +579,8 @@ BOOST_FILESYSTEM_DECL path path::extension_v3() const
     return pos == string_type::npos ? path() : path(name.m_pathname.c_str() + pos);
 }
 
-BOOST_FILESYSTEM_DECL path path::extension_v4() const
+BOOST_FILESYSTEM_DECL string_type::size_type path::find_extension_v4_size() const
 {
-    path ext;
     const size_type size = m_pathname.size();
     size_type root_name_size = 0;
     find_root_directory_start(m_pathname.c_str(), size, root_name_size);
@@ -590,10 +603,10 @@ BOOST_FILESYSTEM_DECL path path::extension_v4() const
         }
 
         if (ext_pos > filename_pos)
-            ext.assign(m_pathname.c_str() + ext_pos, m_pathname.c_str() + size);
+            return size - ext_pos;
     }
 
-    return ext;
+    return 0u;
 }
 
 //  lexical operations  --------------------------------------------------------------//
