@@ -958,6 +958,40 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+//! FILE_BASIC_INFO definition from Windows SDK
+struct file_basic_info
+{
+    LARGE_INTEGER CreationTime;
+    LARGE_INTEGER LastAccessTime;
+    LARGE_INTEGER LastWriteTime;
+    LARGE_INTEGER ChangeTime;
+    DWORD FileAttributes;
+};
+
+//! FILE_DISPOSITION_INFO definition from Windows SDK
+struct file_disposition_info
+{
+    BOOLEAN DeleteFile;
+};
+
+//! FILE_DISPOSITION_INFO_EX definition from Windows SDK
+struct file_disposition_info_ex
+{
+    DWORD Flags;
+};
+
+#ifndef FILE_DISPOSITION_FLAG_DELETE
+#define FILE_DISPOSITION_FLAG_DELETE 0x00000001
+#endif
+// Available since Windows 10 1709
+#ifndef FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
+#define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS 0x00000002
+#endif
+// Available since Windows 10 1809
+#ifndef FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
+#define FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE 0x00000010
+#endif
+
 //  REPARSE_DATA_BUFFER related definitions are found in ntifs.h, which is part of the
 //  Windows Device Driver Kit. Since that's inconvenient, the definitions are provided
 //  here. See http://msdn.microsoft.com/en-us/library/ms791514.aspx
@@ -1022,6 +1056,136 @@ union reparse_data_buffer_with_storage
     reparse_data_buffer rdb;
     unsigned char storage[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
 };
+
+//  Windows kernel32.dll functions that may or may not be present
+//  must be accessed through pointers
+
+typedef BOOL (WINAPI CreateHardLinkW_t)(
+    /*__in*/ LPCWSTR lpFileName,
+    /*__in*/ LPCWSTR lpExistingFileName,
+    /*__reserved*/ LPSECURITY_ATTRIBUTES lpSecurityAttributes);
+
+CreateHardLinkW_t* create_hard_link_api = NULL;
+
+typedef BOOLEAN (WINAPI CreateSymbolicLinkW_t)(
+    /*__in*/ LPCWSTR lpSymlinkFileName,
+    /*__in*/ LPCWSTR lpTargetFileName,
+    /*__in*/ DWORD dwFlags);
+
+CreateSymbolicLinkW_t* create_symbolic_link_api = NULL;
+
+//! SetFileInformationByHandle signature. Available since Windows Vista.
+typedef BOOL (WINAPI SetFileInformationByHandle_t)(
+    /*_In_*/ HANDLE hFile,
+    /*_In_*/ file_info_by_handle_class FileInformationClass, // the actual type is FILE_INFO_BY_HANDLE_CLASS enum
+    /*_In_reads_bytes_(dwBufferSize)*/ LPVOID lpFileInformation,
+    /*_In_*/ DWORD dwBufferSize);
+
+SetFileInformationByHandle_t* set_file_information_by_handle_api = NULL;
+
+} // unnamed namespace
+
+GetFileInformationByHandleEx_t* get_file_information_by_handle_ex_api = NULL;
+
+#if !defined(UNDER_CE)
+NtQueryDirectoryFile_t* nt_query_directory_file_api = NULL;
+#endif // !defined(UNDER_CE)
+
+namespace {
+
+//! remove() implementation type
+enum remove_impl_type
+{
+    remove_nt5,                            //!< Use Windows XP API
+    remove_disp,                           //!< Use FILE_DISPOSITION_INFO (Windows Vista and later)
+    remove_disp_ex_flag_posix_semantics,   //!< Use FILE_DISPOSITION_INFO_EX with FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
+    remove_disp_ex_flag_ignore_readonly    //!< Use FILE_DISPOSITION_INFO_EX with FILE_DISPOSITION_FLAG_POSIX_SEMANTICS | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
+};
+
+remove_impl_type g_remove_impl_type = remove_nt5;
+
+//! Initializes WinAPI function pointers
+BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
+{
+    boost::winapi::HMODULE_ h = boost::winapi::GetModuleHandleW(L"kernel32.dll");
+    if (BOOST_LIKELY(!!h))
+    {
+        GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = (GetFileInformationByHandleEx_t*)boost::winapi::get_proc_address(h, "GetFileInformationByHandleEx");
+        filesystem::detail::atomic_store_relaxed(get_file_information_by_handle_ex_api, get_file_information_by_handle_ex);
+        SetFileInformationByHandle_t* set_file_information_by_handle = (SetFileInformationByHandle_t*)boost::winapi::get_proc_address(h, "SetFileInformationByHandle");
+        filesystem::detail::atomic_store_relaxed(set_file_information_by_handle_api, set_file_information_by_handle);
+        filesystem::detail::atomic_store_relaxed(create_hard_link_api, (CreateHardLinkW_t*)boost::winapi::get_proc_address(h, "CreateHardLinkW"));
+        filesystem::detail::atomic_store_relaxed(create_symbolic_link_api, (CreateSymbolicLinkW_t*)boost::winapi::get_proc_address(h, "CreateSymbolicLinkW"));
+
+        if (get_file_information_by_handle_ex && set_file_information_by_handle)
+        {
+            // Enable the most advanced implementation based on GetFileInformationByHandleEx/SetFileInformationByHandle.
+            // If certain flags are not supported by the OS, the remove() implementation will downgrade accordingly.
+            filesystem::detail::atomic_store_relaxed(g_remove_impl_type, remove_disp_ex_flag_ignore_readonly);
+        }
+    }
+
+#if !defined(UNDER_CE)
+    h = boost::winapi::GetModuleHandleW(L"ntdll.dll");
+    if (BOOST_LIKELY(!!h))
+    {
+        filesystem::detail::atomic_store_relaxed(nt_query_directory_file_api, (NtQueryDirectoryFile_t*)boost::winapi::get_proc_address(h, "NtQueryDirectoryFile"));
+    }
+
+    init_directory_iterator_impl();
+#endif // !defined(UNDER_CE)
+
+    return BOOST_FILESYSTEM_INITRETSUCCESS_V;
+}
+
+#if defined(_MSC_VER)
+
+#if _MSC_VER >= 1400
+
+#pragma section(".CRT$XCL", long, read)
+__declspec(allocate(".CRT$XCL")) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+extern const init_func_ptr_t p_init_winapi_func_ptrs = &init_winapi_func_ptrs;
+
+#else // _MSC_VER >= 1400
+
+#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
+#pragma data_seg(push, old_seg)
+#endif
+#pragma data_seg(".CRT$XCL")
+BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+extern const init_func_ptr_t p_init_winapi_func_ptrs = &init_winapi_func_ptrs;
+#pragma data_seg()
+#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
+#pragma data_seg(pop, old_seg)
+#endif
+
+#endif // _MSC_VER >= 1400
+
+#if defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
+//! Makes sure the global initializer pointers are referenced and not removed by linker
+struct globals_retainer
+{
+    const init_func_ptr_t* volatile m_p_init_winapi_func_ptrs;
+
+    globals_retainer() { m_p_init_winapi_func_ptrs = &p_init_winapi_func_ptrs; }
+};
+BOOST_ATTRIBUTE_UNUSED
+const globals_retainer g_globals_retainer;
+#endif // defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
+
+#else // defined(_MSC_VER)
+
+//! Invokes WinAPI function pointers initialization
+struct winapi_func_ptrs_initializer
+{
+    winapi_func_ptrs_initializer() { init_winapi_func_ptrs(); }
+};
+
+BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
+const winapi_func_ptrs_initializer winapi_func_ptrs_init;
+
+#endif // defined(_MSC_VER)
+
 
 // Windows CE has no environment variables
 #if !defined(UNDER_CE)
@@ -1116,7 +1280,7 @@ inline std::size_t get_full_path_name(path const& src, std::size_t len, wchar_t*
 
 inline fs::file_status process_status_failure(path const& p, error_code* ec)
 {
-    int errval = ::GetLastError();
+    DWORD errval = ::GetLastError();
     if (ec)                                    // always report errval, even though some
         ec->assign(errval, system_category()); // errval values are not status_errors
 
@@ -1135,43 +1299,16 @@ inline fs::file_status process_status_failure(path const& p, error_code* ec)
     return fs::file_status(fs::status_error);
 }
 
-//! remove() implementation
-inline bool remove_impl(path const& p, DWORD attrs, error_code* ec)
+//! remove() implementation for Windows XP and older
+bool remove_nt5_impl(path const& p, DWORD attrs, error_code* ec)
 {
-    // The following is similar to symlink_status(), except that it distinguishes between symlinks
-    // to directories and to files, and also preserves the full file attributes, which we'll need below.
-    bool is_directory;
-    if (BOOST_UNLIKELY(attrs == INVALID_FILE_ATTRIBUTES))
+    const bool is_directory = (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    const bool is_read_only = (attrs & FILE_ATTRIBUTE_READONLY) != 0;
+    if (is_read_only)
     {
-        error_code local_ec;
-        file_type type = process_status_failure(p, &local_ec).type();
-
-        if (type == fs::file_not_found)
-            return false;
-
-        if (BOOST_UNLIKELY(type == fs::status_error))
-        {
-            if (!ec)
-                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove", p, local_ec));
-
-            *ec = local_ec;
-            return false;
-        }
-
-        is_directory = type == fs::directory_file;
-    }
-    else if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    {
-        is_directory = (attrs & FILE_ATTRIBUTE_DIRECTORY) && is_reparse_point_a_symlink(p);
-    }
-    else
-    {
-        is_directory = (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
-    }
-
-    if (is_directory)
-    {
-        BOOL res = ::RemoveDirectoryW(p.c_str());
+        // RemoveDirectoryW and DeleteFileW do not allow to remove a read-only file, so we have to drop the attribute
+        DWORD new_attrs = attrs & ~FILE_ATTRIBUTE_READONLY;
+        BOOL res = ::SetFileAttributesW(p.c_str(), new_attrs);
         if (BOOST_UNLIKELY(!res))
         {
             DWORD err = ::GetLastError();
@@ -1181,40 +1318,176 @@ inline bool remove_impl(path const& p, DWORD attrs, error_code* ec)
             return false;
         }
     }
+
+    BOOL res;
+    if (!is_directory)
+    {
+        // DeleteFileW works for file symlinks by removing the symlink, not the target.
+        res = ::DeleteFileW(p.c_str());
+    }
     else
     {
-        const bool is_read_only = (attrs & FILE_ATTRIBUTE_READONLY) != 0;
-        if (is_read_only)
-        {
-            // DeleteFileW does not allow to remove a read-only file, so we have to drop the attribute
-            DWORD new_attrs = attrs & ~FILE_ATTRIBUTE_READONLY;
-            BOOL res = ::SetFileAttributesW(p.c_str(), new_attrs);
-            if (BOOST_UNLIKELY(!res))
-            {
-                DWORD err = ::GetLastError();
-                if (!not_found_error(err))
-                    emit_error(err, p, ec, "boost::filesystem::remove");
+        // RemoveDirectoryW works for symlinks and junctions by removing the symlink, not the target,
+        // even if the target directory is not empty.
+        // Note that unlike opening the directory with FILE_FLAG_DELETE_ON_CLOSE flag, RemoveDirectoryW
+        // will fail if the directory is not empty.
+        res = ::RemoveDirectoryW(p.c_str());
+    }
 
-                return false;
+    if (BOOST_UNLIKELY(!res))
+    {
+        DWORD err = ::GetLastError();
+        if (!not_found_error(err))
+        {
+            if (is_read_only)
+            {
+                // Try to restore the read-only attribute
+                ::SetFileAttributesW(p.c_str(), attrs);
             }
+
+            emit_error(err, p, ec, "boost::filesystem::remove");
         }
 
-        BOOL res = ::DeleteFileW(p.c_str());
-        if (BOOST_UNLIKELY(!res))
+        return false;
+    }
+
+    return true;
+}
+
+//! remove() implementation for Windows Vista and newer
+bool remove_nt6_impl(path const& p, remove_impl_type impl, error_code* ec)
+{
+    handle_wrapper h(create_file_handle(p, DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+    DWORD err;
+    if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
+    {
+        err = ::GetLastError();
+
+    return_error:
+        if (!not_found_error(err))
+            emit_error(err, p, ec, "boost::filesystem::remove");
+
+        return false;
+    }
+
+    GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
+    SetFileInformationByHandle_t* set_file_information_by_handle = filesystem::detail::atomic_load_relaxed(set_file_information_by_handle_api);
+    switch (impl)
+    {
+    case remove_disp_ex_flag_ignore_readonly:
         {
-            DWORD err = ::GetLastError();
-            if (!not_found_error(err))
+            file_disposition_info_ex info;
+            info.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE;
+            BOOL res = set_file_information_by_handle(h.handle, file_disposition_info_ex_class, &info, sizeof(info));
+            if (BOOST_LIKELY(!!res))
+                break;
+
+            err = ::GetLastError();
+            if (BOOST_UNLIKELY(err == ERROR_INVALID_PARAMETER || err == ERROR_INVALID_FUNCTION || err == ERROR_NOT_SUPPORTED))
             {
-                if (is_read_only)
+                // Downgrade to the older implementation
+                impl = remove_disp_ex_flag_posix_semantics;
+                filesystem::detail::atomic_store_relaxed(g_remove_impl_type, impl);
+            }
+            else
+            {
+                goto return_error;
+            }
+        }
+        BOOST_FALLTHROUGH;
+
+    case remove_disp_ex_flag_posix_semantics:
+        {
+            file_disposition_info_ex info;
+            info.Flags = FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS;
+            BOOL res = set_file_information_by_handle(h.handle, file_disposition_info_ex_class, &info, sizeof(info));
+            if (BOOST_LIKELY(!!res))
+                break;
+
+            err = ::GetLastError();
+            if (err == ERROR_ACCESS_DENIED)
+            {
+                // Check if the file is read-only and reset the attribute
+                file_basic_info basic_info;
+                res = get_file_information_by_handle_ex(h.handle, file_basic_info_class, &basic_info, sizeof(basic_info));
+                if (BOOST_UNLIKELY(!res || (basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) == 0))
+                    goto return_error; // return ERROR_ACCESS_DENIED
+
+                basic_info.FileAttributes &= ~FILE_ATTRIBUTE_READONLY;
+
+                res = set_file_information_by_handle(h.handle, file_basic_info_class, &basic_info, sizeof(basic_info));
+                if (BOOST_UNLIKELY(!res))
                 {
-                    // Try to restore the read-only attribute
-                    ::SetFileAttributesW(p.c_str(), attrs);
+                    err = ::GetLastError();
+                    goto return_error;
                 }
 
-                emit_error(err, p, ec, "boost::filesystem::remove");
+                // Try to set the flag again
+                res = set_file_information_by_handle(h.handle, file_disposition_info_ex_class, &info, sizeof(info));
+                if (BOOST_LIKELY(!!res))
+                    break;
+
+                err = ::GetLastError();
+
+                // Try to restore the read-only flag
+                basic_info.FileAttributes |= FILE_ATTRIBUTE_READONLY;
+                set_file_information_by_handle(h.handle, file_basic_info_class, &basic_info, sizeof(basic_info));
+
+                goto return_error;
+            }
+            else if (BOOST_UNLIKELY(err == ERROR_INVALID_PARAMETER || err == ERROR_INVALID_FUNCTION || err == ERROR_NOT_SUPPORTED))
+            {
+                // Downgrade to the older implementation
+                impl = remove_disp;
+                filesystem::detail::atomic_store_relaxed(g_remove_impl_type, impl);
+            }
+            else
+            {
+                goto return_error;
+            }
+        }
+        BOOST_FALLTHROUGH;
+
+    default:
+        {
+            file_disposition_info info;
+            info.DeleteFile = true;
+            BOOL res = set_file_information_by_handle(h.handle, file_disposition_info_class, &info, sizeof(info));
+            if (BOOST_LIKELY(!!res))
+                break;
+
+            err = ::GetLastError();
+            if (err == ERROR_ACCESS_DENIED)
+            {
+                // Check if the file is read-only and reset the attribute
+                file_basic_info basic_info;
+                res = get_file_information_by_handle_ex(h.handle, file_basic_info_class, &basic_info, sizeof(basic_info));
+                if (BOOST_UNLIKELY(!res || (basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) == 0))
+                    goto return_error; // return ERROR_ACCESS_DENIED
+
+                basic_info.FileAttributes &= ~FILE_ATTRIBUTE_READONLY;
+
+                res = set_file_information_by_handle(h.handle, file_basic_info_class, &basic_info, sizeof(basic_info));
+                if (BOOST_UNLIKELY(!res))
+                {
+                    err = ::GetLastError();
+                    goto return_error;
+                }
+
+                // Try to set the flag again
+                res = set_file_information_by_handle(h.handle, file_disposition_info_class, &info, sizeof(info));
+                if (BOOST_LIKELY(!!res))
+                    break;
+
+                err = ::GetLastError();
+
+                // Try to restore the read-only flag
+                basic_info.FileAttributes |= FILE_ATTRIBUTE_READONLY;
+                set_file_information_by_handle(h.handle, file_basic_info_class, &basic_info, sizeof(basic_info));
             }
 
-            return false;
+            goto return_error;
         }
     }
 
@@ -1224,43 +1497,47 @@ inline bool remove_impl(path const& p, DWORD attrs, error_code* ec)
 //! remove() implementation
 inline bool remove_impl(path const& p, error_code* ec)
 {
-    return remove_impl(p, ::GetFileAttributesW(p.c_str()), ec);
+    remove_impl_type impl = filesystem::detail::atomic_load_relaxed(g_remove_impl_type);
+    if (BOOST_LIKELY(impl != remove_nt5))
+    {
+        return remove_nt6_impl(p, impl, ec);
+    }
+    else
+    {
+        const DWORD attrs = ::GetFileAttributesW(p.c_str());
+        if (BOOST_UNLIKELY(attrs == INVALID_FILE_ATTRIBUTES))
+        {
+            DWORD err = ::GetLastError();
+            if (!not_found_error(err))
+                emit_error(err, p, ec, "boost::filesystem::remove");
+
+            return false;
+        }
+
+        return remove_nt5_impl(p, attrs, ec);
+    }
 }
 
 //! remove_all() implementation
 uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
+    remove_impl_type impl = filesystem::detail::atomic_load_relaxed(g_remove_impl_type);
     error_code dit_create_ec;
     for (unsigned int attempt = 0u; attempt < remove_all_directory_replaced_retry_count; ++attempt)
     {
         const DWORD attrs = ::GetFileAttributesW(p.c_str());
-        bool recurse;
         if (BOOST_UNLIKELY(attrs == INVALID_FILE_ATTRIBUTES))
         {
-            error_code local_ec;
-            file_type type = process_status_failure(p, &local_ec).type();
-
-            if (type == fs::file_not_found)
+            DWORD err = ::GetLastError();
+            if (not_found_error(err))
                 return 0u;
 
-            if (BOOST_UNLIKELY(type == fs::status_error))
-            {
-                if (!ec)
-                    BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::remove_all", p, local_ec));
-
-                *ec = local_ec;
-                return static_cast< uintmax_t >(-1);
-            }
-
-            // Some unknown file type
-            recurse = false;
-        }
-        else
-        {
-            // Recurse into directories, but not into junctions or directory symlinks
-            recurse = (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0 && (attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0;
+            emit_error(err, p, ec, "boost::filesystem::remove_all");
+            return static_cast< uintmax_t >(-1);
         }
 
+        // Recurse into directories, but not into junctions or directory symlinks
+        const bool recurse = (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0 && (attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0;
         uintmax_t count = 0u;
         if (recurse)
         {
@@ -1294,10 +1571,15 @@ uintmax_t remove_all_impl(path const& p, error_code* ec)
             }
         }
 
-        count += remove_impl(p, attrs, ec);
+        bool removed;
+        if (BOOST_LIKELY(impl != remove_nt5))
+            removed = remove_nt6_impl(p, impl, ec);
+        else
+            removed = remove_nt5_impl(p, attrs, ec);
         if (ec && *ec)
             return static_cast< uintmax_t >(-1);
 
+        count += removed;
         return count;
     }
 
@@ -1461,105 +1743,6 @@ done:
     win32_path.concat(nt_path + pos, nt_path + size);
     return win32_path;
 }
-
-//  Windows kernel32.dll functions that may or may not be present
-//  must be accessed through pointers
-
-typedef BOOL (WINAPI CreateHardLinkW_t)(
-    /*__in*/ LPCWSTR lpFileName,
-    /*__in*/ LPCWSTR lpExistingFileName,
-    /*__reserved*/ LPSECURITY_ATTRIBUTES lpSecurityAttributes);
-
-CreateHardLinkW_t* create_hard_link_api = NULL;
-
-typedef BOOLEAN (WINAPI CreateSymbolicLinkW_t)(
-    /*__in*/ LPCWSTR lpSymlinkFileName,
-    /*__in*/ LPCWSTR lpTargetFileName,
-    /*__in*/ DWORD dwFlags);
-
-CreateSymbolicLinkW_t* create_symbolic_link_api = NULL;
-
-} // unnamed namespace
-
-GetFileInformationByHandleEx_t* get_file_information_by_handle_ex_api = NULL;
-
-#if !defined(UNDER_CE)
-NtQueryDirectoryFile_t* nt_query_directory_file_api = NULL;
-#endif // !defined(UNDER_CE)
-
-namespace {
-
-//! Initializes WinAPI function pointers
-BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
-{
-    boost::winapi::HMODULE_ h = boost::winapi::GetModuleHandleW(L"kernel32.dll");
-    if (BOOST_LIKELY(!!h))
-    {
-        filesystem::detail::atomic_store_relaxed(get_file_information_by_handle_ex_api, (GetFileInformationByHandleEx_t*)boost::winapi::get_proc_address(h, "GetFileInformationByHandleEx"));
-        filesystem::detail::atomic_store_relaxed(create_hard_link_api, (CreateHardLinkW_t*)boost::winapi::get_proc_address(h, "CreateHardLinkW"));
-        filesystem::detail::atomic_store_relaxed(create_symbolic_link_api, (CreateSymbolicLinkW_t*)boost::winapi::get_proc_address(h, "CreateSymbolicLinkW"));
-    }
-
-#if !defined(UNDER_CE)
-    h = boost::winapi::GetModuleHandleW(L"ntdll.dll");
-    if (BOOST_LIKELY(!!h))
-    {
-        filesystem::detail::atomic_store_relaxed(nt_query_directory_file_api, (NtQueryDirectoryFile_t*)boost::winapi::get_proc_address(h, "NtQueryDirectoryFile"));
-    }
-
-    init_directory_iterator_impl();
-#endif // !defined(UNDER_CE)
-
-    return BOOST_FILESYSTEM_INITRETSUCCESS_V;
-}
-
-#if defined(_MSC_VER)
-
-#if _MSC_VER >= 1400
-
-#pragma section(".CRT$XCL", long, read)
-__declspec(allocate(".CRT$XCL")) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
-extern const init_func_ptr_t p_init_winapi_func_ptrs = &init_winapi_func_ptrs;
-
-#else // _MSC_VER >= 1400
-
-#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
-#pragma data_seg(push, old_seg)
-#endif
-#pragma data_seg(".CRT$XCL")
-BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
-extern const init_func_ptr_t p_init_winapi_func_ptrs = &init_winapi_func_ptrs;
-#pragma data_seg()
-#if (_MSC_VER >= 1300) // 1300 == VC++ 7.0
-#pragma data_seg(pop, old_seg)
-#endif
-
-#endif // _MSC_VER >= 1400
-
-#if defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
-//! Makes sure the global initializer pointers are referenced and not removed by linker
-struct globals_retainer
-{
-    const init_func_ptr_t* volatile m_p_init_winapi_func_ptrs;
-
-    globals_retainer() { m_p_init_winapi_func_ptrs = &p_init_winapi_func_ptrs; }
-};
-BOOST_ATTRIBUTE_UNUSED
-const globals_retainer g_globals_retainer;
-#endif // defined(BOOST_FILESYSTEM_NO_ATTRIBUTE_RETAIN)
-
-#else // defined(_MSC_VER)
-
-//! Invokes WinAPI function pointers initialization
-struct winapi_func_ptrs_initializer
-{
-    winapi_func_ptrs_initializer() { init_winapi_func_ptrs(); }
-};
-
-BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_FUNC_PTR_INIT_PRIORITY) BOOST_ATTRIBUTE_UNUSED BOOST_FILESYSTEM_ATTRIBUTE_RETAIN
-const winapi_func_ptrs_initializer winapi_func_ptrs_init;
-
-#endif // defined(_MSC_VER)
 
 #endif // defined(BOOST_POSIX_API)
 

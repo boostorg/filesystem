@@ -132,13 +132,16 @@ extern NtQueryDirectoryFile_t* nt_query_directory_file_api;
 //! FILE_INFO_BY_HANDLE_CLASS enum entries
 enum file_info_by_handle_class
 {
+    file_basic_info_class = 0,
+    file_disposition_info_class = 4,
     file_attribute_tag_info_class = 9,
     file_id_both_directory_info_class = 10,
     file_id_both_directory_restart_info_class = 11,
     file_full_directory_info_class = 14,
     file_full_directory_restart_info_class = 15,
     file_id_extd_directory_info_class = 19,
-    file_id_extd_directory_restart_info_class = 20
+    file_id_extd_directory_restart_info_class = 20,
+    file_disposition_info_ex_class = 21
 };
 
 //! FILE_ATTRIBUTE_TAG_INFO definition from Windows SDK
