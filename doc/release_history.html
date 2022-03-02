@@ -49,6 +49,7 @@
   <li>On Windows, <code>directory_iterator</code> internal implementation has been reworked to better utilize modern Windows APIs, which may improve performance while handling symlinks.</li>
   <li>On Windows, initialize internal WinAPI function pointers early, if possible, to allow Boost.Filesystem operations to be invoked in global constructors. This is only supported on MSVC, GCC, Clang and compatible compilers.</li>
   <li>On Windows, <code>resize_file</code> should no longer fail with an error if the file to be resized is opened.</li>
+  <li>Disabled use of the <code>statx</code> syscall on Android prior to 11.0 (API version 30). The syscall is blacklisted by seccomp and causes process termination in runtime. (<a href="https://github.com/boostorg/filesystem/issues/229">#229</a>)</li>
   <li><b>Deprecated:</b> <code>boost/filesystem/string_file.hpp</code> header is deprecated and will be removed in a future release. The header is no longer included by <code>boost/filesystem.hpp</code> by default. Users are advised to implement the functionality themselves or migrate to other implementations.</li>
   <li><b>Deprecated:</b> Windows CE support is deprecated and will be removed in a future release. Windows CE has been untested for many years and is likely non-functional.</li>
 </ul>
