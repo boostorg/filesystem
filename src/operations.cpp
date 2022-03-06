@@ -2760,7 +2760,7 @@ void create_symlink(path const& to, path const& from, error_code* ec)
 BOOST_FILESYSTEM_DECL
 path current_path(error_code* ec)
 {
-#if defined(UNDER_CE) || defined(__wasm)
+#if defined(UNDER_CE)
     // Windows CE has no current directory, so everything's relative to the root of the directory tree.
     // WASI also does not support current path.
     emit_error(BOOST_ERROR_NOT_SUPPORTED, ec, "boost::filesystem::current_path");
@@ -2830,7 +2830,7 @@ path current_path(error_code* ec)
 BOOST_FILESYSTEM_DECL
 void current_path(path const& p, system::error_code* ec)
 {
-#if defined(UNDER_CE) || defined(__wasm)
+#if defined(UNDER_CE)
     emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::current_path");
 #else
     error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::current_path");
