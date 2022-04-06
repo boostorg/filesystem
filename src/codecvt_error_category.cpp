@@ -29,6 +29,13 @@ namespace filesystem {
 
 namespace {
 
+#if (defined(BOOST_GCC) && BOOST_GCC >= 40600) || defined(BOOST_CLANG)
+#pragma GCC diagnostic push
+// '(anonymous namespace)::codecvt_error_cat' has virtual functions but non-virtual destructor
+// This is no a problem as instances of codecvt_error_cat are never destroyed through a pointer to base.
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
+
 class codecvt_error_cat BOOST_FINAL :
     public boost::system::error_category
 {
@@ -67,6 +74,10 @@ std::string codecvt_error_cat::message(int ev) const
     }
     return str;
 }
+
+#if (defined(BOOST_GCC) && BOOST_GCC >= 40600) || defined(BOOST_CLANG)
+#pragma GCC diagnostic pop
+#endif
 
 } // unnamed namespace
 
