@@ -38,9 +38,10 @@
 #endif
 #include <cerrno>
 
-// Use WASI when not building with emscripten or when BOOST_FILESYSTEM_DISABLE_EMSCRIPTEN_WASI is not set
-#if defined(__wasm) && (!defined(__EMSCRIPTEN__) || !defined(BOOST_FILESYSTEM_DISABLE_EMSCRIPTEN_WASI))
-#define BOOST_FILESYSTEM_STANDALONE_WASM
+// Default to POSIX under Emscripten
+// If BOOST_FILESYSTEM_EMSCRIPTEN_USE_WASI is set, use WASI instead
+#if defined(__wasm) && (!defined(__EMSCRIPTEN__) || defined(BOOST_FILESYSTEM_EMSCRIPTEN_USE_WASI))
+#define BOOST_FILESYSTEM_USE_WASI
 #endif
 
 #ifdef BOOST_POSIX_API
@@ -48,7 +49,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if defined(BOOST_FILESYSTEM_USE_WASI)
 // WASI does not have statfs or statvfs.
 #elif !defined(__APPLE__) && \
     (!defined(__OpenBSD__) || BOOST_OS_BSD_OPEN >= BOOST_VERSION_NUMBER(4, 4, 0)) && \
@@ -2225,7 +2226,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     }
 
     mode_t to_mode = from_mode;
-#if !defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if !defined(BOOST_FILESYSTEM_USE_WASI)
     // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
     // which checks the file permission on the server, even if the client's file descriptor supports writing.
     to_mode |= S_IWUSR;
@@ -2344,7 +2345,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     if (BOOST_UNLIKELY(err != 0))
         goto fail; // err already contains the error code
 
-#if !defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if !defined(BOOST_FILESYSTEM_USE_WASI)
     // If we created a new file with an explicitly added S_IWUSR permission,
     // we may need to update its mode bits to match the source file.
     if (to_mode != from_mode)
@@ -2780,7 +2781,7 @@ void create_symlink(path const& to, path const& from, error_code* ec)
 BOOST_FILESYSTEM_DECL
 path current_path(error_code* ec)
 {
-#if defined(UNDER_CE) || defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if defined(UNDER_CE) || defined(BOOST_FILESYSTEM_USE_WASI)
     // Windows CE has no current directory, so everything's relative to the root of the directory tree.
     // WASI also does not support current path.
     emit_error(BOOST_ERROR_NOT_SUPPORTED, ec, "boost::filesystem::current_path");
@@ -2850,7 +2851,7 @@ path current_path(error_code* ec)
 BOOST_FILESYSTEM_DECL
 void current_path(path const& p, system::error_code* ec)
 {
-#if defined(UNDER_CE) || defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if defined(UNDER_CE) || defined(BOOST_FILESYSTEM_USE_WASI)
     emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::current_path");
 #else
     error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::current_path");
@@ -3354,7 +3355,7 @@ void permissions(path const& p, perms prms, system::error_code* ec)
     if ((prms & add_perms) && (prms & remove_perms)) // precondition failed
         return;
 
-#if defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if defined(BOOST_FILESYSTEM_USE_WASI)
     emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::permissions");
 #elif defined(BOOST_POSIX_API)
     error_code local_ec;
@@ -3618,7 +3619,7 @@ space_info space(path const& p, error_code* ec)
     if (ec)
         ec->clear();
 
-#if defined(BOOST_FILESYSTEM_STANDALONE_WASM)
+#if defined(BOOST_FILESYSTEM_USE_WASI)
 
     emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::space");
 
