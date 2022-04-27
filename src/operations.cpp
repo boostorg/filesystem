@@ -38,7 +38,7 @@
 #endif
 #include <cerrno>
 
-// Use WASI when not building with emscripten or when BOOST_FILESYSTEM_DISABLE_EMSCRIPTEN_WASI is set
+// Use WASI when not building with emscripten or when BOOST_FILESYSTEM_DISABLE_EMSCRIPTEN_WASI is not set
 #if defined(__wasm) && (!defined(__EMSCRIPTEN__) || !defined(BOOST_FILESYSTEM_DISABLE_EMSCRIPTEN_WASI))
 #define BOOST_FILESYSTEM_STANDALONE_WASM
 #endif
