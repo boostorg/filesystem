@@ -1252,7 +1252,13 @@ namespace {
 
 inline bool is_reparse_point_a_symlink(path const& p)
 {
-    handle_wrapper h(create_file_handle(p, 0u, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+    handle_wrapper h(create_file_handle(
+        p,
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
         return false;
 
@@ -1357,8 +1363,13 @@ bool remove_nt5_impl(path const& p, DWORD attrs, error_code* ec)
 //! remove() implementation for Windows Vista and newer
 bool remove_nt6_impl(path const& p, remove_impl_type impl, error_code* ec)
 {
-    handle_wrapper h(create_file_handle(p, DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+    handle_wrapper h(create_file_handle(
+        p,
+        DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
     DWORD err;
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
     {
@@ -2373,7 +2384,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         // Create handle_wrappers here so that CloseHandle calls don't clobber error code returned by GetLastError
         handle_wrapper hw_from, hw_to;
 
-        hw_from.handle = create_file_handle(from.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+        hw_from.handle = create_file_handle(from.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
 
         FILETIME lwt_from;
         if (hw_from.handle == INVALID_HANDLE_VALUE)
@@ -2384,15 +2395,15 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
             return false;
         }
 
-        if (!::GetFileTime(hw_from.handle, 0, 0, &lwt_from))
+        if (!::GetFileTime(hw_from.handle, NULL, NULL, &lwt_from))
             goto fail_last_error;
 
-        hw_to.handle = create_file_handle(to.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+        hw_to.handle = create_file_handle(to.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
 
         if (hw_to.handle != INVALID_HANDLE_VALUE)
         {
             FILETIME lwt_to;
-            if (!::GetFileTime(hw_to.handle, 0, 0, &lwt_to))
+            if (!::GetFileTime(hw_to.handle, NULL, NULL, &lwt_to))
                 goto fail_last_error;
 
             ULONGLONG tfrom = (static_cast< ULONGLONG >(lwt_from.dwHighDateTime) << 32) | static_cast< ULONGLONG >(lwt_from.dwLowDateTime);
@@ -2894,23 +2905,21 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
     // been retrieved.
 
     // p2 is done first, so any error reported is for p1
-    handle_wrapper h2(
-        create_file_handle(
-            p2.c_str(),
-            0u,
-            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL,
-            OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS));
+    handle_wrapper h2(create_file_handle(
+        p2.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
 
-    handle_wrapper h1(
-        create_file_handle(
-            p1.c_str(),
-            0u,
-            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL,
-            OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS));
+    handle_wrapper h1(create_file_handle(
+        p1.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(h1.handle == INVALID_HANDLE_VALUE || h2.handle == INVALID_HANDLE_VALUE))
     {
@@ -3044,8 +3053,13 @@ uintmax_t hard_link_count(path const& p, system::error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    handle_wrapper h(
-        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
+    handle_wrapper h(create_file_handle(
+        p.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
     {
@@ -3166,8 +3180,13 @@ std::time_t creation_time(path const& p, system::error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    handle_wrapper hw(
-        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
+    handle_wrapper hw(create_file_handle(
+        p.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
@@ -3219,8 +3238,13 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    handle_wrapper hw(
-        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
+    handle_wrapper hw(create_file_handle(
+        p.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
@@ -3281,8 +3305,13 @@ void last_write_time(path const& p, const std::time_t new_time, system::error_co
 
 #else // defined(BOOST_POSIX_API)
 
-    handle_wrapper hw(
-        create_file_handle(p.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS));
+    handle_wrapper hw(create_file_handle(
+        p.c_str(),
+        FILE_WRITE_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
 
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
@@ -3294,7 +3323,7 @@ void last_write_time(path const& p, const std::time_t new_time, system::error_co
     FILETIME lwt;
     to_FILETIME(new_time, lwt);
 
-    if (BOOST_UNLIKELY(!::SetFileTime(hw.handle, 0, 0, &lwt)))
+    if (BOOST_UNLIKELY(!::SetFileTime(hw.handle, NULL, NULL, &lwt)))
         goto fail;
 
 #endif // defined(BOOST_POSIX_API)
@@ -3445,8 +3474,13 @@ path read_symlink(path const& p, system::error_code* ec)
 
 #else
 
-    handle_wrapper h(
-        create_file_handle(p.c_str(), 0u, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+    handle_wrapper h(create_file_handle(
+        p.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
 
     DWORD error;
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
@@ -3460,7 +3494,7 @@ path read_symlink(path const& p, system::error_code* ec)
 
     boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
     DWORD sz = 0u;
-    if (BOOST_UNLIKELY(!::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, 0, 0, buf.get(), sizeof(*buf), &sz, 0)))
+    if (BOOST_UNLIKELY(!::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &sz, NULL)))
     {
         error = ::GetLastError();
         goto return_error;
@@ -3711,14 +3745,13 @@ file_status status(path const& p, error_code* ec)
     if (st.type() == symlink_file)
     {
         // Resolve the symlink
-        handle_wrapper h(
-            create_file_handle(
-                p.c_str(),
-                0u, // dwDesiredAccess; attributes only
-                FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-                NULL, // lpSecurityAttributes
-                OPEN_EXISTING,
-                FILE_FLAG_BACKUP_SEMANTICS));
+        handle_wrapper h(create_file_handle(
+            p.c_str(),
+            FILE_READ_ATTRIBUTES, // dwDesiredAccess; attributes only
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL, // lpSecurityAttributes
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS));
 
         if (h.handle == INVALID_HANDLE_VALUE)
         {
@@ -3814,14 +3847,13 @@ file_status symlink_status(path const& p, error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
-    handle_wrapper h(
-        create_file_handle(
-            p.c_str(),
-            0u, // dwDesiredAccess; attributes only
-            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
-            NULL, // lpSecurityAttributes
-            OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
+    handle_wrapper h(create_file_handle(
+        p.c_str(),
+        FILE_READ_ATTRIBUTES, // dwDesiredAccess; attributes only
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL, // lpSecurityAttributes
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
 
     if (h.handle == INVALID_HANDLE_VALUE)
     {
