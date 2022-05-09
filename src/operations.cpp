@@ -1284,9 +1284,8 @@ inline std::size_t get_full_path_name(path const& src, std::size_t len, wchar_t*
     return static_cast< std::size_t >(::GetFullPathNameW(src.c_str(), static_cast< DWORD >(len), buf, p));
 }
 
-inline fs::file_status process_status_failure(path const& p, error_code* ec)
+inline fs::file_status process_status_failure(DWORD errval, path const& p, error_code* ec)
 {
-    DWORD errval = ::GetLastError();
     if (ec)                                    // always report errval, even though some
         ec->assign(errval, system_category()); // errval values are not status_errors
 
@@ -1303,6 +1302,11 @@ inline fs::file_status process_status_failure(path const& p, error_code* ec)
         BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status", p, error_code(errval, system_category())));
 
     return fs::file_status(fs::status_error);
+}
+
+inline fs::file_status process_status_failure(path const& p, error_code* ec)
+{
+    return process_status_failure(::GetLastError(), p, ec);
 }
 
 //! remove() implementation for Windows XP and older
@@ -3855,13 +3859,30 @@ file_status symlink_status(path const& p, error_code* ec)
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
 
+    DWORD attrs;
     if (h.handle == INVALID_HANDLE_VALUE)
     {
-    return_status_failure:
-        return process_status_failure(p, ec);
+        // For some system files and folders like "System Volume Information" CreateFileW fails
+        // with ERROR_ACCESS_DENIED. GetFileAttributesW succeeds for such files, so try that.
+        // Though this will only help if the file is not a reparse point (symlink or not).
+        DWORD err = GetLastError();
+        if (err == ERROR_ACCESS_DENIED)
+        {
+            attrs = GetFileAttributesW(p.c_str());
+            if (attrs != INVALID_FILE_ATTRIBUTES)
+            {
+                if ((attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0u)
+                    return file_status((attrs & FILE_ATTRIBUTE_DIRECTORY) ? fs::directory_file : fs::regular_file, make_permissions(p, attrs));
+            }
+            else
+            {
+                err = GetLastError();
+            }
+        }
+
+        return process_status_failure(err, p, ec);
     }
 
-    DWORD attrs;
     fs::perms permissions;
     GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
     if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
@@ -3869,7 +3890,7 @@ file_status symlink_status(path const& p, error_code* ec)
         file_attribute_tag_info info;
         BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
         if (BOOST_UNLIKELY(!res))
-            goto return_status_failure;
+            return process_status_failure(p, ec);
 
         attrs = info.FileAttributes;
         permissions = make_permissions(p, attrs);
@@ -3882,7 +3903,7 @@ file_status symlink_status(path const& p, error_code* ec)
         BY_HANDLE_FILE_INFORMATION info;
         BOOL res = ::GetFileInformationByHandle(h.handle, &info);
         if (BOOST_UNLIKELY(!res))
-            goto return_status_failure;
+            return process_status_failure(p, ec);
 
         attrs = info.dwFileAttributes;
         permissions = make_permissions(p, attrs);

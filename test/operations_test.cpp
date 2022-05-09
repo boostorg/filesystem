@@ -1069,6 +1069,18 @@ void predicate_and_status_tests()
     BOOST_TEST(!fs::is_regular_file(stat));
     BOOST_TEST(!fs::is_other(stat));
     BOOST_TEST(!fs::is_symlink(stat));
+
+#ifdef BOOST_WINDOWS_API
+    stat = fs::status(L"\\System Volume Information");
+    BOOST_TEST(fs::type_present(stat));
+    BOOST_TEST(fs::permissions_present(stat));
+    BOOST_TEST(fs::status_known(stat));
+    BOOST_TEST(fs::exists(stat));
+    BOOST_TEST(fs::is_directory(stat));
+    BOOST_TEST(!fs::is_regular_file(stat));
+    BOOST_TEST(!fs::is_other(stat));
+    BOOST_TEST(!fs::is_symlink(stat));
+#endif // BOOST_WINDOWS_API
 }
 
 //  create_directory_tests  ----------------------------------------------------------//
