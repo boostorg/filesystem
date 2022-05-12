@@ -42,6 +42,7 @@
 <h2>1.80.0</h2>
 <ul>
   <li>On Windows, added a fallback implementation for querying file attributes in case if the file cannot be opened with <code>ERROR_ACCESS_DENIED</code> error. This may allow <code>status</code> and <code>symlink_status</code> to succeed for system files and directories that are not reparse points or symlinks. (<a href="https://github.com/boostorg/filesystem/issues/234">#234</a>)</li>
+  <li>On Windows, added a workaround for <code>status</code> and <code>symlink_status</code> reporting that files do not exist on FAT/exFAT filesystems. (<a href="https://github.com/boostorg/filesystem/issues/236">#236</a>)</li>
 </ul>
 
 <h2>1.79.0</h2>

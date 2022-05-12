@@ -3865,54 +3865,65 @@ file_status symlink_status(path const& p, error_code* ec)
         // For some system files and folders like "System Volume Information" CreateFileW fails
         // with ERROR_ACCESS_DENIED. GetFileAttributesW succeeds for such files, so try that.
         // Though this will only help if the file is not a reparse point (symlink or not).
-        DWORD err = GetLastError();
+        DWORD err = ::GetLastError();
         if (err == ERROR_ACCESS_DENIED)
         {
-            attrs = GetFileAttributesW(p.c_str());
+            attrs = ::GetFileAttributesW(p.c_str());
             if (attrs != INVALID_FILE_ATTRIBUTES)
             {
                 if ((attrs & FILE_ATTRIBUTE_REPARSE_POINT) == 0u)
-                    return file_status((attrs & FILE_ATTRIBUTE_DIRECTORY) ? fs::directory_file : fs::regular_file, make_permissions(p, attrs));
+                    goto done;
             }
             else
             {
-                err = GetLastError();
+                err = ::GetLastError();
             }
         }
 
         return process_status_failure(err, p, ec);
     }
 
-    fs::perms permissions;
-    GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
-    if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
     {
-        file_attribute_tag_info info;
-        BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
-        if (BOOST_UNLIKELY(!res))
-            return process_status_failure(p, ec);
+        GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
+        if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
+        {
+            file_attribute_tag_info info;
+            BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
+            if (BOOST_UNLIKELY(!res))
+            {
+                // On FAT/exFAT filesystems requesting FILE_ATTRIBUTE_TAG_INFO returns ERROR_INVALID_PARAMETER.
+                // Presumably, this is because these filesystems don't support reparse points, so ReparseTag
+                // cannot be returned. Also check ERROR_NOT_SUPPORTED for good measure. Fall back to the legacy
+                // code path in this case.
+                DWORD err = ::GetLastError();
+                if (err == ERROR_INVALID_PARAMETER || err == ERROR_NOT_SUPPORTED)
+                    goto use_get_file_information_by_handle;
 
-        attrs = info.FileAttributes;
-        permissions = make_permissions(p, attrs);
+                return process_status_failure(err, p, ec);
+            }
 
-        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-            return is_reparse_point_tag_a_symlink(info.ReparseTag) ? fs::file_status(fs::symlink_file, permissions) : fs::file_status(fs::reparse_file, permissions);
+            attrs = info.FileAttributes;
+
+            if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+                return fs::file_status(is_reparse_point_tag_a_symlink(info.ReparseTag) ? fs::symlink_file : fs::reparse_file, make_permissions(p, attrs));
+        }
+        else
+        {
+        use_get_file_information_by_handle:
+            BY_HANDLE_FILE_INFORMATION info;
+            BOOL res = ::GetFileInformationByHandle(h.handle, &info);
+            if (BOOST_UNLIKELY(!res))
+                return process_status_failure(p, ec);
+
+            attrs = info.dwFileAttributes;
+
+            if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
+                return fs::file_status(is_reparse_point_a_symlink_ioctl(h.handle) ? fs::symlink_file : fs::reparse_file, make_permissions(p, attrs));
+        }
     }
-    else
-    {
-        BY_HANDLE_FILE_INFORMATION info;
-        BOOL res = ::GetFileInformationByHandle(h.handle, &info);
-        if (BOOST_UNLIKELY(!res))
-            return process_status_failure(p, ec);
 
-        attrs = info.dwFileAttributes;
-        permissions = make_permissions(p, attrs);
-
-        if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-            return is_reparse_point_a_symlink_ioctl(h.handle) ? fs::file_status(fs::symlink_file, permissions) : fs::file_status(fs::reparse_file, permissions);
-    }
-
-    return (attrs & FILE_ATTRIBUTE_DIRECTORY) ? fs::file_status(fs::directory_file, permissions) : fs::file_status(fs::regular_file, permissions);
+done:
+    return fs::file_status((attrs & FILE_ATTRIBUTE_DIRECTORY) ? fs::directory_file : fs::regular_file, make_permissions(p, attrs));
 
 #endif // defined(BOOST_POSIX_API)
 }
