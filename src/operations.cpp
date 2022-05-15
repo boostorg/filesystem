@@ -3770,12 +3770,20 @@ file_status status(path const& p, error_code* ec)
             file_attribute_tag_info info;
             BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
             if (BOOST_UNLIKELY(!res))
-                goto return_status_failure;
+            {
+                // See the comment in symlink_status
+                DWORD err = ::GetLastError();
+                if (err == ERROR_INVALID_PARAMETER || err == ERROR_NOT_SUPPORTED)
+                    goto use_get_file_information_by_handle;
+
+                return process_status_failure(err, p, ec);
+            }
 
             attrs = info.FileAttributes;
         }
         else
         {
+        use_get_file_information_by_handle:
             BY_HANDLE_FILE_INFORMATION info;
             BOOL res = ::GetFileInformationByHandle(h.handle, &info);
             if (BOOST_UNLIKELY(!res))

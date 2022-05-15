@@ -774,7 +774,14 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
         file_attribute_tag_info info;
         BOOL res = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
         if (BOOST_UNLIKELY(!res))
-            goto return_last_error;
+        {
+            // On FAT/exFAT filesystems requesting FILE_ATTRIBUTE_TAG_INFO returns ERROR_INVALID_PARAMETER. See the comment in symlink_status.
+            DWORD error = ::GetLastError();
+            if (error == ERROR_INVALID_PARAMETER || error == ERROR_NOT_SUPPORTED)
+                goto use_get_file_information_by_handle;
+
+            return error_code(error, system_category());
+        }
 
         if (BOOST_UNLIKELY((info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0u))
             return make_error_code(system::errc::not_a_directory);
@@ -787,6 +794,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
     }
     else
     {
+    use_get_file_information_by_handle:
         BY_HANDLE_FILE_INFORMATION info;
         BOOL res = ::GetFileInformationByHandle(h.handle, &info);
         if (BOOST_UNLIKELY(!res))
