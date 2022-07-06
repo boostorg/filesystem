@@ -3387,7 +3387,7 @@ void permissions(path const& p, perms prms, system::error_code* ec)
     //   "http://man7.org/linux/man-pages/man2/fchmodat.2.html"
 #if defined(AT_FDCWD) && defined(AT_SYMLINK_NOFOLLOW) && \
     !(defined(__SUNPRO_CC) || defined(__sun) || defined(sun)) && \
-    !(defined(linux) || defined(__linux) || defined(__linux__)) && \
+    !(defined(linux) || defined(__linux) || defined(__linux__) || defined(__rtems__)) && \
     !(defined(__MAC_OS_X_VERSION_MIN_REQUIRED) && __MAC_OS_X_VERSION_MIN_REQUIRED < 101000) && \
     !(defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 80000) && \
     !(defined(__QNX__) && (_NTO_VERSION <= 700))
