@@ -170,6 +170,8 @@ using std::time_t;
 #include "error_handling.hpp"
 #include "private_config.hpp"
 
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
+
 namespace fs = boost::filesystem;
 using boost::filesystem::path;
 using boost::filesystem::filesystem_error;
@@ -4216,3 +4218,5 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 } // namespace detail
 } // namespace filesystem
 } // namespace boost
+
+#include <boost/filesystem/detail/footer.hpp>

@@ -21,6 +21,8 @@
 
 #include <windows.h>
 
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
+
 #ifndef IO_REPARSE_TAG_MOUNT_POINT
 #define IO_REPARSE_TAG_MOUNT_POINT (0xA0000003L)
 #endif
@@ -185,5 +187,7 @@ inline HANDLE create_file_handle(boost::filesystem::path const& p, DWORD dwDesir
 } // namespace detail
 } // namespace filesystem
 } // namespace boost
+
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM_SRC_WINDOWS_TOOLS_HPP_

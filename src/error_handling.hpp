@@ -24,6 +24,8 @@
 #include <boost/winapi/error_codes.hpp>
 #endif
 
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
+
 namespace boost {
 namespace filesystem {
 
@@ -172,5 +174,7 @@ inline bool error(err_t error_num, path const& p1, path const& p2, system::error
 
 } // namespace filesystem
 } // namespace boost
+
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM_SRC_ERROR_HANDLING_HPP_

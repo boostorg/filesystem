@@ -72,6 +72,8 @@
 #include "error_handling.hpp"
 #include "private_config.hpp"
 
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
+
 //  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
 //  dir_itr_increment. The config tests are placed here because some of the
 //  macros being tested come from dirent.h.
@@ -1460,3 +1462,5 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
 } // namespace filesystem
 } // namespace boost
+
+#include <boost/filesystem/detail/footer.hpp>

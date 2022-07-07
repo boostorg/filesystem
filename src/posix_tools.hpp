@@ -19,6 +19,8 @@
 #include <unistd.h>
 #endif
 
+#include <boost/filesystem/detail/header.hpp> // must be the last #include
+
 namespace boost {
 namespace filesystem {
 namespace detail {
@@ -60,5 +62,7 @@ inline int close_fd(int fd)
 } // namespace detail
 } // namespace filesystem
 } // namespace boost
+
+#include <boost/filesystem/detail/footer.hpp>
 
 #endif // BOOST_FILESYSTEM_SRC_POSIX_TOOLS_HPP_
