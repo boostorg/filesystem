@@ -14,6 +14,7 @@
 #include "platform_config.hpp"
 
 #include <boost/throw_exception.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>
@@ -189,6 +190,7 @@ BOOST_FILESYSTEM_DECL void* dir_itr_imp::operator new(std::size_t class_size, st
 
 BOOST_FILESYSTEM_DECL void dir_itr_imp::operator delete(void* p, std::size_t extra_size) BOOST_NOEXCEPT
 {
+    boost::ignore_unused(extra_size);
     std::free(p);
 }
 

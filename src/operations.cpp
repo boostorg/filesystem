@@ -24,6 +24,7 @@
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/core/bit.hpp>
+#include <boost/core/ignore_unused.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/assert.hpp>
 #include <new> // std::bad_alloc, std::nothrow
@@ -413,6 +414,8 @@ inline void init_statx_impl(unsigned int major_ver, unsigned int minor_ver, unsi
         stx = &statx_syscall;
 
     filesystem::detail::atomic_store_relaxed(statx_ptr, stx);
+#else // !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
+    boost::ignore_unused(major_ver, minor_ver, patch_ver);
 #endif // !defined(BOOST_FILESYSTEM_HAS_STATX) && defined(BOOST_FILESYSTEM_HAS_STATX_SYSCALL)
 }
 
@@ -472,6 +475,7 @@ inline std::size_t get_blksize(struct ::stat const& st) BOOST_NOEXCEPT
 #if defined(BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE)
     return st.st_blksize;
 #else
+    boost::ignore_unused(st);
     return 4096u; // a suitable default used on most modern SSDs/HDDs
 #endif
 }
@@ -4066,7 +4070,7 @@ BOOST_FILESYSTEM_DECL
 path system_complete(path const& p, system::error_code* ec)
 {
 #ifdef BOOST_POSIX_API
-
+    boost::ignore_unused(ec);
     return (p.empty() || p.is_absolute()) ? p : current_path() / p;
 
 #else

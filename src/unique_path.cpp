@@ -16,6 +16,8 @@
 #include <boost/predef/os/bsd/open.h>
 #include <boost/predef/os/bsd/free.h>
 
+#include <boost/core/ignore_unused.hpp>
+
 #ifdef BOOST_POSIX_API
 
 #include <cerrno>
@@ -272,6 +274,7 @@ void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsig
 {
 #if defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY) && \
     (defined(BOOST_FILESYSTEM_HAS_GETRANDOM) || defined(BOOST_FILESYSTEM_HAS_GETRANDOM_SYSCALL))
+    boost::ignore_unused(patch_ver);
     fill_random_t* fr = &fill_random_dev_random;
 
     if (major_ver > 3u || (major_ver == 3u && minor_ver >= 17u))
