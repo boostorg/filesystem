@@ -25,6 +25,19 @@ namespace boost {
 namespace filesystem {
 namespace detail {
 
+//! Platform-specific parameters for directory iterator construction
+struct directory_iterator_params
+{
+#if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+    //! File descriptor of the base directory relative to which to interpret relative paths
+    int basedir_fd;
+#endif
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    //! File descriptor of the directory over which the iterator iterates
+    int iterator_fd;
+#endif
+};
+
 /*!
  * Closes a file descriptor and returns the result, similar to close(2). Unlike close(2), guarantees that the file descriptor is closed even if EINTR error happens.
  *

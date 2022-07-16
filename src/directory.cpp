@@ -378,7 +378,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
     return error_code();
 }
 
-error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, unsigned int opts, fs::path& first_filename, fs::file_status&, fs::file_status&)
+error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, unsigned int opts, directory_iterator_params* params, fs::path& first_filename, fs::file_status&, fs::file_status&)
 {
     std::size_t extra_size = 0u;
 #if defined(BOOST_FILESYSTEM_USE_READDIR_R)
@@ -411,7 +411,11 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
     if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
         flags |= O_NOFOLLOW;
 
+#if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+    int fd = ::openat(params ? params->basedir_fd : AT_FDCWD, dir.c_str(), flags);
+#else
     int fd = ::open(dir.c_str(), flags);
+#endif
     if (BOOST_UNLIKELY(fd < 0))
     {
         const int err = errno;
@@ -446,6 +450,11 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
 
     // Force initial readdir call by the caller. This will initialize the actual first filename and statuses.
     first_filename.assign(".");
+
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    if (params)
+        params->iterator_fd = fd;
+#endif
 
     imp.swap(pimpl);
     return error_code();
@@ -753,7 +762,7 @@ done:
     return error_code();
 }
 
-error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, unsigned int opts, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
+error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, unsigned int opts, directory_iterator_params*, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     boost::intrusive_ptr< detail::dir_itr_imp > pimpl(new (dir_itr_extra_size) detail::dir_itr_imp());
     if (BOOST_UNLIKELY(!pimpl))
@@ -983,7 +992,7 @@ done:
     return error_code();
 }
 
-error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, unsigned int opts, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
+error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, unsigned int opts, directory_iterator_params*, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     boost::intrusive_ptr< detail::dir_itr_imp > pimpl(new (static_cast< std::size_t >(0u)) detail::dir_itr_imp());
     if (BOOST_UNLIKELY(!pimpl))
@@ -1049,7 +1058,7 @@ dir_itr_imp::~dir_itr_imp() BOOST_NOEXCEPT
 }
 
 BOOST_FILESYSTEM_DECL
-void directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, system::error_code* ec)
+void directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, directory_iterator_params* params, system::error_code* ec)
 {
     if (BOOST_UNLIKELY(p.empty()))
     {
@@ -1065,7 +1074,7 @@ void directory_iterator_construct(directory_iterator& it, path const& p, unsigne
         boost::intrusive_ptr< detail::dir_itr_imp > imp;
         path filename;
         file_status file_stat, symlink_file_stat;
-        system::error_code result = dir_itr_create(imp, p, opts, filename, file_stat, symlink_file_stat);
+        system::error_code result = dir_itr_create(imp, p, opts, params, filename, file_stat, symlink_file_stat);
 
         while (true)
         {
@@ -1179,7 +1188,7 @@ void recursive_directory_iterator_construct(recursive_directory_iterator& it, pa
         ec->clear();
 
     directory_iterator dir_it;
-    detail::directory_iterator_construct(dir_it, dir_path, opts, ec);
+    detail::directory_iterator_construct(dir_it, dir_path, opts, NULL, ec);
     if ((ec && *ec) || dir_it == directory_iterator())
         return;
 
@@ -1317,8 +1326,8 @@ inline push_directory_result recursive_directory_iterator_push_directory(detail:
 
         file_status symlink_stat;
 
-        // if we are not recursing into symlinks, we are going to have to know if the
-        // stack top is a symlink, so get symlink_status and verify no error occurred
+        // If we are not recursing into symlinks, we are going to have to know if the
+        // stack top is a symlink, so get symlink_status and verify no error occurred.
         if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) == 0u ||
             (imp->m_options & static_cast< unsigned int >(directory_options::skip_dangling_symlinks)) != 0u)
         {
