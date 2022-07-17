@@ -619,130 +619,144 @@ typedef int copy_file_data_t(int infile, int outfile, uintmax_t size, std::size_
 //! Pointer to the actual implementation of the copy_file_data implementation
 copy_file_data_t* copy_file_data = &copy_file_data_read_write;
 
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
+//! copy_file_data wrapper that tests if a read/write loop must be used for a given filesystem
+template< typename CopyFileData >
+int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize);
+
+#endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
+
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
-//! copy_file implementation that uses sendfile loop. Requires sendfile to support file descriptors.
-int copy_file_data_sendfile(int infile, int outfile, uintmax_t size, std::size_t blksize)
+struct copy_file_data_sendfile
 {
-    // sendfile will not send more than this amount of data in one call
-    BOOST_CONSTEXPR_OR_CONST std::size_t max_batch_size = 0x7ffff000u;
-    uintmax_t offset = 0u;
-    while (offset < size)
+    //! copy_file implementation that uses sendfile loop. Requires sendfile to support file descriptors.
+    static int impl(int infile, int outfile, uintmax_t size, std::size_t blksize)
     {
-        uintmax_t size_left = size - offset;
-        std::size_t size_to_copy = max_batch_size;
-        if (size_left < static_cast< uintmax_t >(max_batch_size))
-            size_to_copy = static_cast< std::size_t >(size_left);
-        ssize_t sz = ::sendfile(outfile, infile, NULL, size_to_copy);
-        if (BOOST_UNLIKELY(sz < 0))
+        // sendfile will not send more than this amount of data in one call
+        BOOST_CONSTEXPR_OR_CONST std::size_t max_batch_size = 0x7ffff000u;
+        uintmax_t offset = 0u;
+        while (offset < size)
         {
-            int err = errno;
-            if (err == EINTR)
-                continue;
-
-            if (offset == 0u)
+            uintmax_t size_left = size - offset;
+            std::size_t size_to_copy = max_batch_size;
+            if (size_left < static_cast< uintmax_t >(max_batch_size))
+                size_to_copy = static_cast< std::size_t >(size_left);
+            ssize_t sz = ::sendfile(outfile, infile, NULL, size_to_copy);
+            if (BOOST_UNLIKELY(sz < 0))
             {
-                // sendfile may fail with EINVAL if the underlying filesystem does not support it
-                if (err == EINVAL)
+                int err = errno;
+                if (err == EINTR)
+                    continue;
+
+                if (offset == 0u)
                 {
-                fallback_to_read_write:
-                    return copy_file_data_read_write(infile, outfile, size, blksize);
+                    // sendfile may fail with EINVAL if the underlying filesystem does not support it
+                    if (err == EINVAL)
+                    {
+                    fallback_to_read_write:
+                        return copy_file_data_read_write(infile, outfile, size, blksize);
+                    }
+
+                    if (err == ENOSYS)
+                    {
+                        filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
+                        goto fallback_to_read_write;
+                    }
                 }
 
-                if (err == ENOSYS)
-                {
-                    filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
-                    goto fallback_to_read_write;
-                }
+                return err;
             }
 
-            return err;
+            offset += sz;
         }
 
-        offset += sz;
+        return 0;
     }
-
-    return 0;
-}
+};
 
 #endif // defined(BOOST_FILESYSTEM_USE_SENDFILE)
 
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
-//! copy_file implementation that uses copy_file_range loop. Requires copy_file_range to support cross-filesystem copying.
-int copy_file_data_copy_file_range(int infile, int outfile, uintmax_t size, std::size_t blksize)
+struct copy_file_data_copy_file_range
 {
-    // Although copy_file_range does not document any particular upper limit of one transfer, still use some upper bound to guarantee
-    // that size_t is not overflown in case if off_t is larger and the file size does not fit in size_t.
-    BOOST_CONSTEXPR_OR_CONST std::size_t max_batch_size = 0x7ffff000u;
-    uintmax_t offset = 0u;
-    while (offset < size)
+    //! copy_file implementation that uses copy_file_range loop. Requires copy_file_range to support cross-filesystem copying.
+    static int impl(int infile, int outfile, uintmax_t size, std::size_t blksize)
     {
-        uintmax_t size_left = size - offset;
-        std::size_t size_to_copy = max_batch_size;
-        if (size_left < static_cast< uintmax_t >(max_batch_size))
-            size_to_copy = static_cast< std::size_t >(size_left);
-        // Note: Use syscall directly to avoid depending on libc version. copy_file_range is added in glibc 2.27.
-        // uClibc-ng does not have copy_file_range as of the time of this writing (the latest uClibc-ng release is 1.0.33).
-        loff_t sz = ::syscall(__NR_copy_file_range, infile, (loff_t*)NULL, outfile, (loff_t*)NULL, size_to_copy, (unsigned int)0u);
-        if (BOOST_UNLIKELY(sz < 0))
+        // Although copy_file_range does not document any particular upper limit of one transfer, still use some upper bound to guarantee
+        // that size_t is not overflown in case if off_t is larger and the file size does not fit in size_t.
+        BOOST_CONSTEXPR_OR_CONST std::size_t max_batch_size = 0x7ffff000u;
+        uintmax_t offset = 0u;
+        while (offset < size)
         {
-            int err = errno;
-            if (err == EINTR)
-                continue;
-
-            if (offset == 0u)
+            uintmax_t size_left = size - offset;
+            std::size_t size_to_copy = max_batch_size;
+            if (size_left < static_cast< uintmax_t >(max_batch_size))
+                size_to_copy = static_cast< std::size_t >(size_left);
+            // Note: Use syscall directly to avoid depending on libc version. copy_file_range is added in glibc 2.27.
+            // uClibc-ng does not have copy_file_range as of the time of this writing (the latest uClibc-ng release is 1.0.33).
+            loff_t sz = ::syscall(__NR_copy_file_range, infile, (loff_t*)NULL, outfile, (loff_t*)NULL, size_to_copy, (unsigned int)0u);
+            if (BOOST_UNLIKELY(sz < 0))
             {
-                // copy_file_range may fail with EINVAL if the underlying filesystem does not support it.
-                // In some RHEL/CentOS 7.7-7.8 kernel versions, copy_file_range on NFSv4 is also known to return EOPNOTSUPP
-                // if the remote server does not support COPY, despite that it is not a documented error code.
-                // See https://patchwork.kernel.org/project/linux-nfs/patch/20190411183418.4510-1-olga.kornievskaia@gmail.com/
-                // and https://bugzilla.redhat.com/show_bug.cgi?id=1783554.
-                if (err == EINVAL || err == EOPNOTSUPP)
+                int err = errno;
+                if (err == EINTR)
+                    continue;
+
+                if (offset == 0u)
                 {
+                    // copy_file_range may fail with EINVAL if the underlying filesystem does not support it.
+                    // In some RHEL/CentOS 7.7-7.8 kernel versions, copy_file_range on NFSv4 is also known to return EOPNOTSUPP
+                    // if the remote server does not support COPY, despite that it is not a documented error code.
+                    // See https://patchwork.kernel.org/project/linux-nfs/patch/20190411183418.4510-1-olga.kornievskaia@gmail.com/
+                    // and https://bugzilla.redhat.com/show_bug.cgi?id=1783554.
+                    if (err == EINVAL || err == EOPNOTSUPP)
+                    {
 #if !defined(BOOST_FILESYSTEM_USE_SENDFILE)
-                fallback_to_read_write:
+                    fallback_to_read_write:
 #endif
-                    return copy_file_data_read_write(infile, outfile, size, blksize);
+                        return copy_file_data_read_write(infile, outfile, size, blksize);
+                    }
+
+                    if (err == EXDEV)
+                    {
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+                    fallback_to_sendfile:
+                        return copy_file_data_sendfile::impl(infile, outfile, size, blksize);
+#else
+                        goto fallback_to_read_write;
+#endif
+                    }
+
+                    if (err == ENOSYS)
+                    {
+#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
+                        filesystem::detail::atomic_store_relaxed(copy_file_data, &check_fs_type< copy_file_data_sendfile >);
+                        goto fallback_to_sendfile;
+#else
+                        filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
+                        goto fallback_to_read_write;
+#endif
+                    }
                 }
 
-                if (err == EXDEV)
-                {
-#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-                fallback_to_sendfile:
-                    return copy_file_data_sendfile(infile, outfile, size, blksize);
-#else
-                    goto fallback_to_read_write;
-#endif
-                }
-
-                if (err == ENOSYS)
-                {
-#if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-                    filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_sendfile);
-                    goto fallback_to_sendfile;
-#else
-                    filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
-                    goto fallback_to_read_write;
-#endif
-                }
+                return err;
             }
 
-            return err;
+            offset += sz;
         }
 
-        offset += sz;
+        return 0;
     }
-
-    return 0;
-}
+};
 
 #endif // defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
 
 //! copy_file_data wrapper that tests if a read/write loop must be used for a given filesystem
-template< copy_file_data_t* CopyFileData >
+template< typename CopyFileData >
 int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
 {
     {
@@ -776,7 +790,7 @@ int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
         }
     }
 
-    return CopyFileData(infile, outfile, size, blksize);
+    return CopyFileData::impl(infile, outfile, size, blksize);
 }
 
 #endif // defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
@@ -792,14 +806,14 @@ inline void init_copy_file_data_impl(unsigned int major_ver, unsigned int minor_
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
     // sendfile started accepting file descriptors as the target in Linux 2.6.33
     if (major_ver > 2u || (major_ver == 2u && (minor_ver > 6u || (minor_ver == 6u && patch_ver >= 33u))))
-        cfd = &check_fs_type< &copy_file_data_sendfile >;
+        cfd = &check_fs_type< copy_file_data_sendfile >;
 #endif
 
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
     // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
     // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
     if (major_ver > 4u || (major_ver == 4u && minor_ver >= 5u))
-        cfd = &check_fs_type< &copy_file_data_copy_file_range >;
+        cfd = &check_fs_type< copy_file_data_copy_file_range >;
 #endif
 
     filesystem::detail::atomic_store_relaxed(copy_file_data, cfd);
