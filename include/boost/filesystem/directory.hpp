@@ -263,6 +263,7 @@ struct dir_itr_imp :
     public boost::intrusive_ref_counter< dir_itr_imp >
 {
 #ifdef BOOST_WINDOWS_API
+    bool close_handle;
     unsigned char extra_data_format;
     std::size_t current_offset;
 #endif
@@ -271,6 +272,7 @@ struct dir_itr_imp :
 
     dir_itr_imp() BOOST_NOEXCEPT :
 #ifdef BOOST_WINDOWS_API
+        close_handle(false),
         extra_data_format(0u),
         current_offset(0u),
 #endif
