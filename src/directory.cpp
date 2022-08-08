@@ -599,9 +599,12 @@ extra_data_format g_extra_data_format = file_directory_information_format;
  * \brief Extra buffer size for GetFileInformationByHandleEx-based or NtQueryDirectoryFile-based directory iterator.
  *
  * Must be large enough to accommodate at least one FILE_DIRECTORY_INFORMATION or *_DIR_INFO struct and one filename.
- * NTFS, VFAT, exFAT support filenames up to 255 UTF-16/UCS-2 characters. ReFS supports filenames up to 32768 UTF-16 characters.
+ * NTFS, VFAT, exFAT and ReFS support filenames up to 255 UTF-16/UCS-2 characters. (For ReFS, there is no information
+ * on the on-disk format, and it is possible that it supports longer filenames, up to 32768 UTF-16/UCS-2 characters.)
+ * The buffer cannot be larger than 64k, because up to Windows 8.1, NtQueryDirectoryFile and GetFileInformationByHandleEx
+ * fail with ERROR_INVALID_PARAMETER when trying to retrieve the filenames from a network share.
  */
-BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_extra_size = sizeof(file_id_extd_dir_info) + 65536u;
+BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_extra_size = 65536u;
 
 inline system::error_code dir_itr_close(dir_itr_imp& imp) BOOST_NOEXCEPT
 {
