@@ -834,9 +834,9 @@ public:
 
     path relative_path() const
     {
-        path_detail::substring root_dir = find_relative_path();
-        const value_type* p = m_pathname.c_str() + root_dir.pos;
-        return path(p, p + root_dir.size);
+        path_detail::substring rel_path = find_relative_path();
+        const value_type* p = m_pathname.c_str() + rel_path.pos;
+        return path(p, p + rel_path.size);
     }
 
     path parent_path() const { return path(m_pathname.c_str(), m_pathname.c_str() + find_parent_path_size()); }
