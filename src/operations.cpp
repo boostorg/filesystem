@@ -4434,7 +4434,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
     path head(p);
     for (; !head.empty(); --itr)
     {
-        file_status head_status = detail::status_impl(head, &local_ec);
+        file_status head_status(detail::status_impl(head, &local_ec));
         if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
         {
             if (!ec)
@@ -4450,32 +4450,83 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         head.remove_filename();
     }
 
+    if (head.empty())
+        return p.lexically_normal();
+
+    path const& dot_p = dot_path();
+    path const& dot_dot_p = dot_dot_path();
+
 #else
 
-    // On Windows, filesystem APIs such as GetFileAttributesW perform lexical path normalization internally.
-    // As a result, a path like "c:\a\.." can be reported as present even if "c:\a" is not. This would break
-    // canonical, as symlink_status that it calls internally would report an error that the file at the intermediate
-    // path does not exist. To avoid this, scan the initial path in the forward direction.
-    // Also, operate on paths with preferred separators. This can be important on Windows since GetFileAttributesW,
-    // which is called in status() may return "file not found" for paths to network shares and mounted cloud
-    // storages that have forward slashes as separators.
+    // On Windows, filesystem APIs such as GetFileAttributesW and CreateFileW perform lexical path normalization
+    // internally. As a result, a path like "c:\a\.." can be reported as present even if "c:\a" is not. This would
+    // break canonical, as symlink_status that it calls internally would report an error that the file at the
+    // intermediate path does not exist. To avoid this, scan the initial path in the forward direction.
+    // Also, operate on paths with preferred separators. This can be important on Windows since GetFileAttributesW
+    // or CreateFileW, which is called in status() may return "file not found" for paths to network shares and
+    // mounted cloud storages that have forward slashes as separators.
+    // Also, avoid querying status of the root name such as \\?\c: as CreateFileW returns ERROR_INVALID_FUNCTION for
+    // such path. Querying the status of a root name such as c: is also not right as this path refers to the current
+    // directory on drive C:, which is not what we want to test for existence anyway.
     path::iterator itr(p.begin());
     path head;
+    if (p.has_root_name())
+    {
+        BOOST_ASSERT(itr != p_end);
+        head = *itr;
+        ++itr;
+    }
+
+    if (p.has_root_directory())
+    {
+        BOOST_ASSERT(itr != p_end);
+        // Convert generic separator returned by the iterator for the root directory to
+        // the preferred separator.
+        head += path::preferred_separator;
+        ++itr;
+    }
+
+    if (!head.empty())
+    {
+        file_status head_status(detail::status_impl(head, &local_ec));
+        if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
+        {
+            if (!ec)
+                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
+
+            *ec = local_ec;
+            return path();
+        }
+
+        if (head_status.type() == fs::file_not_found)
+        {
+            // If the root path does not exist then no path element exists
+            return p.lexically_normal();
+        }
+    }
+
+    path const& dot_p = dot_path();
+    path const& dot_dot_p = dot_dot_path();
     for (; itr != p_end; ++itr)
     {
         path const& p_elem = *itr;
-        if (p_elem.size() == 1u && detail::is_directory_separator(p_elem.native()[0]))
+
+        // Avoid querying status of paths containing dot and dot-dot elements, as this will break
+        // if the root name starts with "\\?\".
+        if (p_elem == dot_p)
+            continue;
+
+        if (p_elem == dot_dot_p)
         {
-            // Convert generic separator returned by the iterator for the root directory to
-            // the preferred separator.
-            head += path::preferred_separator;
-        }
-        else
-        {
-            head /= p_elem;
+            if (head.has_relative_path())
+                head.remove_filename();
+
+            continue;
         }
 
-        file_status head_status = detail::status_impl(head, &local_ec);
+        head /= p_elem;
+
+        file_status head_status(detail::status_impl(head, &local_ec));
         if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
         {
             if (!ec)
@@ -4492,32 +4543,21 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         }
     }
 
+    if (head.empty())
+        return p.lexically_normal();
+
 #endif
 
-    path const& dot_p = dot_path();
-    path const& dot_dot_p = dot_dot_path();
     path tail;
     bool tail_has_dots = false;
     for (; itr != p_end; ++itr)
     {
         path const& tail_elem = *itr;
-#if defined(BOOST_WINDOWS_API)
-        if (tail_elem.size() == 1u && detail::is_directory_separator(tail_elem.native()[0]))
-        {
-            // Convert generic separator returned by the iterator for the root directory to
-            // the preferred separator.
-            tail += path::preferred_separator;
-            continue;
-        }
-#endif
         tail /= tail_elem;
         // for a later optimization, track if any dot or dot-dot elements are present
         if (!tail_has_dots && (tail_elem == dot_p || tail_elem == dot_dot_p))
             tail_has_dots = true;
     }
-
-    if (head.empty())
-        return p.lexically_normal();
 
     head = detail::canonical(head, base, &local_ec);
     if (BOOST_UNLIKELY(!!local_ec))

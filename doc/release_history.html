@@ -42,6 +42,7 @@
 <h2>1.81.0</h2>
 <ul>
   <li>On Windows prior to 10, added a workaround for network share filesystem that produces <code>ERROR_INVALID_PARAMETER</code> when constructing directory iterators. (<a href="https://github.com/boostorg/filesystem/pull/246">PR#246</a>, <a href="https://github.com/boostorg/filesystem/issues/245">#245</a>)</li>
+  <li>On Windows, fixed <code>weakly_canonical</code> failing with an <code>ERROR_INVALID_FUNCTION</code> error code if the path started with the "\\?\" prefix. (<a href="https://github.com/boostorg/filesystem/issues/247">#247</a>)</li>
 </ul>
 
 <h2>1.80.0</h2>
