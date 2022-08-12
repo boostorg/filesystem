@@ -70,7 +70,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
-#if _POSIX_C_SOURCE < 200809L
+#if !defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
 #include <utime.h>
 #endif
 #include <limits.h>
