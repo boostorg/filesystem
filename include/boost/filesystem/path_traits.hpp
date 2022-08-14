@@ -1,6 +1,7 @@
 //  filesystem path_traits.hpp  --------------------------------------------------------//
 
 //  Copyright Beman Dawes 2009
+//  Copyright Andrey Semashev 2022
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -11,18 +12,18 @@
 #define BOOST_FILESYSTEM_PATH_TRAITS_HPP
 
 #include <boost/filesystem/config.hpp>
-#include <boost/system/error_category.hpp>
-#include <boost/type_traits/is_array.hpp>
-#include <boost/type_traits/decay.hpp>
-#include <boost/core/enable_if.hpp>
 #include <cstddef>
 #include <cwchar> // for mbstate_t
+#include <locale>
 #include <string>
+#include <boost/assert.hpp>
+#include <boost/system/error_category.hpp>
+#if BOOST_FILESYSTEM_VERSION < 4
 #include <vector>
 #include <list>
-#include <iterator>
-#include <locale>
-#include <boost/assert.hpp>
+#include <boost/core/enable_if.hpp>
+#include <boost/type_traits/is_array.hpp>
+#endif
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
@@ -90,29 +91,39 @@ struct is_pathable< std::wstring >
     static const bool value = true;
 };
 
+#if BOOST_FILESYSTEM_VERSION < 4
 template<>
-struct is_pathable< std::vector< char > >
+struct
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
+is_pathable< std::vector< char > >
 {
     static const bool value = true;
 };
 
 template<>
-struct is_pathable< std::vector< wchar_t > >
+struct
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
+is_pathable< std::vector< wchar_t > >
 {
     static const bool value = true;
 };
 
 template<>
-struct is_pathable< std::list< char > >
+struct
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
+is_pathable< std::list< char > >
 {
     static const bool value = true;
 };
 
 template<>
-struct is_pathable< std::list< wchar_t > >
+struct
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
+is_pathable< std::list< wchar_t > >
 {
     static const bool value = true;
 };
+#endif // BOOST_FILESYSTEM_VERSION < 4
 
 template<>
 struct is_pathable< directory_entry >
@@ -122,6 +133,7 @@ struct is_pathable< directory_entry >
 
 //  Pathable empty
 
+#if BOOST_FILESYSTEM_VERSION < 4
 template< class Container >
 inline
     // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
@@ -131,11 +143,12 @@ inline
 {
     return c.begin() == c.end();
 }
+#endif // BOOST_FILESYSTEM_VERSION < 4
 
 template< class T >
 inline bool empty(T* const& c_str)
 {
-    BOOST_ASSERT(c_str);
+    BOOST_ASSERT(c_str != NULL);
     return !*c_str;
 }
 
@@ -255,48 +268,57 @@ inline void convert(const wchar_t* from, std::wstring& to)
 template< class U >
 inline void dispatch(std::string const& c, U& to, codecvt_type const& cvt)
 {
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
+    const char* p = c.c_str();
+    convert(p, p + c.size(), to, cvt);
 }
 template< class U >
 inline void dispatch(std::wstring const& c, U& to, codecvt_type const& cvt)
 {
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
+    const wchar_t* p = c.c_str();
+    convert(p, p + c.size(), to, cvt);
 }
+
+#if BOOST_FILESYSTEM_VERSION < 4
 template< class U >
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
 inline void dispatch(std::vector< char > const& c, U& to, codecvt_type const& cvt)
 {
     if (!c.empty())
         convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
 }
 template< class U >
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
 inline void dispatch(std::vector< wchar_t > const& c, U& to, codecvt_type const& cvt)
 {
     if (!c.empty())
         convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
 }
+#endif // BOOST_FILESYSTEM_VERSION < 4
 
 //  contiguous containers without codecvt
 template< class U >
 inline void dispatch(std::string const& c, U& to)
 {
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to);
+    const char* p = c.c_str();
+    convert(p, p + c.size(), to);
 }
 template< class U >
 inline void dispatch(std::wstring const& c, U& to)
 {
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to);
+    const wchar_t* p = c.c_str();
+    convert(p, p + c.size(), to);
 }
+
+#if BOOST_FILESYSTEM_VERSION < 4
 template< class U >
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
 inline void dispatch(std::vector< char > const& c, U& to)
 {
     if (!c.empty())
         convert(&*c.begin(), &*c.begin() + c.size(), to);
 }
 template< class U >
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
 inline void dispatch(std::vector< wchar_t > const& c, U& to)
 {
     if (!c.empty())
@@ -305,6 +327,7 @@ inline void dispatch(std::vector< wchar_t > const& c, U& to)
 
 //  non-contiguous containers with codecvt
 template< class Container, class U >
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
 inline
     // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
     // conforming compilers. Replace by plain "void" at some future date (2012?)
@@ -317,6 +340,7 @@ inline
         convert(s.c_str(), s.c_str() + s.size(), to, cvt);
     }
 }
+#endif // BOOST_FILESYSTEM_VERSION < 4
 
 //  c_str
 template< class T, class U >
@@ -339,8 +363,10 @@ void dispatch(directory_entry const& de,
 #endif
               codecvt_type const&);
 
+#if BOOST_FILESYSTEM_VERSION < 4
 //  non-contiguous containers without codecvt
 template< class Container, class U >
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
 inline
     // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
     // conforming compilers. Replace by plain "void" at some future date (2012?)
@@ -353,13 +379,14 @@ inline
         convert(seq.c_str(), seq.c_str() + seq.size(), to);
     }
 }
+#endif // BOOST_FILESYSTEM_VERSION < 4
 
 //  c_str
 template< class T, class U >
 inline void dispatch(T* const& c_str, U& to)
 {
     //    std::cout << "dispatch() const T *\n";
-    BOOST_ASSERT(c_str);
+    BOOST_ASSERT(c_str != NULL);
     convert(c_str, to);
 }
 

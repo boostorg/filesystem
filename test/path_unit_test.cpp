@@ -46,6 +46,7 @@
 #include <cstring>
 #include <cwchar>
 #include <locale>
+#include <vector>
 #include <list>
 
 namespace fs = boost::filesystem;
@@ -180,14 +181,6 @@ void test_constructors()
     PATH_IS(x5, L"std::wstring");
     BOOST_TEST_EQ(x5.native().size(), 12U);
 
-    path x4v(v); // std::vector<char>
-    PATH_IS(x4v, L"fuz");
-    BOOST_TEST_EQ(x4v.native().size(), 3U);
-
-    path x5v(wv); // std::vector<wchar_t>
-    PATH_IS(x5v, L"wfuz");
-    BOOST_TEST_EQ(x5v.native().size(), 4U);
-
     path x6("array char"); // array char
     PATH_IS(x6, L"array char");
     BOOST_TEST_EQ(x6.native().size(), 10U);
@@ -223,15 +216,6 @@ void test_constructors()
     path x9nc(const_cast< wchar_t* >(ws.c_str())); // wchar_t* null terminated
     PATH_IS(x9nc, L"wstring");
     BOOST_TEST_EQ(x9nc.native().size(), 7U);
-
-    // non-contiguous containers
-    path x10(l); // std::list<char>
-    PATH_IS(x10, L"string");
-    BOOST_TEST_EQ(x10.native().size(), 6U);
-
-    path xll(wl); // std::list<wchar_t>
-    PATH_IS(xll, L"wstring");
-    BOOST_TEST_EQ(xll.native().size(), 7U);
 
     // easy-to-make coding errors
     // path e1(x0, path::codecvt());  // fails to compile, and that is OK
