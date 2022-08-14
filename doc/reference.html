@@ -213,17 +213,6 @@ and directories.</p>
   </tr>
   <tr>
     <td width="35%" align="left">
-    <p>New character types</td>
-    <td width="65%" align="left">
-    <p>The <code>boost::filesystem</code> interface doesn't use the
-    new types directly. It does use <code>u16string</code> and <code>u32string</code>
-    in namespace <code>boost</code>. These are typedefs to <code>std::u16string</code>
-    and <code>std::u32string</code> for C++11, or to <code>
-    std::basic_string&lt;boost::u16_t&gt;</code> and <code>
-    std::basic_string&lt;boost::u32_t&gt;</code> for C++03.</td>
-  </tr>
-  <tr>
-    <td width="35%" align="left">
     <p>Defaulted and deleted functions</td>
     <td width="65%" align="left">
     <p>Workaround replacement functions provided.</td>
@@ -1142,8 +1131,6 @@ system or for a particular file system.</p>
           String  <a href="#string-template">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
         string    <a href="#string">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
         wstring   <a href="#wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
-        u16string <a href="#u16string">u16string</a>() const;
-        u32string <a href="#u32wstring">u32string</a>() const;
 
         // <a href="#path-generic-format-observers">generic format observers</a>
         template &lt;class String&gt;
@@ -1151,8 +1138,6 @@ system or for a particular file system.</p>
 
         string    <a href="#generic_string">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;
         wstring   <a href="#generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
-        u16string <a href="#generic_u16string">generic_u16string</a>()
-        u32string <a href="#generic_u32wstring">generic_u32string</a>()
 
         // <a href="#path-compare">compare</a>
         int   <a href="#path-compare">compare</a>(const path&amp; p) const noexcept;
@@ -1602,9 +1587,7 @@ String <a name="string-template">string</a>(const codecvt_type&amp; cvt=codecvt(
 </blockquote>
 
 <pre>string <a name="string">string</a>(const codecvt_type&amp; cvt=codecvt()) const;
-wstring <a name="wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
-u16string <a name="u16string">u16string</a>() const;
-u32wstring <a name="u32wstring">u32wstring</a>() const; </pre>
+wstring <a name="wstring">wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;</pre>
 
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
@@ -1625,9 +1608,7 @@ String <a name="generic_string-template">generic_string</a>(const codecvt_type&a
 </blockquote>
 
 <pre>string <a name="generic_string">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;
-wstring <a name="generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;
-u16string <a name="generic_u16string">generic_u16string</a>() const;
-u32wstring <a name="generic_u32wstring">generic_u32wstring</a>() const; </pre>
+wstring <a name="generic_wstring">generic_wstring</a>(const codecvt_type&amp; cvt=codecvt()) const;</pre>
 
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
