@@ -69,7 +69,7 @@
 
 // Deprecated symbols markup -----------------------------------------------------------//
 
-#if !defined(BOOST_FILESYSTEM_DEPRECATED)
+#if !defined(BOOST_FILESYSTEM_ALLOW_DEPRECATED)
 
 #if !defined(BOOST_FILESYSTEM_DETAIL_DEPRECATED) && defined(_MSC_VER)
 #if (_MSC_VER) >= 1400
@@ -108,7 +108,7 @@
 #endif
 #endif
 
-#endif // !defined(BOOST_FILESYSTEM_DEPRECATED)
+#endif // !defined(BOOST_FILESYSTEM_ALLOW_DEPRECATED)
 
 #if !defined(BOOST_FILESYSTEM_DETAIL_DEPRECATED)
 #define BOOST_FILESYSTEM_DETAIL_DEPRECATED(msg)

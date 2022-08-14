@@ -12,6 +12,7 @@
 //  important to preserve existing code that uses the old names.
 
 #define BOOST_FILESYSTEM_DEPRECATED
+#define BOOST_FILESYSTEM_ALLOW_DEPRECATED
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/string_file.hpp>

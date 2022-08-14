@@ -901,29 +901,43 @@ public:
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::lexically_normal() instead")
     path& normalize()
     {
         path tmp(lexically_normal());
         m_pathname.swap(tmp.m_pathname);
         return *this;
     }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::remove_filename() instead")
     path& remove_leaf() { return remove_filename(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::filename() instead")
     path leaf() const { return filename(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::parent_path() instead")
     path branch_path() const { return parent_path(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::generic_path() instead")
     path generic() const { return generic_path(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use !path::empty() instead")
     bool has_leaf() const { return !m_pathname.empty(); }
-    bool has_branch_path() const { return !parent_path().empty(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::has_parent_path() instead")
+    bool has_branch_path() const { return has_parent_path(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::is_absolute() instead")
     bool is_complete() const { return is_absolute(); }
 #endif
 
 #if defined(BOOST_FILESYSTEM_DEPRECATED)
     //  deprecated functions with enough signature or semantic changes that they are
     //  not supplied by default
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
     std::string file_string() const { return string(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
     std::string directory_string() const { return string(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
     std::string native_file_string() const { return string(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
     std::string native_directory_string() const { return string(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::native() instead")
     string_type external_file_string() const { return native(); }
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::native() instead")
     string_type external_directory_string() const { return native(); }
 #endif
 

@@ -42,6 +42,7 @@
 <h2>1.81.0</h2>
 <ul>
   <li><b>Deprecated:</b> <code>path</code> construction, assignment and appending from containers of characters, such as <code>std::vector&lt;char&gt;</code> or <code>std::list&lt;wchar_t&gt;</code>, is deprecated in <b>v3</b> and removed in <b>v4</b>. Please use string types or iterators instead.</li>
+  <li>Previously deprecated APIs will now generate compilation warnings on use. To suppress these warnings, <code>BOOST_FILESYSTEM_ALLOW_DEPRECATED</code> macro can be defined when compiling user's code.</li>
   <li>Fixed compilation due to a missing include on POSIX systems that do not support <code>*at</code> APIs. (<a href="https://github.com/boostorg/filesystem/issues/250">#250</a>)</li>
   <li>On Windows prior to 10, added a workaround for network share filesystem that produces <code>ERROR_INVALID_PARAMETER</code> when constructing directory iterators. (<a href="https://github.com/boostorg/filesystem/pull/246">PR#246</a>, <a href="https://github.com/boostorg/filesystem/issues/245">#245</a>)</li>
   <li>On Windows, fixed <code>weakly_canonical</code> failing with an <code>ERROR_INVALID_FUNCTION</code> error code if the path started with the "\\?\" prefix. (<a href="https://github.com/boostorg/filesystem/issues/247">#247</a>)</li>

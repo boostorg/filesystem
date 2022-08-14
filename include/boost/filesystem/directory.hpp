@@ -118,6 +118,7 @@ public:
     }
 
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use directory_entry::replace_filename() instead")
     void replace_leaf(boost::filesystem::path const& p, file_status st, file_status symlink_st)
     {
         replace_filename(p, st, symlink_st);
@@ -228,9 +229,10 @@ inline bool is_other(directory_entry const& e, system::error_code& ec) BOOST_NOE
     return filesystem::is_other(e.status(ec));
 }
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
 inline bool is_regular(directory_entry const& e)
 {
-    return filesystem::is_regular(e.status());
+    return filesystem::is_regular_file(e);
 }
 #endif
 
@@ -540,11 +542,13 @@ public:
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     // Deprecated constructors
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use directory_options instead of symlink_option")
     recursive_directory_iterator(path const& dir_path, BOOST_SCOPED_ENUM_NATIVE(symlink_option) opts)
     {
         detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), NULL);
     }
 
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use directory_options instead of symlink_option")
     recursive_directory_iterator(path const& dir_path, BOOST_SCOPED_ENUM_NATIVE(symlink_option) opts, system::error_code& ec) BOOST_NOEXCEPT
     {
         detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), &ec);
@@ -586,6 +590,7 @@ public:
     }
 
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use recursive_directory_iterator::depth() instead")
     int level() const BOOST_NOEXCEPT
     {
         return depth();
@@ -614,6 +619,7 @@ public:
     }
 
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use recursive_directory_iterator::disable_recursion_pending() instead")
     void no_push(bool value = true) BOOST_NOEXCEPT
     {
         disable_recursion_pending(value);
@@ -664,6 +670,7 @@ private:
 };
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use recursive_directory_iterator instead")
 typedef recursive_directory_iterator wrecursive_directory_iterator;
 #endif
 

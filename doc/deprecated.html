@@ -48,6 +48,10 @@ BOOST_FILESYSTEM_NO_DEPRECATED</code>, and this is recommended for all new code.
 <p style="font-size: 10pt">In the table, &#10004; indicates a synonym or other
 workaround is provided unless <code>
 BOOST_FILESYSTEM_NO_DEPRECATED</code> is defined.</p>
+<p style="font-size: 10pt">Additionally, when not disabled, most of the deprecated components will generate
+compilation warnings when used. These warnings are intended to highlight the library usage that
+needs to be updated. For convenience during the transition period, these warnings
+can be suppressed by defining <code>BOOST_FILESYSTEM_ALLOW_DEPRECATED</code> macro.</p>
 <table border="1" cellpadding="5" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td style="font-size: 10pt" valign="top">
