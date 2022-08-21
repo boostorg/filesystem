@@ -131,6 +131,57 @@ public:
     operator fs::path() const { return m_path; }
 };
 
+template< typename Char >
+class basic_custom_string
+{
+public:
+    typedef std::basic_string< Char > string_type;
+    typedef typename string_type::size_type size_type;
+    typedef typename string_type::difference_type difference_type;
+    typedef typename string_type::value_type value_type;
+    typedef typename string_type::reference reference;
+    typedef typename string_type::const_reference const_reference;
+    typedef typename string_type::pointer pointer;
+    typedef typename string_type::const_pointer const_pointer;
+    typedef typename string_type::iterator iterator;
+    typedef typename string_type::const_iterator const_iterator;
+
+private:
+    string_type m_str;
+
+public:
+    basic_custom_string() {}
+    explicit basic_custom_string(const_pointer str) : m_str(str) {}
+    explicit basic_custom_string(string_type const& str) : m_str(str) {}
+    template< typename OtherChar >
+    explicit basic_custom_string(const OtherChar* str)
+    {
+        // Do a simple character code conversion; only valid for ASCII characters
+        while (*str != static_cast< OtherChar >(0))
+        {
+            m_str.push_back(static_cast< value_type >(*str));
+            ++str;
+        }
+    }
+
+    bool empty() const { return m_str.empty(); }
+    size_type size() const { return m_str.size(); }
+
+    const_pointer data() const { return m_str.data(); }
+    const_pointer c_str() const { return m_str.c_str(); }
+
+    iterator begin() { return m_str.begin(); }
+    const_iterator begin() const { return m_str.begin(); }
+    iterator end() { return m_str.end(); }
+    const_iterator end() const { return m_str.end(); }
+
+    operator string_type() const { return m_str; }
+};
+
+typedef basic_custom_string< char > custom_string;
+typedef basic_custom_string< wchar_t > wcustom_string;
+typedef basic_custom_string< fs::path::value_type > pcustom_string;
+
 
 std::string platform(BOOST_PLATFORM);
 
@@ -2038,6 +2089,10 @@ void construction_tests()
     PATH_TEST_EQ("././..", "././..");
     PATH_TEST_EQ("./../.", "./../.");
     PATH_TEST_EQ(".././.", ".././.");
+
+    PATH_TEST_EQ(derived_from_path("foo"), "foo");
+    PATH_TEST_EQ(convertible_to_path("foo"), "foo");
+    PATH_TEST_EQ(fs::path(pcustom_string("foo")), "foo");
 }
 
 //  append_tests  --------------------------------------------------------------------//
@@ -2060,8 +2115,11 @@ void construction_tests()
         p3 /= convertible_to_path(appnd);\
         PATH_TEST_EQ(p3, expected);\
         path p4(p);\
-        p4.append(s.begin(), s.end());\
-        PATH_TEST_EQ(p4.string(), expected);\
+        p4 /= pcustom_string(appnd);\
+        PATH_TEST_EQ(p4, expected);\
+        path p5(p);\
+        p5.append(s.begin(), s.end());\
+        PATH_TEST_EQ(p5.string(), expected);\
     }
 
 void append_tests()
@@ -2195,8 +2253,11 @@ void append_tests()
         p6 += convertible_to_path(appnd);\
         PATH_TEST_EQ(p6, expected);\
         path p7(p);\
-        p7.concat(s.begin(), s.end());\
-        PATH_TEST_EQ(p7.string(), expected);\
+        p7 += pcustom_string(appnd);\
+        PATH_TEST_EQ(p7, expected);\
+        path p8(p);\
+        p8.concat(s.begin(), s.end());\
+        PATH_TEST_EQ(p8.string(), expected);\
     }
 
 void concat_tests()
