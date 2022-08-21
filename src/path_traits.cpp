@@ -24,7 +24,7 @@
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
-namespace pt = boost::filesystem::path_traits;
+namespace pt = boost::filesystem::detail::path_traits;
 namespace fs = boost::filesystem;
 namespace bs = boost::system;
 

@@ -28,7 +28,6 @@
 
 namespace boost {
 namespace filesystem {
-namespace detail {
 
 namespace {
 
@@ -115,7 +114,6 @@ const codecvt_error_category_initializer g_codecvt_error_category_initializer;
 
 #endif // !defined(BOOST_SYSTEM_HAS_CONSTEXPR) && !defined(_MSC_VER)
 
-} // namespace detail
 } // namespace filesystem
 } // namespace boost
 
