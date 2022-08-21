@@ -18,7 +18,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path_traits.hpp> // includes <cwchar>
+#include <boost/filesystem/detail/path_traits.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/core/enable_if.hpp>
@@ -208,10 +208,10 @@ public:
 
     template< class Source >
     path(Source const& source, typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value
     >::type* = NULL)
     {
-        path_traits::dispatch(source, m_pathname);
+        detail::path_traits::dispatch(source, m_pathname);
     }
 
     path(const value_type* s) : m_pathname(s) {}
@@ -273,10 +273,10 @@ public:
 
     template< class Source >
     path(Source const& source, codecvt_type const& cvt, typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value
     >::type* = NULL)
     {
-        path_traits::dispatch(source, m_pathname, cvt);
+        detail::path_traits::dispatch(source, m_pathname, cvt);
     }
 
     path(const value_type* begin, const value_type* end) : m_pathname(begin, end) {}
@@ -288,7 +288,7 @@ public:
         {
             // convert requires contiguous string, so copy
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
         }
     }
 
@@ -301,7 +301,7 @@ public:
         {
             // convert requires contiguous string, so copy
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
         }
     }
 
@@ -325,7 +325,7 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type operator=(Source const& source)
     {
@@ -352,12 +352,12 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type assign(Source const& source)
     {
         m_pathname.clear();
-        path_traits::dispatch(source, m_pathname);
+        detail::path_traits::dispatch(source, m_pathname);
         return *this;
     }
 
@@ -381,12 +381,12 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type assign(Source const& source, codecvt_type const& cvt)
     {
         m_pathname.clear();
-        path_traits::dispatch(source, m_pathname, cvt);
+        detail::path_traits::dispatch(source, m_pathname, cvt);
         return *this;
     }
 
@@ -404,7 +404,7 @@ public:
         if (begin != end)
         {
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
         }
         return *this;
     }
@@ -423,7 +423,7 @@ public:
         if (begin != end)
         {
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
         }
         return *this;
     }
@@ -447,7 +447,7 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type operator+=(Source const& source)
     {
@@ -490,11 +490,11 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type concat(Source const& source)
     {
-        path_traits::dispatch(source, m_pathname);
+        detail::path_traits::dispatch(source, m_pathname);
         return *this;
     }
 
@@ -518,11 +518,11 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type concat(Source const& source, codecvt_type const& cvt)
     {
-        path_traits::dispatch(source, m_pathname, cvt);
+        detail::path_traits::dispatch(source, m_pathname, cvt);
         return *this;
     }
 
@@ -539,7 +539,7 @@ public:
         if (begin != end)
         {
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname);
         }
         return *this;
     }
@@ -557,7 +557,7 @@ public:
         if (begin != end)
         {
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), m_pathname, cvt);
         }
         return *this;
     }
@@ -584,7 +584,7 @@ public:
 
     template< class Source >
     BOOST_FORCEINLINE typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type operator/=(Source const& source)
     {
@@ -611,12 +611,12 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type append(Source const& source)
     {
         path p;
-        path_traits::dispatch(source, p.m_pathname);
+        detail::path_traits::dispatch(source, p.m_pathname);
         return append(p);
     }
 
@@ -640,12 +640,12 @@ public:
 
     template< class Source >
     typename boost::enable_if_c<
-        path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
+        detail::path_traits::is_pathable< typename boost::decay< Source >::type >::value && !path_detail::is_native_pathable< Source >::value,
         path&
     >::type append(Source const& source, codecvt_type const& cvt)
     {
         path p;
-        path_traits::dispatch(source, p.m_pathname, cvt);
+        detail::path_traits::dispatch(source, p.m_pathname, cvt);
         return append(p);
     }
 
@@ -663,7 +663,7 @@ public:
         if (begin != end)
         {
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname);
         }
         return append(p);
     }
@@ -682,7 +682,7 @@ public:
         if (begin != end)
         {
             std::basic_string< typename std::iterator_traits< InputIterator >::value_type > seq(begin, end);
-            path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname, cvt);
+            detail::path_traits::convert(seq.c_str(), seq.c_str() + seq.size(), p.m_pathname, cvt);
         }
         return append(p);
     }
@@ -744,14 +744,14 @@ public:
     {
         std::string tmp;
         if (!m_pathname.empty())
-            path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp);
+            detail::path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp);
         return tmp;
     }
     std::string string(codecvt_type const& cvt) const
     {
         std::string tmp;
         if (!m_pathname.empty())
-            path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp, cvt);
+            detail::path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp, cvt);
         return tmp;
     }
 
@@ -767,14 +767,14 @@ public:
     {
         std::wstring tmp;
         if (!m_pathname.empty())
-            path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp);
+            detail::path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp);
         return tmp;
     }
     std::wstring wstring(codecvt_type const& cvt) const
     {
         std::wstring tmp;
         if (!m_pathname.empty())
-            path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp, cvt);
+            detail::path_traits::convert(m_pathname.c_str(), m_pathname.c_str() + m_pathname.size(), tmp, cvt);
         return tmp;
     }
 #endif
@@ -1370,6 +1370,7 @@ inline std::wstring path::generic_string< std::wstring >(codecvt_type const& cvt
 //                        requiring path::codecvt() be visable                          //
 //--------------------------------------------------------------------------------------//
 
+namespace detail {
 namespace path_traits { //  without codecvt
 
 inline void convert(const char* from,
@@ -1399,6 +1400,7 @@ inline void convert(const wchar_t* from, std::string& to)
 }
 
 } // namespace path_traits
+} // namespace detail
 } // namespace filesystem
 } // namespace boost
 

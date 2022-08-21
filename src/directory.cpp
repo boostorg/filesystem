@@ -134,8 +134,10 @@ file_status directory_entry::get_symlink_status(system::error_code* ec) const
     return m_symlink_status;
 }
 
+namespace detail {
+
 //  dispatch directory_entry supplied here rather than in
-//  <boost/filesystem/path_traits.hpp>, thus avoiding header circularity.
+//  <boost/filesystem/detail/path_traits.hpp>, thus avoiding header circularity.
 //  test cases are in operations_unit_test.cpp
 
 namespace path_traits {
@@ -171,8 +173,6 @@ void dispatch(directory_entry const& de,
 //                               directory_iterator                                     //
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
-
-namespace detail {
 
 BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_imp_extra_data_alignment = 16u;
 

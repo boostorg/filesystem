@@ -12,7 +12,7 @@
 #include "platform_config.hpp"
 
 #include <boost/filesystem/config.hpp>
-#include <boost/filesystem/path_traits.hpp>
+#include <boost/filesystem/detail/path_traits.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/assert.hpp>
@@ -119,6 +119,7 @@ void convert_aux(
 
 namespace boost {
 namespace filesystem {
+namespace detail {
 namespace path_traits {
 
 //--------------------------------------------------------------------------------------//
@@ -130,12 +131,10 @@ void convert(const char* from,
              const char* from_end, // 0 for null terminated MBCS
              std::wstring& to, codecvt_type const& cvt)
 {
-    BOOST_ASSERT(from);
+    BOOST_ASSERT(from != NULL);
 
     if (!from_end) // null terminated
-    {
         from_end = from + std::strlen(from);
-    }
 
     if (from == from_end)
         return;
@@ -164,12 +163,10 @@ void convert(const wchar_t* from,
              const wchar_t* from_end, // 0 for null terminated MBCS
              std::string& to, codecvt_type const& cvt)
 {
-    BOOST_ASSERT(from);
+    BOOST_ASSERT(from != NULL);
 
     if (!from_end) // null terminated
-    {
         from_end = from + std::wcslen(from);
-    }
 
     if (from == from_end)
         return;
@@ -195,6 +192,7 @@ void convert(const wchar_t* from,
 }
 
 } // namespace path_traits
+} // namespace detail
 } // namespace filesystem
 } // namespace boost
 
