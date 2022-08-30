@@ -13,395 +13,682 @@
 
 #include <boost/filesystem/config.hpp>
 #include <cstddef>
-#include <cwchar> // for mbstate_t
+#include <cstring> // for strlen
+#include <cwchar> // for mbstate_t, wcslen
 #include <locale>
 #include <string>
+#include <iterator>
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+#include <string_view>
+#endif
 #include <boost/assert.hpp>
 #include <boost/system/error_category.hpp>
-#if BOOST_FILESYSTEM_VERSION < 4
+#include <boost/type_traits/declval.hpp>
+#include <boost/type_traits/remove_cv.hpp>
+#if defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#include <boost/type_traits/disjunction.hpp>
+#include <boost/core/enable_if.hpp>
+#endif
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 #include <vector>
 #include <list>
-#include <boost/core/enable_if.hpp>
-#include <boost/type_traits/is_array.hpp>
 #endif
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 namespace boost {
+
+template< typename, typename > class basic_string_view;
+
+namespace container {
+template< typename, typename, typename > class basic_string;
+} // namespace container
+
 namespace filesystem {
 
 BOOST_FILESYSTEM_DECL system::error_category const& codecvt_error_category() BOOST_NOEXCEPT;
-//  uses std::codecvt_base::result used for error codes:
-//
-//    ok:       Conversion successful.
-//    partial:  Not all source characters converted; one or more additional source
-//              characters are needed to produce the final target character, or the
-//              size of the target intermediate buffer was too small to hold the result.
-//    error:    A character in the source could not be converted to the target encoding.
-//    noconv:   The source and target characters have the same type and encoding, so no
-//              conversion was necessary.
 
 class directory_entry;
 
 namespace detail {
 namespace path_traits {
 
+#if defined(BOOST_WINDOWS_API)
+typedef wchar_t path_native_char_type;
+#define BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE false
+#define BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE true
+#else
+typedef char path_native_char_type;
+#define BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE true
+#define BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE false
+#endif
+
 typedef std::codecvt< wchar_t, char, std::mbstate_t > codecvt_type;
 
-//  is_pathable type trait; allows disabling over-agressive class path member templates
+struct unknown_type_tag {};
+struct ntcts_type_tag {};
+struct char_ptr_tag : ntcts_type_tag {};
+struct char_array_tag : ntcts_type_tag {};
+struct string_class_tag {};
+struct std_string_tag : string_class_tag {};
+struct boost_container_string_tag : string_class_tag {};
+struct std_string_view_tag : string_class_tag {};
+struct boost_string_view_tag : string_class_tag {};
+struct range_type_tag {};
+struct directory_entry_tag {};
 
-template< class T >
-struct is_pathable
+//! The traits define a number of properties of a path source
+template< typename T >
+struct path_source_traits
 {
-    static const bool value = false;
+    //! The kind of the path source. Useful for dispatching.
+    typedef unknown_type_tag tag_type;
+    //! Character type that the source contains
+    typedef void char_type;
+    //! Indicates whether the source is natively supported by \c path::string_type as arguments for constructors/assignment/appending
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
 
-template<>
-struct is_pathable< char* >
+template< >
+struct path_source_traits< char* >
 {
-    static const bool value = true;
+    typedef char_ptr_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
 };
 
-template<>
-struct is_pathable< const char* >
+template< >
+struct path_source_traits< const char* >
 {
-    static const bool value = true;
+    typedef char_ptr_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
 };
 
-template<>
-struct is_pathable< wchar_t* >
+template< >
+struct path_source_traits< wchar_t* >
 {
-    static const bool value = true;
+    typedef char_ptr_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
 };
 
-template<>
-struct is_pathable< const wchar_t* >
+template< >
+struct path_source_traits< const wchar_t* >
 {
-    static const bool value = true;
+    typedef char_ptr_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
 };
 
-template<>
-struct is_pathable< std::string >
+template< >
+struct path_source_traits< char[] >
 {
-    static const bool value = true;
+    typedef char_array_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
 };
 
-template<>
-struct is_pathable< std::wstring >
+template< >
+struct path_source_traits< const char[] >
 {
-    static const bool value = true;
+    typedef char_array_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
 };
 
-#if BOOST_FILESYSTEM_VERSION < 4
-template<>
+template< >
+struct path_source_traits< wchar_t[] >
+{
+    typedef char_array_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
+};
+
+template< >
+struct path_source_traits< const wchar_t[] >
+{
+    typedef char_array_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
+};
+
+template< std::size_t N >
+struct path_source_traits< char[N] >
+{
+    typedef char_array_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
+};
+
+template< std::size_t N >
+struct path_source_traits< const char[N] >
+{
+    typedef char_array_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
+};
+
+template< std::size_t N >
+struct path_source_traits< wchar_t[N] >
+{
+    typedef char_array_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
+};
+
+template< std::size_t N >
+struct path_source_traits< const wchar_t[N] >
+{
+    typedef char_array_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
+};
+
+template< >
+struct path_source_traits< std::string >
+{
+    typedef std_string_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
+};
+
+template< >
+struct path_source_traits< std::wstring >
+{
+    typedef std_string_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
+};
+
+template< >
+struct path_source_traits< boost::container::basic_string< char, std::char_traits< char >, void > >
+{
+    typedef boost_container_string_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
+};
+
+template< >
+struct path_source_traits< boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > >
+{
+    typedef boost_container_string_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
+};
+
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+
+template< >
+struct path_source_traits< std::string_view >
+{
+    typedef std_string_view_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE;
+};
+
+template< >
+struct path_source_traits< std::wstring_view >
+{
+    typedef std_string_view_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE;
+};
+
+#endif // !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+
+template< >
+struct path_source_traits< boost::basic_string_view< char, std::char_traits< char > > >
+{
+    typedef boost_string_view_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
+};
+
+template< >
+struct path_source_traits< boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > >
+{
+    typedef boost_string_view_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
+};
+
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+template< >
 struct
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-is_pathable< std::vector< char > >
+path_source_traits< std::vector< char > >
 {
-    static const bool value = true;
+    // Since C++11 this could be string_class_tag as std::vector gained data() member
+    typedef range_type_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
 
-template<>
+template< >
 struct
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-is_pathable< std::vector< wchar_t > >
+path_source_traits< std::vector< wchar_t > >
 {
-    static const bool value = true;
+    // Since C++11 this could be string_class_tag as std::vector gained data() member
+    typedef range_type_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
 
-template<>
+template< >
 struct
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-is_pathable< std::list< char > >
+path_source_traits< std::list< char > >
 {
-    static const bool value = true;
+    typedef range_type_tag tag_type;
+    typedef char char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
 
-template<>
+template< >
 struct
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-is_pathable< std::list< wchar_t > >
+path_source_traits< std::list< wchar_t > >
 {
-    static const bool value = true;
+    typedef range_type_tag tag_type;
+    typedef wchar_t char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
-#endif // BOOST_FILESYSTEM_VERSION < 4
+#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 
-template<>
-struct is_pathable< directory_entry >
+template< >
+struct path_source_traits< directory_entry >
 {
-    static const bool value = true;
+    typedef directory_entry_tag tag_type;
+    typedef path_native_char_type char_type;
+    static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
 
-//  Pathable empty
+#undef BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE
+#undef BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE
 
-#if BOOST_FILESYSTEM_VERSION < 4
-template< class Container >
-inline
-    // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
-    // conforming compilers. Replace by plain "bool" at some future date (2012?)
-    typename boost::disable_if< boost::is_array< Container >, bool >::type
-    empty(Container const& c)
+
+//! The trait tests if the type is a known path Source tag
+template< typename Tag >
+struct is_known_path_source_tag
 {
-    return c.begin() == c.end();
-}
-#endif // BOOST_FILESYSTEM_VERSION < 4
+    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+};
 
-template< class T >
-inline bool empty(T* const& c_str)
+template< >
+struct is_known_path_source_tag< unknown_type_tag >
 {
-    BOOST_ASSERT(c_str != NULL);
-    return !*c_str;
-}
+    static BOOST_CONSTEXPR_OR_CONST bool value = false;
+};
 
-template< typename T, std::size_t N >
-inline bool empty(T (&x)[N])
+//! The trait tests if the type is compatible with path Source requirements
+template< typename T >
+struct is_path_source :
+    public is_known_path_source_tag< typename path_source_traits< T >::tag_type >
 {
-    return !x[0];
-}
+};
 
-// value types differ  ---------------------------------------------------------------//
-//
-//   A from_end argument of NULL is less efficient than a known end, so use only if needed
 
-//  with codecvt
+//! The trait indicates whether the type is a path Source that is natively supported by path::string_type as the source for construction/assignment/appending
+template< typename T >
+struct is_native_path_source
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = path_source_traits< T >::is_native;
+};
 
+
+//! The trait indicates whether the type is one of the supported path character types
+template< typename T >
+struct is_path_char_type
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = false;
+};
+
+template< >
+struct is_path_char_type< char >
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+};
+
+template< >
+struct is_path_char_type< wchar_t >
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+};
+
+
+//! The trait indicates whether the type is an iterator over a sequence of path characters
+template< typename Iterator >
+struct is_path_source_iterator :
+    public is_path_char_type< typename std::iterator_traits< Iterator >::value_type >
+{
+};
+
+
+//! The trait indicates whether the type is a pointer to a sequence of native path characters
+template< typename T >
+struct is_native_char_ptr
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = false;
+};
+
+template< >
+struct is_native_char_ptr< path_native_char_type* >
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+};
+
+template< >
+struct is_native_char_ptr< const path_native_char_type* >
+{
+    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+};
+
+
+//! Converts character encoding using the supplied codecvt facet. If \a cvt is \c NULL then \c path::codecvt() will be used.
 BOOST_FILESYSTEM_DECL
-void convert(const char* from,
-             const char* from_end, // NULL for null terminated MBCS
-             std::wstring& to, codecvt_type const& cvt);
+void convert(const char* from, const char* from_end, std::wstring& to, const codecvt_type* cvt = NULL);
 
+//! \overload convert
 BOOST_FILESYSTEM_DECL
-void convert(const wchar_t* from,
-             const wchar_t* from_end, // NULL for null terminated MBCS
-             std::string& to, codecvt_type const& cvt);
+void convert(const wchar_t* from, const wchar_t* from_end, std::string& to, const codecvt_type* cvt = NULL);
 
-inline void convert(const char* from, std::wstring& to, codecvt_type const& cvt)
-{
-    BOOST_ASSERT(from);
-    convert(from, NULL, to, cvt);
-}
-
-inline void convert(const wchar_t* from, std::string& to, codecvt_type const& cvt)
-{
-    BOOST_ASSERT(from);
-    convert(from, NULL, to, cvt);
-}
-
-//  without codecvt
-
-inline void convert(const char* from,
-                    const char* from_end, // NULL for null terminated MBCS
-                    std::wstring& to);
-
-inline void convert(const wchar_t* from,
-                    const wchar_t* from_end, // NULL for null terminated MBCS
-                    std::string& to);
-
-inline void convert(const char* from, std::wstring& to);
-
-inline void convert(const wchar_t* from, std::string& to);
-
-// value types same  -----------------------------------------------------------------//
-
-// char with codecvt
-
-inline void convert(const char* from, const char* from_end, std::string& to, codecvt_type const&)
-{
-    BOOST_ASSERT(from);
-    BOOST_ASSERT(from_end);
-    to.append(from, from_end);
-}
-
-inline void convert(const char* from, std::string& to, codecvt_type const&)
-{
-    BOOST_ASSERT(from);
-    to += from;
-}
-
-// wchar_t with codecvt
-
-inline void convert(const wchar_t* from, const wchar_t* from_end, std::wstring& to, codecvt_type const&)
-{
-    BOOST_ASSERT(from);
-    BOOST_ASSERT(from_end);
-    to.append(from, from_end);
-}
-
-inline void convert(const wchar_t* from, std::wstring& to, codecvt_type const&)
-{
-    BOOST_ASSERT(from);
-    to += from;
-}
-
-// char without codecvt
-
-inline void convert(const char* from, const char* from_end, std::string& to)
-{
-    BOOST_ASSERT(from);
-    BOOST_ASSERT(from_end);
-    to.append(from, from_end);
-}
-
-inline void convert(const char* from, std::string& to)
-{
-    BOOST_ASSERT(from);
-    to += from;
-}
-
-// wchar_t without codecvt
-
-inline void convert(const wchar_t* from, const wchar_t* from_end, std::wstring& to)
-{
-    BOOST_ASSERT(from);
-    BOOST_ASSERT(from_end);
-    to.append(from, from_end);
-}
-
-inline void convert(const wchar_t* from, std::wstring& to)
-{
-    BOOST_ASSERT(from);
-    to += from;
-}
 
 //  Source dispatch  -----------------------------------------------------------------//
 
-//  contiguous containers with codecvt
-template< class U >
-inline void dispatch(std::string const& c, U& to, codecvt_type const& cvt)
+template< typename Source, typename Callback >
+inline void dispatch(Source const& source, Callback cb, const codecvt_type* cvt = NULL);
+
+template< typename Callback >
+BOOST_FORCEINLINE void dispatch(const char* source, Callback cb, const codecvt_type* cvt, ntcts_type_tag)
 {
-    const char* p = c.c_str();
-    convert(p, p + c.size(), to, cvt);
-}
-template< class U >
-inline void dispatch(std::wstring const& c, U& to, codecvt_type const& cvt)
-{
-    const wchar_t* p = c.c_str();
-    convert(p, p + c.size(), to, cvt);
+    cb(source, source + std::strlen(source), cvt);
 }
 
-#if BOOST_FILESYSTEM_VERSION < 4
-template< class U >
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-inline void dispatch(std::vector< char > const& c, U& to, codecvt_type const& cvt)
+template< typename Callback >
+BOOST_FORCEINLINE void dispatch(const wchar_t* source, Callback cb, const codecvt_type* cvt, ntcts_type_tag)
 {
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
-}
-template< class U >
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-inline void dispatch(std::vector< wchar_t > const& c, U& to, codecvt_type const& cvt)
-{
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to, cvt);
-}
-#endif // BOOST_FILESYSTEM_VERSION < 4
-
-//  contiguous containers without codecvt
-template< class U >
-inline void dispatch(std::string const& c, U& to)
-{
-    const char* p = c.c_str();
-    convert(p, p + c.size(), to);
-}
-template< class U >
-inline void dispatch(std::wstring const& c, U& to)
-{
-    const wchar_t* p = c.c_str();
-    convert(p, p + c.size(), to);
+    cb(source, source + std::wcslen(source), cvt);
 }
 
-#if BOOST_FILESYSTEM_VERSION < 4
-template< class U >
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-inline void dispatch(std::vector< char > const& c, U& to)
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch(Source const& source, Callback cb, const codecvt_type* cvt, string_class_tag)
 {
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to);
-}
-template< class U >
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-inline void dispatch(std::vector< wchar_t > const& c, U& to)
-{
-    if (!c.empty())
-        convert(&*c.begin(), &*c.begin() + c.size(), to);
+    cb(source.data(), source.data() + source.size(), cvt);
 }
 
-//  non-contiguous containers with codecvt
-template< class Container, class U >
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-inline
-    // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
-    // conforming compilers. Replace by plain "void" at some future date (2012?)
-    typename boost::disable_if< boost::is_array< Container >, void >::type
-    dispatch(Container const& c, U& to, codecvt_type const& cvt)
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch(Source const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
 {
-    if (!c.empty())
+    std::basic_string< typename Source::value_type > src(source.begin(), source.end());
+    cb(src.data(), src.data() + src.size(), cvt);
+}
+
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+
+template< typename Callback >
+BOOST_FORCEINLINE void dispatch(std::vector< char > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
+{
+    const char* data = NULL, *data_end = NULL;
+    if (!source.empty())
     {
-        std::basic_string< typename Container::value_type > s(c.begin(), c.end());
-        convert(s.c_str(), s.c_str() + s.size(), to, cvt);
+        data = &source[0];
+        data_end = data + source.size();
     }
-}
-#endif // BOOST_FILESYSTEM_VERSION < 4
-
-//  c_str
-template< class T, class U >
-inline void dispatch(T* const& c_str, U& to, codecvt_type const& cvt)
-{
-    //    std::cout << "dispatch() const T *\n";
-    BOOST_ASSERT(c_str);
-    convert(c_str, to, cvt);
+    cb(data, data_end, cvt);
 }
 
-//  Note: there is no dispatch on C-style arrays because the array may
-//  contain a string smaller than the array size.
-
-BOOST_FILESYSTEM_DECL
-void dispatch(directory_entry const& de,
-#ifdef BOOST_WINDOWS_API
-              std::wstring& to,
-#else
-              std::string& to,
-#endif
-              codecvt_type const&);
-
-#if BOOST_FILESYSTEM_VERSION < 4
-//  non-contiguous containers without codecvt
-template< class Container, class U >
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
-inline
-    // disable_if aids broken compilers (IBM, old GCC, etc.) and is harmless for
-    // conforming compilers. Replace by plain "void" at some future date (2012?)
-    typename boost::disable_if< boost::is_array< Container >, void >::type
-    dispatch(Container const& c, U& to)
+template< typename Callback >
+BOOST_FORCEINLINE void dispatch(std::vector< wchar_t > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
 {
-    if (!c.empty())
+    const wchar_t* data = NULL, *data_end = NULL;
+    if (!source.empty())
     {
-        std::basic_string< typename Container::value_type > seq(c.begin(), c.end());
-        convert(seq.c_str(), seq.c_str() + seq.size(), to);
+        data = &source[0];
+        data_end = data + source.size();
     }
+    cb(data, data_end, cvt);
 }
-#endif // BOOST_FILESYSTEM_VERSION < 4
 
-//  c_str
-template< class T, class U >
-inline void dispatch(T* const& c_str, U& to)
+#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+
+// Defined in directory.hpp to avoid circular header dependencies
+template< typename Callback >
+void dispatch(directory_entry const& de, Callback cb, const codecvt_type* cvt, directory_entry_tag);
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch(Source const& source, Callback cb, const codecvt_type* cvt)
 {
-    //    std::cout << "dispatch() const T *\n";
-    BOOST_ASSERT(c_str != NULL);
-    convert(c_str, to);
+    path_traits::dispatch(source, cb, cvt,
+        typename path_traits::path_source_traits< typename boost::remove_cv< Source >::type >::tag_type());
 }
 
-//  Note: there is no dispatch on C-style arrays because the array may
-//  contain a string smaller than the array size.
 
-BOOST_FILESYSTEM_DECL
-void dispatch(directory_entry const& de,
-#ifdef BOOST_WINDOWS_API
-              std::wstring& to
-#else
-              std::string& to
+typedef char yes_type;
+struct no_type { char buf[2]; };
+
+// Note: The obscure naming of the _check* functions below is a workaround for an MSVC-9.0 bug, which looks up the function outside the class scope
+
+#if !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+
+//! The type trait indicates whether the type has a conversion path to one of the path source types
+template< typename T >
+struct is_convertible_to_path_source
+{
+    // Note: The obscure naming of this function is a workaround for an MSVC-9.0 bug, which looks up the function outside the class scope
+    static yes_type _check_convertible_to_path_source(const char*);
+    static yes_type _check_convertible_to_path_source(const wchar_t*);
+    static yes_type _check_convertible_to_path_source(std::string const&);
+    static yes_type _check_convertible_to_path_source(std::wstring const&);
+    static yes_type _check_convertible_to_path_source(boost::container::basic_string< char, std::char_traits< char >, void > const&);
+    static yes_type _check_convertible_to_path_source(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+    static yes_type _check_convertible_to_path_source(std::string_view const&);
+    static yes_type _check_convertible_to_path_source(std::wstring_view const&);
 #endif
-);
+    static yes_type _check_convertible_to_path_source(boost::basic_string_view< char, std::char_traits< char > > const&);
+    static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
+    static no_type _check_convertible_to_path_source(...);
+
+    static BOOST_CONSTEXPR_OR_CONST bool value =
+        sizeof(is_convertible_to_path_source< T >::_check_convertible_to_path_source(boost::declval< T const& >())) == sizeof(yes_type);
+};
+
+#else // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+
+// Note: We use separate checks for convertibility to std::string_view and other types to avoid ambiguity with an implicit range constructor
+//       of std::string_view in the early C++23 draft (N4892). If a user's type is convertible to e.g. std::string and also satisfies
+//       ranges::contiguous_range and ranges::sized_range concepts then the conversion is ambiguous: the type is convertible to std::string
+//       through the conversion operator in the user's class and is also convertible to std::string_view through the implicit conversion
+//       constructor in std::string_view. The solution is to check convertibility to std::string_view separately first.
+
+template< typename T >
+struct is_convertible_to_std_string_view
+{
+    static yes_type _check_convertible_to_std_string_view(std::string_view const&);
+    static yes_type _check_convertible_to_std_string_view(std::wstring_view const&);
+    static no_type _check_convertible_to_std_string_view(...);
+
+    static BOOST_CONSTEXPR_OR_CONST bool value =
+        sizeof(is_convertible_to_std_string_view< T >::_check_convertible_to_std_string_view(boost::declval< T const& >())) == sizeof(yes_type);
+};
+
+template< typename T >
+struct is_convertible_to_path_source_non_std_string_view
+{
+    // Note: The obscure naming of this function is a workaround for an MSVC-9.0 bug, which looks up the function outside the class scope
+    static yes_type _check_convertible_to_path_source(const char*);
+    static yes_type _check_convertible_to_path_source(const wchar_t*);
+    static yes_type _check_convertible_to_path_source(std::string const&);
+    static yes_type _check_convertible_to_path_source(std::wstring const&);
+    static yes_type _check_convertible_to_path_source(boost::container::basic_string< char, std::char_traits< char >, void > const&);
+    static yes_type _check_convertible_to_path_source(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
+    static yes_type _check_convertible_to_path_source(boost::basic_string_view< char, std::char_traits< char > > const&);
+    static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
+    static no_type _check_convertible_to_path_source(...);
+
+    static BOOST_CONSTEXPR_OR_CONST bool value =
+        sizeof(is_convertible_to_path_source_non_std_string_view< T >::_check_convertible_to_path_source(boost::declval< T const& >())) == sizeof(yes_type);
+};
+
+//! The type trait indicates whether the type has a conversion path to one of the path source types
+template< typename T >
+struct is_convertible_to_path_source :
+    public boost::disjunction<
+        is_convertible_to_std_string_view< T >,
+        is_convertible_to_path_source_non_std_string_view< T >
+    >
+{
+};
+
+#endif // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+
+//! The type trait makes \a T dependent on the second template argument. Used to delay type resolution and name binding.
+template< typename T, typename >
+struct make_dependent
+{
+    typedef T type;
+};
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl(const char* source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< const char*, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl(const wchar_t* source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< const wchar_t*, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl(std::string const& source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< std::string, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl(std::wstring const& source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< std::wstring, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl
+(
+    boost::container::basic_string< char, std::char_traits< char >, void > const& source,
+    Callback cb,
+    const codecvt_type* cvt
+)
+{
+    typedef typename path_traits::make_dependent< boost::container::basic_string< char, std::char_traits< char >, void >, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl
+(
+    boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const& source,
+    Callback cb,
+    const codecvt_type* cvt
+)
+{
+    typedef typename path_traits::make_dependent< boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void >, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl
+(
+    boost::basic_string_view< char, std::char_traits< char > > const& source,
+    Callback cb,
+    const codecvt_type* cvt
+)
+{
+    typedef typename path_traits::make_dependent< boost::basic_string_view< char, std::char_traits< char > >, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl
+(
+    boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const& source,
+    Callback cb,
+    const codecvt_type* cvt
+)
+{
+    typedef typename path_traits::make_dependent< boost::basic_string_view< wchar_t, std::char_traits< wchar_t > >, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+#if !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< std::string_view, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_impl(std::wstring_view const& source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< std::wstring_view, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+#endif // !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
+{
+    typedef typename boost::remove_cv< Source >::type source_t;
+    path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
+}
+
+#else // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_sv_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< std::string_view, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE void dispatch_convertible_sv_impl(std::wstring_view const& source, Callback cb, const codecvt_type* cvt)
+{
+    typedef typename path_traits::make_dependent< std::wstring_view, Source >::type source_t;
+    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE typename boost::disable_if_c<
+    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value
+>::type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
+{
+    typedef typename boost::remove_cv< Source >::type source_t;
+    path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
+}
+
+template< typename Source, typename Callback >
+BOOST_FORCEINLINE typename boost::enable_if_c<
+    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value
+>::type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
+{
+    typedef typename boost::remove_cv< Source >::type source_t;
+    path_traits::dispatch_convertible_sv_impl< source_t >(source, cb, cvt);
+}
+
+#endif // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 } // namespace path_traits
 } // namespace detail

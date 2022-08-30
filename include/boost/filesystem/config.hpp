@@ -170,4 +170,15 @@
 #include <boost/config/auto_link.hpp>
 #endif // auto-linking disabled
 
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW) && \
+    (\
+        (defined(BOOST_DINKUMWARE_STDLIB) && defined(_HAS_CXX23) && (_HAS_CXX23 != 0) && defined(_MSVC_STL_UPDATE) && (_MSVC_STL_UPDATE < 202208L)) || \
+        (defined(BOOST_LIBSTDCXX_VERSION) && (BOOST_LIBSTDCXX_VERSION < 120100) && (BOOST_CXX_VERSION > 202002L))\
+    )
+// Indicates that std::string_view has implicit constructor from ranges that was present in an early C++23 draft (N4892).
+// This was later rectified by marking the constructor explicit (https://wg21.link/p2499). Unfortunately, some compilers
+// were released with the constructor being implicit.
+#define BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR
+#endif
+
 #endif // BOOST_FILESYSTEM_CONFIG_HPP

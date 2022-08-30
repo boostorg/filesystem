@@ -53,12 +53,17 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/exception.hpp>
 
+#include <boost/config.hpp>
 #include <boost/next_prior.hpp>
+#include <boost/utility/string_view.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <cstring>
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+#include <string_view>
+#endif
 #include <boost/core/lightweight_test.hpp>
 #include <boost/detail/lightweight_main.hpp>
 
@@ -2093,9 +2098,22 @@ void construction_tests()
     PATH_TEST_EQ(derived_from_path("foo"), "foo");
     PATH_TEST_EQ(convertible_to_path("foo"), "foo");
     PATH_TEST_EQ(fs::path(pcustom_string("foo")), "foo");
+    PATH_TEST_EQ(boost::string_view("foo"), "foo");
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+    PATH_TEST_EQ(std::string_view("foo"), "foo");
+#endif
 }
 
 //  append_tests  --------------------------------------------------------------------//
+
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+#define APPEND_TEST_STD_STRING_VIEW(appnd, expected)\
+        path p6(p);\
+        p6 /= std::string_view(appnd);\
+        PATH_TEST_EQ(p6, expected);
+#else
+#define APPEND_TEST_STD_STRING_VIEW(appnd, expected)
+#endif
 
 #define APPEND_TEST(pth, appnd, expected)\
     {\
@@ -2118,8 +2136,12 @@ void construction_tests()
         p4 /= pcustom_string(appnd);\
         PATH_TEST_EQ(p4, expected);\
         path p5(p);\
-        p5.append(s.begin(), s.end());\
-        PATH_TEST_EQ(p5.string(), expected);\
+        p5 /= boost::string_view(appnd);\
+        PATH_TEST_EQ(p5, expected);\
+        APPEND_TEST_STD_STRING_VIEW(appnd, expected)\
+        path p7(p);\
+        p7.append(s.begin(), s.end());\
+        PATH_TEST_EQ(p7.string(), expected);\
     }
 
 void append_tests()
@@ -2230,6 +2252,15 @@ void append_tests()
 
 //  concat_tests  --------------------------------------------------------------------//
 
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+#define CONCAT_TEST_STD_STRING_VIEW(appnd, expected)\
+        path p9(p);\
+        p9 += std::string_view(appnd);\
+        PATH_TEST_EQ(p9, expected);
+#else
+#define CONCAT_TEST_STD_STRING_VIEW(appnd, expected)
+#endif
+
 #define CONCAT_TEST(pth, appnd, expected)\
     {\
         const path p(pth);\
@@ -2256,8 +2287,12 @@ void append_tests()
         p7 += pcustom_string(appnd);\
         PATH_TEST_EQ(p7, expected);\
         path p8(p);\
-        p8.concat(s.begin(), s.end());\
-        PATH_TEST_EQ(p8.string(), expected);\
+        p8 += boost::string_view(appnd);\
+        PATH_TEST_EQ(p8, expected);\
+        CONCAT_TEST_STD_STRING_VIEW(appnd, expected)\
+        path p10(p);\
+        p10.concat(s.begin(), s.end());\
+        PATH_TEST_EQ(p10.string(), expected);\
     }
 
 void concat_tests()

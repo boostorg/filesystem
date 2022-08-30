@@ -1283,19 +1283,19 @@ shall return strings formatted according to the <a href="#generic-pathname-forma
 using <i>preferred-separator</i>. See [<a href="#Operating-system-examples">fs.os.examples</a>].</p>
 <h3><a name="path-Requirements"><code>path</code> Requirements</a> [path.req]</h3>
 <p>Template parameters named <code><a name="InputIterator">InputIterator</a></code> are required to meet the
-requirements for a C++ standard library <code>RandomIterator</code> compliant iterator. The iterator's value type is required
-to be one of: <code>char</code>, <code>wchar_t</code>. Collectively, these types are referred to as supported character types.</p>
+requirements for a C++ standard library <code>InputIterator</code> compliant iterator. The iterator's value type is required
+to be one of: <code>char</code>, <code>wchar_t</code>. Collectively, these types are referred to as supported path character types.</p>
 <p>Template parameters named <code><a name="Source">Source</a></code> are required to be one of:</p>
 <ul>
   <li>
-  <p>A <code>std::basic_string</code> specialization with a value type of one of the supported character types.</li>
+  <p>A <code>std::basic_string</code>, <code>std::basic_string_view</code>, <code>boost::container::basic_string</code> or <code>boost::basic_string_view</code> specialization with a value type of one of the supported path character types.</li>
   <li>
-  <p><b>v3, deprecated:</b> A container with a value type of one of the supported character types.</li>
+  <p><b>v3, deprecated:</b> A container with a value type of one of the supported path character types.</li>
   <li>
   <p>A pointer into a null terminated string. The value type is required
-  to be a supported character type.</li>
+  to be a supported path character type.</li>
   <li>
-  <p>A C-array. The value type is required to be a supported character type.</li>
+  <p>A C-array of supported path character type containing a null terminated string.</li>
   <li>
   <p>A <code>boost::filesystem::directory_entry</code>.</li>
 </ul>
