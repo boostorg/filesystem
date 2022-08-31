@@ -2653,6 +2653,51 @@ void lexically_normal_tests()
     }
 }
 
+//  compare_tests  -------------------------------------------------------------------//
+
+#define COMPARE_TEST(pth1, pth2)\
+    {\
+        BOOST_TEST_EQ(fs::path(pth1).compare(pth1), 0);\
+        BOOST_TEST_LT(fs::path(pth1).compare(pth2), 0);\
+        BOOST_TEST_GT(fs::path(pth2).compare(pth1), 0);\
+        BOOST_TEST(fs::path(pth1) == pth1);\
+        BOOST_TEST(pth1 == fs::path(pth1));\
+        BOOST_TEST(fs::path(pth1) != pth2);\
+        BOOST_TEST(pth1 != fs::path(pth2));\
+        BOOST_TEST(fs::path(pth1) < pth2);\
+        BOOST_TEST(pth1 < fs::path(pth2));\
+        BOOST_TEST(fs::path(pth2) > pth1);\
+        BOOST_TEST(pth2 > fs::path(pth1));\
+        BOOST_TEST(fs::path(pth1) <= pth1);\
+        BOOST_TEST(pth1 <= fs::path(pth2));\
+        BOOST_TEST(fs::path(pth1) >= pth1);\
+        BOOST_TEST(pth2 >= fs::path(pth1));\
+    }
+
+void compare_tests()
+{
+    COMPARE_TEST(fs::path("foo"), fs::path("zoo"))
+    COMPARE_TEST("foo", "zoo")
+    COMPARE_TEST(std::string("foo"), std::string("zoo"))
+    COMPARE_TEST(derived_from_path("foo"), derived_from_path("zoo"))
+    COMPARE_TEST(pcustom_string("foo"), pcustom_string("zoo"))
+    COMPARE_TEST(boost::string_view("foo"), boost::string_view("zoo"))
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+    COMPARE_TEST(std::string_view("foo"), std::string_view("zoo"))
+#endif
+
+    COMPARE_TEST("/foo", "foo")
+    COMPARE_TEST("/a/b", "foo")
+    COMPARE_TEST("/foo", "/zoo")
+    COMPARE_TEST("/foo", "/foo/bar")
+
+    if (platform == "Windows")
+    {
+        COMPARE_TEST("c:\\foo", "d:\\foo")
+        COMPARE_TEST("c:\\foo", "c:\\zoo")
+    }
+}
+
 inline void odr_use(const path::value_type& c)
 {
     static const path::value_type dummy = '\0';
@@ -2702,6 +2747,7 @@ int cpp_main(int, char*[])
     replace_extension_tests();
     make_preferred_tests();
     lexically_normal_tests();
+    compare_tests();
 
     // verify deprecated names still available
 
