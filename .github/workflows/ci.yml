@@ -103,12 +103,17 @@ jobs:
             install:
               - g++-10
           - toolset: gcc-11
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
             os: ubuntu-20.04
             install:
               - g++-11
             sources:
               - "ppa:ubuntu-toolchain-r/test"
+          - toolset: gcc-12
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            os: ubuntu-22.04
+            install:
+              - g++-12
           - name: UBSAN
             toolset: gcc-11
             cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
