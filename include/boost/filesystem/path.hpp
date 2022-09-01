@@ -228,6 +228,13 @@ private:
     };
 
 public:
+    class iterator;
+    friend class iterator;
+    typedef iterator const_iterator;
+    class reverse_iterator;
+    typedef reverse_iterator const_reverse_iterator;
+
+public:
     //  -----  constructors  -----
 
     path() BOOST_NOEXCEPT {}
@@ -425,10 +432,7 @@ public:
     //  -----  assignments  -----
 
     // We need to explicitly define copy assignment as otherwise it will be implicitly defined as deleted because there is move assignment
-    path& operator=(path const& p)
-    {
-        return assign(p);
-    }
+    path& operator=(path const& p);
 
     template< typename Source >
     typename boost::enable_if_c<
@@ -560,10 +564,7 @@ public:
 
     //  -----  concatenation  -----
 
-    path& operator+=(path const& p)
-    {
-        return concat(p);
-    }
+    path& operator+=(path const& p);
 
     template< typename Source >
     typename boost::enable_if_c<
@@ -598,7 +599,7 @@ public:
 
     path& concat(path const& p)
     {
-        m_pathname += p.m_pathname;
+        m_pathname.append(p.m_pathname);
         return *this;
     }
 
@@ -705,10 +706,7 @@ public:
     //  if a separator is added, it is the preferred separator for the platform;
     //  slash for POSIX, backslash for Windows
 
-    BOOST_FORCEINLINE path& operator/=(path const& p)
-    {
-        return append(p);
-    }
+    path& operator/=(path const& p);
 
     template< typename Source >
     BOOST_FORCEINLINE typename boost::enable_if_c<
@@ -920,7 +918,7 @@ public:
 #ifdef BOOST_WINDOWS_API
     BOOST_FILESYSTEM_DECL path generic_path() const;
 #else
-    path generic_path() const { return path(*this); }
+    path generic_path() const;
 #endif
 
     template< typename String >
@@ -1004,19 +1002,9 @@ public:
 
     BOOST_FORCEINLINE path lexically_normal() const { return BOOST_FILESYSTEM_VERSIONED_SYM(lexically_normal)(); }
     BOOST_FILESYSTEM_DECL path lexically_relative(path const& base) const;
-    path lexically_proximate(path const& base) const
-    {
-        path tmp(lexically_relative(base));
-        return tmp.empty() ? *this : tmp;
-    }
+    path lexically_proximate(path const& base) const;
 
     //  -----  iterators  -----
-
-    class iterator;
-    friend class iterator;
-    typedef iterator const_iterator;
-    class reverse_iterator;
-    typedef reverse_iterator const_reverse_iterator;
 
     BOOST_FILESYSTEM_DECL iterator begin() const;
     BOOST_FILESYSTEM_DECL iterator end() const;
@@ -1032,13 +1020,7 @@ public:
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
     //  recently deprecated functions supplied by default
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::lexically_normal() instead")
-    path& normalize()
-    {
-        path tmp(lexically_normal());
-        m_pathname.swap(tmp.m_pathname);
-        return *this;
-    }
+    path& normalize();
     BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::remove_filename() instead")
     path& remove_leaf() { return remove_filename(); }
     BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::filename() instead")
@@ -1386,10 +1368,46 @@ inline bool is_element_separator(path::value_type c) BOOST_NOEXCEPT
 //                  class path miscellaneous function implementations                 //
 //------------------------------------------------------------------------------------//
 
+// Note: Because of the range constructor in C++23 std::string_view that involves a check for contiguous_range concept,
+//       any non-template function call that requires a check whether the source argument (which may be fs::path)
+//       is convertible to std::string_view must be made after fs::path::iterator is defined. This includes overload
+//       resolution and SFINAE checks. Otherwise, the concept check result formally changes between fs::path::iterator
+//       is not defined and defined, which causes compilation errors with gcc 11 and later.
+//       https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106808
+
+inline path& path::operator=(path const& p)
+{
+    return assign(p);
+}
+
+inline path& path::operator+=(path const& p)
+{
+    return concat(p);
+}
+
+BOOST_FORCEINLINE path& path::operator/=(path const& p)
+{
+    return append(p);
+}
+
+#if !defined(BOOST_WINDOWS_API)
+inline path path::generic_path() const
+{
+    return path(*this);
+}
+#endif
+
+inline path path::lexically_proximate(path const& base) const
+{
+    path tmp(lexically_relative(base));
+    return tmp.empty() ? *this : tmp;
+}
+
 inline path::reverse_iterator path::rbegin() const
 {
     return reverse_iterator(end());
 }
+
 inline path::reverse_iterator path::rend() const
 {
     return reverse_iterator(begin());
@@ -1409,6 +1427,18 @@ inline bool path::filename_is_dot_dot() const
     // use detail::is_element_separator() rather than detail::is_directory_separator
     // to deal with "c:.." edge case on Windows when ':' acts as a separator
 }
+
+#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
+
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::lexically_normal() instead")
+inline path& path::normalize()
+{
+    path tmp(lexically_normal());
+    m_pathname.swap(tmp.m_pathname);
+    return *this;
+}
+
+#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 
 //--------------------------------------------------------------------------------------//
 //                     class path member template specializations                       //
