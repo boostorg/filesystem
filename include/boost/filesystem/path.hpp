@@ -1286,14 +1286,14 @@ inline void swap(path& lhs, path& rhs) BOOST_NOEXCEPT
     lhs.swap(rhs);
 }
 
-inline path operator/(path lhs, path const& rhs)
+BOOST_FORCEINLINE path operator/(path lhs, path const& rhs)
 {
     lhs.append(rhs);
     return lhs;
 }
 
 template< typename Source >
-inline typename boost::enable_if_c<
+BOOST_FORCEINLINE typename boost::enable_if_c<
     boost::disjunction<
         detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >,
         detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
