@@ -214,62 +214,64 @@ jobs:
           - toolset: clang
             compiler: clang++-11
             cxxstd: "03,11,14,17,20"
-            os: ubuntu-20.04
+            os: ubuntu-22.04
             install:
               - clang-11
           - toolset: clang
             compiler: clang++-12
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
-            os: ubuntu-20.04
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            os: ubuntu-22.04
             install:
               - clang-12
-          - toolset: clang
-            compiler: clang++-12
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
-            os: ubuntu-20.04
-            install:
-              - clang-12
-              - libc++-12-dev
-              - libc++abi-12-dev
-            cxxflags: -stdlib=libc++
-            linkflags: -stdlib=libc++
           - toolset: clang
             compiler: clang++-13
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
-            os: ubuntu-20.04
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            os: ubuntu-22.04
             install:
               - clang-13
+          - toolset: clang
+            compiler: clang++-14
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            os: ubuntu-22.04
+            install:
+              - clang-14
+          - toolset: clang
+            compiler: clang++-15
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            os: ubuntu-22.04
+            install:
+              - clang-15
             sources:
-              - "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+              - "deb http://apt.llvm.org/focal/ llvm-toolchain-jammy-15 main"
             source_keys:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
           - toolset: clang
-            compiler: clang++-13
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
-            os: ubuntu-20.04
+            compiler: clang++-15
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            os: ubuntu-22.04
             install:
-              - clang-13
-              - libc++-13-dev
-              - libc++abi-13-dev
+              - clang-15
+              - libc++-15-dev
+              - libc++abi-15-dev
             sources:
-              - "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+              - "deb http://apt.llvm.org/focal/ llvm-toolchain-jammy-15 main"
             source_keys:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
           - name: UBSAN
             toolset: clang
-            compiler: clang++-12
-            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu"
+            compiler: clang++-14
+            cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
             ubsan: 1
             build_variant: debug
-            os: ubuntu-20.04
+            os: ubuntu-22.04
             install:
-              - clang-12
-              - libc++-12-dev
-              - libc++abi-12-dev
+              - clang-14
+              - libc++-14-dev
+              - libc++abi-14-dev
 
           - toolset: clang
             cxxstd: "03,11,14,17,2a"
