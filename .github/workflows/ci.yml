@@ -242,7 +242,7 @@ jobs:
             install:
               - clang-15
             sources:
-              - "deb http://apt.llvm.org/focal/ llvm-toolchain-jammy-15 main"
+              - "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
             source_keys:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
           - toolset: clang
@@ -254,7 +254,7 @@ jobs:
               - libc++-15-dev
               - libc++abi-15-dev
             sources:
-              - "deb http://apt.llvm.org/focal/ llvm-toolchain-jammy-15 main"
+              - "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main"
             source_keys:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
             cxxflags: -stdlib=libc++
