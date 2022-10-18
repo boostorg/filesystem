@@ -3119,7 +3119,7 @@ bool create_directories(path const& p, system::error_code* ec)
         parent /= fname;
         if (!fname.empty() && fname != dot_p && fname != dot_dot_p)
         {
-            created = create_directory(parent, NULL, &local_ec);
+            created = detail::create_directory(parent, NULL, &local_ec);
             if (BOOST_UNLIKELY(!!local_ec))
             {
                 if (!ec)
