@@ -491,6 +491,12 @@ struct is_convertible_to_path_source
     static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
     static no_type _check_convertible_to_path_source(...);
 
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+    // Note: Disambiguate the nullptr value. 
+    // This can happen if `NULL` is defined as `nullptr` in operations.cpp
+    static no_type _check_convertible_to_path_source(std::nullptr_t);
+#endif
+
     static BOOST_CONSTEXPR_OR_CONST bool value =
         sizeof(is_convertible_to_path_source< T >::_check_convertible_to_path_source(boost::declval< T const& >())) == sizeof(yes_type);
 };
