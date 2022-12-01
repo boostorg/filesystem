@@ -879,6 +879,13 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
             {
                 DWORD error = ::GetLastError();
 
+                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER)
+                {
+                    // Fall back to file_directory_information_format
+                    filesystem::detail::atomic_store_relaxed(g_extra_data_format, file_directory_information_format);
+                    return dir_itr_create(imp, dir, opts, params, first_filename, sf, symlink_sf);
+                }
+
                 if (error == ERROR_NO_MORE_FILES || error == ERROR_FILE_NOT_FOUND)
                     goto done;
 
