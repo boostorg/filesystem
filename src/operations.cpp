@@ -1775,7 +1775,7 @@ DWORD remove_nt6_by_handle(HANDLE handle, remove_impl_type impl)
                 break;
 
             err = ::GetLastError();
-            if (BOOST_UNLIKELY(err == ERROR_INVALID_PARAMETER || err == ERROR_INVALID_FUNCTION || err == ERROR_NOT_SUPPORTED))
+            if (BOOST_UNLIKELY(err == ERROR_INVALID_PARAMETER || err == ERROR_INVALID_FUNCTION || err == ERROR_NOT_SUPPORTED || err == ERROR_CALL_NOT_IMPLEMENTED))
             {
                 // Downgrade to the older implementation
                 impl = remove_disp_ex_flag_posix_semantics;
@@ -1833,7 +1833,7 @@ DWORD remove_nt6_by_handle(HANDLE handle, remove_impl_type impl)
 
                 break;
             }
-            else if (BOOST_UNLIKELY(err == ERROR_INVALID_PARAMETER || err == ERROR_INVALID_FUNCTION || err == ERROR_NOT_SUPPORTED))
+            else if (BOOST_UNLIKELY(err == ERROR_INVALID_PARAMETER || err == ERROR_INVALID_FUNCTION || err == ERROR_NOT_SUPPORTED || err == ERROR_CALL_NOT_IMPLEMENTED))
             {
                 // Downgrade to the older implementation
                 impl = remove_disp;
