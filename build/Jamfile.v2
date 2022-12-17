@@ -127,6 +127,10 @@ project boost/filesystem
       <target-os>cygwin:<define>BOOST_USE_WINDOWS_H
       <target-os>cygwin:<define>WIN32_LEAN_AND_MEAN
       <target-os>cygwin:<define>NOMINMAX
+
+      # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
+      # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
+      <toolset>gcc-12:<cxxflags>"-Wno-restrict"
     : source-location ../src
     : usage-requirements # pass these requirement to dependents (i.e. users)
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1

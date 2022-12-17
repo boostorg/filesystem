@@ -107,6 +107,16 @@ if(WIN32 OR CYGWIN)
     )
 endif()
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+    (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 12 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 12) AND
+    CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
+    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
+    # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
+    target_compile_options(boost_filesystem PRIVATE
+        -Wno-restrict
+    )
+endif()
+
 if(BOOST_FILESYSTEM_NO_DEPRECATED)
     target_compile_definitions(boost_filesystem PUBLIC BOOST_FILESYSTEM_NO_DEPRECATED)
 endif()
