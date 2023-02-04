@@ -187,6 +187,15 @@ typedef basic_custom_string< char > custom_string;
 typedef basic_custom_string< wchar_t > wcustom_string;
 typedef basic_custom_string< fs::path::value_type > pcustom_string;
 
+inline std::string const& to_string(std::string const& s)
+{
+    return s;
+}
+
+inline std::string to_string(fs::path const& p)
+{
+    return p.string();
+}
 
 std::string platform(BOOST_PLATFORM);
 
@@ -2102,6 +2111,11 @@ void construction_tests()
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
     PATH_TEST_EQ(std::string_view("foo"), "foo");
 #endif
+
+    // Check that path constructors don't cause ambiguity for to_string calls
+    // https://github.com/boostorg/filesystem/issues/273
+    custom_string c("test");
+    BOOST_TEST_EQ(to_string(c), std::string("test"));
 }
 
 //  append_tests  --------------------------------------------------------------------//

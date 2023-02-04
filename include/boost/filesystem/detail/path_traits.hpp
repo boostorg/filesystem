@@ -398,37 +398,37 @@ void convert(const wchar_t* from, const wchar_t* from_end, std::string& to, cons
 //  Source dispatch  -----------------------------------------------------------------//
 
 template< typename Source, typename Callback >
-inline void dispatch(Source const& source, Callback cb, const codecvt_type* cvt = NULL);
+typename Callback::result_type dispatch(Source const& source, Callback cb, const codecvt_type* cvt = NULL);
 
 template< typename Callback >
-BOOST_FORCEINLINE void dispatch(const char* source, Callback cb, const codecvt_type* cvt, ntcts_type_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(const char* source, Callback cb, const codecvt_type* cvt, ntcts_type_tag)
 {
-    cb(source, source + std::strlen(source), cvt);
+    return cb(source, source + std::strlen(source), cvt);
 }
 
 template< typename Callback >
-BOOST_FORCEINLINE void dispatch(const wchar_t* source, Callback cb, const codecvt_type* cvt, ntcts_type_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(const wchar_t* source, Callback cb, const codecvt_type* cvt, ntcts_type_tag)
 {
-    cb(source, source + std::wcslen(source), cvt);
+    return cb(source, source + std::wcslen(source), cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch(Source const& source, Callback cb, const codecvt_type* cvt, string_class_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, Callback cb, const codecvt_type* cvt, string_class_tag)
 {
-    cb(source.data(), source.data() + source.size(), cvt);
+    return cb(source.data(), source.data() + source.size(), cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch(Source const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
 {
     std::basic_string< typename Source::value_type > src(source.begin(), source.end());
-    cb(src.data(), src.data() + src.size(), cvt);
+    return cb(src.data(), src.data() + src.size(), cvt);
 }
 
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 
 template< typename Callback >
-BOOST_FORCEINLINE void dispatch(std::vector< char > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(std::vector< char > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
 {
     const char* data = NULL, *data_end = NULL;
     if (!source.empty())
@@ -436,11 +436,11 @@ BOOST_FORCEINLINE void dispatch(std::vector< char > const& source, Callback cb, 
         data = &source[0];
         data_end = data + source.size();
     }
-    cb(data, data_end, cvt);
+    return cb(data, data_end, cvt);
 }
 
 template< typename Callback >
-BOOST_FORCEINLINE void dispatch(std::vector< wchar_t > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(std::vector< wchar_t > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
 {
     const wchar_t* data = NULL, *data_end = NULL;
     if (!source.empty())
@@ -448,19 +448,19 @@ BOOST_FORCEINLINE void dispatch(std::vector< wchar_t > const& source, Callback c
         data = &source[0];
         data_end = data + source.size();
     }
-    cb(data, data_end, cvt);
+    return cb(data, data_end, cvt);
 }
 
 #endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 
 // Defined in directory.hpp to avoid circular header dependencies
 template< typename Callback >
-void dispatch(directory_entry const& de, Callback cb, const codecvt_type* cvt, directory_entry_tag);
+typename Callback::result_type dispatch(directory_entry const& de, Callback cb, const codecvt_type* cvt, directory_entry_tag);
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch(Source const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, Callback cb, const codecvt_type* cvt)
 {
-    path_traits::dispatch(source, cb, cvt,
+    return path_traits::dispatch(source, cb, cvt,
         typename path_traits::path_source_traits< typename boost::remove_cv< Source >::type >::tag_type());
 }
 
@@ -552,35 +552,35 @@ struct make_dependent
 };
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl(const char* source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(const char* source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< const char*, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl(const wchar_t* source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(const wchar_t* source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< const wchar_t*, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl(std::string const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(std::string const& source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< std::string, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl(std::wstring const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(std::wstring const& source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< std::wstring, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl
 (
     boost::container::basic_string< char, std::char_traits< char >, void > const& source,
     Callback cb,
@@ -588,11 +588,11 @@ BOOST_FORCEINLINE void dispatch_convertible_impl
 )
 {
     typedef typename path_traits::make_dependent< boost::container::basic_string< char, std::char_traits< char >, void >, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl
 (
     boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const& source,
     Callback cb,
@@ -600,11 +600,11 @@ BOOST_FORCEINLINE void dispatch_convertible_impl
 )
 {
     typedef typename path_traits::make_dependent< boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void >, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl
 (
     boost::basic_string_view< char, std::char_traits< char > > const& source,
     Callback cb,
@@ -612,11 +612,11 @@ BOOST_FORCEINLINE void dispatch_convertible_impl
 )
 {
     typedef typename path_traits::make_dependent< boost::basic_string_view< char, std::char_traits< char > >, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl
 (
     boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const& source,
     Callback cb,
@@ -624,7 +624,7 @@ BOOST_FORCEINLINE void dispatch_convertible_impl
 )
 {
     typedef typename path_traits::make_dependent< boost::basic_string_view< wchar_t, std::char_traits< wchar_t > >, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 #if !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
@@ -632,60 +632,62 @@ BOOST_FORCEINLINE void dispatch_convertible_impl
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< std::string_view, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_impl(std::wstring_view const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(std::wstring_view const& source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< std::wstring_view, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 #endif // !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
 {
     typedef typename boost::remove_cv< Source >::type source_t;
-    path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
+    return path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
 }
 
 #else // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_sv_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_sv_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< std::string_view, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE void dispatch_convertible_sv_impl(std::wstring_view const& source, Callback cb, const codecvt_type* cvt)
+BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_sv_impl(std::wstring_view const& source, Callback cb, const codecvt_type* cvt)
 {
     typedef typename path_traits::make_dependent< std::wstring_view, Source >::type source_t;
-    path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
+    return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
 template< typename Source, typename Callback >
 BOOST_FORCEINLINE typename boost::disable_if_c<
-    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value
+    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value,
+    typename Callback::result_type
 >::type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
 {
     typedef typename boost::remove_cv< Source >::type source_t;
-    path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
+    return path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
 }
 
 template< typename Source, typename Callback >
 BOOST_FORCEINLINE typename boost::enable_if_c<
-    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value
+    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value,
+    typename Callback::result_type
 >::type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = NULL)
 {
     typedef typename boost::remove_cv< Source >::type source_t;
-    path_traits::dispatch_convertible_sv_impl< source_t >(source, cb, cvt);
+    return path_traits::dispatch_convertible_sv_impl< source_t >(source, cb, cvt);
 }
 
 #endif // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)

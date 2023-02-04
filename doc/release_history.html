@@ -39,6 +39,11 @@
     </td>
 </table>
 
+<h2>1.82.0</h2>
+<ul>
+  <li>Fixed compilation errors that could have been caused by <code>path</code> conversion constructors being too permissive on the accepted arguments. (<a href="https://github.com/boostorg/filesystem/issues/273">#273</a>)</li>
+</ul>
+
 <h2>1.81.0</h2>
 <ul>
   <li><b>Deprecated:</b> <code>path</code> construction, assignment and appending from containers of characters, such as <code>std::vector&lt;char&gt;</code> or <code>std::list&lt;wchar_t&gt;</code>, is deprecated in <b>v3</b> and removed in <b>v4</b>. Please use string types or iterators instead.</li>

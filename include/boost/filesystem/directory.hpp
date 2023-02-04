@@ -174,10 +174,10 @@ namespace path_traits {
 
 // Dispatch function for integration with path class
 template< typename Callback >
-BOOST_FORCEINLINE void dispatch(directory_entry const& de, Callback cb, const codecvt_type* cvt, directory_entry_tag)
+BOOST_FORCEINLINE typename Callback::result_type dispatch(directory_entry const& de, Callback cb, const codecvt_type* cvt, directory_entry_tag)
 {
     boost::filesystem::path::string_type const& source = de.path().native();
-    cb(source.data(), source.data() + source.size(), cvt);
+    return cb(source.data(), source.data() + source.size(), cvt);
 }
 
 } // namespace path_traits
