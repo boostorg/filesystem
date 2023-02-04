@@ -489,6 +489,9 @@ struct is_convertible_to_path_source
 #endif
     static yes_type _check_convertible_to_path_source(boost::basic_string_view< char, std::char_traits< char > > const&);
     static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+    static no_type _check_convertible_to_path_source(std::nullptr_t);
+#endif
     static no_type _check_convertible_to_path_source(...);
 
     static BOOST_CONSTEXPR_OR_CONST bool value =
@@ -508,6 +511,9 @@ struct is_convertible_to_std_string_view
 {
     static yes_type _check_convertible_to_std_string_view(std::string_view const&);
     static yes_type _check_convertible_to_std_string_view(std::wstring_view const&);
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+    static no_type _check_convertible_to_std_string_view(std::nullptr_t);
+#endif
     static no_type _check_convertible_to_std_string_view(...);
 
     static BOOST_CONSTEXPR_OR_CONST bool value =
@@ -526,6 +532,9 @@ struct is_convertible_to_path_source_non_std_string_view
     static yes_type _check_convertible_to_path_source(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
     static yes_type _check_convertible_to_path_source(boost::basic_string_view< char, std::char_traits< char > > const&);
     static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+    static no_type _check_convertible_to_path_source(std::nullptr_t);
+#endif
     static no_type _check_convertible_to_path_source(...);
 
     static BOOST_CONSTEXPR_OR_CONST bool value =

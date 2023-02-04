@@ -446,6 +446,12 @@ public:
         }
     }
 
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+    BOOST_DELETED_FUNCTION(path(std::nullptr_t))
+    BOOST_DELETED_FUNCTION(path& operator= (std::nullptr_t))
+#endif
+
+public:
     //  -----  assignments  -----
 
     // We need to explicitly define copy assignment as otherwise it will be implicitly defined as deleted because there is move assignment
