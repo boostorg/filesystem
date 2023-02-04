@@ -30,3 +30,6 @@ install tut3-copy : tut3 : <location>. ;
 install tut4-copy : tut4 : <location>. ;
 install tut5-copy : tut5 : <location>. ;
 install path_info-copy : path_info : <location>. ;
+
+alias tutorial : tut1-copy tut2-copy tut3-copy tut4-copy tut5-copy path_info-copy ;
+explicit tut1-copy tut2-copy tut3-copy tut4-copy tut5-copy path_info-copy tutorial ;
