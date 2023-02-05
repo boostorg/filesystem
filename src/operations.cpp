@@ -1116,7 +1116,7 @@ uintmax_t remove_all_impl
                 count += fs::detail::remove_all_impl
                 (
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                    itr->path().filename(),
+                    path_algorithms::filename_v4(itr->path()),
 #else
                     itr->path(),
 #endif
@@ -2007,7 +2007,7 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
                 (
                     hh.handle,
                     h,
-                    nested_path.filename(),
+                    path_algorithms::filename_v4(nested_path),
                     0u, // FileAttributes
                     FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -2393,12 +2393,12 @@ path absolute(path const& p, path const& base, system::error_code* ec)
     else
     {
         res.concat(abs_base.root_directory());
-        res /= abs_base.relative_path();
+        path_algorithms::append_v4(res, abs_base.relative_path());
     }
 
     path p_relative_path(p.relative_path());
     if (!p_relative_path.empty())
-        res /= p_relative_path;
+        path_algorithms::append_v4(res, p_relative_path);
 
     return res;
 }
@@ -2445,13 +2445,13 @@ path canonical(path const& p, path const& base, system::error_code* ec)
     path result;
     while (true)
     {
-        for (path::iterator itr(source.begin()), end(source.end()); itr != end; ++itr)
+        for (path::iterator itr(source.begin()), end(source.end()); itr != end; path_algorithms::increment_v4(itr))
         {
-            if (*itr == dot_p)
+            if (path_algorithms::compare_v4(*itr, dot_p) == 0)
                 continue;
-            if (*itr == dot_dot_p)
+            if (path_algorithms::compare_v4(*itr, dot_dot_p) == 0)
             {
-                if (result != root)
+                if (path_algorithms::compare_v4(result, root) != 0)
                     result.remove_filename_and_trailing_separators();
                 continue;
             }
@@ -2467,7 +2467,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 continue;
             }
 
-            result /= *itr;
+            path_algorithms::append_v4(result, *itr);
 
             // If we don't have an absolute path yet then don't check symlink status.
             // This avoids checking "C:" which is "the current directory on drive C"
@@ -2496,10 +2496,10 @@ path canonical(path const& p, path const& base, system::error_code* ec)
 
                 if (link.is_absolute())
                 {
-                    for (++itr; itr != end; ++itr)
+                    for (path_algorithms::increment_v4(itr); itr != end; path_algorithms::increment_v4(itr))
                     {
-                        if (*itr != dot_p)
-                            link /= *itr;
+                        if (path_algorithms::compare_v4(*itr, dot_p) != 0)
+                            path_algorithms::append_v4(link, *itr);
                     }
                     source = link;
                     root = source.root_path();
@@ -2507,15 +2507,15 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 else // link is relative
                 {
                     link.remove_trailing_separator();
-                    if (link == dot_p)
+                    if (path_algorithms::compare_v4(link, dot_p) == 0)
                         continue;
 
                     path new_source(result);
-                    new_source /= link;
-                    for (++itr; itr != end; ++itr)
+                    path_algorithms::append_v4(new_source, link);
+                    for (path_algorithms::increment_v4(itr); itr != end; path_algorithms::increment_v4(itr))
                     {
-                        if (*itr != dot_p)
-                            new_source /= *itr;
+                        if (path_algorithms::compare_v4(*itr, dot_p) != 0)
+                            path_algorithms::append_v4(new_source, *itr);
                     }
                     source = new_source;
                 }
@@ -2611,10 +2611,10 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
                 relative_from = detail::relative(abs_from, abs_to, ec);
                 if (ec && *ec)
                     return;
-                if (relative_from != dot_path())
-                    relative_from /= from.filename();
+                if (path_algorithms::compare_v4(relative_from, dot_path()) != 0)
+                    path_algorithms::append_v4(relative_from, path_algorithms::filename_v4(from));
                 else
-                    relative_from = from.filename();
+                    relative_from = path_algorithms::filename_v4(from);
                 pfrom = &relative_from;
             }
             detail::create_symlink(*pfrom, to, ec);
@@ -2650,7 +2650,11 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
         }
 
         if (is_directory(to_stat))
-            detail::copy_file(from, to / from.filename(), options, ec);
+        {
+            path target(to);
+            path_algorithms::append_v4(target, path_algorithms::filename_v4(from));
+            detail::copy_file(from, target, options, ec);
+        }
         else
             detail::copy_file(from, to, options, ec);
     }
@@ -2705,8 +2709,12 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
             while (itr != end_dit)
             {
                 path const& p = itr->path();
-                // Set _detail_recursing flag so that we don't recurse more than for one level deeper into the directory if options are copy_options::none
-                detail::copy(p, to / p.filename(), options | static_cast< unsigned int >(copy_options::_detail_recursing), ec);
+                {
+                    path target(to);
+                    path_algorithms::append_v4(target, path_algorithms::filename_v4(p));
+                    // Set _detail_recursing flag so that we don't recurse more than for one level deeper into the directory if options are copy_options::none
+                    detail::copy(p, target, options | static_cast< unsigned int >(copy_options::_detail_recursing), ec);
+                }
                 if (ec && *ec)
                     return;
 
@@ -3096,9 +3104,9 @@ bool create_directories(path const& p, system::error_code* ec)
     error_code local_ec;
 
     // Find the initial part of the path that exists
-    for (path fname = parent.filename(); parent.has_relative_path(); fname = parent.filename())
+    for (path fname = path_algorithms::filename_v4(parent); parent.has_relative_path(); fname = path_algorithms::filename_v4(parent))
     {
-        if (!fname.empty() && fname != dot_p && fname != dot_dot_p)
+        if (!fname.empty() && path_algorithms::compare_v4(fname, dot_p) != 0 && path_algorithms::compare_v4(fname, dot_dot_p) != 0)
         {
             file_status existing_status = detail::status_impl(parent, &local_ec);
 
@@ -3115,17 +3123,17 @@ bool create_directories(path const& p, system::error_code* ec)
             }
         }
 
-        --it;
+        path_algorithms::decrement_v4(it);
         parent.remove_filename_and_trailing_separators();
     }
 
     // Create missing directories
     bool created = false;
-    for (; it != e; ++it)
+    for (; it != e; path_algorithms::increment_v4(it))
     {
         path const& fname = *it;
-        parent /= fname;
-        if (!fname.empty() && fname != dot_p && fname != dot_dot_p)
+        path_algorithms::append_v4(parent, fname);
+        if (!fname.empty() && path_algorithms::compare_v4(fname, dot_p) != 0 && path_algorithms::compare_v4(fname, dot_dot_p) != 0)
         {
             created = detail::create_directory(parent, NULL, &local_ec);
             if (BOOST_UNLIKELY(!!local_ec))
@@ -4318,11 +4326,8 @@ path temp_directory_path(system::error_code* ec)
 #else // Windows
 #if !defined(UNDER_CE)
 
-    const wchar_t* tmp_env = L"TMP";
-    const wchar_t* temp_env = L"TEMP";
-    const wchar_t* localappdata_env = L"LOCALAPPDATA";
-    const wchar_t* userprofile_env = L"USERPROFILE";
-    const wchar_t* env_list[] = { tmp_env, temp_env, localappdata_env, userprofile_env };
+    static const wchar_t* env_list[] = { L"TMP", L"TEMP", L"LOCALAPPDATA", L"USERPROFILE" };
+    static const wchar_t temp_dir[] = L"Temp";
 
     path p;
     for (unsigned int i = 0; i < sizeof(env_list) / sizeof(*env_list); ++i)
@@ -4332,7 +4337,7 @@ path temp_directory_path(system::error_code* ec)
         {
             p = env;
             if (i >= 2)
-                p /= L"Temp";
+                path_algorithms::append_v4(p, temp_dir, temp_dir + (sizeof(temp_dir) / sizeof(*temp_dir) - 1u));
             error_code lcl_ec;
             if (exists(p, lcl_ec) && !lcl_ec && is_directory(p, lcl_ec) && !lcl_ec)
                 break;
@@ -4357,7 +4362,7 @@ path temp_directory_path(system::error_code* ec)
             goto getwindir_error;
 
         p = buf.get(); // do not depend on initial buf size, see ticket #10388
-        p /= L"Temp";
+        path_algorithms::append_v4(p, temp_dir, temp_dir + (sizeof(temp_dir) / sizeof(*temp_dir) - 1u));
     }
 
     return p;
@@ -4403,7 +4408,12 @@ path system_complete(path const& p, system::error_code* ec)
 {
 #ifdef BOOST_POSIX_API
 
-    return (p.empty() || p.is_absolute()) ? p : current_path() / p;
+    if (p.empty() || p.is_absolute())
+        return p;
+
+    path res(current_path());
+    path_algorithms::append_v4(res, p);
+    return res;
 
 #else
     if (p.empty())
@@ -4440,7 +4450,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 
     path::iterator itr(p_end);
     path head(p);
-    for (; !head.empty(); --itr)
+    for (; !head.empty(); path_algorithms::decrement_v4(itr))
     {
         file_status head_status(detail::status_impl(head, &local_ec));
         if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
@@ -4459,7 +4469,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
     }
 
     if (head.empty())
-        return p.lexically_normal();
+        return path_algorithms::lexically_normal_v4(p);
 
     path const& dot_p = dot_path();
     path const& dot_dot_p = dot_dot_path();
@@ -4482,7 +4492,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
     {
         BOOST_ASSERT(itr != p_end);
         head = *itr;
-        ++itr;
+        path_algorithms::increment_v4(itr);
     }
 
     if (p.has_root_directory())
@@ -4491,7 +4501,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         // Convert generic separator returned by the iterator for the root directory to
         // the preferred separator.
         head += path::preferred_separator;
-        ++itr;
+        path_algorithms::increment_v4(itr);
     }
 
     if (!head.empty())
@@ -4509,22 +4519,22 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         if (head_status.type() == fs::file_not_found)
         {
             // If the root path does not exist then no path element exists
-            return p.lexically_normal();
+            return path_algorithms::lexically_normal_v4(p);
         }
     }
 
     path const& dot_p = dot_path();
     path const& dot_dot_p = dot_dot_path();
-    for (; itr != p_end; ++itr)
+    for (; itr != p_end; path_algorithms::increment_v4(itr))
     {
         path const& p_elem = *itr;
 
         // Avoid querying status of paths containing dot and dot-dot elements, as this will break
         // if the root name starts with "\\?\".
-        if (p_elem == dot_p)
+        if (path_algorithms::compare_v4(p_elem, dot_p) == 0)
             continue;
 
-        if (p_elem == dot_dot_p)
+        if (path_algorithms::compare_v4(p_elem, dot_dot_p) == 0)
         {
             if (head.has_relative_path())
                 head.remove_filename_and_trailing_separators();
@@ -4532,7 +4542,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
             continue;
         }
 
-        head /= p_elem;
+        path_algorithms::append_v4(head, p_elem);
 
         file_status head_status(detail::status_impl(head, &local_ec));
         if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
@@ -4552,18 +4562,18 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
     }
 
     if (head.empty())
-        return p.lexically_normal();
+        return path_algorithms::lexically_normal_v4(p);
 
 #endif
 
     path tail;
     bool tail_has_dots = false;
-    for (; itr != p_end; ++itr)
+    for (; itr != p_end; path_algorithms::increment_v4(itr))
     {
         path const& tail_elem = *itr;
-        tail /= tail_elem;
+        path_algorithms::append_v4(tail, tail_elem);
         // for a later optimization, track if any dot or dot-dot elements are present
-        if (!tail_has_dots && (tail_elem == dot_p || tail_elem == dot_dot_p))
+        if (!tail_has_dots && (path_algorithms::compare_v4(tail_elem, dot_p) == 0 || path_algorithms::compare_v4(tail_elem, dot_dot_p) == 0))
             tail_has_dots = true;
     }
 
@@ -4579,11 +4589,11 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 
     if (BOOST_LIKELY(!tail.empty()))
     {
-        head /= tail;
+        path_algorithms::append_v4(head, tail);
 
         // optimization: only normalize if tail had dot or dot-dot element
         if (tail_has_dots)
-            return head.lexically_normal();
+            return path_algorithms::lexically_normal_v4(head);
     }
 
     return head;

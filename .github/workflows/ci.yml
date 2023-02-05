@@ -264,7 +264,7 @@ jobs:
             compiler: clang++-14
             cxxstd: "03-gnu,11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
             cxxflags: -stdlib=libc++
-            linkflags: -stdlib=libc++
+            linkflags: "-stdlib=libc++ -lubsan"
             ubsan: 1
             build_variant: debug
             os: ubuntu-22.04
