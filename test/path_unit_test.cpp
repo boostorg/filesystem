@@ -746,16 +746,35 @@ void test_modifiers()
     CHECK(path("").remove_filename() == "");
     CHECK(path("foo").remove_filename() == "");
     CHECK(path("/foo").remove_filename() == "/");
-    CHECK(path("foo/bar").remove_filename() == "foo");
-    BOOST_TEST_EQ(path("foo/bar/").remove_filename(), path("foo/bar"));
+
     BOOST_TEST_EQ(path(".").remove_filename(), path(""));
-    BOOST_TEST_EQ(path("./.").remove_filename(), path("."));
     BOOST_TEST_EQ(path("/.").remove_filename(), path("/"));
     BOOST_TEST_EQ(path("..").remove_filename(), path(""));
-    BOOST_TEST_EQ(path("../..").remove_filename(), path(".."));
     BOOST_TEST_EQ(path("/..").remove_filename(), path("/"));
+
+#if BOOST_FILESYSTEM_VERSION == 3
+    CHECK(path("foo/bar").remove_filename() == "foo");
+    BOOST_TEST_EQ(path("foo/bar/").remove_filename(), path("foo/bar"));
+    BOOST_TEST_EQ(path("./.").remove_filename(), path("."));
+    BOOST_TEST_EQ(path("../..").remove_filename(), path(".."));
     BOOST_TEST_EQ(path("//").remove_filename(), path(""));
     BOOST_TEST_EQ(path("////").remove_filename(), path(""));
+#else
+    CHECK(path("foo/bar").remove_filename() == "foo/");
+    BOOST_TEST_EQ(path("foo/bar/").remove_filename(), path("foo/bar/"));
+    BOOST_TEST_EQ(path("./.").remove_filename(), path("./"));
+    BOOST_TEST_EQ(path("../..").remove_filename(), path("../"));
+    BOOST_TEST_EQ(path("//").remove_filename(), path("//"));
+    BOOST_TEST_EQ(path("////").remove_filename(), path("////"));
+#endif
+
+    BOOST_TEST_EQ(path("foo/bar").remove_filename_and_trailing_separators(), path("foo"));
+    BOOST_TEST_EQ(path("foo/bar/").remove_filename_and_trailing_separators(), path("foo/bar"));
+    BOOST_TEST_EQ(path("foo///bar").remove_filename_and_trailing_separators(), path("foo"));
+    BOOST_TEST_EQ(path("foo/bar///").remove_filename_and_trailing_separators(), path("foo/bar"));
+
+    BOOST_TEST_EQ(path("foo/bar").replace_filename("zoo"), path("foo/zoo"));
+    BOOST_TEST_EQ(path("foo/bar/").replace_filename("zoo"), path("foo/bar/zoo"));
 }
 
 //  test_decompositions  -------------------------------------------------------------//

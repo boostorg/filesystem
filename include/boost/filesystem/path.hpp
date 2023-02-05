@@ -835,8 +835,14 @@ public:
 #else // BOOST_WINDOWS_API
     BOOST_FILESYSTEM_DECL path& make_preferred(); // change slashes to backslashes
 #endif
-    BOOST_FILESYSTEM_DECL path& remove_filename();
+    BOOST_FORCEINLINE path& remove_filename()
+    {
+        BOOST_FILESYSTEM_VERSIONED_SYM(remove_filename)();
+        return *this;
+    }
+    BOOST_FILESYSTEM_DECL path& remove_filename_and_trailing_separators();
     BOOST_FILESYSTEM_DECL path& remove_trailing_separator();
+    BOOST_FILESYSTEM_DECL path& replace_filename(path const& replacement);
     BOOST_FORCEINLINE path& replace_extension(path const& new_extension = path())
     {
         BOOST_FILESYSTEM_VERSIONED_SYM(replace_extension)(new_extension);
@@ -1125,6 +1131,9 @@ private:
         const value_type* p = m_pathname.c_str() + pos;
         return path(p, p + extension_size);
     }
+
+    BOOST_FILESYSTEM_DECL void remove_filename_v3();
+    BOOST_FILESYSTEM_DECL void remove_filename_v4();
 
     BOOST_FILESYSTEM_DECL void replace_extension_v3(path const& new_extension);
     BOOST_FILESYSTEM_DECL void replace_extension_v4(path const& new_extension);

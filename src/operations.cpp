@@ -2452,7 +2452,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
             if (*itr == dot_dot_p)
             {
                 if (result != root)
-                    result.remove_filename();
+                    result.remove_filename_and_trailing_separators();
                 continue;
             }
 
@@ -2492,7 +2492,7 @@ path canonical(path const& p, path const& base, system::error_code* ec)
                 path link(detail::read_symlink(result, ec));
                 if (ec && *ec)
                     goto return_empty_path;
-                result.remove_filename();
+                result.remove_filename_and_trailing_separators();
 
                 if (link.is_absolute())
                 {
@@ -3116,7 +3116,7 @@ bool create_directories(path const& p, system::error_code* ec)
         }
 
         --it;
-        parent.remove_filename();
+        parent.remove_filename_and_trailing_separators();
     }
 
     // Create missing directories
@@ -4455,7 +4455,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         if (head_status.type() != fs::file_not_found)
             break;
 
-        head.remove_filename();
+        head.remove_filename_and_trailing_separators();
     }
 
     if (head.empty())
@@ -4527,7 +4527,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         if (p_elem == dot_dot_p)
         {
             if (head.has_relative_path())
-                head.remove_filename();
+                head.remove_filename_and_trailing_separators();
 
             continue;
         }
@@ -4546,7 +4546,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
 
         if (head_status.type() == fs::file_not_found)
         {
-            head.remove_filename();
+            head.remove_filename_and_trailing_separators();
             break;
         }
     }

@@ -295,17 +295,35 @@ BOOST_FILESYSTEM_DECL path& path::make_preferred()
 }
 #endif
 
-BOOST_FILESYSTEM_DECL path& path::remove_filename()
+BOOST_FILESYSTEM_DECL path& path::remove_filename_and_trailing_separators()
 {
     size_type end_pos = find_parent_path_size();
     m_pathname.erase(m_pathname.begin() + end_pos, m_pathname.end());
     return *this;
 }
 
+BOOST_FILESYSTEM_DECL void path::remove_filename_v3()
+{
+    remove_filename_and_trailing_separators();
+}
+
+BOOST_FILESYSTEM_DECL void path::remove_filename_v4()
+{
+    size_type filename_size = find_filename_v4_size();
+    m_pathname.erase(m_pathname.begin() + (m_pathname.size() - filename_size), m_pathname.end());
+}
+
 BOOST_FILESYSTEM_DECL path& path::remove_trailing_separator()
 {
     if (!m_pathname.empty() && detail::is_directory_separator(m_pathname[m_pathname.size() - 1]))
         m_pathname.erase(m_pathname.end() - 1);
+    return *this;
+}
+
+BOOST_FILESYSTEM_DECL path& path::replace_filename(path const& replacement)
+{
+    remove_filename_v4();
+    append_v4(replacement.m_pathname.c_str(), replacement.m_pathname.c_str() + replacement.m_pathname.size());
     return *this;
 }
 
