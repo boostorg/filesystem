@@ -2,7 +2,7 @@
 
 //  Copyright Vladimir Prus 2002
 //  Copyright Beman Dawes 2002-2005, 2009
-//  Copyright Andrey Semashev 2021
+//  Copyright Andrey Semashev 2021-2023
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
