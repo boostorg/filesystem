@@ -187,6 +187,12 @@ typedef basic_custom_string< char > custom_string;
 typedef basic_custom_string< wchar_t > wcustom_string;
 typedef basic_custom_string< fs::path::value_type > pcustom_string;
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+// unused function 'to_string'
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif // defined(__clang__)
+
 inline std::string const& to_string(std::string const& s)
 {
     return s;
@@ -196,6 +202,10 @@ inline std::string to_string(fs::path const& p)
 {
     return p.string();
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif // defined(__clang__)
 
 std::string platform(BOOST_PLATFORM);
 
