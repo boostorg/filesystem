@@ -2420,6 +2420,14 @@ void concat_tests()
 
 //  self_assign_append_concat_tests  -------------------------------------------------//
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic push
+// explicitly assigning value of variable of type 'boost::filesystem::path' to itself
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+#endif
+
 void self_assign_append_concat_tests()
 {
     std::cout << "self_assign_append_concat_tests..." << std::endl;
@@ -2473,6 +2481,12 @@ void self_assign_append_concat_tests()
     p = "snafubar";
     PATH_TEST_EQ(p.concat(p.c_str() + 5, p.c_str() + 7), "snafubarba");
 }
+
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic pop
+#endif
+#endif
 
 //  name_function_tests  -------------------------------------------------------------//
 
@@ -2812,6 +2826,14 @@ const boost::filesystem::path ticket_6690("test");       // #6690 another V++ st
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic push
+// explicitly assigning value of variable of type 'boost::filesystem::path' to itself
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+#endif
+
 int cpp_main(int, char*[])
 {
     // The choice of platform is make at runtime rather than compile-time
@@ -2903,3 +2925,9 @@ int cpp_main(int, char*[])
 
     return ::boost::report_errors();
 }
+
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic pop
+#endif
+#endif

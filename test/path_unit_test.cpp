@@ -228,6 +228,14 @@ void test_constructors()
 path x;
 path y;
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic push
+// explicitly assigning value of variable of type 'boost::filesystem::path' to itself
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
+#endif
+
 //  test_assignments  ----------------------------------------------------------------//
 
 void test_assignments()
@@ -438,6 +446,12 @@ void test_concats()
     x += L'x'; // wchar
     PATH_IS(x, L"foo-x");
 }
+
+#if defined(__clang__) && defined(__has_warning)
+#if __has_warning("-Wself-assign-overloaded")
+#pragma clang diagnostic pop
+#endif
+#endif
 
 //  test_observers  ------------------------------------------------------------------//
 
