@@ -1530,7 +1530,7 @@ inline bool is_reparse_point_a_symlink(path const& p)
 {
     handle_wrapper h(create_file_handle(
         p,
-        FILE_READ_ATTRIBUTES,
+        FILE_READ_ATTRIBUTES | FILE_READ_EA,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         NULL,
         OPEN_EXISTING,
@@ -1650,9 +1650,13 @@ fs::file_status status_by_handle(HANDLE h, path const& p, error_code* ec)
 //! symlink_status() implementation
 fs::file_status symlink_status_impl(path const& p, error_code* ec)
 {
+    // Normally, we only need FILE_READ_ATTRIBUTES access mode. But SMBv1 reports incorrect
+    // file attributes in GetFileInformationByHandleEx in this case (e.g. it reports FILE_ATTRIBUTE_NORMAL
+    // for a directory in a SMBv1 share), so we add FILE_READ_EA as a workaround.
+    // https://github.com/boostorg/filesystem/issues/282
     handle_wrapper h(create_file_handle(
         p.c_str(),
-        FILE_READ_ATTRIBUTES, // dwDesiredAccess; attributes only
+        FILE_READ_ATTRIBUTES | FILE_READ_EA,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         NULL, // lpSecurityAttributes
         OPEN_EXISTING,
@@ -1696,7 +1700,7 @@ fs::file_status status_impl(path const& p, error_code* ec)
         // Resolve the symlink
         handle_wrapper h(create_file_handle(
             p.c_str(),
-            FILE_READ_ATTRIBUTES, // dwDesiredAccess; attributes only
+            FILE_READ_ATTRIBUTES | FILE_READ_EA, // see the comment in symlink_status_impl re. access mode
             FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
             NULL, // lpSecurityAttributes
             OPEN_EXISTING,
@@ -1910,7 +1914,7 @@ inline bool remove_nt6_impl(path const& p, remove_impl_type impl, error_code* ec
 {
     handle_wrapper h(create_file_handle(
         p,
-        DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES,
+        DELETE | FILE_READ_ATTRIBUTES | FILE_READ_EA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA,
         FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
         NULL,
         OPEN_EXISTING,
@@ -2009,7 +2013,7 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
                     h,
                     path_algorithms::filename_v4(nested_path),
                     0u, // FileAttributes
-                    FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE,
+                    FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_READ_EA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | SYNCHRONIZE,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     FILE_OPEN,
                     FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT | FILE_OPEN_REPARSE_POINT
@@ -2035,7 +2039,7 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
             {
                 hh.handle = create_file_handle(
                     nested_path,
-                    FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE,
+                    FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_READ_EA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | SYNCHRONIZE,
                     FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
                     NULL,
                     OPEN_EXISTING,
@@ -2152,7 +2156,7 @@ inline uintmax_t remove_all_impl(path const& p, error_code* ec)
     {
         handle_wrapper h(create_file_handle(
             p,
-            FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE,
+            FILE_LIST_DIRECTORY | DELETE | FILE_READ_ATTRIBUTES | FILE_READ_EA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | SYNCHRONIZE,
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
             NULL,
             OPEN_EXISTING,
@@ -2969,7 +2973,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         // Create handle_wrappers here so that CloseHandle calls don't clobber error code returned by GetLastError
         handle_wrapper hw_from, hw_to;
 
-        hw_from.handle = create_file_handle(from.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+        hw_from.handle = create_file_handle(from.c_str(), GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
 
         FILETIME lwt_from;
         if (hw_from.handle == INVALID_HANDLE_VALUE)
@@ -2983,7 +2987,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         if (!::GetFileTime(hw_from.handle, NULL, NULL, &lwt_from))
             goto fail_last_error;
 
-        hw_to.handle = create_file_handle(to.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+        hw_to.handle = create_file_handle(to.c_str(), GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
 
         if (hw_to.handle != INVALID_HANDLE_VALUE)
         {
@@ -3767,7 +3771,7 @@ std::time_t creation_time(path const& p, system::error_code* ec)
 
     handle_wrapper hw(create_file_handle(
         p.c_str(),
-        FILE_READ_ATTRIBUTES,
+        GENERIC_READ,
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
         OPEN_EXISTING,
@@ -3781,7 +3785,6 @@ std::time_t creation_time(path const& p, system::error_code* ec)
     }
 
     FILETIME ct;
-
     if (BOOST_UNLIKELY(!::GetFileTime(hw.handle, &ct, NULL, NULL)))
         goto fail;
 
@@ -3825,7 +3828,7 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
 
     handle_wrapper hw(create_file_handle(
         p.c_str(),
-        FILE_READ_ATTRIBUTES,
+        GENERIC_READ,
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
         OPEN_EXISTING,
@@ -3839,7 +3842,6 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
     }
 
     FILETIME lwt;
-
     if (BOOST_UNLIKELY(!::GetFileTime(hw.handle, NULL, NULL, &lwt)))
         goto fail;
 
@@ -4071,9 +4073,8 @@ path read_symlink(path const& p, system::error_code* ec)
     DWORD error;
     if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
     {
+    return_last_error:
         error = ::GetLastError();
-
-    return_error:
         emit_error(error, p, ec, "boost::filesystem::read_symlink");
         return symlink_path;
     }
@@ -4081,10 +4082,7 @@ path read_symlink(path const& p, system::error_code* ec)
     boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
     DWORD sz = 0u;
     if (BOOST_UNLIKELY(!::DeviceIoControl(h.handle, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &sz, NULL)))
-    {
-        error = ::GetLastError();
-        goto return_error;
-    }
+        goto return_last_error;
 
     const wchar_t* buffer;
     std::size_t offset, len;

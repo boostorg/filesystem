@@ -47,6 +47,7 @@
   <li>Added <code>path::remove_filename_and_trailing_separators</li>, which removes the filename and directory separators preceding it from the path. This behavior is similar to <code>path::remove_filename</code> in Filesystem <b>v3</b>, but is also usable in <b>v4</b>.
   <li>Added <code>path::replace_filename</code>, which replaces filename in a path.</li>
   <li>Updated implementation of the library version selection to avoid ODR violations. (<a href="https://github.com/boostorg/filesystem/issues/279">#279</a>)</li>
+  <li>On Windows, added a workaround for querying file attributes for files in SMBv1 shares. Previously, directories in SMBv1 shares could have been reported as regular files. This does not affect SMBv2 or later. (<a href="https://github.com/boostorg/filesystem/issues/282">#282</a>)</li>
 </ul>
 
 <h2>1.81.0</h2>
