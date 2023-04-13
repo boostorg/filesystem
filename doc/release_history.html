@@ -39,6 +39,11 @@
     </td>
 </table>
 
+<h2>1.83.0</h2>
+<ul>
+  <li>On Windows, added another workaround for SMBv1 shares. Previously, creating a directory iterator over a directory in an SMBv1 share could fail with error code <code>ERROR_INVALID_LEVEL</code>. (<a href="https://github.com/boostorg/filesystem/issues/284">#284</a>)</li>
+</ul>
+
 <h2>1.82.0</h2>
 <ul>
   <li>Due to changes in Boost.System and some other libraries used in Boost.Filesystem, the support for C++03 is deprecated. C++11 will become the minimum starting with Boost.Filesystem 1.84.</li>

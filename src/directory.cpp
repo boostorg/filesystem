@@ -816,13 +816,15 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
             {
                 DWORD error = ::GetLastError();
 
-                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER || error == ERROR_CALL_NOT_IMPLEMENTED)
+                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER ||
+                    error == ERROR_INVALID_LEVEL || error == ERROR_CALL_NOT_IMPLEMENTED)
                 {
                     // Fall back to file_full_dir_info_format.
                     // Note that some mounted filesystems may not support FILE_ID_128 identifiers, which will cause
                     // GetFileInformationByHandleEx(FileIdExtdDirectoryRestartInfo) return ERROR_INVALID_PARAMETER,
-                    // even though in general the operation is supported by the kernel. So don't downgrade to
-                    // FileFullDirectoryRestartInfo permanently in this case - only for this particular iterator.
+                    // even though in general the operation is supported by the kernel. SMBv1 returns a special error
+                    // code ERROR_INVALID_LEVEL in this case. So don't downgrade to FileFullDirectoryRestartInfo
+                    // permanently for such error codes - only for this particular iterator.
                     // Some other filesystems also don't implement other info classes and also return ERROR_INVALID_PARAMETER
                     // (e.g. see https://github.com/boostorg/filesystem/issues/266), so generally treat this error code
                     // as "non-permanent", even though it is also returned if GetFileInformationByHandleEx in general
@@ -858,7 +860,8 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
             {
                 DWORD error = ::GetLastError();
 
-                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER || error == ERROR_CALL_NOT_IMPLEMENTED)
+                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER ||
+                    error == ERROR_INVALID_LEVEL || error == ERROR_CALL_NOT_IMPLEMENTED)
                 {
                     // Fall back to file_id_both_dir_info
                     if (error == ERROR_NOT_SUPPORTED || error == ERROR_CALL_NOT_IMPLEMENTED)
@@ -888,7 +891,8 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
             {
                 DWORD error = ::GetLastError();
 
-                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER || error == ERROR_CALL_NOT_IMPLEMENTED)
+                if (error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER ||
+                    error == ERROR_INVALID_LEVEL || error == ERROR_CALL_NOT_IMPLEMENTED)
                 {
                     // Fall back to file_directory_information
                     if (error == ERROR_NOT_SUPPORTED || error == ERROR_CALL_NOT_IMPLEMENTED)
