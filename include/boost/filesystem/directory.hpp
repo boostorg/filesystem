@@ -151,12 +151,12 @@ public:
     file_status symlink_status() const { return get_symlink_status(); }
     file_status symlink_status(system::error_code& ec) const BOOST_NOEXCEPT { return get_symlink_status(&ec); }
 
-    bool operator==(directory_entry const& rhs) const BOOST_NOEXCEPT { return m_path == rhs.m_path; }
-    bool operator!=(directory_entry const& rhs) const BOOST_NOEXCEPT { return m_path != rhs.m_path; }
-    bool operator<(directory_entry const& rhs) const BOOST_NOEXCEPT { return m_path < rhs.m_path; }
-    bool operator<=(directory_entry const& rhs) const BOOST_NOEXCEPT { return m_path <= rhs.m_path; }
-    bool operator>(directory_entry const& rhs) const BOOST_NOEXCEPT { return m_path > rhs.m_path; }
-    bool operator>=(directory_entry const& rhs) const BOOST_NOEXCEPT { return m_path >= rhs.m_path; }
+    bool operator==(directory_entry const& rhs) const { return m_path == rhs.m_path; }
+    bool operator!=(directory_entry const& rhs) const { return m_path != rhs.m_path; }
+    bool operator<(directory_entry const& rhs) const { return m_path < rhs.m_path; }
+    bool operator<=(directory_entry const& rhs) const { return m_path <= rhs.m_path; }
+    bool operator>(directory_entry const& rhs) const { return m_path > rhs.m_path; }
+    bool operator>=(directory_entry const& rhs) const { return m_path >= rhs.m_path; }
 
 private:
     BOOST_FILESYSTEM_DECL file_status get_status(system::error_code* ec = NULL) const;
