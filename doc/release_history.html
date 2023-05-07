@@ -41,6 +41,7 @@
 
 <h2>1.83.0</h2>
 <ul>
+  <li>Generic <code>path</code> comparison operators are now more restricted to avoid potential ambiguities when user's code contains a <code>using namespace boost::filesystem;</code> directive. (<a href="https://github.com/boostorg/filesystem/issues/285">#285</a>)</li>
   <li>On Windows, added another workaround for SMBv1 shares. Previously, creating a directory iterator over a directory in an SMBv1 share could fail with error code <code>ERROR_INVALID_LEVEL</code>. (<a href="https://github.com/boostorg/filesystem/issues/284">#284</a>)</li>
 </ul>
 
