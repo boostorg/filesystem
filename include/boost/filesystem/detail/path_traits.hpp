@@ -480,33 +480,37 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, 
 typedef char yes_type;
 struct no_type { char buf[2]; };
 
-// Note: The obscure naming of the _check* functions below is a workaround for an MSVC-9.0 bug, which looks up the function outside the class scope
-
 #if !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+
+namespace is_convertible_to_path_source_impl {
+
+yes_type check(const char*);
+yes_type check(const wchar_t*);
+yes_type check(std::string const&);
+yes_type check(std::wstring const&);
+yes_type check(boost::container::basic_string< char, std::char_traits< char >, void > const&);
+yes_type check(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+yes_type check(std::string_view const&);
+yes_type check(std::wstring_view const&);
+#endif
+yes_type check(boost::basic_string_view< char, std::char_traits< char > > const&);
+yes_type check(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+no_type check(std::nullptr_t);
+#endif
+no_type check(...);
+
+} // namespace is_convertible_to_path_source_impl
 
 //! The type trait indicates whether the type has a conversion path to one of the path source types
 template< typename T >
-struct is_convertible_to_path_source
+struct is_convertible_to_path_source :
+    public boost::integral_constant<
+        bool,
+        sizeof(is_convertible_to_path_source_impl::check(boost::declval< T const& >())) == sizeof(yes_type)
+    >
 {
-    static yes_type _check_convertible_to_path_source(const char*);
-    static yes_type _check_convertible_to_path_source(const wchar_t*);
-    static yes_type _check_convertible_to_path_source(std::string const&);
-    static yes_type _check_convertible_to_path_source(std::wstring const&);
-    static yes_type _check_convertible_to_path_source(boost::container::basic_string< char, std::char_traits< char >, void > const&);
-    static yes_type _check_convertible_to_path_source(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
-#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
-    static yes_type _check_convertible_to_path_source(std::string_view const&);
-    static yes_type _check_convertible_to_path_source(std::wstring_view const&);
-#endif
-    static yes_type _check_convertible_to_path_source(boost::basic_string_view< char, std::char_traits< char > > const&);
-    static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
-#if !defined(BOOST_NO_CXX11_NULLPTR)
-    static no_type _check_convertible_to_path_source(std::nullptr_t);
-#endif
-    static no_type _check_convertible_to_path_source(...);
-
-    static BOOST_CONSTEXPR_OR_CONST bool value =
-        sizeof(is_convertible_to_path_source< T >::_check_convertible_to_path_source(boost::declval< T const& >())) == sizeof(yes_type);
 };
 
 #else // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
@@ -517,38 +521,50 @@ struct is_convertible_to_path_source
 //       through the conversion operator in the user's class and is also convertible to std::string_view through the implicit conversion
 //       constructor in std::string_view. The solution is to check convertibility to std::string_view separately first.
 
-template< typename T >
-struct is_convertible_to_std_string_view
-{
-    static yes_type _check_convertible_to_std_string_view(std::string_view const&);
-    static yes_type _check_convertible_to_std_string_view(std::wstring_view const&);
-#if !defined(BOOST_NO_CXX11_NULLPTR)
-    static no_type _check_convertible_to_std_string_view(std::nullptr_t);
-#endif
-    static no_type _check_convertible_to_std_string_view(...);
+namespace is_convertible_to_std_string_view_impl {
 
-    static BOOST_CONSTEXPR_OR_CONST bool value =
-        sizeof(is_convertible_to_std_string_view< T >::_check_convertible_to_std_string_view(boost::declval< T const& >())) == sizeof(yes_type);
+yes_type check(std::string_view const&);
+yes_type check(std::wstring_view const&);
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+no_type check(std::nullptr_t);
+#endif
+no_type check(...);
+
+} // namespace is_convertible_to_std_string_view_impl
+
+template< typename T >
+struct is_convertible_to_std_string_view :
+    public boost::integral_constant<
+        bool,
+        sizeof(is_convertible_to_std_string_view_impl::check(boost::declval< T const& >())) == sizeof(yes_type)
+    >
+{
 };
 
-template< typename T >
-struct is_convertible_to_path_source_non_std_string_view
-{
-    static yes_type _check_convertible_to_path_source(const char*);
-    static yes_type _check_convertible_to_path_source(const wchar_t*);
-    static yes_type _check_convertible_to_path_source(std::string const&);
-    static yes_type _check_convertible_to_path_source(std::wstring const&);
-    static yes_type _check_convertible_to_path_source(boost::container::basic_string< char, std::char_traits< char >, void > const&);
-    static yes_type _check_convertible_to_path_source(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
-    static yes_type _check_convertible_to_path_source(boost::basic_string_view< char, std::char_traits< char > > const&);
-    static yes_type _check_convertible_to_path_source(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
-#if !defined(BOOST_NO_CXX11_NULLPTR)
-    static no_type _check_convertible_to_path_source(std::nullptr_t);
-#endif
-    static no_type _check_convertible_to_path_source(...);
+namespace is_convertible_to_path_source_non_std_string_view_impl {
 
-    static BOOST_CONSTEXPR_OR_CONST bool value =
-        sizeof(is_convertible_to_path_source_non_std_string_view< T >::_check_convertible_to_path_source(boost::declval< T const& >())) == sizeof(yes_type);
+yes_type check(const char*);
+yes_type check(const wchar_t*);
+yes_type check(std::string const&);
+yes_type check(std::wstring const&);
+yes_type check(boost::container::basic_string< char, std::char_traits< char >, void > const&);
+yes_type check(boost::container::basic_string< wchar_t, std::char_traits< wchar_t >, void > const&);
+yes_type check(boost::basic_string_view< char, std::char_traits< char > > const&);
+yes_type check(boost::basic_string_view< wchar_t, std::char_traits< wchar_t > > const&);
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+no_type check(std::nullptr_t);
+#endif
+no_type check(...);
+
+} // namespace is_convertible_to_path_source_non_std_string_view_impl
+
+template< typename T >
+struct is_convertible_to_path_source_non_std_string_view :
+    public boost::integral_constant<
+        bool,
+        sizeof(is_convertible_to_path_source_non_std_string_view_impl::check(boost::declval< T const& >())) == sizeof(yes_type)
+    >
+{
 };
 
 //! The type trait indicates whether the type has a conversion path to one of the path source types
