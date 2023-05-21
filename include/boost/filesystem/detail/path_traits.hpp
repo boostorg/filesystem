@@ -23,8 +23,11 @@
 #endif
 #include <boost/assert.hpp>
 #include <boost/system/error_category.hpp>
+#include <boost/iterator/is_iterator.hpp>
 #include <boost/type_traits/declval.hpp>
 #include <boost/type_traits/remove_cv.hpp>
+#include <boost/type_traits/integral_constant.hpp>
+#include <boost/type_traits/conjunction.hpp>
 #if defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 #include <boost/type_traits/disjunction.hpp>
 #include <boost/core/enable_if.hpp>
@@ -311,78 +314,87 @@ struct path_source_traits< directory_entry >
 
 //! The trait tests if the type is a known path Source tag
 template< typename Tag >
-struct is_known_path_source_tag
+struct is_known_path_source_tag :
+    public boost::true_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
 };
 
 template< >
-struct is_known_path_source_tag< unknown_type_tag >
+struct is_known_path_source_tag< unknown_type_tag > :
+    public boost::false_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = false;
 };
 
 //! The trait tests if the type is compatible with path Source requirements
 template< typename T >
 struct is_path_source :
-    public is_known_path_source_tag< typename path_source_traits< T >::tag_type >
+    public is_known_path_source_tag< typename path_source_traits< T >::tag_type >::type
 {
 };
 
 
 //! The trait indicates whether the type is a path Source that is natively supported by path::string_type as the source for construction/assignment/appending
 template< typename T >
-struct is_native_path_source
+struct is_native_path_source :
+    public boost::integral_constant< bool, path_source_traits< T >::is_native >
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = path_source_traits< T >::is_native;
 };
 
 
 //! The trait indicates whether the type is one of the supported path character types
 template< typename T >
-struct is_path_char_type
+struct is_path_char_type :
+    public boost::false_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = false;
 };
 
 template< >
-struct is_path_char_type< char >
+struct is_path_char_type< char > :
+    public boost::true_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
 };
 
 template< >
-struct is_path_char_type< wchar_t >
+struct is_path_char_type< wchar_t > :
+    public boost::true_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
 };
 
+
+template< typename Iterator >
+struct is_iterator_to_path_chars :
+    public is_path_char_type< typename std::iterator_traits< Iterator >::value_type >::type
+{
+};
 
 //! The trait indicates whether the type is an iterator over a sequence of path characters
 template< typename Iterator >
 struct is_path_source_iterator :
-    public is_path_char_type< typename std::iterator_traits< Iterator >::value_type >
+    public boost::conjunction<
+        boost::iterators::is_iterator< Iterator >,
+        is_iterator_to_path_chars< Iterator >
+    >::type
 {
 };
 
 
 //! The trait indicates whether the type is a pointer to a sequence of native path characters
 template< typename T >
-struct is_native_char_ptr
+struct is_native_char_ptr :
+    public boost::false_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = false;
 };
 
 template< >
-struct is_native_char_ptr< path_native_char_type* >
+struct is_native_char_ptr< path_native_char_type* > :
+    public boost::true_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
 };
 
 template< >
-struct is_native_char_ptr< const path_native_char_type* >
+struct is_native_char_ptr< const path_native_char_type* > :
+    public boost::true_type
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
 };
 
 
@@ -476,7 +488,6 @@ struct no_type { char buf[2]; };
 template< typename T >
 struct is_convertible_to_path_source
 {
-    // Note: The obscure naming of this function is a workaround for an MSVC-9.0 bug, which looks up the function outside the class scope
     static yes_type _check_convertible_to_path_source(const char*);
     static yes_type _check_convertible_to_path_source(const wchar_t*);
     static yes_type _check_convertible_to_path_source(std::string const&);
@@ -523,7 +534,6 @@ struct is_convertible_to_std_string_view
 template< typename T >
 struct is_convertible_to_path_source_non_std_string_view
 {
-    // Note: The obscure naming of this function is a workaround for an MSVC-9.0 bug, which looks up the function outside the class scope
     static yes_type _check_convertible_to_path_source(const char*);
     static yes_type _check_convertible_to_path_source(const wchar_t*);
     static yes_type _check_convertible_to_path_source(std::string const&);
@@ -547,7 +557,7 @@ struct is_convertible_to_path_source :
     public boost::disjunction<
         is_convertible_to_std_string_view< T >,
         is_convertible_to_path_source_non_std_string_view< T >
-    >
+    >::type
 {
 };
 
