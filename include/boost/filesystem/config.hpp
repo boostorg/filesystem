@@ -139,7 +139,7 @@
 // Indicates that std::string_view has implicit constructor from ranges that was present in an early C++23 draft (N4892).
 // This was later rectified by marking the constructor explicit (https://wg21.link/p2499). Unfortunately, some compilers
 // were released with the constructor being implicit.
-#define BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR
+#define BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR
 #endif
 
 #endif // BOOST_FILESYSTEM_CONFIG_HPP

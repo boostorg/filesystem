@@ -28,7 +28,7 @@
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 #include <boost/type_traits/conjunction.hpp>
-#if defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#if defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 #include <boost/type_traits/disjunction.hpp>
 #include <boost/core/enable_if.hpp>
 #endif
@@ -480,7 +480,7 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, 
 typedef char yes_type;
 struct no_type { char buf[2]; };
 
-#if !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#if !defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 namespace is_convertible_to_path_source_impl {
 
@@ -513,7 +513,7 @@ struct is_convertible_to_path_source :
 {
 };
 
-#else // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#else // !defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 // Note: We use separate checks for convertibility to std::string_view and other types to avoid ambiguity with an implicit range constructor
 //       of std::string_view in the early C++23 draft (N4892). If a user's type is convertible to e.g. std::string and also satisfies
@@ -577,7 +577,7 @@ struct is_convertible_to_path_source :
 {
 };
 
-#endif // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#endif // !defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 //! The type trait makes \a T dependent on the second template argument. Used to delay type resolution and name binding.
 template< typename T, typename >
@@ -662,7 +662,7 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl
     return path_traits::dispatch(static_cast< source_t const& >(source), cb, cvt);
 }
 
-#if !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#if !defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 
@@ -689,7 +689,7 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible(Source con
     return path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
 }
 
-#else // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#else // !defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 template< typename Source, typename Callback >
 BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_sv_impl(std::string_view const& source, Callback cb, const codecvt_type* cvt)
@@ -725,7 +725,7 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
     return path_traits::dispatch_convertible_sv_impl< source_t >(source, cb, cvt);
 }
 
-#endif // !defined(BOOST_FILESYSTEM_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
+#endif // !defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
 
 } // namespace path_traits
 } // namespace detail
