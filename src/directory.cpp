@@ -328,17 +328,36 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
     }
     else // filesystem supplies d_type value
     {
-        if (result->d_type == DT_DIR)
-            sf = symlink_sf = fs::file_status(fs::directory_file);
-        else if (result->d_type == DT_REG)
+        if (result->d_type == DT_REG)
             sf = symlink_sf = fs::file_status(fs::regular_file);
+        else if (result->d_type == DT_DIR)
+            sf = symlink_sf = fs::file_status(fs::directory_file);
         else if (result->d_type == DT_LNK)
         {
             sf = fs::file_status(fs::status_error);
             symlink_sf = fs::file_status(fs::symlink_file);
         }
         else
-            sf = symlink_sf = fs::file_status(fs::status_error);
+        {
+            switch (result->d_type)
+            {
+            case DT_SOCK:
+                sf = symlink_sf = fs::file_status(fs::socket_file);
+                break;
+            case DT_FIFO:
+                sf = symlink_sf = fs::file_status(fs::fifo_file);
+                break;
+            case DT_BLK:
+                sf = symlink_sf = fs::file_status(fs::block_file);
+                break;
+            case DT_CHR:
+                sf = symlink_sf = fs::file_status(fs::character_file);
+                break;
+            default:
+                sf = symlink_sf = fs::file_status(fs::status_error);
+                break;
+            }
+        }
     }
 #else
     sf = symlink_sf = fs::file_status(fs::status_error);
