@@ -74,15 +74,6 @@
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
-//  BOOST_FILESYSTEM_STATUS_CACHE enables file_status cache in
-//  dir_itr_increment. The config tests are placed here because some of the
-//  macros being tested come from dirent.h.
-//
-// TODO: find out what macros indicate dirent::d_type present in more libraries
-#if defined(BOOST_WINDOWS_API) || defined(_DIRENT_HAVE_D_TYPE) // defined by GNU C library if d_type present
-#define BOOST_FILESYSTEM_STATUS_CACHE
-#endif
-
 namespace fs = boost::filesystem;
 using boost::system::error_code;
 using boost::system::system_category;
@@ -321,7 +312,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
 
     filename = result->d_name;
 
-#ifdef BOOST_FILESYSTEM_STATUS_CACHE
+#if defined(BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE)
     if (result->d_type == DT_UNKNOWN) // filesystem does not supply d_type value
     {
         sf = symlink_sf = fs::file_status(fs::status_error);
