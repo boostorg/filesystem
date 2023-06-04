@@ -87,42 +87,32 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-BOOST_FILESYSTEM_DECL
-file_status directory_entry::get_status(system::error_code* ec) const
+BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(system::error_code* ec) const
 {
-    if (!status_known(m_status))
+    system::error_code local_ec;
+    m_symlink_status = detail::symlink_status(m_path, &local_ec);
+
+    if (!filesystem::is_symlink(m_symlink_status))
     {
-        // optimization: if the symlink status is known, and it isn't a symlink,
-        // then status and symlink_status are identical so just copy the
-        // symlink status to the regular status.
-        if (status_known(m_symlink_status) && !is_symlink(m_symlink_status))
+        // Also works if symlink_status fails - set m_status to status_error as well
+        m_status = m_symlink_status;
+
+        if (BOOST_UNLIKELY(!!local_ec))
         {
-            m_status = m_symlink_status;
-            if (ec)
-                ec->clear();
+            if (!ec)
+                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::directory_entry::refresh", m_path, local_ec));
+
+            *ec = local_ec;
+            return;
         }
-        else
-        {
-            m_status = detail::status(m_path, ec);
-        }
+
+        if (ec)
+            ec->clear();
     }
-    else if (ec)
+    else
     {
-        ec->clear();
+        m_status = detail::status(m_path, ec);
     }
-
-    return m_status;
-}
-
-BOOST_FILESYSTEM_DECL
-file_status directory_entry::get_symlink_status(system::error_code* ec) const
-{
-    if (!status_known(m_symlink_status))
-        m_symlink_status = detail::symlink_status(m_path, ec);
-    else if (ec)
-        ec->clear();
-
-    return m_symlink_status;
 }
 
 //--------------------------------------------------------------------------------------//
@@ -1131,7 +1121,7 @@ void directory_iterator_construct(directory_iterator& it, path const& p, unsigne
             {
                 path full_path(p);
                 path_algorithms::append_v4(full_path, filename);
-                imp->dir_entry.assign
+                imp->dir_entry.assign_with_status
                 (
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
                     static_cast< path&& >(full_path),
@@ -1200,7 +1190,7 @@ void directory_iterator_increment(directory_iterator& it, system::error_code* ec
                   && (filename_str[1] == static_cast< path::string_type::value_type >('\0') ||
                       (filename_str[1] == path::dot && filename_str[2] == static_cast< path::string_type::value_type >('\0')))))
             {
-                it.m_imp->dir_entry.replace_filename(filename, file_stat, symlink_file_stat);
+                it.m_imp->dir_entry.replace_filename_with_status(filename, file_stat, symlink_file_stat);
                 return;
             }
         }
@@ -1364,14 +1354,14 @@ inline push_directory_result recursive_directory_iterator_push_directory(detail:
             return result;
         }
 
-        file_status symlink_stat;
+        file_type symlink_ft = status_error;
 
         // If we are not recursing into symlinks, we are going to have to know if the
         // stack top is a symlink, so get symlink_status and verify no error occurred.
         if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) == 0u ||
             (imp->m_options & static_cast< unsigned int >(directory_options::skip_dangling_symlinks)) != 0u)
         {
-            symlink_stat = imp->m_stack.back()->symlink_status(ec);
+            symlink_ft = imp->m_stack.back()->symlink_file_type(ec);
             if (ec)
                 return result;
         }
@@ -1384,12 +1374,12 @@ inline push_directory_result recursive_directory_iterator_push_directory(detail:
         // The predicate code has since been rewritten to pass error_code arguments,
         // per ticket #5653.
 
-        if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) != 0u || !fs::is_symlink(symlink_stat))
+        if ((imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink)) != 0u || symlink_ft != symlink_file)
         {
-            file_status stat = imp->m_stack.back()->status(ec);
+            file_type ft = imp->m_stack.back()->file_type(ec);
             if (BOOST_UNLIKELY(!!ec))
             {
-                if (ec == make_error_condition(system::errc::no_such_file_or_directory) && fs::is_symlink(symlink_stat) &&
+                if (ec == make_error_condition(system::errc::no_such_file_or_directory) && symlink_ft == symlink_file &&
                     (imp->m_options & static_cast< unsigned int >(directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks)) == static_cast< unsigned int >(directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks))
                 {
                     // Skip dangling symlink and continue iteration on the current depth level
@@ -1399,7 +1389,7 @@ inline push_directory_result recursive_directory_iterator_push_directory(detail:
                 return result;
             }
 
-            if (!fs::is_directory(stat))
+            if (ft != directory_file)
                 return result;
 
             if (BOOST_UNLIKELY((imp->m_stack.size() - 1u) >= static_cast< std::size_t >((std::numeric_limits< int >::max)())))
