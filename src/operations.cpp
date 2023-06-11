@@ -1511,15 +1511,30 @@ boost::winapi::NTSTATUS_ nt_create_file_handle_at(HANDLE& out, HANDLE basedir_ha
 
 #endif // !defined(UNDER_CE)
 
-ULONG get_reparse_point_tag_ioctl(HANDLE h)
+ULONG get_reparse_point_tag_ioctl(HANDLE h, path const& p, error_code* ec)
 {
-    boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
+    boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new (std::nothrow) reparse_data_buffer_with_storage);
+    if (BOOST_UNLIKELY(!buf.get()))
+    {
+        if (!ec)
+            BOOST_FILESYSTEM_THROW(filesystem_error("Cannot allocate memory to query reparse point", p, make_error_code(system::errc::not_enough_memory)));
+
+        *ec = make_error_code(system::errc::not_enough_memory);
+        return 0u;
+    }
 
     // Query the reparse data
     DWORD dwRetLen = 0u;
     BOOL result = ::DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, NULL, 0, buf.get(), sizeof(*buf), &dwRetLen, NULL);
     if (BOOST_UNLIKELY(!result))
-        return false;
+    {
+        DWORD err = ::GetLastError();
+        if (!ec)
+            BOOST_FILESYSTEM_THROW(filesystem_error("Failed to query reparse point", p, error_code(err, system_category())));
+
+        ec->assign(err, system_category());
+        return 0u;
+    }
 
     return buf->rdb.ReparseTag;
 }
@@ -1623,7 +1638,14 @@ fs::file_status status_by_handle(HANDLE h, path const& p, error_code* ec)
         attrs = info.dwFileAttributes;
 
         if ((attrs & FILE_ATTRIBUTE_REPARSE_POINT) != 0u)
-            reparse_tag = get_reparse_point_tag_ioctl(h);
+        {
+            reparse_tag = get_reparse_point_tag_ioctl(h, p, ec);
+            if (ec)
+            {
+                if (BOOST_UNLIKELY(!!ec))
+                    return fs::file_status(fs::status_error);
+            }
+        }
     }
 
     if ((attrs & FILE_ATTRIBUTE_REPARSE_POINT) != 0u)
