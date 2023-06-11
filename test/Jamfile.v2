@@ -78,6 +78,7 @@ compile macro_default_test.cpp ;
 run odr1_test.cpp odr2_test.cpp ;
 run deprecated_test.cpp : : : <define>BOOST_FILESYSTEM_VERSION=3 ;
 run fstream_test.cpp : : : $(VIS) <define>BOOST_FILESYSTEM_VERSION=4 ;
+run cstdio_test.cpp : : : $(VIS) <define>BOOST_FILESYSTEM_VERSION=4 ;
 run large_file_support_test.cpp : : : <define>BOOST_FILESYSTEM_VERSION=4 ;
 run locale_info.cpp : : : <define>BOOST_FILESYSTEM_VERSION=4 <test-info>always_show_run_output ;
 run operations_test.cpp : : : <link>shared <define>BOOST_FILESYSTEM_VERSION=4 <test-info>always_show_run_output ;
