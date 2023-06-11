@@ -176,7 +176,7 @@ inline file_status status(path const& p)
     return detail::status(p);
 }
 
-inline file_status status(path const& p, system::error_code& ec)
+inline file_status status(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return detail::status(p, &ec);
 }
@@ -186,7 +186,7 @@ inline file_status symlink_status(path const& p)
     return detail::symlink_status(p);
 }
 
-inline file_status symlink_status(path const& p, system::error_code& ec)
+inline file_status symlink_status(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return detail::symlink_status(p, &ec);
 }
@@ -196,7 +196,7 @@ inline bool exists(path const& p)
     return filesystem::exists(detail::status(p));
 }
 
-inline bool exists(path const& p, system::error_code& ec)
+inline bool exists(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::exists(detail::status(p, &ec));
 }
@@ -206,7 +206,7 @@ inline bool is_regular_file(path const& p)
     return filesystem::is_regular_file(detail::status(p));
 }
 
-inline bool is_regular_file(path const& p, system::error_code& ec)
+inline bool is_regular_file(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_regular_file(detail::status(p, &ec));
 }
@@ -216,7 +216,7 @@ inline bool is_directory(path const& p)
     return filesystem::is_directory(detail::status(p));
 }
 
-inline bool is_directory(path const& p, system::error_code& ec)
+inline bool is_directory(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_directory(detail::status(p, &ec));
 }
@@ -226,7 +226,7 @@ inline bool is_symlink(path const& p)
     return filesystem::is_symlink(detail::symlink_status(p));
 }
 
-inline bool is_symlink(path const& p, system::error_code& ec)
+inline bool is_symlink(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_symlink(detail::symlink_status(p, &ec));
 }
@@ -236,7 +236,7 @@ inline bool is_block_file(path const& p)
     return filesystem::is_block_file(detail::status(p));
 }
 
-inline bool is_block_file(path const& p, system::error_code& ec)
+inline bool is_block_file(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_block_file(detail::status(p, &ec));
 }
@@ -246,7 +246,7 @@ inline bool is_character_file(path const& p)
     return filesystem::is_character_file(detail::status(p));
 }
 
-inline bool is_character_file(path const& p, system::error_code& ec)
+inline bool is_character_file(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_character_file(detail::status(p, &ec));
 }
@@ -256,7 +256,7 @@ inline bool is_fifo(path const& p)
     return filesystem::is_fifo(detail::status(p));
 }
 
-inline bool is_fifo(path const& p, system::error_code& ec)
+inline bool is_fifo(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_fifo(detail::status(p, &ec));
 }
@@ -266,7 +266,7 @@ inline bool is_socket(path const& p)
     return filesystem::is_socket(detail::status(p));
 }
 
-inline bool is_socket(path const& p, system::error_code& ec)
+inline bool is_socket(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_socket(detail::status(p, &ec));
 }
@@ -276,7 +276,7 @@ inline bool is_reparse_file(path const& p)
     return filesystem::is_reparse_file(detail::symlink_status(p));
 }
 
-inline bool is_reparse_file(path const& p, system::error_code& ec)
+inline bool is_reparse_file(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_reparse_file(detail::symlink_status(p, &ec));
 }
@@ -286,7 +286,7 @@ inline bool is_other(path const& p)
     return filesystem::is_other(detail::status(p));
 }
 
-inline bool is_other(path const& p, system::error_code& ec)
+inline bool is_other(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_other(detail::status(p, &ec));
 }
@@ -299,7 +299,7 @@ inline bool is_regular(path const& p)
 }
 
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
-inline bool is_regular(path const& p, system::error_code& ec)
+inline bool is_regular(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::is_regular_file(p, ec);
 }
