@@ -821,9 +821,14 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
             if (BOOST_UNLIKELY((info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0u))
                 return make_error_code(system::errc::not_a_directory);
 
-            if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u)
+            if ((opts & static_cast< unsigned int >(directory_options::_detail_no_follow)) != 0u && (info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u)
             {
-                if ((info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u && is_reparse_point_a_symlink_ioctl(h.handle))
+                error_code ec;
+                const ULONG reparse_point_tag = detail::get_reparse_point_tag_ioctl(h.handle, dir, &ec);
+                if (BOOST_UNLIKELY(!!ec))
+                    return ec;
+
+                if (detail::is_reparse_point_tag_a_symlink(reparse_point_tag))
                     return make_error_code(system::errc::too_many_symbolic_link_levels);
             }
         }

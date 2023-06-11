@@ -1541,35 +1541,6 @@ ULONG get_reparse_point_tag_ioctl(HANDLE h, path const& p, error_code* ec)
 
 namespace {
 
-inline bool is_reparse_point_a_symlink(path const& p)
-{
-    handle_wrapper h(create_file_handle(
-        p,
-        FILE_READ_ATTRIBUTES | FILE_READ_EA,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-        NULL,
-        OPEN_EXISTING,
-        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT));
-    if (BOOST_UNLIKELY(h.handle == INVALID_HANDLE_VALUE))
-        return false;
-
-    GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
-    if (BOOST_LIKELY(get_file_information_by_handle_ex != NULL))
-    {
-        file_attribute_tag_info info;
-        BOOL result = get_file_information_by_handle_ex(h.handle, file_attribute_tag_info_class, &info, sizeof(info));
-        if (BOOST_UNLIKELY(!result))
-            return false;
-
-        if ((info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) == 0u)
-            return false;
-
-        return is_reparse_point_tag_a_symlink(info.ReparseTag);
-    }
-
-    return is_reparse_point_a_symlink_ioctl(h.handle);
-}
-
 inline std::size_t get_full_path_name(path const& src, std::size_t len, wchar_t* buf, wchar_t** p)
 {
     return static_cast< std::size_t >(::GetFullPathNameW(src.c_str(), static_cast< DWORD >(len), buf, p));
