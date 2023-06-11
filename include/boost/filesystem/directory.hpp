@@ -278,6 +278,56 @@ public:
         return this->symlink_file_type(ec) == filesystem::symlink_file;
     }
 
+    bool is_block_file() const
+    {
+        return this->file_type() == filesystem::block_file;
+    }
+
+    bool is_block_file(system::error_code& ec) const BOOST_NOEXCEPT
+    {
+        return this->file_type(ec) == filesystem::block_file;
+    }
+
+    bool is_character_file() const
+    {
+        return this->file_type() == filesystem::character_file;
+    }
+
+    bool is_character_file(system::error_code& ec) const BOOST_NOEXCEPT
+    {
+        return this->file_type(ec) == filesystem::character_file;
+    }
+
+    bool is_fifo() const
+    {
+        return this->file_type() == filesystem::fifo_file;
+    }
+
+    bool is_fifo(system::error_code& ec) const BOOST_NOEXCEPT
+    {
+        return this->file_type(ec) == filesystem::fifo_file;
+    }
+
+    bool is_socket() const
+    {
+        return this->file_type() == filesystem::socket_file;
+    }
+
+    bool is_socket(system::error_code& ec) const BOOST_NOEXCEPT
+    {
+        return this->file_type(ec) == filesystem::socket_file;
+    }
+
+    bool is_reparse_file() const
+    {
+        return this->symlink_file_type() == filesystem::reparse_file;
+    }
+
+    bool is_reparse_file(system::error_code& ec) const BOOST_NOEXCEPT
+    {
+        return this->symlink_file_type(ec) == filesystem::reparse_file;
+    }
+
     bool is_other() const
     {
         filesystem::file_type ft = this->file_type();
@@ -418,66 +468,142 @@ inline file_status status(directory_entry const& e)
 {
     return e.status();
 }
+
 inline file_status status(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
     return e.status(ec);
 }
+
+inline file_status symlink_status(directory_entry const& e)
+{
+    return e.symlink_status();
+}
+
+inline file_status symlink_status(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return e.symlink_status(ec);
+}
+
 inline bool type_present(directory_entry const& e)
 {
-    return filesystem::type_present(e.status());
+    return e.file_type() != filesystem::status_error;
 }
+
 inline bool type_present(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
-    return filesystem::type_present(e.status(ec));
+    return e.file_type(ec) != filesystem::status_error;
 }
+
 inline bool status_known(directory_entry const& e)
 {
     return filesystem::status_known(e.status());
 }
+
 inline bool status_known(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
     return filesystem::status_known(e.status(ec));
 }
+
 inline bool exists(directory_entry const& e)
 {
-    return filesystem::exists(e.status());
+    return e.exists();
 }
+
 inline bool exists(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
-    return filesystem::exists(e.status(ec));
+    return e.exists(ec);
 }
+
 inline bool is_regular_file(directory_entry const& e)
 {
-    return filesystem::is_regular_file(e.status());
+    return e.is_regular_file();
 }
+
 inline bool is_regular_file(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
-    return filesystem::is_regular_file(e.status(ec));
+    return e.is_regular_file(ec);
 }
+
 inline bool is_directory(directory_entry const& e)
 {
-    return filesystem::is_directory(e.status());
+    return e.is_directory();
 }
+
 inline bool is_directory(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
-    return filesystem::is_directory(e.status(ec));
+    return e.is_directory(ec);
 }
+
 inline bool is_symlink(directory_entry const& e)
 {
-    return filesystem::is_symlink(e.symlink_status());
+    return e.is_symlink();
 }
+
 inline bool is_symlink(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
-    return filesystem::is_symlink(e.symlink_status(ec));
+    return e.is_symlink(ec);
 }
+
+inline bool is_block_file(directory_entry const& e)
+{
+    return e.is_block_file();
+}
+
+inline bool is_block_file(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return e.is_block_file(ec);
+}
+
+inline bool is_character_file(directory_entry const& e)
+{
+    return e.is_character_file();
+}
+
+inline bool is_character_file(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return e.is_character_file(ec);
+}
+
+inline bool is_fifo(directory_entry const& e)
+{
+    return e.is_fifo();
+}
+
+inline bool is_fifo(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return e.is_fifo(ec);
+}
+
+inline bool is_socket(directory_entry const& e)
+{
+    return e.is_socket();
+}
+
+inline bool is_socket(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return e.is_socket(ec);
+}
+
+inline bool is_reparse_file(directory_entry const& e)
+{
+    return e.is_reparse_file();
+}
+
+inline bool is_reparse_file(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return e.is_reparse_file(ec);
+}
+
 inline bool is_other(directory_entry const& e)
 {
-    return filesystem::is_other(e.status());
+    return e.is_other();
 }
+
 inline bool is_other(directory_entry const& e, system::error_code& ec) BOOST_NOEXCEPT
 {
-    return filesystem::is_other(e.status(ec));
+    return e.is_other(ec);
 }
+
 #ifndef BOOST_FILESYSTEM_NO_DEPRECATED
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
 inline bool is_regular(directory_entry const& e)
