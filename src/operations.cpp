@@ -2966,7 +2966,14 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         // Create handle_wrappers here so that CloseHandle calls don't clobber error code returned by GetLastError
         handle_wrapper hw_from, hw_to;
 
-        hw_from.handle = create_file_handle(from.c_str(), GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+        // See the comment in last_write_time regarding access rights used here for GetFileTime.
+        hw_from.handle = create_file_handle(
+            from.c_str(),
+            FILE_READ_ATTRIBUTES | FILE_READ_EA,
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS);
 
         FILETIME lwt_from;
         if (hw_from.handle == INVALID_HANDLE_VALUE)
@@ -2980,7 +2987,13 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         if (!::GetFileTime(hw_from.handle, NULL, NULL, &lwt_from))
             goto fail_last_error;
 
-        hw_to.handle = create_file_handle(to.c_str(), GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS);
+        hw_to.handle = create_file_handle(
+            to.c_str(),
+            FILE_READ_ATTRIBUTES | FILE_READ_EA,
+            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS);
 
         if (hw_to.handle != INVALID_HANDLE_VALUE)
         {
@@ -3762,9 +3775,10 @@ std::time_t creation_time(path const& p, system::error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
+    // See the comment in last_write_time regarding access rights used here for GetFileTime.
     handle_wrapper hw(create_file_handle(
         p.c_str(),
-        GENERIC_READ,
+        FILE_READ_ATTRIBUTES | FILE_READ_EA,
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
         OPEN_EXISTING,
@@ -3819,9 +3833,12 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
 
 #else // defined(BOOST_POSIX_API)
 
+    // GetFileTime is documented to require GENERIC_READ access right, but this causes problems if the file
+    // is opened by another process without FILE_SHARE_READ. In practice, FILE_READ_ATTRIBUTES works, and
+    // FILE_READ_EA is also added for good measure, in case if it matters for SMBv1.
     handle_wrapper hw(create_file_handle(
         p.c_str(),
-        GENERIC_READ,
+        FILE_READ_ATTRIBUTES | FILE_READ_EA,
         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
         OPEN_EXISTING,

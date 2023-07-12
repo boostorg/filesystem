@@ -52,6 +52,7 @@
   <li>Generic <code>path</code> comparison operators are now more restricted to avoid potential ambiguities when user's code contains a <code>using namespace boost::filesystem;</code> directive. (<a href="https://github.com/boostorg/filesystem/issues/285">#285</a>)</li>
   <li>Fixed potential overload resolution ambiguity in users' code, where <code>path</code> constructors from iterators could interfere with function overloads taking a <code>std::initializer_list</code> argument. (<a href="https://github.com/boostorg/filesystem/issues/287">#287</a>)</li>
   <li>On Windows, added more workarounds for errors returned by various filesystems when creating a directory iterator. (<a href="https://github.com/boostorg/filesystem/issues/284">#284</a>, <a href="https://github.com/boostorg/filesystem/issues/286">#286</a>)</li>
+  <li>On Windows, relaxed access rights needed for querying file times. (<a href="https://github.com/boostorg/filesystem/issues/290">#290</a>)</li>
 </ul>
 
 <h2>1.82.0</h2>
