@@ -765,7 +765,11 @@ struct copy_file_data_sendfile
             if (size_left < static_cast< uintmax_t >(max_batch_size))
                 size_to_copy = static_cast< std::size_t >(size_left);
             ssize_t sz = ::sendfile(outfile, infile, NULL, size_to_copy);
-            if (BOOST_UNLIKELY(sz < 0))
+            if (BOOST_LIKELY(sz > 0))
+            {
+                offset += sz;
+            }
+            else if (sz < 0)
             {
                 int err = errno;
                 if (err == EINTR)
@@ -789,8 +793,11 @@ struct copy_file_data_sendfile
 
                 return err;
             }
-
-            offset += sz;
+            else
+            {
+                // EOF: the input file was truncated while copying was in progress
+                break;
+            }
         }
 
         return 0;
@@ -819,7 +826,11 @@ struct copy_file_data_copy_file_range
             // Note: Use syscall directly to avoid depending on libc version. copy_file_range is added in glibc 2.27.
             // uClibc-ng does not have copy_file_range as of the time of this writing (the latest uClibc-ng release is 1.0.33).
             loff_t sz = ::syscall(__NR_copy_file_range, infile, (loff_t*)NULL, outfile, (loff_t*)NULL, size_to_copy, (unsigned int)0u);
-            if (BOOST_UNLIKELY(sz < 0))
+            if (BOOST_LIKELY(sz > 0))
+            {
+                offset += sz;
+            }
+            else if (sz < 0)
             {
                 int err = errno;
                 if (err == EINTR)
@@ -864,8 +875,11 @@ struct copy_file_data_copy_file_range
 
                 return err;
             }
-
-            offset += sz;
+            else
+            {
+                // EOF: the input file was truncated while copying was in progress
+                break;
+            }
         }
 
         return 0;
