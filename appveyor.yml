@@ -15,9 +15,6 @@ branches:
 
 environment:
   matrix:
-    - TOOLSET: msvc-9.0,msvc-10.0,msvc-11.0,msvc-12.0
-      ADDRMD: 32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: msvc-14.0
       ADDRMD: 32,64
       EXTRA_TESTS: 1
@@ -47,32 +44,32 @@ environment:
       ENV_SCRIPT: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - TOOLSET: gcc
-      CXXSTD: 03,11,14,1z
+      CXXSTD: 11,14,1z
       ADDPATH: C:\cygwin\bin;
       THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: gcc
-      CXXSTD: 03,11,14,1z
+      CXXSTD: 11,14,1z
       ADDPATH: C:\cygwin64\bin;
       EXTRA_TESTS: 1
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: gcc
-      CXXSTD: 03,11,14,1z
+      CXXSTD: 11,14,1z
       ADDPATH: C:\mingw\bin;
       EXTRA_TESTS: 1
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: gcc
-      CXXSTD: 03,11,14,1z
+      CXXSTD: 11,14,1z
       ADDPATH: C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;
       EXTRA_TESTS: 1
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: gcc
-      CXXSTD: 03,11,14,17
+      CXXSTD: 11,14,17
       ADDPATH: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev0\mingw64\bin;
       THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     - TOOLSET: gcc
-      CXXSTD: 03,11,14,17,2a
+      CXXSTD: 11,14,17,2a
       ADDPATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;
       THREADING: single,multi
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
