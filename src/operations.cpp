@@ -1438,21 +1438,39 @@ inline bool not_found_error(int errval) BOOST_NOEXCEPT
 }
 
 // these constants come from inspecting some Microsoft sample code
-inline std::time_t to_time_t(FILETIME const& ft) BOOST_NOEXCEPT
+inline DWORD to_time_t(FILETIME const& ft, std::time_t& t) BOOST_NOEXCEPT
 {
-    uint64_t t = (static_cast< uint64_t >(ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
-    t -= 116444736000000000ull;
-    t /= 10000000u;
-    return static_cast< std::time_t >(t);
+    uint64_t ut = (static_cast< uint64_t >(ft.dwHighDateTime) << 32u) | ft.dwLowDateTime;
+    if (BOOST_UNLIKELY(ut > static_cast< uint64_t >((std::numeric_limits< int64_t >::max)())))
+        return ERROR_INVALID_DATA;
+
+    // On Windows, time_t is signed, and negative values are possible since FILETIME epoch is earlier than POSIX epoch
+    int64_t st = static_cast< int64_t >(ut) / 10000000 - 11644473600ll;
+    if (BOOST_UNLIKELY(st < static_cast< int64_t >((std::numeric_limits< std::time_t >::min)()) ||
+        st > static_cast< int64_t >((std::numeric_limits< std::time_t >::max)())))
+    {
+        return ERROR_INVALID_DATA;
+    }
+
+    t = static_cast< std::time_t >(st);
+    return 0u;
 }
 
-inline void to_FILETIME(std::time_t t, FILETIME& ft) BOOST_NOEXCEPT
+inline DWORD to_FILETIME(std::time_t t, FILETIME& ft) BOOST_NOEXCEPT
 {
-    uint64_t temp = t;
-    temp *= 10000000u;
-    temp += 116444736000000000ull;
-    ft.dwLowDateTime = static_cast< DWORD >(temp);
-    ft.dwHighDateTime = static_cast< DWORD >(temp >> 32);
+    // On Windows, time_t is signed, and negative values are possible since FILETIME epoch is earlier than POSIX epoch
+    int64_t st = static_cast< int64_t >(t);
+    if (BOOST_UNLIKELY(st < ((std::numeric_limits< int64_t >::min)() / 10000000 - 11644473600ll) ||
+        st > ((std::numeric_limits< int64_t >::max)() / 10000000 - 11644473600ll)))
+    {
+        return ERROR_INVALID_DATA;
+    }
+    st = (st + 11644473600ll) * 10000000;
+    uint64_t ut = static_cast< uint64_t >(st);
+    ft.dwLowDateTime = static_cast< DWORD >(ut);
+    ft.dwHighDateTime = static_cast< DWORD >(ut >> 32u);
+
+    return 0u;
 }
 
 } // unnamed namespace
@@ -3798,18 +3816,26 @@ std::time_t creation_time(path const& p, system::error_code* ec)
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS));
 
+    DWORD err;
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
+    fail_errno:
+        err = BOOST_ERRNO;
     fail:
-        emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::creation_time");
+        emit_error(err, p, ec, "boost::filesystem::creation_time");
         return (std::numeric_limits< std::time_t >::min)();
     }
 
     FILETIME ct;
     if (BOOST_UNLIKELY(!::GetFileTime(hw.handle, &ct, NULL, NULL)))
+        goto fail_errno;
+
+    std::time_t t;
+    err = to_time_t(ct, t);
+    if (BOOST_UNLIKELY(err != 0u))
         goto fail;
 
-    return to_time_t(ct);
+    return t;
 
 #endif // defined(BOOST_POSIX_API)
 }
@@ -3858,18 +3884,26 @@ std::time_t last_write_time(path const& p, system::error_code* ec)
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS));
 
+    DWORD err;
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
+    fail_errno:
+        err = BOOST_ERRNO;
     fail:
-        emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+        emit_error(err, p, ec, "boost::filesystem::last_write_time");
         return (std::numeric_limits< std::time_t >::min)();
     }
 
     FILETIME lwt;
     if (BOOST_UNLIKELY(!::GetFileTime(hw.handle, NULL, NULL, &lwt)))
+        goto fail_errno;
+
+    std::time_t t;
+    err = to_time_t(lwt, t);
+    if (BOOST_UNLIKELY(err != 0u))
         goto fail;
 
-    return to_time_t(lwt);
+    return t;
 
 #endif // defined(BOOST_POSIX_API)
 }
@@ -3924,18 +3958,23 @@ void last_write_time(path const& p, const std::time_t new_time, system::error_co
         OPEN_EXISTING,
         FILE_FLAG_BACKUP_SEMANTICS));
 
+    DWORD err;
     if (BOOST_UNLIKELY(hw.handle == INVALID_HANDLE_VALUE))
     {
+    fail_errno:
+        err = BOOST_ERRNO;
     fail:
-        emit_error(BOOST_ERRNO, p, ec, "boost::filesystem::last_write_time");
+        emit_error(err, p, ec, "boost::filesystem::last_write_time");
         return;
     }
 
     FILETIME lwt;
-    to_FILETIME(new_time, lwt);
+    err = to_FILETIME(new_time, lwt);
+    if (BOOST_UNLIKELY(err != 0u))
+        goto fail;
 
     if (BOOST_UNLIKELY(!::SetFileTime(hw.handle, NULL, NULL, &lwt)))
-        goto fail;
+        goto fail_errno;
 
 #endif // defined(BOOST_POSIX_API)
 }
