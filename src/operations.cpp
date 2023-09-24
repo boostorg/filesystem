@@ -1438,7 +1438,7 @@ inline bool not_found_error(int errval) BOOST_NOEXCEPT
 }
 
 // these constants come from inspecting some Microsoft sample code
-inline DWORD to_time_t(FILETIME const& ft, std::time_t& t) BOOST_NOEXCEPT
+inline DWORD to_time_t(FILETIME const& ft, std::time_t& t)
 {
     uint64_t ut = (static_cast< uint64_t >(ft.dwHighDateTime) << 32u) | ft.dwLowDateTime;
     if (BOOST_UNLIKELY(ut > static_cast< uint64_t >((std::numeric_limits< int64_t >::max)())))
@@ -1456,7 +1456,7 @@ inline DWORD to_time_t(FILETIME const& ft, std::time_t& t) BOOST_NOEXCEPT
     return 0u;
 }
 
-inline DWORD to_FILETIME(std::time_t t, FILETIME& ft) BOOST_NOEXCEPT
+inline DWORD to_FILETIME(std::time_t t, FILETIME& ft)
 {
     // On Windows, time_t is signed, and negative values are possible since FILETIME epoch is earlier than POSIX epoch
     int64_t st = static_cast< int64_t >(t);
@@ -1465,6 +1465,7 @@ inline DWORD to_FILETIME(std::time_t t, FILETIME& ft) BOOST_NOEXCEPT
     {
         return ERROR_INVALID_DATA;
     }
+
     st = (st + 11644473600ll) * 10000000;
     uint64_t ut = static_cast< uint64_t >(st);
     ft.dwLowDateTime = static_cast< DWORD >(ut);
