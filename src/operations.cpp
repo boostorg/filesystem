@@ -244,10 +244,10 @@ namespace detail {
 void init_fill_random_impl(unsigned int major_ver, unsigned int minor_ver, unsigned int patch_ver);
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
 
-#if defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
+#if defined(BOOST_WINDOWS_API)
 //! Initializes directory iterator implementation. Implemented in directory.cpp.
 void init_directory_iterator_impl() BOOST_NOEXCEPT;
-#endif // defined(BOOST_WINDOWS_API) && !defined(UNDER_CE)
+#endif // defined(BOOST_WINDOWS_API)
 
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
@@ -1307,10 +1307,8 @@ SetFileInformationByHandle_t* set_file_information_by_handle_api = NULL;
 
 GetFileInformationByHandleEx_t* get_file_information_by_handle_ex_api = NULL;
 
-#if !defined(UNDER_CE)
 NtCreateFile_t* nt_create_file_api = NULL;
 NtQueryDirectoryFile_t* nt_query_directory_file_api = NULL;
-#endif // !defined(UNDER_CE)
 
 namespace {
 
@@ -1346,7 +1344,6 @@ BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
         }
     }
 
-#if !defined(UNDER_CE)
     h = boost::winapi::GetModuleHandleW(L"ntdll.dll");
     if (BOOST_LIKELY(!!h))
     {
@@ -1355,7 +1352,6 @@ BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
     }
 
     init_directory_iterator_impl();
-#endif // !defined(UNDER_CE)
 
     return BOOST_FILESYSTEM_INITRETSUCCESS_V;
 }
@@ -1409,8 +1405,6 @@ const winapi_func_ptrs_initializer winapi_func_ptrs_init;
 #endif // defined(_MSC_VER)
 
 
-// Windows CE has no environment variables
-#if !defined(UNDER_CE)
 inline std::wstring wgetenv(const wchar_t* name)
 {
     // use a separate buffer since C++03 basic_string is not required to be contiguous
@@ -1424,7 +1418,6 @@ inline std::wstring wgetenv(const wchar_t* name)
 
     return std::wstring();
 }
-#endif // !defined(UNDER_CE)
 
 inline bool not_found_error(int errval) BOOST_NOEXCEPT
 {
@@ -1475,8 +1468,6 @@ inline DWORD to_FILETIME(std::time_t t, FILETIME& ft)
 }
 
 } // unnamed namespace
-
-#if !defined(UNDER_CE)
 
 //! The flag indicates whether OBJ_DONT_REPARSE flag is not supported by the kernel
 static bool g_no_obj_dont_reparse = false;
@@ -1541,8 +1532,6 @@ boost::winapi::NTSTATUS_ nt_create_file_handle_at(HANDLE& out, HANDLE basedir_ha
 
     return status;
 }
-
-#endif // !defined(UNDER_CE)
 
 ULONG get_reparse_point_tag_ioctl(HANDLE h, path const& p, error_code* ec)
 {
@@ -1988,8 +1977,6 @@ inline bool remove_impl(path const& p, error_code* ec)
     }
 }
 
-#if !defined(UNDER_CE)
-
 //! remove_all() by handle implementation for Windows Vista and newer
 uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
 {
@@ -2104,8 +2091,6 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
     return count;
 }
 
-#endif // !defined(UNDER_CE)
-
 //! remove_all() implementation for Windows XP and older
 uintmax_t remove_all_nt5_impl(path const& p, error_code* ec)
 {
@@ -2176,7 +2161,6 @@ uintmax_t remove_all_nt5_impl(path const& p, error_code* ec)
 //! remove_all() implementation
 inline uintmax_t remove_all_impl(path const& p, error_code* ec)
 {
-#if !defined(UNDER_CE)
     remove_impl_type impl = fs::detail::atomic_load_relaxed(g_remove_impl_type);
     if (BOOST_LIKELY(impl != remove_nt5))
     {
@@ -2200,7 +2184,6 @@ inline uintmax_t remove_all_impl(path const& p, error_code* ec)
 
         return fs::detail::remove_all_nt6_by_handle(h.handle, p, ec);
     }
-#endif // !defined(UNDER_CE)
 
     return fs::detail::remove_all_nt5_impl(p, ec);
 }
@@ -3399,7 +3382,7 @@ void create_symlink(path const& to, path const& from, error_code* ec)
 BOOST_FILESYSTEM_DECL
 path current_path(error_code* ec)
 {
-#if defined(UNDER_CE) || defined(BOOST_FILESYSTEM_USE_WASI)
+#if defined(BOOST_FILESYSTEM_USE_WASI)
     // Windows CE has no current directory, so everything's relative to the root of the directory tree.
     // WASI also does not support current path.
     emit_error(BOOST_ERROR_NOT_SUPPORTED, ec, "boost::filesystem::current_path");
@@ -3469,7 +3452,7 @@ path current_path(error_code* ec)
 BOOST_FILESYSTEM_DECL
 void current_path(path const& p, system::error_code* ec)
 {
-#if defined(UNDER_CE) || defined(BOOST_FILESYSTEM_USE_WASI)
+#if defined(BOOST_FILESYSTEM_USE_WASI)
     emit_error(BOOST_ERROR_NOT_SUPPORTED, p, ec, "boost::filesystem::current_path");
 #else
     error(!BOOST_SET_CURRENT_DIRECTORY(p.c_str()) ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::current_path");
@@ -4356,6 +4339,7 @@ path temp_directory_path(system::error_code* ec)
         ec->clear();
 
 #ifdef BOOST_POSIX_API
+
     const char* val = NULL;
 
     (val = std::getenv("TMPDIR")) ||
@@ -4386,9 +4370,8 @@ path temp_directory_path(system::error_code* ec)
     return p;
 
 #else // Windows
-#if !defined(UNDER_CE)
 
-    static const wchar_t* env_list[] = { L"TMP", L"TEMP", L"LOCALAPPDATA", L"USERPROFILE" };
+    static const wchar_t* const env_list[] = { L"TMP", L"TEMP", L"LOCALAPPDATA", L"USERPROFILE" };
     static const wchar_t temp_dir[] = L"Temp";
 
     path p;
@@ -4429,39 +4412,6 @@ path temp_directory_path(system::error_code* ec)
 
     return p;
 
-#else // Windows CE
-
-    // Windows CE has no environment variables, so the same code as used for
-    // regular Windows, above, doesn't work.
-
-    DWORD size = ::GetTempPathW(0, NULL);
-    if (size == 0u)
-    {
-    fail:
-        int errval = ::GetLastError();
-        error(errval, ec, "boost::filesystem::temp_directory_path");
-        return path();
-    }
-
-    boost::scoped_array< wchar_t > buf(new wchar_t[size]);
-    if (::GetTempPathW(size, buf.get()) == 0)
-        goto fail;
-
-    path p(buf.get());
-    p.remove_trailing_separator();
-
-    file_status status = detail::status_impl(p, ec);
-    if (ec && *ec)
-        return path();
-    if (!is_directory(status))
-    {
-        error(ERROR_PATH_NOT_FOUND, p, ec, "boost::filesystem::temp_directory_path");
-        return path();
-    }
-
-    return p;
-
-#endif // !defined(UNDER_CE)
 #endif
 }
 
@@ -4478,6 +4428,7 @@ path system_complete(path const& p, system::error_code* ec)
     return res;
 
 #else
+
     if (p.empty())
     {
         if (ec)
@@ -4499,6 +4450,7 @@ path system_complete(path const& p, system::error_code* ec)
     boost::scoped_array< wchar_t > big_buf(new wchar_t[len]);
 
     return error(get_full_path_name(p, len, big_buf.get(), &pfn) == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::system_complete") ? path() : path(big_buf.get());
+
 #endif
 }
 
