@@ -4301,7 +4301,7 @@ space_info space(path const& p, error_code* ec)
         str.push_back(path::preferred_separator);
 
     ULARGE_INTEGER avail, total, free;
-    if (!error(::GetDiskFreeSpaceExW(str.c_str(), &avail, &total, &free) == 0, p, ec, "boost::filesystem::space"))
+    if (!error(::GetDiskFreeSpaceExW(str.c_str(), &avail, &total, &free) == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::space"))
     {
         info.capacity = static_cast< uintmax_t >(total.QuadPart);
         info.free = static_cast< uintmax_t >(free.QuadPart);
