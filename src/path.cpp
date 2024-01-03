@@ -272,14 +272,6 @@ BOOST_FILESYSTEM_DECL path path_algorithms::lexically_normal_v4(path const& p)
     size_type root_dir_pos = find_root_directory_start(pathname, pathname_size, root_name_size);
     path normal(pathname, pathname + root_name_size);
 
-#if defined(BOOST_WINDOWS_API)
-    for (size_type i = 0; i < root_name_size; ++i)
-    {
-        if (normal.m_pathname[i] == path::separator)
-            normal.m_pathname[i] = path::preferred_separator;
-    }
-#endif
-
     size_type root_path_size = root_name_size;
     if (root_dir_pos < pathname_size)
     {
