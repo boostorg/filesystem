@@ -39,6 +39,12 @@
     </td>
 </table>
 
+<h2>1.85.0</h2>
+<ul>
+  <li><code>path::generic_path</code> and <code>path::generic_string</code> methods now remove duplicate directory separators in the returned paths.</li>
+  <li><b>v4:</b> <code>path::generic_path</code> and <code>path::generic_string</code> avoid converting between backslashes and forward slashes in path root names. For example, on Windows, <code>path("\\\\?\\c:\\foo").generic_string()</code> now returns "\\?\c:/foo" instead of "//?/c:/foo".</li>
+</ul>
+
 <h2>1.84.0</h2>
 <ul>
   <li>As was announced in Boost 1.82.0, C++03 is no longer supported. A C++11 or later compiler is required.</li>

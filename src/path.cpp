@@ -365,6 +365,96 @@ BOOST_FILESYSTEM_DECL path path_algorithms::lexically_normal_v4(path const& p)
     return normal;
 }
 
+//  generic_path ---------------------------------------------------------------------//
+
+BOOST_FILESYSTEM_DECL path path_algorithms::generic_path_v3(path const& p)
+{
+    path tmp;
+    const size_type pathname_size = p.m_pathname.size();
+    tmp.m_pathname.reserve(pathname_size);
+
+    const value_type* const pathname = p.m_pathname.c_str();
+
+    // Don't remove duplicate slashes from the root name
+    size_type root_name_size = 0u;
+    size_type root_dir_pos = find_root_directory_start(pathname, pathname_size, root_name_size);
+    if (root_name_size > 0u)
+    {
+        tmp.m_pathname.append(pathname, root_name_size);
+#if defined(BOOST_WINDOWS_API)
+        std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
+#endif
+    }
+
+    size_type pos = root_name_size;
+    if (root_dir_pos < pathname_size)
+    {
+        tmp.m_pathname.push_back(path::separator);
+        pos = root_dir_pos + 1u;
+    }
+
+    while (pos < pathname_size)
+    {
+        size_type element_size = find_separator(pathname + pos, pathname_size - pos);
+        if (element_size > 0u)
+        {
+            tmp.m_pathname.append(pathname + pos, element_size);
+
+            pos += element_size;
+            if (pos >= pathname_size)
+                break;
+
+            tmp.m_pathname.push_back(path::separator);
+        }
+
+        ++pos;
+    }
+
+    return tmp;
+}
+
+BOOST_FILESYSTEM_DECL path path_algorithms::generic_path_v4(path const& p)
+{
+    path tmp;
+    const size_type pathname_size = p.m_pathname.size();
+    tmp.m_pathname.reserve(pathname_size);
+
+    const value_type* const pathname = p.m_pathname.c_str();
+
+    // Treat root name specially as it may contain backslashes, duplicate ones too,
+    // in case of UNC paths and Windows-specific prefixes.
+    size_type root_name_size = 0u;
+    size_type root_dir_pos = find_root_directory_start(pathname, pathname_size, root_name_size);
+    if (root_name_size > 0u)
+        tmp.m_pathname.append(pathname, root_name_size);
+
+    size_type pos = root_name_size;
+    if (root_dir_pos < pathname_size)
+    {
+        tmp.m_pathname.push_back(path::separator);
+        pos = root_dir_pos + 1u;
+    }
+
+    while (pos < pathname_size)
+    {
+        size_type element_size = find_separator(pathname + pos, pathname_size - pos);
+        if (element_size > 0u)
+        {
+            tmp.m_pathname.append(pathname + pos, element_size);
+
+            pos += element_size;
+            if (pos >= pathname_size)
+                break;
+
+            tmp.m_pathname.push_back(path::separator);
+        }
+
+        ++pos;
+    }
+
+    return tmp;
+}
+
 //  append  --------------------------------------------------------------------------//
 
 BOOST_FILESYSTEM_DECL void path_algorithms::append_v3(path& p, const value_type* begin, const value_type* end)
@@ -826,13 +916,6 @@ BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
 }
 
 #if defined(BOOST_WINDOWS_API)
-
-BOOST_FILESYSTEM_DECL path path::generic_path() const
-{
-    path tmp(*this);
-    std::replace(tmp.m_pathname.begin(), tmp.m_pathname.end(), L'\\', L'/');
-    return tmp;
-}
 
 BOOST_FILESYSTEM_DECL path& path::make_preferred()
 {

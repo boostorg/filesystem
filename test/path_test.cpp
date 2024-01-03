@@ -2618,6 +2618,55 @@ void make_preferred_tests()
     }
 }
 
+//  generic_path_tests  --------------------------------------------------------------//
+
+void generic_path_tests()
+{
+    std::cout << "generic_path_tests..." << std::endl;
+
+    BOOST_TEST_EQ(path("").generic_path().string(), std::string(""));
+    BOOST_TEST_EQ(path("/").generic_path().string(), std::string("/"));
+    BOOST_TEST_EQ(path("//").generic_path().string(), std::string("//"));
+    BOOST_TEST_EQ(path("///").generic_path().string(), std::string("/"));
+
+    BOOST_TEST_EQ(path("foo").generic_path().string(), std::string("foo"));
+    BOOST_TEST_EQ(path("foo/bar").generic_path().string(), std::string("foo/bar"));
+    BOOST_TEST_EQ(path("..").generic_path().string(), std::string(".."));
+    BOOST_TEST_EQ(path("../..").generic_path().string(), std::string("../.."));
+    BOOST_TEST_EQ(path("/..").generic_path().string(), std::string("/.."));
+    BOOST_TEST_EQ(path("../foo").generic_path().string(), std::string("../foo"));
+    BOOST_TEST_EQ(path("foo/..").generic_path().string(), std::string("foo/.."));
+    BOOST_TEST_EQ(path("foo/../").generic_path().string(), std::string("foo/../"));
+
+    BOOST_TEST_EQ(path("foo//bar").generic_path().string(), std::string("foo/bar"));
+
+    BOOST_TEST_EQ(path("//net//foo//bar").generic_path().string(), std::string("//net/foo/bar"));
+
+    if (platform == "Windows")
+    {
+        BOOST_TEST_EQ(path("c:\\foo\\bar").generic_path().string(), std::string("c:/foo/bar"));
+        BOOST_TEST_EQ(path("c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("c:/foo/bar/zoo"));
+
+        BOOST_TEST_EQ(path("c:foo\\\\bar//zoo").generic_path().string(), std::string("c:foo/bar/zoo"));
+
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST_EQ(path("\\\\net\\foo\\bar").generic_path().string(), std::string("//net/foo/bar"));
+        BOOST_TEST_EQ(path("\\\\net\\\\foo\\/bar//zoo").generic_path().string(), std::string("//net/foo/bar/zoo"));
+
+        BOOST_TEST_EQ(path("\\\\?\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("//?/c:/foo/bar/zoo"));
+        BOOST_TEST_EQ(path("\\\\.\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("//./c:/foo/bar/zoo"));
+        BOOST_TEST_EQ(path("\\??\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("/?" "?/c:/foo/bar/zoo")); // note: break trigraph
+#else
+        BOOST_TEST_EQ(path("\\\\net\\foo\\bar").generic_path().string(), std::string("\\\\net/foo/bar"));
+        BOOST_TEST_EQ(path("\\\\net\\\\foo\\/bar//zoo").generic_path().string(), std::string("\\\\net/foo/bar/zoo"));
+
+        BOOST_TEST_EQ(path("\\\\?\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("\\\\?\\c:/foo/bar/zoo"));
+        BOOST_TEST_EQ(path("\\\\.\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("\\\\.\\c:/foo/bar/zoo"));
+        BOOST_TEST_EQ(path("\\??\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("\\??\\c:/foo/bar/zoo"));
+#endif
+    }
+}
+
 //  lexically_normal_tests  ----------------------------------------------------------//
 
 void lexically_normal_tests()
@@ -2864,6 +2913,7 @@ int cpp_main(int, char*[])
     name_function_tests();
     replace_extension_tests();
     make_preferred_tests();
+    generic_path_tests();
     lexically_normal_tests();
     compare_tests();
 

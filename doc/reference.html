@@ -1582,7 +1582,8 @@ function's return type, conversion is performed by <code>cvt</code>.</p>
 
 <h3> <a name="path-generic-format-observers"><code><font size="4">path</font></code> generic format observers</a>
 [path.generic.obs]</h3>
-<p>The string returned by all generic format observers is in the <a href="#generic-pathname-format">generic pathname format</a>.</p>
+<p>The string returned by all generic format observers is in the <a href="#generic-pathname-format">generic pathname format</a>.
+The returned strings use a single forward slash ('/') as directory separators.</p>
 
 <pre>template &lt;class String&gt;
 String <a name="generic_string-template">generic_string</a>(const codecvt_type&amp; cvt=codecvt()) const;</pre>
@@ -4613,7 +4614,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
 </table>
 <hr>
 <p>&copy; Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</p>
-<p>&copy; Copyright Andrey Semashev, 2019-2021</p>
+<p>&copy; Copyright Andrey Semashev, 2019-2024</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
 <a href="http://www.boost.org/LICENSE_1_0.txt">www.boost.org/LICENSE_1_0.txt</a></p>
 </body>

@@ -2303,7 +2303,7 @@ void platform_specific_tests()
         BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name().string() + "foo")).string() == fs::initial_path() / "foo");
         BOOST_TEST(fs::system_complete(fs::path("c:/")).generic_string() == "c:/");
         BOOST_TEST(fs::system_complete(fs::path("c:/foo")).generic_string() == "c:/foo");
-        BOOST_TEST(fs::system_complete(fs::path("//share")).generic_string() == "//share");
+        BOOST_TEST(fs::system_complete(fs::path("\\\\share")).generic_string() == "\\\\share");
 
 #if defined(BOOST_FILESYSTEM_HAS_MKLINK)
         // Issue 9016 asked that NTFS directory junctions be recognized as directories.

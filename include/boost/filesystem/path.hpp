@@ -107,6 +107,9 @@ struct path_algorithms
     BOOST_FILESYSTEM_DECL static path lexically_normal_v3(path const& p);
     BOOST_FILESYSTEM_DECL static path lexically_normal_v4(path const& p);
 
+    BOOST_FILESYSTEM_DECL static path generic_path_v3(path const& p);
+    BOOST_FILESYSTEM_DECL static path generic_path_v4(path const& p);
+
     BOOST_FILESYSTEM_DECL static int compare_v3(path const& left, path const& right);
     BOOST_FILESYSTEM_DECL static int compare_v4(path const& left, path const& right);
 
@@ -976,11 +979,7 @@ public:
     //  Experimental generic function returning generic formatted path (i.e. separators
     //  are forward slashes). Motivation: simpler than a family of generic_*string
     //  functions.
-#ifdef BOOST_WINDOWS_API
-    BOOST_FILESYSTEM_DECL path generic_path() const;
-#else
     path generic_path() const;
-#endif
 
     template< typename String >
     String generic_string() const;
@@ -988,18 +987,10 @@ public:
     template< typename String >
     String generic_string(codecvt_type const& cvt) const;
 
-#ifdef BOOST_WINDOWS_API
     std::string generic_string() const { return generic_path().string(); }
     std::string generic_string(codecvt_type const& cvt) const { return generic_path().string(cvt); }
     std::wstring generic_wstring() const { return generic_path().wstring(); }
-    std::wstring generic_wstring(codecvt_type const&) const { return generic_wstring(); }
-#else // BOOST_POSIX_API
-    //  On POSIX-like systems, the generic format is the same as the native format
-    std::string const& generic_string() const { return m_pathname; }
-    std::string const& generic_string(codecvt_type const&) const { return m_pathname; }
-    std::wstring generic_wstring() const { return this->wstring(); }
-    std::wstring generic_wstring(codecvt_type const& cvt) const { return this->wstring(cvt); }
-#endif
+    std::wstring generic_wstring(codecvt_type const& cvt) const { return generic_path().wstring(cvt); }
 
     //  -----  compare  -----
 
@@ -1629,13 +1620,6 @@ BOOST_FORCEINLINE path& path::operator/=(path const& p)
     return append(p);
 }
 
-#if !defined(BOOST_WINDOWS_API)
-inline path path::generic_path() const
-{
-    return path(*this);
-}
-#endif
-
 inline path path::lexically_proximate(path const& base) const
 {
     path tmp(lexically_relative(base));
@@ -1750,6 +1734,11 @@ BOOST_FORCEINLINE bool path::has_filename() const
 BOOST_FORCEINLINE path path::lexically_normal() const
 {
     return BOOST_FILESYSTEM_VERSIONED_SYM(detail::path_algorithms::lexically_normal)(*this);
+}
+
+BOOST_FORCEINLINE path path::generic_path() const
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::path_algorithms::generic_path)(*this);
 }
 
 namespace path_detail {
