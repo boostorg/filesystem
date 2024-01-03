@@ -148,10 +148,10 @@ bool create_io_reparse_file_placeholder(const wchar_t* name)
 
 int main()
 {
-    boost::filesystem::path rpt = boost::filesystem::temp_directory_path() / "reparse_point_test.txt";
+    boost::filesystem::path rpt = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path(L"bfs_reparse_point_test-%%%%-%%%%.txt");
+    std::cout << "Creating file placeholder reparse point: " << rpt.string() << std::endl;
 
     BOOST_TEST(create_io_reparse_file_placeholder(rpt.native().c_str()));
-    std::cout << "Created file placeholder reparse point: " << rpt.string() << std::endl;
     BOOST_TEST_NO_THROW(BOOST_TEST(boost::filesystem::status(rpt).type() == boost::filesystem::reparse_file));
     BOOST_TEST_NO_THROW(BOOST_TEST(boost::filesystem::remove(rpt)));
 
