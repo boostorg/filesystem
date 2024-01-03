@@ -110,6 +110,11 @@ struct path_algorithms
     BOOST_FILESYSTEM_DECL static path generic_path_v3(path const& p);
     BOOST_FILESYSTEM_DECL static path generic_path_v4(path const& p);
 
+#if defined(BOOST_WINDOWS_API)
+    BOOST_FILESYSTEM_DECL static void make_preferred_v3(path& p);
+    BOOST_FILESYSTEM_DECL static void make_preferred_v4(path& p);
+#endif
+
     BOOST_FILESYSTEM_DECL static int compare_v3(path const& left, path const& right);
     BOOST_FILESYSTEM_DECL static int compare_v4(path const& left, path const& right);
 
@@ -886,15 +891,7 @@ public:
     //  -----  modifiers  -----
 
     void clear() BOOST_NOEXCEPT { m_pathname.clear(); }
-#ifdef BOOST_POSIX_API
-    path& make_preferred()
-    {
-        // No effect on POSIX
-        return *this;
-    }
-#else // BOOST_WINDOWS_API
-    BOOST_FILESYSTEM_DECL path& make_preferred(); // change slashes to backslashes
-#endif
+    path& make_preferred();
     path& remove_filename();
     BOOST_FILESYSTEM_DECL path& remove_filename_and_trailing_separators();
     BOOST_FILESYSTEM_DECL path& remove_trailing_separator();
@@ -1739,6 +1736,15 @@ BOOST_FORCEINLINE path path::lexically_normal() const
 BOOST_FORCEINLINE path path::generic_path() const
 {
     return BOOST_FILESYSTEM_VERSIONED_SYM(detail::path_algorithms::generic_path)(*this);
+}
+
+BOOST_FORCEINLINE path& path::make_preferred()
+{
+    // No effect on POSIX
+#if defined(BOOST_WINDOWS_API)
+    BOOST_FILESYSTEM_VERSIONED_SYM(detail::path_algorithms::make_preferred)(*this);
+#endif
+    return *this;
 }
 
 namespace path_detail {

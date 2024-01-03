@@ -2610,7 +2610,11 @@ void make_preferred_tests()
 
     if (platform == "Windows")
     {
+#if BOOST_FILESYSTEM_VERSION == 3
         BOOST_TEST(path("//abc\\def/ghi").make_preferred().native() == path("\\\\abc\\def\\ghi").native());
+#else
+        BOOST_TEST(path("//abc\\def/ghi").make_preferred().native() == path("//abc\\def\\ghi").native());
+#endif
     }
     else
     {

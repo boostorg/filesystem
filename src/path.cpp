@@ -447,6 +447,32 @@ BOOST_FILESYSTEM_DECL path path_algorithms::generic_path_v4(path const& p)
     return tmp;
 }
 
+#if defined(BOOST_WINDOWS_API)
+
+//  make_preferred -------------------------------------------------------------------//
+
+BOOST_FILESYSTEM_DECL void path_algorithms::make_preferred_v3(path& p)
+{
+    std::replace(p.m_pathname.begin(), p.m_pathname.end(), L'/', L'\\');
+}
+
+BOOST_FILESYSTEM_DECL void path_algorithms::make_preferred_v4(path& p)
+{
+    const size_type pathname_size = p.m_pathname.size();
+    if (pathname_size > 0u)
+    {
+        value_type* const pathname = &p.m_pathname[0];
+
+        // Avoid converting slashes in the root name
+        size_type root_name_size = 0u;
+        find_root_directory_start(pathname, pathname_size, root_name_size);
+
+        std::replace(pathname + root_name_size, pathname + pathname_size, L'/', L'\\');
+    }
+}
+
+#endif // defined(BOOST_WINDOWS_API)
+
 //  append  --------------------------------------------------------------------------//
 
 BOOST_FILESYSTEM_DECL void path_algorithms::append_v3(path& p, const value_type* begin, const value_type* end)
@@ -906,16 +932,6 @@ BOOST_FILESYSTEM_DECL path path::lexically_relative(path const& base) const
         detail::path_algorithms::append_v4(tmp, *mm.first);
     return tmp;
 }
-
-#if defined(BOOST_WINDOWS_API)
-
-BOOST_FILESYSTEM_DECL path& path::make_preferred()
-{
-    std::replace(m_pathname.begin(), m_pathname.end(), L'/', L'\\');
-    return *this;
-}
-
-#endif // defined(BOOST_WINDOWS_API)
 
 } // namespace filesystem
 } // namespace boost
