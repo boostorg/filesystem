@@ -136,6 +136,7 @@ project boost/filesystem
       [ check-target-builds ../config//has_fdopendir_nofollow "has fdopendir(O_NOFOLLOW)" : <define>BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW ]
       [ check-target-builds ../config//has_dirent_d_type "has dirent::d_type" : <define>BOOST_FILESYSTEM_HAS_DIRENT_D_TYPE ]
       [ check-target-builds ../config//has_posix_at_apis "has POSIX *at APIs" : <define>BOOST_FILESYSTEM_HAS_POSIX_AT_APIS ]
+      [ check-target-builds ../config//has_fallocate "has fallocate" : <define>BOOST_FILESYSTEM_HAS_FALLOCATE ]
       <conditional>@check-statx
       <conditional>@select-windows-crypto-api
       <conditional>@check-cxx20-atomic-ref

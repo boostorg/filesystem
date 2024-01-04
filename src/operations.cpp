@@ -2,7 +2,7 @@
 
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
-//  Copyright 2018-2022 Andrey Semashev
+//  Copyright 2018-2024 Andrey Semashev
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -656,6 +656,57 @@ inline int data_sync(int fd)
 #endif
 }
 
+//! Hints the filesystem to opportunistically preallocate storage for a file
+inline int preallocate_storage(int file, uintmax_t size)
+{
+#if defined(BOOST_FILESYSTEM_HAS_FALLOCATE)
+    if (BOOST_LIKELY(size > 0 && size <= static_cast< uintmax_t >((std::numeric_limits< off_t >::max)())))
+    {
+        while (true)
+        {
+            // Note: We intentionally use fallocate rather than posix_fallocate to avoid
+            //       invoking glibc emulation that writes zeros to the end of the file.
+            //       We want this call to act like a hint to the filesystem and an early
+            //       check for the free storage space. We don't want to write zeros only
+            //       to later overwrite them with the actual data.
+            int err = fallocate(file, FALLOC_FL_KEEP_SIZE, 0, static_cast< off_t >(size));
+            if (BOOST_UNLIKELY(err != 0))
+            {
+                err = errno;
+
+                // Ignore the error if the operation is not supported by the kernel or filesystem
+                if (err == EOPNOTSUPP || err == ENOSYS)
+                    break;
+
+                if (err == EINTR)
+                    continue;
+
+                return err;
+            }
+
+            break;
+        }
+    }
+#endif
+
+    return 0;
+}
+
+//! copy_file implementation wrapper that preallocates storage for the target file
+template< typename CopyFileData >
+struct copy_file_data_preallocate
+{
+    //! copy_file implementation wrapper that preallocates storage for the target file before invoking the underlying copy implementation
+    static int impl(int infile, int outfile, uintmax_t size, std::size_t blksize)
+    {
+        int err = preallocate_storage(outfile, size);
+        if (BOOST_UNLIKELY(err != 0))
+            return err;
+
+        return CopyFileData::impl(infile, outfile, size, blksize);
+    }
+};
+
 // Min and max buffer sizes are selected to minimize the overhead from system calls.
 // The values are picked based on coreutils cp(1) benchmarking data described here:
 // https://github.com/coreutils/coreutils/blob/d1b0257077c0b0f0ee25087efd46270345d1dd1f/src/ioblksize.h#L23-L72
@@ -864,7 +915,7 @@ struct copy_file_data_copy_file_range
                     if (err == ENOSYS)
                     {
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
-                        filesystem::detail::atomic_store_relaxed(copy_file_data, &check_fs_type< copy_file_data_sendfile >);
+                        filesystem::detail::atomic_store_relaxed(copy_file_data, &check_fs_type< copy_file_data_preallocate< copy_file_data_sendfile > >);
                         goto fallback_to_sendfile;
 #else
                         filesystem::detail::atomic_store_relaxed(copy_file_data, &copy_file_data_read_write);
@@ -941,14 +992,14 @@ inline void init_copy_file_data_impl(unsigned int major_ver, unsigned int minor_
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE)
     // sendfile started accepting file descriptors as the target in Linux 2.6.33
     if (major_ver > 2u || (major_ver == 2u && (minor_ver > 6u || (minor_ver == 6u && patch_ver >= 33u))))
-        cfd = &check_fs_type< copy_file_data_sendfile >;
+        cfd = &check_fs_type< copy_file_data_preallocate< copy_file_data_sendfile > >;
 #endif
 
 #if defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)
     // Although copy_file_range appeared in Linux 4.5, it did not support cross-filesystem copying until 5.3.
     // copy_file_data_copy_file_range will fallback to copy_file_data_sendfile if copy_file_range returns EXDEV.
     if (major_ver > 4u || (major_ver == 4u && minor_ver >= 5u))
-        cfd = &check_fs_type< copy_file_data_copy_file_range >;
+        cfd = &check_fs_type< copy_file_data_preallocate< copy_file_data_copy_file_range > >;
 #endif
 
     filesystem::detail::atomic_store_relaxed(copy_file_data, cfd);
