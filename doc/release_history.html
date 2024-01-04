@@ -43,6 +43,7 @@
 <ul>
   <li><code>path::generic_path</code> and <code>path::generic_string</code> methods now remove duplicate directory separators in the returned paths.</li>
   <li><b>v4:</b> <code>path::generic_path</code>, <code>path::generic_string</code>, <code>path::make_preferred</code> and <code>path::lexically_normal</code> avoid converting between backslashes and forward slashes in path root names. For example, on Windows, <code>path("\\\\?\\c:\\foo").generic_string()</code> now returns "\\?\c:/foo" instead of "//?/c:/foo". Similarly, <code>path("\\\\host/share/foo/..").lexically_normal()</code> now returns "\\host\share".</li>
+  <li>Added a <code>unique_path</code> overload taking a single <code>error_code&amp; ec</code> argument. The overload generates a unique path using the default path model.</li>
 </ul>
 
 <h2>1.84.0</h2>

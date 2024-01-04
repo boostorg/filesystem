@@ -731,9 +731,28 @@ inline path temp_directory_path(system::error_code& ec)
     return detail::temp_directory_path(&ec);
 }
 
-inline path unique_path(path const& p = "%%%%-%%%%-%%%%-%%%%")
+inline path unique_path(path const& p =
+#if defined(BOOST_WINDOWS_API)
+    L"%%%%-%%%%-%%%%-%%%%"
+#else
+    "%%%%-%%%%-%%%%-%%%%"
+#endif
+)
 {
     return detail::unique_path(p);
+}
+
+inline path unique_path(system::error_code& ec)
+{
+    return detail::unique_path
+    (
+#if defined(BOOST_WINDOWS_API)
+        L"%%%%-%%%%-%%%%-%%%%",
+#else
+        "%%%%-%%%%-%%%%-%%%%",
+#endif
+        &ec
+    );
 }
 
 inline path unique_path(path const& p, system::error_code& ec)

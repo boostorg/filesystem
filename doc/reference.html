@@ -924,6 +924,7 @@ nothing else.&quot;</p>
     path         <a href="#temp_directory_path">temp_directory_path</a>(system::error_code&amp; ec);
 
     path         <a href="#unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
+    path         <a href="#unique_path">unique_path</a>(system::error_code&amp; ec);
     path         <a href="#unique_path">unique_path</a>(const path&amp; model, system::error_code&amp; ec);
 
     path         <a href="#weakly_canonical">weakly_canonical</a>(const path&amp; p, const path&amp; base=current_path());
@@ -3914,16 +3915,18 @@ path temp_directory_path(system::error_code&amp; ec);</pre>
   path, not just a single directory name.&nbsp; <i>—end note</i>]</p>
 </blockquote>
 <pre>path <a name="unique_path">unique_path</a>(const path&amp; model=&quot;%%%%-%%%%-%%%%-%%%%&quot;);
+path unique_path(system::error_code&amp; ec);
 path unique_path(const path&amp; model, system::error_code&amp; ec);</pre>
 <blockquote>
   <p>The <code>unique_path</code> function generates a path name suitable for
   creating temporary files, including directories. The name is based
   on a model that uses the percent sign character to specify replacement by a
-  random hexadecimal digit. [<i>Note:</i> The more bits of randomness in the
-  generated path name, the less likelihood of prior existence or being guessed.
-  Each replacement hexadecimal digit in the model adds four bits of randomness.
-  The default model thus provides 64 bits of randomness. This is sufficient for
-  most applications. <i>—end note</i>]</p>
+  random hexadecimal digit. Where model is not specified, a default model
+  equivalent to &quot;%%%%-%%%%-%%%%-%%%%&quot; is used. [<i>Note:</i> The more
+  bits of randomness in the generated path name, the less likelihood of prior
+  existence or being guessed. Each replacement hexadecimal digit in the model
+  adds four bits of randomness. The default model thus provides 64 bits of
+  randomness. This is sufficient for most applications. <i>—end note</i>]</p>
   <p><i>Returns:</i> A path identical to <code>model</code>, except that each
   occurrence of a percent sign character is replaced by a random hexadecimal
   digit character in the range 0-9, a-f.</p>
