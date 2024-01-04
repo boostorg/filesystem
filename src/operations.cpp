@@ -4482,13 +4482,13 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         head.remove_filename_and_trailing_separators();
     }
 
-    if (head.empty())
-        return path_algorithms::lexically_normal_v4(p);
-
     path const& dot_p = dot_path();
     path const& dot_dot_p = dot_dot_path();
 
 #else
+
+    path const& dot_p = dot_path();
+    path const& dot_dot_p = dot_dot_path();
 
     // On Windows, filesystem APIs such as GetFileAttributesW and CreateFileW perform lexical path normalization
     // internally. As a result, a path like "c:\a\.." can be reported as present even if "c:\a" is not. This would
@@ -4533,12 +4533,12 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         if (head_status.type() == fs::file_not_found)
         {
             // If the root path does not exist then no path element exists
-            return path_algorithms::lexically_normal_v4(p);
+            itr = p.begin();
+            head.clear();
+            goto skip_head;
         }
     }
 
-    path const& dot_p = dot_path();
-    path const& dot_dot_p = dot_dot_path();
     for (; itr != p_end; path_algorithms::increment_v4(itr))
     {
         path const& p_elem = *itr;
@@ -4575,8 +4575,7 @@ path weakly_canonical(path const& p, path const& base, system::error_code* ec)
         }
     }
 
-    if (head.empty())
-        return path_algorithms::lexically_normal_v4(p);
+skip_head:;
 
 #endif
 

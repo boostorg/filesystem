@@ -2657,16 +2657,17 @@ void weakly_canonical_basic_tests()
     cout << "weakly_canonical_basic_tests..." << endl;
     cout << "  dir is " << dir << endl;
 
-    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), fs::path("no-such/foo/bar"));
-    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), fs::path("no-such/bar"));
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), fs::current_path() / fs::path("no-such/foo/bar"));
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), fs::current_path() / fs::path("no-such/bar"));
     BOOST_TEST_EQ(fs::weakly_canonical(dir), dir);
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/bar"), dir / "no-such/foo/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/../bar"), dir / "no-such/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "../no-such/foo/../bar"), dir.parent_path() / "no-such/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/../f0"), dir / "f0"); // dir / "f0" exists, dir / "no-such" does not
-    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), fs::path("c:/no-such/foo/bar"));
 
 #ifdef BOOST_WINDOWS_API
+    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), fs::path("c:/no-such/foo/bar"));
+
     // Test Windows long paths
     fs::path long_path = make_long_path(dir / L"f0");
     BOOST_TEST_EQ(fs::weakly_canonical(long_path), long_path);
