@@ -43,6 +43,7 @@
 <ul>
   <li><code>path::generic_path</code> and <code>path::generic_string</code> methods now remove duplicate directory separators in the returned paths.</li>
   <li><b>v4:</b> <code>path::generic_path</code>, <code>path::generic_string</code>, <code>path::make_preferred</code> and <code>path::lexically_normal</code> avoid converting between backslashes and forward slashes in path root names. For example, on Windows, <code>path("\\\\?\\c:\\foo").generic_string()</code> now returns "\\?\c:/foo" instead of "//?/c:/foo". Similarly, <code>path("\\\\host/share/foo/..").lexically_normal()</code> now returns "\\host\share".</li>
+  <li><b>v4:</b> <code>equivalent</code> now indicates error if either one of the paths doesn't exist.</li>
   <li>Added a <code>unique_path</code> overload taking a single <code>error_code&amp; ec</code> argument. The overload generates a unique path using the default path model.</li>
   <li><code>weakly_canonical</code> now produces an absolute path if the input path is relative and contains no elements that exist in the filesystem. (<a href="https://github.com/boostorg/filesystem/issues/300">#300</a>)</li>
   <li>On Linux, <code>copy_file</code> backends based on <code>sendfile</code> and <code>copy_file_range</code> system calls will attempt to preallocate storage for the target file. This may reduce filesystem fragmentation and provide early error indication if there is not enough free space. Not all filesystems support this feature; file copying proceeds if storage preallocation is not supported.</li>

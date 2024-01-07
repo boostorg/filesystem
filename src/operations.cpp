@@ -3511,8 +3511,11 @@ void current_path(path const& p, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
-bool equivalent(path const& p1, path const& p2, system::error_code* ec)
+bool equivalent_v3(path const& p1, path const& p2, system::error_code* ec)
 {
+    if (ec)
+        ec->clear();
+
 #if defined(BOOST_POSIX_API)
 
     // p2 is done first, so any error reported is for p1
@@ -3548,7 +3551,10 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
         // if one is invalid and the other isn't then they aren't equivalent,
         // but if both are invalid then it is an error
         if (e1 != 0 && e2 != 0)
-            emit_error(errno, p1, p2, ec, "boost::filesystem::equivalent");
+        {
+            int err = errno;
+            emit_error(err, p1, p2, ec, "boost::filesystem::equivalent");
+        }
         return false;
     }
 
@@ -3601,6 +3607,118 @@ bool equivalent(path const& p1, path const& p2, system::error_code* ec)
 
     if (error(!::GetFileInformationByHandle(h2.handle, &info2) ? BOOST_ERRNO : 0, p1, p2, ec, "boost::filesystem::equivalent"))
         return false;
+
+    // In theory, volume serial numbers are sufficient to distinguish between
+    // devices, but in practice VSN's are sometimes duplicated, so last write
+    // time and file size are also checked.
+    return info1.dwVolumeSerialNumber == info2.dwVolumeSerialNumber &&
+        info1.nFileIndexHigh == info2.nFileIndexHigh &&
+        info1.nFileIndexLow == info2.nFileIndexLow &&
+        info1.nFileSizeHigh == info2.nFileSizeHigh &&
+        info1.nFileSizeLow == info2.nFileSizeLow &&
+        info1.ftLastWriteTime.dwLowDateTime == info2.ftLastWriteTime.dwLowDateTime &&
+        info1.ftLastWriteTime.dwHighDateTime == info2.ftLastWriteTime.dwHighDateTime;
+
+#endif
+}
+
+BOOST_FILESYSTEM_DECL
+bool equivalent_v4(path const& p1, path const& p2, system::error_code* ec)
+{
+    if (ec)
+        ec->clear();
+
+#if defined(BOOST_POSIX_API)
+
+#if defined(BOOST_FILESYSTEM_USE_STATX)
+    struct ::statx s1;
+    int err = invoke_statx(AT_FDCWD, p1.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s1);
+    if (BOOST_UNLIKELY(err != 0))
+    {
+    fail_errno:
+        err = errno;
+    fail_err:
+        emit_error(err, p1, p2, ec, "boost::filesystem::equivalent");
+        return false;
+    }
+
+    if (BOOST_UNLIKELY((s1.stx_mask & STATX_INO) != STATX_INO))
+    {
+    fail_unsupported:
+        err = BOOST_ERROR_NOT_SUPPORTED;
+        goto fail_err;
+    }
+
+    struct ::statx s2;
+    err = invoke_statx(AT_FDCWD, p2.c_str(), AT_NO_AUTOMOUNT, STATX_INO, &s2);
+    if (BOOST_UNLIKELY(err != 0))
+        goto fail_errno;
+
+    if (BOOST_UNLIKELY((s1.stx_mask & STATX_INO) != STATX_INO))
+        goto fail_unsupported;
+#else
+    struct ::stat s1;
+    int err = ::stat(p1.c_str(), &s1);
+    if (BOOST_UNLIKELY(err != 0))
+    {
+    fail_errno:
+        err = errno;
+        emit_error(err, p1, p2, ec, "boost::filesystem::equivalent");
+        return false;
+    }
+
+    struct ::stat s2;
+    err = ::stat(p2.c_str(), &s2);
+    if (BOOST_UNLIKELY(err != 0))
+        goto fail_errno;
+#endif
+
+    return equivalent_stat(s1, s2);
+
+#else // Windows
+
+    // Thanks to Jeremy Maitin-Shepard for much help and for permission to
+    // base the equivalent() implementation on portions of his
+    // file-equivalence-win32.cpp experimental code.
+
+    // Note well: Physical location on external media is part of the
+    // equivalence criteria. If there are no open handles, physical location
+    // can change due to defragmentation or other relocations. Thus handles
+    // must be held open until location information for both paths has
+    // been retrieved.
+
+    handle_wrapper h1(create_file_handle(
+        p1.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
+    if (BOOST_UNLIKELY(h1.handle == INVALID_HANDLE_VALUE))
+    {
+    fail_errno:
+        err_t err = BOOST_ERRNO;
+        emit_error(err, p1, p2, ec, "boost::filesystem::equivalent");
+        return false;
+    }
+
+    handle_wrapper h2(create_file_handle(
+        p2.c_str(),
+        FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS));
+    if (BOOST_UNLIKELY(h2.handle == INVALID_HANDLE_VALUE))
+        goto fail_errno;
+
+    BY_HANDLE_FILE_INFORMATION info1;
+    if (BOOST_UNLIKELY(!::GetFileInformationByHandle(h1.handle, &info1)))
+        goto fail_errno;
+
+    BY_HANDLE_FILE_INFORMATION info2;
+    if (BOOST_UNLIKELY(!::GetFileInformationByHandle(h2.handle, &info2)))
+        goto fail_errno;
 
     // In theory, volume serial numbers are sufficient to distinguish between
     // devices, but in practice VSN's are sometimes duplicated, so last write

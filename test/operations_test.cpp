@@ -2301,9 +2301,13 @@ void platform_specific_tests()
 
         BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name())) == fs::initial_path());
         BOOST_TEST(fs::system_complete(fs::path(fs::initial_path().root_name().string() + "foo")).string() == fs::initial_path() / "foo");
-        BOOST_TEST(fs::system_complete(fs::path("c:/")).generic_string() == "c:/");
-        BOOST_TEST(fs::system_complete(fs::path("c:/foo")).generic_string() == "c:/foo");
-        BOOST_TEST(fs::system_complete(fs::path("\\\\share")).generic_string() == "\\\\share");
+        BOOST_TEST_EQ(fs::system_complete(fs::path("c:/")).generic_string(), std::string("c:/"));
+        BOOST_TEST_EQ(fs::system_complete(fs::path("c:/foo")).generic_string(), std::string("c:/foo"));
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST_EQ(fs::system_complete(fs::path("\\\\share")).generic_string(), std::string("//share"));
+#else
+        BOOST_TEST_EQ(fs::system_complete(fs::path("\\\\share")).generic_string(), std::string("\\\\share"));
+#endif
 
 #if defined(BOOST_FILESYSTEM_HAS_MKLINK)
         // Issue 9016 asked that NTFS directory junctions be recognized as directories.
@@ -2376,10 +2380,10 @@ void platform_specific_tests()
     {
         cout << "POSIX specific tests..." << endl;
         BOOST_TEST(fs::system_complete("").empty());
-        BOOST_TEST(fs::initial_path().root_path().string() == "/");
-        BOOST_TEST(fs::system_complete("/").string() == "/");
-        BOOST_TEST(fs::system_complete("foo").string() == fs::initial_path().string() + "/foo");
-        BOOST_TEST(fs::system_complete("/foo").string() == fs::initial_path().root_path().string() + "foo");
+        BOOST_TEST_EQ(fs::initial_path().root_path().string(), std::string("/"));
+        BOOST_TEST_EQ(fs::system_complete("/").string(), std::string("/"));
+        BOOST_TEST_EQ(fs::system_complete("foo").string(), fs::initial_path().string() + "/foo");
+        BOOST_TEST_EQ(fs::system_complete("/foo").string(), fs::initial_path().root_path().string() + "foo");
     } // POSIX
 }
 
@@ -2395,7 +2399,7 @@ void initial_tests()
     BOOST_TEST(fs::initial_path() == fs::current_path());
     BOOST_TEST(fs::initial_path().is_absolute());
     BOOST_TEST(fs::current_path().is_absolute());
-    BOOST_TEST(fs::initial_path().string() == fs::current_path().string());
+    BOOST_TEST_EQ(fs::initial_path().string(), fs::current_path().string());
 }
 
 //  space_tests  ---------------------------------------------------------------------//
@@ -2443,10 +2447,17 @@ void equivalent_tests(const fs::path& f1x)
     BOOST_TEST(!fs::equivalent(f1x, dir));
     BOOST_TEST(!fs::equivalent(dir, f1x));
     BOOST_TEST(!fs::equivalent(d1, d2));
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST(!fs::equivalent(dir, ng));
     BOOST_TEST(!fs::equivalent(ng, dir));
     BOOST_TEST(!fs::equivalent(f1x, ng));
     BOOST_TEST(!fs::equivalent(ng, f1x));
+#else
+    BOOST_TEST(CHECK_EXCEPTION(([] { fs::equivalent(dir, ng); }), ENOENT));
+    BOOST_TEST(CHECK_EXCEPTION(([] { fs::equivalent(ng, dir); }), ENOENT));
+    BOOST_TEST(CHECK_EXCEPTION(([&f1x] { fs::equivalent(f1x, ng); }), ENOENT));
+    BOOST_TEST(CHECK_EXCEPTION(([&f1x] { fs::equivalent(ng, f1x); }), ENOENT));
+#endif
 }
 
 //  temp_directory_path_tests  -------------------------------------------------------//

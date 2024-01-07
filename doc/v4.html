@@ -58,6 +58,7 @@ It removes the features that were <a href="deprecated.html">deprecated</a> in Ve
   <li><code>directory_entry</code> constructors and modifiers that initialize or modify path of the directory entry automatically call <code>directory_entry::refresh</code> instead of clearing cached file statuses. This means that the file identified by the new path needs to be accessible in the filesystem at the point of the call.</li>
   <li><code>directory_entry</code> constructors and modifiers that accept <code>file_status</code> arguments to initialize cached file statuses are removed. The amount of cached data
   is an implementation detail of <code>directory_entry</code>, and in the future it may not be limited to just file statuses. Users should rely on automatic refreshes of the cached data.</li>
+  <li><a href="reference.html#equivalent"><code>equivalent</code></a> now fails if only one of the input paths exists.</li>
 </ul>
 
 <hr>

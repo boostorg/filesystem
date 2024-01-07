@@ -127,7 +127,9 @@ path current_path(system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
 void current_path(path const& p, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
-bool equivalent(path const& p1, path const& p2, system::error_code* ec = NULL);
+bool equivalent_v3(path const& p1, path const& p2, system::error_code* ec = NULL);
+BOOST_FILESYSTEM_DECL
+bool equivalent_v4(path const& p1, path const& p2, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
 boost::uintmax_t file_size(path const& p, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
@@ -554,16 +556,6 @@ inline void create_symlink(path const& to, path const& new_symlink, system::erro
     detail::create_symlink(to, new_symlink, &ec);
 }
 
-inline bool equivalent(path const& p1, path const& p2)
-{
-    return detail::equivalent(p1, p2);
-}
-
-inline bool equivalent(path const& p1, path const& p2, system::error_code& ec) BOOST_NOEXCEPT
-{
-    return detail::equivalent(p1, p2, &ec);
-}
-
 inline boost::uintmax_t file_size(path const& p)
 {
     return detail::file_size(p);
@@ -777,6 +769,22 @@ inline path weakly_canonical(path const& p, path const& base, system::error_code
 {
     return detail::weakly_canonical(p, base, &ec);
 }
+
+namespace BOOST_FILESYSTEM_VERSION_NAMESPACE {
+
+inline bool equivalent(path const& p1, path const& p2)
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::equivalent)(p1, p2);
+}
+
+inline bool equivalent(path const& p1, path const& p2, system::error_code& ec) BOOST_NOEXCEPT
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::equivalent)(p1, p2, &ec);
+}
+
+} // namespace BOOST_FILESYSTEM_VERSION_NAMESPACE
+
+using BOOST_FILESYSTEM_VERSION_NAMESPACE::equivalent;
 
 //  test helper  -----------------------------------------------------------------------//
 

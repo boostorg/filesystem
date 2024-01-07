@@ -3443,22 +3443,17 @@ bool <a name="exists3">exists</a>(const path&amp; p, system::error_code&amp; ec)
 <pre><code>bool <a name="equivalent">equivalent</a>(const path&amp; p1, const path&amp; p2);
 bool <a name="equivalent2">equivalent</a>(const path&amp; p1, const path&amp; p2, system::error_code&amp; ec);</code></pre>
 <blockquote>
-  <p><i>Effects:</i> Determines <code>file_status s1</code> and <code>s2</code>, as if by <code>status(p1)</code> and&nbsp; <code>status(p2)</code>,
-  respectively.</p>
-  <p><i>Returns:</i> <code>true</code>, if <code>sf1 ==
-  sf2</code> and <code>p1</code> and <code>p2</code> resolve to the same file
+  <p><i>Returns:</i> <code>true</code>, if <code>p1</code> and <code>p2</code> resolve to the same file
   system entity, else <code>false</code>.</p>
   <blockquote>
   <p>Two paths are considered to resolve to the same
   file system entity if two candidate entities reside on the same device at the
-  same location. This is determined as if by the values of the ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">stat</a></code> structure<code>,</code> obtained as if by <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code> for the two paths, having equal <code>st_dev</code> values
-  and equal <code>st_ino</code> values.</p>
-  <p>[<i>Note:</i> ISO/IEC 9945 requires that <i>&quot;st_dev</i> must be unique within a Local Area Network&quot;. Conservative
+  same location. This is determined as if by the values of the ISO/IEC 9945 <code><a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">stat</a></code> structure<code>,</code> obtained as if by <code><a href="http://www.opengroup.org/onlinepubs/000095399/functions/stat.html">stat()</a></code> for the two paths, having equal <code>st_dev</code> values and equal <code>st_ino</code> values.</p>
+  <p>[<i>Note:</i> ISO/IEC 9945 requires that &quot;<i>st_dev</i> must be unique within a Local Area Network&quot;. Conservative
   ISO/IEC 9945 implementations may also wish to check for equal <code>st_size</code> and <code>st_mtime</code> values. <i>Windows</i> implementations may use <code>GetFileInformationByHandle()</code> as a surrogate for <code>stat()</code>,
   and consider &quot;same&quot; to be equal values for <code>dwVolumeSerialNumber</code>, <code>nFileIndexHigh</code>, <code>nFileIndexLow</code>, <code>nFileSizeHigh</code>, <code>nFileSizeLow</code>, <code>ftLastWriteTime.dwLowDateTime</code>, and <code>ftLastWriteTime.dwHighDateTime</code>. <i>—end note</i>]</p>
   </blockquote>
-  <p><i>Throws:</i> <code>filesystem_error</code> if <code>(!exists(s1) &amp;&amp; !exists(s2)) || (is_other(s1) &amp;&amp; is_other(s2))</code>,
-  otherwise as specified in <a href="#Error-reporting">Error reporting</a>.</p>
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>. [<b>v3:</b> <code>!exists(p1) &amp;&amp; !exists(p2)</code> is an error. If only one of the paths doesn't exist, <code>false</code> is returned without error.] [<b>v4:</b> <code>!exists(p1) || !exists(p2)</code> is an error.]</p>
 </blockquote>
 
 <pre>uintmax_t <a name="file_size">file_size</a>(const path&amp; p);
