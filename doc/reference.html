@@ -325,7 +325,7 @@ file systems support multiple hard links to a file. If the last hard link to a
 file is removed, the file itself is removed.</p>
 <blockquote>
 <p>[<i>Note:</i> A hard link can be thought of as a shared-ownership smart
-pointer to a file.<i> —end note</i>]<i> </i></p>
+pointer to a file.<i> —end note</i>]</p>
 </blockquote>
 <h3><a name="symbolic-link">symbolic link</a> [fs.def.symlink]</h3>
 <p>A type of file with the
@@ -334,7 +334,7 @@ stored by the file is used to modify the pathname resolution.</p>
 <blockquote>
 <p>[<i>Note:</i> A symbolic link can be thought of as a raw pointer to a file.
 If the file pointed to does not exist, the symbolic link is said to be a
-&quot;dangling&quot; symbolic link.<i> —end note</i>]<i> </i></p>
+&quot;dangling&quot; symbolic link.<i> —end note</i>]</p>
 </blockquote>
 <h3><a name="file-system-race">file system race</a> [fs.def.race]</h3>
 <p>The condition that occurs
@@ -947,31 +947,27 @@ throws an exception to report file system errors, and another that sets an <code
   <p>Uses where file system
 errors are truly exceptional and indicate a serious failure. Throwing an
   exception is the most appropriate response. This is the preferred default for
-  most everyday programming.<br>
-&nbsp;</li>
+  most everyday programming.</p></li>
   <li>
   <p>Uses where file system errors are routine and do not necessarily represent
   failure. Returning an error code is the most appropriate response. This allows
-  application specific error handling, including simply ignoring the error.</li>
+  application specific error handling, including simply ignoring the error.</p></li>
 </ul>
   <p><i>—end note</i>]</p>
 </blockquote>
 <p>Functions <b>not</b> having an argument of type <code>system::error_code&amp;</code> report errors as follows, unless otherwise specified:</p>
-  <ul>
+<ul>
   <li>
   <p>When a call by the
   implementation to an operating system or other underlying API results in an
   error that prevents the function from meeting its specifications, an exception
-  of type
-<code>filesystem_error</code> is thrown.<br>
-&nbsp;</li>
+  of type <code>filesystem_error</code> is thrown.</p></li>
   <li>
   <p>Failure to allocate storage is reported by throwing an exception as described in the C++ standard,
-  17.6.4.10 [res.on.exception.handling].<br>
-&nbsp;</li>
+  17.6.4.10 [res.on.exception.handling].</p></li>
   <li>
   <p>Destructors throw nothing.</li>
-  </ul>
+</ul>
   <p>Functions having an argument of type <code>system::error_code&amp;</code> report errors as follows, unless otherwise
   specified:</p>
 <ul>
@@ -981,14 +977,13 @@ errors are truly exceptional and indicate a serious failure. Throwing an
   error that prevents the function from meeting its specifications, the
 <code>system::error_code&amp;</code> argument is set as
   appropriate for the specific error. Otherwise, <code>clear()</code>
-  is called on the
-<code>system::error_code&amp;</code> argument.<br>
-&nbsp;</li>
+  is called on the <code>system::error_code&amp;</code> argument.</p></li>
   <li>
   <p>Failure to allocate storage is reported by
   throwing an exception as described in the C++ standard,
-  17.6.4.10 [res.on.exception.handling].</li>
+  17.6.4.10 [res.on.exception.handling].</p></li>
 </ul>
+
 <h2><a name="class-path">Class <code>path</code> [class.path]</a></h2>
 <p>An object of class <code>path</code> represents a <a href="#path">path</a>,
 and contains a <a href="#pathname">pathname</a> Such an object is concerned only with the lexical and syntactic aspects
@@ -1254,20 +1249,19 @@ to be one of: <code>char</code>, <code>wchar_t</code>. Collectively, these types
 <p>Template parameters named <code><a name="Source">Source</a></code> are required to be one of:</p>
 <ul>
   <li>
-  <p>A <code>std::basic_string</code>, <code>std::basic_string_view</code>, <code>boost::container::basic_string</code> or <code>boost::basic_string_view</code> specialization with a value type of one of the supported path character types.</li>
+  <p>A <code>std::basic_string</code>, <code>std::basic_string_view</code>, <code>boost::container::basic_string</code> or <code>boost::basic_string_view</code> specialization with a value type of one of the supported path character types.</p></li>
   <li>
-  <p><b>v3, deprecated:</b> A container with a value type of one of the supported path character types.</li>
+  <p><b>v3, deprecated:</b> A container with a value type of one of the supported path character types.</p></li>
   <li>
   <p>A pointer into a null terminated string. The value type is required
-  to be a supported path character type.</li>
+  to be a supported path character type.</p></li>
   <li>
-  <p>A C-array of supported path character type containing a null terminated string.</li>
+  <p>A C-array of supported path character type containing a null terminated string.</p></li>
   <li>
-  <p>A <code>boost::filesystem::directory_entry</code>.</li>
+  <p>A <code>boost::filesystem::directory_entry</code>.</p></li>
 </ul>
 
-<h3> <a name="path-constructors"> <code>
-<font size="4">path</font></code> constructors</a> [path.construct]</h3>
+<h3><a name="path-constructors"><code>path</code> constructors</a> [path.construct]</h3>
 
 <pre>template &lt;class <a href="#Source">Source</a>&gt;
 path(Source const&amp; source, const codecvt_type&amp; cvt=codecvt());</pre>
@@ -1518,7 +1512,7 @@ assert(path(&quot;a/b&quot;).lexically_relative(&quot;c/d&quot;) ==  &quot;&quot
 <p>The above assertions will succeed.<i> </i>On Windows, the
 returned path&#39;s <i>directory-separator</i>s will be backslashes rather than
 forward slashes, but that
-does not affect <code>path</code> equality.<i> —end example</i>]</p>
+does not affect <code>path</code> equality. <i>—end example</i>]</p>
 
   <p>[<i>Note:</i> If symlink following semantics are desired, use the operational function <code>
   <a href="#relative">relative</a></code>&nbsp; <i>—end note</i>]</p>
@@ -1599,7 +1593,7 @@ wstring <a name="generic_wstring">generic_wstring</a>(const codecvt_type&amp; cv
 
 <blockquote>
 <p><i>Returns:</i> <code>pathname</code>.</p>
-<p><i>Remarks:</i>&nbsp; If <code>string_type</code> is a different type than
+<p><i>Remarks:</i> If <code>string_type</code> is a different type than
 function's return type, conversion is performed by <code>cvt</code>.</p>
 </blockquote>
 
@@ -1612,7 +1606,7 @@ function's return type, conversion is performed by <code>cvt</code>.</p>
   value greater than 0 if the elements of <code>*this</code> are
   lexicographically greater than the elements of <code>p</code>, otherwise 0.</p>
   <p>Remark: The elements are determined as if by iteration over the half-open
-  range [<code>begin()</code>, <code>end()</code>) for <code>*this</code> and&nbsp; <code>p</code>.</p>
+  range [<code>begin()</code>, <code>end()</code>) for <code>*this</code> and <code>p</code>.</p>
 </blockquote>
 
 <pre>int compare(const std::string&amp; s) const</pre>
@@ -1986,8 +1980,8 @@ const string_type  external_directory_string() const { return native(); }</pre>
   assert(lexically_normal(&quot;foo/.///bar/../&quot;) == &quot;foo/.&quot;);</code></p>
   <p>All of the above assertions will succeed.<i> </i>On Windows, the
   returned path&#39;s <i>directory-separator</i> characters will be backslashes
-  rather than slashes, but that does not affect <code>path</code> equality.<i>
-  —end example</i>]</p>
+  rather than slashes, but that does not affect <code>path</code> equality.
+  <i>—end example</i>]</p>
 </blockquote>
 
   <div>
@@ -3175,18 +3169,20 @@ path absolute(const path&amp; p, const path&amp; base, system::error_code&amp; e
 path canonical(const path&amp; p, system::error_code&amp; ec);
 path canonical(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
 <blockquote>
-<p><i>Overview:</i> Converts <code>p</code>, which must exist, to an absolute
+<p><i>Overview:</i> Converts <code>p</code> to an absolute
 path that has no symbolic link, <a href="#Dot">dot</a>,
-or <a href="#Dot">dot-dot</a> elements. </p>
+or <a href="#Dot">dot-dot</a> elements. Testing path elements for symbolic links
+is done as if by calling <code><a href="#is_symlink2">is_symlink</a></code> and requires
+<code><a href="#absolute">absolute</a>(p, base)</code> to exist.</p>
 <p><i>Returns:</i> A <a href="#canonical-path">canonical path</a> that refers to
-the same file system object as <code>absolute(p, base)</code>. For the overload
-without a <code>base</code> argument, <code>base</code> is <code>current_path()</code>.</p>
+the same file system object as <code><a href="#absolute">absolute</a>(p, base)</code>. For the overload
+without a <code>base</code> argument, <code>base</code> is <code><a href="#current_path">current_path</a>()</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 
-  <p><i>Remarks:</i> <code>!exists(p)</code> is an error.</p>
+  <p><i>Remarks:</i> <code>!exists(absolute(p, base))</code> is an error.</p>
 
-  <p>[<i>Note:</i> Canonical pathnames allow security checking of a path (eg.
-  does this path live in /home/goodguy or /home/badguy?)&nbsp; —end note]</p>
+  <p>[<i>Note:</i> Canonical pathnames allow security checking of a path (e.g.
+  does this path live in /home/goodguy or /home/badguy?)&nbsp; <i>—end note</i>]</p>
 
 </blockquote>
 <pre>void copy(const path&amp; from, const path&amp; to);
@@ -3944,13 +3940,12 @@ path weakly_canonical(const path&amp; p, const path&amp; base, system::error_cod
   result normalized.</p>
   <p><i>Effects:</i> Let <code>head</code> be the path composed of the leading
   elements of <code>p</code> that exist and <code>tail</code> &mdash; from the rest of <code>p</code>.
-  Where not specified, <code>base</code> is obtained from <code>current_path()</code> or <code>current_path(ec)</code>
-  Calls <a href="#canonical"><code>canonical(head, base)</code></a> or <a href="#canonical"><code>canonical(head, base, ec)</code></a>,
-  appends <code>tail</code> to the returned path using <code>operator/</code>.
+  Where not specified, <code>base</code> is obtained from <code><a href="#current_path">current_path</a>()</code> or <code><a href="#current_path">current_path</a>(ec)</code>
+  Calls <code><a href="#canonical">canonical</a>(head, base)</code> or <code><a href="#canonical">canonical</a>(head, base, ec)</code>,
+  appends <code>tail</code> to the returned path as if by using <code>operator/</code>.
   The result is then normalized and returned.</p>
   <p><i>Postcondition:</i> The returned path is in
-  <a href="#normal-form">
-  normal form</a>.</p>
+  <a href="#normal-form">normal form</a>.</p>
   <p><i>Remarks:</i> Uses <code>operator/=</code> to compose the returned path.
   Uses the <code>status</code> function to determine existence.</p>
   <p><i>Remarks:</i> Implementations are encouraged to avoid unnecessary
