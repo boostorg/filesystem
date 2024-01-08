@@ -45,7 +45,7 @@ namespace {
 
 bool cleanup = true;
 
-void test(const fs::path& p)
+void test(fs::path const& p)
 {
     fs::remove(p);
     {
@@ -188,7 +188,8 @@ int cpp_main(int argc, char*[])
     std::wstring ws(L"wide_fstream_test_");
     ws.push_back(static_cast< wchar_t >(0x2780));
     ws.push_back(static_cast< wchar_t >(0x263A));
-    test(ws);
+    ws.append(L"-%%%%-%%%%.txt");
+    test(fs::unique_path(ws));
 
 #if !defined(BOOST_FILESYSTEM_DETAIL_NO_CXX11_MOVABLE_FSTREAMS) && !defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
     test_movable();
