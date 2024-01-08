@@ -1639,8 +1639,13 @@ void absolute_tests()
 {
     cout << "absolute_tests..." << endl;
 
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST_EQ(fs::absolute(""), fs::current_path());
     BOOST_TEST_EQ(fs::absolute("", ""), fs::current_path());
+#else
+    BOOST_TEST_EQ(fs::absolute(""), fs::current_path() / fs::path());
+    BOOST_TEST_EQ(fs::absolute("", ""), fs::current_path() / fs::path());
+#endif
     BOOST_TEST_EQ(fs::absolute(fs::current_path() / "foo/bar"), fs::current_path() / "foo/bar");
     BOOST_TEST_EQ(fs::absolute("foo"), fs::current_path() / "foo");
     BOOST_TEST_EQ(fs::absolute("foo", fs::current_path()), fs::current_path() / "foo");
@@ -1654,11 +1659,19 @@ void absolute_tests()
     // these tests were moved from elsewhere, so may duplicate some of the above tests
 
     // p.empty()
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), fs::path("//foo/bar"));
     if (platform == "Windows")
     {
         BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), fs::path("a:/bar"));
     }
+#else
+    BOOST_TEST_EQ(fs::absolute(fs::path(), "//foo/bar"), fs::path("//foo/bar/"));
+    if (platform == "Windows")
+    {
+        BOOST_TEST_EQ(fs::absolute(fs::path(), "a:/bar"), fs::path("a:/bar/"));
+    }
+#endif
 
     // p.has_root_name()
     //   p.has_root_directory()
@@ -1669,13 +1682,23 @@ void absolute_tests()
     }
     //   !p.has_root_directory()
     BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/"), fs::path("//net/"));
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc"), fs::path("//net/abc"));
     BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc/def"), fs::path("//net/abc/def"));
+#else
+    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc"), fs::path("//net/abc/"));
+    BOOST_TEST_EQ(fs::absolute(fs::path("//net"), "//xyz/abc/def"), fs::path("//net/abc/def/"));
+#endif
     if (platform == "Windows")
     {
         BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/"), fs::path("a:/"));
+#if BOOST_FILESYSTEM_VERSION == 3
         BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc"), fs::path("a:/abc"));
         BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc/def"), fs::path("a:/abc/def"));
+#else
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc"), fs::path("a:/abc\\"));
+        BOOST_TEST_EQ(fs::absolute(fs::path("a:"), "b:/abc/def"), fs::path("a:/abc/def\\"));
+#endif
         BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/"), fs::path("a:/foo"));
         BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc"), fs::path("a:/abc/foo"));
         BOOST_TEST_EQ(fs::absolute(fs::path("a:foo"), "b:/abc/def"), fs::path("a:/abc/def/foo"));
@@ -1741,9 +1764,15 @@ void canonical_basic_tests()
     BOOST_TEST(ok);
 
     // non-symlink tests; also see canonical_symlink_tests()
+#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST_EQ(fs::canonical(""), fs::current_path());
     BOOST_TEST_EQ(fs::canonical("", fs::current_path()), fs::current_path());
     BOOST_TEST_EQ(fs::canonical("", ""), fs::current_path());
+#else
+    BOOST_TEST_EQ(fs::canonical(""), fs::current_path() / fs::path());
+    BOOST_TEST_EQ(fs::canonical("", fs::current_path()), fs::current_path() / fs::path());
+    BOOST_TEST_EQ(fs::canonical("", ""), fs::current_path() / fs::path());
+#endif
     BOOST_TEST_EQ(fs::canonical(fs::current_path()), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(fs::current_path(), ""), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(fs::current_path(), "no-such-file"), fs::current_path());

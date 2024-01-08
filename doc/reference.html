@@ -3131,8 +3131,8 @@ an error.&nbsp;See <a href="#Error-reporting">Error reporting</a>. <i>—end not
 path absolute(const path&amp; p, system::error_code&amp; ec);
 path absolute(const path&amp; p, const path&amp; base, system::error_code&amp; ec);</pre>
   <blockquote>
-  <p><i>Returns:</i> A <a href="#Absolute-path">absolute path</a> composed according to the
-  following table</p>
+  <p><i>Returns:</i> If <code>p.is_absolute()</code> is <code>true</code> then <code>p</code>, otherwise an <a href="#Absolute-path">absolute path</a> composed according to the
+  following table:</p>
   <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
     <tr>
       <td align="center">&nbsp;</td>
@@ -3163,7 +3163,7 @@ path absolute(const path&amp; p, const path&amp; base, system::error_code&amp; e
   </table>
   <p>For the overload without a <code>base</code> argument, <code>base</code> is <code>current_path()</code>.</p>
   <p>[<i>Note:</i> For the returned path, <code>rp</code>, <code>rp.is_absolute()</code> is <code>true</code>. <i>—end note</i>]</p>
-  <p><i>Throws:</i>&nbsp; As specified in <a href="#Error-reporting">Error reporting</a>.</p>
+  <p><i>Throws:</i> As specified in <a href="#Error-reporting">Error reporting</a>.</p>
 </blockquote>
 <pre>path <a name="canonical">canonical</a>(const path&amp; p, const path&amp; base = current_path());
 path canonical(const path&amp; p, system::error_code&amp; ec);
@@ -3182,7 +3182,7 @@ without a <code>base</code> argument, <code>base</code> is <code><a href="#curre
   <p><i>Remarks:</i> <code>!exists(absolute(p, base))</code> is an error.</p>
 
   <p>[<i>Note:</i> Canonical pathnames allow security checking of a path (e.g.
-  does this path live in /home/goodguy or /home/badguy?)&nbsp; <i>—end note</i>]</p>
+  does this path live in /home/goodguy or /home/badguy?) <i>—end note</i>]</p>
 
 </blockquote>
 <pre>void copy(const path&amp; from, const path&amp; to);

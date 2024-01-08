@@ -90,7 +90,9 @@ BOOST_SCOPED_ENUM_DECLARE_END(copy_option)
 namespace detail {
 
 BOOST_FILESYSTEM_DECL
-path absolute(path const& p, path const& base, system::error_code* ec = NULL);
+path absolute_v3(path const& p, path const& base, system::error_code* ec = NULL);
+BOOST_FILESYSTEM_DECL
+path absolute_v4(path const& p, path const& base, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
 file_status status(path const& p, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
@@ -100,7 +102,9 @@ bool is_empty(path const& p, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
 path initial_path(system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
-path canonical(path const& p, path const& base, system::error_code* ec = NULL);
+path canonical_v3(path const& p, path const& base, system::error_code* ec = NULL);
+BOOST_FILESYSTEM_DECL
+path canonical_v4(path const& p, path const& base, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
 void copy(path const& from, path const& to, unsigned int options, system::error_code* ec = NULL);
 #if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
@@ -163,7 +167,9 @@ path temp_directory_path(system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
 path unique_path(path const& p, system::error_code* ec = NULL);
 BOOST_FILESYSTEM_DECL
-path weakly_canonical(path const& p, path const& base, system::error_code* ec = NULL);
+path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec = NULL);
+BOOST_FILESYSTEM_DECL
+path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec = NULL);
 
 } // namespace detail
 
@@ -363,56 +369,6 @@ inline void current_path(path const& p, system::error_code& ec) BOOST_NOEXCEPT
 {
     detail::current_path(p, &ec);
 }
-
-inline path absolute(path const& p, path const& base = current_path())
-{
-    return detail::absolute(p, base);
-}
-
-inline path absolute(path const& p, system::error_code& ec)
-{
-    path base = current_path(ec);
-    if (ec)
-        return path();
-    return detail::absolute(p, base, &ec);
-}
-
-inline path absolute(path const& p, path const& base, system::error_code& ec)
-{
-    return detail::absolute(p, base, &ec);
-}
-
-inline path canonical(path const& p, path const& base = current_path())
-{
-    return detail::canonical(p, base);
-}
-
-inline path canonical(path const& p, system::error_code& ec)
-{
-    path base = current_path(ec);
-    if (ec)
-        return path();
-    return detail::canonical(p, base, &ec);
-}
-
-inline path canonical(path const& p, path const& base, system::error_code& ec)
-{
-    return detail::canonical(p, base, &ec);
-}
-
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use absolute() instead")
-inline path complete(path const& p)
-{
-    return absolute(p, initial_path());
-}
-
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use absolute() instead")
-inline path complete(path const& p, path const& base)
-{
-    return absolute(p, base);
-}
-#endif
 
 inline void copy(path const& from, path const& to)
 {
@@ -752,25 +708,43 @@ inline path unique_path(path const& p, system::error_code& ec)
     return detail::unique_path(p, &ec);
 }
 
-inline path weakly_canonical(path const& p, path const& base = current_path())
+namespace BOOST_FILESYSTEM_VERSION_NAMESPACE {
+
+inline path absolute(path const& p, path const& base = current_path())
 {
-    return detail::weakly_canonical(p, base);
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::absolute)(p, base);
 }
 
-inline path weakly_canonical(path const& p, system::error_code& ec)
+inline path absolute(path const& p, system::error_code& ec)
 {
     path base = current_path(ec);
     if (ec)
         return path();
-    return detail::weakly_canonical(p, base, &ec);
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::absolute)(p, base, &ec);
 }
 
-inline path weakly_canonical(path const& p, path const& base, system::error_code& ec)
+inline path absolute(path const& p, path const& base, system::error_code& ec)
 {
-    return detail::weakly_canonical(p, base, &ec);
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::absolute)(p, base, &ec);
 }
 
-namespace BOOST_FILESYSTEM_VERSION_NAMESPACE {
+inline path canonical(path const& p, path const& base = current_path())
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::canonical)(p, base);
+}
+
+inline path canonical(path const& p, system::error_code& ec)
+{
+    path base = current_path(ec);
+    if (ec)
+        return path();
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::canonical)(p, base, &ec);
+}
+
+inline path canonical(path const& p, path const& base, system::error_code& ec)
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::canonical)(p, base, &ec);
+}
 
 inline bool equivalent(path const& p1, path const& p2)
 {
@@ -782,9 +756,44 @@ inline bool equivalent(path const& p1, path const& p2, system::error_code& ec) B
     return BOOST_FILESYSTEM_VERSIONED_SYM(detail::equivalent)(p1, p2, &ec);
 }
 
+inline path weakly_canonical(path const& p, path const& base = current_path())
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::weakly_canonical)(p, base);
+}
+
+inline path weakly_canonical(path const& p, system::error_code& ec)
+{
+    path base = current_path(ec);
+    if (ec)
+        return path();
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::weakly_canonical)(p, base, &ec);
+}
+
+inline path weakly_canonical(path const& p, path const& base, system::error_code& ec)
+{
+    return BOOST_FILESYSTEM_VERSIONED_SYM(detail::weakly_canonical)(p, base, &ec);
+}
+
 } // namespace BOOST_FILESYSTEM_VERSION_NAMESPACE
 
+using BOOST_FILESYSTEM_VERSION_NAMESPACE::absolute;
+using BOOST_FILESYSTEM_VERSION_NAMESPACE::canonical;
 using BOOST_FILESYSTEM_VERSION_NAMESPACE::equivalent;
+using BOOST_FILESYSTEM_VERSION_NAMESPACE::weakly_canonical;
+
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use absolute() instead")
+inline path complete(path const& p)
+{
+    return absolute(p, initial_path());
+}
+
+BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use absolute() instead")
+inline path complete(path const& p, path const& base)
+{
+    return absolute(p, base);
+}
+#endif
 
 //  test helper  -----------------------------------------------------------------------//
 
