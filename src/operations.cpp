@@ -1,5 +1,3 @@
-//  operations.cpp  --------------------------------------------------------------------//
-
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
 //  Copyright 2018-2024 Andrey Semashev
@@ -3184,7 +3182,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 #if !defined(BOOST_FILESYSTEM_USE_WASI)
     // If we created a new file with an explicitly added S_IWUSR permission,
     // we may need to update its mode bits to match the source file.
-    if (to_mode != from_mode)
+    if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0) && (options & static_cast<unsigned int>(copy_options::skip_fchmod_failure)) == 0u )
     {
         if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0))
             goto fail_errno;
