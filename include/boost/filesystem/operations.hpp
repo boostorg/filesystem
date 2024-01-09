@@ -59,7 +59,7 @@ BOOST_SCOPED_ENUM_UT_DECLARE_BEGIN(copy_options, unsigned int)
     update_existing = 1u << 2,    // Overwrite existing file if its last write time is older than the replacement file
     synchronize_data = 1u << 3,   // Flush all buffered data written to the target file to permanent storage
     synchronize = 1u << 4,        // Flush all buffered data and attributes written to the target file to permanent storage
-	skip_fchmod_failure = 1 << 7, // Skip the error when fchmod fails while setting file mode bits
+    skip_fchmod_failure = 1 << 7, // Skip the error when fchmod fails while setting file mode bits
 	
     // copy options:
     recursive = 1u << 8,          // Recurse into sub-directories
