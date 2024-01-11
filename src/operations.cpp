@@ -3182,9 +3182,9 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 #if !defined(BOOST_FILESYSTEM_USE_WASI)
     // If we created a new file with an explicitly added S_IWUSR permission,
     // we may need to update its mode bits to match the source file.
-    if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0) && (options & static_cast<unsigned int>(copy_options::skip_fchmod_failure)) == 0u )
+    if (to_mode != from_mode)
     {
-        if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0))
+        if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0) && (options & static_cast<unsigned int>(copy_options::skip_fchmod_failure)) == 0u )
             goto fail_errno;
     }
 #endif
