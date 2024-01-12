@@ -108,7 +108,7 @@ run issues/70-71-copy.cpp : : : <define>BOOST_FILESYSTEM_VERSION=4 ;
 
 run issues/99_canonical_with_junction_point.cpp : : : <define>BOOST_FILESYSTEM_VERSION=4 ;
 run issues/reparse_tag_file_placeholder.cpp : : : <define>BOOST_FILESYSTEM_VERSION=4 ;
-run issues/179_test.cpp : : : <link>shared <define>BOOST_FILESYSTEM_VERSION=4 ;
+run issues/179 : : : <link>shared <define>BOOST_FILESYSTEM_VERSION=4 ;
 
 if [ os.environ BOOST_FILESYSTEM_TEST_WITH_EXAMPLES ]
 {
