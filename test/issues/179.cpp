@@ -13,6 +13,7 @@
 namespace fs = boost::filesystem;
 using boost::system::error_code;
 using boost::system::system_category;
+typedef unsigned short mode_t;
 
 extern "C" int fchmod(int fd, mode_t mode) {
     // Return -1 to indicate failure
