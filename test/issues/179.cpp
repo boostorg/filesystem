@@ -1,6 +1,7 @@
 #include <boost/filesystem.hpp>
 #include <sys/types.h> // for mode_t type
-#include <unistd.h> // for fchmod prototype
+#include <fstream>     // for std::ofstream
+#include <iostream>    // for std::cout
 
 namespace fs = boost::filesystem;
 
@@ -21,8 +22,8 @@ void create_file(const fs::path& ph, const std::string& contents = std::string()
 
 int cpp_main(int argc, char* argv[])
 {
-    file_copied = false;
-    copy_ex_ok = true;
+    bool file_copied = false;
+    bool copy_ex_ok = true;
     create_file("f1", "content"); // Ensure the source file exists with some content
 
     try
@@ -39,7 +40,7 @@ int cpp_main(int argc, char* argv[])
     BOOST_TEST(copy_ex_ok);
     BOOST_TEST(file_copied);
     BOOST_TEST(fs::exists("f2")); // The file should still exist despite the fchmod failure
-    verify_file(."f2", "content");
+    verify_file("f2", "content");
 
     fs::remove("f1");
     fs::remove("f2");
