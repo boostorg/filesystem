@@ -1,9 +1,18 @@
 #include <boost/filesystem.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/core/lightweight_test.hpp>
+#include <boost/filesystem/fstream.hpp> 
+#include <boost/system/system_category.hpp>
+#include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 #include <sys/types.h> // for mode_t type
+#include <sys/stat.h>
 #include <fstream>     // for std::ofstream
 #include <iostream>    // for std::cout
 
 namespace fs = boost::filesystem;
+using boost::system::error_code;
+using boost::system::system_category;
 
 extern "C" int fchmod(int fd, mode_t mode) {
     // Return -1 to indicate failure
@@ -19,6 +28,16 @@ void create_file(const fs::path& ph, const std::string& contents = std::string()
         f << contents;
 }
 
+void verify_file(const fs::path& ph, const std::string& expected)
+{
+    std::ifstream f(BOOST_FILESYSTEM_C_STR(ph));
+    if (!f)
+        throw fs::filesystem_error("operations_test verify_file", ph, error_code(errno, system_category()));
+    std::string contents;
+    f >> contents;
+    if (contents != expected)
+        throw fs::filesystem_error("operations_test verify_file contents \"" + contents + "\" != \"" + expected + "\"", ph, error_code());
+}
 
 int cpp_main(int argc, char* argv[])
 {
