@@ -212,7 +212,7 @@ bool throws_fs_error(F func, errno_t en, int line)
 
 struct poison_category_impl : public boost::system::error_category
 {
-    char const* name() const BOOST_NOEXCEPT { return "poison"; }
+    char const* name() const noexcept { return "poison"; }
     std::string message(int) const { return "poison_category::message"; }
 };
 
@@ -2214,7 +2214,7 @@ void creation_time_tests(const fs::path& dirx)
 
     fs::path f1x = dirx / "creation_time_file";
 
-    std::time_t start = std::time(NULL);
+    std::time_t start = std::time(nullptr);
 
     // These pauses are inserted because the test spuriously fails on Windows, presumably because of
     // different converting FILETIME to seconds in time() and Boost.Filesystem or some sort of quirk
@@ -2234,7 +2234,7 @@ void creation_time_tests(const fs::path& dirx)
 #else
         Sleep(1000);
 #endif
-        std::time_t finish = std::time(NULL);
+        std::time_t finish = std::time(nullptr);
         cout << "  start time: " << start << ", file creation time: " << ft << ", finish time: " << finish << endl;
 
         BOOST_TEST(ft >= start && ft <= finish);

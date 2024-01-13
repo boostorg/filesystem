@@ -14,7 +14,6 @@
 #ifndef BOOST_FILESYSTEM_SRC_WINDOWS_TOOLS_HPP_
 #define BOOST_FILESYSTEM_SRC_WINDOWS_TOOLS_HPP_
 
-#include <cstddef>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/file_status.hpp>
@@ -246,19 +245,19 @@ struct handle_wrapper
 {
     HANDLE handle;
 
-    handle_wrapper() BOOST_NOEXCEPT : handle(INVALID_HANDLE_VALUE) {}
-    explicit handle_wrapper(HANDLE h) BOOST_NOEXCEPT : handle(h) {}
-    ~handle_wrapper() BOOST_NOEXCEPT
+    handle_wrapper() noexcept : handle(INVALID_HANDLE_VALUE) {}
+    explicit handle_wrapper(HANDLE h) noexcept : handle(h) {}
+    ~handle_wrapper() noexcept
     {
         if (handle != INVALID_HANDLE_VALUE)
             ::CloseHandle(handle);
     }
-    BOOST_DELETED_FUNCTION(handle_wrapper(handle_wrapper const&))
-    BOOST_DELETED_FUNCTION(handle_wrapper& operator=(handle_wrapper const&))
+    handle_wrapper(handle_wrapper const&) = delete;
+    handle_wrapper& operator=(handle_wrapper const&) = delete;
 };
 
 //! Creates a file handle
-inline HANDLE create_file_handle(boost::filesystem::path const& p, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile = NULL)
+inline HANDLE create_file_handle(boost::filesystem::path const& p, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile = nullptr)
 {
     return ::CreateFileW(p.c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 }

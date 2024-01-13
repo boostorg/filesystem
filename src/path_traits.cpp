@@ -122,8 +122,8 @@ void convert(const char* from, const char* from_end, std::wstring& to, const cod
     if (from == from_end)
         return;
 
-    BOOST_ASSERT(from != NULL);
-    BOOST_ASSERT(from_end != NULL);
+    BOOST_ASSERT(from != nullptr);
+    BOOST_ASSERT(from_end != nullptr);
 
     if (!cvt)
         cvt = &fs::path::codecvt();
@@ -153,8 +153,8 @@ void convert(const wchar_t* from, const wchar_t* from_end, std::string& to, cons
     if (from == from_end)
         return;
 
-    BOOST_ASSERT(from != NULL);
-    BOOST_ASSERT(from_end != NULL);
+    BOOST_ASSERT(from != nullptr);
+    BOOST_ASSERT(from_end != nullptr);
 
     if (!cvt)
         cvt = &fs::path::codecvt();

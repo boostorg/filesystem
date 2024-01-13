@@ -214,7 +214,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 #if defined(BOOST_FILESYSTEM_HAS_BCRYPT)
 
     boost::winapi::BCRYPT_ALG_HANDLE_ handle;
-    boost::winapi::NTSTATUS_ status = boost::winapi::BCryptOpenAlgorithmProvider(&handle, boost::winapi::BCRYPT_RNG_ALGORITHM_, NULL, 0);
+    boost::winapi::NTSTATUS_ status = boost::winapi::BCryptOpenAlgorithmProvider(&handle, boost::winapi::BCRYPT_RNG_ALGORITHM_, nullptr, 0);
     if (BOOST_UNLIKELY(status != 0))
     {
     fail:
@@ -233,7 +233,7 @@ void system_crypt_random(void* buf, std::size_t len, boost::system::error_code* 
 
     boost::winapi::HCRYPTPROV_ handle;
     boost::winapi::DWORD_ err = 0u;
-    if (BOOST_UNLIKELY(!boost::winapi::CryptAcquireContextW(&handle, NULL, NULL, boost::winapi::PROV_RSA_FULL_, boost::winapi::CRYPT_VERIFYCONTEXT_ | boost::winapi::CRYPT_SILENT_)))
+    if (BOOST_UNLIKELY(!boost::winapi::CryptAcquireContextW(&handle, nullptr, nullptr, boost::winapi::PROV_RSA_FULL_, boost::winapi::CRYPT_VERIFYCONTEXT_ | boost::winapi::CRYPT_SILENT_)))
     {
         err = boost::winapi::GetLastError();
 

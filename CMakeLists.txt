@@ -75,6 +75,19 @@ endif()
 add_library(boost_filesystem ${BOOST_FILESYSTEM_SOURCES})
 add_library(Boost::filesystem ALIAS boost_filesystem)
 
+target_compile_features(boost_filesystem PUBLIC
+    cxx_rvalue_references
+    cxx_strong_enums
+    cxx_noexcept
+    cxx_nullptr
+    cxx_defaulted_functions
+    cxx_defaulted_move_initializers
+    cxx_deleted_functions
+    cxx_default_function_template_args
+    cxx_final
+    cxx_override
+)
+
 get_target_property(BOOST_FILESYSTEM_TARGET_TYPE boost_filesystem TYPE)
 if(BOOST_FILESYSTEM_TARGET_TYPE STREQUAL "SHARED_LIBRARY")
     set(CMAKE_REQUIRED_LIBRARIES "-Wl,--no-undefined")

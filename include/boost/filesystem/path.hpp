@@ -2,7 +2,7 @@
 
 //  Copyright Vladimir Prus 2002
 //  Copyright Beman Dawes 2002-2005, 2009
-//  Copyright Andrey Semashev 2021-2023
+//  Copyright Andrey Semashev 2021-2024
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -246,15 +246,15 @@ private:
     public:
         typedef void result_type;
 
-        explicit assign_op(path& self) BOOST_NOEXCEPT : m_self(self) {}
+        explicit assign_op(path& self) noexcept : m_self(self) {}
 
-        result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = NULL) const
+        result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = nullptr) const
         {
             m_self.m_pathname.assign(source, source_end);
         }
 
         template< typename OtherChar >
-        result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = NULL) const
+        result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = nullptr) const
         {
             m_self.m_pathname.clear();
             detail::path_traits::convert(source, source_end, m_self.m_pathname, cvt);
@@ -270,15 +270,15 @@ private:
     public:
         typedef void result_type;
 
-        explicit concat_op(path& self) BOOST_NOEXCEPT : m_self(self) {}
+        explicit concat_op(path& self) noexcept : m_self(self) {}
 
-        result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = NULL) const
+        result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = nullptr) const
         {
             m_self.m_pathname.append(source, source_end);
         }
 
         template< typename OtherChar >
-        result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = NULL) const
+        result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = nullptr) const
         {
             detail::path_traits::convert(source, source_end, m_self.m_pathname, cvt);
         }
@@ -293,15 +293,15 @@ private:
     public:
         typedef void result_type;
 
-        explicit append_op(path& self) BOOST_NOEXCEPT : m_self(self) {}
+        explicit append_op(path& self) noexcept : m_self(self) {}
 
-        BOOST_FORCEINLINE result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = NULL) const
+        BOOST_FORCEINLINE result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = nullptr) const
         {
             m_self.append(source, source_end);
         }
 
         template< typename OtherChar >
-        BOOST_FORCEINLINE result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = NULL) const
+        BOOST_FORCEINLINE result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = nullptr) const
         {
             string_type src;
             detail::path_traits::convert(source, source_end, src, cvt);
@@ -318,12 +318,12 @@ private:
     public:
         typedef int result_type;
 
-        explicit compare_op(path const& self) BOOST_NOEXCEPT : m_self(self) {}
+        explicit compare_op(path const& self) noexcept : m_self(self) {}
 
-        result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = NULL) const;
+        result_type operator() (const value_type* source, const value_type* source_end, const codecvt_type* = nullptr) const;
 
         template< typename OtherChar >
-        result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = NULL) const;
+        result_type operator() (const OtherChar* source, const OtherChar* source_end, const codecvt_type* cvt = nullptr) const;
     };
 
 public:
@@ -335,7 +335,7 @@ public:
 public:
     //  -----  constructors  -----
 
-    path() BOOST_NOEXCEPT {}
+    path() noexcept {}
     path(path const& p) : m_pathname(p.m_pathname) {}
     path(path const& p, codecvt_type const&) : m_pathname(p.m_pathname) {}
 
@@ -348,7 +348,6 @@ public:
     path(std::basic_string_view< value_type > const& s, codecvt_type const&) : m_pathname(s) {}
 #endif
 
-#if !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS)
     template<
         typename Source,
         typename = typename boost::enable_if_c<
@@ -359,20 +358,10 @@ public:
         >::type
     >
     path(Source const& source)
-#else
-    template< typename Source >
-    path(Source const& source, typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_native_path_source< typename boost::remove_cv< Source >::type > >
-        >::value
-    >::type* = NULL)
-#endif
     {
         assign(source);
     }
 
-#if !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS)
     template<
         typename Source,
         typename = typename boost::enable_if_c<
@@ -383,73 +372,57 @@ public:
         >::type
     >
     explicit path(Source const& source, codecvt_type const& cvt)
-#else
-    template< typename Source >
-    explicit path(Source const& source, codecvt_type const& cvt, typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_native_path_source< typename boost::remove_cv< Source >::type > >
-        >::value
-    >::type* = NULL)
-#endif
     {
         assign(source, cvt);
     }
 
-    //  As of October 2015 the interaction between noexcept and =default is so troublesome
-    //  for VC++, GCC, and probably other compilers, that =default is not used with noexcept
-    //  functions. GCC is not even consistent for the same release on different platforms.
-
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-    path(path&& p) BOOST_NOEXCEPT : m_pathname(static_cast< string_type&& >(p.m_pathname))
+    path(path&& p) noexcept : m_pathname(static_cast< string_type&& >(p.m_pathname))
     {
     }
-    path(path&& p, codecvt_type const&) BOOST_NOEXCEPT : m_pathname(static_cast< string_type&& >(p.m_pathname))
+    path(path&& p, codecvt_type const&) noexcept : m_pathname(static_cast< string_type&& >(p.m_pathname))
     {
     }
-    path& operator=(path&& p) BOOST_NOEXCEPT
+    path& operator=(path&& p) noexcept
     {
         m_pathname = static_cast< string_type&& >(p.m_pathname);
         return *this;
     }
-    path& assign(path&& p) BOOST_NOEXCEPT
+    path& assign(path&& p) noexcept
     {
         m_pathname = static_cast< string_type&& >(p.m_pathname);
         return *this;
     }
-    path& assign(path&& p, codecvt_type const&) BOOST_NOEXCEPT
+    path& assign(path&& p, codecvt_type const&) noexcept
     {
         m_pathname = static_cast< string_type&& >(p.m_pathname);
         return *this;
     }
 
-    path(string_type&& s) BOOST_NOEXCEPT : m_pathname(static_cast< string_type&& >(s))
+    path(string_type&& s) noexcept : m_pathname(static_cast< string_type&& >(s))
     {
     }
-    path(string_type&& s, codecvt_type const&) BOOST_NOEXCEPT : m_pathname(static_cast< string_type&& >(s))
+    path(string_type&& s, codecvt_type const&) noexcept : m_pathname(static_cast< string_type&& >(s))
     {
     }
-    path& operator=(string_type&& p) BOOST_NOEXCEPT
-    {
-        m_pathname = static_cast< string_type&& >(p);
-        return *this;
-    }
-    path& assign(string_type&& p) BOOST_NOEXCEPT
+    path& operator=(string_type&& p) noexcept
     {
         m_pathname = static_cast< string_type&& >(p);
         return *this;
     }
-    path& assign(string_type&& p, codecvt_type const&) BOOST_NOEXCEPT
+    path& assign(string_type&& p) noexcept
     {
         m_pathname = static_cast< string_type&& >(p);
         return *this;
     }
-#endif
+    path& assign(string_type&& p, codecvt_type const&) noexcept
+    {
+        m_pathname = static_cast< string_type&& >(p);
+        return *this;
+    }
 
     path(const value_type* begin, const value_type* end) : m_pathname(begin, end) {}
     path(const value_type* begin, const value_type* end, codecvt_type const&) : m_pathname(begin, end) {}
 
-#if !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS)
     template<
         typename InputIterator,
         typename = typename boost::enable_if_c<
@@ -460,29 +433,15 @@ public:
         >::type
     >
     path(InputIterator begin, InputIterator end)
-#else
-    template< typename InputIterator >
-    path(InputIterator begin, InputIterator end, typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
-        >::value
-    >::type* = NULL)
-#endif
     {
         if (begin != end)
         {
             typedef std::basic_string< typename std::iterator_traits< InputIterator >::value_type > source_t;
             source_t source(begin, end);
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
             assign(static_cast< source_t&& >(source));
-#else
-            assign(source);
-#endif
         }
     }
 
-#if !defined(BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS)
     template<
         typename InputIterator,
         typename = typename boost::enable_if_c<
@@ -493,32 +452,17 @@ public:
         >::type
     >
     path(InputIterator begin, InputIterator end, codecvt_type const& cvt)
-#else
-    template< typename InputIterator >
-    path(InputIterator begin, InputIterator end, codecvt_type const& cvt, typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
-        >::value
-    >::type* = NULL)
-#endif
     {
         if (begin != end)
         {
             typedef std::basic_string< typename std::iterator_traits< InputIterator >::value_type > source_t;
             source_t source(begin, end);
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
             assign(static_cast< source_t&& >(source), cvt);
-#else
-            assign(source, cvt);
-#endif
         }
     }
 
-#if !defined(BOOST_NO_CXX11_NULLPTR)
-    BOOST_DELETED_FUNCTION(path(std::nullptr_t))
-    BOOST_DELETED_FUNCTION(path& operator= (std::nullptr_t))
-#endif
+    path(std::nullptr_t) = delete;
+    path& operator= (std::nullptr_t) = delete;
 
 public:
     //  -----  assignments  -----
@@ -616,11 +560,7 @@ public:
         {
             typedef std::basic_string< typename std::iterator_traits< InputIterator >::value_type > source_t;
             source_t source(begin, end);
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
             assign(static_cast< source_t&& >(source));
-#else
-            assign(source);
-#endif
         }
         return *this;
     }
@@ -645,11 +585,7 @@ public:
         {
             typedef std::basic_string< typename std::iterator_traits< InputIterator >::value_type > source_t;
             source_t source(begin, end);
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
             assign(static_cast< source_t&& >(source), cvt);
-#else
-            assign(source, cvt);
-#endif
         }
         return *this;
     }
@@ -890,7 +826,7 @@ public:
 
     //  -----  modifiers  -----
 
-    void clear() BOOST_NOEXCEPT { m_pathname.clear(); }
+    void clear() noexcept { m_pathname.clear(); }
     path& make_preferred();
     path& remove_filename();
     BOOST_FILESYSTEM_DECL path& remove_filename_and_trailing_separators();
@@ -898,7 +834,7 @@ public:
     BOOST_FILESYSTEM_DECL path& replace_filename(path const& replacement);
     path& replace_extension(path const& new_extension = path());
 
-    void swap(path& rhs) BOOST_NOEXCEPT { m_pathname.swap(rhs.m_pathname); }
+    void swap(path& rhs) noexcept { m_pathname.swap(rhs.m_pathname); }
 
     //  -----  observers  -----
 
@@ -921,9 +857,9 @@ public:
 
     //  -----  native format observers  -----
 
-    string_type const& native() const BOOST_NOEXCEPT { return m_pathname; }
-    const value_type* c_str() const BOOST_NOEXCEPT { return m_pathname.c_str(); }
-    string_type::size_type size() const BOOST_NOEXCEPT { return m_pathname.size(); }
+    string_type const& native() const noexcept { return m_pathname; }
+    const value_type* c_str() const noexcept { return m_pathname.c_str(); }
+    string_type::size_type size() const noexcept { return m_pathname.size(); }
 
     template< typename String >
     String string() const;
@@ -1064,7 +1000,7 @@ public:
 
     //  -----  query  -----
 
-    bool empty() const BOOST_NOEXCEPT { return m_pathname.empty(); }
+    bool empty() const noexcept { return m_pathname.empty(); }
     bool filename_is_dot() const;
     bool filename_is_dot_dot() const;
     bool has_root_path() const { return detail::path_algorithms::find_root_path_size(*this) > 0; }
@@ -1187,7 +1123,7 @@ private:
 
     path const& dereference() const { return m_element; }
 
-    bool equal(path_iterator const& rhs) const BOOST_NOEXCEPT
+    bool equal(path_iterator const& rhs) const noexcept
     {
         return m_path_ptr == rhs.m_path_ptr && m_pos == rhs.m_pos;
     }
@@ -1232,7 +1168,7 @@ private:
     friend class boost::filesystem::path;
 
     path const& dereference() const { return m_element; }
-    bool equal(path_reverse_iterator const& rhs) const BOOST_NOEXCEPT { return m_itr == rhs.m_itr; }
+    bool equal(path_reverse_iterator const& rhs) const noexcept { return m_itr == rhs.m_itr; }
 
     void increment()
     {
@@ -1449,7 +1385,7 @@ template< typename Path >
 inline typename boost::enable_if_c<
     boost::is_same< Path, path >::value,
     std::size_t
->::type hash_value(Path const& p) BOOST_NOEXCEPT
+>::type hash_value(Path const& p) noexcept
 {
 #ifdef BOOST_WINDOWS_API
     std::size_t seed = 0u;
@@ -1461,7 +1397,7 @@ inline typename boost::enable_if_c<
 #endif
 }
 
-inline void swap(path& lhs, path& rhs) BOOST_NOEXCEPT
+inline void swap(path& lhs, path& rhs) noexcept
 {
     lhs.swap(rhs);
 }
@@ -1521,7 +1457,7 @@ namespace detail {
 //  a forward slash is the only valid directory separator and also the only valid
 //  element separator. For Windows, forward slash and back slash are the possible
 //  directory separators, but colon (example: "c:foo") is also an element separator.
-inline bool is_directory_separator(path::value_type c) BOOST_NOEXCEPT
+inline bool is_directory_separator(path::value_type c) noexcept
 {
     return c == path::separator
 #ifdef BOOST_WINDOWS_API
@@ -1530,7 +1466,7 @@ inline bool is_directory_separator(path::value_type c) BOOST_NOEXCEPT
         ;
 }
 
-inline bool is_element_separator(path::value_type c) BOOST_NOEXCEPT
+inline bool is_element_separator(path::value_type c) noexcept
 {
     return c == path::separator
 #ifdef BOOST_WINDOWS_API

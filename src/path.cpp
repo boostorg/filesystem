@@ -1,7 +1,7 @@
 //  filesystem path.cpp  -------------------------------------------------------------  //
 
 //  Copyright Beman Dawes 2008
-//  Copyright Andrey Semashev 2021-2023
+//  Copyright Andrey Semashev 2021-2024
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -91,7 +91,7 @@ inline bool is_device_name_char(wchar_t c)
 }
 
 //! Returns position of the first directory separator in the \a size initial characters of \a p, or \a size if not found
-inline size_type find_separator(const wchar_t* p, size_type size) BOOST_NOEXCEPT
+inline size_type find_separator(const wchar_t* p, size_type size) noexcept
 {
     size_type pos = 0u;
     for (; pos < size; ++pos)
@@ -110,7 +110,7 @@ const char dot_dot_path_literal[] = "..";
 const char separators[] = "/";
 
 //! Returns position of the first directory separator in the \a size initial characters of \a p, or \a size if not found
-inline size_type find_separator(const char* p, size_type size) BOOST_NOEXCEPT
+inline size_type find_separator(const char* p, size_type size) noexcept
 {
     const char* sep = static_cast< const char* >(std::memchr(p, '/', size));
     size_type pos = size;
@@ -1449,9 +1449,9 @@ std::locale default_locale()
 #endif
 }
 
-std::locale* g_path_locale = NULL;
+std::locale* g_path_locale = nullptr;
 
-void schedule_path_locale_cleanup() BOOST_NOEXCEPT;
+void schedule_path_locale_cleanup() noexcept;
 
 // std::locale("") construction, needed on non-Apple POSIX systems, can throw
 // (if environmental variables LC_MESSAGES or LANG are wrong, for example), so
@@ -1506,10 +1506,10 @@ inline std::locale* replace_path_locale(std::locale const& loc)
 
 #if defined(_MSC_VER)
 
-const boost::filesystem::path* g_dot_path = NULL;
-const boost::filesystem::path* g_dot_dot_path = NULL;
+const boost::filesystem::path* g_dot_path = nullptr;
+const boost::filesystem::path* g_dot_dot_path = nullptr;
 
-inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
+inline void schedule_path_locale_cleanup() noexcept
 {
 }
 
@@ -1560,11 +1560,11 @@ inline boost::filesystem::path const& get_dot_dot_path()
 void __cdecl destroy_path_globals()
 {
     delete g_dot_dot_path;
-    g_dot_dot_path = NULL;
+    g_dot_dot_path = nullptr;
     delete g_dot_path;
-    g_dot_path = NULL;
+    g_dot_path = nullptr;
     delete g_path_locale;
-    g_path_locale = NULL;
+    g_path_locale = nullptr;
 }
 
 BOOST_FILESYSTEM_INIT_FUNC init_path_globals()
@@ -1617,7 +1617,7 @@ struct path_locale_deleter
     ~path_locale_deleter()
     {
         delete g_path_locale;
-        g_path_locale = NULL;
+        g_path_locale = nullptr;
     }
 };
 
@@ -1630,7 +1630,7 @@ const boost::filesystem::path g_dot_path(dot_path_literal);
 BOOST_FILESYSTEM_INIT_PRIORITY(BOOST_FILESYSTEM_PATH_GLOBALS_INIT_PRIORITY)
 const boost::filesystem::path g_dot_dot_path(dot_dot_path_literal);
 
-inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
+inline void schedule_path_locale_cleanup() noexcept
 {
 }
 
@@ -1646,7 +1646,7 @@ inline boost::filesystem::path const& get_dot_dot_path()
 
 #else // defined(BOOST_FILESYSTEM_HAS_INIT_PRIORITY)
 
-inline void schedule_path_locale_cleanup() BOOST_NOEXCEPT
+inline void schedule_path_locale_cleanup() noexcept
 {
     BOOST_ATTRIBUTE_UNUSED static const path_locale_deleter g_path_locale_deleter;
 }
@@ -1690,14 +1690,10 @@ BOOST_FILESYSTEM_DECL std::locale path::imbue(std::locale const& loc)
     std::cout << "***** path::imbue() called" << std::endl;
 #endif
     std::locale* p = replace_path_locale(loc);
-    if (BOOST_LIKELY(p != NULL))
+    if (BOOST_LIKELY(p != nullptr))
     {
         // Note: copying/moving std::locale does not throw
-#if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
         std::locale temp(std::move(*p));
-#else
-        std::locale temp(*p);
-#endif
         delete p;
         return temp;
     }
