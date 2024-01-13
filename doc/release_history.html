@@ -47,6 +47,7 @@
   <li><b>v4:</b> <code>absolute</code> now returns a path with a trailing directory separator when the input path has an empty <code>relative_path()</code>. (<a href="https://github.com/boostorg/filesystem/issues/301">#301</a>)</li>
   <li>Added a <code>unique_path</code> overload taking a single <code>error_code&amp; ec</code> argument. The overload generates a unique path using the default path model.</li>
   <li><code>weakly_canonical</code> now produces an absolute path if the input path is relative and contains no elements that exist in the filesystem. (<a href="https://github.com/boostorg/filesystem/issues/300">#300</a>)</li>
+  <li>Added a new <code>copy_options::ignore_attribute_errors</code> option for <code>copy_file</code> and <code>copy</code> operations. The new option allows to ignore possible errors while copying file attributes. (<a href="https://github.com/boostorg/filesystem/issues/179">#179</a>)</li>
   <li>On Linux, <code>copy_file</code> backends based on <code>sendfile</code> and <code>copy_file_range</code> system calls will attempt to preallocate storage for the target file. This may reduce filesystem fragmentation and provide early error indication if there is not enough free space. Not all filesystems support this feature; file copying proceeds if storage preallocation is not supported.</li>
 </ul>
 

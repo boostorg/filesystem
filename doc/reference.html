@@ -708,6 +708,7 @@ nothing else.&quot;</p>
       update_existing,
       synchronize_data,
       synchronize,
+      ignore_attribute_errors,
       // <a href="#copy">copy</a> options
       recursive,
       copy_symlinks,
@@ -3198,6 +3199,7 @@ void copy(const path&amp; from, const path&amp; to, <a href="#copy_options">copy
     <ul>
       <li><code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code>;</li>
       <li><code>copy_options::synchronize_data</code> or <code>copy_options::synchronize</code>;</li>
+      <li><code>copy_options::ignore_attribute_errors</code>;</li>
       <li><code>copy_options::recursive</code>;</li>
       <li><code>copy_options::copy_symlinks</code> or <code>copy_options::skip_symlinks</code>;</li>
       <li><code>copy_options::directories_only</code>, <code>copy_options::create_symlinks</code> or <code>copy_options::create_hard_links</code>.</li>
@@ -3290,7 +3292,8 @@ bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">
   <p><i>Precondition:</i> <code>options</code> must contain at most one option from each of the following groups:
     <ul>
       <li><code>copy_options::skip_existing</code>, <code>copy_options::overwrite_existing</code> or <code>copy_options::update_existing</code>;</li>
-      <li><code>copy_options::synchronize_data</code> or <code>copy_options::synchronize</code>.</li>
+      <li><code>copy_options::synchronize_data</code> or <code>copy_options::synchronize</code>;</li>
+      <li><code>copy_options::ignore_attribute_errors</code>.</li>
     </ul>
   </p>
   <p><i>Effects:</i> Report an error if:
@@ -3303,11 +3306,11 @@ bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">
     Otherwise, return successfully with no effect if:
     <ul>
       <li><code>exists(to) &amp;&amp; (options &amp; copy_options::skip_existing) != copy_options::none</code>, or</li>
-      <li><code>exists(to) &amp;&amp; (options &amp; copy_options::update_existing) != copy_options::none</code> and last write time of <code>from</code> is more recent than that of <code>to</code>.</li>
+      <li><code>exists(to) &amp;&amp; (options &amp; copy_options::update_existing) != copy_options::none</code> and last write time of <code>to</code> is more recent than that of <code>from</code>.</li>
     </ul>
     Otherwise:
     <ul>
-     <li>The contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to; then</li>
+     <li>The contents and attributes of the file <code>from</code> resolves to are copied to the file <code>to</code> resolves to. If copying file attributes (but not contents) fails with an error and <code>(options &amp; copy_options::ignore_attribute_errors) != copy_options::none</code> then that error is ignored. After that,</li>
      <li>If <code>(options &amp; copy_options::synchronize) != copy_options::none</code>, the written data and attributes are synchronized with the permanent storage; otherwise</li>
      <li>If <code>(options &amp; copy_options::synchronize_data) != copy_options::none</code>, the written data is synchronized with the permanent storage.</li>
     </ul>
@@ -3317,6 +3320,7 @@ bool copy_file(const path&amp; from, const path&amp; to, <a href="#copy_option">
   <p>[<i>Note:</i> The overloads taking <a href="#copy_option"><code>copy_option</code></a> are deprecated. Their effect is equivalent to the corresponding overloads taking <a href="#copy_options"><code>copy_options</code></a> after casting the <code>options</code> argument to <a href="#copy_options"><code>copy_options</code></a>.]</p>
   <p>[<i>Note:</i> When <code>copy_options::update_existing</code> is specified, checking the write times of <code>from</code> and <code>to</code> may not be atomic with the copy operation. Another process may create or modify the file identified by <code>to</code> after the file modification times have been checked but before copying starts. In this case the target file will be overwritten.]</p>
   <p>[<i>Note:</i> The <code>copy_options::synchronize_data</code> and <code>copy_options::synchronize</code> options may have a significant performance impact. The <code>copy_options::synchronize_data</code> option may be less expensive than <code>copy_options::synchronize</code>. However, without these options, upon returning from <code>copy_file</code> it is not guaranteed that the copied file is completely written and preserved in case of a system failure. Any delayed write operations may fail after the function returns, at the point of physically writing the data to the underlying media, and this error will not be reported to the caller.]</p>
+  <p>[<i>Note:</i> The <code>copy_options::ignore_attribute_errors</code> option can be used when the caller does not require file attributes to be copied. The implementation is permitted to make an attempt to copy the file attributes, but still succeed the file copying operation if that attempt fails. This option may be useful with file systems that do not fully support operations of file attributes.]</p>
 </blockquote>
 <pre>void <a name="copy_symlink">copy_symlink</a>(const path&amp; existing_symlink, const path&amp; new_symlink);
 void copy_symlink(const path&amp; existing_symlink, const path&amp; new_symlink, system::error_code&amp; ec);</pre>

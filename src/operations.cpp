@@ -3061,7 +3061,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
         goto fail;
     }
 
-    mode_t to_mode = from_mode;
+    mode_t to_mode = from_mode & fs::perms_mask;
 #if !defined(BOOST_FILESYSTEM_USE_WASI)
     // Enable writing for the newly created files. Having write permission set is important e.g. for NFS,
     // which checks the file permission on the server, even if the client's file descriptor supports writing.
@@ -3184,10 +3184,13 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 #if !defined(BOOST_FILESYSTEM_USE_WASI)
     // If we created a new file with an explicitly added S_IWUSR permission,
     // we may need to update its mode bits to match the source file.
-    if (to_mode != from_mode)
+    if ((to_mode & fs::perms_mask) != (from_mode & fs::perms_mask))
     {
-        if (BOOST_UNLIKELY(::fchmod(outfile.fd, from_mode) != 0))
+        if (BOOST_UNLIKELY(::fchmod(outfile.fd, (from_mode & fs::perms_mask)) != 0 &&
+            (options & static_cast< unsigned int >(copy_options::ignore_attribute_errors)) == 0u))
+        {
             goto fail_errno;
+        }
     }
 #endif
 
