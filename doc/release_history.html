@@ -49,6 +49,8 @@
   <li><code>weakly_canonical</code> now produces an absolute path if the input path is relative and contains no elements that exist in the filesystem. (<a href="https://github.com/boostorg/filesystem/issues/300">#300</a>)</li>
   <li>Added a new <code>copy_options::ignore_attribute_errors</code> option for <code>copy_file</code> and <code>copy</code> operations. The new option allows to ignore possible errors while copying file attributes. (<a href="https://github.com/boostorg/filesystem/issues/179">#179</a>)</li>
   <li>On Linux, <code>copy_file</code> backends based on <code>sendfile</code> and <code>copy_file_range</code> system calls will attempt to preallocate storage for the target file. This may reduce filesystem fragmentation and provide early error indication if there is not enough free space. Not all filesystems support this feature; file copying proceeds if storage preallocation is not supported.</li>
+  <li>Removed APIs that were previously declared deprecated. In particular, <code>path</code> and <code>recursive_directory_iterator</code> member functions, <code>is_regular</code>, <code>copy_directory</code>, <code>symbolic_link_exists</code>, <code>complete</code>, <code>copy_option</code>, <code>symlink_option</code>, as well as <code>boost/filesystem/convenience.hpp</code> and <code>boost/filesystem/path_traits.hpp</code> headers were removed.</li>
+  <li>Support for <code>path</code> construction, assignment and appending from container types (e.g. <code>std::vector&lt;char&gt;</code>) is now disabled by default. Users can still enable this functionality by defining <code>BOOST_FILESYSTEM_DEPRECATED</code>. This functionality remains deprecated and will be completely removed in a future release.</li>
 </ul>
 
 <h2>1.84.0</h2>

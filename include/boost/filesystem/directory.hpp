@@ -591,14 +591,6 @@ inline bool is_other(directory_entry const& e, system::error_code& ec) noexcept
     return e.is_other(ec);
 }
 
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
-inline bool is_regular(directory_entry const& e)
-{
-    return filesystem::is_regular_file(e);
-}
-#endif
-
 //--------------------------------------------------------------------------------------//
 //                                                                                      //
 //                            directory_iterator helpers                                //
@@ -816,19 +808,6 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-// Deprecated enum, use directory_options instead
-enum class symlink_option : unsigned int
-{
-    none = static_cast< unsigned int >(directory_options::none),
-    no_recurse = none,                                                                  // don't follow directory symlinks (default behavior)
-    recurse = static_cast< unsigned int >(directory_options::follow_directory_symlink), // follow directory symlinks
-    _detail_no_push = static_cast< unsigned int >(directory_options::_detail_no_push)   // internal use only
-};
-
-BOOST_BITMASK(symlink_option)
-#endif // BOOST_FILESYSTEM_NO_DEPRECATED
-
 class recursive_directory_iterator;
 
 namespace detail {
@@ -892,21 +871,6 @@ public:
         detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), &ec);
     }
 
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-    // Deprecated constructors
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use directory_options instead of symlink_option")
-    recursive_directory_iterator(path const& dir_path, symlink_option opts)
-    {
-        detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), nullptr);
-    }
-
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use directory_options instead of symlink_option")
-    recursive_directory_iterator(path const& dir_path, symlink_option opts, system::error_code& ec) noexcept
-    {
-        detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), &ec);
-    }
-#endif // BOOST_FILESYSTEM_NO_DEPRECATED
-
     recursive_directory_iterator(recursive_directory_iterator const&) = default;
     recursive_directory_iterator& operator=(recursive_directory_iterator const&) = default;
 
@@ -939,16 +903,6 @@ public:
         return (m_imp->m_options & static_cast< unsigned int >(directory_options::_detail_no_push)) == 0u;
     }
 
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use recursive_directory_iterator::depth() instead")
-    int level() const noexcept
-    {
-        return depth();
-    }
-    bool no_push_pending() const noexcept { return !recursion_pending(); }
-    bool no_push_request() const noexcept { return !recursion_pending(); }
-#endif
-
     void pop()
     {
         detail::recursive_directory_iterator_pop(*this, nullptr);
@@ -967,14 +921,6 @@ public:
         else
             m_imp->m_options &= ~static_cast< unsigned int >(directory_options::_detail_no_push);
     }
-
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use recursive_directory_iterator::disable_recursion_pending() instead")
-    void no_push(bool value = true) noexcept
-    {
-        disable_recursion_pending(value);
-    }
-#endif
 
     file_status status() const
     {
@@ -1018,11 +964,6 @@ private:
     // (i.e. InputIterators). The end iterator is indicated by is_end().
     boost::intrusive_ptr< detail::recur_dir_itr_imp > m_imp;
 };
-
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use recursive_directory_iterator instead")
-typedef recursive_directory_iterator wrecursive_directory_iterator;
-#endif
 
 //  enable recursive directory iterator C++11 range-base for statement use  ----------//
 

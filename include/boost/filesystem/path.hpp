@@ -1039,44 +1039,6 @@ public:
     static BOOST_FILESYSTEM_DECL std::locale imbue(std::locale const& loc);
     static BOOST_FILESYSTEM_DECL codecvt_type const& codecvt();
 
-    //  -----  deprecated functions  -----
-
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-    //  recently deprecated functions supplied by default
-    path& normalize();
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::remove_filename() instead")
-    path& remove_leaf() { return remove_filename(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::filename() instead")
-    path leaf() const { return filename(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::parent_path() instead")
-    path branch_path() const { return parent_path(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::generic_path() instead")
-    path generic() const { return generic_path(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use !path::empty() instead")
-    bool has_leaf() const { return !m_pathname.empty(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::has_parent_path() instead")
-    bool has_branch_path() const { return has_parent_path(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::is_absolute() instead")
-    bool is_complete() const { return is_absolute(); }
-#endif
-
-#if defined(BOOST_FILESYSTEM_DEPRECATED)
-    //  deprecated functions with enough signature or semantic changes that they are
-    //  not supplied by default
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
-    std::string file_string() const { return string(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
-    std::string directory_string() const { return string(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
-    std::string native_file_string() const { return string(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::string() instead")
-    std::string native_directory_string() const { return string(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::native() instead")
-    string_type external_file_string() const { return native(); }
-    BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::native() instead")
-    string_type external_directory_string() const { return native(); }
-#endif
-
     //--------------------------------------------------------------------------------------//
     //                            class path private members                                //
     //--------------------------------------------------------------------------------------//
@@ -1097,10 +1059,6 @@ namespace detail {
 BOOST_FILESYSTEM_DECL path const& dot_path();
 BOOST_FILESYSTEM_DECL path const& dot_dot_path();
 } // namespace detail
-
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-typedef path wpath;
-#endif
 
 namespace path_detail {
 
@@ -1583,18 +1541,6 @@ inline bool path::filename_is_dot_dot() const
     // use detail::is_element_separator() rather than detail::is_directory_separator
     // to deal with "c:.." edge case on Windows when ':' acts as a separator
 }
-
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use path::lexically_normal() instead")
-BOOST_FORCEINLINE path& path::normalize()
-{
-    path tmp(lexically_normal());
-    m_pathname.swap(tmp.m_pathname);
-    return *this;
-}
-
-#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 
 // The following functions are defined differently, depending on Boost.Filesystem version in use.
 // To avoid ODR violation, these functions are not defined when the library itself is built.

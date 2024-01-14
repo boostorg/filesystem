@@ -32,7 +32,7 @@
 #include <boost/type_traits/disjunction.hpp>
 #include <boost/core/enable_if.hpp>
 #endif
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+#if defined(BOOST_FILESYSTEM_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 #include <vector>
 #include <list>
 #endif
@@ -256,7 +256,7 @@ struct path_source_traits< boost::basic_string_view< wchar_t, std::char_traits< 
     static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
 
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+#if defined(BOOST_FILESYSTEM_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 template< >
 struct
 BOOST_FILESYSTEM_DETAIL_DEPRECATED("Boost.Filesystem path construction/assignment/appending from containers is deprecated, use strings or iterators instead.")
@@ -298,7 +298,7 @@ path_source_traits< std::list< wchar_t > >
     typedef wchar_t char_type;
     static BOOST_CONSTEXPR_OR_CONST bool is_native = false;
 };
-#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+#endif // defined(BOOST_FILESYSTEM_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 
 template< >
 struct path_source_traits< directory_entry >
@@ -437,7 +437,7 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, 
     return cb(src.data(), src.data() + src.size(), cvt);
 }
 
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+#if defined(BOOST_FILESYSTEM_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 
 template< typename Callback >
 BOOST_FORCEINLINE typename Callback::result_type dispatch(std::vector< char > const& source, Callback cb, const codecvt_type* cvt, range_type_tag)
@@ -463,7 +463,7 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch(std::vector< wchar_t >
     return cb(data, data_end, cvt);
 }
 
-#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
+#endif // defined(BOOST_FILESYSTEM_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 
 // Defined in directory.hpp to avoid circular header dependencies
 template< typename Callback >

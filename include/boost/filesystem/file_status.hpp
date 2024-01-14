@@ -33,9 +33,6 @@ namespace filesystem {
 enum file_type
 {
     status_error,
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-    status_unknown = status_error,
-#endif
     file_not_found,
     regular_file,
     directory_file,
@@ -246,14 +243,6 @@ inline BOOST_CONSTEXPR bool is_other(file_status f) noexcept
 {
     return filesystem::exists(f) && !filesystem::is_regular_file(f) && !filesystem::is_directory(f) && !filesystem::is_symlink(f);
 }
-
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
-inline bool is_regular(file_status f) noexcept
-{
-    return filesystem::is_regular_file(f);
-}
-#endif
 
 } // namespace filesystem
 } // namespace boost

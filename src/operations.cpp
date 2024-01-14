@@ -3497,53 +3497,6 @@ bool create_directory(path const& p, const path* existing, error_code* ec)
     return false;
 }
 
-// Deprecated, to be removed in a future release
-BOOST_FILESYSTEM_DECL
-void copy_directory(path const& from, path const& to, system::error_code* ec)
-{
-    if (ec)
-        ec->clear();
-
-#if defined(BOOST_POSIX_API)
-
-#if defined(BOOST_FILESYSTEM_USE_STATX)
-    int err;
-    struct ::statx from_stat;
-    if (BOOST_UNLIKELY(invoke_statx(AT_FDCWD, from.c_str(), AT_NO_AUTOMOUNT, STATX_TYPE | STATX_MODE, &from_stat) < 0))
-    {
-    fail_errno:
-        err = errno;
-    fail:
-        emit_error(err, from, to, ec, "boost::filesystem::copy_directory");
-        return;
-    }
-
-    if (BOOST_UNLIKELY((from_stat.stx_mask & (STATX_TYPE | STATX_MODE)) != (STATX_TYPE | STATX_MODE)))
-    {
-        err = BOOST_ERROR_NOT_SUPPORTED;
-        goto fail;
-    }
-#else
-    struct ::stat from_stat;
-    if (BOOST_UNLIKELY(::stat(from.c_str(), &from_stat) < 0))
-    {
-    fail_errno:
-        emit_error(errno, from, to, ec, "boost::filesystem::copy_directory");
-        return;
-    }
-#endif
-
-    if (BOOST_UNLIKELY(::mkdir(to.c_str(), get_mode(from_stat)) < 0))
-        goto fail_errno;
-
-#else // defined(BOOST_POSIX_API)
-
-    if (BOOST_UNLIKELY(!::CreateDirectoryExW(from.c_str(), to.c_str(), 0)))
-        emit_error(BOOST_ERRNO, from, to, ec, "boost::filesystem::copy_directory");
-
-#endif // defined(BOOST_POSIX_API)
-}
-
 BOOST_FILESYSTEM_DECL
 void create_directory_symlink(path const& to, path const& from, system::error_code* ec)
 {

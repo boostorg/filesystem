@@ -20,12 +20,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/file_status.hpp>
 
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-// These includes are left for backward compatibility and should be included directly by users, as needed
-#include <boost/filesystem/exception.hpp>
-#include <boost/filesystem/directory.hpp>
-#endif
-
 #include <boost/detail/bitmask.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/cstdint.hpp>
@@ -71,16 +65,6 @@ enum class copy_options : unsigned int
 
 BOOST_BITMASK(copy_options)
 
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-// Deprecated enum, use copy_options instead
-enum class copy_option : unsigned int
-{
-    none = static_cast< unsigned int >(copy_options::none),
-    fail_if_exists = none,
-    overwrite_if_exists = static_cast< unsigned int >(copy_options::overwrite_existing)
-};
-#endif
-
 //--------------------------------------------------------------------------------------//
 //                             implementation details                                   //
 //--------------------------------------------------------------------------------------//
@@ -105,10 +89,6 @@ BOOST_FILESYSTEM_DECL
 path canonical_v4(path const& p, path const& base, system::error_code* ec = nullptr);
 BOOST_FILESYSTEM_DECL
 void copy(path const& from, path const& to, unsigned int options, system::error_code* ec = nullptr);
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-BOOST_FILESYSTEM_DECL
-void copy_directory(path const& from, path const& to, system::error_code* ec = nullptr);
-#endif
 BOOST_FILESYSTEM_DECL
 bool copy_file(path const& from, path const& to,                     // See ticket #2925
                unsigned int options, system::error_code* ec = nullptr); // see copy_options for options
@@ -297,20 +277,6 @@ inline bool is_other(path const& p, system::error_code& ec) noexcept
     return filesystem::is_other(detail::status(p, &ec));
 }
 
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
-inline bool is_regular(path const& p)
-{
-    return filesystem::is_regular_file(p);
-}
-
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_regular_file() instead")
-inline bool is_regular(path const& p, system::error_code& ec) noexcept
-{
-    return filesystem::is_regular_file(p, ec);
-}
-#endif
-
 inline bool is_empty(path const& p)
 {
     return detail::is_empty(p);
@@ -388,20 +354,6 @@ inline void copy(path const& from, path const& to, copy_options options, system:
     detail::copy(from, to, static_cast< unsigned int >(options), &ec);
 }
 
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use create_directory() instead")
-inline void copy_directory(path const& from, path const& to)
-{
-    detail::copy_directory(from, to);
-}
-
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use create_directory() instead")
-inline void copy_directory(path const& from, path const& to, system::error_code& ec) noexcept
-{
-    detail::copy_directory(from, to, &ec);
-}
-#endif
-
 inline bool copy_file(path const& from, path const& to)
 {
     return detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none));
@@ -422,20 +374,6 @@ inline bool copy_file(path const& from, path const& to, copy_options options, sy
 {
     return detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
 }
-
-#if !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use copy_options instead of copy_option")
-inline bool copy_file(path const& from, path const& to, copy_option options)
-{
-    return detail::copy_file(from, to, static_cast< unsigned int >(options));
-}
-
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use copy_options instead of copy_option")
-inline bool copy_file(path const& from, path const& to, copy_option options, system::error_code& ec) noexcept
-{
-    return detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
-}
-#endif // !defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 
 inline void copy_symlink(path const& existing_symlink, path const& new_symlink)
 {
@@ -646,14 +584,6 @@ inline space_info space(path const& p, system::error_code& ec) noexcept
     return detail::space(p, &ec);
 }
 
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use is_symlink(symlink_status(path)) instead")
-inline bool symbolic_link_exists(path const& p)
-{
-    return is_symlink(filesystem::symlink_status(p));
-}
-#endif
-
 inline path system_complete(path const& p)
 {
     return detail::system_complete(p);
@@ -775,20 +705,6 @@ using BOOST_FILESYSTEM_VERSION_NAMESPACE::absolute;
 using BOOST_FILESYSTEM_VERSION_NAMESPACE::canonical;
 using BOOST_FILESYSTEM_VERSION_NAMESPACE::equivalent;
 using BOOST_FILESYSTEM_VERSION_NAMESPACE::weakly_canonical;
-
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use absolute() instead")
-inline path complete(path const& p)
-{
-    return absolute(p, initial_path());
-}
-
-BOOST_FILESYSTEM_DETAIL_DEPRECATED("Use absolute() instead")
-inline path complete(path const& p, path const& base)
-{
-    return absolute(p, base);
-}
-#endif
 
 //  test helper  -----------------------------------------------------------------------//
 
