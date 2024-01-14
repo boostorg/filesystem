@@ -40,7 +40,7 @@ void verify_file(const fs::path& ph, const std::string& expected)
         throw fs::filesystem_error("operations_test verify_file contents \"" + contents + "\" != \"" + expected + "\"", ph, error_code());
 }
 
-int cpp_main(int argc, char* argv[])
+int main()
 {
     bool file_copied = false;
     bool copy_ex_ok = true;
