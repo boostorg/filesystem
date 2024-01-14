@@ -173,7 +173,7 @@ int cpp_main(int argc, char*[])
 
     // test narrow characters
     std::cout << "narrow character tests:\n";
-    test("narrow_fstream_test");
+    test(fs::unique_path("narrow_fstream_test-%%%%-%%%%.txt"));
 
     // So that tests are run with known encoding, use Boost UTF-8 codecvt
     std::locale global_loc = std::locale();
