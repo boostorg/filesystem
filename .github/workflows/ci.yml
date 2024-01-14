@@ -257,7 +257,7 @@ jobs:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
           - toolset: clang
             compiler: clang++-17
-            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
             os: ubuntu-22.04
             install:
               - clang-17
@@ -267,7 +267,7 @@ jobs:
               - "https://apt.llvm.org/llvm-snapshot.gpg.key"
           - toolset: clang
             compiler: clang++-17
-            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
             os: ubuntu-22.04
