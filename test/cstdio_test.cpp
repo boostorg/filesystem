@@ -79,7 +79,7 @@ int cpp_main(int argc, char*[])
 
     // test narrow characters
     std::cout << "narrow character tests:\n";
-    test("narrow_fopen_test");
+    test(fs::unique_path("narrow_fopen_test-%%%%-%%%%.txt"));
 
     // So that tests are run with known encoding, use Boost UTF-8 codecvt
     std::locale global_loc = std::locale();
@@ -94,7 +94,8 @@ int cpp_main(int argc, char*[])
     std::wstring ws(L"wide_fopen_test_");
     ws.push_back(static_cast< wchar_t >(0x2780));
     ws.push_back(static_cast< wchar_t >(0x263A));
-    test(ws);
+    ws.append(L"-%%%%-%%%%.txt");
+    test(fs::unique_path(ws));
 
     return ::boost::report_errors();
 }
