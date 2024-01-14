@@ -40,13 +40,27 @@
 namespace boost {
 namespace filesystem {
 
+enum class directory_options : unsigned int
+{
+    none = 0u,
+    skip_permission_denied = 1u,         // if a directory cannot be opened because of insufficient permissions, pretend that the directory is empty
+    follow_directory_symlink = 1u << 1u, // recursive_directory_iterator: follow directory symlinks
+    skip_dangling_symlinks = 1u << 2u,   // non-standard extension for recursive_directory_iterator: don't follow dangling directory symlinks,
+    pop_on_error = 1u << 3u,             // non-standard extension for recursive_directory_iterator: instead of producing an end iterator on errors,
+                                         // repeatedly invoke pop() until it succeeds or the iterator becomes equal to end iterator
+    _detail_no_follow = 1u << 4u,        // internal use only
+    _detail_no_push = 1u << 5u           // internal use only
+};
+
+BOOST_BITMASK(directory_options)
+
 class directory_iterator;
 
 namespace detail {
 
 struct directory_iterator_params;
 
-BOOST_FILESYSTEM_DECL void directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, directory_iterator_params* params, system::error_code* ec);
+BOOST_FILESYSTEM_DECL void directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, directory_iterator_params* params, system::error_code* ec);
 BOOST_FILESYSTEM_DECL void directory_iterator_increment(directory_iterator& it, system::error_code* ec);
 
 } // namespace detail
@@ -63,7 +77,7 @@ BOOST_FILESYSTEM_DECL void directory_iterator_increment(directory_iterator& it, 
 
 class directory_entry
 {
-    friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, detail::directory_iterator_params* params, system::error_code* ec);
+    friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, detail::directory_iterator_params* params, system::error_code* ec);
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_increment(directory_iterator& it, system::error_code* ec);
 
 public:
@@ -597,20 +611,6 @@ inline bool is_other(directory_entry const& e, system::error_code& ec) noexcept
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-enum class directory_options : unsigned int
-{
-    none = 0u,
-    skip_permission_denied = 1u,         // if a directory cannot be opened because of insufficient permissions, pretend that the directory is empty
-    follow_directory_symlink = 1u << 1u, // recursive_directory_iterator: follow directory symlinks
-    skip_dangling_symlinks = 1u << 2u,   // non-standard extension for recursive_directory_iterator: don't follow dangling directory symlinks,
-    pop_on_error = 1u << 3u,             // non-standard extension for recursive_directory_iterator: instead of producing an end iterator on errors,
-                                         // repeatedly invoke pop() until it succeeds or the iterator becomes equal to end iterator
-    _detail_no_follow = 1u << 4u,        // internal use only
-    _detail_no_push = 1u << 5u           // internal use only
-};
-
-BOOST_BITMASK(directory_options)
-
 namespace detail {
 
 struct dir_itr_imp :
@@ -657,7 +657,7 @@ class directory_iterator :
 {
     friend class boost::iterator_core_access;
 
-    friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_construct(directory_iterator& it, path const& p, unsigned int opts, detail::directory_iterator_params* params, system::error_code* ec);
+    friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, detail::directory_iterator_params* params, system::error_code* ec);
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_increment(directory_iterator& it, system::error_code* ec);
 
 public:
@@ -667,17 +667,17 @@ public:
     // separate translation unit dll's, so forward to detail functions
     explicit directory_iterator(path const& p, directory_options opts = directory_options::none)
     {
-        detail::directory_iterator_construct(*this, p, static_cast< unsigned int >(opts), nullptr, nullptr);
+        detail::directory_iterator_construct(*this, p, opts, nullptr, nullptr);
     }
 
     directory_iterator(path const& p, system::error_code& ec) noexcept
     {
-        detail::directory_iterator_construct(*this, p, static_cast< unsigned int >(directory_options::none), nullptr, &ec);
+        detail::directory_iterator_construct(*this, p, directory_options::none, nullptr, &ec);
     }
 
     directory_iterator(path const& p, directory_options opts, system::error_code& ec) noexcept
     {
-        detail::directory_iterator_construct(*this, p, static_cast< unsigned int >(opts), nullptr, &ec);
+        detail::directory_iterator_construct(*this, p, opts, nullptr, &ec);
     }
 
     directory_iterator(directory_iterator const&) = default;
@@ -817,13 +817,12 @@ struct recur_dir_itr_imp :
 {
     typedef directory_iterator element_type;
     std::vector< element_type > m_stack;
-    // directory_options values, declared as unsigned int for ABI compatibility
-    unsigned int m_options;
+    directory_options m_options;
 
-    explicit recur_dir_itr_imp(unsigned int opts) noexcept : m_options(opts) {}
+    explicit recur_dir_itr_imp(directory_options opts) noexcept : m_options(opts) {}
 };
 
-BOOST_FILESYSTEM_DECL void recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, unsigned int opts, system::error_code* ec);
+BOOST_FILESYSTEM_DECL void recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, directory_options opts, system::error_code* ec);
 BOOST_FILESYSTEM_DECL void recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec);
 BOOST_FILESYSTEM_DECL void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::error_code* ec);
 
@@ -844,7 +843,7 @@ class recursive_directory_iterator :
 {
     friend class boost::iterator_core_access;
 
-    friend BOOST_FILESYSTEM_DECL void detail::recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, unsigned int opts, system::error_code* ec);
+    friend BOOST_FILESYSTEM_DECL void detail::recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, directory_options opts, system::error_code* ec);
     friend BOOST_FILESYSTEM_DECL void detail::recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec);
     friend BOOST_FILESYSTEM_DECL void detail::recursive_directory_iterator_pop(recursive_directory_iterator& it, system::error_code* ec);
 
@@ -853,22 +852,22 @@ public:
 
     explicit recursive_directory_iterator(path const& dir_path)
     {
-        detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(directory_options::none), nullptr);
+        detail::recursive_directory_iterator_construct(*this, dir_path, directory_options::none, nullptr);
     }
 
     recursive_directory_iterator(path const& dir_path, system::error_code& ec)
     {
-        detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(directory_options::none), &ec);
+        detail::recursive_directory_iterator_construct(*this, dir_path, directory_options::none, &ec);
     }
 
     recursive_directory_iterator(path const& dir_path, directory_options opts)
     {
-        detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), nullptr);
+        detail::recursive_directory_iterator_construct(*this, dir_path, opts, nullptr);
     }
 
     recursive_directory_iterator(path const& dir_path, directory_options opts, system::error_code& ec)
     {
-        detail::recursive_directory_iterator_construct(*this, dir_path, static_cast< unsigned int >(opts), &ec);
+        detail::recursive_directory_iterator_construct(*this, dir_path, opts, &ec);
     }
 
     recursive_directory_iterator(recursive_directory_iterator const&) = default;
@@ -900,7 +899,7 @@ public:
     bool recursion_pending() const noexcept
     {
         BOOST_ASSERT_MSG(!is_end(), "recursion_pending() on end recursive_directory_iterator");
-        return (m_imp->m_options & static_cast< unsigned int >(directory_options::_detail_no_push)) == 0u;
+        return (m_imp->m_options & directory_options::_detail_no_push) == directory_options::none;
     }
 
     void pop()
@@ -917,9 +916,9 @@ public:
     {
         BOOST_ASSERT_MSG(!is_end(), "disable_recursion_pending() on end recursive_directory_iterator");
         if (value)
-            m_imp->m_options |= static_cast< unsigned int >(directory_options::_detail_no_push);
+            m_imp->m_options |= directory_options::_detail_no_push;
         else
-            m_imp->m_options &= ~static_cast< unsigned int >(directory_options::_detail_no_push);
+            m_imp->m_options &= ~directory_options::_detail_no_push;
     }
 
     file_status status() const

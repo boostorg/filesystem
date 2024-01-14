@@ -291,7 +291,7 @@ BOOST_CONSTEXPR_OR_CONST unsigned int symloop_max =
 bool is_empty_directory(path const& p, error_code* ec)
 {
     fs::directory_iterator itr;
-    detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::none), nullptr, ec);
+    detail::directory_iterator_construct(itr, p, directory_options::none, nullptr, ec);
     return itr == fs::directory_iterator();
 }
 
@@ -1145,7 +1145,7 @@ uintmax_t remove_all_impl
             (
                 itr,
                 p,
-                static_cast< unsigned int >(directory_options::_detail_no_follow),
+                directory_options::_detail_no_follow,
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                 &params,
 #else
@@ -2051,7 +2051,7 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
         directory_iterator_params params;
         params.use_handle = h;
         params.close_handle = false; // the caller will close the handle
-        fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), &params, &local_ec);
+        fs::detail::directory_iterator_construct(itr, p, directory_options::_detail_no_follow, &params, &local_ec);
         if (BOOST_UNLIKELY(!!local_ec))
         {
             if (!ec)
@@ -2165,7 +2165,7 @@ uintmax_t remove_all_nt5_impl(path const& p, error_code* ec)
         if (recurse)
         {
             fs::directory_iterator itr;
-            fs::detail::directory_iterator_construct(itr, p, static_cast< unsigned int >(directory_options::_detail_no_follow), nullptr, &dit_create_ec);
+            fs::detail::directory_iterator_construct(itr, p, directory_options::_detail_no_follow, nullptr, &dit_create_ec);
             if (BOOST_UNLIKELY(!!dit_create_ec))
             {
                 if (dit_create_ec == make_error_condition(system::errc::not_a_directory) ||
@@ -2797,26 +2797,24 @@ path canonical_v4(path const& p, path const& base, system::error_code* ec)
 }
 
 BOOST_FILESYSTEM_DECL
-void copy(path const& from, path const& to, unsigned int options, system::error_code* ec)
+void copy(path const& from, path const& to, copy_options options, system::error_code* ec)
 {
-    BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1);
+    BOOST_ASSERT((((options & copy_options::overwrite_existing) != copy_options::none) +
+        ((options & copy_options::skip_existing) != copy_options::none) +
+        ((options & copy_options::update_existing) != copy_options::none)) <= 1);
 
-    BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::copy_symlinks)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::skip_symlinks)) != 0u)) <= 1);
+    BOOST_ASSERT((((options & copy_options::copy_symlinks) != copy_options::none) +
+        ((options & copy_options::skip_symlinks) != copy_options::none)) <= 1);
 
-    BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::directories_only)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::create_hard_links)) != 0u)) <= 1);
+    BOOST_ASSERT((((options & copy_options::directories_only) != copy_options::none) +
+        ((options & copy_options::create_symlinks) != copy_options::none) +
+        ((options & copy_options::create_hard_links) != copy_options::none)) <= 1);
 
     if (ec)
         ec->clear();
 
     file_status from_stat;
-    if ((options & (static_cast< unsigned int >(copy_options::copy_symlinks) |
-        static_cast< unsigned int >(copy_options::skip_symlinks) |
-        static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
+    if ((options & (copy_options::copy_symlinks | copy_options::skip_symlinks | copy_options::create_symlinks)) != copy_options::none)
     {
         from_stat = detail::symlink_status_impl(from, ec);
     }
@@ -2836,20 +2834,20 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
 
     if (is_symlink(from_stat))
     {
-        if ((options & static_cast< unsigned int >(copy_options::skip_symlinks)) != 0u)
+        if ((options & copy_options::skip_symlinks) != copy_options::none)
             return;
 
-        if ((options & static_cast< unsigned int >(copy_options::copy_symlinks)) == 0u)
+        if ((options & copy_options::copy_symlinks) == copy_options::none)
             goto fail;
 
         detail::copy_symlink(from, to, ec);
     }
     else if (is_regular_file(from_stat))
     {
-        if ((options & static_cast< unsigned int >(copy_options::directories_only)) != 0u)
+        if ((options & copy_options::directories_only) != copy_options::none)
             return;
 
-        if ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u)
+        if ((options & copy_options::create_symlinks) != copy_options::none)
         {
             const path* pfrom = &from;
             path relative_from;
@@ -2882,7 +2880,7 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
             return;
         }
 
-        if ((options & static_cast< unsigned int >(copy_options::create_hard_links)) != 0u)
+        if ((options & copy_options::create_hard_links) != copy_options::none)
         {
             detail::create_hard_link(from, to, ec);
             return;
@@ -2890,8 +2888,7 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
 
         error_code local_ec;
         file_status to_stat;
-        if ((options & (static_cast< unsigned int >(copy_options::skip_symlinks) |
-            static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
+        if ((options & (copy_options::skip_symlinks | copy_options::create_symlinks)) != copy_options::none)
         {
             to_stat = detail::symlink_status_impl(to, &local_ec);
         }
@@ -2922,7 +2919,7 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
     else if (is_directory(from_stat))
     {
         error_code local_ec;
-        if ((options & static_cast< unsigned int >(copy_options::create_symlinks)) != 0u)
+        if ((options & copy_options::create_symlinks) != copy_options::none)
         {
             local_ec = make_error_code(system::errc::is_a_directory);
             if (!ec)
@@ -2932,8 +2929,7 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
         }
 
         file_status to_stat;
-        if ((options & (static_cast< unsigned int >(copy_options::skip_symlinks) |
-            static_cast< unsigned int >(copy_options::create_symlinks))) != 0u)
+        if ((options & (copy_options::skip_symlinks | copy_options::create_symlinks)) != copy_options::none)
         {
             to_stat = detail::symlink_status_impl(to, &local_ec);
         }
@@ -2959,10 +2955,10 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
                 return;
         }
 
-        if ((options & static_cast< unsigned int >(copy_options::recursive)) != 0u || options == 0u)
+        if ((options & copy_options::recursive) != copy_options::none || options == copy_options::none)
         {
             fs::directory_iterator itr;
-            detail::directory_iterator_construct(itr, from, static_cast< unsigned int >(directory_options::none), nullptr, ec);
+            detail::directory_iterator_construct(itr, from, directory_options::none, nullptr, ec);
             if (ec && *ec)
                 return;
 
@@ -2974,7 +2970,7 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
                     path target(to);
                     path_algorithms::append_v4(target, path_algorithms::filename_v4(p));
                     // Set _detail_recursing flag so that we don't recurse more than for one level deeper into the directory if options are copy_options::none
-                    detail::copy(p, target, options | static_cast< unsigned int >(copy_options::_detail_recursing), ec);
+                    detail::copy(p, target, options | copy_options::_detail_recursing, ec);
                 }
                 if (ec && *ec)
                     return;
@@ -2993,11 +2989,11 @@ void copy(path const& from, path const& to, unsigned int options, system::error_
 }
 
 BOOST_FILESYSTEM_DECL
-bool copy_file(path const& from, path const& to, unsigned int options, error_code* ec)
+bool copy_file(path const& from, path const& to, copy_options options, error_code* ec)
 {
-    BOOST_ASSERT((((options & static_cast< unsigned int >(copy_options::overwrite_existing)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) +
-        ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)) <= 1);
+    BOOST_ASSERT((((options & copy_options::overwrite_existing) != copy_options::none) +
+        ((options & copy_options::skip_existing) != copy_options::none) +
+        ((options & copy_options::update_existing) != copy_options::none)) <= 1);
 
     if (ec)
         ec->clear();
@@ -3028,7 +3024,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 
 #if defined(BOOST_FILESYSTEM_USE_STATX)
     unsigned int statx_data_mask = STATX_TYPE | STATX_MODE | STATX_INO | STATX_SIZE;
-    if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
+    if ((options & copy_options::update_existing) != copy_options::none)
         statx_data_mask |= STATX_MTIME;
 
     struct ::statx from_stat;
@@ -3069,7 +3065,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 #endif
     int oflag = O_WRONLY | O_CLOEXEC;
 
-    if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
+    if ((options & copy_options::update_existing) != copy_options::none)
     {
         // Try opening the existing file without truncation to test the modification time later
         while (true)
@@ -3094,9 +3090,9 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     {
     create_outfile:
         oflag |= O_CREAT | O_TRUNC;
-        if (((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
-             (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u) &&
-            (options & static_cast< unsigned int >(copy_options::update_existing)) == 0u)
+        if (((options & copy_options::overwrite_existing) == copy_options::none ||
+             (options & copy_options::skip_existing) != copy_options::none) &&
+            (options & copy_options::update_existing) == copy_options::none)
         {
             oflag |= O_EXCL;
         }
@@ -3110,7 +3106,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
                 if (err == EINTR)
                     continue;
 
-                if (err == EEXIST && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+                if (err == EEXIST && (options & copy_options::skip_existing) != copy_options::none)
                     return false;
 
                 goto fail;
@@ -3187,16 +3183,16 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     if ((to_mode & fs::perms_mask) != (from_mode & fs::perms_mask))
     {
         if (BOOST_UNLIKELY(::fchmod(outfile.fd, (from_mode & fs::perms_mask)) != 0 &&
-            (options & static_cast< unsigned int >(copy_options::ignore_attribute_errors)) == 0u))
+            (options & copy_options::ignore_attribute_errors) == copy_options::none))
         {
             goto fail_errno;
         }
     }
 #endif
 
-    if ((options & (static_cast< unsigned int >(copy_options::synchronize_data) | static_cast< unsigned int >(copy_options::synchronize))) != 0u)
+    if ((options & (copy_options::synchronize_data | copy_options::synchronize)) != copy_options::none)
     {
-        if ((options & static_cast< unsigned int >(copy_options::synchronize)) != 0u)
+        if ((options & copy_options::synchronize) != copy_options::none)
             err = full_sync(outfile.fd);
         else
             err = data_sync(outfile.fd);
@@ -3222,13 +3218,13 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
 #else // defined(BOOST_POSIX_API)
 
     DWORD copy_flags = 0u;
-    if ((options & static_cast< unsigned int >(copy_options::overwrite_existing)) == 0u ||
-        (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+    if ((options & copy_options::overwrite_existing) == copy_options::none ||
+        (options & copy_options::skip_existing) != copy_options::none)
     {
         copy_flags |= COPY_FILE_FAIL_IF_EXISTS;
     }
 
-    if ((options & static_cast< unsigned int >(copy_options::update_existing)) != 0u)
+    if ((options & copy_options::update_existing) != copy_options::none)
     {
         // Create handle_wrappers here so that CloseHandle calls don't clobber error code returned by GetLastError
         handle_wrapper hw_from, hw_to;
@@ -3316,7 +3312,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     LPPROGRESS_ROUTINE cb = nullptr;
     LPVOID cb_ctx = nullptr;
 
-    if ((options & (static_cast< unsigned int >(copy_options::synchronize_data) | static_cast< unsigned int >(copy_options::synchronize))) != 0u)
+    if ((options & (copy_options::synchronize_data | copy_options::synchronize)) != copy_options::none)
     {
         cb = &local::on_copy_file_progress;
         cb_ctx = &cb_context;
@@ -3328,7 +3324,7 @@ bool copy_file(path const& from, path const& to, unsigned int options, error_cod
     if (BOOST_UNLIKELY(!res))
     {
         err = ::GetLastError();
-        if ((err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) && (options & static_cast< unsigned int >(copy_options::skip_existing)) != 0u)
+        if ((err == ERROR_FILE_EXISTS || err == ERROR_ALREADY_EXISTS) && (options & copy_options::skip_existing) != copy_options::none)
             return false;
 
     copy_failed:

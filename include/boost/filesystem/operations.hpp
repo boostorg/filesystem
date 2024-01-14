@@ -88,10 +88,9 @@ path canonical_v3(path const& p, path const& base, system::error_code* ec = null
 BOOST_FILESYSTEM_DECL
 path canonical_v4(path const& p, path const& base, system::error_code* ec = nullptr);
 BOOST_FILESYSTEM_DECL
-void copy(path const& from, path const& to, unsigned int options, system::error_code* ec = nullptr);
+void copy(path const& from, path const& to, copy_options options, system::error_code* ec = nullptr);
 BOOST_FILESYSTEM_DECL
-bool copy_file(path const& from, path const& to,                     // See ticket #2925
-               unsigned int options, system::error_code* ec = nullptr); // see copy_options for options
+bool copy_file(path const& from, path const& to, copy_options options, system::error_code* ec = nullptr);
 BOOST_FILESYSTEM_DECL
 void copy_symlink(path const& existing_symlink, path const& new_symlink, system::error_code* ec = nullptr);
 BOOST_FILESYSTEM_DECL
@@ -336,43 +335,42 @@ inline void current_path(path const& p, system::error_code& ec) noexcept
 
 inline void copy(path const& from, path const& to)
 {
-    detail::copy(from, to, static_cast< unsigned int >(copy_options::none));
+    detail::copy(from, to, copy_options::none);
 }
 
 inline void copy(path const& from, path const& to, system::error_code& ec) noexcept
 {
-    detail::copy(from, to, static_cast< unsigned int >(copy_options::none), &ec);
+    detail::copy(from, to, copy_options::none, &ec);
 }
 
 inline void copy(path const& from, path const& to, copy_options options)
 {
-    detail::copy(from, to, static_cast< unsigned int >(options));
+    detail::copy(from, to, options);
 }
 
 inline void copy(path const& from, path const& to, copy_options options, system::error_code& ec) noexcept
 {
-    detail::copy(from, to, static_cast< unsigned int >(options), &ec);
+    detail::copy(from, to, options, &ec);
 }
 
 inline bool copy_file(path const& from, path const& to)
 {
-    return detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none));
+    return detail::copy_file(from, to, copy_options::none);
 }
 
 inline bool copy_file(path const& from, path const& to, system::error_code& ec) noexcept
 {
-    return detail::copy_file(from, to, static_cast< unsigned int >(copy_options::none), &ec);
+    return detail::copy_file(from, to, copy_options::none, &ec);
 }
 
-// See ticket #2925
 inline bool copy_file(path const& from, path const& to, copy_options options)
 {
-    return detail::copy_file(from, to, static_cast< unsigned int >(options));
+    return detail::copy_file(from, to, options);
 }
 
 inline bool copy_file(path const& from, path const& to, copy_options options, system::error_code& ec) noexcept
 {
-    return detail::copy_file(from, to, static_cast< unsigned int >(options), &ec);
+    return detail::copy_file(from, to, options, &ec);
 }
 
 inline void copy_symlink(path const& existing_symlink, path const& new_symlink)
