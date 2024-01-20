@@ -6,11 +6,11 @@
 <!-- generate-section-numbers=false -->
 
 <head>
-<meta http-equiv="Content-Language" content="en-us">
-<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link href="styles.css" rel="stylesheet">
+<meta http-equiv="Content-Language" content="en-us"/>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0"/>
+<meta name="ProgId" content="FrontPage.Editor.Document"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<link href="styles.css" rel="stylesheet"/>
 <title>Filesystem Reference</title>
 </head>
 
@@ -21,11 +21,10 @@
 <table border="0" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td width="277">
-<p>
 <a href="../../../index.htm">
-<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"></a></td>
+<img src="../../../boost.png" alt="boost.png (6897 bytes)" align="middle" width="300" height="86" border="0"/></a></td>
     <td align="middle">
-    <font size="7">Filesystem Library<br>
+    <font size="7">Filesystem Library<br/>
     Version 4</font></td>
   </tr>
 </table>
@@ -45,6 +44,7 @@
     <a href="deprecated.html">Deprecated</a> &nbsp;&nbsp;
     <a href="issue_reporting.html">Bug Reports </a>&nbsp;&nbsp;
     </td>
+  </tr>
 </table>
 
 <h1>Reference Documentation</h1>
@@ -56,119 +56,119 @@
 <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%">
   <tr>
     <td width="33%" valign="top">
-    <p><a href="#Introduction">Introduction</a><br>
-    <a href="#Definitions">Definitions</a><br>
-    <a href="#Conformance">Conformance</a><br>
+    <p><a href="#Introduction">Introduction</a><br/>
+    <a href="#Definitions">Definitions</a><br/>
+    <a href="#Conformance">Conformance</a><br/>
     <a href="#Header-filesystem-synopsis">
-    Header <code>&lt;boost/filesystem.hpp&gt;</code> synopsis</a><br>
-    <a href="#Error-reporting">Error reporting</a><br>
-    <a href="#class-path">Class <code>path</code></a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-Conversions"><code>path</code> conversions</a><br>
+    Header <code>&lt;boost/filesystem.hpp&gt;</code> synopsis</a><br/>
+    <a href="#Error-reporting">Error reporting</a><br/>
+    <a href="#class-path">Class <code>path</code></a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#path-Conversions"><code>path</code> conversions</a><br/>
 &nbsp;&nbsp;&nbsp; <a href="#path-Conversions-to-native-format"><code>path</code>
-    conversions to native format</a><br>
+    conversions to native format</a><br/>
 &nbsp;&nbsp;&nbsp; <a href="#path-Conversions-to-generic-format"><code>path</code>
-    conversions to generic format</a><br>
+    conversions to generic format</a><br/>
 &nbsp;&nbsp;&nbsp; <a href="#path-Encoding-conversions"><code>path</code>
-    encoding conversions</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-Requirements"><code>path</code> requirements</a><br>
-    &nbsp;&nbsp;&nbsp; <a href="#path-constructors"><code>path</code> constructors</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-assignments"><code>path</code> assignments</a><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends"><code>path</code> appends</a><br>
-    &nbsp;&nbsp; &nbsp;<a href="#path-concatenation"><code>path</code> concatenation</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-modifiers"><code>path</code> modifiers</a><br>
+    encoding conversions</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#path-Requirements"><code>path</code> requirements</a><br/>
+    &nbsp;&nbsp;&nbsp; <a href="#path-constructors"><code>path</code> constructors</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#path-assignments"><code>path</code> assignments</a><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-appends"><code>path</code> appends</a><br/>
+    &nbsp;&nbsp; &nbsp;<a href="#path-concatenation"><code>path</code> concatenation</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-modifiers"><code>path</code> modifiers</a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-native-format-observers"><code>path</code> native
-    format observers</a><br>
+    format observers</a><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-generic-format-observers"><code>path</code> generic
-    format observers</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-compare"><code>path</code> compare</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-decomposition"><code>path</code> decomposition</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#path-query"><code>path</code> query</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-iterators"><code>path</code> iterators</a><br>
+    format observers</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#path-compare"><code>path</code> compare</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#path-decomposition"><code>path</code> decomposition</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#path-query"><code>path</code> query</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-iterators"><code>path</code> iterators</a><br/>
 
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-deprecated-functions"><code>path</code> deprecated functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-non-member-functions"><code>path</code> non-member functions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-inserter-extractor"><code>path</code> inserters and extractors</a><br>
- &nbsp;<a href="#Class-filesystem_error">Class <code>filesystem_error</code></a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-deprecated-functions"><code>path</code> deprecated functions</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-non-member-functions"><code>path</code> non-member functions</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#path-inserter-extractor"><code>path</code> inserters and extractors</a><br/>
+ &nbsp;<a href="#Class-filesystem_error">Class <code>filesystem_error</code></a><br/>
 &nbsp;&nbsp;&nbsp; <a href="#filesystem_error-members"><code>filesystem_error</code>
-    constructors</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path1"><code>filesystem_error</code> path1</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path2"><code>filesystem_error</code> path2</a><br>
-&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what"><code>filesystem_error</code> what</a></td>
+    constructors</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path1"><code>filesystem_error</code> path1</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-path2"><code>filesystem_error</code> path2</a><br/>
+&nbsp;&nbsp;&nbsp; <a href="#filesystem_error-what"><code>filesystem_error</code> what</a></p></td>
     <td width="33%" valign="top">
     <p>
-    <a href="#Enum-file_type">Enum <code>file_type</code></a><br>
-    <a href="#Enum-perms">Enum <code>perms</code></a><br>
+    <a href="#Enum-file_type">Enum <code>file_type</code></a><br/>
+    <a href="#Enum-perms">Enum <code>perms</code></a><br/>
     <a href="#file_status">Class
-    <code>file_status</code></a><br>
+    <code>file_status</code></a><br/>
 &nbsp;&nbsp;&nbsp;
     <a href="#file_status">
-    <code>file_status</code></a><a href="#file_status-constructors"> constructors</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<code><a href="#file_status-modifiers">file_status-modifiers</a></code><a href="#directory_entry-observers"> observers</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<code><a href="#file_status-observers">file_status-observers</a></code><a href="#directory_entry-modifiers"> modifiers</a><br>
-<a href="#Class-directory_entry">Class <code>directory_entry</code></a><br>
+    <code>file_status</code></a><a href="#file_status-constructors"> constructors</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<code><a href="#file_status-modifiers">file_status-modifiers</a></code><a href="#directory_entry-observers"> observers</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<code><a href="#file_status-observers">file_status-observers</a></code><a href="#directory_entry-modifiers"> modifiers</a><br/>
+<a href="#Class-directory_entry">Class <code>directory_entry</code></a><br/>
 &nbsp;&nbsp;&nbsp;
-<a href="#directory_entry-constructors"><code>directory_entry</code> constructors</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-observers"><code>directory_entry</code> observers</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-modifiers"><code>directory_entry</code> modifiers</a><br>
-<a href="#Class-directory_iterator">Class  <code>directory_iterator</code></a><br>
+<a href="#directory_entry-constructors"><code>directory_entry</code> constructors</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-observers"><code>directory_entry</code> observers</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#directory_entry-modifiers"><code>directory_entry</code> modifiers</a><br/>
+<a href="#Class-directory_iterator">Class  <code>directory_iterator</code></a><br/>
 &nbsp;&nbsp;&nbsp; <a href="#directory_iterator-members"><code>directory_iterator</code>
-    members</a><br>
-<a href="#Class-recursive_directory_iterator">Class <code>recursive_directory_iterator</code></a><br>
+    members</a><br/>
+<a href="#Class-recursive_directory_iterator">Class <code>recursive_directory_iterator</code></a><br/>
     <a href="#Operational-functions">
-    Operational functions</a><br>
-    <code>&nbsp;&nbsp;&nbsp;&nbsp; <a href="#absolute">absolute</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#canonical">canonical</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy">copy</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_directory">copy_directory</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_symlink">copy_symlink</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_directories">create_directories</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_hard_link">create_hard_link</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_symlink">create_symlink</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#creation_time">creation_time</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#current_path">current_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#file_size">file_size</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a></code></td>
+    Operational functions</a><br/>
+    <code>&nbsp;&nbsp;&nbsp;&nbsp; <a href="#absolute">absolute</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#canonical">canonical</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy">copy</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_directory">copy_directory</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_file">copy_file</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#copy_symlink">copy_symlink</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_directories">create_directories</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_directory">create_directory</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_hard_link">create_hard_link</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#create_symlink">create_symlink</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#creation_time">creation_time</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#current_path">current_path</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#exists">exists</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#equivalent">equivalent</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#file_size">file_size</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#hard_link_count">hard_link_count</a></code></p></td>
     <td width="34%" valign="top">
     <p>
     <code>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_block_file">is_block_file</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_character_file">is_character_file</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_fifo">is_fifo</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_other">is_other</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_regular_file">is_regular_file</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_reparse_file">is_reparse_file</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_socket">is_socket</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_symlink">is_symlink</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#permissions">permissions</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#relative">relative</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#resize_file">resize_file</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#space">space</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#status">status</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#status_known">status_known</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#symlink_status">symlink_status</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#system_complete">system_complete</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#temp_directory_path">temp_directory_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp; <a href="#weakly_canonical">weakly_canonical</a><br></code>
-    <a href="#File-streams">File streams</a><br>
-<a href="#path-decomposition-table">Path decomposition table</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#initial_path">initial_path</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_block_file">is_block_file</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_character_file">is_character_file</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_directory">is_directory</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_empty">is_empty</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_fifo">is_fifo</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_other">is_other</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_regular_file">is_regular_file</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_reparse_file">is_reparse_file</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_socket">is_socket</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#is_symlink">is_symlink</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#last_write_time">last_write_time</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#permissions">permissions</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#read_symlink">read_symlink</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#relative">relative</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove">remove</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#remove_all">remove_all</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#rename">rename</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#resize_file">resize_file</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#space">space</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#status">status</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#status_known">status_known</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#symlink_status">symlink_status</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#system_complete">system_complete</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#temp_directory_path">temp_directory_path</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#unique_path">unique_path</a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp; <a href="#weakly_canonical">weakly_canonical</a><br/></code>
+    <a href="#File-streams">File streams</a><br/>
+<a href="#path-decomposition-table">Path decomposition table</a><br/>
     <a href="#windows-path-prefixes">Long paths on Windows and the
-    <b>\\?\</b> namespace prefix</a><br>
-<a href="#Acknowledgements">Acknowledgements</a><br>
-<a href="#References">References</a><br>
-&nbsp;</td>
+    <b>\\?\</b> namespace prefix</a><br/>
+<a href="#Acknowledgements">Acknowledgements</a><br/>
+<a href="#References">References</a><br/>
+&nbsp;</p></td>
   </tr>
 </table>
 
@@ -342,10 +342,10 @@ when multiple threads, processes, or computers interleave access and
 modification of
 the same object within a file system.</p>
 <h2><a name="generic-pathname-format">Generic pathname format</a> [path.generic]</h2>
-<p><i>pathname:<br>
+<p><i>pathname:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; root-name<sub>opt</sub>
 root-directory<sub>opt</sub> relative-path<sub>opt</sub></i></p>
-<p><i>root-name:<br>
+<p><i>root-name:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>An
 operating system dependent name that identifies the starting location for
 absolute paths. </p>
@@ -357,29 +357,29 @@ that identifies network or other resource locations. Some operating systems defi
 specifier - a <i>root-name</i> identifying a specific device such as a disc drive. <i>—end note</i>]</p>
   </blockquote>
 </blockquote>
-<p><i>root-directory:<br>
+<p><i>root-directory:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 directory-separator</i></p>
-<p><i>relative-path:<br>
+<p><i>relative-path:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-filename<br>
+filename<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; relative-path
-directory-separator<br>
+directory-separator<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; relative-path
 directory-separator filename</i></p>
-<p><i>filename:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i><code>&quot;.&quot;</code><i><br>
+<p><i>filename:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i><code>&quot;.&quot;</code><i><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i><code>
 &quot;..&quot;</code></p>
-<p><i>preferred-separator:<br>
+<p><i>preferred-separator:<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>An
 operating system dependent directory separator character. May be a synonym for <i> <code>&quot;/&quot;</code>.</i></p>
-<p><i>directory-separator:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code>&quot;/&quot;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;/&quot;</code> directory-separator<br>
+<p><i>directory-separator:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <code>&quot;/&quot;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &quot;/&quot;</code> directory-separator<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-preferred-separator<br>
+preferred-separator<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 preferred-separator directory-separator</i></p>
 <p>Multiple successive <i>directory-separator</i> characters are considered to
@@ -397,203 +397,203 @@ specifications for operating systems that use the ISO/IEC 9945  or Windows&reg; 
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td valign="top" align="center">
-    <p><b>Feature</b></td>
+    <p><b>Feature</b></p></td>
     <td valign="top" align="center">
-    <p><b>Section</b></td>
+    <p><b>Section</b></p></td>
     <td valign="top" align="center">
-    <p><b>ISO/IEC 9945<br>
-&nbsp;POSIX</b>&reg;<b> API</b></td>
+    <p><b>ISO/IEC 9945<br/>
+&nbsp;POSIX</b>&reg;<b> API</b></p></td>
     <td valign="top" align="center">
-    <p><b>Windows</b>&reg;<b> API</b></td>
+    <p><b>Windows</b>&reg;<b> API</b></p></td>
     <td valign="top" align="center">
-    <p><b>Notes</b></td>
+    <p><b>Notes</b></p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>path<br>
-&nbsp;::value_type</code></td>
+    <p><code>path<br/>
+&nbsp;::value_type</code></p></td>
     <td valign="top">
-    <p>[<a href="#class-path">class.path</a>]</td>
+    <p>[<a href="#class-path">class.path</a>]</p></td>
     <td valign="top">
-    <p><code>char</code></td>
+    <p><code>char</code></p></td>
     <td valign="top">
-    <p><code>wchar_t</code></td>
+    <p><code>wchar_t</code></p></td>
     <td valign="top">
-    <p>&nbsp;</td>
+    <p>&nbsp;</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>path::preferred<br>
-&nbsp;_separator</code></td>
+    <p><code>path::preferred<br/>
+&nbsp;_separator</code></p></td>
     <td valign="top">
-    <p>[<a href="#class-path">class.path</a>]</td>
+    <p>[<a href="#class-path">class.path</a>]</p></td>
     <td valign="top">
-    <p><code>'/'</code></td>
+    <p><code>'/'</code></p></td>
     <td valign="top">
-    <p><code>L'\\'</code> (single backslash)</td>
+    <p><code>L'\\'</code> (single backslash)</p></td>
     <td valign="top">
-    <p>&nbsp;</td>
+    <p>&nbsp;</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>path(&quot;/&quot;)<br>
-&nbsp;.is_absolute()<br>
-    path(&quot;c:/&quot;)<br>
-&nbsp;.is_absolute()</code></td>
+    <p><code>path(&quot;/&quot;)<br/>
+&nbsp;.is_absolute()<br/>
+    path(&quot;c:/&quot;)<br/>
+&nbsp;.is_absolute()</code></p></td>
     <td valign="top">
-    <p>[<a href="#path-query">path</a><br>
-&nbsp;<a href="#path-query">.query</a>]</td>
+    <p>[<a href="#path-query">path</a><br/>
+&nbsp;<a href="#path-query">.query</a>]</p></td>
     <td valign="top">
-    <p><code><br>
-    true<br>
-    <br>
-    false</code></td>
+    <p><code><br/>
+    true<br/>
+    <br/>
+    false</code></p></td>
     <td valign="top">
-    <p><code><br>
-    false<br>
-    <br>
-    true</code></td>
+    <p><code><br/>
+    false<br/>
+    <br/>
+    true</code></p></td>
     <td valign="top">
-    <p>&nbsp;</td>
+    <p>&nbsp;</p></td>
   </tr>
   <tr>
     <td valign="top">
     <p><code>path</code> argument disambiguation between generic format and
-    native format</td>
+    native format</p></td>
     <td valign="top">
-    <p>[<a href="#path-Conversions-to-native-format">path.arg</a><br>
-&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</td>
+    <p>[<a href="#path-Conversions-to-native-format">path.arg</a><br/>
+&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</p></td>
     <td valign="top">
-    <p>Not required</td>
+    <p>Not required</p></td>
     <td valign="top">
-    <p>Not required</td>
+    <p>Not required</p></td>
     <td valign="top">
     <p>There is no need to distinguish between the generic format and native
-    format for these operating systems.</td>
+    format for these operating systems.</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>path</code> argument format conversion</td>
+    <p><code>path</code> argument format conversion</p></td>
     <td valign="top">
-    <p>[<a href="#path-Conversions-to-native-format">path.arg</a><br>
-&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</td>
+    <p>[<a href="#path-Conversions-to-native-format">path.arg</a><br/>
+&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</p></td>
     <td valign="top">
-    <p>No conversion performed</td>
+    <p>No conversion performed</p></td>
     <td valign="top">
-    <p>No conversion performed</td>
+    <p>No conversion performed</p></td>
     <td valign="top">
-    <p>The generic format is already acceptable to the native API of these operating systems.</td>
+    <p>The generic format is already acceptable to the native API of these operating systems.</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>path<br>
-&nbsp;(&quot;/cats/jane&quot;)<br>
-&nbsp;.c_str()<br>
-    path|<br>
-&nbsp;(&quot;/cats/jane/&quot;)<br>
-&nbsp;.c_str()</code></td>
+    <p><code>path<br/>
+&nbsp;(&quot;/cats/jane&quot;)<br/>
+&nbsp;.c_str()<br/>
+    path|<br/>
+&nbsp;(&quot;/cats/jane/&quot;)<br/>
+&nbsp;.c_str()</code></p></td>
     <td valign="top">
-    <p>[<a href="#path-Conversions-to-native-format">path.arg</a><br>
-&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</td>
+    <p>[<a href="#path-Conversions-to-native-format">path.arg</a><br/>
+&nbsp;<a href="#path-Conversions-to-native-format">.fmt.cvt</a>]</p></td>
     <td valign="top">
-    <p> <code><br>
-    <br>
-    &quot;/cats/jane&quot;<br>
-    <br>
-    <br>
-    &quot;/cats/jane/&quot;</code></td>
+    <p><code><br/>
+    <br/>
+    &quot;/cats/jane&quot;<br/>
+    <br/>
+    <br/>
+    &quot;/cats/jane/&quot;</code></p></td>
     <td valign="top">
-    <p><code><br>
-    <br>
-    L&quot;/cats/jane&quot;<br>
-    <br>
-    <br>
-    L&quot;/cats/jane/&quot;</code></td>
+    <p><code><br/>
+    <br/>
+    L&quot;/cats/jane&quot;<br/>
+    <br/>
+    <br/>
+    L&quot;/cats/jane/&quot;</code></p></td>
     <td valign="top">
     <p>These operating systems accept the same native separator between
     directory names and a final file name, so no format conversion is performed.
-    Other operating systems might require conversion.</td>
+    Other operating systems might require conversion.</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p>Format conversion by <code>path</code> native format observers</td>
+    <p>Format conversion by <code>path</code> native format observers</p></td>
     <td valign="top">
-    <p>[<a href="#path-native-format-observers">path.native</a><br>
-&nbsp;<a href="#path-native-format-observers">.obs</a>]</td>
+    <p>[<a href="#path-native-format-observers">path.native</a><br/>
+&nbsp;<a href="#path-native-format-observers">.obs</a>]</p></td>
     <td valign="top">
-    <p>No conversion performed</td>
+    <p>No conversion performed</p></td>
     <td valign="top">
-    <p>No conversion performed</td>
+    <p>No conversion performed</p></td>
     <td valign="top">
     <p>For efficiency, <code>path</code> objects are required to store pathnames in the native
-    format regardless of operating system.</td>
+    format regardless of operating system.</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p>Format conversion by <code>path</code> generic format observers</td>
+    <p>Format conversion by <code>path</code> generic format observers</p></td>
     <td valign="top">
-    <p>[<a href="#path-generic-format-observers">path</a><br>
-&nbsp;<a href="#path-generic-format-observers">.generic</a><br>
-&nbsp;<a href="#path-generic-format-observers">.obs</a>]</td>
+    <p>[<a href="#path-generic-format-observers">path</a><br/>
+&nbsp;<a href="#path-generic-format-observers">.generic</a><br/>
+&nbsp;<a href="#path-generic-format-observers">.obs</a>]</p></td>
     <td valign="top">
-    <p>No conversion performed</td>
+    <p>No conversion performed</p></td>
     <td valign="top">
-    <p>Backslashes converted to slashes</td>
+    <p>Backslashes converted to slashes</p></td>
     <td valign="top">
-    <p>&nbsp;</td>
+    <p>&nbsp;</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p><code>p.<br>
-&nbsp;make_preferred()</code></td>
+    <p><code>p.<br/>
+&nbsp;make_preferred()</code></p></td>
     <td valign="top">
-    <p>[<a href="#path-modifiers">fs.path</a><br>
-&nbsp;<a href="#path-modifiers">.modifiers</a>]</td>
+    <p>[<a href="#path-modifiers">fs.path</a><br/>
+&nbsp;<a href="#path-modifiers">.modifiers</a>]</p></td>
     <td valign="top">
-    <p>No change</td>
+    <p>No change</p></td>
     <td valign="top">
-    <p>Slashes converted to backslashes</td>
+    <p>Slashes converted to backslashes</p></td>
     <td valign="top">
-    <p>&nbsp;</td>
+    <p>&nbsp;</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p>Characters prohibited in filenames</td>
+    <p>Characters prohibited in filenames</p></td>
     <td valign="top">
-    <p>[<a href="#filename">fs.def</a><br>
-&nbsp;<a href="#filename">.filename</a>]</td>
+    <p>[<a href="#filename">fs.def</a><br/>
+&nbsp;<a href="#filename">.filename</a>]</p></td>
     <td valign="top">
-    <p>0x00, <code>'/'</code></td>
+    <p>0x00, <code>'/'</code></p></td>
     <td valign="top">
     <p>0x00-0x1F, <code>'&quot;'</code>, <code>'*'</code>,<code>&nbsp;'*'</code>,
     <code>'&lt;'</code>,
     <code>'&gt;'</code>, <code>'?'</code>, <code>'\\'</code> (single backslash),
-    <code>'/'</code>, <code>'|'</code></td>
+    <code>'/'</code>, <code>'|'</code></p></td>
     <td valign="top">
     <p>Many operating systems prohibit the ASCII control characters (0x00-0x1F)
-    in filenames.</td>
+    in filenames.</p></td>
   </tr>
   <tr>
     <td valign="top">
-    <p>Initial imbued <code>path</code> locale</td>
+    <p>Initial imbued <code>path</code> locale</p></td>
     <td valign="top">
-    <p>[<a href="#path-imbued-locale">path</a><br>
-&nbsp;<a href="#path-imbued-locale">.imbued</a><br>
-&nbsp;<a href="#path-imbued-locale">.locale</a>]</td>
+    <p>[<a href="#path-imbued-locale">path</a><br/>
+&nbsp;<a href="#path-imbued-locale">.imbued</a><br/>
+&nbsp;<a href="#path-imbued-locale">.locale</a>]</p></td>
     <td valign="top">
-    <p> <code>std::<br>
-&nbsp; locale(&quot;&quot;)<br>
-    </code><sup>[footnote 2]</sup></td>
+    <p><code>std::<br/>
+&nbsp; locale(&quot;&quot;)<br/>
+    </code><sup>[footnote 2]</sup></p></td>
     <td valign="top">
-    <p>Implementation supplied locale using <code>MultiByte<br>
+    <p>Implementation supplied locale using <code>MultiByte<br/>
 &nbsp; ToWideChar</code>
-    and <code>WideChar<br>
+    and <code>WideChar<br/>
 &nbsp; ToMultiByte</code> with a codepage of <code>CP_ACP</code>
     if <code>AreFileApisANSI</code> is true, otherwise codepage <code>CP_OEMCP</code>.<sup>[footnote
-    3]</sup></td>
+    3]</sup></p></td>
     <td valign="top">
     <p>Apple OS X&reg;:&nbsp; Implementation supplied locale providing UTF-8 <code>codecvt</code>
-    facet.<sup>[footnote 4]</sup></td>
+    facet.<sup>[footnote 4]</sup></p></td>
   </tr>
 </table>
 <p><sup>[footnote1]</sup> OS X&reg; and Windows&reg; are examples of commercially
@@ -941,7 +941,7 @@ errors are truly exceptional and indicate a serious failure. Throwing an
   <p>Failure to allocate storage is reported by throwing an exception as described in the C++ standard,
   17.6.4.10 [res.on.exception.handling].</p></li>
   <li>
-  <p>Destructors throw nothing.</li>
+  <p>Destructors throw nothing.</p></li>
 </ul>
   <p>Functions having an argument of type <code>system::error_code&amp;</code> report errors as follows, unless otherwise
   specified:</p>
@@ -1288,13 +1288,13 @@ path&amp; append(const path&amp; p);</pre>
     <ul>
     <li>
     <p>an added separator
-    would be redundant, or</li>
+    would be redundant, or</p></li>
     <li>
-    <p>would change a relative path to an absolute path, or</li>
+    <p>would change a relative path to an absolute path, or</p></li>
     <li>
-    <p><code>p.empty()</code>, or</li>
+    <p><code>p.empty()</code>, or</p></li>
     <li>
-    <p><code>*p.native().cbegin()</code> is a directory separator.</li>
+    <p><code>*p.native().cbegin()</code> is a directory separator.</p></li>
     </ul>
     <p>Then appends <code>p.native()</code> to <code>pathname</code>.</p>
     <p><b>v4:</b> If <code>p.<a href="#path-is_absolute">is_absolute</a>() || (p.<a href="#path-has_root_name">has_root_name</a>() &amp;&amp; p.<a href="#path-root_name">root_name</a>() != <a href="#path-root_name">root_name</a>())</code>, assigns <code>p</code> to <code>*this</code>. Otherwise, modifies <code>*this</code> as if by these steps:
@@ -1342,14 +1342,16 @@ path&amp; concat(InputIterator begin, InputIterator end, const codecvt_type&amp;
  where <code>prior_native</code> is <code>native()</code> prior to the call to <code>operator+=</code>,
  and <code><i>effective-argument</i></code> is:</p>
  <ul><li>
-   <p><code>p.native()</code> if <code>p</code> is present and is <code>const path&amp;</code>, otherwise</li>
+   <p><code>p.native()</code> if <code>p</code> is present and is <code>const path&amp;</code>, otherwise</p></li>
  <li>
  <p><code>s</code>, where <code>s</code> is
-  <code>std::basic_string&lt;typename std::iterator_traits&lt;InputIterator&gt;::value_type&gt;<br>s(begin, end)</code>,
-   if <code>begin</code> and <code>end</code> arguments are present, otherwise</li>
+  <code>std::basic_string&lt;typename std::iterator_traits&lt;InputIterator&gt;::value_type&gt;<br/>s(begin, end)</code>,
+   if <code>begin</code> and <code>end</code> arguments are present, otherwise</p></li>
  <li>
- <p><code>x</code>.</li></ul><p>If the value type of <code><i>effective-argument</i></code> would not be <code>path::value_type</code>, the actual argument or argument range is first
-   converted so that <code><i>effective-argument</i></code> has value type <code>path::value_type</code>.</li> </p>
+ <p><code>x</code>.</p></li>
+ </ul>
+ <p>If the value type of <code><i>effective-argument</i></code> would not be <code>path::value_type</code>, the actual argument or argument range is first
+   converted so that <code><i>effective-argument</i></code> has value type <code>path::value_type</code>.</p>
  <p><i>Returns: </i><code>*this</code></p>
  </blockquote>
 <h3><a name="path-modifiers"> <code>
@@ -1381,7 +1383,7 @@ path</code> modifiers</a> [path.modifiers]</h3>
   <p><b>v4:</b> Removes the <code>filename()</code> path element.</p>
   <p>[<i>Note:</i> Unlike <b>v3</b>, the trailing directory separator(s) are not removed.<i>—end
   note</i>]</p>
-  <p><i>Returns:</i> <code>*this</code>.
+  <p><i>Returns:</i> <code>*this</code>.</p>
 </blockquote>
 
 <pre>path&amp; <a name="path-remove_filename_and_trailing_separators">remove_filename_and_trailing_separators</a>();</pre>
@@ -1390,14 +1392,14 @@ path</code> modifiers</a> [path.modifiers]</h3>
   <p><i>Effects:</i> As if, <code>*this = parent_path();</code></p>
   <p>[<i>Note:</i> This function is similar to <code>path::remove_filename</code> from <b>v3</b>, but is also usable in <b>v4</b>.<i>—end
   note</i>]</p>
-  <p><i>Returns:</i> <code>*this</code>.
+  <p><i>Returns:</i> <code>*this</code>.</p>
 </blockquote>
 
 <pre>path&amp; <a name="path-replace_filename">replace_filename</a>(const path&amp; replacement);</pre>
 
 <blockquote>
   <p><i>Effects:</i> As if, <code>remove_filename().append(replacement);</code></p>
-  <p><i>Returns:</i> <code>*this</code>.
+  <p><i>Returns:</i> <code>*this</code>.</p>
 </blockquote>
 
 <pre>path&amp; <a name="path-replace_extension">replace_extension</a>(const path&amp; new_extension = path());</pre>
@@ -1407,14 +1409,14 @@ path</code> modifiers</a> [path.modifiers]</h3>
   <ul>
     <li>
     <p>Any existing <code>extension()</code> is removed from the stored path,
-    then</li>
+    then</p></li>
     <li>
     <p>iff
   <code>new_extension</code> is not empty and does not begin with a dot
-    character, a dot character is appended to the stored path, then</li>
+    character, a dot character is appended to the stored path, then</p></li>
     <li>
   <p>
-  <code>new_extension</code> is appended to the stored path.</li>
+  <code>new_extension</code> is appended to the stored path.</p></li>
   </ul>
   <p><i>Returns:</i> <code>*this</code></p>
 </blockquote>
@@ -1423,7 +1425,7 @@ path</code> modifiers</a> [path.modifiers]</h3>
 
 <blockquote>
   <p><i>Effects:</i> Swaps the contents of the two paths.</p>
-  <p><i>Complexity: </i>constant time.</p>
+  <p><i>Complexity:</i> constant time.</p>
 </blockquote>
 
   <h3><a name="path-lexical-operations"><code>path</code> lexical operations</a>
@@ -1459,13 +1461,13 @@ does not affect <code>path</code> equality.<i> —end example</i>]</p>
     <li>
   <code>path()</code> if the first mismatched element of <code>*this</code> is equal to <code>
   begin()</code> or the first mismatched element
-  of <code>base</code> is equal to <code>base.begin()</code>, or<br>&nbsp;
+  of <code>base</code> is equal to <code>base.begin()</code>, or<br/>&nbsp;
     </li>
     <li>
   <code>path(&quot;.&quot;)</code> if the first mismatched element of <code>
   *this</code> is equal to <code>
   end()</code> and the first mismatched element
-  of <code>base</code> is equal to <code>base.end()</code>, or<br>&nbsp;
+  of <code>base</code> is equal to <code>base.end()</code>, or<br/>&nbsp;
     </li>
     <li>An object of class <code>path</code> composed via application of <code>
     operator/= path(&quot;..&quot;)</code> for each element in the half-open
@@ -1478,11 +1480,11 @@ does not affect <code>path</code> equality.<i> —end example</i>]</p>
 </ul>
 
 <p>[<i>Example:</i></p>
-<p><code>assert(path(&quot;/a/d&quot;).lexically_relative(&quot;/a/b/c&quot;) ==  &quot;../../d&quot;);<br>
-assert(path(&quot;/a/b/c&quot;).lexically_relative(&quot;/a/d&quot;) ==  &quot;../b/c&quot;);<br>
-assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a&quot;) == &quot;b/c&quot;);<br>
-assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a/b/c/x/y&quot;) ==  &quot;../..&quot;);<br>
-assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a/b/c&quot;) ==  &quot;.&quot;);<br>
+<p><code>assert(path(&quot;/a/d&quot;).lexically_relative(&quot;/a/b/c&quot;) ==  &quot;../../d&quot;);<br/>
+assert(path(&quot;/a/b/c&quot;).lexically_relative(&quot;/a/d&quot;) ==  &quot;../b/c&quot;);<br/>
+assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a&quot;) == &quot;b/c&quot;);<br/>
+assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a/b/c/x/y&quot;) ==  &quot;../..&quot;);<br/>
+assert(path(&quot;a/b/c&quot;).lexically_relative(&quot;a/b/c&quot;) ==  &quot;.&quot;);<br/>
 assert(path(&quot;a/b&quot;).lexically_relative(&quot;c/d&quot;) ==  &quot;&quot;);</code></p>
 <p>The above assertions will succeed.<i> </i>On Windows, the
 returned path&#39;s <i>directory-separator</i>s will be backslashes rather than
@@ -1495,6 +1497,7 @@ does not affect <code>path</code> equality. <i>—end example</i>]</p>
   <p>[<i>Note:</i> If <a href="#lexically_normal">normalization</a> is needed to ensure
   consistent matching of elements, apply <code><a href="#lexically_normal">lexically_normal()</a></code>
   to <code>*this</code>, <code>base</code>, or both. <i>—end note</i>]</p>
+</blockquote>
 
 <pre>path <a name="lexically_proximate">lexically_proximate</a>(const path&amp; base) const;</pre>
 <blockquote>
@@ -1930,7 +1933,7 @@ out-live the iterator itself. <i>—end note</i>] </p>
   <p><i>Remarks:</i> Uses <code>operator/=</code> to compose the
   returned path.</p>
   <p>[<i>Example:</i></p>
-  <p><code>assert(lexically_normal(&quot;foo/./bar/..&quot;) == &quot;foo&quot;);<br>
+  <p><code>assert(lexically_normal(&quot;foo/./bar/..&quot;) == &quot;foo&quot;);<br/>
   assert(lexically_normal(&quot;foo/.///bar/../&quot;) == &quot;foo/.&quot;);</code></p>
   <p>All of the above assertions will succeed.<i> </i>On Windows, the
   returned path&#39;s <i>directory-separator</i> characters will be backslashes
@@ -1957,27 +1960,27 @@ out-live the iterator itself. <i>—end note</i>] </p>
     <li>
     <p><code>path()</code> if the first mismatched element of <code>p</code>
     is equal to <code>p.begin()</code> or the first mismatched element of <code>
-    base</code> is equal to <code>base.begin()</code>, or<br>
-    &nbsp; </li>
+    base</code> is equal to <code>base.begin()</code>, or<br/>
+    &nbsp;</p></li>
     <li>
     <p><code>path(&quot;.&quot;)</code> if the first mismatched element of <code>
     p</code> is equal to <code>p.end()</code> and the first mismatched element
-    of <code>base</code> is equal to <code>base.end()</code>, or<br>
-    &nbsp; </li>
+    of <code>base</code> is equal to <code>base.end()</code>, or<br/>
+    &nbsp;</p></li>
     <li>
     <p>An object of class <code>path</code> composed via application
     of <code>operator/= path(&quot;..&quot;)</code> for each element in the half-open
     range [first mismatched element of <code>base</code>, <code>base.end()</code>),
     and then application of <code>operator/=</code> for each element in the
-    half-open range [first mismatched element of <code>p</code>, <code>p.end()</code>).
+    half-open range [first mismatched element of <code>p</code>, <code>p.end()</code>).</p>
     </li>
   </ul>
   <p>[<i>Example:</i></p>
-  <p><code>assert(lexically_relative(&quot;/a/d&quot;, &quot;/a/b/c&quot;) == &quot;../../d&quot;);<br>
-  assert(lexically_relative(&quot;/a/b/c&quot;, &quot;/a/d&quot;) == &quot;../b/c&quot;);<br>
-  assert(lexically_relative(&quot;a/b/c&quot;, &quot;a&quot;) == &quot;b/c&quot;);<br>
-  assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c/x/y&quot;) == &quot;../..&quot;);<br>
-  assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c&quot;) == &quot;.&quot;);<br>
+  <p><code>assert(lexically_relative(&quot;/a/d&quot;, &quot;/a/b/c&quot;) == &quot;../../d&quot;);<br/>
+  assert(lexically_relative(&quot;/a/b/c&quot;, &quot;/a/d&quot;) == &quot;../b/c&quot;);<br/>
+  assert(lexically_relative(&quot;a/b/c&quot;, &quot;a&quot;) == &quot;b/c&quot;);<br/>
+  assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c/x/y&quot;) == &quot;../..&quot;);<br/>
+  assert(lexically_relative(&quot;a/b/c&quot;, &quot;a/b/c&quot;) == &quot;.&quot;);<br/>
   assert(lexically_relative(&quot;a/b&quot;, &quot;c/d&quot;) == &quot;&quot;);</code></p>
   <p>All of the above assertions will succeed.<i> </i>On Windows, the
   returned path&#39;s <i>directory-separator</i>s will be backslashes rather than
@@ -2299,15 +2302,15 @@ or others removes write permission for all. </span> </p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td><b>Name</b></td>
-    <td align="center"><b>Value<br>
+    <td align="center"><b>Value<br/>
     (octal)</b></td>
-    <td align="center"><b>ISO/IEC 9945<br>
+    <td align="center"><b>ISO/IEC 9945<br/>
     macro</b></td>
     <td><b>Definition or notes</b></td>
   </tr>
 
 <tr><td>
-  <p><code>no_perms</code></td><td><code>0</code></td><td></td>
+  <p><code>no_perms</code></p></td><td><code>0</code></td><td></td>
   <td>There are no permissions set for the file. Note: <code>file_not_found</code> is <code>no_perms</code> rather than <code>perms_not_known</code></td>
 </tr>
 <tr><td><code>owner_read</code></td><td><code>0400</code></td><td> <code>S_IRUSR</code></td>
@@ -2366,9 +2369,9 @@ or others removes write permission for all. </span> </p>
   is created without specifying the permissions</td>
 </tr>
 <tr><td>
-  <p><code>add_perms</code></td><td><code>0x1000</code></td><td></td><td>
+  <p><code>add_perms</code></p></td><td><code>0x1000</code></td><td></td><td>
   <p><code>permissions()</code> adds the argument permission bits to the
-  file's current bits</td>
+  file's current bits</p></td>
 </tr>
 <tr><td><code>remove_perms</code></td><td><code>0x2000</code></td><td></td><td>
   <code>permissions()</code> removes the argument permission bits from the
@@ -2937,7 +2940,7 @@ as a <code>directory_iterator</code> unless otherwise specified.</p>
 <ul>
   <li>Incrementing a <code>recursive_directory_iterator</code> pointing to a
   directory causes that directory itself to be iterated over, as specified by
-  the <code>operator++</code> and <code>increment</code> functions.<br>
+  the <code>operator++</code> and <code>increment</code> functions.<br/>
 &nbsp;</li>
   <li>When a <code>recursive_directory_iterator</code> reaches the end of the directory currently being iterated
   over, or when <code>pop()</code> is called, <code>m_depth</code> is
@@ -3069,28 +3072,28 @@ path absolute(const path&amp; p, const path&amp; base, system::error_code&amp; e
   <table border="1" cellpadding="5" cellspacing="0" bordercolor="#111111" style="border-collapse: collapse">
     <tr>
       <td align="center">&nbsp;</td>
-      <td align="center"><b><code>p.<br>
+      <td align="center"><b><code>p.<br/>
       has_root_directory()</code></b></td>
       <td align="center"><b><code>!p.has_root_directory()</code></b></td>
     </tr>
     <tr>
       <td align="center"><b><code>p.has_root_name()</code></b></td>
       <td align="left"><code>return p</code></td>
-      <td align="left"><code>return<br>
-&nbsp;p.root_name()<br>
-&nbsp;/ absolute(base)<br>
-&nbsp;&nbsp;&nbsp; .root_directory()<br>
-      &nbsp;/ absolute(base)<br>
-&nbsp;&nbsp;&nbsp; .relative_path()<br>
+      <td align="left"><code>return<br/>
+&nbsp;p.root_name()<br/>
+&nbsp;/ absolute(base)<br/>
+&nbsp;&nbsp;&nbsp; .root_directory()<br/>
+      &nbsp;/ absolute(base)<br/>
+&nbsp;&nbsp;&nbsp; .relative_path()<br/>
 &nbsp;/ p.relative_path()</code></td>
     </tr>
     <tr>
       <td align="center"><b><code>!p.has_root_name()</code></b></td>
-      <td align="left"><code>return<br>
-&nbsp;absolute(base)<br>
-&nbsp; .root_name()<br>
+      <td align="left"><code>return<br/>
+&nbsp;absolute(base)<br/>
+&nbsp; .root_name()<br/>
       &nbsp;/ p</code></td>
-      <td align="left"><code>return absolute(base)<br>
+      <td align="left"><code>return absolute(base)<br/>
 &nbsp;/ p</code></td>
     </tr>
   </table>
@@ -3438,11 +3441,11 @@ bool <a name="is_directory3">is_directory</a>(const path&amp; p, system::error_c
 nothing.</p>
 </blockquote>
 <pre><code>bool <a name="is_empty">is_empty</a>(const path&amp; p);
-bool <a name="is_empty2">is_empty</a></a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
+bool <a name="is_empty2">is_empty</a>(const path&amp; p, system::error_code&amp; ec);</code></pre>
 <blockquote>
   <p><i>Effects:</i> Determines <code>file_status s</code>, as if by <code>status(p, ec)</code>.</p>
-  <p><i>Returns:</i> <code>is_directory(s)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ? directory_iterator(p) == directory_iterator()<br>
+  <p><i>Returns:</i> <code>is_directory(s)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ? directory_iterator(p) == directory_iterator()<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : file_size(p) == 0;</code></p>
 </blockquote>
 <pre>bool <code><a name="is_fifo">is_fifo</a></code>(file_status s) noexcept;</pre>
@@ -3564,7 +3567,7 @@ void permissions(const path&amp; p, <a href="#symlink_perms">perms</a> prms, sys
     <tr>
       <td><code>add_perms</code></td>
       <td>
-      <p><code>status(p).permissions() | (prms &amp; <a href="#perms_mask">perms_mask</a>)</code> </td>
+      <p><code>status(p).permissions() | (prms &amp; <a href="#perms_mask">perms_mask</a>)</code></p></td>
     </tr>
     <tr>
       <td><code>remove_perms</code></td>
@@ -3702,13 +3705,13 @@ thrown.<i> —end note</i>] </p>
       indicate this are ENOENT or ENOTDIR. Windows equivalents
       include ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND, ERROR_INVALID_NAME,
       ERROR_INVALID_PARAMETER, ERROR_BAD_PATHNAME, and ERROR_BAD_NETPATH. <i>--
-      end note</i>]<br>
+      end note</i>]<br/>
 &nbsp;</li>
       <li>Otherwise, if the specific error indicates that <code>p</code> can be resolved
       but the attributes cannot be determined, return <code>
       file_status(type_unknown)</code>. [<i>Note: </i>For example, Windows
       ERROR_SHARING_VIOLATION errors. For ISO/IEC 9945, the case never arises. <i>—end
-      note</i>]<br>
+      note</i>]<br/>
 &nbsp;</li>
       <li>Otherwise, return <code>
       file_status(status_error)</code>.</li>
@@ -3729,36 +3732,36 @@ regular_file</code> implies appropriate <code>&lt;fstream&gt;</code> operations
       errors. Lack of
 <code>regular_file</code> does not necessarily imply <code>&lt;fstream&gt;</code> operations would
 fail on a directory.
-<i>—end note</i>]<br>
+<i>—end note</i>]<br/>
 &nbsp;</li>
       <li>Otherwise, if the attributes indicate a directory, as if by ISO/IEC 9945
       <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">S_ISDIR()</a>,
       return <code>
       file_status(directory_file)</code>. [<i>Note:</i> <code>directory_file</code> implies <code>
 directory_iterator(p)</code>would succeed.
-<i>—end note</i>]<br>
+<i>—end note</i>]<br/>
 &nbsp;</li>
       <li>Otherwise, if the attributes indicate a block special file, as if by ISO/IEC 9945
       <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">S_ISBLK()</a>,
       return <code>
-      file_status(block_file)</code>.<br>
+      file_status(block_file)</code>.<br/>
 &nbsp;</li>
       <li>Otherwise, if the attributes indicate a character special file, as if by ISO/IEC 9945
       <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">S_ISCHR()</a>,
       return <code>
-      file_status(character_file)</code>.<br>
+      file_status(character_file)</code>.<br/>
 &nbsp;</li>
       <li>Otherwise, if the attributes indicate a fifo or pipe file, as if by
       ISO/IEC 9945
       <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">S_ISFIFO()</a>,
       return <code>
-      file_status(fifo_file)</code>.<br>
+      file_status(fifo_file)</code>.<br/>
 &nbsp;</li>
       <li>Otherwise, if the attributes indicate a socket, as if by ISO/IEC
       9945
       <a href="http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html">S_ISSOCK()</a>,
       return <code>
-      file_status(socket_file)</code>.<br>
+      file_status(socket_file)</code>.<br/>
 &nbsp;</li>
       <li>Otherwise, return <code>
       file_status(type_unknown)</code>.</li>
@@ -3862,7 +3865,7 @@ path weakly_canonical(const path&amp; p, const path&amp; base, system::error_cod
   the entirety of <code>p</code>.</p>
   <p><i>Throws:</i>&nbsp; As specified in Error reporting.</p>
 </blockquote>
-<hr>
+<hr/>
 
 <!-- generate-section-numbers=false -->
 
@@ -3943,18 +3946,17 @@ other differences from its standard counterpart.</p>
 <h2><a name="path-decomposition-table">Path decomposition table</a></h2>
 <p>The table is generated by a program compiled with the Boost implementation.</p>
 <p>Shaded entries indicate cases where ISO/IEC 9945 (POSIX) and Windows implementations yield different results. The top value is the
-ISO/IEC 9945 result and the bottom value is the Windows result. <br>
+ISO/IEC 9945 result and the bottom value is the Windows result.</p>
 <table border="1" cellspacing="0" cellpadding="5">
-<p>
-<tr><td><b>Constructor<br>argument</b></td>
-<td><b>Iteration<br>over<br>Elements</b></td>
+<tr><td><b>Constructor<br/>argument</b></td>
+<td><b>Iteration<br/>over<br/>Elements</b></td>
 <td><b><code>string()</code></b></td>
-<td><b><code>generic_<br>string()</code></b></td>
-<td><b><code>root_<br>path()</code></b></td>
-<td><b><code>root_<br>name()</code></b></td>
-<td><b><code>root_<br>directory()</code></b></td>
-<td><b><code>relative_<br>path()</code></b></td>
-<td><b><code>parent_<br>path()</code></b></td>
+<td><b><code>generic_<br/>string()</code></b></td>
+<td><b><code>root_<br/>path()</code></b></td>
+<td><b><code>root_<br/>name()</code></b></td>
+<td><b><code>root_<br/>directory()</code></b></td>
+<td><b><code>relative_<br/>path()</code></b></td>
+<td><b><code>parent_<br/>path()</code></b></td>
 <td><b><code>filename()</code></b></td>
 </tr>
 <tr>
@@ -4262,82 +4264,82 @@ ISO/IEC 9945 result and the bottom value is the Windows result. <br>
 <td><code>c:</code></td>
 <td><code>c:</code></td>
 <td><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><code>c:</code><br><font size="-1"><i>empty</i></font></td>
+<td><code>c:</code><br/><font size="-1"><i>empty</i></font></td>
 <td><font size="-1"><i>empty</i></font></td>
 <td><code>c:</code></td>
 </tr>
 <tr>
 <td><code>c:/</code></td>
-<td><code>c:,.</code><br><code>c:,/</code></td>
+<td><code>c:,.</code><br/><code>c:,/</code></td>
 <td><code>c:/</code></td>
 <td><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
-<td><code>c:/</code><br><font size="-1"><i>empty</i></font></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>/</code></td>
+<td><code>c:/</code><br/><font size="-1"><i>empty</i></font></td>
 <td><code>c:</code></td>
-<td><code>.</code><br><code>/</code></td>
+<td><code>.</code><br/><code>/</code></td>
 </tr>
 <tr>
 <td><code>c:foo</code></td>
-<td><code>c:foo</code><br><code>c:,foo</code></td>
+<td><code>c:foo</code><br/><code>c:,foo</code></td>
 <td><code>c:foo</code></td>
 <td><code>c:foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><code>c:foo</code><br><code>foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><code>c:foo</code><br><code>foo</code></td>
+<td><code>c:foo</code><br/><code>foo</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><code>c:foo</code><br/><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:/foo</code></td>
-<td><code>c:,foo</code><br><code>c:,/,foo</code></td>
+<td><code>c:,foo</code><br/><code>c:,/,foo</code></td>
 <td><code>c:/foo</code></td>
 <td><code>c:/foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
-<td><code>c:/foo</code><br><code>foo</code></td>
-<td><code>c:</code><br><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>/</code></td>
+<td><code>c:/foo</code><br/><code>foo</code></td>
+<td><code>c:</code><br/><code>c:/</code></td>
 <td><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:foo/</code></td>
-<td><code>c:foo,.</code><br><code>c:,foo,.</code></td>
+<td><code>c:foo,.</code><br/><code>c:,foo,.</code></td>
 <td><code>c:foo/</code></td>
 <td><code>c:foo/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><code>c:foo/</code><br><code>foo/</code></td>
+<td><code>c:foo/</code><br/><code>foo/</code></td>
 <td><code>c:foo</code></td>
 <td><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:/foo/</code></td>
-<td><code>c:,foo,.</code><br><code>c:,/,foo,.</code></td>
+<td><code>c:,foo,.</code><br/><code>c:,/,foo,.</code></td>
 <td><code>c:/foo/</code></td>
 <td><code>c:/foo/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
-<td><code>c:/foo/</code><br><code>foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>/</code></td>
+<td><code>c:/foo/</code><br/><code>foo/</code></td>
 <td><code>c:/foo</code></td>
 <td><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:/foo/bar</code></td>
-<td><code>c:,foo,bar</code><br><code>c:,/,foo,bar</code></td>
+<td><code>c:,foo,bar</code><br/><code>c:,/,foo,bar</code></td>
 <td><code>c:/foo/bar</code></td>
 <td><code>c:/foo/bar</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
-<td><code>c:/foo/bar</code><br><code>foo/bar</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>/</code></td>
+<td><code>c:/foo/bar</code><br/><code>foo/bar</code></td>
 <td><code>c:/foo</code></td>
 <td><code>bar</code></td>
 </tr>
@@ -4346,96 +4348,96 @@ ISO/IEC 9945 result and the bottom value is the Windows result. <br>
 <td><code>prn:</code></td>
 <td><code>prn:</code></td>
 <td><code>prn:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>prn:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>prn:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>prn:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>prn:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><code>prn:</code><br><font size="-1"><i>empty</i></font></td>
+<td><code>prn:</code><br/><font size="-1"><i>empty</i></font></td>
 <td><font size="-1"><i>empty</i></font></td>
 <td><code>prn:</code></td>
 </tr>
 <tr>
 <td><code>c:\</code></td>
-<td><code>c:\</code><br><code>c:,/</code></td>
+<td><code>c:\</code><br/><code>c:,/</code></td>
 <td><code>c:\</code></td>
-<td><code>c:\</code><br><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
-<td><code>c:\</code><br><font size="-1"><i>empty</i></font></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><code>c:\</code><br><code>\</code></td>
+<td><code>c:\</code><br/><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>\</code></td>
+<td><code>c:\</code><br/><font size="-1"><i>empty</i></font></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><code>c:\</code><br/><code>\</code></td>
 </tr>
 <tr>
 <td><code>c:foo</code></td>
-<td><code>c:foo</code><br><code>c:,foo</code></td>
+<td><code>c:foo</code><br/><code>c:,foo</code></td>
 <td><code>c:foo</code></td>
 <td><code>c:foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><code>c:foo</code><br><code>foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><code>c:foo</code><br><code>foo</code></td>
+<td><code>c:foo</code><br/><code>foo</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><code>c:foo</code><br/><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:\foo</code></td>
-<td><code>c:\foo</code><br><code>c:,/,foo</code></td>
+<td><code>c:\foo</code><br/><code>c:,/,foo</code></td>
 <td><code>c:\foo</code></td>
-<td><code>c:\foo</code><br><code>c:/foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
-<td><code>c:\foo</code><br><code>foo</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
-<td><code>c:\foo</code><br><code>foo</code></td>
+<td><code>c:\foo</code><br/><code>c:/foo</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>\</code></td>
+<td><code>c:\foo</code><br/><code>foo</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:\</code></td>
+<td><code>c:\foo</code><br/><code>foo</code></td>
 </tr>
 <tr>
 <td><code>c:foo\</code></td>
-<td><code>c:foo\</code><br><code>c:,foo,.</code></td>
+<td><code>c:foo\</code><br/><code>c:,foo,.</code></td>
 <td><code>c:foo\</code></td>
-<td><code>c:foo\</code><br><code>c:foo/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
+<td><code>c:foo\</code><br/><code>c:foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
 <td><font size="-1"><i>empty</i></font></td>
-<td><code>c:foo\</code><br><code>foo\</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:foo</code></td>
-<td><code>c:foo\</code><br><code>.</code></td>
+<td><code>c:foo\</code><br/><code>foo\</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:foo</code></td>
+<td><code>c:foo\</code><br/><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:\foo\</code></td>
-<td><code>c:\foo\</code><br><code>c:,/,foo,.</code></td>
+<td><code>c:\foo\</code><br/><code>c:,/,foo,.</code></td>
 <td><code>c:\foo\</code></td>
-<td><code>c:\foo\</code><br><code>c:/foo/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
-<td><code>c:\foo\</code><br><code>foo\</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:\foo</code></td>
-<td><code>c:\foo\</code><br><code>.</code></td>
+<td><code>c:\foo\</code><br/><code>c:/foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>\</code></td>
+<td><code>c:\foo\</code><br/><code>foo\</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:\foo</code></td>
+<td><code>c:\foo\</code><br/><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:\foo/</code></td>
-<td><code>c:\foo,.</code><br><code>c:,/,foo,.</code></td>
+<td><code>c:\foo,.</code><br/><code>c:,/,foo,.</code></td>
 <td><code>c:\foo/</code></td>
-<td><code>c:\foo/</code><br><code>c:/foo/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:\</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>\</code></td>
-<td><code>c:\foo/</code><br><code>foo/</code></td>
+<td><code>c:\foo/</code><br/><code>c:/foo/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:\</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>\</code></td>
+<td><code>c:\foo/</code><br/><code>foo/</code></td>
 <td><code>c:\foo</code></td>
 <td><code>.</code></td>
 </tr>
 <tr>
 <td><code>c:/foo\bar</code></td>
-<td><code>c:,foo\bar</code><br><code>c:,/,foo,bar</code></td>
+<td><code>c:,foo\bar</code><br/><code>c:,/,foo,bar</code></td>
 <td><code>c:/foo\bar</code></td>
-<td><code>c:/foo\bar</code><br><code>c:/foo/bar</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:/</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>c:</code></td>
-<td><font size="-1"><i>empty</i></font><br><code>/</code></td>
-<td><code>c:/foo\bar</code><br><code>foo\bar</code></td>
-<td><code>c:</code><br><code>c:/foo</code></td>
-<td><code>foo\bar</code><br><code>bar</code></td>
+<td><code>c:/foo\bar</code><br/><code>c:/foo/bar</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:/</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>c:</code></td>
+<td><font size="-1"><i>empty</i></font><br/><code>/</code></td>
+<td><code>c:/foo\bar</code><br/><code>foo\bar</code></td>
+<td><code>c:</code><br/><code>c:/foo</code></td>
+<td><code>foo\bar</code><br/><code>bar</code></td>
 </tr>
 </table>
 
@@ -4519,7 +4521,7 @@ multiple string types. His idea became the basis for the version 3 path design.<
     <td width="84%">Dave Abrahams, Error and Exception Handling, <a href="http://www.boost.org/more/error_handling.html">www.boost.org/more/error_handling.html</a></td>
   </tr>
 </table>
-<hr>
+<hr/>
 <p>&copy; Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011</p>
 <p>&copy; Copyright Andrey Semashev, 2019-2024</p>
 <p>Distributed under the Boost Software License, Version 1.0. See
