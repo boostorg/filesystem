@@ -221,6 +221,30 @@ those features along with suggested replacements.</p>
   </tr>
   <tr>
     <td style="font-size: 10pt" valign="top">
+    <code>convenience.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>std::string extension(const path&amp; p)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    Replace <code>extension(p)</code> with <code>p.extension().string()</code>.</td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>convenience.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>std::string basename(const path&amp; p)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    Replace <code>basename(p)</code> with <code>p.stem().string()</code>.</td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
+    <code>convenience.hpp</code></td>
+    <td style="font-size: 10pt" valign="top">
+    <code>path change_extension(const path&amp; p, const path&amp; new_extension)</code></td>
+    <td style="font-size: 10pt" valign="top">
+    Replace <code>path new_p = change_extension(p, ext);</code> with <code>path new_p = p; new_p.replace_extension(ext);</code>.</td>
+  </tr>
+  <tr>
+    <td style="font-size: 10pt" valign="top">
     <code>operations.hpp</code></td>
     <td style="font-size: 10pt" valign="top">
     <p dir="ltr"><code>template &lt;class Path&gt;<br/>
