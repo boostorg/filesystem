@@ -92,6 +92,12 @@ jobs:
             os: ubuntu-22.04
             install:
               - g++-12
+          - toolset: gcc-13
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            os: ubuntu-latest
+            container: ubuntu:23.04
+            install:
+              - g++-13
           - name: UBSAN
             toolset: gcc-11
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu"
