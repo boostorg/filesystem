@@ -18,7 +18,11 @@
 #ifdef BOOST_HAS_UNISTD_H
 #include <unistd.h>
 #endif
+#include <fcntl.h>
 
+#include <boost/system/error_code.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/file_status.hpp>
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
 namespace boost {
@@ -29,6 +33,8 @@ namespace detail {
 struct directory_iterator_params
 {
 #if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+    //! Base directory path, relative to which to interpret relative paths. Must be empty if basedir_fd is AT_FDCWD.
+    path basedir;
     //! File descriptor of the base directory relative to which to interpret relative paths
     int basedir_fd;
 #endif
@@ -71,6 +77,26 @@ inline int close_fd(int fd)
     return ::close(fd);
 #endif
 }
+
+//! status() implementation
+file_status status_impl
+(
+    path const& p,
+    system::error_code* ec
+#if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS) || defined(BOOST_FILESYSTEM_USE_STATX)
+    , int basedir_fd = AT_FDCWD
+#endif
+);
+
+//! symlink_status() implementation
+file_status symlink_status_impl
+(
+    path const& p,
+    system::error_code* ec
+#if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS) || defined(BOOST_FILESYSTEM_USE_STATX)
+    , int basedir_fd = AT_FDCWD
+#endif
+);
 
 } // namespace detail
 } // namespace filesystem

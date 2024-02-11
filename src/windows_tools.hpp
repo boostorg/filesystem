@@ -90,7 +90,7 @@ inline bool is_reparse_point_tag_a_symlink(ULONG reparse_point_tag)
 //! Platform-specific parameters for directory iterator construction
 struct directory_iterator_params
 {
-    //! Handle of the directory to iterate over. If not \c INVALID_HANDLE_VALUE, the directory path is ignored.
+    //! Handle of the directory to iterate over. If not \c INVALID_HANDLE_VALUE, the directory path is only used to generate paths returned by the iterator.
     HANDLE use_handle;
     /*!
      * If \c use_handle is not \c INVALID_HANDLE_VALUE, specifies whether the directory iterator should close the handle upon destruction.

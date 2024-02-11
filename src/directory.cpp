@@ -175,6 +175,23 @@ inline system::error_code dir_itr_close(dir_itr_imp& imp) noexcept
     return error_code();
 }
 
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+
+// Obtains a file descriptor from the directory iterator
+inline int dir_itr_fd(dir_itr_imp const& imp, system::error_code& ec)
+{
+    int fd = ::dirfd(static_cast< DIR* >(imp.handle));
+    if (BOOST_UNLIKELY(fd < 0))
+    {
+        int err = errno;
+        ec = system::error_code(err, system::system_category());
+    }
+
+    return fd;
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+
 #if defined(BOOST_FILESYSTEM_USE_READDIR_R)
 
 // Obtains maximum length of a path, not including the terminating zero
@@ -1020,6 +1037,21 @@ void directory_iterator_construct(directory_iterator& it, path const& p, directo
 
     try
     {
+#if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+        path dir_path;
+        if (params)
+        {
+            dir_path = params->basedir;
+            path_algorithms::append_v4(dir_path, p);
+        }
+        else
+        {
+            dir_path = p;
+        }
+#else
+        path const& dir_path = p;
+#endif
+
         boost::intrusive_ptr< detail::dir_itr_imp > imp;
         path filename;
         file_status file_stat, symlink_file_stat;
@@ -1049,7 +1081,7 @@ void directory_iterator_construct(directory_iterator& it, path const& p, directo
                 && (filename_str[1] == static_cast< path::string_type::value_type >('\0') ||
                     (filename_str[1] == path::dot && filename_str[2] == static_cast< path::string_type::value_type >('\0')))))
             {
-                path full_path(p);
+                path full_path(dir_path);
                 path_algorithms::append_v4(full_path, filename);
                 imp->dir_entry.assign_with_status
                 (
@@ -1251,99 +1283,152 @@ void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::
     }
 }
 
-namespace {
-
-enum push_directory_result
-{
-    directory_not_pushed = 0u,
-    directory_pushed = 1u,
-    keep_depth = 1u << 1
-};
-
-// Returns: true if push occurs, otherwise false. Always returns false on error.
-inline push_directory_result recursive_directory_iterator_push_directory(detail::recur_dir_itr_imp* imp, system::error_code& ec) noexcept
-{
-    push_directory_result result = directory_not_pushed;
-    try
-    {
-        //  Discover if the iterator is for a directory that needs to be recursed into,
-        //  taking symlinks and options into account.
-
-        if ((imp->m_options & directory_options::_detail_no_push) != directory_options::none)
-        {
-            imp->m_options &= ~directory_options::_detail_no_push;
-            return result;
-        }
-
-        file_type symlink_ft = status_error;
-
-        // If we are not recursing into symlinks, we are going to have to know if the
-        // stack top is a symlink, so get symlink_status and verify no error occurred.
-        if ((imp->m_options & directory_options::follow_directory_symlink) == directory_options::none ||
-            (imp->m_options & directory_options::skip_dangling_symlinks) != directory_options::none)
-        {
-            symlink_ft = imp->m_stack.back()->symlink_file_type(ec);
-            if (ec)
-                return result;
-        }
-
-        // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
-        // symlinks correctly and efficiently, fixing ticket #5652.
-        //   if (((m_options & directory_options::follow_directory_symlink) == directory_options::follow_directory_symlink
-        //         || !is_symlink(m_stack.back()->symlink_status()))
-        //       && is_directory(m_stack.back()->status())) ...
-        // The predicate code has since been rewritten to pass error_code arguments,
-        // per ticket #5653.
-
-        if ((imp->m_options & directory_options::follow_directory_symlink) != directory_options::none || symlink_ft != symlink_file)
-        {
-            file_type ft = imp->m_stack.back()->file_type(ec);
-            if (BOOST_UNLIKELY(!!ec))
-            {
-                if (ec == make_error_condition(system::errc::no_such_file_or_directory) && symlink_ft == symlink_file &&
-                    (imp->m_options & (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks)) == (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks))
-                {
-                    // Skip dangling symlink and continue iteration on the current depth level
-                    ec = error_code();
-                }
-
-                return result;
-            }
-
-            if (ft != directory_file)
-                return result;
-
-            if (BOOST_UNLIKELY((imp->m_stack.size() - 1u) >= static_cast< std::size_t >((std::numeric_limits< int >::max)())))
-            {
-                // We cannot let depth to overflow
-                ec = make_error_code(system::errc::value_too_large);
-                // When depth overflow happens, avoid popping the current directory iterator
-                // and attempt to continue iteration on the current depth.
-                result = keep_depth;
-                return result;
-            }
-
-            directory_iterator next(imp->m_stack.back()->path(), imp->m_options, ec);
-            if (!ec && next != directory_iterator())
-            {
-                imp->m_stack.push_back(std::move(next)); // may throw
-                return directory_pushed;
-            }
-        }
-    }
-    catch (std::bad_alloc&)
-    {
-        ec = make_error_code(system::errc::not_enough_memory);
-    }
-
-    return result;
-}
-
-} // namespace
-
 BOOST_FILESYSTEM_DECL
 void recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec)
 {
+    enum push_directory_result : unsigned int
+    {
+        directory_not_pushed = 0u,
+        directory_pushed = 1u,
+        keep_depth = 1u << 1u
+    };
+
+    struct local
+    {
+        //! Attempts to descend into a directory
+        static push_directory_result push_directory(detail::recur_dir_itr_imp* imp, system::error_code& ec)
+        {
+            push_directory_result result = directory_not_pushed;
+            try
+            {
+                //  Discover if the iterator is for a directory that needs to be recursed into,
+                //  taking symlinks and options into account.
+
+                if ((imp->m_options & directory_options::_detail_no_push) != directory_options::none)
+                {
+                    imp->m_options &= ~directory_options::_detail_no_push;
+                    return result;
+                }
+
+                file_type symlink_ft = status_error;
+
+#if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+                int parentdir_fd = -1;
+                path dir_it_filename;
+#endif
+
+                // If we are not recursing into symlinks, we are going to have to know if the
+                // stack top is a symlink, so get symlink_status and verify no error occurred.
+                if ((imp->m_options & directory_options::follow_directory_symlink) == directory_options::none ||
+                    (imp->m_options & directory_options::skip_dangling_symlinks) != directory_options::none)
+                {
+#if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+                    directory_iterator const& dir_it = imp->m_stack.back();
+                    if (filesystem::type_present(dir_it->m_symlink_status))
+                    {
+                        symlink_ft = dir_it->m_symlink_status.type();
+                    }
+                    else
+                    {
+                        parentdir_fd = dir_itr_fd(*dir_it.m_imp, ec);
+                        if (ec)
+                            return result;
+
+                        dir_it_filename = detail::path_algorithms::filename_v4(dir_it->path());
+
+                        symlink_ft = detail::symlink_status_impl(dir_it_filename, &ec, parentdir_fd).type();
+                        if (ec)
+                            return result;
+                    }
+
+#else
+                    symlink_ft = imp->m_stack.back()->symlink_file_type(ec);
+                    if (ec)
+                        return result;
+#endif
+                }
+
+                // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
+                // symlinks correctly and efficiently, fixing ticket #5652.
+                //   if (((m_options & directory_options::follow_directory_symlink) == directory_options::follow_directory_symlink
+                //         || !is_symlink(m_stack.back()->symlink_status()))
+                //       && is_directory(m_stack.back()->status())) ...
+                // The predicate code has since been rewritten to pass error_code arguments,
+                // per ticket #5653.
+
+                if ((imp->m_options & directory_options::follow_directory_symlink) != directory_options::none || symlink_ft != symlink_file)
+                {
+                    directory_iterator const& dir_it = imp->m_stack.back();
+
+#if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+                    if (parentdir_fd < 0)
+                    {
+                        parentdir_fd = dir_itr_fd(*dir_it.m_imp, ec);
+                        if (ec)
+                            return result;
+
+                        dir_it_filename = detail::path_algorithms::filename_v4(dir_it->path());
+                    }
+
+                    file_type ft = status_error;
+                    if (filesystem::type_present(dir_it->m_status))
+                        ft = dir_it->m_status.type();
+                    else
+                        ft = detail::status_impl(dir_it_filename, &ec, parentdir_fd).type();
+#else
+                    file_type ft = dir_it->file_type(ec);
+#endif
+                    if (BOOST_UNLIKELY(!!ec))
+                    {
+                        if (ec == make_error_condition(system::errc::no_such_file_or_directory) && symlink_ft == symlink_file &&
+                            (imp->m_options & (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks)) == (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks))
+                        {
+                            // Skip dangling symlink and continue iteration on the current depth level
+                            ec = system::error_code();
+                        }
+
+                        return result;
+                    }
+
+                    if (ft != directory_file)
+                        return result;
+
+                    if (BOOST_UNLIKELY((imp->m_stack.size() - 1u) >= static_cast< std::size_t >((std::numeric_limits< int >::max)())))
+                    {
+                        // We cannot let depth to overflow
+                        ec = make_error_code(system::errc::value_too_large);
+                        // When depth overflow happens, avoid popping the current directory iterator
+                        // and attempt to continue iteration on the current depth.
+                        result = keep_depth;
+                        return result;
+                    }
+
+#if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+                    detail::directory_iterator_params params;
+                    params.basedir = dir_it->path().parent_path();
+                    params.basedir_fd = parentdir_fd;
+                    params.iterator_fd = -1;
+                    directory_iterator next;
+                    detail::directory_iterator_construct(next, dir_it_filename, imp->m_options, &params, &ec);
+#else
+                    directory_iterator next(dir_it->path(), imp->m_options, ec);
+#endif
+                    if (!ec && next != directory_iterator())
+                    {
+                        imp->m_stack.push_back(std::move(next)); // may throw
+                        return directory_pushed;
+                    }
+                }
+            }
+            catch (std::bad_alloc&)
+            {
+                ec = make_error_code(system::errc::not_enough_memory);
+            }
+
+            return result;
+        }
+    };
+
     BOOST_ASSERT_MSG(!it.is_end(), "increment() on end recursive_directory_iterator");
     detail::recur_dir_itr_imp* const imp = it.m_imp.get();
 
@@ -1353,7 +1438,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
     system::error_code local_ec;
 
     //  if various conditions are met, push a directory_iterator into the iterator stack
-    push_directory_result push_result = recursive_directory_iterator_push_directory(imp, local_ec);
+    push_directory_result push_result = local::push_directory(imp, local_ec);
     if (push_result == directory_pushed)
         return;
 
@@ -1373,7 +1458,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                 system::error_code increment_ec;
                 directory_iterator& dir_it = imp->m_stack.back();
                 detail::directory_iterator_increment(dir_it, &increment_ec);
-                if (!increment_ec && dir_it != directory_iterator())
+                if (!increment_ec && !dir_it.is_end())
                     goto on_error_return;
             }
 
@@ -1407,7 +1492,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
         if (BOOST_UNLIKELY(!!local_ec))
             goto on_error;
 
-        if (dir_it != directory_iterator())
+        if (!dir_it.is_end())
             break;
 
         imp->m_stack.pop_back();

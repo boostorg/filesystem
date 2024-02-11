@@ -477,13 +477,15 @@ inline std::size_t get_blksize(struct ::stat const& st) noexcept
 
 #endif // defined(BOOST_FILESYSTEM_USE_STATX)
 
+} // namespace
+
 //! status() implementation
 file_status status_impl
 (
     path const& p,
-    error_code* ec
+    system::error_code* ec
 #if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS) || defined(BOOST_FILESYSTEM_USE_STATX)
-    , int basedir_fd = AT_FDCWD
+    , int basedir_fd
 #endif
 )
 {
@@ -501,14 +503,14 @@ file_status status_impl
     if (err != 0)
     {
         err = errno;
-        if (ec)                                 // always report errno, even though some
-            ec->assign(err, system_category()); // errno values are not status_errors
+        if (ec)                                         // always report errno, even though some
+            ec->assign(err, system::system_category()); // errno values are not status_errors
 
         if (not_found_error(err))
             return fs::file_status(fs::file_not_found, fs::no_perms);
 
         if (!ec)
-            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status", p, error_code(err, system_category())));
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::status", p, system::error_code(err, system::system_category())));
 
         return fs::file_status(fs::status_error);
     }
@@ -542,9 +544,9 @@ file_status status_impl
 file_status symlink_status_impl
 (
     path const& p,
-    error_code* ec
+    system::error_code* ec
 #if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS) || defined(BOOST_FILESYSTEM_USE_STATX)
-    , int basedir_fd = AT_FDCWD
+    , int basedir_fd
 #endif
 )
 {
@@ -562,14 +564,14 @@ file_status symlink_status_impl
     if (err != 0)
     {
         err = errno;
-        if (ec)                                 // always report errno, even though some
-            ec->assign(err, system_category()); // errno values are not status_errors
+        if (ec)                                         // always report errno, even though some
+            ec->assign(err, system::system_category()); // errno values are not status_errors
 
         if (not_found_error(err)) // these are not errors
             return fs::file_status(fs::file_not_found, fs::no_perms);
 
         if (!ec)
-            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::symlink_status", p, error_code(err, system_category())));
+            BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::symlink_status", p, system::error_code(err, system::system_category())));
 
         return fs::file_status(fs::status_error);
     }
@@ -600,6 +602,8 @@ file_status symlink_status_impl
 
     return fs::file_status(fs::type_unknown);
 }
+
+namespace {
 
 //! Flushes buffered data and attributes written to the file to permanent storage
 inline int full_sync(int fd)
@@ -1099,14 +1103,25 @@ uintmax_t remove_all_impl
     path const& p,
     error_code* ec
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-    , int basedir_fd = AT_FDCWD
+    , int parentdir_fd = AT_FDCWD
 #endif
 )
 {
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
     fs::detail::directory_iterator_params params;
-    params.basedir_fd = basedir_fd;
+    params.basedir_fd = parentdir_fd;
     params.iterator_fd = -1;
+
+    fs::path remove_path;
+    if (parentdir_fd != AT_FDCWD)
+    {
+        params.basedir = p.parent_path();
+        remove_path = path_algorithms::filename_v4(p);
+    }
+    else
+    {
+        remove_path = p;
+    }
 #endif
 
     error_code dit_create_ec;
@@ -1115,14 +1130,11 @@ uintmax_t remove_all_impl
         fs::file_type type;
         {
             error_code local_ec;
-            type = fs::detail::symlink_status_impl
-            (
-                p,
-                &local_ec
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                , basedir_fd
+            type = fs::detail::symlink_status_impl(remove_path, &local_ec, parentdir_fd).type();
+#else
+            type = fs::detail::symlink_status_impl(p, &local_ec).type();
 #endif
-            ).type();
 
             if (type == fs::file_not_found)
                 return 0u;
@@ -1141,18 +1153,11 @@ uintmax_t remove_all_impl
         if (type == fs::directory_file) // but not a directory symlink
         {
             fs::directory_iterator itr;
-            fs::detail::directory_iterator_construct
-            (
-                itr,
-                p,
-                directory_options::_detail_no_follow,
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                &params,
+            fs::detail::directory_iterator_construct(itr, remove_path, directory_options::_detail_no_follow, &params, &dit_create_ec);
 #else
-                nullptr,
+            fs::detail::directory_iterator_construct(itr, p, directory_options::_detail_no_follow, nullptr, &dit_create_ec);
 #endif
-                &dit_create_ec
-            );
 
             if (BOOST_UNLIKELY(!!dit_create_ec))
             {
@@ -1180,11 +1185,7 @@ uintmax_t remove_all_impl
             {
                 count += fs::detail::remove_all_impl
                 (
-#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                    path_algorithms::filename_v4(itr->path()),
-#else
                     itr->path(),
-#endif
                     ec
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                     , params.iterator_fd
@@ -1199,15 +1200,11 @@ uintmax_t remove_all_impl
             }
         }
 
-        count += fs::detail::remove_impl
-        (
-            p,
-            type,
-            ec
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-            , basedir_fd
+        count += fs::detail::remove_impl(remove_path, type, ec, parentdir_fd);
+#else
+        count += fs::detail::remove_impl(p, type, ec);
 #endif
-        );
         if (ec && *ec)
             return static_cast< uintmax_t >(-1);
 

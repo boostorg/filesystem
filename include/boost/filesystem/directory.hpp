@@ -55,6 +55,7 @@ enum class directory_options : unsigned int
 BOOST_BITMASK(directory_options)
 
 class directory_iterator;
+class recursive_directory_iterator;
 
 namespace detail {
 
@@ -62,6 +63,12 @@ struct directory_iterator_params;
 
 BOOST_FILESYSTEM_DECL void directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, directory_iterator_params* params, system::error_code* ec);
 BOOST_FILESYSTEM_DECL void directory_iterator_increment(directory_iterator& it, system::error_code* ec);
+
+struct recur_dir_itr_imp;
+
+BOOST_FILESYSTEM_DECL void recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, directory_options opts, system::error_code* ec);
+BOOST_FILESYSTEM_DECL void recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec);
+BOOST_FILESYSTEM_DECL void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::error_code* ec);
 
 } // namespace detail
 
@@ -79,6 +86,8 @@ class directory_entry
 {
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, detail::directory_iterator_params* params, system::error_code* ec);
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_increment(directory_iterator& it, system::error_code* ec);
+
+    friend BOOST_FILESYSTEM_DECL void detail::recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec);
 
 public:
     typedef boost::filesystem::path::value_type value_type; // enables class path ctor taking directory_entry
@@ -660,6 +669,8 @@ class directory_iterator :
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, detail::directory_iterator_params* params, system::error_code* ec);
     friend BOOST_FILESYSTEM_DECL void detail::directory_iterator_increment(directory_iterator& it, system::error_code* ec);
 
+    friend BOOST_FILESYSTEM_DECL void detail::recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec);
+
 public:
     directory_iterator() noexcept {} // creates the "end" iterator
 
@@ -808,8 +819,6 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-class recursive_directory_iterator;
-
 namespace detail {
 
 struct recur_dir_itr_imp :
@@ -821,10 +830,6 @@ struct recur_dir_itr_imp :
 
     explicit recur_dir_itr_imp(directory_options opts) noexcept : m_options(opts) {}
 };
-
-BOOST_FILESYSTEM_DECL void recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, directory_options opts, system::error_code* ec);
-BOOST_FILESYSTEM_DECL void recursive_directory_iterator_increment(recursive_directory_iterator& it, system::error_code* ec);
-BOOST_FILESYSTEM_DECL void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::error_code* ec);
 
 } // namespace detail
 
