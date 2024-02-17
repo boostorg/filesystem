@@ -94,6 +94,12 @@ typedef boost::winapi::DWORD_ err_t;
 #if !defined(STATUS_OBJECT_PATH_NOT_FOUND)
 #define STATUS_OBJECT_PATH_NOT_FOUND ((boost::winapi::NTSTATUS_)0xC000003Al)
 #endif
+#if !defined(STATUS_SHARING_VIOLATION)
+#define STATUS_SHARING_VIOLATION ((boost::winapi::NTSTATUS_)0xC0000043l)
+#endif
+#if !defined(STATUS_EAS_NOT_SUPPORTED)
+#define STATUS_EAS_NOT_SUPPORTED ((boost::winapi::NTSTATUS_)0xC000004Fl)
+#endif
 #if !defined(STATUS_NOT_SUPPORTED)
 #define STATUS_NOT_SUPPORTED ((boost::winapi::NTSTATUS_)0xC00000BBl)
 #endif
@@ -139,6 +145,10 @@ inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
     case static_cast< boost::winapi::ULONG_ >(STATUS_OBJECT_NAME_NOT_FOUND):
     case static_cast< boost::winapi::ULONG_ >(STATUS_OBJECT_PATH_NOT_FOUND):
         return boost::winapi::ERROR_FILE_NOT_FOUND_;
+    case static_cast< boost::winapi::ULONG_ >(STATUS_SHARING_VIOLATION):
+        return boost::winapi::ERROR_SHARING_VIOLATION_;
+    case static_cast< boost::winapi::ULONG_ >(STATUS_EAS_NOT_SUPPORTED):
+        return boost::winapi::ERROR_EAS_NOT_SUPPORTED_;
     case static_cast< boost::winapi::ULONG_ >(STATUS_ACCESS_DENIED):
         return boost::winapi::ERROR_ACCESS_DENIED_;
     case static_cast< boost::winapi::ULONG_ >(STATUS_BAD_NETWORK_PATH):
