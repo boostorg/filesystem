@@ -782,10 +782,10 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
     handle_wrapper h;
     HANDLE iterator_handle;
     bool close_handle = true;
-    if (params != nullptr && params->use_handle != INVALID_HANDLE_VALUE)
+    if (params != nullptr && params->dir_handle != INVALID_HANDLE_VALUE)
     {
         // Operate on externally provided handle, which must be a directory handle
-        iterator_handle = params->use_handle;
+        iterator_handle = params->dir_handle;
         close_handle = params->close_handle;
     }
     else
@@ -1315,6 +1315,8 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 #if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                 int parentdir_fd = -1;
                 path dir_it_filename;
+#elif defined(BOOST_WINDOWS_API)
+                handle_wrapper direntry_handle;
 #endif
 
                 // If we are not recursing into symlinks, we are going to have to know if the
@@ -1340,7 +1342,45 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         if (ec)
                             return result;
                     }
+#elif defined(BOOST_WINDOWS_API)
+                    directory_iterator const& dir_it = imp->m_stack.back();
+                    if (filesystem::type_present(dir_it->m_symlink_status))
+                    {
+                        symlink_ft = dir_it->m_symlink_status.type();
+                    }
+                    else
+                    {
+                        boost::winapi::NTSTATUS_ status = nt_create_file_handle_at
+                        (
+                            direntry_handle.handle,
+                            static_cast< HANDLE >(dir_it.m_imp->handle),
+                            detail::path_algorithms::filename_v4(dir_it->path()),
+                            0u, // FileAttributes
+                            FILE_LIST_DIRECTORY | FILE_READ_ATTRIBUTES | FILE_READ_EA | SYNCHRONIZE,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                            FILE_OPEN,
+                            FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT | FILE_OPEN_REPARSE_POINT
+                        );
 
+                        if (NT_SUCCESS(status))
+                        {
+                            symlink_ft = detail::status_by_handle(direntry_handle.handle, dir_it->path(), &ec).type();
+                        }
+                        else if (status == STATUS_NOT_IMPLEMENTED)
+                        {
+                            symlink_ft = dir_it->symlink_file_type(ec);
+                        }
+                        else
+                        {
+                            if (!not_found_ntstatus(status))
+                                ec.assign(translate_ntstatus(status), system::system_category());
+
+                            return result;
+                        }
+
+                        if (ec)
+                            return result;
+                    }
 #else
                     symlink_ft = imp->m_stack.back()->symlink_file_type(ec);
                     if (ec)
@@ -1375,6 +1415,42 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         ft = dir_it->m_status.type();
                     else
                         ft = detail::status_impl(dir_it_filename, &ec, parentdir_fd).type();
+#elif defined(BOOST_WINDOWS_API)
+                    if (direntry_handle.handle != INVALID_HANDLE_VALUE && symlink_ft == symlink_file)
+                    {
+                        // Close the symlink to reopen the target file below
+                        ::CloseHandle(direntry_handle.handle);
+                        direntry_handle.handle = INVALID_HANDLE_VALUE;
+                    }
+
+                    file_type ft = symlink_ft;
+                    if (direntry_handle.handle == INVALID_HANDLE_VALUE)
+                    {
+                        boost::winapi::NTSTATUS_ status = nt_create_file_handle_at
+                        (
+                            direntry_handle.handle,
+                            static_cast< HANDLE >(dir_it.m_imp->handle),
+                            detail::path_algorithms::filename_v4(dir_it->path()),
+                            0u, // FileAttributes
+                            FILE_LIST_DIRECTORY | FILE_READ_ATTRIBUTES | FILE_READ_EA | SYNCHRONIZE,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                            FILE_OPEN,
+                            FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT
+                        );
+
+                        if (NT_SUCCESS(status))
+                        {
+                            ft = detail::status_by_handle(direntry_handle.handle, dir_it->path(), &ec).type();
+                        }
+                        else if (status == STATUS_NOT_IMPLEMENTED)
+                        {
+                            ft = dir_it->file_type(ec);
+                        }
+                        else
+                        {
+                            ec.assign(translate_ntstatus(status), system::system_category());
+                        }
+                    }
 #else
                     file_type ft = dir_it->file_type(ec);
 #endif
@@ -1384,7 +1460,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                             (imp->m_options & (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks)) == (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks))
                         {
                             // Skip dangling symlink and continue iteration on the current depth level
-                            ec = system::error_code();
+                            ec.clear();
                         }
 
                         return result;
@@ -1410,13 +1486,24 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     params.iterator_fd = -1;
                     directory_iterator next;
                     detail::directory_iterator_construct(next, dir_it_filename, imp->m_options, &params, &ec);
+#elif defined(BOOST_WINDOWS_API)
+                    detail::directory_iterator_params params;
+                    params.dir_handle = direntry_handle.handle;
+                    params.close_handle = true;
+                    directory_iterator next;
+                    detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
+                    if (BOOST_LIKELY(!ec))
+                        direntry_handle.handle = INVALID_HANDLE_VALUE;
 #else
                     directory_iterator next(dir_it->path(), imp->m_options, ec);
 #endif
-                    if (!ec && next != directory_iterator())
+                    if (BOOST_LIKELY(!ec))
                     {
-                        imp->m_stack.push_back(std::move(next)); // may throw
-                        return directory_pushed;
+                        if (!next.is_end())
+                        {
+                            imp->m_stack.push_back(std::move(next)); // may throw
+                            return directory_pushed;
+                        }
                     }
                 }
             }

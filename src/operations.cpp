@@ -1641,6 +1641,8 @@ inline fs::file_status process_status_failure(path const& p, error_code* ec)
     return process_status_failure(::GetLastError(), p, ec);
 }
 
+} // namespace
+
 //! (symlink_)status() by handle implementation
 fs::file_status status_by_handle(HANDLE h, path const& p, error_code* ec)
 {
@@ -1709,6 +1711,8 @@ fs::file_status status_by_handle(HANDLE h, path const& p, error_code* ec)
 
     return fs::file_status(ftype, make_permissions(p, attrs));
 }
+
+namespace {
 
 //! symlink_status() implementation
 fs::file_status symlink_status_impl(path const& p, error_code* ec)
@@ -2046,7 +2050,7 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
 
         fs::directory_iterator itr;
         directory_iterator_params params;
-        params.use_handle = h;
+        params.dir_handle = h;
         params.close_handle = false; // the caller will close the handle
         fs::detail::directory_iterator_construct(itr, p, directory_options::_detail_no_follow, &params, &local_ec);
         if (BOOST_UNLIKELY(!!local_ec))
@@ -2082,14 +2086,8 @@ uintmax_t remove_all_nt6_by_handle(HANDLE h, path const& p, error_code* ec)
 
                 if (!NT_SUCCESS(status))
                 {
-                    if (status == STATUS_NO_SUCH_FILE ||
-                        status == STATUS_OBJECT_NAME_NOT_FOUND ||
-                        status == STATUS_OBJECT_PATH_NOT_FOUND ||
-                        status == STATUS_BAD_NETWORK_PATH ||
-                        status == STATUS_BAD_NETWORK_NAME)
-                    {
+                    if (not_found_ntstatus(status))
                         goto next_entry;
-                    }
 
                     DWORD err = translate_ntstatus(status);
                     emit_error(err, nested_path, ec, "boost::filesystem::remove_all");

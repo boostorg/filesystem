@@ -123,7 +123,7 @@ typedef boost::winapi::DWORD_ err_t;
 #endif
 
 //! Converts NTSTATUS error codes to Win32 error codes for reporting
-inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
+inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status) noexcept
 {
     // We have to cast to unsigned integral type to avoid signed overflow and narrowing conversion in the constants.
     switch (static_cast< boost::winapi::ULONG_ >(status))
@@ -166,6 +166,13 @@ inline boost::winapi::DWORD_ translate_ntstatus(boost::winapi::NTSTATUS_ status)
     default:
         return boost::winapi::ERROR_NOT_SUPPORTED_;
     }
+}
+
+//! Tests if the NTSTATUS indicates that the file is not found
+inline bool not_found_ntstatus(boost::winapi::NTSTATUS_ status) noexcept
+{
+    return status == STATUS_NO_SUCH_FILE || status == STATUS_OBJECT_NAME_NOT_FOUND || status == STATUS_OBJECT_PATH_NOT_FOUND ||
+        status == STATUS_BAD_NETWORK_PATH || status == STATUS_BAD_NETWORK_NAME;
 }
 
 #endif

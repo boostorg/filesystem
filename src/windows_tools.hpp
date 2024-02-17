@@ -17,6 +17,7 @@
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/file_status.hpp>
+#include <boost/system/error_code.hpp>
 #include <boost/winapi/basic_types.hpp> // NTSTATUS_
 
 #include <windows.h>
@@ -91,9 +92,9 @@ inline bool is_reparse_point_tag_a_symlink(ULONG reparse_point_tag)
 struct directory_iterator_params
 {
     //! Handle of the directory to iterate over. If not \c INVALID_HANDLE_VALUE, the directory path is only used to generate paths returned by the iterator.
-    HANDLE use_handle;
+    HANDLE dir_handle;
     /*!
-     * If \c use_handle is not \c INVALID_HANDLE_VALUE, specifies whether the directory iterator should close the handle upon destruction.
+     * If \c dir_handle is not \c INVALID_HANDLE_VALUE, specifies whether the directory iterator should close the handle upon destruction.
      * If \c false, the handle must remain valid for the lifetime of the iterator.
      */
     bool close_handle;
@@ -249,7 +250,7 @@ struct handle_wrapper
     explicit handle_wrapper(HANDLE h) noexcept : handle(h) {}
     ~handle_wrapper() noexcept
     {
-        if (handle != INVALID_HANDLE_VALUE)
+        if (handle != nullptr && handle != INVALID_HANDLE_VALUE)
             ::CloseHandle(handle);
     }
     handle_wrapper(handle_wrapper const&) = delete;
@@ -264,6 +265,9 @@ inline HANDLE create_file_handle(boost::filesystem::path const& p, DWORD dwDesir
 
 //! Creates a file handle for a file relative to a previously opened base directory. The file path must be relative and in preferred format.
 boost::winapi::NTSTATUS_ nt_create_file_handle_at(HANDLE& out, HANDLE basedir_handle, boost::filesystem::path const& p, ULONG FileAttributes, ACCESS_MASK DesiredAccess, ULONG ShareMode, ULONG CreateDisposition, ULONG CreateOptions);
+
+//! Returns status of the file identified by an open handle. The path \a p is used to report errors and infer file permissions.
+filesystem::file_status status_by_handle(HANDLE h, path const& p, system::error_code* ec);
 
 } // namespace detail
 } // namespace filesystem
