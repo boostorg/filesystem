@@ -239,6 +239,7 @@ target_link_libraries(boost_filesystem
 
     PRIVATE
         Boost::predef
+        Boost::scope
 )
 
 if(NOT BOOST_FILESYSTEM_HAS_CXX20_ATOMIC_REF)

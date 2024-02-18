@@ -2,7 +2,7 @@
 
 //  Copyright 2002-2009, 2014 Beman Dawes
 //  Copyright 2001 Dietmar Kuehl
-//  Copyright 2019, 2022 Andrey Semashev
+//  Copyright 2019, 2022-2024 Andrey Semashev
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -39,6 +39,8 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#include <boost/scope/unique_fd.hpp>
 
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS >= 0) && defined(_SC_THREAD_SAFE_FUNCTIONS) && \
     !defined(__CYGWIN__) && \
@@ -123,6 +125,104 @@ BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(system::error_code* ec)
 
 namespace detail {
 
+#if defined(BOOST_POSIX_API)
+
+//! Opens a directory file and returns a file descriptor. Returns a negative value in case of error.
+boost::scope::unique_fd open_directory(path const& p, directory_options opts, system::error_code& ec)
+{
+    ec.clear();
+
+    int flags = O_DIRECTORY | O_RDONLY | O_NONBLOCK | O_CLOEXEC;
+
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    if ((opts & directory_options::_detail_no_follow) != directory_options::none)
+        flags |= O_NOFOLLOW;
+#endif
+
+    int res;
+    while (true)
+    {
+        res = ::open(p.c_str(), flags);
+        if (BOOST_UNLIKELY(res < 0))
+        {
+            const int err = errno;
+            if (err == EINTR)
+                continue;
+            ec = system::error_code(err, system::system_category());
+            return boost::scope::unique_fd();
+        }
+
+        break;
+    }
+
+#if defined(BOOST_FILESYSTEM_NO_O_CLOEXEC) && defined(FD_CLOEXEC)
+    boost::scope::unique_fd fd(res);
+
+    res = ::fcntl(fd.get(), F_SETFD, FD_CLOEXEC);
+    if (BOOST_UNLIKELY(res < 0))
+    {
+        const int err = errno;
+        ec = system::error_code(err, system::system_category());
+        return boost::scope::unique_fd();
+    }
+
+    return fd;
+#else
+    return boost::scope::unique_fd(res);
+#endif
+}
+
+#if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+
+//! Opens a directory file and returns a file descriptor. Returns a negative value in case of error.
+boost::scope::unique_fd openat_directory(int basedir_fd, path const& p, directory_options opts, system::error_code& ec)
+{
+    ec.clear();
+
+    int flags = O_DIRECTORY | O_RDONLY | O_NONBLOCK | O_CLOEXEC;
+
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+    if ((opts & directory_options::_detail_no_follow) != directory_options::none)
+        flags |= O_NOFOLLOW;
+#endif
+
+    int res;
+    while (true)
+    {
+        res = ::openat(basedir_fd, p.c_str(), flags);
+        if (BOOST_UNLIKELY(res < 0))
+        {
+            const int err = errno;
+            if (err == EINTR)
+                continue;
+            ec = system::error_code(err, system::system_category());
+            return boost::scope::unique_fd();
+        }
+
+        break;
+    }
+
+#if defined(BOOST_FILESYSTEM_NO_O_CLOEXEC) && defined(FD_CLOEXEC)
+    boost::scope::unique_fd fd(res);
+
+    res = ::fcntl(fd.get(), F_SETFD, FD_CLOEXEC);
+    if (BOOST_UNLIKELY(res < 0))
+    {
+        const int err = errno;
+        ec = system::error_code(err, system::system_category());
+        return boost::scope::unique_fd();
+    }
+
+    return fd;
+#else
+    return boost::scope::unique_fd(res);
+#endif
+}
+
+#endif // defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+
+#endif // defined(BOOST_POSIX_API)
+
 BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_imp_extra_data_alignment = 16u;
 
 BOOST_FILESYSTEM_DECL void* dir_itr_imp::operator new(std::size_t class_size, std::size_t extra_size) noexcept
@@ -168,7 +268,7 @@ inline system::error_code dir_itr_close(dir_itr_imp& imp) noexcept
         if (BOOST_UNLIKELY(::closedir(h) != 0))
         {
             err = errno;
-            return error_code(err, system_category());
+            return system::error_code(err, system::system_category());
         }
     }
 
@@ -308,12 +408,12 @@ inline int invoke_readdir(dir_itr_imp& imp, struct dirent** result)
 
 #endif // !defined(BOOST_FILESYSTEM_USE_READDIR_R)
 
-error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_status& sf, fs::file_status& symlink_sf)
+system::error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     dirent* result = nullptr;
     int err = invoke_readdir(imp, &result);
     if (BOOST_UNLIKELY(err != 0))
-        return error_code(err, system_category());
+        return system::error_code(err, system::system_category());
     if (result == nullptr)
         return dir_itr_close(imp);
 
@@ -360,10 +460,10 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
 #else
     sf = symlink_sf = fs::file_status(fs::status_error);
 #endif
-    return error_code();
+    return system::error_code();
 }
 
-error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, directory_options opts, directory_iterator_params* params, fs::path& first_filename, fs::file_status&, fs::file_status&)
+system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, directory_options opts, directory_iterator_params* params, fs::path& first_filename, fs::file_status&, fs::file_status&)
 {
     std::size_t extra_size = 0u;
 #if defined(BOOST_FILESYSTEM_USE_READDIR_R)
@@ -392,57 +492,42 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
         return make_error_code(system::errc::not_enough_memory);
 
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
-    int flags = O_DIRECTORY | O_RDONLY | O_NONBLOCK | O_CLOEXEC;
-    if ((opts & directory_options::_detail_no_follow) != directory_options::none)
-        flags |= O_NOFOLLOW;
-
-#if defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-    int fd = ::openat(params ? params->basedir_fd : AT_FDCWD, dir.c_str(), flags);
-#else
-    int fd = ::open(dir.c_str(), flags);
-#endif
-    if (BOOST_UNLIKELY(fd < 0))
+    boost::scope::unique_fd fd;
+    if (params && params->dir_fd)
     {
-        const int err = errno;
-        return error_code(err, system_category());
+        fd = std::move(params->dir_fd);
+    }
+    else
+    {
+        system::error_code ec;
+        fd = open_directory(dir, opts, ec);
+        if (BOOST_UNLIKELY(!!ec))
+            return ec;
     }
 
-#if defined(BOOST_FILESYSTEM_NO_O_CLOEXEC) && defined(FD_CLOEXEC)
-    int res = ::fcntl(fd, F_SETFD, FD_CLOEXEC);
-    if (BOOST_UNLIKELY(res < 0))
-    {
-        const int err = errno;
-        close_fd(fd);
-        return error_code(err, system_category());
-    }
-#endif
-
-    pimpl->handle = ::fdopendir(fd);
+    pimpl->handle = ::fdopendir(fd.get());
     if (BOOST_UNLIKELY(!pimpl->handle))
     {
         const int err = errno;
-        close_fd(fd);
-        return error_code(err, system_category());
+        return system::error_code(err, system::system_category());
     }
+
+    // At this point fd will be closed by closedir
+    fd.release();
 #else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
     pimpl->handle = ::opendir(dir.c_str());
     if (BOOST_UNLIKELY(!pimpl->handle))
     {
         const int err = errno;
-        return error_code(err, system_category());
+        return system::error_code(err, system::system_category());
     }
 #endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
 
     // Force initial readdir call by the caller. This will initialize the actual first filename and statuses.
     first_filename.assign(".");
 
-#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
-    if (params)
-        params->iterator_fd = fd;
-#endif
-
     imp.swap(pimpl);
-    return error_code();
+    return system::error_code();
 }
 
 BOOST_CONSTEXPR_OR_CONST err_t not_found_error_code = ENOENT;
@@ -604,7 +689,7 @@ inline system::error_code dir_itr_close(dir_itr_imp& imp) noexcept
     return error_code();
 }
 
-error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_status& sf, fs::file_status& symlink_sf)
+system::error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     void* extra_data = get_dir_itr_imp_extra_data(&imp);
     const void* current_data = static_cast< const unsigned char* >(extra_data) + imp.current_offset;
@@ -623,7 +708,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
                     if (error == ERROR_NO_MORE_FILES)
                         goto done;
 
-                    return error_code(error, system_category());
+                    return system::error_code(error, system::system_category());
                 }
 
                 imp.current_offset = 0u;
@@ -653,7 +738,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
                     if (error == ERROR_NO_MORE_FILES)
                         goto done;
 
-                    return error_code(error, system_category());
+                    return system::error_code(error, system::system_category());
                 }
 
                 imp.current_offset = 0u;
@@ -683,7 +768,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
                     if (error == ERROR_NO_MORE_FILES)
                         goto done;
 
-                    return error_code(error, system_category());
+                    return system::error_code(error, system::system_category());
                 }
 
                 imp.current_offset = 0u;
@@ -727,7 +812,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
                     if (status == STATUS_NO_MORE_FILES)
                         goto done;
 
-                    return error_code(translate_ntstatus(status), system_category());
+                    return system::error_code(translate_ntstatus(status), system::system_category());
                 }
 
                 imp.current_offset = 0u;
@@ -746,7 +831,7 @@ error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_stat
     }
 
 done:
-    return error_code();
+    return system::error_code();
 }
 
 //! Returns \c true if the error code indicates that the OS or the filesystem does not support a particular directory info class
@@ -771,7 +856,7 @@ inline bool is_dir_info_class_not_supported(DWORD error)
         error == ERROR_INTERNAL_ERROR;
 }
 
-error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, directory_options opts, directory_iterator_params* params, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
+system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, directory_options opts, directory_iterator_params* params, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     boost::intrusive_ptr< detail::dir_itr_imp > pimpl(new (dir_itr_extra_size) detail::dir_itr_imp());
     if (BOOST_UNLIKELY(!pimpl))
@@ -799,7 +884,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
         {
         return_last_error:
             DWORD error = ::GetLastError();
-            return error_code(error, system_category());
+            return system::error_code(error, system::system_category());
         }
 
         if (BOOST_LIKELY(get_file_information_by_handle_ex != nullptr))
@@ -813,7 +898,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
                 if (error == ERROR_INVALID_PARAMETER || error == ERROR_NOT_SUPPORTED)
                     goto use_get_file_information_by_handle;
 
-                return error_code(error, system_category());
+                return system::error_code(error, system::system_category());
             }
 
             if (BOOST_UNLIKELY((info.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0u))
@@ -869,7 +954,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
                 if (error == ERROR_NO_MORE_FILES || error == ERROR_FILE_NOT_FOUND)
                     goto done;
 
-                return error_code(error, system_category());
+                return system::error_code(error, system::system_category());
             }
 
             pimpl->extra_data_format = file_id_extd_dir_info_format;
@@ -899,7 +984,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
                 if (error == ERROR_NO_MORE_FILES || error == ERROR_FILE_NOT_FOUND)
                     goto done;
 
-                return error_code(error, system_category());
+                return system::error_code(error, system::system_category());
             }
 
             pimpl->extra_data_format = file_full_dir_info_format;
@@ -929,7 +1014,7 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
                 if (error == ERROR_NO_MORE_FILES || error == ERROR_FILE_NOT_FOUND)
                     goto done;
 
-                return error_code(error, system_category());
+                return system::error_code(error, system::system_category());
             }
 
             pimpl->extra_data_format = file_id_both_dir_info_format;
@@ -986,14 +1071,13 @@ error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::
         break;
     }
 
-
     pimpl->handle = iterator_handle;
     h.handle = INVALID_HANDLE_VALUE;
     pimpl->close_handle = close_handle;
 
 done:
     imp.swap(pimpl);
-    return error_code();
+    return system::error_code();
 }
 
 BOOST_CONSTEXPR_OR_CONST err_t not_found_error_code = ERROR_PATH_NOT_FOUND;
@@ -1026,6 +1110,9 @@ dir_itr_imp::~dir_itr_imp() noexcept
 BOOST_FILESYSTEM_DECL
 void directory_iterator_construct(directory_iterator& it, path const& p, directory_options opts, directory_iterator_params* params, system::error_code* ec)
 {
+    // At most one of the two options may be specified, and follow_directory_symlink is ignored for directory_iterator.
+    BOOST_ASSERT((opts & (directory_options::follow_directory_symlink | directory_options::_detail_no_follow)) != (directory_options::follow_directory_symlink | directory_options::_detail_no_follow));
+
     if (BOOST_UNLIKELY(p.empty()))
     {
         emit_error(not_found_error_code, p, ec, "boost::filesystem::directory_iterator::construct");
@@ -1037,21 +1124,6 @@ void directory_iterator_construct(directory_iterator& it, path const& p, directo
 
     try
     {
-#if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-        path dir_path;
-        if (params)
-        {
-            dir_path = params->basedir;
-            path_algorithms::append_v4(dir_path, p);
-        }
-        else
-        {
-            dir_path = p;
-        }
-#else
-        path const& dir_path = p;
-#endif
-
         boost::intrusive_ptr< detail::dir_itr_imp > imp;
         path filename;
         file_status file_stat, symlink_file_stat;
@@ -1081,7 +1153,7 @@ void directory_iterator_construct(directory_iterator& it, path const& p, directo
                 && (filename_str[1] == static_cast< path::string_type::value_type >('\0') ||
                     (filename_str[1] == path::dot && filename_str[2] == static_cast< path::string_type::value_type >('\0')))))
             {
-                path full_path(dir_path);
+                path full_path(p);
                 path_algorithms::append_v4(full_path, filename);
                 imp->dir_entry.assign_with_status
                 (
@@ -1172,6 +1244,9 @@ void directory_iterator_increment(directory_iterator& it, system::error_code* ec
 BOOST_FILESYSTEM_DECL
 void recursive_directory_iterator_construct(recursive_directory_iterator& it, path const& dir_path, directory_options opts, system::error_code* ec)
 {
+    // At most one of the two options may be specified
+    BOOST_ASSERT((opts & (directory_options::follow_directory_symlink | directory_options::_detail_no_follow)) != (directory_options::follow_directory_symlink | directory_options::_detail_no_follow));
+
     if (ec)
         ec->clear();
 
@@ -1400,6 +1475,11 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                 {
                     directory_iterator const& dir_it = imp->m_stack.back();
 
+                    // Don't query the file type from the filesystem yet, if not known. We will use dir_it for that below.
+                    file_type ft = dir_it->m_status.type();
+                    if (ft != status_error && ft != directory_file)
+                        return result;
+
 #if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                     if (parentdir_fd < 0)
                     {
@@ -1410,12 +1490,28 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         dir_it_filename = detail::path_algorithms::filename_v4(dir_it->path());
                     }
 
-                    file_type ft = status_error;
-                    if (filesystem::type_present(dir_it->m_status))
-                        ft = dir_it->m_status.type();
-                    else
-                        ft = detail::status_impl(dir_it_filename, &ec, parentdir_fd).type();
-#elif defined(BOOST_WINDOWS_API)
+                    // Try to open the file as a directory right away. This effectively tests whether the file is a directory, and, if it is, opens the directory in one system call.
+                    detail::directory_iterator_params params{ detail::openat_directory(parentdir_fd, dir_it_filename, imp->m_options, ec) };
+                    if (!!ec)
+                    {
+                        if
+                        (
+                            // Skip non-directory files
+                            ec == system::error_code(ENOTDIR, system::system_category()) ||
+                            (
+                                // Skip dangling symlink, if requested by options
+                                ec == system::error_code(ENOENT, system::system_category()) && symlink_ft == symlink_file &&
+                                (imp->m_options & (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks)) == (directory_options::follow_directory_symlink | directory_options::skip_dangling_symlinks)
+                            )
+                        )
+                        {
+                            ec.clear();
+                        }
+
+                        return result;
+                    }
+#else // defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+#if defined(BOOST_WINDOWS_API)
                     if (direntry_handle.handle != INVALID_HANDLE_VALUE && symlink_ft == symlink_file)
                     {
                         // Close the symlink to reopen the target file below
@@ -1423,7 +1519,6 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         direntry_handle.handle = INVALID_HANDLE_VALUE;
                     }
 
-                    file_type ft = symlink_ft;
                     if (direntry_handle.handle == INVALID_HANDLE_VALUE)
                     {
                         boost::winapi::NTSTATUS_ status = nt_create_file_handle_at
@@ -1440,7 +1535,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
                         if (NT_SUCCESS(status))
                         {
-                            ft = detail::status_by_handle(direntry_handle.handle, dir_it->path(), &ec).type();
+                            goto get_file_type_by_handle;
                         }
                         else if (status == STATUS_NOT_IMPLEMENTED)
                         {
@@ -1451,9 +1546,16 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                             ec.assign(translate_ntstatus(status), system::system_category());
                         }
                     }
-#else
-                    file_type ft = dir_it->file_type(ec);
-#endif
+                    else
+                    {
+                    get_file_type_by_handle:
+                        ft = detail::status_by_handle(direntry_handle.handle, dir_it->path(), &ec).type();
+                    }
+#else // defined(BOOST_WINDOWS_API)
+                    if (ft == status_error)
+                        ft = dir_it->file_type(ec);
+#endif // defined(BOOST_WINDOWS_API)
+
                     if (BOOST_UNLIKELY(!!ec))
                     {
                         if (ec == make_error_condition(system::errc::no_such_file_or_directory) && symlink_ft == symlink_file &&
@@ -1468,6 +1570,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
                     if (ft != directory_file)
                         return result;
+#endif // defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
 
                     if (BOOST_UNLIKELY((imp->m_stack.size() - 1u) >= static_cast< std::size_t >((std::numeric_limits< int >::max)())))
                     {
@@ -1480,25 +1583,22 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     }
 
 #if defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                    detail::directory_iterator_params params;
-                    params.basedir = dir_it->path().parent_path();
-                    params.basedir_fd = parentdir_fd;
-                    params.iterator_fd = -1;
                     directory_iterator next;
-                    detail::directory_iterator_construct(next, dir_it_filename, imp->m_options, &params, &ec);
+                    detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
 #elif defined(BOOST_WINDOWS_API)
                     detail::directory_iterator_params params;
                     params.dir_handle = direntry_handle.handle;
                     params.close_handle = true;
                     directory_iterator next;
                     detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
-                    if (BOOST_LIKELY(!ec))
-                        direntry_handle.handle = INVALID_HANDLE_VALUE;
 #else
                     directory_iterator next(dir_it->path(), imp->m_options, ec);
 #endif
                     if (BOOST_LIKELY(!ec))
                     {
+#if defined(BOOST_WINDOWS_API)
+                        direntry_handle.handle = INVALID_HANDLE_VALUE;
+#endif
                         if (!next.is_end())
                         {
                             imp->m_stack.push_back(std::move(next)); // may throw

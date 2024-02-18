@@ -118,6 +118,8 @@
 
 #endif // defined(linux) || defined(__linux) || defined(__linux__)
 
+#include <boost/scope/unique_fd.hpp>
+
 #if defined(POSIX_FADV_SEQUENTIAL) && (!defined(__ANDROID__) || __ANDROID_API__ >= 21)
 #define BOOST_FILESYSTEM_HAS_POSIX_FADVISE
 #endif
@@ -305,24 +307,43 @@ bool not_found_error(int errval) noexcept; // forward declaration
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-struct fd_wrapper
-{
-    int fd;
-
-    fd_wrapper() noexcept : fd(-1) {}
-    explicit fd_wrapper(int fd) noexcept : fd(fd) {}
-    ~fd_wrapper() noexcept
-    {
-        if (fd >= 0)
-            close_fd(fd);
-    }
-    fd_wrapper(fd_wrapper const&) = delete;
-    fd_wrapper& operator=(fd_wrapper const&) = delete;
-};
-
 inline bool not_found_error(int errval) noexcept
 {
     return errval == ENOENT || errval == ENOTDIR;
+}
+
+/*!
+ * Closes a file descriptor and returns the result, similar to close(2). Unlike close(2), guarantees that the file descriptor is closed even if EINTR error happens.
+ *
+ * Some systems don't close the file descriptor in case if the thread is interrupted by a signal and close(2) returns EINTR.
+ * Other (most) systems do close the file descriptor even when when close(2) returns EINTR, and attempting to close it
+ * again could close a different file descriptor that was opened by a different thread. This function hides this difference in behavior.
+ *
+ * Future POSIX standards will likely fix this by introducing posix_close (see https://www.austingroupbugs.net/view.php?id=529)
+ * and prohibiting returning EINTR from close(2), but we still have to support older systems where this new behavior is not available and close(2)
+ * behaves differently between systems.
+ */
+inline int close_fd(int fd)
+{
+#if defined(hpux) || defined(_hpux) || defined(__hpux)
+    int res;
+    while (true)
+    {
+        res = ::close(fd);
+        if (BOOST_UNLIKELY(res < 0))
+        {
+            int err = errno;
+            if (err == EINTR)
+                continue;
+        }
+
+        break;
+    }
+
+    return res;
+#else
+    return ::close(fd);
+#endif
 }
 
 #if defined(BOOST_FILESYSTEM_HAS_STATX)
@@ -1108,19 +1129,12 @@ uintmax_t remove_all_impl
 )
 {
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-    fs::detail::directory_iterator_params params;
-    params.basedir_fd = parentdir_fd;
-    params.iterator_fd = -1;
-
-    fs::path remove_path;
+    fs::path filename;
+    const fs::path* remove_path = &p;
     if (parentdir_fd != AT_FDCWD)
     {
-        params.basedir = p.parent_path();
-        remove_path = path_algorithms::filename_v4(p);
-    }
-    else
-    {
-        remove_path = p;
+        filename = path_algorithms::filename_v4(p);
+        remove_path = &filename;
     }
 #endif
 
@@ -1131,7 +1145,7 @@ uintmax_t remove_all_impl
         {
             error_code local_ec;
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-            type = fs::detail::symlink_status_impl(remove_path, &local_ec, parentdir_fd).type();
+            type = fs::detail::symlink_status_impl(*remove_path, &local_ec, parentdir_fd).type();
 #else
             type = fs::detail::symlink_status_impl(p, &local_ec).type();
 #endif
@@ -1154,9 +1168,27 @@ uintmax_t remove_all_impl
         {
             fs::directory_iterator itr;
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-            fs::detail::directory_iterator_construct(itr, remove_path, directory_options::_detail_no_follow, &params, &dit_create_ec);
+            fs::detail::directory_iterator_params params{ fs::detail::openat_directory(parentdir_fd, *remove_path, directory_options::_detail_no_follow, dit_create_ec) };
+            int dir_fd = -1;
+            if (BOOST_LIKELY(!dit_create_ec))
+            {
+                // Save dir_fd as constructing the iterator will move the fd into the iterator context
+                dir_fd = params.dir_fd.get();
+                fs::detail::directory_iterator_construct(itr, *remove_path, directory_options::_detail_no_follow, &params, &dit_create_ec);
+            }
 #else
-            fs::detail::directory_iterator_construct(itr, p, directory_options::_detail_no_follow, nullptr, &dit_create_ec);
+            fs::detail::directory_iterator_construct
+            (
+                itr,
+                p,
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
+                directory_options::_detail_no_follow,
+#else
+                directory_options::none,
+#endif
+                nullptr,
+                &dit_create_ec
+            );
 #endif
 
             if (BOOST_UNLIKELY(!!dit_create_ec))
@@ -1188,7 +1220,7 @@ uintmax_t remove_all_impl
                     itr->path(),
                     ec
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                    , params.iterator_fd
+                    , dir_fd
 #endif
                 );
                 if (ec && *ec)
@@ -1201,7 +1233,7 @@ uintmax_t remove_all_impl
         }
 
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-        count += fs::detail::remove_impl(remove_path, type, ec, parentdir_fd);
+        count += fs::detail::remove_impl(*remove_path, type, ec, parentdir_fd);
 #else
         count += fs::detail::remove_impl(p, type, ec);
 #endif
@@ -2997,13 +3029,13 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
 
     int err = 0;
 
-    // Note: Declare fd_wrappers here so that errno is not clobbered by close() that may be called in fd_wrapper destructors
-    fd_wrapper infile, outfile;
+    // Note: Declare fd wrappers here so that errno is not clobbered by close() that may be called in fd wrapper destructors
+    boost::scope::unique_fd infile, outfile;
 
     while (true)
     {
-        infile.fd = ::open(from.c_str(), O_RDONLY | O_CLOEXEC);
-        if (BOOST_UNLIKELY(infile.fd < 0))
+        infile.reset(::open(from.c_str(), O_RDONLY | O_CLOEXEC));
+        if (BOOST_UNLIKELY(!infile))
         {
             err = errno;
             if (err == EINTR)
@@ -3023,7 +3055,7 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
         statx_data_mask |= STATX_MTIME;
 
     struct ::statx from_stat;
-    if (BOOST_UNLIKELY(invoke_statx(infile.fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &from_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(infile.get(), "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &from_stat) < 0))
     {
     fail_errno:
         err = errno;
@@ -3037,7 +3069,7 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
     }
 #else
     struct ::stat from_stat;
-    if (BOOST_UNLIKELY(::fstat(infile.fd, &from_stat) != 0))
+    if (BOOST_UNLIKELY(::fstat(infile.get(), &from_stat) != 0))
     {
     fail_errno:
         err = errno;
@@ -3065,8 +3097,8 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
         // Try opening the existing file without truncation to test the modification time later
         while (true)
         {
-            outfile.fd = ::open(to.c_str(), oflag, to_mode);
-            if (outfile.fd < 0)
+            outfile.reset(::open(to.c_str(), oflag, to_mode));
+            if (!outfile)
             {
                 err = errno;
                 if (err == EINTR)
@@ -3094,8 +3126,8 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
 
         while (true)
         {
-            outfile.fd = ::open(to.c_str(), oflag, to_mode);
-            if (outfile.fd < 0)
+            outfile.reset(::open(to.c_str(), oflag, to_mode));
+            if (!outfile)
             {
                 err = errno;
                 if (err == EINTR)
@@ -3120,7 +3152,7 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
     }
 
     struct ::statx to_stat;
-    if (BOOST_UNLIKELY(invoke_statx(outfile.fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &to_stat) < 0))
+    if (BOOST_UNLIKELY(invoke_statx(outfile.get(), "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, statx_data_mask, &to_stat) < 0))
         goto fail_errno;
 
     if (BOOST_UNLIKELY((to_stat.stx_mask & statx_data_mask) != statx_data_mask))
@@ -3130,7 +3162,7 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
     }
 #else
     struct ::stat to_stat;
-    if (BOOST_UNLIKELY(::fstat(outfile.fd, &to_stat) != 0))
+    if (BOOST_UNLIKELY(::fstat(outfile.get(), &to_stat) != 0))
         goto fail_errno;
 #endif
 
@@ -3163,12 +3195,12 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
             return false;
 #endif
 
-        if (BOOST_UNLIKELY(::ftruncate(outfile.fd, 0) != 0))
+        if (BOOST_UNLIKELY(::ftruncate(outfile.get(), 0) != 0))
             goto fail_errno;
     }
 
     // Note: Use block size of the target file since it is most important for writing performance.
-    err = filesystem::detail::atomic_load_relaxed(filesystem::detail::copy_file_data)(infile.fd, outfile.fd, get_size(from_stat), get_blksize(to_stat));
+    err = filesystem::detail::atomic_load_relaxed(filesystem::detail::copy_file_data)(infile.get(), outfile.get(), get_size(from_stat), get_blksize(to_stat));
     if (BOOST_UNLIKELY(err != 0))
         goto fail; // err already contains the error code
 
@@ -3177,7 +3209,7 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
     // we may need to update its mode bits to match the source file.
     if ((to_mode & fs::perms_mask) != (from_mode & fs::perms_mask))
     {
-        if (BOOST_UNLIKELY(::fchmod(outfile.fd, (from_mode & fs::perms_mask)) != 0 &&
+        if (BOOST_UNLIKELY(::fchmod(outfile.get(), (from_mode & fs::perms_mask)) != 0 &&
             (options & copy_options::ignore_attribute_errors) == copy_options::none))
         {
             goto fail_errno;
@@ -3188,9 +3220,9 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
     if ((options & (copy_options::synchronize_data | copy_options::synchronize)) != copy_options::none)
     {
         if ((options & copy_options::synchronize) != copy_options::none)
-            err = full_sync(outfile.fd);
+            err = full_sync(outfile.get());
         else
-            err = data_sync(outfile.fd);
+            err = data_sync(outfile.get());
 
         if (BOOST_UNLIKELY(err != 0))
             goto fail;
@@ -3198,8 +3230,8 @@ bool copy_file(path const& from, path const& to, copy_options options, error_cod
 
     // We have to explicitly close the output file descriptor in order to handle a possible error returned from it. The error may indicate
     // a failure of a prior write operation.
-    err = close_fd(outfile.fd);
-    outfile.fd = -1;
+    err = close_fd(outfile.get());
+    outfile.release();
     if (BOOST_UNLIKELY(err < 0))
     {
         err = errno;
