@@ -864,7 +864,7 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
 
     GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = filesystem::detail::atomic_load_relaxed(get_file_information_by_handle_ex_api);
 
-    handle_wrapper h;
+    unique_handle h;
     HANDLE iterator_handle;
     bool close_handle = true;
     if (params != nullptr && params->dir_handle != INVALID_HANDLE_VALUE)
@@ -879,13 +879,15 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
         if ((opts & directory_options::_detail_no_follow) != directory_options::none)
             flags |= FILE_FLAG_OPEN_REPARSE_POINT;
 
-        iterator_handle = h.handle = create_file_handle(dir, FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, flags);
-        if (BOOST_UNLIKELY(iterator_handle == INVALID_HANDLE_VALUE))
+        h = create_file_handle(dir, FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, flags);
+        if (BOOST_UNLIKELY(!h))
         {
         return_last_error:
             DWORD error = ::GetLastError();
             return system::error_code(error, system::system_category());
         }
+
+        iterator_handle = h.get();
 
         if (BOOST_LIKELY(get_file_information_by_handle_ex != nullptr))
         {
@@ -924,7 +926,7 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
             if ((opts & directory_options::_detail_no_follow) != directory_options::none && (info.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u)
             {
                 error_code ec;
-                const ULONG reparse_point_tag = detail::get_reparse_point_tag_ioctl(h.handle, dir, &ec);
+                const ULONG reparse_point_tag = detail::get_reparse_point_tag_ioctl(iterator_handle, dir, &ec);
                 if (BOOST_UNLIKELY(!!ec))
                     return ec;
 
@@ -1072,7 +1074,7 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
     }
 
     pimpl->handle = iterator_handle;
-    h.handle = INVALID_HANDLE_VALUE;
+    h.release();
     pimpl->close_handle = close_handle;
 
 done:
@@ -1391,7 +1393,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                 int parentdir_fd = -1;
                 path dir_it_filename;
 #elif defined(BOOST_WINDOWS_API)
-                handle_wrapper direntry_handle;
+                unique_handle direntry_handle;
 #endif
 
                 // If we are not recursing into symlinks, we are going to have to know if the
@@ -1427,7 +1429,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     {
                         boost::winapi::NTSTATUS_ status = nt_create_file_handle_at
                         (
-                            direntry_handle.handle,
+                            direntry_handle,
                             static_cast< HANDLE >(dir_it.m_imp->handle),
                             detail::path_algorithms::filename_v4(dir_it->path()),
                             0u, // FileAttributes
@@ -1439,7 +1441,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
                         if (NT_SUCCESS(status))
                         {
-                            symlink_ft = detail::status_by_handle(direntry_handle.handle, dir_it->path(), &ec).type();
+                            symlink_ft = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec).type();
                         }
                         else if (status == STATUS_NOT_IMPLEMENTED)
                         {
@@ -1512,18 +1514,17 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     }
 #else // defined(BOOST_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
 #if defined(BOOST_WINDOWS_API)
-                    if (direntry_handle.handle != INVALID_HANDLE_VALUE && symlink_ft == symlink_file)
+                    if (!!direntry_handle && symlink_ft == symlink_file)
                     {
                         // Close the symlink to reopen the target file below
-                        ::CloseHandle(direntry_handle.handle);
-                        direntry_handle.handle = INVALID_HANDLE_VALUE;
+                        direntry_handle.reset();
                     }
 
-                    if (direntry_handle.handle == INVALID_HANDLE_VALUE)
+                    if (!direntry_handle)
                     {
                         boost::winapi::NTSTATUS_ status = nt_create_file_handle_at
                         (
-                            direntry_handle.handle,
+                            direntry_handle,
                             static_cast< HANDLE >(dir_it.m_imp->handle),
                             detail::path_algorithms::filename_v4(dir_it->path()),
                             0u, // FileAttributes
@@ -1549,7 +1550,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     else
                     {
                     get_file_type_by_handle:
-                        ft = detail::status_by_handle(direntry_handle.handle, dir_it->path(), &ec).type();
+                        ft = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec).type();
                     }
 #else // defined(BOOST_WINDOWS_API)
                     if (ft == status_error)
@@ -1587,7 +1588,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
 #elif defined(BOOST_WINDOWS_API)
                     detail::directory_iterator_params params;
-                    params.dir_handle = direntry_handle.handle;
+                    params.dir_handle = direntry_handle.get();
                     params.close_handle = true;
                     directory_iterator next;
                     detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
@@ -1597,7 +1598,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     if (BOOST_LIKELY(!ec))
                     {
 #if defined(BOOST_WINDOWS_API)
-                        direntry_handle.handle = INVALID_HANDLE_VALUE;
+                        direntry_handle.release();
 #endif
                         if (!next.is_end())
                         {

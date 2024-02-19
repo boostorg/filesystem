@@ -18,6 +18,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/file_status.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/scope/unique_resource.hpp>
 #include <boost/winapi/basic_types.hpp> // NTSTATUS_
 
 #include <windows.h>
@@ -39,6 +40,34 @@
 namespace boost {
 namespace filesystem {
 namespace detail {
+
+//! Deleter for HANDLEs
+struct handle_deleter
+{
+    using result_type = void;
+
+    result_type operator() (HANDLE h) const noexcept
+    {
+        ::CloseHandle(h);
+    }
+};
+
+//! Resource traits for HANDLEs
+struct handle_resource_traits
+{
+    static HANDLE make_default() noexcept
+    {
+        return INVALID_HANDLE_VALUE;
+    }
+
+    static bool is_allocated(HANDLE h) noexcept
+    {
+        return h != INVALID_HANDLE_VALUE && h != nullptr;
+    }
+};
+
+//! Unique HANDLE wrapper
+using unique_handle = boost::scope::unique_resource< HANDLE, handle_deleter, handle_resource_traits >;
 
 BOOST_INLINE_VARIABLE BOOST_CONSTEXPR_OR_CONST wchar_t colon = L':';
 BOOST_INLINE_VARIABLE BOOST_CONSTEXPR_OR_CONST wchar_t questionmark = L'?';
@@ -241,30 +270,33 @@ typedef BOOL (WINAPI GetFileInformationByHandleEx_t)(
 
 extern GetFileInformationByHandleEx_t* get_file_information_by_handle_ex_api;
 
-//! HANDLE wrapper that automatically closes the handle
-struct handle_wrapper
-{
-    HANDLE handle;
-
-    handle_wrapper() noexcept : handle(INVALID_HANDLE_VALUE) {}
-    explicit handle_wrapper(HANDLE h) noexcept : handle(h) {}
-    ~handle_wrapper() noexcept
-    {
-        if (handle != nullptr && handle != INVALID_HANDLE_VALUE)
-            ::CloseHandle(handle);
-    }
-    handle_wrapper(handle_wrapper const&) = delete;
-    handle_wrapper& operator=(handle_wrapper const&) = delete;
-};
-
 //! Creates a file handle
-inline HANDLE create_file_handle(boost::filesystem::path const& p, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile = nullptr)
+inline unique_handle create_file_handle
+(
+    boost::filesystem::path const& p,
+    DWORD dwDesiredAccess,
+    DWORD dwShareMode,
+    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+    DWORD dwCreationDisposition,
+    DWORD dwFlagsAndAttributes,
+    HANDLE hTemplateFile = nullptr
+)
 {
-    return ::CreateFileW(p.c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+    return unique_handle(::CreateFileW(p.c_str(), dwDesiredAccess, dwShareMode, lpSecurityAttributes, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile));
 }
 
 //! Creates a file handle for a file relative to a previously opened base directory. The file path must be relative and in preferred format.
-boost::winapi::NTSTATUS_ nt_create_file_handle_at(HANDLE& out, HANDLE basedir_handle, boost::filesystem::path const& p, ULONG FileAttributes, ACCESS_MASK DesiredAccess, ULONG ShareMode, ULONG CreateDisposition, ULONG CreateOptions);
+boost::winapi::NTSTATUS_ nt_create_file_handle_at
+(
+    unique_handle& out,
+    HANDLE basedir_handle,
+    boost::filesystem::path const& p,
+    ULONG FileAttributes,
+    ACCESS_MASK DesiredAccess,
+    ULONG ShareMode,
+    ULONG CreateDisposition,
+    ULONG CreateOptions
+);
 
 //! Returns status of the file identified by an open handle. The path \a p is used to report errors and infer file permissions.
 filesystem::file_status status_by_handle(HANDLE h, path const& p, system::error_code* ec);
