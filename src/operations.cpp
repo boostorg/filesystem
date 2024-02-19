@@ -20,14 +20,13 @@
 #include <boost/filesystem/exception.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/smart_ptr/scoped_ptr.hpp>
-#include <boost/smart_ptr/scoped_array.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/core/bit.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/assert.hpp>
 #include <new> // std::bad_alloc, std::nothrow
 #include <limits>
+#include <memory>
 #include <string>
 #include <cstddef>
 #include <cstdlib> // for malloc, free
@@ -803,7 +802,7 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
         if (buf_sz > max_read_write_buf_size)
             buf_sz = max_read_write_buf_size;
         const std::size_t buf_size = static_cast< std::size_t >(boost::core::bit_ceil(static_cast< uint_least32_t >(buf_sz)));
-        boost::scoped_array< char > buf(new (std::nothrow) char[buf_size]);
+        std::unique_ptr< char[] > buf(new (std::nothrow) char[buf_size]);
         if (BOOST_LIKELY(!!buf.get()))
             return copy_file_data_read_write_impl(infile, outfile, buf.get(), buf_size);
     }
@@ -1491,7 +1490,7 @@ inline std::wstring wgetenv(const wchar_t* name)
     const DWORD size = ::GetEnvironmentVariableW(name, nullptr, 0);
     if (size > 0)
     {
-        boost::scoped_array< wchar_t > buf(new wchar_t[size]);
+        std::unique_ptr< wchar_t[] > buf(new wchar_t[size]);
         if (BOOST_LIKELY(::GetEnvironmentVariableW(name, buf.get(), size) > 0))
             return std::wstring(buf.get());
     }
@@ -1628,7 +1627,7 @@ boost::winapi::NTSTATUS_ nt_create_file_handle_at
 
 ULONG get_reparse_point_tag_ioctl(HANDLE h, path const& p, error_code* ec)
 {
-    boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new (std::nothrow) reparse_data_buffer_with_storage);
+    std::unique_ptr< reparse_data_buffer_with_storage > buf(new (std::nothrow) reparse_data_buffer_with_storage);
     if (BOOST_UNLIKELY(!buf.get()))
     {
         if (!ec)
@@ -3662,7 +3661,7 @@ path current_path(error_code* ec)
                 break;
             }
 
-            boost::scoped_array< char > buf(new char[path_max]);
+            std::unique_ptr< char[] > buf(new char[path_max]);
             p = ::getcwd(buf.get(), path_max);
             if (BOOST_LIKELY(!!p))
             {
@@ -3683,7 +3682,7 @@ path current_path(error_code* ec)
     DWORD sz;
     if ((sz = ::GetCurrentDirectoryW(0, nullptr)) == 0)
         sz = 1;
-    boost::scoped_array< path::value_type > buf(new path::value_type[sz]);
+    std::unique_ptr< path::value_type[] > buf(new path::value_type[sz]);
     error(::GetCurrentDirectoryW(sz, buf.get()) == 0 ? BOOST_ERRNO : 0, ec, "boost::filesystem::current_path");
     return path(buf.get());
 #endif
@@ -4451,7 +4450,7 @@ path read_symlink(path const& p, system::error_code* ec)
                 break;
             }
 
-            boost::scoped_array< char > buf(new char[path_max]);
+            std::unique_ptr< char[] > buf(new char[path_max]);
             result = ::readlink(path_str, buf.get(), path_max);
             if (BOOST_UNLIKELY(result < 0))
             {
@@ -4484,7 +4483,7 @@ path read_symlink(path const& p, system::error_code* ec)
         return symlink_path;
     }
 
-    boost::scoped_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
+    std::unique_ptr< reparse_data_buffer_with_storage > buf(new reparse_data_buffer_with_storage);
     DWORD sz = 0u;
     if (BOOST_UNLIKELY(!::DeviceIoControl(h.get(), FSCTL_GET_REPARSE_POINT, nullptr, 0, buf.get(), sizeof(*buf), &sz, nullptr)))
         goto return_last_error;
@@ -4760,7 +4759,7 @@ path temp_directory_path(system::error_code* ec)
             return path();
         }
 
-        boost::scoped_array< wchar_t > buf(new wchar_t[size]);
+        std::unique_ptr< wchar_t[] > buf(new wchar_t[size]);
         if (BOOST_UNLIKELY(::GetWindowsDirectoryW(buf.get(), size) == 0))
             goto getwindir_error;
 
@@ -4805,7 +4804,7 @@ path system_complete(path const& p, system::error_code* ec)
     if (len < buf_size) // len does not include null termination character
         return path(&buf[0]);
 
-    boost::scoped_array< wchar_t > big_buf(new wchar_t[len]);
+    std::unique_ptr< wchar_t[] > big_buf(new wchar_t[len]);
 
     return error(get_full_path_name(p, len, big_buf.get(), &pfn) == 0 ? BOOST_ERRNO : 0, p, ec, "boost::filesystem::system_complete") ? path() : path(big_buf.get());
 
