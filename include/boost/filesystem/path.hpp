@@ -16,27 +16,25 @@
 #ifndef BOOST_FILESYSTEM_PATH_HPP
 #define BOOST_FILESYSTEM_PATH_HPP
 
-#include <boost/assert.hpp>
 #include <boost/filesystem/config.hpp>
-#include <boost/filesystem/detail/path_traits.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/iterator/iterator_categories.hpp>
-#include <boost/core/enable_if.hpp>
-#include <boost/io/quoted.hpp>
-#include <boost/functional/hash_fwd.hpp>
-#include <boost/type_traits/negation.hpp>
-#include <boost/type_traits/conjunction.hpp>
-#include <boost/type_traits/disjunction.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/remove_cv.hpp>
 #include <cstddef>
 #include <iosfwd>
 #include <locale>
 #include <string>
 #include <iterator>
+#include <type_traits>
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 #include <string_view>
 #endif
+#include <boost/assert.hpp>
+#include <boost/iterator/iterator_facade.hpp>
+#include <boost/iterator/iterator_categories.hpp>
+#include <boost/io/quoted.hpp>
+#include <boost/functional/hash_fwd.hpp>
+#include <boost/filesystem/detail/path_traits.hpp>
+#include <boost/filesystem/detail/type_traits/negation.hpp>
+#include <boost/filesystem/detail/type_traits/conjunction.hpp>
+#include <boost/filesystem/detail/type_traits/disjunction.hpp>
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
@@ -350,10 +348,10 @@ public:
 
     template<
         typename Source,
-        typename = typename boost::enable_if_c<
-            boost::conjunction<
-                detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >,
-                boost::negation< detail::path_traits::is_native_path_source< typename boost::remove_cv< Source >::type > >
+        typename = typename std::enable_if<
+            detail::conjunction<
+                detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >,
+                detail::negation< detail::path_traits::is_native_path_source< typename std::remove_cv< Source >::type > >
             >::value
         >::type
     >
@@ -364,10 +362,10 @@ public:
 
     template<
         typename Source,
-        typename = typename boost::enable_if_c<
-            boost::conjunction<
-                detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >,
-                boost::negation< detail::path_traits::is_native_path_source< typename boost::remove_cv< Source >::type > >
+        typename = typename std::enable_if<
+            detail::conjunction<
+                detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >,
+                detail::negation< detail::path_traits::is_native_path_source< typename std::remove_cv< Source >::type > >
             >::value
         >::type
     >
@@ -425,10 +423,10 @@ public:
 
     template<
         typename InputIterator,
-        typename = typename boost::enable_if_c<
-            boost::conjunction<
+        typename = typename std::enable_if<
+            detail::conjunction<
                 detail::path_traits::is_path_source_iterator< InputIterator >,
-                boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+                detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
             >::value
         >::type
     >
@@ -444,10 +442,10 @@ public:
 
     template<
         typename InputIterator,
-        typename = typename boost::enable_if_c<
-            boost::conjunction<
+        typename = typename std::enable_if<
+            detail::conjunction<
                 detail::path_traits::is_path_source_iterator< InputIterator >,
-                boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+                detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
             >::value
         >::type
     >
@@ -471,10 +469,10 @@ public:
     path& operator=(path const& p);
 
     template< typename Source >
-    typename boost::enable_if_c<
-        boost::disjunction<
-            detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >,
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+    typename std::enable_if<
+        detail::disjunction<
+            detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >,
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
         >::value,
         path&
     >::type operator=(Source const& source)
@@ -489,8 +487,8 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type assign(Source const& source)
     {
@@ -499,10 +497,10 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         path&
     >::type assign(Source const& source)
@@ -518,8 +516,8 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type assign(Source const& source, codecvt_type const& cvt)
     {
@@ -528,10 +526,10 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         path&
     >::type assign(Source const& source, codecvt_type const& cvt)
@@ -547,10 +545,10 @@ public:
     }
 
     template< typename InputIterator >
-    typename boost::enable_if_c<
-        boost::conjunction<
+    typename std::enable_if<
+        detail::conjunction<
             detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+            detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
         >::value,
         path&
     >::type assign(InputIterator begin, InputIterator end)
@@ -572,10 +570,10 @@ public:
     }
 
     template< typename InputIterator >
-    typename boost::enable_if_c<
-        boost::conjunction<
+    typename std::enable_if<
+        detail::conjunction<
             detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+            detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
         >::value,
         path&
     >::type assign(InputIterator begin, InputIterator end, codecvt_type const& cvt)
@@ -595,8 +593,8 @@ public:
     path& operator+=(path const& p);
 
     template< typename Source >
-    typename boost::enable_if_c<
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >::value,
+    typename std::enable_if<
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type operator+=(Source const& source)
     {
@@ -610,7 +608,7 @@ public:
     }
 
     template< typename CharT >
-    typename boost::enable_if_c<
+    typename std::enable_if<
         detail::path_traits::is_path_char_type< CharT >::value,
         path&
     >::type operator+=(CharT c)
@@ -629,8 +627,8 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type concat(Source const& source)
     {
@@ -639,10 +637,10 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         path&
     >::type concat(Source const& source)
@@ -658,8 +656,8 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type concat(Source const& source, codecvt_type const& cvt)
     {
@@ -668,10 +666,10 @@ public:
     }
 
     template< typename Source >
-    typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         path&
     >::type concat(Source const& source, codecvt_type const& cvt)
@@ -687,10 +685,10 @@ public:
     }
 
     template< typename InputIterator >
-    typename boost::enable_if_c<
-        boost::conjunction<
+    typename std::enable_if<
+        detail::conjunction<
             detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+            detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
         >::value,
         path&
     >::type concat(InputIterator begin, InputIterator end)
@@ -710,10 +708,10 @@ public:
     }
 
     template< typename InputIterator >
-    typename boost::enable_if_c<
-        boost::conjunction<
+    typename std::enable_if<
+        detail::conjunction<
             detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+            detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
         >::value,
         path&
     >::type concat(InputIterator begin, InputIterator end, codecvt_type const& cvt)
@@ -734,8 +732,8 @@ public:
     path& operator/=(path const& p);
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >::value,
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type operator/=(Source const& source)
     {
@@ -745,8 +743,8 @@ public:
     path& append(path const& p);
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type append(Source const& source)
     {
@@ -755,10 +753,10 @@ public:
     }
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         path&
     >::type append(Source const& source)
@@ -770,8 +768,8 @@ public:
     path& append(path const& p, codecvt_type const&);
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         path&
     >::type append(Source const& source, codecvt_type const& cvt)
     {
@@ -780,10 +778,10 @@ public:
     }
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         path&
     >::type append(Source const& source, codecvt_type const& cvt)
@@ -795,10 +793,10 @@ public:
     path& append(const value_type* begin, const value_type* end);
 
     template< typename InputIterator >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        boost::conjunction<
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::conjunction<
             detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+            detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
         >::value,
         path&
     >::type append(InputIterator begin, InputIterator end)
@@ -811,10 +809,10 @@ public:
     path& append(const value_type* begin, const value_type* end, codecvt_type const&);
 
     template< typename InputIterator >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        boost::conjunction<
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::conjunction<
             detail::path_traits::is_path_source_iterator< InputIterator >,
-            boost::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
+            detail::negation< detail::path_traits::is_native_char_ptr< InputIterator > >
         >::value,
         path&
     >::type append(InputIterator begin, InputIterator end, const codecvt_type& cvt)
@@ -930,8 +928,8 @@ public:
     int compare(path const& p) const; // generic, lexicographical
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         int
     >::type compare(Source const& source) const
     {
@@ -939,10 +937,10 @@ public:
     }
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         int
     >::type compare(Source const& source) const
@@ -951,8 +949,8 @@ public:
     }
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type >::value,
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::path_traits::is_path_source< typename std::remove_cv< Source >::type >::value,
         int
     >::type compare(Source const& source, codecvt_type const& cvt) const
     {
@@ -960,10 +958,10 @@ public:
     }
 
     template< typename Source >
-    BOOST_FORCEINLINE typename boost::enable_if_c<
-        boost::conjunction<
-            detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >,
-            boost::negation< detail::path_traits::is_path_source< typename boost::remove_cv< Source >::type > >
+    BOOST_FORCEINLINE typename std::enable_if<
+        detail::conjunction<
+            detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >,
+            detail::negation< detail::path_traits::is_path_source< typename std::remove_cv< Source >::type > >
         >::value,
         int
     >::type compare(Source const& source, codecvt_type const& cvt) const
@@ -1169,10 +1167,10 @@ BOOST_FORCEINLINE bool operator==(path const& lhs, path const& rhs)
 }
 
 template< typename Path, typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator==(Path const& lhs, Source const& rhs)
@@ -1181,10 +1179,10 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 }
 
 template< typename Source, typename Path >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator==(Source const& lhs, Path const& rhs)
@@ -1198,10 +1196,10 @@ BOOST_FORCEINLINE bool operator!=(path const& lhs, path const& rhs)
 }
 
 template< typename Path, typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator!=(Path const& lhs, Source const& rhs)
@@ -1210,10 +1208,10 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 }
 
 template< typename Source, typename Path >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator!=(Source const& lhs, Path const& rhs)
@@ -1227,10 +1225,10 @@ BOOST_FORCEINLINE bool operator<(path const& lhs, path const& rhs)
 }
 
 template< typename Path, typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator<(Path const& lhs, Source const& rhs)
@@ -1239,10 +1237,10 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 }
 
 template< typename Source, typename Path >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator<(Source const& lhs, Path const& rhs)
@@ -1256,10 +1254,10 @@ BOOST_FORCEINLINE bool operator<=(path const& lhs, path const& rhs)
 }
 
 template< typename Path, typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator<=(Path const& lhs, Source const& rhs)
@@ -1268,10 +1266,10 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 }
 
 template< typename Source, typename Path >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator<=(Source const& lhs, Path const& rhs)
@@ -1285,10 +1283,10 @@ BOOST_FORCEINLINE bool operator>(path const& lhs, path const& rhs)
 }
 
 template< typename Path, typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator>(Path const& lhs, Source const& rhs)
@@ -1297,10 +1295,10 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 }
 
 template< typename Source, typename Path >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator>(Source const& lhs, Path const& rhs)
@@ -1314,10 +1312,10 @@ BOOST_FORCEINLINE bool operator>=(path const& lhs, path const& rhs)
 }
 
 template< typename Path, typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator>=(Path const& lhs, Source const& rhs)
@@ -1326,10 +1324,10 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 }
 
 template< typename Source, typename Path >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    boost::conjunction<
-        boost::is_same< Path, path >,
-        detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::conjunction<
+        std::is_same< Path, path >,
+        detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >
     >::value,
     bool
 >::type operator>=(Source const& lhs, Path const& rhs)
@@ -1340,8 +1338,8 @@ BOOST_FORCEINLINE typename boost::enable_if_c<
 
 // Note: Declared as a template to delay binding to Boost.ContainerHash functions and make the dependency optional
 template< typename Path >
-inline typename boost::enable_if_c<
-    boost::is_same< Path, path >::value,
+inline typename std::enable_if<
+    std::is_same< Path, path >::value,
     std::size_t
 >::type hash_value(Path const& p) noexcept
 {
@@ -1367,8 +1365,8 @@ BOOST_FORCEINLINE path operator/(path lhs, path const& rhs)
 }
 
 template< typename Source >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    detail::path_traits::is_convertible_to_path_source< typename boost::remove_cv< Source >::type >::value,
+BOOST_FORCEINLINE typename std::enable_if<
+    detail::path_traits::is_convertible_to_path_source< typename std::remove_cv< Source >::type >::value,
     path
 >::type operator/(path lhs, Source const& rhs)
 {

@@ -1,7 +1,7 @@
 //  filesystem path_traits.hpp  --------------------------------------------------------//
 
 //  Copyright Beman Dawes 2009
-//  Copyright Andrey Semashev 2022
+//  Copyright Andrey Semashev 2022-2024
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -18,19 +18,16 @@
 #include <locale>
 #include <string>
 #include <iterator>
+#include <type_traits>
 #if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
 #include <string_view>
 #endif
 #include <boost/assert.hpp>
 #include <boost/system/error_category.hpp>
 #include <boost/iterator/is_iterator.hpp>
-#include <boost/type_traits/declval.hpp>
-#include <boost/type_traits/remove_cv.hpp>
-#include <boost/type_traits/integral_constant.hpp>
-#include <boost/type_traits/conjunction.hpp>
+#include <boost/filesystem/detail/type_traits/conjunction.hpp>
 #if defined(BOOST_FILESYSTEM_DETAIL_CXX23_STRING_VIEW_HAS_IMPLICIT_RANGE_CTOR)
-#include <boost/type_traits/disjunction.hpp>
-#include <boost/core/enable_if.hpp>
+#include <boost/filesystem/detail/type_traits/disjunction.hpp>
 #endif
 #if defined(BOOST_FILESYSTEM_DEPRECATED) && BOOST_FILESYSTEM_VERSION < 4
 #include <vector>
@@ -315,13 +312,13 @@ struct path_source_traits< directory_entry >
 //! The trait tests if the type is a known path Source tag
 template< typename Tag >
 struct is_known_path_source_tag :
-    public boost::true_type
+    public std::true_type
 {
 };
 
 template< >
 struct is_known_path_source_tag< unknown_type_tag > :
-    public boost::false_type
+    public std::false_type
 {
 };
 
@@ -336,7 +333,7 @@ struct is_path_source :
 //! The trait indicates whether the type is a path Source that is natively supported by path::string_type as the source for construction/assignment/appending
 template< typename T >
 struct is_native_path_source :
-    public boost::integral_constant< bool, path_source_traits< T >::is_native >
+    public std::integral_constant< bool, path_source_traits< T >::is_native >
 {
 };
 
@@ -344,19 +341,19 @@ struct is_native_path_source :
 //! The trait indicates whether the type is one of the supported path character types
 template< typename T >
 struct is_path_char_type :
-    public boost::false_type
+    public std::false_type
 {
 };
 
 template< >
 struct is_path_char_type< char > :
-    public boost::true_type
+    public std::true_type
 {
 };
 
 template< >
 struct is_path_char_type< wchar_t > :
-    public boost::true_type
+    public std::true_type
 {
 };
 
@@ -370,10 +367,13 @@ struct is_iterator_to_path_chars :
 //! The trait indicates whether the type is an iterator over a sequence of path characters
 template< typename Iterator >
 struct is_path_source_iterator :
-    public boost::conjunction<
-        boost::iterators::is_iterator< Iterator >,
-        is_iterator_to_path_chars< Iterator >
-    >::type
+    public std::integral_constant<
+        bool,
+        detail::conjunction<
+            boost::iterators::is_iterator< Iterator >,
+            is_iterator_to_path_chars< Iterator >
+        >::value
+    >
 {
 };
 
@@ -381,19 +381,19 @@ struct is_path_source_iterator :
 //! The trait indicates whether the type is a pointer to a sequence of native path characters
 template< typename T >
 struct is_native_char_ptr :
-    public boost::false_type
+    public std::false_type
 {
 };
 
 template< >
 struct is_native_char_ptr< path_native_char_type* > :
-    public boost::true_type
+    public std::true_type
 {
 };
 
 template< >
 struct is_native_char_ptr< const path_native_char_type* > :
-    public boost::true_type
+    public std::true_type
 {
 };
 
@@ -473,7 +473,7 @@ template< typename Source, typename Callback >
 BOOST_FORCEINLINE typename Callback::result_type dispatch(Source const& source, Callback cb, const codecvt_type* cvt)
 {
     return path_traits::dispatch(source, cb, cvt,
-        typename path_traits::path_source_traits< typename boost::remove_cv< Source >::type >::tag_type());
+        typename path_traits::path_source_traits< typename std::remove_cv< Source >::type >::tag_type());
 }
 
 
@@ -504,9 +504,9 @@ no_type check_convertible(...);
 //! The type trait indicates whether the type has a conversion path to one of the path source types
 template< typename T >
 struct is_convertible_to_path_source :
-    public boost::integral_constant<
+    public std::integral_constant<
         bool,
-        sizeof(is_convertible_to_path_source_impl::check_convertible(boost::declval< T const& >())) == sizeof(yes_type)
+        sizeof(is_convertible_to_path_source_impl::check_convertible(std::declval< T const& >())) == sizeof(yes_type)
     >
 {
 };
@@ -530,9 +530,9 @@ no_type check_convertible(...);
 
 template< typename T >
 struct is_convertible_to_std_string_view :
-    public boost::integral_constant<
+    public std::integral_constant<
         bool,
-        sizeof(is_convertible_to_std_string_view_impl::check_convertible(boost::declval< T const& >())) == sizeof(yes_type)
+        sizeof(is_convertible_to_std_string_view_impl::check_convertible(std::declval< T const& >())) == sizeof(yes_type)
     >
 {
 };
@@ -554,9 +554,9 @@ no_type check_convertible(...);
 
 template< typename T >
 struct is_convertible_to_path_source_non_std_string_view :
-    public boost::integral_constant<
+    public std::integral_constant<
         bool,
-        sizeof(is_convertible_to_path_source_non_std_string_view_impl::check_convertible(boost::declval< T const& >())) == sizeof(yes_type)
+        sizeof(is_convertible_to_path_source_non_std_string_view_impl::check_convertible(std::declval< T const& >())) == sizeof(yes_type)
     >
 {
 };
@@ -564,10 +564,13 @@ struct is_convertible_to_path_source_non_std_string_view :
 //! The type trait indicates whether the type has a conversion path to one of the path source types
 template< typename T >
 struct is_convertible_to_path_source :
-    public boost::disjunction<
-        is_convertible_to_std_string_view< T >,
-        is_convertible_to_path_source_non_std_string_view< T >
-    >::type
+    public std::integral_constant<
+        bool,
+        detail::disjunction<
+            is_convertible_to_std_string_view< T >,
+            is_convertible_to_path_source_non_std_string_view< T >
+        >::value
+    >
 {
 };
 
@@ -679,7 +682,7 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_impl(std::
 template< typename Source, typename Callback >
 BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = nullptr)
 {
-    typedef typename boost::remove_cv< Source >::type source_t;
+    typedef typename std::remove_cv< Source >::type source_t;
     return path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
 }
 
@@ -700,22 +703,22 @@ BOOST_FORCEINLINE typename Callback::result_type dispatch_convertible_sv_impl(st
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE typename boost::disable_if_c<
-    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value,
+BOOST_FORCEINLINE typename std::enable_if<
+    !is_convertible_to_std_string_view< typename std::remove_cv< Source >::type >::value,
     typename Callback::result_type
 >::type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = nullptr)
 {
-    typedef typename boost::remove_cv< Source >::type source_t;
+    typedef typename std::remove_cv< Source >::type source_t;
     return path_traits::dispatch_convertible_impl< source_t >(source, cb, cvt);
 }
 
 template< typename Source, typename Callback >
-BOOST_FORCEINLINE typename boost::enable_if_c<
-    is_convertible_to_std_string_view< typename boost::remove_cv< Source >::type >::value,
+BOOST_FORCEINLINE typename std::enable_if<
+    is_convertible_to_std_string_view< typename std::remove_cv< Source >::type >::value,
     typename Callback::result_type
 >::type dispatch_convertible(Source const& source, Callback cb, const codecvt_type* cvt = nullptr)
 {
-    typedef typename boost::remove_cv< Source >::type source_t;
+    typedef typename std::remove_cv< Source >::type source_t;
     return path_traits::dispatch_convertible_sv_impl< source_t >(source, cb, cvt);
 }
 
