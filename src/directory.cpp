@@ -13,7 +13,6 @@
 
 #include "platform_config.hpp"
 
-#include <boost/throw_exception.hpp>
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/directory.hpp>
 #include <boost/filesystem/exception.hpp>
