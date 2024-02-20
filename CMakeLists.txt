@@ -229,7 +229,6 @@ target_link_libraries(boost_filesystem
         Boost::assert
         Boost::config
         Boost::container_hash
-        Boost::core
         Boost::detail
         Boost::io
         Boost::iterator
@@ -238,6 +237,7 @@ target_link_libraries(boost_filesystem
         Boost::type_traits
 
     PRIVATE
+        Boost::core
         Boost::predef
         Boost::scope
 )
