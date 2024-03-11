@@ -1,0 +1,34 @@
+# Copyright René Ferdinand Rivera Morell 2023
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import project ;
+
+project /boost/filesystem
+    : common-requirements
+        <source>/boost/assert//boost_assert
+        <source>/boost/atomic//boost_atomic
+        <source>/boost/config//boost_config
+        <source>/boost/container_hash//boost_container_hash
+        <source>/boost/core//boost_core
+        <source>/boost/detail//boost_detail
+        <source>/boost/io//boost_io
+        <source>/boost/iterator//boost_iterator
+        <source>/boost/predef//boost_predef
+        <source>/boost/smart_ptr//boost_smart_ptr
+        <source>/boost/system//boost_system
+        <source>/boost/throw_exception//boost_throw_exception
+        <source>/boost/type_traits//boost_type_traits
+        <source>/boost/winapi//boost_winapi
+        <include>include
+    ;
+
+explicit
+    [ alias boost_filesystem : build//boost_filesystem ]
+    [ alias all : boost_filesystem bug example test ]
+    ;
+
+call-if : boost-library filesystem
+    : install boost_filesystem
+    ;

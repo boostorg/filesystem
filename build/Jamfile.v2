@@ -136,7 +136,7 @@ local cxx_requirements = [ requires
     cxx11_override
 ] ;
 
-project boost/filesystem
+project
     : requirements
       <host-os>hpux,<toolset>gcc:<define>_INCLUDE_STDC__SOURCE_199901
       [ check-target-builds ../config//has_attribute_init_priority "has init_priority attribute" : <define>BOOST_FILESYSTEM_HAS_INIT_PRIORITY ]
@@ -214,5 +214,3 @@ lib boost_filesystem
     : usage-requirements
       $(cxx_requirements)
     ;
-
-boost-install boost_filesystem ;
