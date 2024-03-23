@@ -115,26 +115,25 @@ feature/relative2</a> branch of the Boost Filesystem Git repository. See
 <a href="https://github.com/boostorg/filesystem/tree/feature/relative2">
 github.com/boostorg/filesystem/tree/feature/relative2</a></p>
 <h2><a name="Requirements">Requirements</a></h2>
-<b><a name="Requirement-1">Requirement 1</a>:</b> Some uses require symlinks be followed; i.e. the path must be resolved in
-  the actual file system.<p><b><a name="Requirement-2">Requirement 2</a>: </b>Some uses require symlinks not be followed; i.e. the path must not be
+<p><b><a name="Requirement-1">Requirement 1</a>:</b> Some uses require symlinks be followed; i.e. the path must be resolved in
+  the actual file system.</p>
+<p><b><a name="Requirement-2">Requirement 2</a>: </b>Some uses require symlinks not be followed; i.e. the path must not be
   resolved in the actual file system.</p>
-<b><a name="Requirement-3">Requirement 3</a>: </b>Some uses require removing redundant current directory (<i>dot</i>)
-  or parent directory (<i>dot-dot</i>) placeholders.<p><b>
-<a name="Requirement-4">Requirement 4</a>: </b>Some uses do not require removing redundant current directory (<i>dot</i>)
-  or parent directory (<i>dot-dot</i>) placeholders since the path is known to
-be
-already in normal form.</p>
+<p><b><a name="Requirement-3">Requirement 3</a>: </b>Some uses require removing redundant current directory (<i>dot</i>)
+  or parent directory (<i>dot-dot</i>) placeholders.</p>
+<p><b><a name="Requirement-4">Requirement 4</a>: </b>Some uses do not require removing redundant current directory (<i>dot</i>)
+  or parent directory (<i>dot-dot</i>) placeholders since the path is known to be already in normal form.</p>
 <h2><a name="Issues">Issues</a></h2>
 <p><b><a name="Issue-1">Issue 1</a>:</b> What happens if <code>p</code>
 and <code>base</code> are themselves relative?</p>
-<b><a name="Issue-2">Issue 2</a>:</b> What happens if there is no common prefix? Is this an error, the whole of
-  <code>p</code> is relative to <code>base</code>, or something else?<p><b>
-<a name="Issue-3">Issue 3</a>:</b> What happens if <code>p</code>, <code>base</code>, or both are empty?</p>
-<b><a name="Issue-4">Issue 4</a>:</b> What happens if <code>p</code> and <code>base</code> are the same?<p>
-<b><a name="Issue-5">Issue 5</a>:</b> How is the &quot;common prefix&quot; determined?</p>
-<b><a name="Issue-6">Issue 6</a>:</b> What happens if portions of <code>p</code> or <code>base</code> exist but
-  the entire path does not exist and yet symlinks need to be followed?<p><b>
-<a name="Issue-7">Issue 7</a>:</b> What happens when a symlink in the existing portion of a path is affected
+<p><b><a name="Issue-2">Issue 2</a>:</b> What happens if there is no common prefix? Is this an error, the whole of
+  <code>p</code> is relative to <code>base</code>, or something else?</p>
+<p><b><a name="Issue-3">Issue 3</a>:</b> What happens if <code>p</code>, <code>base</code>, or both are empty?</p>
+<p><b><a name="Issue-4">Issue 4</a>:</b> What happens if <code>p</code> and <code>base</code> are the same?</p>
+<p><b><a name="Issue-5">Issue 5</a>:</b> How is the &quot;common prefix&quot; determined?</p>
+<p><b><a name="Issue-6">Issue 6</a>:</b> What happens if portions of <code>p</code> or <code>base</code> exist but
+  the entire path does not exist and yet symlinks need to be followed?</p>
+<p><b><a name="Issue-7">Issue 7</a>:</b> What happens when a symlink in the existing portion of a path is affected
   by a directory (<i>dot-dot</i>) placeholder in a later non-existent portion of
   the path?</p>
 <p><b><a name="Issue-8">Issue 8</a>:</b> Overly complex semantics (and thus
