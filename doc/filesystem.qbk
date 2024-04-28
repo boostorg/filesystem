@@ -1,0 +1,55 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[library Boost.Filesystem
+    [quickbook 1.7]
+    [authors [Dawes, Beman], [Semashev, Andrey]]
+    [copyright 2002-2015 Beman Dawes]
+    [copyright 2019-2024 Andrey Semashev]
+    [license
+        Distributed under the Boost Software License, Version 1.0.
+        (See accompanying file LICENSE_1_0.txt or copy at
+        [@https://www.boost.org/LICENSE_1_0.txt]).
+    ]
+    [id filesystem]
+    [source-mode c++]
+    [version 4]
+]
+
+[c++]
+
+[def __boost_build__ [@https://www.boost.org/doc/libs/release/tools/build/doc/html/index.html Boost.Build]]
+[def __boost_system__ [@https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html Boost.System]]
+
+[template github_issue[key][@https://github.com/boostorg/filesystem/issues/[key] #[key]]]
+[template github_pr[key][@https://github.com/boostorg/filesystem/pull/[key] PR#[key]]]
+[template trac_issue[key][@https://svn.boost.org/trac/boost/ticket/[key] #[key]]]
+
+[template super[x]'''<superscript>'''[x]'''</superscript>''']
+[template sub[x]'''<subscript>'''[x]'''</subscript>''']
+
+[template header[x][headerref [x] [^[x]]]]
+[template enum[x][enumref boost::filesystem::[x] [^[x]]]]
+[template class[x][classref boost::filesystem::[x] [^[x]]]]
+[template member[x][memberref boost::filesystem::[x] [^[x]]]]
+[template func[x][funcref boost::filesystem::[x] [^[x]]]]
+
+[include intro.qbk]
+[include install.qbk]
+[include tutorial.qbk]
+[include cautions.qbk]
+[include portability_guide.qbk]
+[include reference.qbk]
+[include faq.qbk]
+[include design.qbk]
+[include v3.qbk]
+[include v4.qbk]
+[include deprecated.qbk]
+[include issue_reporting.qbk]
+[include changelog.qbk]
+[include acknowledgements.qbk]
