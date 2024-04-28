@@ -1,0 +1,9030 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[template super[x]'''<superscript>'''[x]'''</superscript>''']
+[template sub[x]'''<subscript>'''[x]'''</subscript>''']
+
+[h1 Filesystem Reference]
+
+
+
+
+
+
+[table
+  
+[
+    [
+[@../../../index.htm 
+[$../../../boost.png]]]
+    [
+    Filesystem Library
+
+    Version 4]
+  ]
+
+]
+
+
+
+[table
+  
+[
+    [[@index.htm Home]   
+    [@tutorial.html Tutorial]   
+    [@reference.html Reference]   
+    [@faq.htm FAQ]   
+    [@release_history.html Releases]   
+    [@portability_guide.htm Portability]   
+    [@v4.html V4]   
+    [@v3.html V3 Intro]   
+    [@v3_design.html V3 Design]   
+    [@deprecated.html Deprecated]   
+    [@issue_reporting.html Bug Reports ]  
+    ]
+  ]
+
+]
+
+
+
+[h1 Reference Documentation]
+
+
+
+
+
+[h2 [#TOC]Table of Contents]
+
+
+
+[table
+  
+[
+    [
+    
+
+[@#Introduction Introduction]
+
+    [@#Definitions Definitions]
+
+    [@#Conformance Conformance]
+
+    [@#Header-filesystem-synopsis 
+    Header `<boost/filesystem.hpp>` synopsis]
+
+    [@#Error-reporting Error reporting]
+
+    [@#class-path Class `path`]
+
+    [@#path-Conversions `path` conversions]
+
+    [@#path-Conversions-to-native-format `path`
+    conversions to native format]
+
+    [@#path-Conversions-to-generic-format `path`
+    conversions to generic format]
+
+    [@#path-Encoding-conversions `path`
+    encoding conversions]
+
+    [@#path-Requirements `path` requirements]
+
+        [@#path-constructors `path` constructors]
+
+    [@#path-assignments `path` assignments]
+
+        [@#path-appends `path` appends]
+
+        [@#path-concatenation `path` concatenation]
+
+    [@#path-modifiers `path` modifiers]
+
+    [@#path-native-format-observers `path` native
+    format observers]
+
+    [@#path-generic-format-observers `path` generic
+    format observers]
+
+    [@#path-compare `path` compare]
+
+    [@#path-decomposition `path` decomposition]
+
+    [@#path-query `path` query]
+
+    [@#path-iterators `path` iterators]
+
+
+    [@#path-deprecated-functions `path` deprecated functions]
+
+    [@#path-non-member-functions `path` non-member functions]
+
+    [@#path-inserter-extractor `path` inserters and extractors]
+
+  [@#Class-filesystem_error Class `filesystem_error`]
+
+    [@#filesystem_error-members `filesystem_error`
+    constructors]
+
+    [@#filesystem_error-path1 `filesystem_error` path1]
+
+    [@#filesystem_error-path2 `filesystem_error` path2]
+
+    [@#filesystem_error-what `filesystem_error` what]
+
+]
+    [
+    
+
+
+    [@#Enum-file_type Enum `file_type`]
+
+    [@#Enum-perms Enum `perms`]
+
+    [@#file_status Class
+    `file_status`]
+
+   
+    [@#file_status 
+    `file_status`][@#file_status-constructors  constructors]
+
+    `[@#file_status-modifiers file_status-modifiers]`[@#directory_entry-observers  observers]
+
+    `[@#file_status-observers file_status-observers]`[@#directory_entry-modifiers  modifiers]
+
+[@#Class-directory_entry Class `directory_entry`]
+
+   
+[@#directory_entry-constructors `directory_entry` constructors]
+
+    [@#directory_entry-observers `directory_entry` observers]
+
+    [@#directory_entry-modifiers `directory_entry` modifiers]
+
+[@#Class-directory_iterator Class  `directory_iterator`]
+
+    [@#directory_iterator-members `directory_iterator`
+    members]
+
+[@#Class-recursive_directory_iterator Class `recursive_directory_iterator`]
+
+    [@#Operational-functions 
+    Operational functions]
+
+    `     [@#absolute absolute]
+
+     [@#canonical canonical]
+
+     [@#copy copy]
+
+     [@#copy_directory copy_directory]
+
+     [@#copy_file copy_file]
+
+     [@#copy_symlink copy_symlink]
+
+     [@#create_directories create_directories]
+
+     [@#create_directory create_directory]
+
+     [@#create_hard_link create_hard_link]
+
+     [@#create_symlink create_symlink]
+
+     [@#creation_time creation_time]
+
+     [@#current_path current_path]
+
+     [@#exists exists]
+
+     [@#equivalent equivalent]
+
+     [@#file_size file_size]
+
+     [@#hard_link_count hard_link_count]`
+
+]
+    [
+    
+
+
+    `
+     [@#initial_path initial_path]
+
+     [@#is_block_file is_block_file]
+
+     [@#is_character_file is_character_file]
+
+     [@#is_directory is_directory]
+
+     [@#is_empty is_empty]
+
+     [@#is_fifo is_fifo]
+
+     [@#is_other is_other]
+
+     [@#is_regular_file is_regular_file]
+
+     [@#is_reparse_file is_reparse_file]
+
+     [@#is_socket is_socket]
+
+     [@#is_symlink is_symlink]
+
+     [@#last_write_time last_write_time]
+
+     [@#permissions permissions]
+
+     [@#read_symlink read_symlink]
+
+     [@#relative relative]
+
+     [@#remove remove]
+
+     [@#remove_all remove_all]
+
+     [@#rename rename]
+
+     [@#resize_file resize_file]
+
+     [@#space space]
+
+     [@#status status]
+
+     [@#status_known status_known]
+
+     [@#symlink_status symlink_status]
+
+     [@#system_complete system_complete]
+
+     [@#temp_directory_path temp_directory_path]
+
+     [@#unique_path unique_path]
+
+     [@#weakly_canonical weakly_canonical]
+`
+    [@#File-streams File streams]
+
+[@#path-decomposition-table Path decomposition table]
+
+    [@#windows-path-prefixes Long paths on Windows and the
+    [*\\\\?\\] namespace prefix]
+
+[@#Acknowledgements Acknowledgements]
+
+[@#References References]
+
+ 
+
+]
+  ]
+
+]
+
+
+
+
+[h2 [#Introduction]Introduction]
+
+
+
+
+This reference documentation describes components that C++ programs may use
+to perform operations involving file systems, including paths, regular files,
+and directories.
+
+
+
+
+[h2 [#Conformance]Conformance \[fs.conformance\]]
+
+
+
+[h3 ISO/IEC 9945 conformance \[fs.conform.9945\]]
+
+
+
+Some behavior in this reference documentation is specified by reference to ISO/IEC 9945. How such behavior is actually implemented is unspecified.
+
+
+[:
+
+
+\[['Note:] This constitutes an "as if" rule for implementation of
+operating system dependent behavior. In practice implementations will usually call native
+operating system API's. ['—end note]\]
+
+
+]
+
+
+
+
+Implementations are encouraged to provide such behavior
+
+as it is defined by ISO/IEC 9945. Implementations shall document any
+behavior that differs from the behavior defined by ISO/IEC 9945. Implementations that do not support exact
+ISO/IEC 9945 behavior are
+encouraged to provide behavior as close to ISO/IEC 9945 behavior as is reasonable given the
+limitations of actual operating systems and file systems. If an implementation cannot provide any
+reasonable behavior, the implementation shall report an error in an
+implementation-defined manner.
+
+
+[:
+
+
+\[['Note:] Such errors might be reported by an `#error` directive, a `
+static_assert`, a `filesystem_error` exception, a special
+return value, or some other manner. ['—end note]\]
+
+
+]
+
+
+
+
+Implementations are not required to provide behavior that is not supported by
+a particular file system.
+
+
+[:
+
+
+\[['Example:] The [@http://en.wikipedia.org/wiki/FAT_filesystem 
+FAT file system] used by some memory cards, camera memory, and floppy discs
+does not support hard links, symlinks, and many other features of more capable
+file systems. Implementations are only required to support the FAT features
+supported by the host operating system. ['—end example]\]
+
+
+]
+
+
+
+
+The behavior of functions described in this
+reference
+may differ from their specification in
+the presence of [@#file-system-race file system races]. No diagnostic is required.
+
+
+
+
+If the possibility of a file system race would make it unreliable for a program to
+test for a precondition before calling a function described in this reference documentation, ['
+Requires] is not specified for the condition. Instead, the condition is
+specified as a ['Throws] condition.
+
+
+[:
+
+
+\[['Note:] As a design practice, preconditions are not specified when it
+is unreasonable for a program to detect them prior to calling the function. ['
+—end note]\]
+
+
+]
+
+
+
+[h3 Operating system dependent conformance \[fs.conform.os\]]
+
+
+
+Some behavior is specified in this reference documentation as being
+operating system dependent (\[fs.def.osdep\]). The operation system an
+implementation is dependent upon is implementation defined.
+
+
+
+
+It is permissible for an implementation to be dependent upon an operating
+system emulator rather than the actual operating system.
+
+
+[:
+
+
+\[['Example:] An implementation uses Cygwin, a Linux® API emulator for
+some Windows® operating system versions. The implementation would define Cygwin
+as its operating system. Users could refer to the Cygwin documentation to find
+details of the operating system dependent behavior.  ['—end example]\]
+
+
+
+
+['It is user and conformance test
+detectable that such an implementation is running on Cygwin. Users would be
+misled and conformance tests would fail if the implementation defined Linux or
+Windows rather than Cygwin as the operating system, since real behavior is a
+blend of the two.] 
+
+
+]
+
+
+
+[h2 [#Definitions]Definitions \[fs.definitions\]]
+
+
+
+The following definitions  shall apply throughout this reference documentation:
+
+
+
+[h3 [#operatingsystemdependent]operating system dependent behavior
+\[fs.def.osdep\]]
+
+
+
+Behavior  that is dependent upon the behavior
+and characteristics of an operating system. See \[fs.conform.os\].
+
+
+
+[h3 [#file]file \[fs.def.file\]]
+
+
+
+An object that can be written to, or read from, or both. A file
+has certain attributes, including type. File types include regular files
+and directories. Other types of files, such as symbolic links, may be supported by the
+implementation.
+
+
+
+[h3 [#file-system]file system \[fs.def.filesystem\]]
+
+
+
+A collection of files and certain of their attributes.
+
+
+
+[h3 [#filename]filename \[fs.def.filename\]]
+
+  
+
+The name of a file. Filenames `
+  "."` 
+and `".."`  have special meaning. The follow characteristics of
+  filenames are operating system dependent:
+
+
+
+  * 
+  
+
+The permitted characters. See \[[@#Operating-system-examples fs.os.examples]\].
+
+
+  
+  * 
+  
+
+Specific filenames that are not permitted.
+
+
+  
+  * 
+  
+
+Additional filenames that have special meaning.
+
+
+  
+  * 
+  
+
+Case awareness and sensitivity during path resolution.
+
+
+  
+  * 
+  
+
+Special rules that may apply to file types other than regular
+  files, such as directories.
+
+
+  
+
+
+[h3 [#path]path \[fs.def.path\]]
+
+
+
+A sequence of elements that identify
+the location of a file within a filesystem. The elements are the ['root-name[sub opt]], ['
+root-directory[sub opt]], and an optional sequence of filenames. \[['Note:]
+A [@#pathname pathname] is the concrete representation of a path. ['—end note]\]
+
+
+
+
+[h3 [#Absolute-path]absolute path \[fs.def.absolute-path\]]
+
+
+
+A path that
+unambiguously
+identifies the location of a file without reference to an additional starting
+location. The elements of a path that determine if it is absolute are
+operating system dependent.
+
+
+
+
+[h3 [#Relative-path]relative path \[fs.def.relative-path\]]
+
+
+
+A path that
+is not absolute, and so only
+unambiguously
+identifies the location of a file when resolved relative to
+an implied starting location. The elements of a path that determine if it is
+relative are operating system dependent.  \[['Note:]
+Paths `"."` and `".."` are relative paths. ['—end note]\]
+
+
+
+[h3 [#canonical-path]canonical path \[fs.def.canonical-path\]]
+
+
+
+An absolute path that has
+no elements that are symbolic links, and no `"."` or `".."` elements.
+
+
+
+[h3 [#pathname]pathname \[fs.def.pathname\]]
+
+
+
+A character string that represents
+the name of a
+path. Pathnames are formatted according to the generic pathname grammar or an
+operating system dependent
+native pathname format.
+
+
+
+
+[h3 [#native-pathname-format]native pathname format \[fs.def.native\]]
+
+
+
+The operating system dependent pathname format accepted by the host operating system.
+
+
+
+[h3 [#normal-form]normal form path \[fs.def.normal\]]
+
+
+
+A path with no redundant directory separators, current directory (['dot]) or parent directory (['dot-dot])
+elements. The normal form for an empty path is an empty path. \[[*v3:] The normal form
+for a path ending in a ['directory-separator] that is not the root directory
+is the same path with a current directory (['dot]) element appended.\]
+
+
+
+[h3 [#link]link \[fs.def.link\]]
+
+
+
+A directory entry object that associates a
+filename with a file. On some file systems, several directory entries can
+associate names with the same file.
+
+
+
+[h3 [#hard-link]hard link \[fs.def.hardlink\]]
+
+
+
+A link to an existing file. Some
+file systems support multiple hard links to a file. If the last hard link to a
+file is removed, the file itself is removed.
+
+
+[:
+
+
+\[['Note:] A hard link can be thought of as a shared-ownership smart
+pointer to a file.[' —end note]\]
+
+
+]
+
+
+
+[h3 [#symbolic-link]symbolic link \[fs.def.symlink\]]
+
+
+
+A type of file with the
+property that when the file is encountered during pathname resolution, a string
+stored by the file is used to modify the pathname resolution.
+
+
+[:
+
+
+\[['Note:] A symbolic link can be thought of as a raw pointer to a file.
+If the file pointed to does not exist, the symbolic link is said to be a
+"dangling" symbolic link.[' —end note]\]
+
+
+]
+
+
+
+[h3 [#file-system-race]file system race \[fs.def.race\]]
+
+
+
+The condition that occurs
+when multiple threads, processes, or computers interleave access and
+modification of
+the same object within a file system.
+
+
+
+[h2 [#generic-pathname-format]Generic pathname format \[path.generic\]]
+
+
+
+['pathname:
+
+            root-name[sub opt]
+root-directory[sub opt] relative-path[sub opt]]
+
+
+
+
+['root-name:
+
+            ]An
+operating system dependent name that identifies the starting location for
+absolute paths. 
+
+
+[:
+  [:
+
+
+\[['Note:] Many operating systems define a name
+beginning with two ['directory-separator] characters as a ['root-name]
+that identifies network or other resource locations. Some operating systems define a single letter followed by a colon as a drive
+specifier - a ['root-name] identifying a specific device such as a disc drive. ['—end note]\]
+
+
+  ]
+
+
+]
+
+
+
+
+['root-directory:
+
+           
+directory-separator]
+
+
+
+
+['relative-path:
+
+           
+filename
+
+            relative-path
+directory-separator
+
+            relative-path
+directory-separator filename]
+
+
+
+
+['filename:
+
+            name
+
+            ]`"."`['
+
+            ]`
+".."`
+
+
+
+
+['preferred-separator:
+
+            ]An
+operating system dependent directory separator character. May be a synonym for [' `"/"`.]
+
+
+
+
+['directory-separator:
+
+            `"/"
+
+      "/"` directory-separator
+
+           
+preferred-separator
+
+           
+preferred-separator directory-separator]
+
+
+
+
+Multiple successive ['directory-separator] characters are considered to
+be the same as one ['directory-separator] character.
+
+
+
+
+The ['filename]
+`"."` is considered to be a reference to the current directory. The
+['filename] `".."` is considered to be a reference to the
+parent
+directory. Specific ['filenames] may have special meanings for a particular
+operating system.
+
+
+
+[h2 [#Operating-system-examples]Operating system dependent examples (Informative) \[fs.os.examples\]]
+
+
+
+Certain features are specified in this reference documentation as being operating system dependent. The following table shows the application of those
+specifications for operating systems that use the ISO/IEC 9945  or Windows® application program interfaces
+(APIs).[super \[footnote1\]]
+
+
+
+[table
+  
+[
+    [
+    
+
+[*Feature]
+
+]
+    [
+    
+
+[*Section]
+
+]
+    [
+    
+
+[*ISO/IEC 9945
+
+ POSIX]®[* API]
+
+]
+    [
+    
+
+[*Windows]®[* API]
+
+]
+    [
+    
+
+[*Notes]
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`path
+
+ ::value_type`
+
+]
+    [
+    
+
+\[[@#class-path class.path]\]
+
+]
+    [
+    
+
+`char`
+
+]
+    [
+    
+
+`wchar_t`
+
+]
+    [
+    
+
+ 
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`path::preferred
+
+ _separator`
+
+]
+    [
+    
+
+\[[@#class-path class.path]\]
+
+]
+    [
+    
+
+`'/'`
+
+]
+    [
+    
+
+`L'\\\\'` (single backslash)
+
+]
+    [
+    
+
+ 
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`path("/")
+
+ .is_absolute()
+
+    path("c:/")
+
+ .is_absolute()`
+
+]
+    [
+    
+
+\[[@#path-query path]
+
+ [@#path-query .query]\]
+
+]
+    [
+    
+
+`
+
+    true
+
+    
+
+    false`
+
+]
+    [
+    
+
+`
+
+    false
+
+    
+
+    true`
+
+]
+    [
+    
+
+ 
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`path` argument disambiguation between generic format and
+    native format
+
+]
+    [
+    
+
+\[[@#path-Conversions-to-native-format path.arg]
+
+ [@#path-Conversions-to-native-format .fmt.cvt]\]
+
+]
+    [
+    
+
+Not required
+
+]
+    [
+    
+
+Not required
+
+]
+    [
+    
+
+There is no need to distinguish between the generic format and native
+    format for these operating systems.
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`path` argument format conversion
+
+]
+    [
+    
+
+\[[@#path-Conversions-to-native-format path.arg]
+
+ [@#path-Conversions-to-native-format .fmt.cvt]\]
+
+]
+    [
+    
+
+No conversion performed
+
+]
+    [
+    
+
+No conversion performed
+
+]
+    [
+    
+
+The generic format is already acceptable to the native API of these operating systems.
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`path
+
+ ("/cats/jane")
+
+ .c_str()
+
+    path|
+
+ ("/cats/jane/")
+
+ .c_str()`
+
+]
+    [
+    
+
+\[[@#path-Conversions-to-native-format path.arg]
+
+ [@#path-Conversions-to-native-format .fmt.cvt]\]
+
+]
+    [
+    
+
+`
+
+    
+
+    "/cats/jane"
+
+    
+
+    
+
+    "/cats/jane/"`
+
+]
+    [
+    
+
+`
+
+    
+
+    L"/cats/jane"
+
+    
+
+    
+
+    L"/cats/jane/"`
+
+]
+    [
+    
+
+These operating systems accept the same native separator between
+    directory names and a final file name, so no format conversion is performed.
+    Other operating systems might require conversion.
+
+]
+  ]
+
+  
+[
+    [
+    
+
+Format conversion by `path` native format observers
+
+]
+    [
+    
+
+\[[@#path-native-format-observers path.native]
+
+ [@#path-native-format-observers .obs]\]
+
+]
+    [
+    
+
+No conversion performed
+
+]
+    [
+    
+
+No conversion performed
+
+]
+    [
+    
+
+For efficiency, `path` objects are required to store pathnames in the native
+    format regardless of operating system.
+
+]
+  ]
+
+  
+[
+    [
+    
+
+Format conversion by `path` generic format observers
+
+]
+    [
+    
+
+\[[@#path-generic-format-observers path]
+
+ [@#path-generic-format-observers .generic]
+
+ [@#path-generic-format-observers .obs]\]
+
+]
+    [
+    
+
+No conversion performed
+
+]
+    [
+    
+
+Backslashes converted to slashes
+
+]
+    [
+    
+
+ 
+
+]
+  ]
+
+  
+[
+    [
+    
+
+`p.
+
+ make_preferred()`
+
+]
+    [
+    
+
+\[[@#path-modifiers fs.path]
+
+ [@#path-modifiers .modifiers]\]
+
+]
+    [
+    
+
+No change
+
+]
+    [
+    
+
+Slashes converted to backslashes
+
+]
+    [
+    
+
+ 
+
+]
+  ]
+
+  
+[
+    [
+    
+
+Characters prohibited in filenames
+
+]
+    [
+    
+
+\[[@#filename fs.def]
+
+ [@#filename .filename]\]
+
+]
+    [
+    
+
+0x00, `'/'`
+
+]
+    [
+    
+
+0x00-0x1F, `'"'`, `'*'`,` '*'`,
+    `'<'`,
+    `'>'`, `'?'`, `'\\\\'` (single backslash),
+    `'/'`, `'|'`
+
+]
+    [
+    
+
+Many operating systems prohibit the ASCII control characters (0x00-0x1F)
+    in filenames.
+
+]
+  ]
+
+  
+[
+    [
+    
+
+Initial imbued `path` locale
+
+]
+    [
+    
+
+\[[@#path-imbued-locale path]
+
+ [@#path-imbued-locale .imbued]
+
+ [@#path-imbued-locale .locale]\]
+
+]
+    [
+    
+
+`std::
+
+  locale("")
+
+    `[super \[footnote 2\]]
+
+]
+    [
+    
+
+Implementation supplied locale using `MultiByte
+
+  ToWideChar`
+    and `WideChar
+
+  ToMultiByte` with a codepage of `CP_ACP`
+    if `AreFileApisANSI` is true, otherwise codepage `CP_OEMCP`.[super \[footnote
+    3\]]
+
+]
+    [
+    
+
+Apple OS X®:  Implementation supplied locale providing UTF-8 `codecvt`
+    facet.[super \[footnote 4\]]
+
+]
+  ]
+
+]
+
+
+
+[super \[footnote1\]] OS X® and Windows® are examples of commercially
+available operating systems. This information is given for the convenience of
+users of this document and does not constitute an endorsement by ISO or IEC of
+these products.
+
+
+
+
+[super \[footnote 2\] ]Rationale: ISO C specifies `std::locale("")` as "the locale-specific native
+environment", while ISO/IEC 9945 says it "Specifies an implementation-defined native
+environment."
+
+
+
+
+[super \[footnote 3\] ]Rationale: This is the current behavior of C and C++
+standard library functions that perform file operations using narrow character
+strings to identify paths. Changing this behavior would be surprising and at
+variance with existing code, particularly where user input is involved.
+
+
+
+
+[super \[footnote 4\]] Rationale: Vendor's documentation states "All BSD
+system functions expect their string parameters to be in UTF-8 encoding and
+nothing else."
+
+
+
+[h2 [#Header-filesystem-synopsis]Header `<boost/filesystem.hpp>` synopsis
+\[filesystem.synopsis\]]
+
+
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+    class [@#class-path path];
+
+    bool lexicographical_compare(path::iterator first1, path::iterator last1,
+      path::iterator first2, path::iterator last2);
+    void swap(path& lhs, path& rhs) noexcept;
+    std::size_t [@#hash_value hash_value](const path& p);
+
+    bool operator==(const path& lhs, const path& rhs);
+    bool operator!=(const path& lhs, const path& rhs);
+    bool operator< (const path& lhs, const path& rhs);
+    bool operator<=(const path& lhs, const path& rhs);
+    bool operator> (const path& lhs, const path& rhs);
+    bool operator>=(const path& lhs, const path& rhs);
+
+    path operator/ (const path& lhs, const path& rhs);
+
+    std::ostream&  operator<<( std::ostream& os, const path& p );
+    std::wostream& operator<<( std::wostream& os, const path& p );
+    std::istream&  operator>>( std::istream& is, path& p );
+    std::wistream& operator>>( std::wistream& is, path& p )
+
+    class [@#Class-filesystem_error filesystem_error];
+    class [@#Class-directory_entry directory_entry];
+
+    class [@#Class-directory_iterator directory_iterator];
+
+    // enable c++11 range-based for statements
+    const directory_iterator& [@#directory_iterator-non-member-functions begin](const directory_iterator& iter);
+    directory_iterator [@#directory_iterator-non-member-functions end](const directory_iterator&);
+
+
+    // enable BOOST_FOREACH
+    directory_iterator& range_begin(directory_iterator& iter);
+    directory_iterator range_begin(const directory_iterator& iter);
+    directory_iterator range_end(const directory_iterator&);
+
+    class [@#Class-recursive_directory_iterator recursive_directory_iterator];
+
+    // enable c++11 range-based for statements
+    const recursive_directory_iterator&
+      [@#recursive_directory_iterator-non-member-functions begin](const recursive_directory_iterator& iter);
+    recursive_directory_iterator
+      [@#recursive_directory_iterator-non-member-functions end](const recursive_directory_iterator&);
+
+
+    // enable BOOST_FOREACH
+    recursive_directory_iterator&
+      range_begin(recursive_directory_iterator& iter);
+    recursive_directory_iterator
+      range_begin(const recursive_directory_iterator& iter);
+    recursive_directory_iterator
+      range_end(const recursive_directory_iterator&);
+
+    enum [#file_type]file_type
+    {
+      status_error, file_not_found, regular_file, directory_file,
+      symlink_file, block_file, character_file, fifo_file, socket_file,
+      reparse_file, type_unknown
+    };
+
+    enum [@#Enum-perms perms]
+    {
+      no_perms,
+      owner_read, owner_write, owner_exe, owner_all,
+      group_read, group_write, group_exe, group_all,
+      others_read, others_write, others_exe, others_all, all_all,
+      set_uid_on_exe, set_gid_on_exe, sticky_bit,
+      perms_mask, perms_not_known,
+      add_perms, remove_perms, symlink_perms
+    };
+
+    class [@#file_status file_status];
+
+    struct [#space_info]space_info  // returned by [@#space space] function
+    {
+      uintmax_t capacity;
+      uintmax_t free;
+      uintmax_t available; // free space available to non-privileged process
+    };
+
+    enum class [#copy_options]copy_options
+    {
+      none = 0u,
+      // [@#copy_file copy_file] options
+      skip_existing,
+      overwrite_existing,
+      update_existing,
+      synchronize_data,
+      synchronize,
+      ignore_attribute_errors,
+      // [@#copy copy] options
+      recursive,
+      copy_symlinks,
+      skip_symlinks,
+      directories_only,
+      create_symlinks,
+      create_hard_links
+    };
+
+    enum class [#directory_options]directory_options
+    {
+      none = 0u,
+      skip_permission_denied,
+      follow_directory_symlink,
+      pop_on_error
+    };
+
+    // [@#Operational-functions operational functions]
+
+    path         [@#absolute absolute](const path& p, const path& base=current_path());
+    path         [@#absolute absolute](const path& p, system::error_code& ec);
+    path         [@#absolute absolute](const path& p, const path& base,
+                   system::error_code& ec);
+
+    path         [@#canonical canonical](const path& p, const path& base = current_path());
+    path         [@#canonical canonical](const path& p, system::error_code& ec);
+    path         [@#canonical canonical](const path& p, const path& base,
+                   system::error_code& ec);
+
+    void         [@#copy copy](const path& from, const path& to);
+    void         [@#copy copy](const path& from, const path& to,
+                   system::error_code& ec);
+    void         [@#copy copy](const path& from, const path& to,
+                   [@#copy_options copy_options] options);
+    void         [@#copy copy](const path& from, const path& to,
+                   [@#copy_options copy_options] options, system::error_code& ec);
+
+    bool         [@#copy_file copy_file](const path& from, const path& to);
+    bool         [@#copy_file copy_file](const path& from, const path& to,
+                   system::error_code& ec);
+    bool         [@#copy_file copy_file](const path& from, const path& to,
+                   [@#copy_options copy_options] options);
+    bool         [@#copy_file copy_file](const path& from, const path& to,
+                   [@#copy_options copy_options] options, system::error_code& ec);
+
+    void         [@#copy_symlink copy_symlink](const path& existing_symlink,
+                   const path& new_symlink);
+    void         [@#copy_symlink copy_symlink](const path& existing_symlink,
+                   const path& new_symlink, system::error_code& ec);
+
+    bool         [@#create_directories create_directories](const path& p);
+    bool         [@#create_directories create_directories](const path& p,
+                   system::error_code& ec);
+
+    bool         [@#create_directory create_directory](const path& p);
+    bool         [@#create_directory create_directory](const path& p, system::error_code& ec);
+    bool         [@#create_directory create_directory](const path& p, const path& existing);
+    bool         [@#create_directory create_directory](const path& p, const path& existing, system::error_code& ec);
+
+    void         [@#create_directory_symlink create_directory_symlink](const path& to,
+                   const path& new_symlink);
+    void         [@#create_directory_symlink create_directory_symlink](const path& to,
+                   const path& new_symlink, system::error_code& ec);
+
+    void         [@#create_hard_link create_hard_link](const path& to, const path& new_hard_link);
+    void         [@#create_hard_link create_hard_link](const path& to, const path& new_hard_link,
+                                  system::error_code& ec);
+
+    void         [@#create_symlink create_symlink](const path& to, const path& new_symlink);
+    void         [@#create_symlink create_symlink](const path& to, const path& new_symlink,
+                                system::error_code& ec);
+
+    std::time_t  [@#creation_time creation_time](const path& p);
+    std::time_t  [@#creation_time creation_time](const path& p, system::error_code& ec);
+
+    path         [@#current_path current_path]();
+    path         [@#current_path current_path](system::error_code& ec);
+    void         [@#current_path current_path](const path& p);
+    void         [@#current_path current_path](const path& p, system::error_code& ec);
+
+    bool         [@#exists exists](file_status s) noexcept;
+    bool         [@#exists exists](const path& p);
+    bool         [@#exists exists](const path& p, system::error_code& ec) noexcept;
+
+    bool         [@#equivalent equivalent](const path& p1, const path& p2);
+    bool         [@#equivalent equivalent](const path& p1, const path& p2,
+                   system::error_code& ec);
+
+    uintmax_t    [@#file_size file_size](const path& p);
+    uintmax_t    [@#file_size file_size](const path& p, system::error_code& ec);
+
+    uintmax_t    [@#hard_link_count hard_link_count](const path& p);
+    uintmax_t    [@#hard_link_count hard_link_count](const path& p, system::error_code& ec);
+
+    const path&  [@#initial_path initial_path]();
+    const path&  [@#initial_path initial_path](system::error_code& ec);
+
+    bool         [@#is_block_file is_block_file](file_status s) noexcept;
+    bool         [@#is_block_file2 is_block_file](const path& p);
+    bool         [@#is_block_file2 is_block_file](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_character_file is_character_file](file_status s) noexcept;
+    bool         [@#is_character_file2 is_character_file](const path& p);
+    bool         [@#is_character_file2 is_character_file](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_directory is_directory](file_status s) noexcept;
+    bool         [@#is_directory2 is_directory](const path& p);
+    bool         [@#is_directory2 is_directory](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_empty is_empty](const path& p);
+    bool         [@#is_empty is_empty](const path& p, system::error_code& ec);
+
+    bool         [@#is_fifo is_fifo](file_status s) noexcept;
+    bool         [@#is_fifo2 is_fifo](const path& p);
+    bool         [@#is_fifo2 is_fifo](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_other is_other](file_status s) noexcept;
+    bool         [@#is_other2 is_other](const path& p,);
+    bool         [@#is_other2 is_other](const path& p, system::error_code& ec) noexcept;
+
+    bool         [@#is_regular_file is_regular_file](file_status s) noexcept;
+    bool         [@#is_regular_file2 is_regular_file](const path& p);
+    bool         [@#is_regular_file2 is_regular_file](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_reparse_file is_reparse_file](file_status s) noexcept;
+    bool         [@#is_reparse_file2 is_reparse_file](const path& p);
+    bool         [@#is_reparse_file2 is_reparse_file](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_socket is_socket](file_status s) noexcept;
+    bool         [@#is_socket2 is_socket](const path& p);
+    bool         [@#is_socket2 is_socket](const path& p,
+                   system::error_code& ec) noexcept;
+
+    bool         [@#is_symlink is_symlink](file_status s noexcept);
+    bool         [@#is_symlink2 is_symlink](const path& p);
+    bool         [@#is_symlink2 is_symlink](const path& p, system::error_code& ec) noexcept;
+
+    std::time_t  [@#last_write_time last_write_time](const path& p);
+    std::time_t  [@#last_write_time last_write_time](const path& p, system::error_code& ec);
+    void         [@#last_write_time2 last_write_time](const path& p, const std::time_t new_time);
+    void         [@#last_write_time2 last_write_time](const path& p, const std::time_t new_time,
+                                 system::error_code& ec);
+
+    path         [@#read_symlink read_symlink](const path& p);
+    path         [@#read_symlink read_symlink](const path& p, system::error_code& ec);
+
+    path         [@#relative relative](const path& p, system::error_code& ec);
+    path         [@#relative relative](const path& p, const path& base=current_path());
+    path         [@#relative relative](const path& p,
+                     const path& base, system::error_code& ec);
+
+    bool         [@#remove remove](const path& p);
+    bool         [@#remove remove](const path& p, system::error_code& ec);
+
+    uintmax_t    [@#remove_all remove_all](const path& p);
+    uintmax_t    [@#remove_all remove_all](const path& p, system::error_code& ec);
+
+    void         [@#rename rename](const path& from, const path& to);
+    void         [@#rename rename](const path& from, const path& to,
+                   system::error_code& ec);
+
+    void         [@#resize_file resize_file](const path& p, uintmax_t size);
+    void         [@#resize_file2 resize_file](const path& p, uintmax_t size,
+                   system::error_code& ec);
+
+    [@#space_info space_info]   [@#space space](const path& p);
+    [@#space_info space_info]   [@#space space](const path& p, system::error_code& ec);
+
+    [@#file_status file_status]  [@#status status](const path& p);
+    [@#file_status file_status]  [@#status status](const path& p, system::error_code& ec) noexcept;
+
+    bool         [@#status_known status_known](file_status s) noexcept;
+
+    [@#file_status file_status]  [@#symlink_status symlink_status](const path& p);
+    [@#file_status file_status]  [@#symlink_status symlink_status](const path& p,
+                   system::error_code& ec) noexcept;
+
+    path         [@#system_complete system_complete](const path& p);
+    path         [@#system_complete system_complete](const path& p, system::error_code& ec);
+
+    path         [@#temp_directory_path temp_directory_path]();
+    path         [@#temp_directory_path temp_directory_path](system::error_code& ec);
+
+    path         [@#unique_path unique_path](const path& model="%%%%-%%%%-%%%%-%%%%");
+    path         [@#unique_path unique_path](system::error_code& ec);
+    path         [@#unique_path unique_path](const path& model, system::error_code& ec);
+
+    path         [@#weakly_canonical weakly_canonical](const path& p, const path& base=current_path());
+    path         [@#weakly_canonical weakly_canonical](const path& p, system::error_code& ec);
+    path         [@#weakly_canonical weakly_canonical](const path& p, const path& base,
+                   system::error_code& ec);
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+
+
+[h2 [#Error-reporting]Error reporting \[fs.err.report\]]
+
+
+
+Filesystem library functions often provide two overloads, one that
+throws an exception to report file system errors, and another that sets an `error_code`.
+
+
+[:
+
+
+\[['Note:] This supports two common use cases:
+
+
+
+  * 
+  
+
+Uses where file system
+errors are truly exceptional and indicate a serious failure. Throwing an
+  exception is the most appropriate response. This is the preferred default for
+  most everyday programming.
+
+
+  * 
+  
+
+Uses where file system errors are routine and do not necessarily represent
+  failure. Returning an error code is the most appropriate response. This allows
+  application specific error handling, including simply ignoring the error.
+
+
+
+  
+
+['—end note]\]
+
+
+]
+
+
+
+
+Functions [*not] having an argument of type `system::error_code&` report errors as follows, unless otherwise specified:
+
+
+
+  * 
+  
+
+When a call by the
+  implementation to an operating system or other underlying API results in an
+  error that prevents the function from meeting its specifications, an exception
+  of type `filesystem_error` is thrown.
+
+
+  * 
+  
+
+Failure to allocate storage is reported by throwing an exception as described in the C++ standard,
+  17.6.4.10 \[res.on.exception.handling\].
+
+
+  * 
+  
+
+Destructors throw nothing.
+
+
+
+  
+
+Functions having an argument of type `system::error_code&` report errors as follows, unless otherwise
+  specified:
+
+
+
+  * 
+  
+
+If a call by the
+  implementation to an operating system or other underlying API results in an
+  error that prevents the function from meeting its specifications, the
+`system::error_code&` argument is set as
+  appropriate for the specific error. Otherwise, `clear()`
+  is called on the `system::error_code&` argument.
+
+
+  * 
+  
+
+Failure to allocate storage is reported by
+  throwing an exception as described in the C++ standard,
+  17.6.4.10 \[res.on.exception.handling\].
+
+
+
+
+
+[h2 [#class-path]Class `path` \[class.path\]]
+
+
+
+An object of class `path` represents a [@#path path],
+and contains a [@#pathname pathname] Such an object is concerned only with the lexical and syntactic aspects
+of a path. The path does not necessarily exist in external storage, and the
+pathname is not necessarily valid for the current operating
+system or for a particular file system.
+
+
+
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+      class path
+      {
+      public:
+        typedef [*['[@#value_type see below]]]                                    value_type;
+        typedef std::basic_string<value_type>                string_type;
+        typedef std::codecvt<wchar_t, char, std::mbstate_t>  codecvt_type;
+        constexpr value_type                                 dot;
+        constexpr value_type                                 separator;
+        constexpr value_type                                 preferred_separator;
+
+        // [@#path-constructors constructors] and destructor
+        path();
+        path(const path& p);
+        path(path&& p) noexcept;
+
+        template <class [@#Source Source]>
+          path(Source const& source, const codecvt_type& cvt=codecvt());
+
+        template <class [@#InputIterator InputIterator]>
+          path(InputIterator begin, InputIterator end,
+            const codecvt_type& cvt=codecvt());
+
+       ~path();
+
+        // [@#path-assignments assignments]
+        path& operator=(const path& p);
+        path& operator=(path&& p) noexcept;
+
+        template <class [@#Source Source]>
+          path& operator=(Source const& source);
+
+        path& assign(const path& p);
+        path& assign(path&& p) noexcept;
+        template <class [@#Source Source]>
+          path& assign(Source const& source,
+            const codecvt_type& cvt=codecvt())
+
+        template <class [@#InputIterator InputIterator]>
+          path& assign(InputIterator begin, InputIterator end,
+            const codecvt_type& cvt=codecvt());
+
+        // [@#path-appends appends]
+        path& operator/=(const path& p);
+
+        template <class [@#Source Source]>
+          path& operator/=(Source const& source);
+
+        path& append(const path& x);
+        template <class [@#Source Source]>
+          path& append(Source const& source,
+            const codecvt_type& cvt=codecvt());
+
+        template <class [@#InputIterator InputIterator]>
+          path& append(InputIterator begin, InputIterator end,
+            const codecvt_type& cvt=codecvt());
+
+        // [@#path-concatenation concatenation]
+        path& operator+=(const path& x);
+        template <class [@#Source Source]>
+          path& operator+=(Source const& source);
+        path& operator+=(value_type x);
+        template <class CharT>
+          path& operator+=(CharT x);
+
+        path& concat(const path& x);
+        template <class [@#Source Source]>
+          path& concat(Source const& x,
+            const codecvt_type& cvt=codecvt());
+        template <class [@#InputIterator InputIterator]>
+          path& concat(InputIterator begin, InputIterator end,
+            const codecvt_type& cvt=codecvt());
+
+        // [@#path-modifiers modifiers]
+        void  [@#path-clear clear]();
+        path& [@#path-make_preferred make_preferred]();
+        path& [@#path-remove_filename remove_filename]();
+        path& [@#path-remove_filename_and_trailing_separators remove_filename_and_trailing_separators]();
+        path& [@#path-replace_filename replace_filename](const path& replacement);
+        path& [@#path-replace_extension replace_extension](const path& new_extension = path());
+        void  [@#path-swap swap](path& rhs) noexcept;
+
+        // lexical operations
+        path [@#lexically_normal lexically_normal]() const;
+        path [@#lexically_relative lexically_relative](const path& base) const;
+        path [@#lexically_proximate lexically_proximate](const path& base) const;
+
+        // [@#path-native-format-observers native format observers]
+        const string_type&  [@#native native]() const noexcept;  // native format, encoding
+        const value_type*   [@#c_str c_str]() const noexcept;   // native().c_str()
+        string_type::size_type [@#path-size size]() const noexcept; // native().size()
+
+        template <class String>
+          String  [@#string-template string](const codecvt_type& cvt=codecvt()) const;
+        string    [@#string string](const codecvt_type& cvt=codecvt()) const;
+        wstring   [@#wstring wstring](const codecvt_type& cvt=codecvt()) const;
+
+        // [@#path-generic-format-observers generic format observers]
+        template <class String>
+          String  [@#generic_string-template generic_string]() const;
+
+        string    [@#generic_string generic_string](const codecvt_type& cvt=codecvt()) const;
+        wstring   [@#generic_wstring generic_wstring](const codecvt_type& cvt=codecvt()) const;
+
+        // [@#path-compare compare]
+        int   [@#path-compare compare](const path& p) const noexcept;
+        int   [@#path-compare compare](const std::string& s) const;
+        int   [@#path-compare compare](const value_type* s) const;
+
+        // [@#path-decomposition decomposition]
+        path  [@#path-root_name root_name]() const;
+        path  [@#path-root_directory root_directory]() const;
+        path  [@#path-root_path root_path]() const;
+        path  [@#path-relative_path relative_path]() const;
+        path  [@#path-parent_path parent_path]() const;
+        path  [@#path-filename filename]() const;
+        path  [@#path-stem stem]() const;
+        path  [@#path-extension extension]() const;
+
+        // [@#path-query query]
+        bool [@#path-query empty]() const;
+        bool [@#filename_is_dot filename_is_dot]() const;
+        bool [@#filename_is_dot_dot filename_is_dot_dot]() const;
+        bool [@#path-has_root_name has_root_name]() const;
+        bool [@#path-has_root_directory has_root_directory]() const;
+        bool [@#path-has_root_path has_root_path]() const;
+        bool [@#path-has_relative_path has_relative_path]() const;
+        bool [@#path-has_parent_path has_parent_path]() const;
+        bool [@#path-has_filename has_filename]() const;
+        bool [@#path-has_stem has_stem]() const;
+        bool [@#path-has_extension has_extension]() const;
+        bool [@#path-is_absolute is_absolute]() const;
+        bool [@#path-is_relative is_relative]() const;
+
+        // [@#path-iterators iterators]
+        class iterator;
+        typedef iterator const_iterator;
+        class reverse_iterator;
+        typedef reverse_iterator const_reverse_iterator;
+
+        iterator begin() const;
+        iterator end() const;
+        reverse_iterator rbegin() const;
+        reverse_iterator rend() const;
+
+        // [@#path-imbued-locale imbued locale]
+        static std::locale [@#path-imbue imbue](const std::locale& loc);
+        static const codecvt_type & [@#path-codecvt codecvt]();
+
+      private:
+        string_type pathname;  // [*['exposition only]]
+      };
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+
+
+
+`[#value_type]value_type` is a `typedef` for the
+character type used by the operating system to represent pathnames.
+
+
+
+
+
+[h3 [#path-Usage]`path` Usage concerns \[path.usage\]]
+
+
+
+[h4 Multithreading concerns]
+
+
+
+
+Filesystem library functions are not protected against data races. \[Modifying
+an object of a Filesystem library type that is shared between threads risks
+undefined behavior unless objects of that type are explicitly specified as being
+sharable without data races or the user supplies a locking mechanism. ['—end
+note]\] \[['Note:] Thus the Filesystem library behaves as if it were part
+of the standard library, and C++ standard 17.6.4.10 ['Shared objects and the
+library] \[res.on.objects\] would thus apply.  ['—end note]\]
+
+
+
+
+[h4 Windows concerns]
+
+
+
+
+Visual C++ at least through version 2012 does not employ C++11-style static
+initialization locks, so the initialization of `path::codecvt()` can
+race, either with itself or `path::imbue()` if they are called from
+a different thread. A workaround is to call:
+
+
+
+[:
+
+
+`path::codecvt();  // ensure VC++ does not race during
+initialization.`
+
+
+
+]
+
+
+
+
+in the main thread before launching any additional threads. \[['Note:] The
+obvious fix of the Filesystem implementation doing the locking doesn't work
+because of unrelated problems with the Microsoft compiler; for static linking
+the runtime tries to do the initialization before main() starts, but doesn't
+permit operating system lock calls at that time.  ['—end note]\]
+
+
+
+
+[h4 POSIX concerns]
+
+
+
+
+Filesystem library initialization may throw an exception on POSIX
+systems (e.g. Linux, but not Mac OS X) that use environmental variables to
+determine the encoding of paths. This happens when `std::locale("")`
+throws because an environmental variable such as LANG is set to an invalid
+value, so it can affect any use of  `std::locale("")`, not just
+the Filesystem library. Filesystem uses lazy initialization so the exception is
+only thrown if a valid `std::locale("")` is actually needed, and also
+so that the exception is thrown after `main()` starts.
+
+
+
+
+
+Rather than waiting until a call to some Filesystem library function
+unexpectedly triggers the exception when it calls `path::codecvt()`,
+a program that needs be highly robust against environmental variable problems
+may want to preemptively call `std::locale("")` within a try block,
+catch the exception, and diagnose or repair the invalid environmental variable.
+
+
+
+
+[h3 [#path-Conversions]`path` Conversions \[path.cvt\]]
+
+
+[h4 `path` argument conversions \[[#path.arg.convert]path.arg.cvt\]]
+
+
+[h5 [#path-Conversions-to-native-format]`path` argument
+format conversions \[path.arg.fmt.cvt\]]
+
+
+
+Member function arguments that take character sequences representing paths
+may use the [@#generic-pathname-format generic pathname format] or
+the [@#native-pathname-format native pathname format]. Iff such  arguments
+are in the generic format and the generic format is not acceptable to the
+operating system as a native path,  conversion to native format shall be performed
+during the processing of the argument. See \[[@#Operating-system-examples fs.os.examples]\].
+
+
+[:
+
+
+\[['Note:] Depending on the operating system, there may be no unambiguous way for an implementation to
+always be able to distinguish between native format and generic format arguments.
+This is by design as it simplifies use for operating systems that do not require
+disambiguation. Should an implementation encounter an
+operating system where disambiguation is required, an implementation can defined
+an extension to distinguish between the formats.['
+—end note]\]
+
+
+]
+
+
+
+
+
+If the native format requires
+paths for regular files to be formatted differently from paths for directories, the
+path shall be treated as a directory path if last element is a separator,
+otherwise it shall be treated as a regular file path.
+
+
+
+
+[h5 [#path-Encoding-conversions]`
+path` argument encoding conversions
+\[path.arg.encoding.cvt\]]
+
+
+
+For member function arguments that take character sequences representing
+paths, if the value type of the argument is not `value_type` and one
+of the value types is `char` and the other is `wchar_t`, conversion to `value_type`
+shall be performed by the `path::codecvt()` facet. (\[[@#path-imbued-locale path.imbued.locale]\]).
+
+
+
+[h4 [#path-Conversions-to-generic-format]`path` Conversions
+to generic format \[fs.cvt.to.generic\]]
+
+
+
+[@#path-generic-format-observers Generic format observer] functions
+shall return strings formatted according to the [@#generic-pathname-format generic pathname format]
+using ['preferred-separator]. See \[[@#Operating-system-examples fs.os.examples]\].
+
+
+
+[h3 [#path-Requirements]`path` Requirements \[path.req\]]
+
+
+
+Template parameters named `[#InputIterator]InputIterator` are required to meet the
+requirements for a C++ standard library `InputIterator` compliant iterator. The iterator's value type is required
+to be one of: `char`, `wchar_t`. Collectively, these types are referred to as supported path character types.
+
+
+
+
+Template parameters named `[#Source]Source` are required to be one of:
+
+
+
+  * 
+  
+
+A `std::basic_string`, `std::basic_string_view`, `boost::container::basic_string` or `boost::basic_string_view` specialization with a value type of one of the supported path character types.
+
+
+  * 
+  
+
+[*v3, deprecated:] A container with a value type of one of the supported path character types.
+
+
+  * 
+  
+
+A pointer into a null terminated string. The value type is required
+  to be a supported path character type.
+
+
+  * 
+  
+
+A C-array of supported path character type containing a null terminated string.
+
+
+  * 
+  
+
+A `boost::filesystem::directory_entry`.
+
+
+
+
+
+[h3 [#path-constructors]`path` constructors \[path.construct\]]
+
+
+
+```
+template <class [@#Source Source]>
+path(Source const& source, const codecvt_type& cvt=codecvt());
+```
+
+
+
+
+```
+template <class [@#InputIterator InputIterator]>
+path(InputIterator begin, InputIterator end, const codecvt_type& cvt=codecvt());
+```
+
+
+[:
+  
+
+['Effects:] Stores the contents \[`begin`,`end`)
+  of `source` in `pathname`, converting format and
+  encoding if required (\[[@#path.arg.convert path.arg.convert]\]).
+
+
+]
+
+
+
+[h3  [#path-assignments] `
+path` assignments \[path.assign\]]
+
+
+
+```
+path& operator=(const path& p);
+path& operator=(path&& p) noexcept;
+template <class [@#Source Source]>
+path& operator=(Source const& source);
+path& assign(const path& p);
+path& assign(path&& p) noexcept;
+template <class [@#Source Source]>
+path& assign(Source const& source, const codecvt_type& cvt=codecvt());
+template <class [@#InputIterator InputIterator]>
+path& assign(InputIterator begin, InputIterator end, const codecvt_type& cvt=codecvt());
+```
+
+
+[:
+  
+
+['Effects:] Stores the contents \[`begin`,`end`)
+  or `source` or `p` in `pathname`, converting format and
+  encoding if required (\[[@#path.arg.convert path.arg.convert]\]). 
+
+
+  
+
+
+  ['Returns: ]`*this`
+
+
+  ]
+
+
+
+[h3 [#path-appends]`path` appends
+\[path.append\]]
+
+  
+
+The append operations use `
+  operator/=` to denote their semantic effect of appending ['
+  preferred-separator] when needed. 
+
+
+
+
+```
+path& operator/=(const path& p);
+path& append(const path& p);
+```
+
+
+[:
+  
+
+['Effects:]
+
+
+  [:
+    
+
+[*v3:] Appends `path::preferred_separator` to `pathname`,
+    converting format and encoding if required (\[[@#path.arg.convert path.arg.convert]\]), unless:
+
+
+    
+    * 
+    
+
+an added separator
+    would be redundant, or
+
+
+    * 
+    
+
+would change a relative path to an absolute path, or
+
+
+    * 
+    
+
+`p.empty()`, or
+
+
+    * 
+    
+
+`*p.native().cbegin()` is a directory separator.
+
+
+    
+    
+
+Then appends `p.native()` to `pathname`.
+
+
+    
+
+[*v4:] If `p.[@#path-is_absolute is_absolute]() || (p.[@#path-has_root_name has_root_name]() && p.[@#path-root_name root_name]() != [@#path-root_name root_name]())`, assigns `p` to `*this`. Otherwise, modifies `*this` as if by these steps:
+    
+
+
+      * If `p.[@#path-has_root_name has_root_directory]()`, removes root directory and relative path, if any.
+      * Let `x` be a `path` with contents of `p` without a root name. If `[@#path-has_filename has_filename]()` is `true` and `x` does not start with a directory separator, appends `path::preferred_separator`.
+      * Appends `x.native()`.
+    
+    
+    
+
+\[['Note:] Whether the path is absolute or not depends on the target OS conventions. Because of this, the result of append operation may be different for different operating systems for some paths. For example, `path("//net/foo") / "/bar"` will result in `"/bar"` on POSIX systems and `"//net/foo/bar"` on Windows because `"/bar"` is an absolute path on POSIX systems but not on Windows. For portable behavior avoid appending paths with non-empty [@#path-root_path root path]. ['—end note]\]
+
+
+  ]
+
+
+  
+
+['Returns: ]`*this`
+
+
+]
+
+
+
+
+```
+template <class [@#Source Source]>
+path& operator/=(Source const & source);
+template <class [@#Source Source]>
+path& append(Source const & source, const codecvt_type& cvt=codecvt());
+template <class [@#InputIterator InputIterator]>
+path& append(InputIterator begin, InputIterator end, const codecvt_type& cvt=codecvt());
+```
+
+
+  [:
+  
+
+['Effects:]
+
+
+  [:
+    
+
+As if `append(path(['args]))`, where `['args]` is the list of arguments passed to the operation.
+
+
+  ]
+
+
+  
+
+['Returns: ]`*this`
+
+
+  ]
+
+
+
+
+[h3 [#path-concatenation]`path` concatenation \[path.concat\]]
+
+
+
+```
+path& operator+=(const path& p);
+path& operator+=(value_type x);
+template <class [@#Source Source]>
+path& operator+=(Source const& source);
+template <class CharT>
+path& operator+=(CharT x);
+path& concat(const path& p);
+template <class [@#Source Source]>
+path& concat(Source const& source, const codecvt_type& cvt=codecvt());
+template <class [@#InputIterator InputIterator]>
+path& concat(InputIterator begin, InputIterator end, const codecvt_type& cvt=codecvt());
+```
+
+
+[:
+
+['Postcondition:] `native() == prior_native + ['effective-argument]`,
+ where `prior_native` is `native()` prior to the call to `operator+=`,
+ and `['effective-argument]` is:
+
+
+ * 
+   
+
+`p.native()` if `p` is present and is `const path&`, otherwise
+
+
+ * 
+ 
+
+`s`, where `s` is
+  `std::basic_string<typename std::iterator_traits<InputIterator>::value_type>
+s(begin, end)`,
+   if `begin` and `end` arguments are present, otherwise
+
+
+ * 
+ 
+
+`x`.
+
+
+ 
+ 
+
+If the value type of `['effective-argument]` would not be `path::value_type`, the actual argument or argument range is first
+   converted so that `['effective-argument]` has value type `path::value_type`.
+
+
+ 
+
+['Returns: ]`*this`
+
+
+ ]
+
+
+
+[h3 [#path-modifiers] `
+path` modifiers \[path.modifiers\]]
+
+
+  
+```
+void [#path-clear]clear();
+```
+
+
+[:
+
+
+['Postcondition:] `this->empty()` is true.
+
+
+]
+
+
+
+
+```
+path& [#path-make_preferred]make_preferred();
+```
+
+
+[:
+  
+
+['Effects:] ['directory-separator]s are converted to ['preferred-separator]s.
+  See \[[@#Operating-system-examples fs.os.examples]\].
+
+
+  
+
+['Returns:] `*this`
+
+
+]
+
+
+
+
+
+
+```
+path& [#path-remove_filename]remove_filename();
+```
+
+
+[:
+  
+
+['Effects:] [*v3:] As if, `*this = parent_path();`
+
+
+  
+
+\[['Note:] This function is needed to efficiently implement `directory_iterator`. It is exposed to allow additional uses. The actual
+  implementation may be much more efficient than `*this = parent_path()`  ['—end
+  note]\]
+
+
+  
+
+[*v4:] Removes the `filename()` path element.
+
+
+  
+
+\[['Note:] Unlike [*v3], the trailing directory separator(s) are not removed.['—end
+  note]\]
+
+
+  
+
+['Returns:] `*this`.
+
+
+]
+
+
+
+
+```
+path& [#path-remove_filename_and_trailing_separators]remove_filename_and_trailing_separators();
+```
+
+
+[:
+  
+
+['Effects:] As if, `*this = parent_path();`
+
+
+  
+
+\[['Note:] This function is similar to `path::remove_filename` from [*v3], but is also usable in [*v4].['—end
+  note]\]
+
+
+  
+
+['Returns:] `*this`.
+
+
+]
+
+
+
+
+```
+path& [#path-replace_filename]replace_filename(const path& replacement);
+```
+
+
+[:
+  
+
+['Effects:] As if, `remove_filename().append(replacement);`
+
+
+  
+
+['Returns:] `*this`.
+
+
+]
+
+
+
+
+```
+path& [#path-replace_extension]replace_extension(const path& new_extension = path());
+```
+
+
+[:
+  
+
+['Effects:]
+
+
+  
+    * 
+    
+
+Any existing `extension()` is removed from the stored path,
+    then
+
+
+    * 
+    
+
+iff
+  `new_extension` is not empty and does not begin with a dot
+    character, a dot character is appended to the stored path, then
+
+
+    * 
+  
+
+
+  `new_extension` is appended to the stored path.
+
+
+  
+  
+
+['Returns:] `*this`
+
+
+]
+
+
+
+
+```
+void [#path-swap]swap(path& rhs) noexcept;
+```
+
+
+[:
+  
+
+['Effects:] Swaps the contents of the two paths.
+
+
+  
+
+['Complexity:] constant time.
+
+
+]
+
+
+
+  
+[h3 [#path-lexical-operations]`path` lexical operations
+  \[path.lex.ops\]]
+
+  
+```
+path [#lexically_normal]lexically_normal() const;
+```
+
+[:
+
+
+['Overview:] Returns `*this` with redundant current directory
+(['dot]), parent directory (['dot-dot]), and ['directory-separator] elements removed.
+
+
+
+
+['Returns:] `*this` in [@#normal-form normal form].
+
+
+
+
+['Remarks:] Uses `operator/=` to compose the returned path.
+
+
+
+
+\[['Example:]
+
+
+
+
+
+
+
+```
+std::cout << path("foo/./bar/..").lexically_normal() << std::endl;    // outputs "foo"
+std::cout << path("foo/.///bar/../").lexically_normal() << std::endl; // v3: outputs "foo/."
+                                                                      // v4: outputs "foo/"
+```
+
+
+
+On Windows, the
+returned path's ['directory-separator] characters will be backslashes rather than slashes, but that
+does not affect `path` equality.[' —end example]\]
+
+
+]
+
+
+
+
+```
+path [#lexically_relative]lexically_relative(const path& base) const;
+```
+
+  [:
+  
+
+['Overview:] Returns `*this` made relative to `base`.
+  Treats empty or identical paths as corner cases, not errors. Does not resolve
+  symlinks. Does not first normalize `*this` or `base`.
+
+
+
+  
+
+['Remarks:] Uses `std::mismatch(begin(), end(), base.begin(), base.end())`, to determine the first mismatched element of
+  `*this` and `base`. Uses `operator==` to
+  determine if elements match. 
+
+
+
+  
+
+['Returns:] 
+
+
+
+  
+    * 
+  `path()` if the first mismatched element of `*this` is equal to `
+  begin()` or the first mismatched element
+  of `base` is equal to `base.begin()`, or
+ 
+    
+    * 
+  `path(".")` if the first mismatched element of `
+  *this` is equal to `
+  end()` and the first mismatched element
+  of `base` is equal to `base.end()`, or
+ 
+    
+    * An object of class `path` composed via application of `
+    operator/= path("..")` for each element in the half-open
+    range \[first
+    mismatched element of `base`, `base.end()`), and then
+    application of `operator/=` for each element in the half-open
+    range
+    \[first mismatched element of `*this`, `end()`).
+    
+
+
+
+
+\[['Example:]
+
+
+
+
+`assert(path("/a/d").lexically_relative("/a/b/c") ==  "../../d");
+
+assert(path("/a/b/c").lexically_relative("/a/d") ==  "../b/c");
+
+assert(path("a/b/c").lexically_relative("a") == "b/c");
+
+assert(path("a/b/c").lexically_relative("a/b/c/x/y") ==  "../..");
+
+assert(path("a/b/c").lexically_relative("a/b/c") ==  ".");
+
+assert(path("a/b").lexically_relative("c/d") ==  "");`
+
+
+
+
+The above assertions will succeed.[' ]On Windows, the
+returned path's ['directory-separator]s will be backslashes rather than
+forward slashes, but that
+does not affect `path` equality. ['—end example]\]
+
+
+
+  
+
+\[['Note:] If symlink following semantics are desired, use the operational function `
+  [@#relative relative]`  ['—end note]\]
+
+
+
+  
+
+\[['Note:] If [@#lexically_normal normalization] is needed to ensure
+  consistent matching of elements, apply `[@#lexically_normal lexically_normal()]`
+  to `*this`, `base`, or both. ['—end note]\]
+
+
+]
+
+
+
+
+```
+path [#lexically_proximate]lexically_proximate(const path& base) const;
+```
+
+[:
+
+
+['Returns:] If `lexically_relative(base)` returns a non-empty path, returns that path.
+Otherwise returns `*this`.
+
+
+
+  
+
+\[['Note:] If symlink following semantics are desired, use the operational function `
+  [@#relative relative]`  ['—end note]\]
+
+
+
+  
+
+\[['Note:] If [@#lexically_normal normalization] is needed to ensure
+  consistent matching of elements, apply `[@#lexically_normal lexically_normal()]`
+  to `*this`, `base`, or both. ['—end note]\]
+
+
+
+]
+
+
+
+
+
+[h3  [#path-native-format-observers]`path` native format observers
+\[path.native.obs\]]
+
+
+
+The string returned by all native format observers is in the [@#native-pathname-format native pathname format].
+
+
+
+
+```
+const string_type& [#native]native() const noexcept;
+```
+
+
+[:
+
+
+['Returns:] `pathname`.
+
+
+]
+
+
+
+
+```
+const value_type* [#c_str]c_str() const noexcept;
+```
+
+
+[:
+
+
+['Returns:] `pathname.c_str()`.
+
+
+]
+
+
+
+
+```
+string_type::size_type [#path-size]size() const noexcept;
+```
+
+
+[:
+
+
+['Returns:] `pathname.size()`.
+
+
+]
+
+
+
+
+```
+template <class String>
+String [#string-template]string(const codecvt_type& cvt=codecvt()) const;
+```
+
+
+[:
+  
+
+['Returns:] `pathname`.
+
+
+
+
+['Remarks:] If `string_type` is a different type than `String`, conversion is performed by `cvt`.
+
+
+]
+
+
+
+
+```
+string [#string]string(const codecvt_type& cvt=codecvt()) const;
+wstring [#wstring]wstring(const codecvt_type& cvt=codecvt()) const;
+```
+
+
+[:
+
+
+['Returns:] `pathname`.
+
+
+
+
+['Remarks:] If `string_type` is a different type than
+function's return type, conversion is performed by `cvt`.
+
+
+]
+
+
+
+
+[h3  [#path-generic-format-observers]`path` generic format observers
+\[path.generic.obs\]]
+
+
+
+The string returned by all generic format observers is in the [@#generic-pathname-format generic pathname format].
+The returned strings use a single forward slash ('/') as directory separators.
+
+
+
+
+```
+template <class String>
+String [#generic_string-template]generic_string(const codecvt_type& cvt=codecvt()) const;
+```
+
+
+[:
+  
+
+['Returns:] `pathname`.
+
+
+
+
+['Remarks:] If `string_type` is a different type than `String`, conversion is performed by `cvt`.
+
+
+]
+
+
+
+
+```
+string [#generic_string]generic_string(const codecvt_type& cvt=codecvt()) const;
+wstring [#generic_wstring]generic_wstring(const codecvt_type& cvt=codecvt()) const;
+```
+
+
+[:
+
+
+['Returns:] `pathname`.
+
+
+
+
+['Remarks:] If `string_type` is a different type than
+function's return type, conversion is performed by `cvt`.
+
+
+]
+
+
+
+
+[h3  [#path-compare]`path` compare \[path.compare\]]
+
+
+
+```
+int compare(const path& p) const noexcept;
+```
+
+
+[:
+  
+
+['Returns:] A value less than 0 if the elements of `*this` are lexicographically less than the elements of `p`, otherwise a
+  value greater than 0 if the elements of `*this` are
+  lexicographically greater than the elements of `p`, otherwise 0.
+
+
+  
+
+Remark: The elements are determined as if by iteration over the half-open
+  range \[`begin()`, `end()`) for `*this` and `p`.
+
+
+]
+
+
+
+
+```
+int compare(const std::string& s) const
+```
+
+
+[:
+  
+
+['Returns:] `compare(path(s))`.
+
+
+]
+
+
+
+
+```
+int compare(const value_type* s) const
+```
+
+
+[:
+  
+
+['Returns:] `compare(path(s))`.
+
+
+]
+
+
+
+[h3  [#path-decomposition] `path` decomposition
+\[path.decompose\]]
+
+
+
+['See the [@#path-decomposition-table Path decomposition table] for examples
+for values returned by decomposition functions. The [@tutorial.html#Using-path-decomposition Tutorial] may also be
+helpful.]
+
+
+
+
+```
+path [#path-root_name]root_name() const;
+```
+
+
+[:
+
+
+['Returns:] ['root-name,] if `pathname` includes ['root-name], otherwise `path()`. 
+
+
+]
+
+
+
+
+```
+path [#path-root_directory]root_directory() const;
+```
+
+
+[:
+
+
+['Returns:] ['root-directory], if `pathname` includes ['root-directory], otherwise `path()`.
+
+
+
+
+If ['root-directory] is composed of ['slash name], ['slash] is
+excluded from the returned string.
+
+
+]
+
+
+
+
+```
+path [#path-root_path]root_path() const;
+```
+
+
+[:
+  
+
+['Returns:] `[@#path-root_name root_name]() / [@#path-root_directory root_directory]()`
+
+
+]
+
+
+
+
+```
+path [#path-relative_path]relative_path() const;
+```
+
+
+[:
+
+
+['Returns:] A `path` composed from `pathname`, if `!empty()`, beginning
+with the first ['filename] after ['root-path]. Otherwise, `path()`.
+
+
+]
+
+
+
+
+```
+path [#path-parent_path]parent_path() const;
+```
+
+
+[:
+  
+
+['Returns:] `(empty() || begin() == --end()) ? path() : ['pp]`, where `['pp]` is constructed as if by
+  starting with an empty `path` and successively applying `operator/=` for each element in the range `begin()`, `--end()`.
+
+
+  
+
+\[['Example:]
+
+
+  [:
+
+    
+```
+std::cout << path("/foo/bar.txt").parent_path(); // outputs "/foo"
+std::cout << path("/foo/bar").parent_path();     // outputs "/foo"
+std::cout << path("/foo/bar/").parent_path();    // outputs "/foo/bar"
+std::cout << path("/").parent_path();            // outputs ""
+std::cout << path(".").parent_path();            // outputs ""
+std::cout << path("..").parent_path();           // outputs ""
+```
+
+
+  ]
+
+
+  
+
+ See the last bullet item in the [@#path-iterators 
+  forward traversal order] list for why the `"/foo/bar/"` example
+  doesn't output `"/foo"`.
+
+
+  
+
+ ['—end example]\]
+
+
+]
+
+
+
+
+```
+path [#path-filename]filename() const;
+```
+
+
+[:
+  
+
+['Returns:] [*v3:] `empty() ? path() : *--end()`
+
+    [*v4:] `*this == [@#path-root_path root_path]() ? path() : *--end()`
+
+
+  
+
+\[['Example:]
+
+
+  [:
+
+    
+```
+std::cout << path("/foo/bar.txt").filename(); // outputs "bar.txt"
+std::cout << path("/foo/bar").filename();     // outputs "bar"
+std::cout << path("/foo/bar/").filename();    // v3 outputs "."
+                                              // v4 outputs ""
+std::cout << path("/").filename();            // v3 outputs "/"
+                                              // v4 outputs ""
+std::cout << path(".").filename();            // outputs "."
+std::cout << path("..").filename();           // outputs ".."
+```
+
+
+  ]
+
+
+  
+
+ See the last bullet item in the [@#path-iterators 
+  forward traversal order] list for why the `"/foo/bar/"` example
+  doesn't output `"bar"`.
+
+
+  
+
+ ['—end example]\]
+
+
+]
+
+
+
+
+```
+path [#path-stem]stem() const;
+```
+
+
+[:
+  
+
+['Returns:] If `p.[@path-filename filename]()` does not contain dots, consist solely of one
+  or to two dots, ['\[Since [*v4]:] or contains exactly one dot as the initial character,['\]] returns `p.filename()`.
+  Otherwise returns the substring of `p.filename()` starting at its beginning and
+  ending at the last dot (the dot is not included).
+
+
+  
+
+\[['Example:]
+
+
+  [:
+
+    
+```
+std::cout << path("/foo/bar.txt").stem() << '\\n'; // outputs "bar"
+std::cout << path(".hidden").stem() << '\\n';      // v3 outputs ""
+                                                  // v4 outputs ".hidden"
+path p = "foo.bar.baz.tar";
+for (; !p.extension().empty(); p = p.stem())
+  std::cout << p.extension() << '\\n';
+  // outputs: .tar
+  //          .baz
+  //          .bar
+```
+
+
+  ]
+
+
+  
+
+ ['—end example]\]
+
+
+]
+
+
+
+
+```
+path [#path-extension]extension() const;
+```
+
+
+[:
+  
+
+['Returns:] The substring of `p.[@path-filename filename]()` that is not included
+  in `p.[@#path-stem stem]()`.
+
+
+  
+
+['Remarks:] Implementations are permitted but not required to define additional
+  behavior for file systems which append additional elements to extensions, such
+  as alternate data streams or partitioned dataset names.
+
+
+  
+
+\[['Example:]
+
+
+  [:
+
+    
+```
+std::cout << path("/foo/bar.txt").extension(); // outputs ".txt"
+```
+
+
+  ]
+
+
+  
+
+ ['—end example]\]
+
+
+  
+
+\[['Note:[* ]]The dot is included in the return value so that it is
+  possible to distinguish between no extension and an empty extension.
+  See [@https://lists.boost.org/Archives/boost/2010/02/162028.php 
+  https://lists.boost.org/Archives/boost/2010/02/162028.php] for more
+  extensive rationale.  ['—end note]\]
+
+
+]
+
+
+
+[h3  [#path-query] `path` query \[path.query\]]
+
+
+
+```
+bool [#path-empty]empty() const;
+```
+
+
+[:
+  
+
+['Returns:] `m_pathname.empty()`.
+
+
+]
+
+
+
+
+```
+bool [#filename_is_dot]filename_is_dot() const;
+```
+
+
+[:
+  
+
+['Returns:] `filename() == path(".")`
+
+
+  
+
+\[['Example:]
+
+
+  [:
+
+    
+```
+std::cout << path(".").filename_is_dot();     // outputs 1
+std::cout << path("/.").filename_is_dot();    // outputs 1
+std::cout << path("foo/.").filename_is_dot(); // outputs 1
+std::cout << path("foo/").filename_is_dot();  // v3 outputs 1, v4 outputs 0
+std::cout << path("/").filename_is_dot();     // outputs 0
+std::cout << path("/foo").filename_is_dot();  // outputs 0
+std::cout << path("/foo.").filename_is_dot(); // outputs 0
+std::cout << path("..").filename_is_dot();    // outputs 0
+```
+
+
+  ]
+
+
+  
+
+ See the last bullet item in the [@#path-iterators forward traversal order]
+  list for why `path("foo/").filename()` is a dot filename in [*v3].
+
+
+  
+
+ ['—end example]\]
+
+
+]
+
+
+
+
+```
+bool [#filename_is_dot_dot]filename_is_dot_dot() const;
+```
+
+
+[:
+  
+
+['Returns:] `filename() == path("..")`
+
+
+]
+
+
+
+
+```
+bool [#path-has_root_path]has_root_path() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-root_path root_path]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_root_name]has_root_name() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-root_name root_name]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_root_directory]has_root_directory() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-root_directory root_directory]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_relative_path]has_relative_path() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-has_relative_path relative_path]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_parent_path]has_parent_path() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-parent_path parent_path]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_filename]has_filename() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-filename filename]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_stem]has_stem() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-stem stem]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-has_extension]has_extension() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-has_extension extension]().empty()`
+
+
+]
+
+
+
+
+```
+bool [#path-is_absolute]is_absolute() const;
+```
+
+
+[:
+  
+
+['Returns:] `true` if the elements of `[@#path-root_path root_path]()` uniquely identify a directory, else `false`.
+
+
+  
+
+\[['Note:] Path is considered absolute on POSIX systems if it has a [@#path-root_directory root directory], and on Windows - if it has both [@#path-root_name root name] and [@#path-root_directory root directory]. ['—end note]\]
+
+
+]
+
+
+
+
+```
+bool [#path-is_relative]is_relative() const;
+```
+
+
+[:
+  
+
+['Returns:] `![@#path-is_absolute is_absolute]()`.
+
+
+]
+
+
+
+[h3  [#path-iterators] `
+path` iterators \[path.itr\]]
+
+
+
+ Path iterators `iterator`, `const_iterator`,
+`reverse_iterator`, and `const_reverse_iterator` iterate over the elements of the stored pathname.
+
+
+
+
+ Path iterators are constant iterators satisfying
+the requirements of a bidirectional iterator (C++ Std, 24.1.4 Bidirectional
+iterators \[lib.bidirectional.iterators\]). The `value_type`  of
+an iterator is `path`.
+
+
+  [:
+
+
+ \[['Note:] Path iterators store their value objects internally
+and when dereferenced return references to those internal objects. They cannot
+be used with iterator adaptors such as `std::reverse_iterator` that
+assume references obtained by dereferencing an iterator point to objects that
+out-live the iterator itself. ['—end note]\] 
+
+
+]
+
+
+  
+
+Calling any non-const member function of a `path` object
+  invalidates all iterators referring to elements of that object.
+
+
+
+
+ The forward traversal order is as follows:
+
+
+
+  * The ['root-name] element, if present.
+  * The ['root-directory] element, if present, in the generic format.
+  \[['Note:] the generic format is required to ensure lexicographical
+  comparison works correctly. ['—end note]\]
+  * Each successive ['filename] element, if present.
+  * \[[*v3:] ['Dot]\] \[[*v4:] Empty path\], if one or more trailing non-root directory separators
+  are present.
+
+  [:
+  
+
+\[['Note:] Treating the last element during iteration as \[[*v3:] ['dot]\] \[[*v4:] an empty path\] when
+  there is a trailing directory separator enables lexical (i.e. syntactic)
+  distinction between paths to directories versus paths to regular files. Such a
+  distinction is usually irrelevant on POSIX and Windows based operating
+  systems, but may be a requirement on other operating systems. ['—end note]\]
+
+
+  ]
+
+
+  
+
+The backward traversal order is the reverse of forward traversal.
+
+
+  
+```
+iterator begin() const;
+```
+
+[:
+  
+
+['Returns:] An iterator for the first  element in forward traversal
+  order. If no elements are present, the end iterator.
+
+
+]
+
+
+
+```
+iterator end() const;
+```
+
+[:
+  
+
+['Returns:] The end iterator.
+
+
+]
+
+
+  
+```
+reverse_iterator rbegin() const;
+```
+
+[:
+  
+
+['Returns:] An iterator for the first element in backward traversal
+  order. If no elements are present, the end iterator.
+
+
+]
+
+
+
+```
+reverse_iterator rend() const;
+```
+
+[:
+  
+
+['Returns:] The end iterator.
+
+
+]
+
+
+ 
+[h3 [#path-imbued-locale]` path`
+ imbued locale \[path.imbued.locale\]]
+
+ 
+
+`path` operations sometimes require encoding conversions between
+ `pathname` and some other string object where one of the value types
+ is `char` and the other is `wchar_t`. Such conversions
+ shall be performed by the `path::codecvt()` facet.
+
+
+ [:
+ 
+
+\[['Example:]
+ ... ['—end example]\]
+
+
+ ]
+
+
+ 
+```
+static std::locale [#path-imbue]imbue(const std::locale& loc);
+```
+
+[:
+  
+
+['Effects:] Stores a copy of `loc` as the imbued `path`
+  locale.
+
+
+  
+
+['Returns:] The previous imbued `path` locale.
+
+
+  
+
+['Remarks:] The initial value of the imbued `path` locale is
+  operating system dependent. It shall be a locale with a `codecvt`
+  facet for a `char` string encoding appropriate for the operating
+  system. See (\[[@#Operating-system-examples fs.os.examples]\]).  
+
+
+]
+
+
+
+```
+static const codecvt_type& [#path-codecvt]codecvt();
+```
+
+[:
+  
+
+['Returns:] The `codecvt` facet for the imbued` path`
+  locale .
+
+
+]
+
+
+
+
+
+[h3  [#path-non-member-functions] `path` non-member functions
+\[path.non-member\]]
+
+
+  
+```
+bool lexicographical_compare(path::iterator first1, path::iterator last1,
+                             path::iterator first2, path::iterator last2);
+```
+
+[:
+  
+
+['Returns:] `true` if the sequence of `native()` strings for the elements defined by the half-open range `\[first1, last1)` is
+  lexicographically less than the sequence of `native()` strings for
+  the elements defined by the half-open range `\[first2, last2)`. Returns `false` otherwise.
+
+
+  
+
+['Remarks:] If two sequences have the same number of elements and their
+  corresponding elements are equivalent, then neither sequence is
+  lexicographically less than the other. If one sequence is a prefix of the
+  other, then the shorter sequence is lexicographically less than the longer
+  sequence. Otherwise, the lexicographical comparison of the sequences yields
+  the same result as the comparison of the first corresponding pair of elements
+  that are not equivalent.
+
+
+  
+
+\[['Note:] A `path` aware `lexicographical_compare` algorithm is provided for historical reasons. ['—end note]\]
+
+
+]
+
+
+
+  
+
+  
+```
+path [#lex-normal]lexically_normal(const path& p);
+```
+
+
+  
+
+[:
+  
+
+['Overview:] Returns `p` with redundant current
+  directory (['dot]), parent directory (['dot-dot]), and ['
+  directory-separator] elements removed.
+
+
+  
+
+['Returns:] `p` in
+  [@#normal-form 
+  normal form].
+
+
+  
+
+['Remarks:] Uses `operator/=` to compose the
+  returned path.
+
+
+  
+
+\[['Example:]
+
+
+  
+
+`assert(lexically_normal("foo/./bar/..") == "foo");
+
+  assert(lexically_normal("foo/.///bar/../") == "foo/.");`
+
+
+  
+
+All of the above assertions will succeed.[' ]On Windows, the
+  returned path's ['directory-separator] characters will be backslashes
+  rather than slashes, but that does not affect `path` equality.
+  ['—end example]\]
+
+
+]
+
+
+
+  
+
+  
+```
+path [#lex-relative]lexically_relative(const path& p, const path& base);
+```
+
+
+  
+
+[:
+  
+
+['Overview:] Returns `p` made relative to `
+  base`. Treats empty or identical paths as corner cases, not errors. Does
+  not resolve symlinks. Does not first normalize `p` or `base`.
+
+
+  
+
+['Remarks:] Uses `std::mismatch(p.begin(), p.end(),
+  base.begin(), base.end())`, to determine the first mismatched element of
+  `p` and `base`. Uses `operator==` to
+  determine if elements match. 
+
+
+  
+
+['Returns:] 
+
+
+  
+    * 
+    
+
+`path()` if the first mismatched element of `p`
+    is equal to `p.begin()` or the first mismatched element of `
+    base` is equal to `base.begin()`, or
+
+     
+
+
+    * 
+    
+
+`path(".")` if the first mismatched element of `
+    p` is equal to `p.end()` and the first mismatched element
+    of `base` is equal to `base.end()`, or
+
+     
+
+
+    * 
+    
+
+An object of class `path` composed via application
+    of `operator/= path("..")` for each element in the half-open
+    range \[first mismatched element of `base`, `base.end()`),
+    and then application of `operator/=` for each element in the
+    half-open range \[first mismatched element of `p`, `p.end()`).
+
+
+    
+  
+  
+
+\[['Example:]
+
+
+  
+
+`assert(lexically_relative("/a/d", "/a/b/c") == "../../d");
+
+  assert(lexically_relative("/a/b/c", "/a/d") == "../b/c");
+
+  assert(lexically_relative("a/b/c", "a") == "b/c");
+
+  assert(lexically_relative("a/b/c", "a/b/c/x/y") == "../..");
+
+  assert(lexically_relative("a/b/c", "a/b/c") == ".");
+
+  assert(lexically_relative("a/b", "c/d") == "");`
+
+
+  
+
+All of the above assertions will succeed.[' ]On Windows, the
+  returned path's ['directory-separator]s will be backslashes rather than
+  forward slashes, but that does not affect `path` equality.[' —end
+  example]\]
+
+
+  
+
+\[['Note:] If symlink following semantics are desired, use the
+  operational function `
+  [@#relative 
+  relative]`  ['—end note]\]
+
+
+  
+
+\[['Note:] If [@#normal-form normalization] is needed to ensure consistent matching of elements, wrap
+  `p`, `base`, or both in calls `
+  [@#lex-normal lexically_normal]()`. ['—end note]\]
+
+
+]
+
+
+
+```
+void swap(path& lhs, path& rhs) noexcept;
+```
+
+[:
+  
+
+['Effects: ]`lhs.swap(rhs)`.
+
+
+]
+
+
+
+```
+std::size_t [#hash_value]hash_value(const path& p);
+```
+
+[:
+  
+
+['Returns:] A hash value for the path `p`. If
+  for two paths, `p1 == p2` then `hash_value(p1) == hash_value(p2)`.
+
+
+  
+
+This allows paths to be used with [@../../functional/hash/index.html Boost.Hash].
+
+
+]
+
+
+
+```
+bool operator< (const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `return lhs.compare(rhs.begin) < 0`.
+
+
+]
+
+
+
+```
+bool operator<=(const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `!(rhs < lhs)`.
+
+
+]
+
+
+
+```
+bool operator> (const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `rhs < lhs`.
+
+
+]
+
+
+
+```
+bool operator>=(const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `!(lhs < rhs)`.
+
+
+]
+
+
+
+```
+bool operator==(const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `!(lhs < rhs) && !(rhs < lhs)`.
+
+
+  
+
+\[['Note:] [#Path-equality]Path equality and path
+  equivalence have different semantics.
+
+
+  
+
+Equality is determined by the `path` non-member `operator==`, which considers the two path's lexical
+  representations only. Thus `path("foo") == "bar"` is never `true`.
+
+
+  
+
+Equivalence is determined by the `[@#equivalent equivalent]()` non-member function, which determines if two paths [@#path resolve] to the same file system entity.
+  Thus `equivalent("foo", "bar")` will be `true` when both paths resolve to the same file.
+
+
+  
+
+Programmers wishing to determine if two paths are "the same" must decide if
+  "the same" means "the same representation" or "resolve to the same actual
+  file", and choose the appropriate function accordingly. ['—end note]\]
+
+
+]
+
+
+
+```
+bool operator!=(const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `!(lhs == rhs)`.
+
+
+]
+
+
+
+```
+path operator/ (const path& lhs, const path& rhs);
+```
+
+[:
+  
+
+['Returns:] `path(lhs) /= rhs`.
+
+
+]
+
+
+
+[h3  [#path-non-member-operators]`path`[#path-inserter-extractor] inserter
+  and extractor \[path.io\]]
+
+
+
+ The inserter and extractor delimit the string with double-quotes (`"`)
+so that paths with embedded spaces will round trip correctly. Ampersand (`&`)
+is as an escape character, so the path can itself contain double quotes.
+
+
+
+```
+template <class Char, class Traits>
+std::basic_ostream<Char, Traits>& operator<<(std::basic_ostream<Char, Traits>& os,
+                                             const path& p);
+
+```
+
+[:
+  
+
+['Effects: ]Insert characters into `os`:
+
+
+  
+    * 
+  
+
+A double-quote.
+
+
+    
+    * 
+  
+
+Each character in `p.string<std::basic_string<Char>>()`.
+  If the character to be inserted is equal to the escape character or a
+  double-quote, as determined by `operator==`, first insert the
+  escape character.
+
+
+    
+    * 
+  
+
+A double-quote.
+
+
+    
+  
+  
+
+\[['Note:] Effects are similar to:
+
+
+
+```
+std::basic_string<Char> str(p.string<std::basic_string<Char>>());
+os << [@../../io/doc/quoted_manip.html boost::io::quoted](str, static_cast<Char>('&'));
+```
+
+['—end note]\]
+  
+
+['Returns:] `os`
+
+
+]
+
+
+
+```
+template <class Char, class Traits>
+std::basic_istream<Char, Traits>& operator>>(std::basic_istream<Char, Traits>& is,
+                                             path& p);
+
+```
+
+[:
+  
+
+['Effects:  ]Extract characters from `is`:
+
+
+  
+    * If the first character that would be extracted is equal to double-quote,
+    as determined by `operator==`, then:
+      * Discard the initial double-quote.
+      * Save the value and then turn off the `skipws` flag.
+      * `p.clear()`
+      * Until an unescaped double-quote character is reached or `
+      is.not_good()`, extract characters from `is` and append
+      them to `p`, except that if an escape character is reached,
+      ignore it and append the next character to `p`.
+      * Discard the final double-quote character.
+      * Restore the `skipws` flag to its original value.
+    
+    
+    * Otherwise, `is >> p`.
+  
+  
+
+\[['Note:] Effects are similar to:
+
+
+
+```
+std::basic_string<Char> str;
+is >> [@../../io/doc/quoted_manip.html boost::io::quoted](str, static_cast<Char>('&'));
+p = str;
+```
+['—end note]\]
+  
+
+['Returns:] `is`
+
+
+  ]
+
+
+
+[h2 [#Class-filesystem_error]Class `filesystem_error`
+\[class.filesystem_error\]]
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+      class filesystem_error : public system_error
+      {
+      public:
+        filesystem_error();
+        filesystem_error(const filesystem_error&);
+        [@#filesystem_error-2-arg filesystem_error](const std::string& what_arg,
+          system::error_code ec);
+        [@#filesystem_error-3-arg filesystem_error](const std::string& what_arg,
+          const path& p1, system::error_code ec);
+        [@#filesystem_error-4-arg filesystem_error](const std::string& what_arg,
+          const path& p1, const path& p2, system::error_code ec);
+
+        filesystem_error& filesystem_error(const filesystem_error&);
+       ~filesystem_error();
+
+        filesystem_error& operator=(const filesystem_error&);
+
+        const path& [@#filesystem_error-path1 path1]() const;
+        const path& [@#filesystem_error-path2 path2]() const;
+
+        const char * [@#filesystem_error-what what]() const;
+      };
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+The class template `filesystem_error` defines the type of
+objects thrown as exceptions to report file system errors from functions described in this
+reference documentation.
+
+
+
+[h3  [#filesystem_error-members] `filesystem_error` members
+\[filesystem_error.members\]]
+
+
+```
+[#filesystem_error-2-arg]filesystem_error(const std::string& what_arg, error_code ec);
+```
+
+[:
+  
+
+['Postcondition:]
+
+
+  
+[table
+    
+[
+      [[*Expression]]
+      [[*Value]]
+    ]
+
+    
+[
+      [`
+      runtime_error::what()`]
+      [
+      `['what_arg].c_str()`]
+    ]
+
+    
+[
+      [`code()`]
+      [`ec`]
+    ]
+
+    
+[
+      [`path1().empty()`]
+      [`true`]
+    ]
+
+    
+[
+      [`path2().empty()`]
+      [`true`]
+    ]
+
+  ]
+
+]
+
+
+
+```
+[#filesystem_error-3-arg]filesystem_error(const std::string& what_arg, const path& p1, error_code ec);
+```
+
+[:
+  
+
+['Postcondition:]
+
+
+  
+[table
+    
+[
+      [[*Expression]]
+      [[*Value]]
+    ]
+
+    
+[
+      [`
+      runtime_error::what()`]
+      [
+      `['what_arg].c_str()`]
+    ]
+
+    
+[
+      [`code()`]
+      [`ec`]
+    ]
+
+    
+[
+      [`path1()`]
+      [Reference to stored copy of `p1`]
+    ]
+
+    
+[
+      [`path2().empty()`]
+      [`true`]
+    ]
+
+  ]
+
+]
+
+
+
+```
+[#filesystem_error-4-arg]filesystem_error(const std::string& what_arg, const path& p1, const path& p2, error_code ec);
+```
+
+[:
+  
+
+['Postcondition:]
+
+
+  
+[table
+    
+[
+      [[*Expression]]
+      [[*Value]]
+    ]
+
+    
+[
+      [`
+      runtime_error::what()`]
+      [
+      [_
+      `['w]`]`['hat_arg].c_str()`]
+    ]
+
+    
+[
+      [`code()`]
+      [`ec`]
+    ]
+
+    
+[
+      [`path1()`]
+      [Reference to stored copy of `p1`]
+    ]
+
+    
+[
+      [`path2()`]
+      [Reference to stored copy of `p2`]
+    ]
+
+  ]
+
+]
+
+
+
+```
+const path& [#filesystem_error-path1]path1() const;
+```
+
+[:
+  
+
+['Returns:] Reference to copy of `p1` stored by the
+  constructor, or, if none, an empty path.
+
+
+]
+
+
+
+```
+const path& [#filesystem_error-path2]path2() const;
+```
+
+[:
+  
+
+['Returns:] Reference to copy of `p2` stored by the
+  constructor, or, if none, an empty path.
+
+
+]
+
+
+
+```
+const char* [#filesystem_error-what]what() const;
+```
+
+[:
+  
+
+['Returns: ]A string containing `runtime_error::what()`. The exact format is unspecified.
+  Implementations are encouraged but not required to include `path1.native_string()`if not empty, `path2.native_string()`if
+  not empty, and `system_error::what()` strings in the returned
+  string.
+
+
+]
+
+
+
+[h2 [#Enum-file_type]Enum file_type \[enum.file_type\]]
+
+
+
+This enum specifies constants uses to identify file types.
+
+
+
+[table
+  
+[
+    [[*Constant Name]]
+    [[*Meaning]]
+  ]
+
+  
+[
+    [`status_error`]
+    [An error occurred while trying to obtain the status of the file. The
+    file simply not being found is [*[_not]] considered a status error. ]
+  ]
+
+  
+[
+    [`file_not_found`]
+    [The file could not be found]
+  ]
+
+  
+[
+    [`regular_file`]
+    [Regular file]
+  ]
+
+  
+[
+    [`directory_file`]
+    [Directory file]
+  ]
+
+  
+[
+    [`symlink_file`]
+    [Symbolic link file]
+  ]
+
+  
+[
+    [`block_file`]
+    [Block special file]
+  ]
+
+  
+[
+    [`character_file`]
+    [Character special file]
+  ]
+
+  
+[
+    [`fifo_file`]
+    [FIFO or pipe file]
+  ]
+
+  
+[
+    [`socket_file`]
+    [Socket file]
+  ]
+
+  
+[
+    [`type_unknown`]
+    [The file exists, but it is of a system specific type not covered by any
+    of the above cases.]
+  ]
+
+]
+
+
+[h2 [#Enum-perms]Enum perms \[enum.perms\]]
+
+
+
+This `enum` specifies bitmask constants uses to identify file
+permissions. ['ISO/IEC 9945
+(POSIX) specifies actual values, and those values have been adopted here because
+they are very familiar and ingrained for many POSIX
+users.]
+
+
+[:
+
+
+Windows: All permissions except write are currently ignored. There is only a
+single write permission; setting write permission for owner, group, or others
+sets write permission for all, and removing write permission for owner, group,
+or others removes write permission for all.  
+
+
+]
+
+
+
+[table
+  
+[
+    [[*Name]]
+    [[*Value
+
+    (octal)]]
+    [[*ISO/IEC 9945
+
+    macro]]
+    [[*Definition or notes]]
+  ]
+
+
+
+[[
+  
+
+`no_perms`
+
+][`0`][]
+  [There are no permissions set for the file. Note: `file_not_found` is `no_perms` rather than `perms_not_known`]
+]
+
+
+[[`owner_read`][`0400`][ `S_IRUSR`]
+  [ Read permission, owner]
+]
+
+
+[[`owner_write`][`0200`][ `S_IWUSR`]
+  [ Write permission, owner]
+]
+
+
+[[`owner_exe`][`0100`][  `S_IXUSR`]
+  [ Execute/search permission, owner]
+]
+
+
+[[`owner_all`][`0700`][  `S_IRWXU`]
+  [ Read, write, execute/search by owner; `owner_read | owner_write | owner_exe`]
+]
+
+
+[[`group_read`][`040`][  `S_IRGRP`]
+  [ Read permission, group]
+]
+
+
+[[`group_write`][`020`][ `S_IWGRP`]
+  [ Write permission, group]
+]
+
+
+[[`group_exe`][`010`][   `S_IXGRP`]
+  [ Execute/search permission, group]
+]
+
+
+[[`group_all`][`070`][   `S_IRWXG`]
+  [ Read, write, execute/search by group; `group_read | group_write | group_exe`]
+]
+
+
+[[`others_read`][`04`][  `S_IROTH`]
+  [ Read permission, others]
+]
+
+
+[[`others_write`][`02`][ `S_IWOTH`]
+  [ Write permission, others]
+]
+
+
+[[`others_exe`][`01`][   `S_IXOTH`]
+  [ Execute/search permission, others]
+]
+
+
+[[`others_all`][`07`][   `S_IRWXO`]
+  [Read, write, execute/search by others; `others_read | others_write | others_exe`]
+]
+
+
+[[`all_all`][`0777`][ ][`owner_all | group_all | others_all`]
+]
+
+
+[[`set_uid_on_exe`][`04000`][ `S_ISUID`]
+  [ Set-user-ID on execution]
+]
+
+
+[[`set_gid_on_exe`][`02000`][ `S_ISGID`]
+  [ Set-group-ID on execution]
+]
+
+
+[[`[#sticky_bit]sticky_bit `][`01000`][ `S_ISVTX`]
+  [ Operating system dependent. Inherently non-portable, even between ISO/IEC 9945
+  operating systems.]
+]
+
+
+[[`[#perms_mask]perms_mask`][`07777`][  ]
+  [`all_all | set_uid_on_exe | set_gid_on_exe | sticky_bit`]
+]
+
+
+[[`perms_not_known`][`0xFFFF`][][
+  The permissions are not known, such as when a `file_status` object
+  is created without specifying the permissions]
+]
+
+
+[[
+  
+
+`add_perms`
+
+][`0x1000`][][
+  
+
+`permissions()` adds the argument permission bits to the
+  file's current bits
+
+]
+]
+
+
+[[`remove_perms`][`0x2000`][][
+  `permissions()` removes the argument permission bits from the
+  file's current bits]
+]
+
+
+[[`[#symlink_perms]symlink_perms`][`0x4000`][][
+  On ISO/IEC 9945
+   `permissions()` resolves symlinks unless
+   `symlink_perms` is specified.
+  Meaningless on Windows as  `
+  permissions()` never resolves symlinks.
+  Meaningless on Mac OS X and some other BSD systems as  `
+  permissions()` always resolves symlinks. Get over it.]
+]
+
+
+]
+
+
+[h2 [#file_status]Class file_status \[class.file_status\]]
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+      class file_status
+      {
+      public:
+
+        // [@#file_status-constructors constructors]
+        file_status() noexcept;
+        explicit file_status([@#file_type file_type] ft, [@#Enum-perms perms] prms = perms_not_known) noexcept;
+
+        // compiler generated
+        file_status(const file_status&) noexcept;
+        file_status& operator=(const file_status&) noexcept;
+       ~file_status() noexcept;
+
+        // [@#file_status-observers observers]
+        [@#file_type file_type]  type() const noexcept;
+        [@#Enum-perms perms]      permissions() const noexcept;
+
+        // [@#file_status-modifiers modifiers]
+        void       type([@#file_type file_type] ft) noexcept;
+        void       permissions([@#Enum-perms perms] prms) noexcept;
+      };
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+An object of type `file_status` stores information about the type
+and permissions of a file.
+
+
+
+[h3 [#file_status-constructors]`file_status` constructors
+\[file_status.cons\]]
+
+
+```
+explicit file_status() noexcept;
+```
+
+[:
+  
+
+['Postconditions:] `type() == status_error`, `permissions() == perms_not_known`.
+
+
+]
+
+
+
+```
+explicit file_status([@#file_type file_type] ft, [@#Enum-perms perms] prms = perms_not_known) noexcept;
+```
+
+[:
+  
+
+['Postconditions:] `type() == ft`, `permissions() == prms`.
+
+
+]
+
+
+  
+[h3 [#file_status-observers]`file_status` observers \[file_status.obs\]]
+
+
+```
+[@#file_type file_type] type() const noexcept;
+```
+
+[:
+  
+
+['Returns: ]The value of `type()` specified by the ['postconditions] of the most recent call to a constructor, operator=, or `type(file_type)` function.
+
+
+]
+
+
+
+```
+[@#Enum-perms perms] permissions() const noexcept;
+```
+
+[:
+  
+
+['Returns: ]The value of `permissions()` specified by the ['postconditions] of the most recent call to a constructor, operator=, or `permissions(perms)` function.
+
+
+]
+
+
+
+[h3 [#file_status-modifiers]`file_status` modifiers \[file_status.mods\]]
+
+
+```
+void type([@#file_type file_type] ft) noexcept;
+```
+
+[:
+  
+
+['Postconditions:] `type() == ft`.
+
+
+]
+
+
+
+```
+void permissions([@#Enum-perms perms] prms) noexcept;
+```
+
+[:
+  
+
+['Postconditions:] `permissions() == prms`.
+
+
+]
+
+
+
+[h2 [#Class-directory_entry]Class `directory_entry` \[class.directory_entry\]]
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+      class directory_entry
+      {
+      public:
+
+        // [@#directory_entry-constructors constructors] and destructor
+        directory_entry();
+        directory_entry(const directory_entry&);
+        explicit directory_entry(const path& p);
+        directory_entry(const path& p, system::error_code& ec);       // v4-only
+        directory_entry(const path& p, file_status st,                // v3-only
+          file_status symlink_st=file_status());
+       ~directory_entry();
+
+        // [@#directory_entry-modifiers modifiers]
+        directory_entry& operator=(const directory_entry&);
+        void assign(const path& p);
+        void assign(const path& p, system::error_code& ec);           // v4-only
+        void assign(const path& p, file_status st,                    // v3-only
+          file_status symlink_st=file_status());
+        void replace_filename(const path& p);
+        void replace_filename(const path& p, system::error_code& ec); // v4-only
+        void replace_filename(const path& p, file_status st,          // v3-only
+          file_status symlink_st=file_status());
+
+        void refresh();
+        void refresh(system::error_code& ec);
+
+        // [@#directory_entry-observers observers]
+        const path&  path() const;
+
+        file_status  status() const;
+        file_status  status(system::error_code& ec) const;
+        file_status  symlink_status() const;
+        file_status  symlink_status(system::error_code& ec) const;
+        file_type file_type() const;
+        file_type file_type(system::error_code& ec) const;
+        file_type symlink_file_type() const;
+        file_type symlink_file_type(system::error_code& ec) const;
+
+        bool exists() const;
+        bool exists(system::error_code& ec) const;
+        bool is_regular_file() const;
+        bool is_regular_file(system::error_code& ec) const;
+        bool is_directory() const;
+        bool is_directory(system::error_code& ec) const;
+        bool is_symlink() const;
+        bool is_symlink(system::error_code& ec) const;
+        bool is_block_file() const;
+        bool is_block_file(system::error_code& ec) const;
+        bool is_character_file() const;
+        bool is_character_file(system::error_code& ec) const;
+        bool is_fifo() const;
+        bool is_fifo(system::error_code& ec) const;
+        bool is_socket() const;
+        bool is_socket(system::error_code& ec) const;
+        bool is_reparse_file() const;
+        bool is_reparse_file(system::error_code& ec) const;
+        bool is_other() const;
+        bool is_other(system::error_code& ec) const;
+
+        bool operator< (const directory_entry& rhs);
+        bool operator==(const directory_entry& rhs);
+        bool operator!=(const directory_entry& rhs);
+        bool operator< (const directory_entry& rhs);
+        bool operator<=(const directory_entry& rhs);
+        bool operator> (const directory_entry& rhs);
+        bool operator>=(const directory_entry& rhs);
+      private:
+        path                 m_path;           // for exposition only
+        mutable file_status  m_status;         // for exposition only; stat()-like
+        mutable file_status  m_symlink_status; // for exposition only; lstat()-like
+      };
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+
+A `directory_entry` object stores a `path` object,
+as well as some amount of cached information about the file identified by the path.
+Currently, the cached information includes a `file_status` object for non-symbolic
+link status and a `file_status` object for symbolic link status.
+
+
+[:
+
+
+\[['Note:] Because `status()` on a pathname may be a relatively expensive operation,
+some operating systems provide status information as a byproduct of directory
+iteration. Caching such status information can result is significant time savings. Cached and
+non-cached results may differ in the presence of file system races. ['—end note]\]
+
+
+
+
+['Actual cold-boot timing of iteration over
+a directory with 15,047 entries was six seconds for non-cached status queries
+versus one second for cached status queries. Windows XP, 3.0 GHz processor, with
+a moderately fast hard-drive. Similar speedups are expected on Linux and BSD-derived
+systems that provide status as a by-product of directory iteration.]
+
+
+
+
+\[['Note:] The exact set of cached information may vary from one Boost.Filesystem version
+to another, and also between different operating systems and underlying file systems. Users' code
+must not rely on whether a certain piece of information is cached or not. This means that calling
+most observers and modifiers of `directory_entry` may or may not result in a filesystem
+query that may potentially fail. Information caching is exclusively a performance feature aimed
+at reducing the amount of such queries. ['—end note]\]
+
+
+]
+
+
+
+[h3  [#directory_entry-constructors] `directory_entry` constructors
+\[directory_entry.cons\]]
+
+
+```
+directory_entry();
+```
+
+[:
+  
+
+['Postcondition:]
+
+
+  
+[table
+    
+[
+      [[*Expression]]
+      [[*Value]]
+    ]
+
+    
+[
+      [`path().empty()`]
+      [`true`]
+    ]
+
+    
+[
+      [`status()`]
+      [`file_status()`]
+    ]
+
+    
+[
+      [`symlink_status()`]
+      [`file_status()`]
+    ]
+
+  ]
+
+]
+
+
+
+```
+explicit directory_entry(const path& p);
+directory_entry(const path& p, system::error_code& ec); // v4-only
+```
+
+[:
+  
+
+['Effects:]
+
+
+  
+
+[*v3:] Initializes `m_path` from `p` and default-constructs `m_status` and `m_symlink_status`.
+
+
+  
+
+\[['Note:] The cached file statuses will be updated when queried by the caller or by an explicit call to `refresh`. ['—end note]\]
+
+
+  
+
+[*v4:] Initializes `m_path` from `p` and calls `refresh()` or `refresh(ec)`, respectively.
+
+
+  
+
+['Postcondition:] `path() == p` if no error occurs, otherwise `path().empty() == true`.
+
+
+]
+
+
+
+```
+directory_entry(const path& p, file_status st, file_status symlink_st=file_status()); // v3-only
+```
+
+[:
+  
+
+[*v3:] ['Postcondition:]
+
+
+  
+[table
+    
+[
+      [[*Expression]]
+      [[*Value]]
+    ]
+
+    
+[
+      [`path()`]
+      [`p`]
+    ]
+
+    
+[
+      [`status()`]
+      [`st`]
+    ]
+
+    
+[
+      [`symlink_status()`]
+      [`symlink_st`]
+    ]
+
+  ]
+
+]
+
+
+
+[h3  [#directory_entry-modifiers] `directory_entry` modifiers
+\[directory_entry.mods\]]
+
+
+```
+void assign(const path& p);
+void assign(const path& p, system::error_code& ec); // v4-only
+```
+
+[:
+  
+
+['Effects:]
+
+
+  
+
+[*v3:] Assigns `p` to `m_path` and `file_status()` to `m_status` and `m_symlink_status`.
+
+
+  
+
+\[['Note:] The cached file statuses will be updated when queried by the caller or by an explicit call to `refresh`. ['—end note]\]
+
+
+  
+
+[*v4:] Assigns `p` to `m_path` and calls `refresh()` or `refresh(ec)`, respectively. If an error
+  occurs, the value of the cached data is unspecified.
+
+
+]
+
+
+
+```
+void assign(const path& p, file_status st, file_status symlink_st=file_status()); // v3-only
+```
+
+[:
+  
+
+[*v3:] ['Postcondition:]
+
+
+  
+[table
+    
+[
+      [[*Expression]]
+      [[*Value]]
+    ]
+
+    
+[
+      [`path()`]
+      [`p`]
+    ]
+
+    
+[
+      [`status()`]
+      [`st`]
+    ]
+
+    
+[
+      [`symlink_status()`]
+      [`symlink_st`]
+    ]
+
+  ]
+
+]
+
+
+
+```
+void replace_filename(const path& p);
+void replace_filename(const path& p, system::error_code& ec); // v4-only
+```
+
+[:
+  
+
+['Effects:]
+
+
+  
+
+[*v3:] Calls `m_path.replace_filename(p)` and assigns `file_status()` to `m_status` and `m_symlink_status`.
+
+
+  
+
+\[['Note:] The cached file statuses will be updated when queried by the caller or by an explicit call to `refresh`. ['—end note]\]
+
+
+  
+
+[*v4:] Calls `m_path.replace_filename(p)` and then `refresh()` or `refresh(ec)`, respectively. If an error
+  occurs, the value of the cached data is unspecified.
+
+
+]
+
+
+
+```
+void replace_filename(const path& p, file_status st, file_status symlink_st=file_status()); // v3-only
+```
+
+[:
+  
+
+['Effects:] [*v3:] Calls `m_path.replace_filename(p)` and assigns `st` to `m_status` and `symlink_st`
+  to `m_symlink_status`.
+
+
+]
+
+
+
+```
+void refresh();
+void refresh(system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Updates any cached data by querying the filesystem about the file identified by `m_path`. If an error occurs,
+  the value of the cached data is unspecified.
+
+
+]
+
+
+
+[h3  [#directory_entry-observers] `directory_entry` observers
+\[directory_entry.obs\]]
+
+
+```
+const path& path() const;
+```
+
+[:
+  
+
+['Returns:] `m_path`
+
+
+]
+
+
+
+```
+file_status status() const;
+file_status status(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] If `!status_known(m_status)`, calls `refresh()` or `refresh(ec)`, respectively.
+
+
+  
+
+['Returns:] `m_status`
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+file_status  symlink_status() const;
+file_status  symlink_status(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] If `!status_known(m_symlink_status)`, calls `refresh()` or `refresh(ec)`, respectively.
+
+
+  
+
+['Returns:] `m_symlink_status`
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+file_type file_type() const;
+file_type file_type(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `status().type()` or `status(ec).type()`, respectively.
+
+
+  
+
+\[['Note:] The implementation may be more efficient than calling `status`, if the information
+  about the file type is cached, but permissions are not. ['—end note]\]
+
+
+]
+
+
+
+```
+file_type symlink_file_type() const;
+file_type symlink_file_type(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `symlink_status().type()` or `symlink_status(ec).type()`, respectively.
+
+
+  
+
+\[['Note:] The implementation may be more efficient than calling `symlink_status`, if the information
+  about the file type is cached, but permissions are not. ['—end note]\]
+
+
+]
+
+
+
+```
+bool exists() const;
+bool exists(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `exists(status())` or `exists(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_regular_file() const;
+bool is_regular_file(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_regular_file(status())` or `is_regular_file(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_directory() const;
+bool is_directory(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_directory(status())` or `is_directory(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_symlink() const;
+bool is_symlink(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_symlink(symlink_status())` or `is_symlink(symlink_status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_block_file() const;
+bool is_block_file(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_block_file(status())` or `is_block_file(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_character_file() const;
+bool is_character_file(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_character_file(status())` or `is_character_file(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_fifo() const;
+bool is_fifo(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_fifo(status())` or `is_fifo(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_socket() const;
+bool is_socket(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_socket(status())` or `is_socket(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_reparse_file() const;
+bool is_reparse_file(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_reparse_file(symlink_status())` or `is_reparse_file(symlink_status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool is_other() const;
+bool is_other(system::error_code& ec) const;
+```
+
+[:
+  
+
+['Effects:] Equivalent to `is_other(status())` or `is_other(status(ec))`, respectively.
+
+
+]
+
+
+
+```
+bool operator==(const directory_entry& rhs);
+```
+
+[:
+  
+
+['Returns:] `m_path == rhs.m_path`.
+
+
+]
+
+
+
+```
+bool operator!=(const directory_entry& rhs);
+```
+
+[:
+  
+
+['Returns:] `m_path != rhs.m_path`.
+
+
+]
+
+
+
+```
+bool operator< (const directory_entry& rhs);
+```
+
+[:
+  
+
+['Returns:] `m_path < rhs.m_path`.
+
+
+]
+
+
+
+```
+bool operator<=(const directory_entry& rhs);
+```
+
+[:
+  
+
+['Returns:] `m_path <= rhs.m_path`.
+
+
+]
+
+
+
+```
+bool operator> (const directory_entry& rhs);
+```
+
+[:
+  
+
+['Returns:] `m_path > rhs.m_path`.
+
+
+]
+
+
+
+```
+bool operator>=(const directory_entry& rhs);
+```
+
+[:
+  
+
+['Returns:] `m_path >= rhs.m_path`.
+
+
+]
+
+
+
+[h2 [#Class-directory_iterator]Class `directory_iterator`
+\[class.directory_iterator\]]
+
+
+
+Objects of type `directory_iterator` provide standard library
+compliant iteration over the contents of a directory. Also see class `[@#Class-recursive_directory_iterator recursive_directory_iterator]`.
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+      class directory_iterator
+      {
+      public:
+        // [@#directory_iterator-members member functions]
+
+        directory_iterator() noexcept;  // creates the "end" iterator
+        directory_iterator(const directory_iterator&);
+        explicit directory_iterator(const path& p, [@#directory_options directory_options] opts = directory_options::none);
+        directory_iterator(const path& p, system::error_code& ec);
+        directory_iterator(const path& p, [@#directory_options directory_options] opts, system::error_code& ec);
+       ~directory_iterator();
+
+        directory_iterator& operator=(const directory_iterator&);
+
+        directory_iterator& operator++();
+        directory_iterator& increment(system::error_code& ec);
+
+        // other members as required by
+        //  C++ Std, 24.1.1 Input iterators \[input.iterators\]
+      };
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+ `directory_iterator` satisfies the requirements of an
+input iterator (C++ Std, 24.2.1, Input iterators \[input.iterators\]).
+
+
+
+
+A `directory_iterator` reads successive elements from the directory for
+which it was constructed, as if by calling ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/readdir_r.html readdir() or readdir_r()]`. After a `directory_iterator` is constructed, and every time `operator++` is called,
+it reads a directory element and stores information about it in an object of type `[@#Class-directory_entry directory_entry]`. `operator++` is not equality preserving; that is, `i == j` does not imply that `++i == ++j`. 
+
+
+[:
+
+
+\[['Note:] The practical consequence of not preserving equality is that directory iterators
+can only be used for single-pass algorithms. ['—end note]\]
+
+
+]
+
+
+
+
+If the end of the directory elements is reached, the iterator shall become equal to
+the end iterator value. The constructor `directory_iterator()` with no arguments always constructs an end iterator object, which
+shall be the only valid iterator for the end condition. The result of `operator*` on an end iterator is not defined. For any other iterator value
+a `const directory_entry&` is returned. The result of `operator->` on an end iterator is
+undefined behavior. For any other iterator value a `const directory_entry*` is
+returned. 
+
+
+
+
+Two end iterators are always equal. An end iterator shall not be equal to a non-end
+iterator.
+
+
+[:
+
+
+['The above wording is based on the
+Standard Library's istream_iterator wording.]
+
+
+]
+
+
+
+
+The result of calling the `path()` member of the `directory_entry` object obtained by dereferencing a `directory_iterator` is a reference to a `path` object composed of the directory argument from which the iterator was
+constructed with filename of the directory entry appended as if by `operator/=`. 
+
+
+
+
+Directory iteration shall not yield directory entries for the current (['dot])
+and parent (['dot dot]) directories.
+
+
+
+
+The order of directory entries obtained by dereferencing successive
+increments of a `directory_iterator` is unspecified.
+
+
+[:
+
+
+\[['Note:] Programs performing directory iteration may wish to test if the
+path obtained by dereferencing a directory iterator actually exists. It could be
+a
+symbolic link to a non-existent file. Programs recursively
+walking directory trees for purposes of removing and renaming entries may wish
+to avoid following symbolic links.
+
+
+
+
+If a file is removed from or added to a directory after the
+construction of a `directory_iterator` for the directory, it is
+unspecified whether or not subsequent incrementing of the iterator will ever
+result in an iterator whose value is the removed or added directory entry. See
+ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/readdir_r.html readdir_r()]`. ['—end note]\]
+
+
+]
+
+
+
+[h3 [#directory_iterator-members]`directory_iterator` members
+\[directory_iterator.members\]]
+
+
+
+
+`[#directory_iterator-default-ctor]directory_iterator()
+noexcept;`
+
+
+
+[:
+
+
+
+['Effects:] Constructs the end iterator.
+
+
+
+]
+
+
+
+
+```
+explicit [#directory_iterator-ctor-path]directory_iterator(const path& p, [@#directory_options directory_options] opts = directory_options::none);
+directory_iterator(const path& p, system::error_code& ec);
+directory_iterator(const path& p, [@#directory_options directory_options] opts, system::error_code& ec);
+```
+
+[:
+
+
+
+['Effects:] Constructs an iterator representing the first
+entry in the directory `p` resolves to, if any; otherwise, the end iterator.
+If opening the directory fails with a `permission_denied` error and `(opts & directory_options::skip_permission_denied) != 0`,
+constructs the end iterator and ignores the error (the operation completes successfully). If `opts` is not specified, it is assumed to be `directory_options::none`.
+
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+
+
+\[['Note:] To iterate over the current directory, use `directory_iterator(".")` rather than `directory_iterator("")`. ['—end note]\]
+
+
+]
+
+
+
+```
+directory_iterator& [#directory_iterator-increment]operator++();
+directory_iterator& increment(system::error_code& ec);
+```
+
+[:
+
+
+
+['Effects:] As specified by the C++ Standard, 24.1.1 Input iterators \[input.iterators\]. In case of error the iterator is left in the end state.
+
+
+
+
+
+['Returns:] `*this`.
+
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+]
+
+
+
+[h3 [#directory_iterator-non-member-functions]`directory_iterator` non-member functions]
+
+
+```
+const directory_iterator& begin(const directory_iterator& iter);
+```
+
+[:
+  
+
+['Returns: ]`iter`.
+
+
+]
+
+
+
+```
+directory_iterator end(const directory_iterator&);
+```
+
+[:
+  
+
+['Returns: ]`directory_iterator()`.
+
+
+]
+
+
+
+[h2 [#Class-recursive_directory_iterator]Class `recursive_directory_iterator`
+\[class.rec.dir.itr\]]
+
+
+
+Objects of type `recursive_directory_iterator` provide standard library
+compliant iteration over the contents of a directory, including recursion into
+its sub-directories.
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+      class recursive_directory_iterator :
+        public iterator<input_iterator_tag, directory_entry>
+      {
+      public:
+
+        // constructors and destructor
+        recursive_directory_iterator() noexcept;
+        recursive_directory_iterator(const recursive_directory_iterator&);
+        explicit recursive_directory_iterator(const path& p,
+          [@#directory_options directory_options] opts = directory_options::none);
+        recursive_directory_iterator(const path& p,
+          [@#directory_options directory_options] opts, system::error_code& ec);
+        recursive_directory_iterator(const path& p, system::error_code& ec);
+       ~recursive_directory_iterator();
+
+        // observers
+        int depth() const noexcept;
+        bool recursion_pending() const noexcept;
+
+        // modifiers
+        recursive_directory_iterator& operator=(const recursive_directory_iterator&);
+
+        recursive_directory_iterator& operator++();
+        recursive_directory_iterator& increment(system::error_code& ec);
+
+        void pop();
+        void pop(system::error_code& ec);
+        void disable_recursion_pending(bool value = true) noexcept;
+
+        // other members as required by
+        //  C++ Std, Input iterators \[input.iterators\]
+
+      private:
+['[*        // actual data members will probably be stored in a shared object,
+        // or some similar mechanism, to achieve the required input iterator
+        // copy semantics]]
+        int            m_depth;              [*['// for exposition only]]
+        bool           m_recursion_pending;  ['[*// for exposition only]]
+        [@#directory_options directory_options] m_options;         ['[*// for exposition only]]
+      };
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+
+The behavior of a `recursive_directory_iterator` is the same
+as a `directory_iterator` unless otherwise specified.
+
+
+
+  * Incrementing a `recursive_directory_iterator` pointing to a
+  directory causes that directory itself to be iterated over, as specified by
+  the `operator++` and `increment` functions.
+
+ 
+  * When a `recursive_directory_iterator` reaches the end of the directory currently being iterated
+  over, or when `pop()` is called, `m_depth` is
+  decremented, and iteration of the parent directory continues.
+
+
+```
+recursive_directory_iterator() noexcept;
+```
+
+[:
+
+
+
+['Effects:] Constructs the end iterator.
+
+
+
+]
+
+
+
+
+```
+explicit recursive_directory_iterator(const path& p, [@#directory_options directory_options] opts = directory_options::none);
+recursive_directory_iterator(const path& p, [@#directory_options directory_options] opts, system::error_code& ec);
+recursive_directory_iterator(const path& p, system::error_code& ec);
+```
+
+[:
+
+
+
+['Effects:]  Constructs an iterator representing the first
+entry in the directory `p` resolves to, if any; otherwise, the end iterator.
+
+
+
+
+
+['Postcondition: ]Unless the end iterator was constructed,[' ]`depth() == 0 && recursion_pending() == true && m_options == opts`.
+For the signature without the `opts` argument, `opts` is assumed to be `directory_options::none`.
+
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+
+
+\[['Note:] To iterate over the current directory, use `recursive_directory_iterator(".")` rather than `recursive_directory_iterator("")`. ['—end note]\]
+
+
+
+
+
+\[['Note:] By default, `recursive_directory_iterator` does not
+follow directory symlinks. To follow directory symlinks, specify `directory_options::follow_directory_symlink` in `opts`. ['—end note]\]
+
+
+]
+
+
+
+```
+int depth() const noexcept;
+```
+
+[:
+  
+
+['Requires:] `*this != recursive_directory_iterator()`.
+
+
+  
+
+['Returns:] `m_depth`.
+
+
+]
+
+
+
+```
+bool recursion_pending() const noexcept;
+```
+
+[:
+  
+
+['Requires:] `*this != recursive_directory_iterator()`.
+
+
+  
+
+['Returns:] `m_recursion_pending`.
+
+
+]
+
+
+
+```
+recursive_directory_iterator& [#recursive_directory_iterator-increment]operator++();
+recursive_directory_iterator& increment(system::error_code& ec);
+```
+
+[:
+
+
+
+['Effects:] As specified by the C++ Standard, 24.1.1 Input iterators \[input.iterators\],
+except:
+
+
+
+
+  * 
+
+
+
+if `recursion_pending() && is_directory(this->status())
+&& (!is_symlink(this->symlink_status()) || (m_options & directory_options::follow_directory_symlink) != 0)` then:
+  
+
+
+    * 
+      
+
+directory `(*this)->path()` is opened and recursively iterated into and `m_depth` is incremented;
+
+
+    
+    * 
+      
+
+if opening the directory fails with a `permission_denied` error and `(m_options & directory_options::skip_permission_denied) != 0`,
+      increment the iterator on the current level and ignore the error (the operation completes successfully).
+
+
+    
+  
+
+
+  
+  * if there are no more directory entries at this level then `m_depth`
+is decremented and iteration of the parent directory resumes.
+
+
+
+
+If the operation completes with an error, then
+  
+
+
+    * if `(m_options & directory_options::pop_on_error) != 0`, the iterator is left in a state as if after repeatedly calling `pop()` until it succeeds or the iterator becomes equal to an end iterator; any `pop()` failures are not reported to the caller;
+    * otherwise, the iterator is left equal to an end iterator.
+  
+
+
+
+
+['Postcondition:] `recursion_pending() == true`.
+
+
+
+
+
+['Returns:] `*this`.
+
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+]
+
+
+
+```
+void pop();
+void pop(system::error_code& ec);
+```
+
+[:
+  
+
+['Requires:] `*this != recursive_directory_iterator()`.
+
+
+  
+
+['Effects:] If `depth() == 0`, set `*this` to `recursive_directory_iterator()`.
+  Otherwise, `--m_depth`, cease iteration of the directory currently being
+  iterated over, and continue iteration over the parent directory.
+
+
+  
+
+If the operation completes with an error, then
+    
+
+
+      * if `(m_options & directory_options::pop_on_error) != 0`, the iterator is left in a state as if after repeatedly calling `pop()` until it succeeds or the iterator becomes equal to an end iterator; any `pop()` failures are not reported to the caller;
+      * otherwise, the iterator is left equal to an end iterator.
+    
+  
+]
+
+
+
+```
+void disable_recursion_pending(bool value = true) noexcept;
+```
+
+[:
+  
+
+['Requires:] `*this != recursive_directory_iterator()`.
+
+
+  
+
+['Postcondition:] `recursion_pending() == !value`.
+
+
+  
+
+\[['Note:] These functions are used to prevent
+  unwanted recursion into a directory. ['—end note]\]
+
+
+]
+
+
+
+[h3 [#recursive_directory_iterator-non-member-functions]`recursive_directory_iterator` non-member functions]
+
+
+```
+const recursive_directory_iterator& begin(const recursive_directory_iterator& iter);
+```
+
+[:
+  
+
+['Returns: ]`iter`.
+
+
+]
+
+
+
+```
+recursive_directory_iterator end(const recursive_directory_iterator&);
+```
+
+[:
+  
+
+['Returns: ]`recursive_directory_iterator()`.
+
+
+]
+
+
+
+[h2 [#Operational-functions]Operational functions \[fs.op.funcs\]]
+
+
+
+Operational functions query or modify files, including directories, in external
+storage.
+
+
+
+
+Operational functions access a file by resolving an
+object of class `path` to a particular file in a file hierarchy. The
+path is resolved as if by the ISO/IEC 9945 [@http://www.opengroup.org/onlinepubs/000095399/basedefs/xbd_chap04.html#tag_04_11 Pathname Resolution] mechanism.
+
+
+
+
+\[['Note: ]Because hardware failures, network failures, [@#file-system-race file system races], and many
+other kinds of errors occur frequently in file system operations, users should be aware
+that any filesystem operational function, no matter how apparently innocuous, may encounter
+an error. See [@#Error-reporting Error reporting]. ['—end note]\]
+
+
+
+```
+path [#absolute]absolute(const path& p, const path& base=current_path());
+path absolute(const path& p, system::error_code& ec);
+path absolute(const path& p, const path& base, system::error_code& ec);
+```
+
+  [:
+  
+
+['Returns:] If `p.is_absolute()` is `true` then `p`, otherwise an [@#Absolute-path absolute path] composed according to the
+  following table:
+
+
+  
+[table
+    
+[
+      [ ]
+      [[*`p.
+
+      has_root_directory()`]]
+      [[*`!p.has_root_directory()`]]
+    ]
+
+    
+[
+      [[*`p.has_root_name()`]]
+      [`return p`]
+      [`return
+
+ p.root_name()
+
+ / absolute(base)
+
+    .root_directory()
+
+       / absolute(base)
+
+    .relative_path()
+
+ / p.relative_path()`]
+    ]
+
+    
+[
+      [[*`!p.has_root_name()`]]
+      [`return
+
+ absolute(base)
+
+  .root_name()
+
+       / p`]
+      [`return absolute(base)
+
+ / p`]
+    ]
+
+  ]
+
+  
+
+For the overload without a `base` argument, `base` is `current_path()`.
+
+
+  
+
+\[['Note:] For the returned path, `rp`, `rp.is_absolute()` is `true`. ['—end note]\]
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+path [#canonical]canonical(const path& p, const path& base = current_path());
+path canonical(const path& p, system::error_code& ec);
+path canonical(const path& p, const path& base, system::error_code& ec);
+```
+
+[:
+
+
+['Overview:] Converts `p` to an absolute
+path that has no symbolic link, [@#Dot dot],
+or [@#Dot dot-dot] elements. Testing path elements for symbolic links
+is done as if by calling `[@#is_symlink2 is_symlink]` and requires
+`[@#absolute absolute](p, base)` to exist.
+
+
+
+
+['Returns:] A [@#canonical-path canonical path] that refers to
+the same file system object as `[@#absolute absolute](p, base)`. For the overload
+without a `base` argument, `base` is `[@#current_path current_path]()`.
+
+
+  
+
+['Throws:]  As specified in [@#Error-reporting Error reporting].
+
+
+
+  
+
+['Remarks:] `!exists(absolute(p, base))` is an error.
+
+
+
+  
+
+\[['Note:] Canonical pathnames allow security checking of a path (e.g.
+  does this path live in /home/goodguy or /home/badguy?) ['—end note]\]
+
+
+
+]
+
+
+
+```
+void copy(const path& from, const path& to);
+void copy(const path& from, const path& to, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects: ]`copy(from, to, copy_options::none`['\[]`, ec`['\]]`)`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+void [#copy]copy(const path& from, const path& to, [@#copy_options copy_options] options);
+void copy(const path& from, const path& to, [@#copy_options copy_options] options, system::error_code& ec);
+```
+
+[:
+  
+
+['Precondition:] `options` must contain at most one option from each of the following groups:
+    
+
+
+      * `copy_options::skip_existing`, `copy_options::overwrite_existing` or `copy_options::update_existing`;
+      * `copy_options::synchronize_data` or `copy_options::synchronize`;
+      * `copy_options::ignore_attribute_errors`;
+      * `copy_options::recursive`;
+      * `copy_options::copy_symlinks` or `copy_options::skip_symlinks`;
+      * `copy_options::directories_only`, `copy_options::create_symlinks` or `copy_options::create_hard_links`.
+    
+  
+
+['Effects:] Let `f` and `t` be `file_status` objects obtained the following way:
+    
+
+
+      * If `(options & (copy_options::create_symlinks | copy_options::skip_symlinks)) != copy_options::none` then `f = [@#symlink_status symlink_status](from)` and `t = [@#symlink_status symlink_status](to)`;
+      * Otherwise, if `(options & copy_options::copy_symlinks) != copy_options::none` then `f = [@#symlink_status symlink_status](from)` and `t = [@#status status](to)`;
+      * Otherwise, `f = [@#status status](from)` and `t = [@#status status](to)`.
+    
+    Then, report an error if:
+    
+      * `!exists(f)`, or
+      * `equivalent(from, to)`, or
+      * `is_other(f) || is_other(t)`, or
+      * `is_directory(f) && is_regular_file(t)`.
+    
+    Otherwise, if `is_symlink(f)`, then:
+    
+      * If `(options & copy_options::skip_symlinks) != copy_options::none` then return;
+      * Otherwise if `!exists(t) && (options & copy_options::copy_symlinks) != copy_options::none` then `[@#copy_symlink copy_symlink](from, to)`;
+      * Otherwise report error.
+    
+    Otherwise, if `is_regular_file(f)`, then:
+    
+      * If `(options & copy_options::directories_only) != copy_options::none` then return;
+      * Otherwise if `(options & copy_options::create_symlinks) != copy_options::none` then `[@#create_symlink create_symlink](link, to)`, where `link` is determined as follows:
+        
+          * If `from.is_absolute()` then `link` equals to `from`;
+          * Otherwise, `link` is equivalent to `[@#relative relative]([@#absolute absolute](to.parent_path()), [@#absolute absolute](from.parent_path())) / from.filename()`.
+        
+      
+      * Otherwise if `(options & copy_options::create_hard_links) != copy_options::none` then `[@#create_hard_link create_hard_link](from, to)`;
+      * Otherwise if `is_directory(t)` then `[@#copy_file copy_file](from, to / from.filename(), options)`;
+      * Otherwise `[@#copy_file copy_file](from, to, options)`.
+    
+    Otherwise, if `is_directory(f)`, then:
+    
+      * If `(options & copy_options::create_symlinks) != copy_options::none` then report error with error code equal to `make_error_code(system::errc::is_a_directory)`;
+      * Otherwise if
+        
+          * `(options & copy_options::recursive) != copy_options::none`, or
+          * `options == copy_options::none` and this call to `copy` is not a recursive call from `copy`
+        
+        then:
+        
+          * If `!exists(t)`, then `[@#create_directory create_directory](to, from)`.
+          * Then, iterate over files in `from` and for each `directory_entry x` obtained during iteration invoke `copy(x.path(), to / x.path().filename(), options)`.
+        
+      
+      * Otherwise, return.
+    
+    Otherwise, for all unsupported file types of `f` report error.
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+
+```
+bool copy_file(const path& from, const path& to);
+bool copy_file(const path& from, const path& to, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects: ]`return copy_file(from, to, copy_options::none`['\[]`, ec`['\]]`)`.
+
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+]
+
+
+
+```
+bool [#copy_file]copy_file(const path& from, const path& to, [@#copy_options copy_options] options);
+bool copy_file(const path& from, const path& to, [@#copy_options copy_options] options, system::error_code& ec);
+```
+
+[:
+  
+
+['Precondition:] `options` must contain at most one option from each of the following groups:
+    
+
+
+      * `copy_options::skip_existing`, `copy_options::overwrite_existing` or `copy_options::update_existing`;
+      * `copy_options::synchronize_data` or `copy_options::synchronize`;
+      * `copy_options::ignore_attribute_errors`.
+    
+  
+  
+
+['Effects:] Report an error if:
+    
+
+
+      * `!is_regular_file(from)`, or
+      * `exists(to) && !is_regular_file(to)`, or
+      * `exists(to) && equivalent(from, to)`, or
+      * `exists(to) && (options & (copy_options::skip_existing | copy_options::overwrite_existing)) == copy_options::none`.
+    
+    Otherwise, return successfully with no effect if:
+    
+      * `exists(to) && (options & copy_options::skip_existing) != copy_options::none`, or
+      * `exists(to) && (options & copy_options::update_existing) != copy_options::none` and last write time of `to` is more recent than that of `from`.
+    
+    Otherwise:
+    
+     * The contents and attributes of the file `from` resolves to are copied to the file `to` resolves to. If copying file attributes (but not contents) fails with an error and `(options & copy_options::ignore_attribute_errors) != copy_options::none` then that error is ignored. After that,
+     * If `(options & copy_options::synchronize) != copy_options::none`, the written data and attributes are synchronized with the permanent storage; otherwise
+     * If `(options & copy_options::synchronize_data) != copy_options::none`, the written data is synchronized with the permanent storage.
+    
+  
+  
+
+['Returns:] `true` if the file was copied without error, otherwise `false`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] When `copy_options::update_existing` is specified, checking the write times of `from` and `to` may not be atomic with the copy operation. Another process may create or modify the file identified by `to` after the file modification times have been checked but before copying starts. In this case the target file will be overwritten.\]
+
+
+  
+
+\[['Note:] The `copy_options::synchronize_data` and `copy_options::synchronize` options may have a significant performance impact. The `copy_options::synchronize_data` option may be less expensive than `copy_options::synchronize`. However, without these options, upon returning from `copy_file` it is not guaranteed that the copied file is completely written and preserved in case of a system failure. Any delayed write operations may fail after the function returns, at the point of physically writing the data to the underlying media, and this error will not be reported to the caller.\]
+
+
+  
+
+\[['Note:] The `copy_options::ignore_attribute_errors` option can be used when the caller does not require file attributes to be copied. The implementation is permitted to make an attempt to copy the file attributes, but still succeed the file copying operation if that attempt fails. This option may be useful with file systems that do not fully support operations of file attributes.\]
+
+
+]
+
+
+
+```
+void [#copy_symlink]copy_symlink(const path& existing_symlink, const path& new_symlink);
+void copy_symlink(const path& existing_symlink, const path& new_symlink, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects: ]`create_symlink(read_symlink(existing_symlink`['\[]`, ec`['\]]`), new_symlink`['\[]`, ec`['\]]`)`.
+
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+]
+
+
+
+```
+bool [#create_directories]create_directories(const path& p);
+bool [#create_directories2]create_directories(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Establishes the postcondition by calling `
+  create_directory()` for any element of `p` that does not
+  exist.
+
+
+  
+
+['Postcondition:] `is_directory(p)`
+
+
+  
+
+['Returns:] `true` if a new directory was created, otherwise `
+  false`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+['Complexity:] ['O(n+1)] where ['n] is the number of elements
+  of `p` that do not exist.
+
+
+]
+
+
+
+```
+bool [#create_directory]create_directory(const path& p);
+bool create_directory(const path& p, system::error_code& ec);
+bool create_directory(const path& p, const path& existing);
+bool create_directory(const path& p, const path& existing, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Establishes the postcondition by attempting to create the
+  directory `p` resolves to, as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/mkdir.html 
+  mkdir()]`. For overloads without `existing` argument, the new directory is created with `S_IRWXU|S_IRWXG|S_IRWXO` mode.
+  Overloads with `existing` argument obtain mode from `existing`, which must be a path to an existing directory. On Windows,
+  `CreateDirectoryW(p.c_str(), NULL)` is used when `existing` is not specified and `CreateDirectoryExW(existing.c_str(), p.c_str(), NULL)` otherwise.
+  Creation failure because `p` resolves to an existing directory shall not be
+  treated as an error.
+
+
+  
+
+['Postcondition:] `is_directory(p)`
+
+
+  
+
+['Returns:] `true` if a new directory was created, otherwise `false`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+void [#create_directory_symlink]create_directory_symlink(const path& to, const path& new_symlink);
+void create_directory_symlink(const path& to, const path& new_symlink, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Establishes the postcondition, as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html symlink()]`.
+
+
+  
+
+['
+  Postcondition:] `new_symlink` resolves to a symbolic link file that
+  contains an unspecified representation of `to`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] Some operating systems, such as Windows, require symlink creation to
+  identify that the link is to a directory. Portable code should use `create_directory_symlink()` to create directory symlinks rather than `create_symlink()` ['—end note]\]
+
+
+  
+
+\[['Note:] Some operating systems do not support symbolic links at all or support
+  them only for regular files.
+  Some file systems do not
+  support
+  symbolic links regardless of the operating system - the FAT file system used on
+  memory cards and flash drives, for example. ['—end note]\]
+
+
+  ]
+
+
+
+```
+void [#create_hard_link]create_hard_link(const path& to, const path& new_hard_link);
+void [#create_hard_link2]create_hard_link(const path& to, const path& new_hard_link, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Establishes the postcondition, as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/link.html link()]`.
+
+
+  
+
+['Postcondition:]
+
+
+  
+    *  `exists(to) &&
+    exists(``new_hard_link``) && equivalent(to,
+
+    ``new_hard_link``)`
+    * The contents of the file or directory
+    `to` resolves to are unchanged.
+  
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] Some operating systems do not support hard links at all or support
+  them only for regular files. Some file systems do not support hard
+  links regardless of the operating system - the FAT file system used on memory
+  cards and flash drives, for example. Some file systems limit the number of
+  links per file. ['—end note]\]
+
+
+  ]
+
+
+
+```
+void [#create_symlink]create_symlink(const path& to, const path& new_symlink);
+void [#create_symlink2]create_symlink(const path& to, const path& new_symlink, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Establishes the postcondition, as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/symlink.html symlink()]`.
+
+
+  
+
+['
+  Postcondition:] `new_symlink` resolves to a symbolic link file that
+  contains an unspecified representation of `to`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] Some operating systems do not support symbolic links at all or support
+  them only for regular files.
+  Some file systems do not
+  support
+  symbolic links regardless of the operating system - the FAT system used on
+  memory cards and flash drives, for example. ['—end note]\]
+
+
+  ]
+
+
+
+```
+path [#current_path]current_path();
+path [#current_path2]current_path(system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] The current working directory path, as if by ISO/IEC
+  9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/getcwd.html getcwd()]`. `is_absolute()` is true for the returned path.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note: ]The `current_path()` name was chosen to emphasize that the return is a
+  path, not just a single directory name.
+
+
+  
+
+The current path as returned by many operating systems is a dangerous
+  global variable. It may be changed unexpectedly by a third-party or system
+  library functions, or by another thread.  ['—end note]\]
+
+
+]
+
+
+
+```
+void current_path(const path& p);
+void current_path(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Establishes the postcondition, as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/chdir.html chdir()]`.
+
+
+
+
+['Postcondition:] `equivalent(p, current_path())`.
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note: ]The current path for many operating systems is a dangerous
+  global state. It may be changed unexpectedly by a third-party or system
+  library functions, or by another thread.  ['—end note]\]
+
+
+]
+
+
+
+```
+bool [#exists]exists(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `status_known(s) && s.type() != file_not_found`
+
+
+]
+
+
+
+```
+bool [#exists2]exists(const path& p);
+bool [#exists3]exists(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `exists(status(p))` or `exists(status(p, ec))`,
+  respectively.
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+bool [#equivalent]equivalent(const path& p1, const path& p2);
+bool [#equivalent2]equivalent(const path& p1, const path& p2, system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] `true`, if `p1` and `p2` resolve to the same file
+  system entity, else `false`.
+
+
+  [:
+  
+
+Two paths are considered to resolve to the same
+  file system entity if two candidate entities reside on the same device at the
+  same location. This is determined as if by the values of the ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html stat]` structure`,` obtained as if by `[@http://www.opengroup.org/onlinepubs/000095399/functions/stat.html stat()]` for the two paths, having equal `st_dev` values and equal `st_ino` values.
+
+
+  
+
+\[['Note:] ISO/IEC 9945 requires that "['st_dev] must be unique within a Local Area Network". Conservative
+  ISO/IEC 9945 implementations may also wish to check for equal `st_size` and `st_mtime` values. ['Windows] implementations may use `GetFileInformationByHandle()` as a surrogate for `stat()`,
+  and consider "same" to be equal values for `dwVolumeSerialNumber`, `nFileIndexHigh`, `nFileIndexLow`, `nFileSizeHigh`, `nFileSizeLow`, `ftLastWriteTime.dwLowDateTime`, and `ftLastWriteTime.dwHighDateTime`. ['—end note]\]
+
+
+  ]
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting]. \[[*v3:] `!exists(p1) && !exists(p2)` is an error. If only one of the paths doesn't exist, `false` is returned without error.\] \[[*v4:] `!exists(p1) || !exists(p2)` is an error.\]
+
+
+]
+
+
+
+
+```
+uintmax_t [#file_size]file_size(const path& p);
+uintmax_t [#file_size2]file_size(const path& p, system::error_code& ec);
+```
+
+
+[:
+  
+
+['Returns:] If `exists(p) && is_regular_file(p)`, the size
+  in bytes
+  of the file `p` resolves to, determined as if by the value of
+  the ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html stat]` structure member `st_size` obtained as if by
+  ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/stat.html stat()]`.
+  Otherwise, `static_cast<uintmax_t>(-1)`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+uintmax_t [#hard_link_count]hard_link_count(const path& p);
+uintmax_t hard_link_count(const path& p, system::error_code& ec);
+```
+
+[:
+
+  
+
+['Returns:] The number of hard links for `p`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+
+]
+
+
+
+
+```
+const path& [#initial_path]initial_path();
+const path& [#initial_path2]initial_path(system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] `current_path()` as of the first call to `initial_path()`.
+
+
+  
+
+\[['Note:] `initial_path()` is not thread safe, and may return an undesirable result
+  if called subsequent to a change to the current directory. These problems can
+  be avoided by calling `initial_path()` immediately on entry to
+  main().  ['—end note]\]
+
+
+  
+
+['Throws:] For the first call, as specified in [@#Error-reporting Error reporting]. Subsequent calls throw nothing.
+
+
+]
+
+
+
+```
+bool [#is_block_file]is_block_file(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == block_file`
+
+
+]
+
+
+
+```
+bool [#is_block_file2]is_block_file(const path& p);
+bool [#is_block_file3]is_block_file(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_block_file(status(p))` or `is_block_file(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+nothing.
+
+
+]
+
+
+
+```
+bool [#is_character_file]is_character_file(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == character_file`
+
+
+]
+
+
+
+```
+bool [#is_character_file2]is_character_file(const path& p);
+bool [#is_character_file3]is_character_file(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_character_file(status(p))` or `is_character_file(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+nothing.
+
+
+]
+
+
+
+```
+bool [#is_directory]is_directory(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == directory_file`
+
+
+]
+
+
+
+```
+bool [#is_directory2]is_directory(const path& p);
+bool [#is_directory3]is_directory(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_directory(status(p))` or `is_directory(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+nothing.
+
+
+]
+
+
+
+```
+bool [#is_empty]is_empty(const path& p);
+bool [#is_empty2]is_empty(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Determines `file_status s`, as if by `status(p, ec)`.
+
+
+  
+
+['Returns:] `is_directory(s)
+
+         ? directory_iterator(p) == directory_iterator()
+
+         : file_size(p) == 0;`
+
+
+]
+
+
+
+```
+bool [#is_fifo]is_fifo(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == fifo_file`
+
+
+]
+
+
+
+```
+bool [#is_fifo2]is_fifo(const path& p);
+bool [#is_fifo3]is_fifo(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_fifo(status(p))` or `is_fifo(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+nothing.
+
+
+]
+
+
+
+```
+bool [#is_other]is_other(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `return exists(s) && !is_regular_file(s) && !is_directory(s) && !is_symlink(s)`
+
+
+]
+
+
+
+```
+bool [#is_other2]is_other(const path& p);
+bool [#is_other3]is_other(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_other(status(p))` or `is_other(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+  
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+  nothing.
+
+
+]
+
+
+
+```
+bool [#is_regular_file]is_regular_file(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == regular_file`
+
+
+]
+
+
+
+```
+bool [#is_regular_file2]is_regular_file(const path& p);
+bool [#is_regular_file3]is_regular_file(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_regular_file(status(p))` or `is_regular_file(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+  
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+  nothing.
+
+
+]
+
+
+
+```
+bool [#is_reparse_file]is_reparse_file(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == reparse_file`
+
+
+]
+
+
+
+```
+bool [#is_reparse_file2]is_reparse_file(const path& p);
+bool [#is_reparse_file3]is_reparse_file(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_reparse_file(symlink_status(p))` or `is_reparse_file(symlink_status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+  
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+  nothing.
+
+
+]
+
+
+
+```
+bool [#is_socket]is_socket(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == socket_file`
+
+
+]
+
+
+
+```
+bool [#is_socket2]is_socket(const path& p);
+bool [#is_socket3]is_socket(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_socket(status(p))` or `is_socket(status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+  
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+  nothing.
+
+
+]
+
+
+
+```
+bool [#is_symlink]is_symlink(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() == symlink_file`
+
+
+]
+
+
+
+```
+bool [#is_symlink2]is_symlink(const path& p);
+bool [#is_symlink3]is_symlink(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Returns:] `is_symlink(symlink_status(p))` or `is_symlink(symlink_status(p, ec))`,
+  respectively. The overload with argument `ec` returns `false` if an error occurs.
+
+
+  
+
+['Throws:] `filesystem_error`; the overload with argument `ec` throws
+  nothing.
+
+
+]
+
+
+
+```
+std::time_t [#creation_time]creation_time(const path& p);
+std::time_t [#creation_time2]creation_time(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] The time of creation of the file to which `p` resolves.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] Not all platforms support querying file creation time. Where not supported, the operation will fail with
+  `errc::function_not_supported` error code. ['—end note]\]
+
+
+]
+
+
+
+```
+std::time_t [#last_write_time]last_write_time(const path& p);
+std::time_t [#last_write_time2]last_write_time(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] The time of last data modification of `p`, determined as if by the
+  value of the ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html stat]` structure member `st_mtime`  obtained
+  as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/stat.html stat()]`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+void [#last_write_time3]last_write_time(const path& p, const std::time_t new_time);
+void [#last_write_time4]last_write_time(const path& p, const std::time_t new_time, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Sets the time of last data modification of the file
+  resolved to by `p` to `new_time`, as if by ISO/IEC
+  9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/stat.html stat()]` followed by
+  ISO/IEC 9945 [@http://www.opengroup.org/onlinepubs/000095399/functions/utime.html `utime()`].
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] A postcondition of `last_write_time(p) == new_time` is not specified since it might not hold for file systems
+  with coarse time granularity. ['—end note]\]
+
+
+]
+
+
+
+```
+void [#permissions]permissions(const path& p, [@#symlink_perms perms] prms);
+void permissions(const path& p, [@#symlink_perms perms] prms, system::error_code& ec);
+```
+
+[:
+  
+
+
+  ['Requires:] `!((prms & add_perms) && (prms & remove_perms))`.
+
+
+  
+
+['Effects:] Applies the effective permissions bits from `prms` to the file `p` resolves to, as if by
+  ISO/IEC 9945 `[@http://pubs.opengroup.org/onlinepubs/9699919799/functions/fchmodat.html fchmodat()]`. The effective permission bits are determined as
+  specified by the following table. 
+
+
+  
+[table
+    
+[
+      [[*bits present in `prms`]]
+      [[*Effective bits applied]]
+    ]
+
+    
+[
+      [Neither `add_perms` nor `remove_perms`]
+      [`prms & perms_mask`]
+    ]
+
+    
+[
+      [`add_perms`]
+      [
+      
+
+`status(p).permissions() | (prms & [@#perms_mask perms_mask])`
+
+]
+    ]
+
+    
+[
+      [`remove_perms`]
+      [`status(p)``.permissions() & ~(prms & [@#perms_mask perms_mask]) `]
+    ]
+
+  ]
+
+  
+
+\[['Note:] Conceptually permissions are viewed as bits, but the actual
+  implementation may use some other mechanism. ['—end note]\]
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+path [#read_symlink]read_symlink(const path& p);
+path read_symlink(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:]  If `p` resolves to a symbolic
+  link, a `path` object containing the contents of that symbolic
+  link. Otherwise an empty `path` object.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting]. \[['Note:] It is an error if `p` does not
+  resolve to a symbolic link. ['—end note]\]
+
+
+]
+
+
+
+```
+path [#relative]relative(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] `relative(p, current_path(), ec)`.
+
+
+  
+
+['Throws:]  As specified in Error reporting.
+
+
+]
+
+
+
+```
+path relative(const path& p, const path& base=current_path());
+path relative(const path& p, const path& base, system::error_code& ec);
+```
+
+[:
+  
+
+['Overview:] Returns `p` made relative to `base`.
+  Treats empty or identical paths as corner cases, not errors. Resolves symlinks
+  and normalizes both `p` and `base` before other
+  processing.
+
+
+  
+
+['Returns:] `[@#weakly_canonical weakly_canonical](p).[@#lex-relative lexically_relative]([@#weakly_canonical weakly_canonical](base))`. The second form returns `path()`
+  if an error occurs.
+
+
+  
+
+['Throws:] As specified in Error reporting.
+
+
+]
+
+
+
+```
+bool [#remove]remove(const path& p);
+bool [#remove2]remove(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:]  If `exists(symlink_status(p,ec))`, it is
+  removed
+  as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/remove.html remove()]`.
+
+
+  [:
+  
+
+\[['Note:] A symbolic link is itself removed, rather than the file it
+  resolves to being removed. ['—end note]\]
+
+
+  ]
+
+
+  
+
+['Postcondition:] `!exists(symlink_status(p))`.
+
+
+  
+
+['Returns:]  `false` if `p` did not exist, otherwise `true`.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+uintmax_t [#remove_all]remove_all(const path& p);
+uintmax_t [#remove_all2]remove_all(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:]  Recursively deletes the contents of `p` if it exists,
+  then deletes file `p` itself,
+  as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/remove.html remove()]`.
+
+
+  [:
+  
+
+\[['Note:] A symbolic link is itself removed, rather than the file it
+  resolves to being removed. ['—end note]\]
+
+
+  ]
+
+
+  
+
+['Postcondition:] `!exists(p)`
+
+
+  
+
+['Returns:] The number of files removed.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+void [#rename]rename(const path& old_p, const path& new_p);
+void [#rename2]rename(const path& old_p, const path& new_p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Renames `old_p` to `new_p`, as if by
+  ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/rename.html rename()]`.
+
+
+  [:
+  
+
+\[['Note:] If `old_p` and `new_p` resolve to the
+  same existing file, no action is taken. Otherwise, if `new_p` resolves to an
+  existing non-directory file, it is removed, while if `new_p` resolves to an
+  existing directory, it is removed if empty on ISO/IEC 9945 but is an error on Windows. A symbolic link is itself renamed, rather than
+  the file it resolves to being renamed. ['—end note]\]
+
+
+  ]
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+void [#resize_file]resize_file(const path& p, uintmax_t new_size);
+void [#resize_file2]resize_file(const path& p, uintmax_t new_size, system::error_code& ec);
+```
+
+[:
+
+
+['Postcondition:] `file_size() == new_size`.
+
+
+
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+['Remarks:] Achieves its postconditions as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/truncate.html truncate()]`.
+
+
+]
+
+
+
+```
+space_info [#space]space(const path& p);
+space_info [#space2]space(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] An object of type `[@#space_info space_info]`. The value of the `space_info` object is determined as if by
+  using ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/statvfs.html statvfs()]` to obtain an ISO/IEC 9945 struct
+  `[@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/statvfs.h.html statvfs]`,
+   and then multiplying its `f_blocks`, `f_bfree`,
+   and `f_bavail` members by its `f_frsize` member,
+   and assigning the results to the `capacity`, `free`,
+  and `available` members respectively. Any members for which the
+  value cannot be determined shall be set to -1.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+]
+
+
+
+```
+[@#file_status file_status] [#status]status(const path& p);
+```
+
+[:
+  
+
+['Effects: ]As if:
+
+
+  [:
+    
+```
+system::error_code ec;
+file_status result = status(p, ec);
+if (result == status_error)
+  throw filesystem_error(['implementation-supplied-message], p, ec);
+return result;
+```
+
+  ]
+
+
+  
+
+['Returns:] See above.
+
+
+  
+
+['Throws:] `filesystem_error`.
+\[['Note:] `result` values of `file_status(file_not_found)`and `file_status(type_unknown)` are not considered failures and do not
+  cause an exception to be
+thrown.[' —end note]\] 
+
+
+  ]
+
+
+
+```
+[@#file_status file_status] [#status2]status(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Effects: ]
+
+
+  [:
+    
+
+If possible, determines the attributes
+    of the file `p` resolves to, as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/stat.html stat()]`.
+
+
+      If, during attribute determination, the underlying file system API reports
+    an error, sets `ec` to indicate the specific error reported.
+    Otherwise, `ec.clear()`.[:
+      
+
+\[['Note:] This allows users to inspect the specifics of underlying
+      API errors even when the value returned by `status()` is not `file_status(status_error)`.  ['—end note]\]
+
+
+    ]
+
+
+    ]
+
+
+  
+
+['Returns:]
+
+
+  [:
+    
+
+If `ec != error_code()`:
+
+
+    
+      * If the specific error indicates that `p` cannot be resolved
+      because some element of the path does not exist, return `
+      file_status(file_not_found)`. \[['Note:] ISO/IEC 9945 errors that
+      indicate this are ENOENT or ENOTDIR. Windows equivalents
+      include ERROR_FILE_NOT_FOUND, ERROR_PATH_NOT_FOUND, ERROR_INVALID_NAME,
+      ERROR_INVALID_PARAMETER, ERROR_BAD_PATHNAME, and ERROR_BAD_NETPATH. ['--
+      end note]\]
+
+ 
+      * Otherwise, if the specific error indicates that `p` can be resolved
+      but the attributes cannot be determined, return `
+      file_status(type_unknown)`. \[['Note: ]For example, Windows
+      ERROR_SHARING_VIOLATION errors. For ISO/IEC 9945, the case never arises. ['—end
+      note]\]
+
+ 
+      * Otherwise, return `
+      file_status(status_error)`.
+    
+        [:
+        
+
+\[['Note:] These semantics distinguish between `p` being known not to exist, `p` existing but not being able to determine its attributes,
+        and there being an error that prevents even knowing if `p` exists. These
+        distinctions are important to some use cases. ['—end note]\]
+
+
+    ]
+
+
+    
+
+Otherwise,
+
+
+    
+      * If the attributes indicate a regular file, as if by ISO/IEC 9945 [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISREG()],
+      return `
+      file_status(regular_file)`. \[['Note:] `
+regular_file` implies appropriate `<fstream>` operations
+      would succeed, assuming no hardware, permission, access, or file system
+      race
+      errors. Lack of
+`regular_file` does not necessarily imply `<fstream>` operations would
+fail on a directory.
+['—end note]\]
+
+ 
+      * Otherwise, if the attributes indicate a directory, as if by ISO/IEC 9945
+      [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISDIR()],
+      return `
+      file_status(directory_file)`. \[['Note:] `directory_file` implies `
+directory_iterator(p)`would succeed.
+['—end note]\]
+
+ 
+      * Otherwise, if the attributes indicate a block special file, as if by ISO/IEC 9945
+      [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISBLK()],
+      return `
+      file_status(block_file)`.
+
+ 
+      * Otherwise, if the attributes indicate a character special file, as if by ISO/IEC 9945
+      [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISCHR()],
+      return `
+      file_status(character_file)`.
+
+ 
+      * Otherwise, if the attributes indicate a fifo or pipe file, as if by
+      ISO/IEC 9945
+      [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISFIFO()],
+      return `
+      file_status(fifo_file)`.
+
+ 
+      * Otherwise, if the attributes indicate a socket, as if by ISO/IEC
+      9945
+      [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISSOCK()],
+      return `
+      file_status(socket_file)`.
+
+ 
+      * Otherwise, return `
+      file_status(type_unknown)`.
+    
+    ]
+
+
+      
+
+['Remarks:] If a symbolic link is encountered during pathname
+      resolution,
+      pathname resolution continues using the contents of the symbolic link.
+
+
+]
+
+
+
+```
+bool [#status_known]status_known(file_status s) noexcept;
+```
+
+[:
+  
+
+['Returns:] `s.type() != status_error`
+
+
+]
+
+
+
+```
+file_status [#symlink_status]symlink_status(const path& p);
+file_status [#symlink_status2]symlink_status(const path& p, system::error_code& ec) noexcept;
+```
+
+[:
+  
+
+['Effects:]  Same as [@#status status()], above,
+  except that the attributes
+    of `p` are determined as if by ISO/IEC 9945 `[@http://www.opengroup.org/onlinepubs/000095399/functions/lstat.html lstat()]`.
+
+
+]
+
+
+[:
+      
+
+['Returns:] Same as [@#status status()], above, except
+      that if the attributes indicate a symbolic link, as if by ISO/IEC 9945 [@http://www.opengroup.org/onlinepubs/000095399/basedefs/sys/stat.h.html S_ISLNK()], return `file_status(symlink_file)`.
+
+
+      
+
+['Remarks:] Pathname resolution terminates if `p` names a symbolic link.
+
+
+  
+
+['Throws:] `filesystem_error`; overload with `error_code&` throws
+  nothing.
+
+
+]
+
+
+
+```
+path [#system_complete]system_complete(const path& p);
+path [#system_complete2]system_complete(const path& p, system::error_code& ec);
+```
+
+[:
+  
+
+['Effects:] Composes an absolute path from `p`, using the
+  same rules used by the operating system to resolve a path passed as the
+  filename argument to standard library open functions.
+
+
+  
+
+['Returns:] The composed path.
+
+
+  
+
+['Postcondition:] For the returned path, `rp`, `rp.is_absolute()` is true.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note:] For ISO/IEC 9945, `system_complete(p)` has the same semantics as `[@#absolute absolute](p, [@#current_path current_path]())`.
+
+
+  
+
+[#windows_effects]For ['Windows], `system_complete(p)` has the
+  same semantics as `[@#absolute absolute](p, [@#current_path current_path]())` if `p.is_absolute() || !p.has_root_name()` or `p` and `base` have the same `root_name()`.
+  Otherwise it acts like `[@#absolute absolute](p, kinky)`, where `kinky` is the current directory for the `p.root_name()` drive. This will
+  be the current directory of that drive the last time it was set, and thus may
+  be [*residue left over from a prior program] run by the command
+  processor! Although these semantics are often useful, they are also very
+  error-prone.
+
+
+]
+
+
+
+```
+path [#temp_directory_path]temp_directory_path();
+path temp_directory_path(system::error_code& ec);
+```
+
+[:
+  
+
+['Returns:] A directory path suitable for temporary files under the
+  conventions of the operating system. The specifics of how this path is
+  determined are implementation defined. An error shall be reported if` !exists(p)
+  || !is_directory(p)`, where `p` is the path to be returned.
+
+
+  
+
+ISO/IEC 9945: The path supplied by the first environment variable found in the
+  list TMPDIR, TMP, TEMP, TEMPDIR. If none of these are found, `"/tmp"`,
+  or, if macro `__ANDROID__ `is defined, `"/data/local/tmp"`.
+
+
+  
+
+['Windows:] The path reported by the ['Windows] `GetTempPath` API function.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+\[['Note: ]The `temp_directory_path()` name was chosen to emphasize that the return is a
+  path, not just a single directory name.  ['—end note]\]
+
+
+]
+
+
+
+```
+path [#unique_path]unique_path(const path& model="%%%%-%%%%-%%%%-%%%%");
+path unique_path(system::error_code& ec);
+path unique_path(const path& model, system::error_code& ec);
+```
+
+[:
+  
+
+The `unique_path` function generates a path name suitable for
+  creating temporary files, including directories. The name is based
+  on a model that uses the percent sign character to specify replacement by a
+  random hexadecimal digit. Where model is not specified, a default model
+  equivalent to "%%%%-%%%%-%%%%-%%%%" is used. \[['Note:] The more
+  bits of randomness in the generated path name, the less likelihood of prior
+  existence or being guessed. Each replacement hexadecimal digit in the model
+  adds four bits of randomness. The default model thus provides 64 bits of
+  randomness. This is sufficient for most applications. ['—end note]\]
+
+
+  
+
+['Returns:] A path identical to `model`, except that each
+  occurrence of a percent sign character is replaced by a random hexadecimal
+  digit character in the range 0-9, a-f.
+
+
+  
+
+['Throws:] As specified in [@#Error-reporting Error reporting].
+
+
+  
+
+['Remarks:] Implementations are encouraged to obtain the required
+  randomness via a [@http://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator cryptographically secure pseudo-random number generator], such as one
+  provided by the operating system. \[['Note]: Such generators may block
+  until sufficient entropy develops. ['—end note]\]
+
+
+]
+
+
+
+```
+path [#weakly_canonical]weakly_canonical(const path& p, const path& base=current_path());
+path weakly_canonical(const path& p, system::error_code& ec);
+path weakly_canonical(const path& p, const path& base, system::error_code& ec);
+```
+
+[:
+  
+
+['Overview:] Returns `p` with symlinks resolved and the
+  result normalized.
+
+
+  
+
+['Effects:] Let `head` be the path composed of the leading
+  elements of `p` that exist and `tail` — from the rest of `p`.
+  Where not specified, `base` is obtained from `[@#current_path current_path]()` or `[@#current_path current_path](ec)`
+  Calls `[@#canonical canonical](head, base)` or `[@#canonical canonical](head, base, ec)`,
+  appends `tail` to the returned path as if by using `operator/`.
+  The result is then normalized and returned.
+
+
+  
+
+['Postcondition:] The returned path is in
+  [@#normal-form normal form].
+
+
+  
+
+['Remarks:] Uses `operator/=` to compose the returned path.
+  Uses the `status` function to determine existence.
+
+
+  
+
+['Remarks:] Implementations are encouraged to avoid unnecessary
+  normalization such as when `canonical` has already been called on
+  the entirety of `p`.
+
+
+  
+
+['Throws:]  As specified in Error reporting.
+
+
+]
+
+
+
+
+
+
+
+
+[h3 [#File-streams]File streams]
+
+
+[h4 [@../../../boost/filesystem/fstream.hpp <boost/filesystem/fstream.hpp>] header]
+
+
+
+Replacements are provided for the file stream classes from the C++ standard
+library's `<fstream>` header. These replacement classes
+publicly inherit from the standard library classes. In the Boost.Filesystem
+version, constructors and open functions take `const path&` arguments
+instead of `const char*` arguments. There are no other differences in syntax or
+semantics.
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+    template < class charT, class traits = std::char_traits<charT> >
+    class basic_filebuf : public std::basic_filebuf<charT,traits>
+    {
+    public:
+      basic_filebuf<charT,traits>*
+        open(const path& p, std::ios_base::openmode mode);
+    };
+
+    template < class charT, class traits = std::char_traits<charT> >
+    class basic_ifstream : public std::basic_ifstream<charT,traits>
+    {
+    public:
+      explicit basic_ifstream(const path& p, std::ios_base::openmode mode=std::ios_base::in)
+      void open(const path& p, std::ios_base::openmode mode=std::ios_base::in);
+    };
+
+    template < class charT, class traits = std::char_traits<charT> >
+    class basic_ofstream : public std::basic_ofstream<charT,traits>
+    {
+    public:
+      explicit basic_ofstream(const path& p, std::ios_base::openmode mode=std::ios_base::out);
+      void open(const path& p, std::ios_base::openmode mode=std::ios_base::out);
+    };
+
+    template < class charT, class traits = std::char_traits<charT> >
+    class basic_fstream : public std::basic_fstream<charT,traits>
+    {
+    public:
+      explicit basic_fstream(const path& p,
+        std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);
+      void open(const path& p,
+        std::ios_base::openmode mode=std::ios_base::in | std::ios_base::out);
+    };
+
+    typedef basic_filebuf<char> filebuf;
+    typedef basic_ifstream<char> ifstream;
+    typedef basic_ofstream<char> ofstream;
+    typedef basic_fstream<char> fstream;
+
+    typedef basic_filebuf<wchar_t> wfilebuf;
+    typedef basic_ifstream<wchar_t> wifstream;
+    typedef basic_fstream<wchar_t> wfstream;
+    typedef basic_ofstream<wchar_t> wofstream;
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+
+[h4 [@../../../boost/filesystem/cstdio.hpp <boost/filesystem/cstdio.hpp>] header]
+
+
+
+This header provides a `std::fopen` overload from `<cstdio>` C++ standard library header.
+The overload accepts `const path&` as its first argument instead of `const char*` and has no
+other differences from its standard counterpart.
+
+
+
+```
+namespace boost
+{
+  namespace filesystem
+  {
+    std::FILE* fopen(const path& p, const char* mode);
+
+  }  // namespace filesystem
+}  // namespace boost
+```
+
+
+
+[h2 [#path-decomposition-table]Path decomposition table]
+
+
+
+The table is generated by a program compiled with the Boost implementation.
+
+
+
+
+Shaded entries indicate cases where ISO/IEC 9945 (POSIX) and Windows implementations yield different results. The top value is the
+ISO/IEC 9945 result and the bottom value is the Windows result.
+
+
+
+[table
+
+[[[*Constructor
+argument]]
+[[*Iteration
+over
+Elements]]
+[[*`string()`]]
+[[*`generic_
+string()`]]
+[[*`root_
+path()`]]
+[[*`root_
+name()`]]
+[[*`root_
+directory()`]]
+[[*`relative_
+path()`]]
+[[*`parent_
+path()`]]
+[[*`filename()`]]
+]
+
+
+[
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+]
+
+
+[
+[`.`]
+[`.`]
+[`.`]
+[`.`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`.`]
+[['empty]]
+[`.`]
+]
+
+
+[
+[`..`]
+[`..`]
+[`..`]
+[`..`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`..`]
+[['empty]]
+[`..`]
+]
+
+
+[
+[`foo`]
+[`foo`]
+[`foo`]
+[`foo`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo`]
+[['empty]]
+[`foo`]
+]
+
+
+[
+[`/`]
+[`/`]
+[`/`]
+[`/`]
+[`/`]
+[['empty]]
+[`/`]
+[['empty]]
+[['empty]]
+[`/`]
+]
+
+
+[
+[`/foo`]
+[`/,foo`]
+[`/foo`]
+[`/foo`]
+[`/`]
+[['empty]]
+[`/`]
+[`foo`]
+[`/`]
+[`foo`]
+]
+
+
+[
+[`foo/`]
+[`foo,.`]
+[`foo/`]
+[`foo/`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/`]
+[`foo`]
+[`.`]
+]
+
+
+[
+[`/foo/`]
+[`/,foo,.`]
+[`/foo/`]
+[`/foo/`]
+[`/`]
+[['empty]]
+[`/`]
+[`foo/`]
+[`/foo`]
+[`.`]
+]
+
+
+[
+[`foo/bar`]
+[`foo,bar`]
+[`foo/bar`]
+[`foo/bar`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/bar`]
+[`foo`]
+[`bar`]
+]
+
+
+[
+[`/foo/bar`]
+[`/,foo,bar`]
+[`/foo/bar`]
+[`/foo/bar`]
+[`/`]
+[['empty]]
+[`/`]
+[`foo/bar`]
+[`/foo`]
+[`bar`]
+]
+
+
+[
+[`//net`]
+[`//net`]
+[`//net`]
+[`//net`]
+[`//net`]
+[`//net`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`//net`]
+]
+
+
+[
+[`//net/foo`]
+[`//net,/,foo`]
+[`//net/foo`]
+[`//net/foo`]
+[`//net/`]
+[`//net`]
+[`/`]
+[`foo`]
+[`//net/`]
+[`foo`]
+]
+
+
+[
+[`///foo///`]
+[`/,foo,.`]
+[`///foo///`]
+[`///foo///`]
+[`/`]
+[['empty]]
+[`/`]
+[`foo///`]
+[`///foo`]
+[`.`]
+]
+
+
+[
+[`///foo///bar`]
+[`/,foo,bar`]
+[`///foo///bar`]
+[`///foo///bar`]
+[`/`]
+[['empty]]
+[`/`]
+[`foo///bar`]
+[`///foo`]
+[`bar`]
+]
+
+
+[
+[`/.`]
+[`/,.`]
+[`/.`]
+[`/.`]
+[`/`]
+[['empty]]
+[`/`]
+[`.`]
+[`/`]
+[`.`]
+]
+
+
+[
+[`./`]
+[`.,.`]
+[`./`]
+[`./`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`./`]
+[`.`]
+[`.`]
+]
+
+
+[
+[`/..`]
+[`/,..`]
+[`/..`]
+[`/..`]
+[`/`]
+[['empty]]
+[`/`]
+[`..`]
+[`/`]
+[`..`]
+]
+
+
+[
+[`../`]
+[`..,.`]
+[`../`]
+[`../`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`../`]
+[`..`]
+[`.`]
+]
+
+
+[
+[`foo/.`]
+[`foo,.`]
+[`foo/.`]
+[`foo/.`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/.`]
+[`foo`]
+[`.`]
+]
+
+
+[
+[`foo/..`]
+[`foo,..`]
+[`foo/..`]
+[`foo/..`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/..`]
+[`foo`]
+[`..`]
+]
+
+
+[
+[`foo/./`]
+[`foo,.,.`]
+[`foo/./`]
+[`foo/./`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/./`]
+[`foo/.`]
+[`.`]
+]
+
+
+[
+[`foo/./bar`]
+[`foo,.,bar`]
+[`foo/./bar`]
+[`foo/./bar`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/./bar`]
+[`foo/.`]
+[`bar`]
+]
+
+
+[
+[`foo/..`]
+[`foo,..`]
+[`foo/..`]
+[`foo/..`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/..`]
+[`foo`]
+[`..`]
+]
+
+
+[
+[`foo/../`]
+[`foo,..,.`]
+[`foo/../`]
+[`foo/../`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/../`]
+[`foo/..`]
+[`.`]
+]
+
+
+[
+[`foo/../bar`]
+[`foo,..,bar`]
+[`foo/../bar`]
+[`foo/../bar`]
+[['empty]]
+[['empty]]
+[['empty]]
+[`foo/../bar`]
+[`foo/..`]
+[`bar`]
+]
+
+
+[
+[`c:`]
+[`c:`]
+[`c:`]
+[`c:`]
+[['empty]
+`c:`]
+[['empty]
+`c:`]
+[['empty]]
+[`c:`
+['empty]]
+[['empty]]
+[`c:`]
+]
+
+
+[
+[`c:/`]
+[`c:,.`
+`c:,/`]
+[`c:/`]
+[`c:/`]
+[['empty]
+`c:/`]
+[['empty]
+`c:`]
+[['empty]
+`/`]
+[`c:/`
+['empty]]
+[`c:`]
+[`.`
+`/`]
+]
+
+
+[
+[`c:foo`]
+[`c:foo`
+`c:,foo`]
+[`c:foo`]
+[`c:foo`]
+[['empty]
+`c:`]
+[['empty]
+`c:`]
+[['empty]]
+[`c:foo`
+`foo`]
+[['empty]
+`c:`]
+[`c:foo`
+`foo`]
+]
+
+
+[
+[`c:/foo`]
+[`c:,foo`
+`c:,/,foo`]
+[`c:/foo`]
+[`c:/foo`]
+[['empty]
+`c:/`]
+[['empty]
+`c:`]
+[['empty]
+`/`]
+[`c:/foo`
+`foo`]
+[`c:`
+`c:/`]
+[`foo`]
+]
+
+
+[
+[`c:foo/`]
+[`c:foo,.`
+`c:,foo,.`]
+[`c:foo/`]
+[`c:foo/`]
+[['empty]
+`c:`]
+[['empty]
+`c:`]
+[['empty]]
+[`c:foo/`
+`foo/`]
+[`c:foo`]
+[`.`]
+]
+
+
+[
+[`c:/foo/`]
+[`c:,foo,.`
+`c:,/,foo,.`]
+[`c:/foo/`]
+[`c:/foo/`]
+[['empty]
+`c:/`]
+[['empty]
+`c:`]
+[['empty]
+`/`]
+[`c:/foo/`
+`foo/`]
+[`c:/foo`]
+[`.`]
+]
+
+
+[
+[`c:/foo/bar`]
+[`c:,foo,bar`
+`c:,/,foo,bar`]
+[`c:/foo/bar`]
+[`c:/foo/bar`]
+[['empty]
+`c:/`]
+[['empty]
+`c:`]
+[['empty]
+`/`]
+[`c:/foo/bar`
+`foo/bar`]
+[`c:/foo`]
+[`bar`]
+]
+
+
+[
+[`prn:`]
+[`prn:`]
+[`prn:`]
+[`prn:`]
+[['empty]
+`prn:`]
+[['empty]
+`prn:`]
+[['empty]]
+[`prn:`
+['empty]]
+[['empty]]
+[`prn:`]
+]
+
+
+[
+[`c:\\`]
+[`c:\\`
+`c:,/`]
+[`c:\\`]
+[`c:\\`
+`c:/`]
+[['empty]
+`c:\\`]
+[['empty]
+`c:`]
+[['empty]
+`\\`]
+[`c:\\`
+['empty]]
+[['empty]
+`c:`]
+[`c:\\`
+`\\`]
+]
+
+
+[
+[`c:foo`]
+[`c:foo`
+`c:,foo`]
+[`c:foo`]
+[`c:foo`]
+[['empty]
+`c:`]
+[['empty]
+`c:`]
+[['empty]]
+[`c:foo`
+`foo`]
+[['empty]
+`c:`]
+[`c:foo`
+`foo`]
+]
+
+
+[
+[`c:\\foo`]
+[`c:\\foo`
+`c:,/,foo`]
+[`c:\\foo`]
+[`c:\\foo`
+`c:/foo`]
+[['empty]
+`c:\\`]
+[['empty]
+`c:`]
+[['empty]
+`\\`]
+[`c:\\foo`
+`foo`]
+[['empty]
+`c:\\`]
+[`c:\\foo`
+`foo`]
+]
+
+
+[
+[`c:foo\\`]
+[`c:foo\\`
+`c:,foo,.`]
+[`c:foo\\`]
+[`c:foo\\`
+`c:foo/`]
+[['empty]
+`c:`]
+[['empty]
+`c:`]
+[['empty]]
+[`c:foo\\`
+`foo\\`]
+[['empty]
+`c:foo`]
+[`c:foo\\`
+`.`]
+]
+
+
+[
+[`c:\\foo\\`]
+[`c:\\foo\\`
+`c:,/,foo,.`]
+[`c:\\foo\\`]
+[`c:\\foo\\`
+`c:/foo/`]
+[['empty]
+`c:\\`]
+[['empty]
+`c:`]
+[['empty]
+`\\`]
+[`c:\\foo\\`
+`foo\\`]
+[['empty]
+`c:\\foo`]
+[`c:\\foo\\`
+`.`]
+]
+
+
+[
+[`c:\\foo/`]
+[`c:\\foo,.`
+`c:,/,foo,.`]
+[`c:\\foo/`]
+[`c:\\foo/`
+`c:/foo/`]
+[['empty]
+`c:\\`]
+[['empty]
+`c:`]
+[['empty]
+`\\`]
+[`c:\\foo/`
+`foo/`]
+[`c:\\foo`]
+[`.`]
+]
+
+
+[
+[`c:/foo\\bar`]
+[`c:,foo\\bar`
+`c:,/,foo,bar`]
+[`c:/foo\\bar`]
+[`c:/foo\\bar`
+`c:/foo/bar`]
+[['empty]
+`c:/`]
+[['empty]
+`c:`]
+[['empty]
+`/`]
+[`c:/foo\\bar`
+`foo\\bar`]
+[`c:`
+`c:/foo`]
+[`foo\\bar`
+`bar`]
+]
+
+]
+
+
+
+[h2 [#windows-path-prefixes]Long paths on Windows and the
+[*\\\\?\\] namespace prefix]
+
+
+
+The Microsoft Windows "Maximum Path Length Limitation" specifies:
+
+
+[:
+
+
+In the Windows API (with some exceptions ...), the maximum length for a path
+is `MAX_PATH`, which is defined as 260 characters.
+
+
+
+
+The Windows API has many functions that also have Unicode versions to permit
+an extended-length path for a maximum total path length of 32,767 characters.
+... To specify an extended-length path, use the "\\\\?\\" prefix. For
+example, "\\\\?\\D:\\very long path". ['\[C++ string literals
+require backslashes be doubled, of course.\]]
+
+
+]
+
+
+
+
+Because most Boost.Filesystem operational functions just pass the contents of
+a class path object to the Windows API, they do work with the extended-length
+prefixes. But some won't work, because to the limitations imposed by Windows.
+
+
+
+
+Effectively, the "\\\\?\\" prefix informs the underlying Windows API
+that the path identifies an object in the Win32 filesystem namespace and disables
+most of the internal path processing, including normalization, by the Windows API.
+While it lifts the length limitation, this imposes a number of other restrictions on
+the acceptable paths that are listed in the section below. There are a number of
+other prefixes that have different special meanings, such as "\\\\.\\" (a local
+device namespace prefix) and "\\??\\" (NT object namespace prefix). Note that
+UNC paths can be extended with the prefixes by referring to a special "UNC"
+device. For example, "\\\\server\\share" can be extended as "\\\\?\\UNC\\server\\share".
+
+
+
+
+In terms of Boost.Filesystem, the namespace prefixes are considered as parts of the path's
+root name. For example, the root name of "\\\\?\\c:\\foo" is "\\\\?\\c:".
+This interpretation is chosen to allow root paths to be iterable, that is you can list
+the contents of the "\\\\?\\c:\\" directory, provided that drive C: exists and you have
+the necessary permissions. ['\[Note: You can't list the contents of "\\\\?\\"
+as such path does not exist.\]]
+
+
+
+
+[h3 Cautions for paths with namespace prefixes]
+
+
+  * Individual components of a path are still are limited to whatever is
+  supported for the particular filesystem, commonly 255 characters.
+  * Only backslashes are acceptable as directory separators. Slashes are
+  not treated as separators.
+  * All paths must be absolute and must not contain "." or ".." components.
+  * Once an absolute path grows beyond 260 characters, it is essentially
+  poisoned and all operations must use extended-length prefixes. So even a
+  simple operation like `create_directory("a")` will fail if the
+  absolute path of the resulting directory would exceed 260 characters.
+  * Certain Boost.Filesystem functions that decompose their argument path and
+  then work on individual relative directories or files will not work properly
+  with namespace prefix paths.
+
+
+
+[h2 [#Acknowledgements]Acknowledgements]
+
+
+
+This Filesystem Library is dedicated to my wife, Sonda, who provided the
+support necessary to see both a trial implementation and the proposal itself
+through to completion. She gave me the strength to continue after a difficult
+year of cancer treatment in the middle of it all.
+
+
+
+
+Many people contributed technical comments, ideas, and suggestions to the
+Boost Filesystem Library. See [@index.htm#Change-history Version history].
+
+
+
+
+Dietmar Kühl contributed the original Boost Filesystem Library `directory_iterator` design. Peter Dimov, Walter Landry, Rob Stewart, and Thomas
+Witt were particularly helpful in refining the library.
+
+
+
+
+The `create_directories`, `extension`, `basename`, and `replace_extension` functions
+were developed by Vladimir Prus. The `temp_directory_path` function was
+contributed by Jeff Flinn. David Svoboda suggested the `canonical` function and
+provided pseudo-code.
+
+
+
+
+Howard Hinnant and John Maddock reviewed a draft of the version 2 proposal, and
+identified a number of mistakes or weaknesses, resulting in a more polished
+final document.
+
+
+
+
+Peter Dimov suggested a single class `path`, with member templates to adapt to
+multiple string types. His idea became the basis for the version 3 path design.
+
+
+
+[h2 [#References]References]
+
+
+[table
+  
+[
+    [\[[#ISO_POSIX]ISO/IEC 9945\]]
+    [ISO/IEC 9945:2003, IEEE Std 1003.1-2001, and The Open Group
+    Base Specifications, Issue 6. Also known as The Single UNIX®
+    Specification, Version 3. Available from each of the organizations involved
+    in its creation. For example, read online or download from [@http://www.unix.org/single_unix_specification/ www.unix.org/single_unix_specification/]. The ISO JTC1/SC22/WG15 -
+    POSIX homepage is [@http://www.open-std.org/jtc1/sc22/WG15/ www.open-std.org/jtc1/sc22/WG15/]]
+  ]
+
+  
+[
+    [\[Abrahams\]]
+    [Dave Abrahams, Error and Exception Handling, [@http://www.boost.org/more/error_handling.html www.boost.org/more/error_handling.html]]
+  ]
+
+]
+
+
+
+
+© Copyright Beman Dawes, 2002, 2006, 2007, 2009, 2010, 2011
+
+
+
+
+© Copyright Andrey Semashev, 2019-2024
+
+
+
+
+Distributed under the Boost Software License, Version 1.0. See
+[@http://www.boost.org/LICENSE_1_0.txt www.boost.org/LICENSE_1_0.txt]
+
+

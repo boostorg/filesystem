@@ -1,0 +1,137 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:acknowledgements Acknowledgements]
+
+[section:v1 Version 1]
+
+The Filesystem Library was designed and implemented by Beman Dawes. The original `directory_iterator` and `filesystem_error` classes
+were based on prior work from Dietmar Kühl, as modified by Jan Langer. Thomas Witt was a particular help in later stages of initial
+development. Peter Dimov and Rob Stewart made many useful suggestions and comments over a long period of time. Howard Hinnant helped
+with internationalization issues.
+
+Key [link filesystem.design.requirements design requirements] and [link filesystem.design.realities design realities] were developed
+during extensive discussions on the Boost mailing list, followed by comments on the initial implementation. Numerous helpful comments
+were then received during the Formal Review. Participants included:
+
+* Aaron Brashears
+* Alan Bellingham
+* Aleksey Gurtovoy
+* Alex Rosenberg
+* Alisdair Meredith
+* Andy Glew
+* Anthony Williams
+* Baptiste Lepilleur
+* Beman Dawes
+* Bill Kempf
+* Bill Seymour
+* Carl Daniel
+* Chris Little
+* Chuck Allison
+* Craig Henderson
+* Dan Nuffer
+* Dan'l Miller
+* Daniel Frey
+* Darin Adler
+* David Abrahams
+* David Held
+* Davlet Panech
+* Dietmar Kühl
+* Douglas Gregor
+* Dylan Nicholson
+* Ed Brey
+* Eric Jensen
+* Eric Woodruff
+* Fedder Skovgaard
+* Gary Powell
+* Gennaro Prota
+* Geoff Leyland
+* George Heintzelman
+* Giovanni Bajo
+* Glen Knowles
+* Hillel Sims
+* Howard Hinnant
+* Jaap Suter
+* James Dennett
+* Jan Langer
+* Jani Kajala
+* Jason Stewart
+* Jeff Garland
+* Jens Maurer
+* Jesse Jones
+* Jim Hyslop
+* Joel de Guzman
+* Joel Young
+* John Levon
+* John Maddock
+* John Williston
+* Jonathan Caves
+* Jonathan Biggar
+* Jurko
+* Justus Schwartz
+* Keith Burton
+* Ken Hagen
+* Kostya Altukhov
+* Mark Rodgers
+* Martin Schuerch
+* Matt Austern
+* Matthias Troyer
+* Mattias Flodin
+* Michiel Salters
+* Mickael Pointier
+* Misha Bergal
+* Neal Becker
+* Noel Yap
+* Parksie
+* Patrick Hartling
+* Pavel Vozenilek
+* Pete Becker
+* Peter Dimov
+* Rainer Deyke
+* Rene Rivera
+* Rob Lievaart
+* Rob Stewart
+* Ron Garcia
+* Ross Smith
+* Sashan
+* Steve Robbins
+* Thomas Witt
+* Tom Harris
+* Toon Knapen
+* Victor Wagner
+* Vincent Finn
+* Vladimir Prus
+* Yitzhak Sapir
+
+A lengthy discussion on the C++ committee's library reflector illuminated the "illusion of portability" problem, particularly in
+postings by PJ Plauger and Pete Becker.
+
+Walter Landry provided much help illuminating symbolic link use cases for version 1.31.0.
+
+[endsect]
+
+[section:v2 Version 2]
+
+So many people have contributed comments and bug reports that it isn't any longer possible to acknowledge them individually. That said,
+Peter Dimov and Rob Stewart need to be specially thanked for their many constructive criticisms and suggestions. Terence Wilson and
+Chris Frey contributed timing programs which helped illuminate performance issues.
+
+[endsect]
+
+[section:v3 Version 3]
+
+Peter Dimov suggested the idea of a single path class that could cope with multiple character types and encodings rather than
+a `basic_path` class template. That idea was the basis for the Version 3 redesign. Walter Landry contributed both the design
+and implementation of the `copy_any`, `copy_directory`, `copy_symlink`, and `read_symlink` functions.
+
+Thanks for comments from Robert Stewart, Zach Laine, Peter Dimov, Gregory Peele, Scott McMurray, John Bytheway, Jeff Flinn,
+Jeffery Bosboom.
+
+[endsect]
+
+[endsect]

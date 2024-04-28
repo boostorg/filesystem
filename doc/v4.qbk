@@ -1,0 +1,69 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:v4 Boost Filesystem Version 4]
+
+Version 4 is a significant revision of the Boost Filesystem library that makes its interface and behavior closer to std::filesystem
+that was introduced in C++17 and updated in the later standards. It removes the features that were [link filesystem.deprecated
+deprecated] in Version 3 and makes a number of breaking changes. Eventually, Version 4 will become the default, and Version 3 will
+be removed.
+
+Users can select Boost.Filesystem v4 version by defining `BOOST_FILESYSTEM_VERSION` macro to 4 when compiling their code. There
+is no need to separately compile Boost.Filesystem for each library version — a single binary supports both v3 and v4. Users
+should avoid using both v3 and v4 in the same application as this can lead to subtle bugs.
+
+[section:breaking_changes Breaking changes]
+
+[section:path Class `path` behavior]
+
+* [member path::filename] no longer returns root name or root directory if the path contains no other elements. For example,
+  on Windows `path("C:").filename()` used to return "C:" and `path("C:\\").filename()` used to return "\\" and both will return
+  an empty path now. This also affects [member path::stem] and [member path::extension] methods, as those are based on
+  `path::filename`.
+* [member path::stem] and [member path::extension] no longer treat a filename that starts with a dot and has no other dots
+  as an extension. Filenames starting with a dot are commonly treated as filenames with an empty extension. The leading dot
+  is used to indicate a hidden file on most UNIX-like systems.
+* [member path::filename] and `path::iterator` no longer return an implicit trailing dot (".") element if the path ends
+  with a directory separator. Instead, an empty path is returned, similar to C++17 std::filesystem. This also affects other methods
+  that are defined in terms of iterators or filename, such as [member path::stem], [member path::compare] or `lexicographical_compare`.
+  For example, `path("a/b/") == path("a/b/.")` no longer holds true.
+* [member path::lexically_normal] no longer produces a trailing dot (".") element and omits a directory separator after a trailing
+  dot-dot ("..") element in the normalized paths.
+* [member path::lexically_normal], [member path::make_preferred], [member path::generic_path] and similar methods no longer convert
+  between forward and backward slashes in root names of the returned paths.
+* [member path::append] consider root name and root directory of the appended path. If the appended path is absolute, or root name
+  is present and differs from the source path, the resulting path is equivalent to the appended path. If root directory is present,
+  the result is the root directory and relative path rebased on top of the root name of the source path. Otherwise, the behavior
+  is similar to v3. This behavior is similar to C++17 std::filesystem.
+* `path` no longer supports construction, assignment or appending from containers of characters. Use string types or iterators as
+  the source for these opereations instead.
+* [member path::remove_filename] preserves the trailing directory separator, so that [member path::has_filename] returns `false`
+  after a successful call to `path::remove_filename`.
+
+[endsect]
+
+[section:directory Directory operations]
+
+* [class directory_entry] constructors and modifiers that initialize or modify path of the directory entry automatically call
+  [member directory_entry::refresh] instead of clearing cached file statuses. This means that the file identified by the new path needs
+  to be accessible in the filesystem at the point of the call.
+* [class directory_entry] constructors and modifiers that accept [class file_status] arguments to initialize cached file statuses
+  are removed. The amount of cached data is an implementation detail of `directory_entry`, and in the future it may not be limited
+  to just file statuses. Users should rely on automatic refreshes of the cached data.
+
+[endsect]
+
+[section:operations Filesystem operations]
+
+* [link filesystem.reference.equivalent `equivalent`] now fails if only one of the input paths exists.
+
+[endsect]
+
+[endsect]
+
+[endsect]
