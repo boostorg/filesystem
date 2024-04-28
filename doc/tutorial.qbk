@@ -1,0 +1,835 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:tutorial Tutorial]
+
+[section:introduction Introduction]
+
+This tutorial develops a little command line program to list information about files and directories - essentially
+a much simplified version of the POSIX `ls` or Windows `dir` commands. We'll start with the simplest possible version
+and progress to more complex functionality. Along the way we'll digress to cover topics you'll need to know about
+to understand Boost.Filesystem.
+
+Source code for each  of the tutorial programs is available, and you are encouraged to compile, test, and experiment
+with it. To conserve space, we won't always show boilerplate code here, but the provided source is complete and
+ready to build.
+
+[endsect]
+
+[section:preliminaries Preliminaries]
+
+Install the Boost distribution if you haven't already done so. See the [link filesystem.install.building building
+instructions].
+
+This tutorial assumes you have bootstrapped Boost.Build and compiled Boost.Filesystem as described in the building
+instructions. The `b2` executable is expected to be available in `PATH`. In the code samples below, ['[*boost-root]]
+denotes the root directory of your Boost installation tree.
+
+Fire up your command line interpreter, and type the following commands:
+  
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ cd ['[*boost-root]]\/libs\/filesystem\/example
+
+$ b2 tutorial
+Compiling example programs...
+
+$ .\/tut1
+Usage: tut1 path
+]
+]
+[
+[pre
+>cd ['[*boost-root]]\\libs\\filesystem\\example
+
+>b2.exe tutorial
+Compiling example programs...
+
+>tut1
+Usage: tut1 path
+]
+]]
+]
+
+If the `tut1` command outputs "`Usage: tut1 path`", all is well. The tutorial example programs are available in
+[^['[*boost-root]]\/libs\/filesystem\/example]. Should you modify and experiment with them as the tutorial progresses,
+just invoke `b2 tutorial` again to rebuild.
+
+If something didn't work right, here are some troubleshooting suggestions:
+
+* If the `b2` program executable isn't being found, check your path environmental variable or see
+  [@https://www.boost.org/more/getting_started/windows.html Boost Getting Started].
+* Look at Boost bootstrap output to try to spot an indication of the problem.
+
+[endsect]
+
+[section:reporting-size Reporting the size of a file]
+
+Let's get started. Our first example program, [@../example/tut1.cpp `tut1.cpp`], reports the size of a file:
+
+[import ../example/tut1.cpp]
+[example_tut1]
+
+The Boost.Filesystem [link filesystem.reference.file_size `file_size`] function returns a `uintmax_t`
+containing the size of the file named by the argument. The declaration looks like this:
+
+```
+uintmax_t file_size(const path& p); 
+```
+
+For now, all you need to know is that `class path` has constructors that take `const char *` and other
+string types. (If you can't wait to find out more, skip ahead to the [link filesystem.tutorial.class-path-constructors class path]
+section of the tutorial.)
+
+Please take a minute to try out `tut1` on your system, using a file that is known to exist, such as `tut1.cpp`.
+Here is what the results look like on two different operating systems:
+  
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut1 tut1.cpp
+tut1.cpp 569
+
+$ ls -l tut1.cpp
+-rw-rw-r-- 1 beman beman 569 Jul 26 12:04 tut1.cpp
+]
+]
+[
+[pre
+>tut1 tut1.cpp
+tut1.cpp 592
+
+>dir tut1.cpp
+...
+07\/26\/2015 07:20 AM 592 tut1.cpp
+...
+]
+]]
+]
+
+So far, so good. The reported Linux and Windows sizes are different because the Linux tests used "\\n"
+line endings, while the Windows tests used "\\r\\n" line endings. The sizes reported may differ from
+the above if changes have been made to `tut1.cpp`.
+
+Now try again, but give a path that doesn't exist:
+  
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut1 foo
+terminate called after throwing an instance of 'boost::filesystem::filesystem_error'
+what(): boost::filesystem::file_size: No such file or directory: "foo"
+Aborted (core dumped)
+]
+]
+[
+[pre
+>tut1 foo
+]
+
+['An exception is thrown; the exact form of the response depends on Windows system options.]
+]]
+]
+
+What happens? There's no file named `foo` in the current directory, so by default an exception
+is thrown. See [link filesystem.tutorial.error-reporting Error reporting] to learn about error reporting
+via error codes rather than exceptions.
+
+Try this:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut1 .
+terminate called after throwing an instance of 'boost::filesystem::filesystem_error'
+what(): boost::filesystem::file_size: Operation not permitted: "."
+Aborted (core dumped)
+]
+]
+[
+[pre
+>tut1 .
+]
+
+['An exception is thrown; the exact form of the response depends on Windows system options.]
+]]
+]
+
+The current directory exists, but `file_size()` works on regular files, not directories, so again
+an exception is thrown.
+
+We'll deal with those situations in `tut2.cpp`.
+
+[endsect]
+
+[section:using-status-queries Using status queries to determine file existence and type]
+
+Boost.Filesystem includes status query functions such as [link filesystem.reference.exists-path `exists`],
+[link filesystem.reference.is_directory-path `is_directory`], and [link filesystem.reference.is_regular_file-path `is_regular_file`].
+These return `bool`s, and will return `true` if the condition described by their name is met. Otherwise they
+return `false`, including when any element of the path argument can't be found.
+
+[@../example/tut2.cpp `tut2.cpp`] uses several of the status query functions to cope with non-existent
+files and with different kinds of files:
+
+[import ../example/tut2.cpp]
+[example_tut2]
+
+Give it a try:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut2 tut2.cpp
+"tut2.cpp" size is 997
+
+$ .\/tut2 foo
+"foo" does not exist
+
+$ .\/tut2 .
+"." is a directory
+]
+]
+[
+[pre
+>tut2 tut2.cpp
+tut2.cpp size is 1039
+
+>tut2 foo
+"foo" does not exist
+
+>tut2 .
+"." is a directory
+]
+]]
+]
+
+Although `tut2` works OK in these tests, the output is less than satisfactory for a directory. We'd typically
+like to see a list of the directory's contents. In `tut3.cpp` we will see how to iterate over directories.
+
+But first, let's try one more test:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ ls \/home\/jane\/foo
+ls: cannot access \/home\/jane\/foo: No such file or directory
+
+$ .\/tut2 \/home\/jane\/foo
+terminate called after throwing an instance of 'boost::
+filesystem::filesystem_error>'
+   what(): boost::filesystem::status: Permission denied:
+     "\/home\/jane\/foo"
+Aborted
+]
+]
+[
+[pre
+>dir e:\\
+The device is not ready.
+
+>tut2 e:\\
+]
+
+['An exception is thrown; the exact form of the response depends on Windows system options.]
+]]
+]
+
+On the Linux system, the test was being run from an account that did not have permission to access
+[^\/home\/jane\/foo]. On the Windows system, [^e:] was a Compact Disc reader\/writer that was not ready. End users
+shouldn't have to interpret cryptic exceptions reports, so as we move on to `tut3.cpp` we will increase
+the robustness of the code, too.
+
+[endsect]
+
+[section:directory-iteration Directory iteration plus catching exceptions]
+
+Boost.Filesystem's [link filesystem.reference.directory_iterator `directory_iterator`] class is just
+what we need here. It follows the general pattern of the standard library's `istream_iterator`. Constructed
+from a path, it iterates over the contents of the directory. A default constructed `directory_iterator`
+acts as the end iterator.
+
+The value type of `directory_iterator` is [link filesystem.reference.directory_entry `directory_entry`].
+A `directory_entry` object contains `path` and [link filesystem.reference.file_status `file_status`]
+information. A `directory_entry` object can be used directly, but can also be passed to `path` arguments
+in function calls.
+
+The other need is increased robustness in the face of the many kinds of errors that can affect file system
+operations. We could do that at the level of each call to a Boost.Filesystem function (see
+[link filesystem.tutorial.error-reporting Error reporting]), but for simplicity [@../example/tut3.cpp
+`tut3.cpp`] uses an overall `try`\/`catch` block.
+
+[import ../example/tut3.cpp]
+[example_tut3]
+
+Give `tut3` a try, passing it a path to a directory as a command line argument. Here is a run on a checkout
+of the Boost Git develop branch, followed by a repeat of the test cases that caused exceptions on Linux and
+Windows:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut3 ~\/boost\/develop
+    "\/home\/beman\/boost\/develop" is a directory containing:
+    "\/home\/beman\/boost\/develop\/rst.css"
+    "\/home\/beman\/boost\/develop\/boost"
+    "\/home\/beman\/boost\/develop\/boost.png"
+    "\/home\/beman\/boost\/develop\/libs"
+    "\/home\/beman\/boost\/develop\/doc"
+    "\/home\/beman\/boost\/develop\/project-config.jam.2"
+    "\/home\/beman\/boost\/develop\/.gitmodules"
+    "\/home\/beman\/boost\/develop\/boostcpp.py"
+    "\/home\/beman\/boost\/develop\/.travis.yml"
+    "\/home\/beman\/boost\/develop\/.gitattributes"
+    "\/home\/beman\/boost\/develop\/index.htm"
+    "\/home\/beman\/boost\/develop\/index.html"
+    "\/home\/beman\/boost\/develop\/bjam"
+    "\/home\/beman\/boost\/develop\/project-config.jam.1"
+    "\/home\/beman\/boost\/develop\/LICENSE_1_0.txt"
+    "\/home\/beman\/boost\/develop\/.git"
+    "\/home\/beman\/boost\/develop\/tools"
+    "\/home\/beman\/boost\/develop\/stage"
+    "\/home\/beman\/boost\/develop\/boostcpp.jam"
+    "\/home\/beman\/boost\/develop\/Jamroot"
+    "\/home\/beman\/boost\/develop\/.gitignore"
+    "\/home\/beman\/boost\/develop\/INSTALL"
+    "\/home\/beman\/boost\/develop\/more"
+    "\/home\/beman\/boost\/develop\/bin.v2"
+    "\/home\/beman\/boost\/develop\/project-config.jam"
+    "\/home\/beman\/boost\/develop\/boost-build.jam"
+    "\/home\/beman\/boost\/develop\/bootstrap.bat"
+    "\/home\/beman\/boost\/develop\/bootstrap.sh"
+    "\/home\/beman\/boost\/develop\/status"
+    "\/home\/beman\/boost\/develop\/boost.css"
+
+$ .\/tut3 \/home\/jane\/foo
+boost::filesystem::status: Permission denied: "\/home\/jane\/foo"
+]
+]
+[
+[pre
+>tut3 \\boost\\develop
+"\\boost\\develop" is a directory containing:
+    "\\boost\\develop\\.git"
+    "\\boost\\develop\\.gitattributes"
+    "\\boost\\develop\\.gitignore"
+    "\\boost\\develop\\.gitmodules"
+    "\\boost\\develop\\.travis.yml"
+    "\\boost\\develop\\bin.v2"
+    "\\boost\\develop\\boost"
+    "\\boost\\develop\\boost-build.jam"
+    "\\boost\\develop\\boost.css"
+    "\\boost\\develop\\boost.png"
+    "\\boost\\develop\\boostcpp.jam"
+    "\\boost\\develop\\boostcpp.py"
+    "\\boost\\develop\\bootstrap.bat"
+    "\\boost\\develop\\bootstrap.sh"
+    "\\boost\\develop\\doc"
+    "\\boost\\develop\\index.htm"
+    "\\boost\\develop\\index.html"
+    "\\boost\\develop\\INSTALL"
+    "\\boost\\develop\\Jamroot"
+    "\\boost\\develop\\libs"
+    "\\boost\\develop\\LICENSE_1_0.txt"
+    "\\boost\\develop\\more"
+    "\\boost\\develop\\project-config.jam"
+    "\\boost\\develop\\rst.css"
+    "\\boost\\develop\\stage"
+    "\\boost\\develop\\status"
+    "\\boost\\develop\\tools"
+
+>tut3 e:\\
+boost::filesystem::status: The device is not ready: "e:\\"
+]
+]]
+]
+
+Not bad, but we can make further improvements:
+
+* The listing would be much easier to read if only the filename was displayed, rather than the full path.
+* The Linux listing isn't sorted. That's because the ordering of directory iteration is unspecified.
+  Ordering depends on the underlying operating system API and file system specifics. So we need to sort the
+  results ourselves.
+
+The next sections show how those changes play out, so read on!
+
+[endsect]
+
+[section:using-path-decomposition Using path decomposition, plus sorting results]
+
+For directories, [@../example/tut4.cpp `tut4.cpp`] builds a `std::vector` of all the entries and then sorts
+it before writing to `std::cout`.
+
+[import ../example/tut4.cpp]
+[example_tut4]
+
+The only difference between `tut3.cpp` and `tut4.cpp` is what happens for directories. We changed:
+
+```
+for (directory_entry const& x : directory_iterator(p))
+    std::cout << " " << x.path() << std::endl;
+```
+
+to:
+
+```
+std::vector<path> v;
+
+for (auto&& x : directory_iterator(p))
+    v.push_back(x.path());
+
+std::sort(v.begin(), v.end());
+
+for (auto&& x : v)
+    std::cout << "    " << x.filename() << std::endl;
+```
+
+[member path::filename] is one of several class `path` decomposition functions. It extracts the filename portion
+from a path (i.e. [^"index.html"] from [^"\/home\/beman\/boost\/trunk\/index.html"]). These decomposition functions
+are more fully explored in the [link filesystem.tutorial.path-iterators-etc Path iterators, observers, composition,
+decomposition and query] portion of this tutorial.
+
+The above was written as two lines of code for clarity. It could have been written more concisely as:
+
+```
+v.push_back(it->path().filename()); // we only care about the filename
+```
+
+Here is the output from a test of [@../example/tut4.cpp `tut4.cpp`]:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut4 ~\/boost\/develop
+"\/home\/beman\/boost\/develop" is a directory containing:
+    ".git"
+    ".gitattributes"
+    ".gitignore"
+    ".gitmodules"
+    ".travis.yml"
+    "INSTALL"
+    "Jamroot"
+    "LICENSE_1_0.txt"
+    "bin.v2"
+    "boost"
+    "boost-build.jam"
+    "boost.css"
+    "boost.png"
+    "boostcpp.jam"
+    "boostcpp.py"
+    "bootstrap.bat"
+    "bootstrap.sh"
+    "doc"
+    "index.htm"
+    "index.html"
+    "libs"
+    "more"
+    "project-config.jam"
+    "project-config.jam.1"
+    "project-config.jam.2"
+    "rst.css"
+    "stage"
+    "status"
+    "tools"
+]
+]
+[
+[pre
+>tut4 \\boost\\develop
+"\\boost\\develop" is a directory containing:
+    ".git"
+    ".gitattributes"
+    ".gitignore"
+    ".gitmodules"
+    ".travis.yml"
+    "INSTALL"
+    "Jamroot"
+    "LICENSE_1_0.txt"
+    "bin.v2"
+    "boost"
+    "boost-build.jam"
+    "boost.css"
+    "boost.png"
+    "boostcpp.jam"
+    "boostcpp.py"
+    "bootstrap.bat"
+    "bootstrap.sh"
+    "doc"
+    "index.htm"
+    "index.html"
+    "libs"
+    "more"
+    "project-config.jam"
+    "project-config.jam.1"
+    "project-config.jam.2"
+    "rst.css"
+    "stage"
+    "status"
+    "tools"
+]
+]]
+]
+
+That completes the main portion of this tutorial. If you haven't already worked through the
+[link filesystem.tutorial.class-path-constructors Class path] sections of this tutorial, dig into them now.
+The [link filesystem.tutorial.error-reporting Error reporting] section may also be of interest, although it can be
+skipped unless you are deeply concerned about error handling issues.
+
+[endsect]
+
+[section:class-path-constructors Class path: Constructors, including Unicode]
+
+Traditional C interfaces pass paths as `const char*` arguments. C++ interfaces may add `const std::string&` overloads,
+but adding overloads becomes untenable if wide characters, containers, and iterator ranges need to be supported.
+
+Passing paths as `const path&` arguments is far simpler, yet far more flexible because class `path` itself is far more flexible:
+
+# Class `path` supports multiple character types and encodings, including Unicode, to ease internationalization.
+# Class `path` supports multiple source types, such as null terminated character sequences, iterator ranges, string class types
+  (including `std::basic_string` and `std::basic_string_view`), and [link filesystem.reference.class-directory_entry
+  `directory_entry`]s, so functions taking paths don't need to provide several overloads.
+# Class `path` supports both native and generic pathname formats, so programs can be portable between operating systems
+  yet use native formats where desirable.
+# Class `path` supplies a full set of iterators, observers, composition, decomposition, and query functions, making pathname
+  manipulations easy, convenient, reliable, and portable.
+
+Here is how (1) and (2) work. Class path constructors, assignments, and appends have member templates for sources. For example,
+here are the constructors that take sources:
+
+```
+template <class Source>
+path(Source const& source);
+
+template <class InputIterator>
+path(InputIterator begin, InputIterator end);
+```
+
+Let's look at [@../example/tut5.cpp `tut5.cpp`] sample program that shows how comfortable class `path` is with both narrow
+and wide characters in C-style strings, C++ strings, and via C++ iterators:
+
+[import ../example/tut5.cpp]
+[example_tut5]
+
+Testing `tut5`:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/tut5
+
+$ ls smile*
+smile smile☺ smile2 smile2☺ smile3 smile3☺ smile4 smile4☺
+]
+]
+[
+[pre
+>tut5
+
+>dir \/b smile*
+smile
+smile2
+smile2☺
+smile3
+smile3☺
+smile4
+smile4☺
+smile☺
+]
+]]
+]
+
+The exact appearance of the smiling face will depend on the font, font size, and other settings for your command line
+window. The above tests were run with out-of-the-box Ubuntu 14.04 and Windows 7, US Edition. If you don't get the above
+results, take a look at the [^['[*boost-root]]\/libs\/filesystem\/example] directory with your system's GUI file browser,
+such as Linux Nautilus, Mac OS X Finder, or Windows Explorer. These tend to be more comfortable with international
+character sets than command line interpreters.
+
+Class `path` takes care of whatever character type or encoding conversions are required by the particular operating system.
+Thus as `tut5` demonstrates, it's no problem to pass a wide character string to a Boost.Filesystem operational function
+even if the underlying operating system uses narrow characters, and visa versa. And the same applies to user supplied
+functions that take `const path&` arguments.
+
+Class `path` also provides path syntax that is portable across operating systems, element iterators, and observer,
+composition, decomposition, and query functions to manipulate the elements of a path. The next section of this
+tutorial deals with path syntax.
+
+[endsect]
+
+[section:class-path-formats Class path: Generic format vs. Native format]
+
+Class `path` deals with two different pathname formats - generic format and native format. For POSIX-like file systems,
+these formats are the same. But for users of Windows and other non-POSIX file systems, the distinction is important. Even
+programmers writing for POSIX-like systems need to understand the distinction if they want their code to be portable
+to non-POSIX systems.
+
+The [*generic format] is the familiar [^\/my_directory\/my_file.txt] format used by POSIX-like operating systems such as
+the Unix variants, Linux, and Mac OS X. Windows also recognizes the generic format, and it is the basis for the familiar
+Internet URL format. The directory separator character is always one or more slash characters.
+
+The [*native format] is the format as defined by the particular operating system. For Windows, either the slash or
+the backslash can be used as the directory separator character, so [^\/my_directory\\\\my_file.txt] would work fine. Of
+course, if you write that in a C++ string literal, it becomes `"/my_directory\\\\my_file.txt"`.
+
+If a drive specifier or a backslash appears in a pathname on a Windows system, it is always treated as the native format.
+
+Class `path` has observer functions that allow you to obtain the string representation of a path object in either the native
+format or the generic format. See the [link filesystem.tutorial.path-iterators-etc next section] for how that plays out.
+
+The distinction between generic format and native format is important when communicating with native C-style API's and
+with users. Both tend to expect paths in the native format and may be confused by the generic format. The generic format
+is great, however, for writing portable programs that work regardless of operating system.
+
+The next section covers class `path` observers, composition, decomposition, query, and iteration over the elements of a path.
+
+[endsect]
+
+[section:path-iterators-etc Class path: Iterators, observers, composition, decomposition, and query]
+
+The [@../example/path_info.cpp `path_info.cpp`] program is handy for learning how class `path` iterators, observers,
+composition, decomposition, and query functions work on your system.
+
+[import ../example/path_info.cpp]
+[example_path_info]
+
+Run the examples below on your system, and try some different path arguments as we go along. Here is the invocation
+we will talk about in detail:
+
+[table
+[[Ubuntu Linux] [Microsoft Windows]]
+[[
+[pre
+$ .\/path_info \/foo bar baa.txt
+
+composed path:
+  operator<<()---------: "\/foo\/bar\/baa.txt"
+  make_preferred()-----: "\/foo\/bar\/baa.txt"
+
+elements:
+  "\/"
+  "foo"
+  "bar"
+  "baa.txt"
+
+observers, native format:
+  native()-------------: \/foo\/bar\/baa.txt
+  c_str()--------------: \/foo\/bar\/baa.txt
+  string()-------------: \/foo\/bar\/baa.txt
+  wstring()------------: \/foo\/bar\/baa.txt
+
+observers, generic format:
+  generic_string()-----: \/foo\/bar\/baa.txt
+  generic_wstring()----: \/foo\/bar\/baa.txt
+
+decomposition:
+  root_name()----------: ""
+  root_directory()-----: "\/"
+  root_path()----------: "\/"
+  relative_path()------: "foo\/bar\/baa.txt"
+  parent_path()--------: "\/foo\/bar"
+  filename()-----------: "baa.txt"
+  stem()---------------: "baa"
+  extension()----------: ".txt"
+
+query:
+  empty()--------------: false
+  is_absolute()--------: true
+  has_root_name()------: false
+  has_root_directory()-: true
+  has_root_path()------: true
+  has_relative_path()--: true
+  has_parent_path()----: true
+  has_filename()-------: true
+  has_stem()-----------: true
+  has_extension()------: true
+]
+]
+[
+[pre
+>path_info \\foo bar baa.txt
+
+composed path:
+operator<<()---------: "\\foo\\bar\\baa.txt"
+make_preferred()-----: "\\foo\\bar\\baa.txt"
+
+elements:
+  "\/"
+  "foo"
+  "bar"
+  "baa.txt"
+
+observers, native format:
+native()-------------: \\foo\\bar\\baa.txt
+c_str()--------------: \\foo\\bar\\baa.txt
+string()-------------: \\foo\\bar\\baa.txt
+wstring()------------: \\foo\\bar\\baa.txt
+
+observers, generic format:
+generic_string()-----: \/foo\/bar\/baa.txt
+generic_wstring()----: \/foo\/bar\/baa.txt
+
+decomposition:
+root_name()----------: ""
+root_directory()-----: "\\"
+root_path()----------: "\\"
+relative_path()------: "foo\\bar\\baa.txt"
+parent_path()--------: "\\foo\\bar"
+filename()-----------: "baa.txt"
+stem()---------------: "baa"
+extension()----------: ".txt"
+
+query:
+empty()--------------: false
+is_absolute()--------: false
+has_root_name()------: false
+has_root_directory()-: true
+has_root_path()------: true
+has_relative_path()--: true
+has_parent_path()----: true
+has_filename()-------: true
+has_stem()-----------: true
+has_extension()------: true
+]
+]]
+]
+
+We will go through the above code in detail to gain a better understanding of what is going on.
+
+A common need is to compose a path from its constituent directories. Class `path` uses `/` and `/=` operators to
+append elements. That's a reminder that these operations append the operating system's preferred directory
+separator if needed. The preferred directory separator is a slash on POSIX-like systems, and a backslash on
+Windows-like systems.
+
+That's what this code does before displaying the resulting `path p` using the `class path` stream inserter:
+
+```
+path p;
+for (int i = 1; i < argc; ++i)
+    p /= argv[i]; // compose path p from the command line arguments
+
+std::cout << "\ncomposed path:" << std::endl;
+std::cout << "  operator<<()---------: " << p << std::endl;
+std::cout << "  make_preferred()-----: " << p.make_preferred() << std::endl;
+```
+
+One abstraction for thinking about a path is as a sequence of elements, where the elements are directory and
+file names. To support this abstraction, class `path` provides iterators and also `begin()` and `end()` functions.
+
+Here is the code that produced the list of elements in the above output listing:
+
+```
+std::cout << "\nelements:" << std::endl;
+for (auto element : p)
+    std::cout << "  " << element << std::endl;
+```
+
+Let's look at class path observer functions:
+
+```
+std::cout << "\nobservers, native format:" << std::endl;
+#ifdef BOOST_POSIX_API
+std::cout << "  native()-------------: " << p.native() << std::endl;
+std::cout << "  c_str()--------------: " << p.c_str() << std::endl;
+#else // BOOST_WINDOWS_API
+std::wcout << L"  native()-------------: " << p.native() << std::endl;
+std::wcout << L"  c_str()--------------: " << p.c_str() << std::endl;
+#endif
+std::cout << "  string()-------------: " << p.string() << std::endl;
+std::wcout << L"  wstring()------------: " << p.wstring() << std::endl;
+
+std::cout << "\nobservers, generic format:" << std::endl;
+std::cout << "  generic_string()-----: " << p.generic_string() << std::endl;
+std::wcout << L"  generic_wstring()----: " << p.generic_wstring() << std::endl;
+```
+
+Native format observers should be used when interacting with the operating system or with users; that's what
+they expect.
+
+Generic format observers should be used when the results need to be portable and uniform regardless of
+the operating system.
+
+`path` objects always hold pathnames in the native format, but otherwise leave them unchanged from their source.
+The [link filesystem.reference.preferred `preferred()`] function will convert to the preferred form, if the native
+format has several forms. Thus on Windows, it will convert slashes to backslashes.
+
+Moving on to decomposition:
+
+```
+std::cout << "\ndecomposition:" << std::endl;
+std::cout << "  root_name()----------: " << p.root_name() << std::endl;
+std::cout << "  root_directory()-----: " << p.root_directory() << std::endl;
+std::cout << "  root_path()----------: " << p.root_path() << std::endl;
+std::cout << "  relative_path()------: " << p.relative_path() << std::endl;
+std::cout << "  parent_path()--------: " << p.parent_path() << std::endl;
+std::cout << "  filename()-----------: " << p.filename() << std::endl;
+std::cout << "  stem()---------------: " << p.stem() << std::endl;
+std::cout << "  extension()----------: " << p.extension() << std::endl;
+```
+
+And, finally, query functions:
+
+```
+std::cout << "\nquery:" << std::endl;
+std::cout << "  empty()--------------: " << p.empty() << std::endl;
+std::cout << "  is_absolute()--------: " << p.is_absolute() << std::endl;
+std::cout << "  has_root_name()------: " << p.has_root_name() << std::endl;
+std::cout << "  has_root_directory()-: " << p.has_root_directory() << std::endl;
+std::cout << "  has_root_path()------: " << p.has_root_path() << std::endl;
+std::cout << "  has_relative_path()--: " << p.has_relative_path() << std::endl;
+std::cout << "  has_parent_path()----: " << p.has_parent_path() << std::endl;
+std::cout << "  has_filename()-------: " << p.has_filename() << std::endl;
+std::cout << "  has_stem()-----------: " << p.has_stem() << std::endl;
+std::cout << "  has_extension()------: " << p.has_extension() << std::endl;
+```
+
+These are pretty self-evident, but do note the difference in the result of `is_absolute()` between Linux and Windows.
+Because there is no root name (i.e. drive specifier or network name), a lone slash (or backslash) is a relative path
+on Windows but an absolute path on POSIX-like operating systems.
+
+[endsect]
+
+[section:error-reporting Error reporting]
+
+The Boost.Filesystem `file_size` function, like many of the operational functions, has two overloads:
+
+```
+uintmax_t file_size(const path& p);
+uintmax_t file_size(const path& p, system::error_code& ec);
+```
+
+The only significant difference between the two is how they report errors.
+
+The first signature will throw exceptions to report errors. A [link filesystem.reference.class-filesystem_error
+`filesystem_error`] exception will be thrown on an operational error. `filesystem_error` is derived from
+`std::runtime_error`. It has a member function to obtain the `error_code` (defined in __boost_system__) reported by
+the source of the error. It also has member functions to obtain the path or paths that caused the error.
+
+[blurb [*Motivation for the second signature:]
+
+Throwing exceptions on errors was the entire error reporting story for the earliest versions of Boost.Filesystem,
+and indeed throwing exceptions on errors works very well for many applications. But user reports trickled in that
+some code became so littered with try and catch blocks as to be unreadable and unmaintainable. In some applications
+I/O errors aren't exceptional, and that's the use case for the second signature.
+]
+
+Functions with a `system::error_code&` argument set that argument to report operational error status, and so do not
+throw exceptions when I\/O related errors occur. For a full explanation, see [link filesystem.reference.error-reporting
+Error reporting] in the reference documentation.
+
+[endsect]
+
+[endsect]

@@ -1,0 +1,582 @@
+[/
+ / Copyright Andrey Semashev 2024-2025.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:reference Reference]
+
+[section:intro Introduction]
+
+This reference documentation describes components that C++ programs may use to perform operations involving file systems, including paths, regular files,
+and directories.
+
+[section:conformance Conformance]
+
+[section:iso_iec_9945 ISO/IEC 9945 conformance]
+
+Some behavior in this reference documentation is specified by reference to ISO/IEC 9945. How such behavior is actually implemented is unspecified.
+
+[note This constitutes an "as if" rule for implementation of operating system dependent behavior. In practice implementations will usually call native
+operating system API's.]
+
+Implementations are encouraged to provide such behavior as it is defined by ISO/IEC 9945. Implementations shall document any behavior that differs from
+the behavior defined by ISO/IEC 9945. Implementations that do not support exact ISO/IEC 9945 behavior are encouraged to provide behavior as close
+to ISO/IEC 9945 behavior as is reasonable given the limitations of actual operating systems and file systems. If an implementation cannot provide any
+reasonable behavior, the implementation shall report an error in an implementation-defined manner.
+
+[note Such errors might be reported by an `#error` directive, a `static_assert`, a [class_filesystem_filesystem_error] exception, a special return value,
+or some other manner.]
+
+Implementations are not required to provide behavior that is not supported by a particular file system.
+
+[tip The [@https://en.wikipedia.org/wiki/FAT_filesystem FAT file system] used by some memory cards, camera memory, and floppy discs does not support
+hard links, symlinks, and many other features of more capable file systems. Implementations are only required to support the FAT features supported
+by the host operating system.]
+
+The behavior of functions described in this reference may differ from their specification in the presence of
+[link filesystem.reference.intro.defs.file-system-race file system races]. No diagnostic is required.
+
+If the possibility of a file system race would make it unreliable for a program to test for a precondition before calling a function described in this
+reference documentation, [*Requires] is not specified for the condition. Instead, the condition is specified as a [*Throws] condition.
+
+[note As a design practice, preconditions are not specified when it is unreasonable for a program to detect them prior to calling the function.]
+
+[endsect]
+
+[section:os Operating system dependent conformance]
+
+Some behavior is specified in this reference documentation as being operating system dependent (\[fs.def.osdep\]). The operation system an implementation
+is dependent upon is implementation defined.
+
+It is permissible for an implementation to be dependent upon an operating system emulator rather than the actual operating system.
+
+[tip ['Example:] An implementation uses [@https://cygwin.com/ Cygwin], a Linux® API emulator for some Windows® operating system versions. The implementation
+would define Cygwin as its operating system. Users could refer to the Cygwin documentation to find details of the operating system dependent behavior.
+
+It is user and conformance test detectable that such an implementation is running on Cygwin. Users would be misled and conformance tests would fail
+if the implementation defined Linux or Windows rather than Cygwin as the operating system, since real behavior is a blend of the two.]
+
+[endsect]
+
+[endsect]
+
+[section:defs Definitions]
+
+The following definitions shall apply throughout this reference documentation:
+
+[variablelist
+[
+    [operating system dependent behavior]
+    [Behavior that is dependent upon the behavior and characteristics of an operating system. See [link filesystem.reference.intro.conformance.os here].]
+]
+[
+    [[#filesystem.reference.intro.defs.file]file]
+    [An object that can be written to, or read from, or both. A file has certain attributes, including type. File types include regular files
+    and directories. Other types of files, such as symbolic links, may be supported by the implementation.]
+]
+[
+    [[#filesystem.reference.intro.defs.filesystem]file system]
+    [A collection of files and their attributes.]
+]
+[
+    [[#filesystem.reference.intro.defs.filename]filename]
+    [The name of a file. Filenames "." and ".." have special meaning. The following characteristics of filenames are operating system dependent:
+
+    * The permitted characters. See [link filesystem.reference.path.os-examples here] for examples.
+    * Specific filenames that are not permitted.
+    * Additional filenames that have special meaning.
+    * Case awareness and sensitivity during path resolution.
+    * Special rules that may apply to file types other than regular files, such as directories.
+    ]
+]
+[
+    [[#filesystem.reference.intro.defs.path]path]
+    [A sequence of elements that identify the location of a file within a filesystem. The elements are the ['root-name[sub opt]],
+    ['root-directory[sub opt]], and an optional sequence of filenames.
+    [note A [link filesystem.reference.intro.defs.pathname pathname] is the concrete representation of a path.]
+    ]
+]
+[
+    [[#filesystem.reference.intro.defs.absolute-path]absolute path]
+    [A path that unambiguously identifies the location of a file without reference to an additional starting location. The elements of a path
+    that determine if it is absolute are operating system dependent.]
+]
+[
+    [[#filesystem.reference.intro.defs.relative-path]relative path]
+    [A path that is not absolute, and so only unambiguously identifies the location of a file when resolved relative to an implied starting location.
+    The elements of a path that determine if it is relative are operating system dependent.
+    [note Paths "." and ".." are relative paths.]
+    ]
+]
+[
+    [[#filesystem.reference.intro.defs.canonical-path]canonical path]
+    [An absolute path that has no elements that are symbolic links, and no "." or ".." elements.]
+]
+[
+    [[#filesystem.reference.intro.defs.pathname]pathname]
+    [A character string that represents the name of a path. Pathnames are formatted according to the generic pathname grammar or an operating system
+    dependent native pathname format.]
+]
+[
+    [[#filesystem.reference.intro.defs.native-format]native pathname format]
+    [The operating system dependent pathname format accepted by the host operating system.]
+]
+[
+    [[#filesystem.reference.intro.defs.normal-form]normal form path]
+    [A path with no redundant directory separators, current directory (['dot]) or parent directory (['dot-dot]) elements. The normal form for
+    an empty path is an empty path. \[[*v3:] The normal form for a path ending in a ['directory-separator] that is not the root directory
+    is the same path with a current directory (['dot]) element appended.\]]
+]
+[
+    [[#filesystem.reference.intro.defs.link]link]
+    [A directory entry object that associates a filename with a file. On some file systems, several directory entries can associate names with
+    the same file.]
+]
+[
+    [[#filesystem.reference.intro.defs.hard-link]hard link]
+    [A link to an existing file. Some file systems support multiple hard links to a file. If the last hard link to a file is removed, the file
+    itself is removed.
+    [note A hard link can be thought of as a shared-ownership smart pointer to a file.]
+    ]
+]
+[
+    [[#filesystem.reference.intro.defs.symbolic-link]symbolic link]
+    [A type of file with the property that when the file is encountered during pathname resolution, a string stored by the file is used to modify
+    the pathname resolution.
+    [note A symbolic link can be thought of as a raw pointer to a file. If the file pointed to does not exist, the symbolic link is said to be a
+    "dangling" symbolic link.]
+    ]
+]
+[
+    [[#filesystem.reference.intro.defs.file-system-race]file system race]
+    [The condition that occurs when multiple threads, processes, or computers interleave access and modification of the same object within
+    a file system.]
+]
+]
+
+[endsect]
+
+[endsect]
+
+[section:path Path]
+
+[section:generic-pathname-format Generic pathname format]
+
+Following is the formal grammar of a generic pathname.
+
+[pre
+pathname:
+    root-name[sub opt] root-directory[sub opt] relative-path[sub opt]
+
+root-name:
+    ['An operating system dependent name that identifies the starting location for absolute paths.]
+
+root-directory:
+    directory-separator
+
+relative-path:
+    filename
+    relative-path directory-separator
+    relative-path directory-separator filename
+
+filename:
+    name
+    "."
+    ".."
+
+preferred-separator:
+    ['An operating system dependent directory separator character. May be a synonym for "/".]
+
+directory-separator:
+    "/"
+    "/" directory-separator
+    preferred-separator
+    preferred-separator directory-separator
+]
+
+[note Many operating systems define a name beginning with two ['directory-separator] characters as a ['root-name] that identifies network
+or other resource locations. Some operating systems define a single letter followed by a colon as a drive specifier - a ['root-name]
+identifying a specific device such as a disc drive.]
+
+Multiple successive ['directory-separator] characters are considered to be the same as one ['directory-separator] character.
+
+The ['filename] "." is considered to be a reference to the current directory. The ['filename] ".." is considered to be a reference to the
+parent directory. Specific ['filenames] may have special meanings for a particular operating system.
+
+[endsect]
+
+[section:os-examples Operating system dependent examples (Informative)]
+
+Certain features are specified in this reference documentation as being operating system dependent. The following table shows the application
+of those specifications for operating systems that use the ISO/IEC 9945 or Windows application program interfaces (APIs).
+[link filesystem.reference.path.os-examples.footnote1 [super \[1\]]]
+
+[table
+[[Feature] [Section] [ISO/IEC 9945 POSIX API] [Windows API] [Notes]]
+[[
+`path::value_type`
+]
+[
+[class path]
+]
+[
+`char`
+]
+[
+`wchar_t`
+]
+[
+]]
+[[
+`path::preferred_separator`
+]
+[
+[class path]
+]
+[
+`'/'`
+]
+[
+`L'\\\\'` (single backslash)
+]
+[
+]]
+[[
+`path("/").is_absolute()`
+]
+[
+[member path::is_absolute]
+]
+[
+`true`
+]
+[
+`false`
+]
+[
+]]
+[[
+`path("c:/").is_absolute()`
+]
+[
+[member path::is_absolute]
+]
+[
+`false`
+]
+[
+`true`
+]
+[
+]]
+[[
+`path` argument disambiguation between generic format and native format
+]
+[
+[link filesystem.reference.path.conversions.format Format conversions]
+]
+[
+Not required
+]
+[
+Not required
+]
+[
+There is no need to distinguish between the generic format and native format for these operating systems.
+]]
+[[
+`path` argument format conversion
+]
+[
+[link filesystem.reference.path.conversions.format Format conversions]
+]
+[
+No conversion performed
+]
+[
+No conversion performed
+]
+[
+The generic format is already acceptable to the native API of these operating systems.
+]]
+[[
+`path("/cats/jane").c_str()`
+]
+[
+[link filesystem.reference.path.conversions.format Format conversions]
+]
+[
+`"/cats/jane"`
+]
+[
+`L"/cats/jane"`
+]
+[
+These operating systems accept the same native separator between directory names and a final file name, so no format conversion is performed.
+Other operating systems might require conversion.
+]]
+[[
+`path("/cats/jane/").c_str()`
+]
+[
+[link filesystem.reference.path.conversions.format Format conversions]
+]
+[
+`"/cats/jane/"`
+]
+[
+`L"/cats/jane/"`
+]
+[
+These operating systems accept the same native separator between directory names and a final file name, so no format conversion is performed.
+Other operating systems might require conversion.
+]]
+[[
+Format conversion by `path` native format observers
+]
+[
+[member path::native]
+]
+[
+No conversion performed
+]
+[
+No conversion performed
+]
+[
+For efficiency, `path` objects are required to store pathnames in the native format regardless of operating system.
+]]
+[[
+Format conversion by `path` generic format observers
+]
+[
+[member path::generic_path]
+]
+[
+No conversion performed
+]
+[
+Backslashes converted to slashes
+]
+[
+]]
+[[
+`p.make_preferred()`
+]
+[
+[member path::make_preferred]
+]
+[
+No change
+]
+[
+Slashes converted to backslashes
+]
+[
+]]
+[[
+Characters prohibited in filenames
+]
+[
+[link filesystem.reference.intro.defs.filename filename]
+]
+[
+0x00, `'/'`
+]
+[
+0x00-0x1F, `'"'`, `'*'`,` '*'`, `'<'`, `'>'`, `'?'`, `'\\\\'` (single backslash), `'/'`, `'|'`
+]
+[
+Many operating systems prohibit the ASCII control characters (0x00-0x1F) in filenames.
+]]
+[[
+Initial imbued `path` locale
+]
+[
+[member path::imbue], [member path::codecvt]
+]
+[
+`std::locale("")`[link filesystem.reference.path.os-examples.footnote2 [super \[2\]]]
+]
+[
+Implementation supplied locale using `MultiByteToWideChar` and `WideCharToMultiByte` with a codepage of `CP_ACP`
+if `AreFileApisANSI` is true, otherwise codepage `CP_OEMCP`.[link filesystem.reference.path.os-examples.footnote3 [super \[3\]]]
+]
+[
+Apple OS X®: Implementation supplied locale providing UTF-8 `codecvt` facet.[link filesystem.reference.path.os-examples.footnote4 [super \[4\]]]
+]]
+]
+
+[#filesystem.reference.path.os-examples.footnote1][super \[1\]] OS X® and Windows® are examples of commercially available operating systems. This information
+is given for the convenience of users of this document and does not constitute an endorsement by ISO or IEC of these products.
+
+[#filesystem.reference.path.os-examples.footnote2][super \[2\]] Rationale: ISO C specifies `std::locale("")` as "the locale-specific native environment",
+while ISO/IEC 9945 says it "Specifies an implementation-defined native environment."
+
+[#filesystem.reference.path.os-examples.footnote3][super \[3\]] Rationale: This is the current behavior of C and C++ standard library functions that perform
+file operations using narrow character strings to identify paths. Changing this behavior would be surprising and at variance with existing code,
+particularly where user input is involved.
+
+[#filesystem.reference.path.os-examples.footnote4][super \[4\]] Rationale: Vendor's documentation states "All BSD system functions expect their string parameters
+to be in UTF-8 encoding and nothing else."
+
+[endsect]
+
+[section:usage Usage concerns]
+
+[section:multithreading Multithreading concerns]
+
+Filesystem library functions are not protected against data races. Modifying an object of a Filesystem library type that is shared between threads risks
+undefined behavior unless objects of that type are explicitly specified as being sharable without data races or the user supplies a locking mechanism.
+
+Class `path` uses a global locale object to perform character code conversion, when needed. This means that changing the locale in one thread may affect
+library behavior in other threads. It is recommended to configure the `path` locale once, early during the application startup, before multiple threads
+have started using the library.
+
+[endsect]
+
+[section:init_order Global initialization and destruction concerns]
+
+Given that class `path` uses a global locale, as well as some other internal objects, using the Filesystem library in global constructors and destructors
+(i.e. before or after `main`) may be problematic because the global objects do not exist. The Filesystem library attempts to mitigate the problem using
+various compiler and platform-specific and mechanisms, such as enforcing early initialization of the internal global objects. The currently supported
+configurations include MSVC on Windows and GCC and compatible compilers supporting the
+[@https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Attributes.html#index-init_005fpriority-variable-attribute `init_priority`] attribute on the target platform.
+
+However, being non-portable, such workarounds cannot be guaranteed to work in every configuration. Portable programs should avoid using the Filesystem
+library in global constructors and destructors.
+
+[endsect]
+
+[section:posix POSIX concerns]
+
+Filesystem library initialization may throw an exception on POSIX systems (e.g. Linux, but not Mac OS X) that use environmental variables to
+determine the encoding of paths. This happens when `std::locale("")` throws because an environmental variable such as `LANG` is set to an invalid
+value, so it can affect any use of `std::locale("")`, not just the Filesystem library. Filesystem uses lazy initialization so the exception is
+only thrown if a valid `std::locale("")` is actually needed, and also so that the exception is thrown after `main()` starts.
+
+Rather than waiting until a call to some Filesystem library function unexpectedly triggers the exception when it calls `path::codecvt()`,
+a program that needs be highly robust against environmental variable problems may want to preemptively call `std::locale("")` within a try block,
+catch the exception, and diagnose or repair the invalid environmental variable.
+
+[endsect]
+
+[endsect]
+
+[section:conversions Conversions]
+
+[section:format Path format conversions]
+
+Member function arguments that take character sequences representing paths may use the [link filesystem.reference.path.generic-pathname-format
+generic pathname format] or the [link filesystem.reference.intro.defs.native-format native pathname format]. Iff such arguments are in
+the generic format and the generic format is not acceptable to the operating system as a native path, conversion to native format shall be performed
+during the processing of the argument. See [link filesystem.reference.path.os-examples OS-specific examples].
+
+[note Depending on the operating system, there may be no unambiguous way for an implementation to always be able to distinguish between native format
+and generic format arguments. This is by design as it simplifies use for operating systems that do not require disambiguation. Should
+an implementation encounter an operating system where disambiguation is required, an implementation can define an extension to distinguish between
+the formats.]
+
+If the native format requires paths for regular files to be formatted differently from paths for directories, the path shall be treated as a directory
+path if last element is a separator, otherwise it shall be treated as a regular file path.
+
+Generic format observer functions shall return strings formatted according to the [link filesystem.reference.path.generic-pathname-format generic
+pathname format] using ['preferred-separator]. See [link filesystem.reference.path.os-examples OS-specific examples].
+
+[endsect]
+
+[section:encoding Character encoding conversions]
+
+For `path` member function arguments that take character sequences representing paths, if the value type of the argument is not `value_type`, character
+encoding conversion to `value_type` shall be performed. Such conversions shall be performed by the `path::codecvt()` facet by default, unless another
+facet is specified in the operation.
+
+The default character encoding facet is set globally for all `path` objects. It can be set as part of the locale object passed to the `path::imbue()`
+method.
+
+[endsect]
+
+[endsect]
+
+[section:requirements Argument requirements]
+
+Some of the class `path` member function templates have parameters with the following requirements.
+
+[#filesystem.reference.path.requirements.InputIterator]Template parameters named `InputIterator` are required to meet the requirements for a
+C++ standard library `InputIterator` compliant iterator. The iterator's value type is required to be one of: `char`, `wchar_t`. Collectively,
+these types are referred to as ['supported path character types].
+
+[#filesystem.reference.path.requirements.Source]Template parameters named `Source` are required to be one of:
+
+* A `std::basic_string`, `std::basic_string_view`, `boost::container::basic_string` or `boost::basic_string_view` specialization with a value
+  type of one of the supported path character types.
+* [*v3, deprecated:] A container with a value type of one of the supported path character types.
+* A pointer into a null terminated string. The value type is required to be a supported path character type.
+* A C-array of supported path character type containing a null terminated string.
+* A `boost::filesystem::directory_entry`.
+
+[endsect]
+
+[section:composition Composition]
+
+Class `path` supports a variety of methods for observing and modifying the path. Among the modifiers, there are two groups of methods for
+performing concatenation and appending. The important distinction between these two groups is that concatenation is performed on the path as if
+the path was a simple string (i.e. the concatenated characters are placed immediately at the end of the path), while appending maintains path
+structure and may insert a directory separator before the appended characters. The rules for inserting the separator depend on the library version
+and are documented in the `path::append()` method description.
+
+Class `path` also supports operators `+` and `/` for concatenation and appending, respectively, as well as the corresponding assigning versions
+thereof.
+
+```
+p1 = "foo";
+std::cout << (p + "bar") << std::endl; // outputs "foobar"
+std::cout << (p / "bar") << std::endl; // outputs "foo/bar"
+```
+
+[endsect]
+
+[section:iterators Iterators]
+
+Class `path` supports iterators `iterator`, `const_iterator`, `reverse_iterator`, and `const_reverse_iterator` to iterate over the elements
+of the stored pathname.
+
+Path iterators are constant iterators satisfying the requirements of a bidirectional iterator (C++ Std, 24.1.4 Bidirectional
+iterators \[lib.bidirectional.iterators\]). The `value_type` of an iterator is `path`.
+
+[note Path iterators store their value objects internally and when dereferenced return references to those internal objects. They cannot
+be used with iterator adaptors such as `std::reverse_iterator` that assume references obtained by dereferencing an iterator point to objects
+that out-live the iterator itself.]
+
+Calling any non-const member function of a `path` object invalidates all iterators referring to elements of that object.
+
+The forward traversal order is as follows:
+
+* The ['root-name] element, if present.
+* The ['root-directory] element, if present, in the generic format.
+  [note The generic format is required to ensure lexicographical comparison works correctly.]
+* Each successive ['filename] element, if present.
+* \[[*v3:] ['Dot]\] \[[*v4:] Empty path\], if one or more trailing non-root directory separators are present.
+
+[note Treating the last element during iteration as \[[*v3:] ['dot]\] \[[*v4:] an empty path\] when there is a trailing directory separator
+enables lexical (i.e. syntactic) distinction between paths to directories versus paths to regular files. Such a distinction is usually
+irrelevant on POSIX and Windows based operating systems, but may be a requirement on other operating systems.]
+
+The backward traversal order is the reverse of forward traversal.
+
+[endsect]
+
+[xinclude path_reference.xml]
+
+[endsect]
+
+[xinclude operations_reference.xml]
+[xinclude directory_reference.xml]
+[xinclude file_status_reference.xml]
+[xinclude exception_reference.xml]
+[xinclude io_reference.xml]
+
+[endsect]

@@ -1,0 +1,216 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:install Installing and using the library]
+
+[section:platform_requirements Supported compilers and platforms]
+
+The library requires a C++11 compiler as a minimum and is regularly tested with the following
+compilers:
+
+* GCC 4.8 and newer on Linux.
+* Clang 3.5 and newer with libstdc++ and libc++ on Linux.
+* Apple Clang 13 on Mac OS.
+* MSVC 14.0 and newer on Windows.
+* Clang-cl 16.0.6 on Windows.
+* MinGW-w64 with GCC 8 and newer on Windows.
+* GCC 7 on Cygwin and Cygwin64.
+
+The library supports POSIX systems and Windows 10 and newer. Note that many operating systems
+not normally thought of as POSIX systems, such as mainframe legacy operating systems or
+embedded operating systems, support POSIX compatible file systems and so will work with
+the Filesystem Library.
+
+Besides the operating systems mentioned above, the library has been used on HP-UX, IBM AIX,
+SGI IRIX, OpenBSD, FreeBSD and Sun Solaris operating systems using a variety of compilers.
+It is also used by several smart phone operating systems.
+
+[section:cygwin_notes Notes for Cygwin users]
+
+[@https://www.cygwin.com/ Cygwin] version 1.7 or later is required because
+only versions of GCC with wide character strings are supported.
+
+The library's implementation code treats Cygwin as a Windows platform, and
+thus uses the Windows API and uses Windows path syntax as the native path
+syntax.
+
+[endsect]
+
+[endsect]
+
+[section:building Building the library]
+
+Boost.Filesystem is implemented as a separately compiled library, so you must install
+binaries in a location that can be found by your linker. If you followed the
+[@https://www.boost.org/doc/libs/release/more/getting_started/index.html Boost Getting Started]
+instructions, that's already been done for you.
+
+Otherwise, the library can also be built manually using __boost_build__ or CMake using the project
+files in the library directory. For example, using __boost_build__ one can build a release version
+of the library with the following command line in the Boost root directory:
+
+[pre
+b2 --with-filesystem variant=release stage
+]
+
+With CMake, the library can be built with the following commands, also in the Boost root directory:
+
+[pre
+mkdir build_static_release
+cd build_static_release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_INCLUDE_LIBRARIES=filesystem
+cmake --build .
+]
+
+The library can be built for static or dynamic (shared/dll) linking. For Boost.Build,
+this is controlled with the `link` [@https://www.boost.org/doc/libs/release/tools/build/doc/html/index.html#bbv2.overview.builtins.features
+property] which can have values `shared` and `static`. For example, to build shared
+libraries:
+
+[pre
+b2 --with-filesystem variant=release link=shared stage
+]
+
+For CMake, the `BUILD_SHARED_LIBS` option enables building shared libraries. Note that
+with CMake users typically have to create a separate build directory for every
+build configuration.
+
+[pre
+mkdir build_shared_release
+cd build_shared_release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 -DBOOST_INCLUDE_LIBRARIES=filesystem
+cmake --build .
+]
+
+When using Boost.Filesystem as a shared library, users should define `BOOST_ALL_DYN_LINK` or
+`BOOST_FILESYSTEM_DYN_LINK` macros when compiling their code. This will configure the auto-linking
+process to link with the shared library instead of the static one. See the
+[@https://www.boost.org/development/separate_compilation.html Separate Compilation] page for more details.
+
+[endsect]
+
+[section:config_macros Configuration Macros]
+
+Users may define the following macros if desired. Sensible defaults are
+provided, so users can ignore these macros unless they have special needs.
+
+Some of the macros can be defined when compiling user's code, which will affect library interfaces.
+Other macros can be defined during Boost.Filesystem compilation, which affect library implementation.
+Those macros need not be defined when building code that uses Boost.Filesystem.
+
+[table
+[[Macro Name] [Default] [Affects library usage] [Affects library build] [Effect if defined]]
+[
+    [`BOOST_FILESYSTEM_VERSION`]
+    [3]
+    [\u2714][]
+    [Selects the Boost.Filesystem library version. Can have values of 3 or 4.
+    Defining to 4 also implies `BOOST_FILESYSTEM_NO_DEPRECATED`.]
+]
+[
+    [`BOOST_FILESYSTEM_NO_DEPRECATED`]
+    [Not defined]
+    [\u2714][]
+    [Deprecated features are excluded from headers.]
+]
+[
+    [`BOOST_FILESYSTEM_DYN_LINK`]
+    [Defined if `BOOST_ALL_DYN_LINK` is defined, otherwise not defined.]
+    [\u2714][]
+    [The Boost.Filesystem library is dynamically linked. If not defined,
+    static linking is assumed.]
+]
+[
+    [`BOOST_FILESYSTEM_NO_LIB`]
+    [Defined if `BOOST_ALL_NO_LIB` is defined, otherwise not defined.]
+    [\u2714][]
+    [Boost.Filesystem library does not use the Boost auto-link
+    facility.]
+]
+[
+    [`BOOST_FILESYSTEM_DISABLE_SENDFILE`]
+    [Not defined. `sendfile` API presence detected at library build time.]
+    [][\u2714]
+    [Boost.Filesystem library does not use the `sendfile` system call on Linux.
+    The `sendfile` system call started accepting regular file descriptors as the target in Linux 2.6.33.]
+]
+[
+    [`BOOST_FILESYSTEM_DISABLE_COPY_FILE_RANGE`]
+    [Not defined. `copy_file_range` API presence detected at library build time.]
+    [][\u2714]
+    [Boost.Filesystem library does not use the `copy_file_range` system call on Linux.
+    The `copy_file_range` system call was introduced in Linux kernel 4.5 and started operating across filesystems in 5.3.]
+]
+[
+    [`BOOST_FILESYSTEM_DISABLE_STATX`]
+    [Not defined. `statx` presence detected at library build time.]
+    [][\u2714]
+    [Boost.Filesystem library does not use the `statx` system call on Linux.
+    The `statx` system call was introduced in Linux kernel 4.11.]
+]
+[
+    [`BOOST_FILESYSTEM_DISABLE_GETRANDOM`]
+    [Not defined. `getrandom` API presence detected at library build time.]
+    [][\u2714]
+    [Boost.Filesystem library does not use the `getrandom` system call on Linux.
+    The `getrandom` system call was introduced in Linux kernel 3.17.]
+]
+[
+    [`BOOST_FILESYSTEM_DISABLE_ARC4RANDOM`]
+    [Not defined. `arc4random` API presence detected at library build time.]
+    [][\u2714]
+    [Boost.Filesystem library does not use the `arc4random_buf` system call on BSD systems.
+    The `arc4random` API was introduced in OpenBSD 2.1 and FreeBSD 8.0.]
+]
+[
+    [`BOOST_FILESYSTEM_DISABLE_BCRYPT`]
+    [Not defined. BCrypt API presence detected at library build time.]
+    [][\u2714]
+    [Boost.Filesystem library does not use the BCrypt API on Windows. Has no effect on other platforms.]
+]
+]
+
+User-defined `BOOST_POSIX_API` and `BOOST_WINDOWS_API` macros, which were supported
+in older Boost.Filesystem versions, are no longer supported and should not be defined by users.
+
+In order to define macros when building Boost.Filesystem one can use `define` property with
+Boost.Build or `-D` option with CMake. For example:
+
+[pre
+b2 --with-filesystem variant=release define=BOOST_FILESYSTEM_DISABLE_STATX stage
+]
+
+or:
+
+[pre
+mkdir build_static_release
+cd build_static_release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBOOST_INCLUDE_LIBRARIES=filesystem -DBOOST_FILESYSTEM_DISABLE_STATX
+cmake --build .
+]
+
+For new code using Boost.Filesystem, defining `BOOST_FILESYSTEM_NO_DEPRECATED` before including
+filesystem headers is strongly recommended. This prevents inadvertent use of old features,
+particularly legacy function names, that have been replaced and are going to go away in the future.
+
+[endsect]
+
+[section:headers Headers and namespaces]
+
+Library components can be introduced by including one of the headers in the `boost/filesystem`
+directory or `boost/filesystem.hpp`, which includes all headers in `boost/filesystem`.
+
+Library components are defined in the `boost::filesystem` namespace.
+
+Do not include headers from `boost/filesystem/detail` directory or use symbols from
+the `boost::filesystem::detail` namespace. Those are implementation details of the library,
+they are not part of the public interface and may be changed or removed without notice.
+
+[endsect]
+
+[endsect]

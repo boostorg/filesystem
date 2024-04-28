@@ -1,23 +1,149 @@
-# Boost Filesystem Library Example Jamfile
-
-# Copyright Beman Dawes 2010
-
+# Copyright 2024 Andrey Semashev
+#
 # Distributed under the Boost Software License, Version 1.0.
-# See www.boost.org/LICENSE_1_0.txt
+# (See accompanying file LICENSE_1_0.txt or copy at
+# https://www.boost.org/LICENSE_1_0.txt)
 
-# Library home page: http://www.boost.org/libs/filesystem
+using quickbook ;
+using boostbook ;
+using doxygen ;
+using xsltproc ;
 
-project
-    : requirements
-      <library>/boost/filesystem//boost_filesystem
-      <link>static
+import set ;
+import doxygen ;
+import xsltproc ;
+import notfile ;
+import path ;
+import project ;
+
+project boost/libs/filesystem/doc ;
+
+local doxygen_params =
+        <doxygen:param>RECURSIVE=YES
+        <doxygen:param>ALPHABETICAL_INDEX=YES
+        <doxygen:param>REPEAT_BRIEF=YES
+        <doxygen:param>ALWAYS_DETAILED_SEC=YES
+        <doxygen:param>BRIEF_MEMBER_DESC=NO
+        <doxygen:param>ABBREVIATE_BRIEF=YES
+        <doxygen:param>INHERIT_DOCS=YES
+        <doxygen:param>HIDE_UNDOC_MEMBERS=YES
+        <doxygen:param>HIDE_UNDOC_CLASSES=YES
+        <doxygen:param>HIDE_SCOPE_NAMES=YES
+        <doxygen:param>AUTOLINK_SUPPORT=YES
+        <doxygen:param>DISTRIBUTE_GROUP_DOC=NO
+        <doxygen:param>SUBGROUPING=NO
+        <doxygen:param>EXTRACT_ALL=NO
+        <doxygen:param>EXTRACT_PRIVATE=NO
+        <doxygen:param>BUILTIN_STL_SUPPORT=YES
+        <doxygen:param>ENABLE_PREPROCESSING=YES
+        <doxygen:param>MACRO_EXPANSION=YES
+        <doxygen:param>SHORT_NAMES=YES
+        <doxygen:param>TAB_SIZE=4
+        <doxygen:param>SOURCE_BROWSER=YES
+        <doxygen:param>VERBATIM_HEADERS=NO
+#        <doxygen:param>SEARCH_INCLUDES=YES
+#        <doxygen:param>"INCLUDE_PATH=../../.."
+#        <doxygen:param>EXCLUDE_SYMBOLS="detail detail::*"
+        <doxygen:param>"PREDEFINED=BOOST_FILESYSTEM_DOXYGEN \\
+                        BOOST_FILESYSTEM_DECL= \\
+                        BOOST_FILESYSTEM_DETAIL_DOC_ALT(alt, ...)=alt \\
+                        BOOST_FILESYSTEM_DETAIL_DOC_HIDDEN(...)=... \\
+                        BOOST_FILESYSTEM_DETAIL_DOC(...)=__VA_ARGS__ \\
+                        BOOST_NO_CXX17_DEDUCTION_GUIDES=1 \\
+                        BOOST_BITMASK(x)= \\
+                        BOOST_SYMBOL_VISIBLE= \\
+                        BOOST_FORCEINLINE=inline \\
+                        BOOST_INLINE_VARIABLE=inline \\
+                        BOOST_NOEXCEPT=noexcept \\
+                        BOOST_CONSTEXPR=constexpr \\
+                        BOOST_CXX14_CONSTEXPR=constexpr"
+        <xsl:param>"boost.doxygen.detailns=detail"
     ;
 
-exe path_table : path_table.cpp ;
-install path_table-copy : path_table : <location>. ;
+
+doxygen path_reference
+    :
+        ../../../boost/filesystem/path.hpp
+    :
+        $(doxygen_params)
+        <xsl:param>"boost.doxygen.reftitle=Path Reference"
+        <xsl:param>"boost.doxygen.refid=path"
+    ;
+
+doxygen operations_reference
+    :
+        ../../../boost/filesystem/operations.hpp
+    :
+        $(doxygen_params)
+        <xsl:param>"boost.doxygen.reftitle=Filesystem Operations"
+        <xsl:param>"boost.doxygen.refid=operations"
+    ;
+
+doxygen directory_reference
+    :
+        ../../../boost/filesystem/directory.hpp
+    :
+        $(doxygen_params)
+        <xsl:param>"boost.doxygen.reftitle=Directory Iteration"
+        <xsl:param>"boost.doxygen.refid=directory"
+    ;
+
+doxygen file_status_reference
+    :
+        ../../../boost/filesystem/file_status.hpp
+    :
+        $(doxygen_params)
+        <xsl:param>"boost.doxygen.reftitle=File Status"
+        <xsl:param>"boost.doxygen.refid=file_status"
+    ;
+
+doxygen exception_reference
+    :
+        ../../../boost/filesystem/exception.hpp
+    :
+        $(doxygen_params)
+        <xsl:param>"boost.doxygen.reftitle=Exceptions"
+        <xsl:param>"boost.doxygen.refid=exceptions"
+    ;
+
+doxygen io_reference
+    :
+        ../../../boost/filesystem/cstdio.hpp
+        ../../../boost/filesystem/fstream.hpp
+    :
+        $(doxygen_params)
+        <xsl:param>"boost.doxygen.reftitle=I/O Utilities"
+        <xsl:param>"boost.doxygen.refid=io_utilities"
+    ;
+
+xml filesystem_doc
+    :
+        filesystem.qbk
+    :
+        <dependency>path_reference
+        <dependency>operations_reference
+        <dependency>directory_reference
+        <dependency>file_status_reference
+        <dependency>exception_reference
+        <dependency>io_reference
+    ;
+
+boostbook filesystem
+    :
+        filesystem_doc
+    :
+        <xsl:param>"boost.root=../../../.."
+        <xsl:param>"boost.libraries=../../../libs/libraries.htm"
+        <xsl:param>"nav.layout=none"
+        <xsl:param>"boost.image=Boost"
+        <xsl:param>"navig.graphics=1"
+        <xsl:param>"chunk.section.depth=1"
+        <xsl:param>"boost.compact.function=0"
+        <format>pdf:<xsl:param>"boost.url.prefix=https://www.boost.org/doc/libs/release/libs/filesystem/doc/html"
+    ;
 
 ###############################################################################
 alias boostdoc ;
 explicit boostdoc ;
-alias boostrelease ;
+alias boostrelease : filesystem ;
 explicit boostrelease ;

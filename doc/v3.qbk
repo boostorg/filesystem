@@ -1,0 +1,197 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:v3 Boost Filesystem Version 3]
+
+Version 3 is a major revision of the Boost Filesystem library. Important changes include:
+
+* A single class `path` handles all aspects of internationalization, replacing the previous template and its `path` and `wpath`
+  instantiations. Character types `char` and `wchar_t` are supported. This is a major simplification of the path abstraction,
+  particularly for functions that take path arguments.
+* New `class path` members include:
+  * [member path::has_stem]
+  * [member path::has_extension]
+  * [member path::is_absolute]. This renames `is_complete()`, which is now deprecated.
+  * [member path::is_relative]
+  * [member path::make_preferred]
+* New or improved operations functions include:
+  * [link filesystem.reference.absolute `absolute()`]. This replaces the operations function `complete()`, which is now
+    deprecated. Semantics are now provided for a Windows corner case where the `base` argument was not an absolute path.
+    Previously this resulted in an exception being thrown.
+  * [link filesystem.reference.create_symlink `create_symlink()`] now supported on both POSIX and Windows.
+  * [link filesystem.reference.read_symlink `read_symlink()`] function added. Supported on both POSIX and Windows. Used
+    to read the contents of a symlink itself.
+  * [link filesystem.reference.resize_file `resize_file()`] function added. Supported on both POSIX and Windows. Used to shrink
+    or grow a regular file.
+  * [link filesystem.reference.unique_path `unique_path()`] function added. Supported on both POSIX and Windows. Used to generate
+    a secure temporary pathname.
+* Support for error reporting via `error_code` is now uniform throughout the operation functions.
+* Documentation has been reworked, including re-writes of major portions.
+* A new [link filesystem.tutorial Tutorial] provides a hopefully much gentler and more complete introduction for new users.
+  Current users might want to review the three sections related to class path.
+
+[section:deprecated Deprecated names and other features]
+
+See the [link filesystem.deprecated Deprecated Features page] for transition aids that allow much existing code to compile
+without change using Version 3.
+
+[endsect]
+
+[section:breaking_changes Breaking changes]
+
+To ease the transition, Versions 2 and 3 both used to be included in the next several Boost releases. Version 2 was removed in
+Boost 1.50.0.
+
+[section:path Class `path`]
+
+* Class template `basic_path` and its specializations are replaced by a single class `path`. Thus any code, such as overloaded
+  functions, that depend on `path` and `wpath` being two distinct types will fail to compile and must be restructured.
+  Restructuring may be as simple as removing one of the overloads, but also might require more complex redesign.
+* Certain functions now return `path` objects rather than `string` or `wstring` objects:
+  * `root_name()`
+  * `root_directory()`
+  * `filename()`
+  * `stem()`
+  * `extension()`
+  Not all uses will fail; if the function is being called in a context that accepts a `path`, all is well. If the result is being
+  used in a context requiring a `std::string` or `std::wstring`, then `.string()` or `.wstring()` respectively must be appended
+  to the function call.
+* `path::iterator::value_type` and `path::const_iterator::value_type` is `path` rather than `std::basic_string`.
+
+[endsect]
+
+[section:compilers Compiler support]
+
+* Compilers and standard libraries that do not fully support wide characters and wide character strings (`std::wstring`) are
+  no longer supported.
+* Cygwin versions prior to 1.7 are no longer supported because they lack wide string support. Cygwin now compiles only for
+  the Windows API and path syntax.
+* MinGW versions not supporting wide strings are no longer supported.
+* Microsoft VC++ 7.1 and earlier are no longer supported.
+
+[endsect]
+
+[endsect]
+
+[section:design Design]
+
+[warning This section documents thinking early in the V3 development process, and is intended to serve historical purposes.
+It is not updated to reflect the current state of the library.]
+
+[note Some parts of the discussion in this section are spoken from the perspective of the original author of Boost.Filesystem,
+Beman Dawes. This text is preserved, with minor editorial and formatting changes, for historical reasons.]
+
+[section:introduction Introduction]
+
+During the review of Boost.Filesystem.V2 (Internationalization), Peter Dimov suggested that the `basic_path` class template
+was unwieldy, and that a single path type that accommodated multiple character types and encodings would be more flexible. Although
+I wasn't willing to stop development at that time to explore how this idea might be implemented, or to break from the pattern for
+Internationalization used the C++ standard library, I've often thought about Peter's suggestion. With the advent of C++0x `char16_t`
+and `char32_t` character types, the `basic_path` class template approach becomes even more unwieldy, so it is time to revisit
+the problem in light of Peter's suggestion.
+
+[endsect]
+
+[section:problem Problem]
+
+With Filesystem.V2, a path argument to a user defined function that is to accommodate multiple character types and encodings must
+be written as a template. Do-the-right-thing overloads or template metaprogramming must be employed to allow arguments to be written
+as string literals. Here's what it looks like:
+
+```
+template<class Path>
+void foo(const Path& p);
+
+inline void foo(const path& p)
+{
+    foo<path>(p);
+}
+
+inline void foo(const wpath& p)
+{
+    foo<wpath>(p);
+}
+```
+
+That's really ugly for such a simple need, and there would be a combinatorial explosion if the function took multiple `Path`
+arguments and each could be either narrow or wide. It gets even worse if the C++0x `char16_t` and `char32_t` types are to be
+supported.
+
+[endsect]
+
+[section:solution Solution]
+
+Overview:
+
+* A single, non-template, class `path`.
+* Each member function is a template accommodating the various applicable character types, including user-defined character types.
+* Hold the path internally in a string of the type used by the operating system API; `std::string` for POSIX, `std::wstring` for
+  Windows.
+
+The signatures presented in [link filesystem.v3.design.problem Problem] collapse to simply:
+
+```
+void foo(const path& p);
+```
+
+That's a significant reduction in code complexity. Specification becomes simpler, too. I believe it will be far easier to teach,
+and result in much more flexible user code.
+
+Other benefits:
+
+* All the polymorphism still occurs at compile time.
+* Efficiency is increased, in that conversions of the encoding, if required, only occur once at the time of creation, not each time
+  the path is used.
+* The size of the implementation code drops approximately in half and becomes much more readable.
+
+Possible problems:
+
+* The combination of member function templates and implicit constructors can result in unclear error messages when the user makes
+  simple commonplace coding errors. This should be much less of a problem with C++ concepts, but in the meantime work continues
+  to restrict over aggressive templates via `enable_if`/`disable_if`.
+
+[endsect]
+
+[section:details Details]
+
+[table Encoding Conversions
+[[Host system] [char string path arguments] [wide string path arguments]]
+[[
+Systems with `char` as the native API path character type (i.e. POSIX-like systems)
+]
+[
+No conversion.
+]
+[
+Conversion occurs, performed by the current path locale's `codecvt` facet.
+]]
+[[
+Systems with `wchar_t` as the native API path character type (i.e. Windows-like systems).
+]
+[
+Conversion occurs, performed by the current path locale's `codecvt` facet.
+]
+[
+No conversion.
+]]
+]
+
+When a class `path` function argument type matches the operating system's API argument type for paths, no conversion is performed
+rather than conversion to a specified encoding such as one of the Unicode encodings. This avoids unintended consequences, etc.
+
+[endsect]
+
+[section:other-changes Other changes]
+
+* Uniform hybrid error handling: The hybrid error handling idiom has been consistently applied to all applicable functions.
+
+[endsect]
+
+[endsect]
+
+[endsect]

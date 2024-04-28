@@ -40,16 +40,19 @@
 namespace boost {
 namespace filesystem {
 
+//! \hideinitializer
 enum class directory_options : unsigned int
 {
     none = 0u,
-    skip_permission_denied = 1u,         // if a directory cannot be opened because of insufficient permissions, pretend that the directory is empty
-    follow_directory_symlink = 1u << 1u, // recursive_directory_iterator: follow directory symlinks
-    skip_dangling_symlinks = 1u << 2u,   // non-standard extension for recursive_directory_iterator: don't follow dangling directory symlinks,
-    pop_on_error = 1u << 3u,             // non-standard extension for recursive_directory_iterator: instead of producing an end iterator on errors,
-                                         // repeatedly invoke pop() until it succeeds or the iterator becomes equal to end iterator
+    skip_permission_denied = 1u,         //!< If a directory cannot be opened because of insufficient permissions, pretend that the directory is empty
+    follow_directory_symlink = 1u << 1u, //!< `recursive_directory_iterator`: follow directory symlinks
+    skip_dangling_symlinks = 1u << 2u,   //!< Non-standard extension for `recursive_directory_iterator`: don't follow dangling directory symlinks,
+    pop_on_error = 1u << 3u,             /*!< non-standard extension for `recursive_directory_iterator`: instead of producing an end iterator on errors,
+                                          * repeatedly invoke `pop()` until it succeeds or the iterator becomes equal to end iterator */
+#if !defined(BOOST_FILESYSTEM_DOXYGEN)
     _detail_no_follow = 1u << 4u,        // internal use only
     _detail_no_push = 1u << 5u           // internal use only
+#endif
 };
 
 BOOST_BITMASK(directory_options)
