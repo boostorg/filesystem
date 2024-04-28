@@ -1,0 +1,27 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:reference Reference]
+
+[section:path Path]
+
+[section:iterators Iterators]
+
+[endsect]
+
+[xinclude path_reference.xml]
+
+[endsect]
+
+[xinclude operations_reference.xml]
+[xinclude directory_reference.xml]
+[xinclude file_status_reference.xml]
+[xinclude exception_reference.xml]
+[xinclude io_reference.xml]
+
+[endsect]

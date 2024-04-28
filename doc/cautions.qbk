@@ -1,0 +1,60 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:cautions Cautions]
+
+After reading the tutorial you can dive right into simple, script-like programs using
+the Filesystem Library! Before doing any serious work, however, there a few cautions to be aware of.
+
+[section:fs_races Effects and Postconditions not guaranteed in the presence of race-conditions]
+
+Filesystem function specifications follow the C++ Standard Library form, specifying behavior in terms of
+effects and postconditions. If a [link filesystem.reference.race_condition race-condition] exists,
+a function's postconditions may no longer be true by the time the function returns to the
+caller.
+
+The state of files and directories is often globally shared, and thus may be changed unexpectedly
+by other threads, processes, or even other computers having network access to the filesystem. As an
+example of the difficulties this can cause, note that the following asserts may fail:
+
+```
+assert(exists("foo") == exists("foo")); /*< This will fail if a non-existent "foo" comes into existence, or an
+                                            existent "foo" is removed, between the first and second call to `exists()`.
+                                            This could happen if, during the execution of the example code, another thread,
+                                            process, or computer is also performing operations in the same directory. */
+
+remove_all("foo");
+assert(!exists("foo")); /*< This will fail if between the call to `remove_all()` and the call to
+                            `exists()` a new file or directory named "foo" is created by another
+                            thread, process, or computer. */
+
+assert(is_directory("foo") == is_directory("foo")); /*< This will fail if another thread, process, or computer removes an
+                                                        existing file "foo" and then creates a directory named "foo", between the
+                                                        example code's two calls to `is_directory()`. */
+```
+
+[endsect]
+
+[section:exceptions Exceptions]
+
+Unless otherwise specified, Boost.Filesystem functions throw
+[link filesystem.reference.basic_filesystem_error-constructors `basic_filesystem_error`]
+exceptions to report failures such as I/O errors. Implementations may also use C++ Standard Library
+functions which can throw `std::bad_alloc` exceptions to report memory allocation errors. These exceptions
+may be thrown even though the error condition leading to the exception is not explicitly specified in
+the function's "Throws" paragraph.
+
+Nominally non-throwing versions are provided for [link filesystem.reference.operational-functions operational functions]
+that access the external file system, since these are often used in contexts where error codes may be
+the preferred way to report an error. Even the nominally non-throwing versions of functions will throw
+`std::bad_alloc` exceptions to report memory allocation errors. However, functions marked `noexcept` never
+throw exceptions.
+
+[endsect]
+
+[endsect]
