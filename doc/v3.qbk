@@ -1,0 +1,609 @@
+[/
+ / Copyright Andrey Semashev 2024-2026.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / http://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:v3 Boost Filesystem Version 3]
+
+Version 3 is a major revision of the Boost Filesystem library. Important changes include:
+
+* A single class `path` handles all aspects of internationalization, replacing the previous template and its `path` and `wpath`
+  instantiations. Character types `char` and `wchar_t` are supported. This is a major simplification of the path abstraction,
+  particularly for functions that take path arguments.
+* New `class path` members include:
+  * [member path::has_stem]
+  * [member path::has_extension]
+  * [member path::is_absolute]. This renames `is_complete()`, which is now deprecated.
+  * [member path::is_relative]
+  * [member path::make_preferred]
+* New or improved operations functions include:
+  * [func absolute]. This replaces the operations function `complete()`, which is now deprecated. Semantics are now provided
+    for a Windows corner case where the `base` argument was not an absolute path.
+    Previously this resulted in an exception being thrown.
+  * [func create_symlink] now supported on both POSIX and Windows.
+  * [func read_symlink] function added. Supported on both POSIX and Windows. Used to read the contents of a symlink itself.
+  * [func resize_file] function added. Supported on both POSIX and Windows. Used to shrink or grow a regular file.
+  * [func unique_path] function added. Supported on both POSIX and Windows. Used to generate a secure temporary pathname.
+* Support for error reporting via `error_code` is now uniform throughout the operation functions.
+* Documentation has been reworked, including re-writes of major portions.
+* A new [link filesystem.tutorial Tutorial] provides a hopefully much gentler and more complete introduction for new users.
+  Current users might want to review the three sections related to class path.
+
+[section:deprecated Deprecated Names and Other Features]
+
+See the [link filesystem.deprecated Deprecated Features page] for transition aids that allow much existing code to compile
+without change using Version 3.
+
+[endsect]
+
+[section:breaking_changes Breaking Changes]
+
+To ease the transition, Versions 2 and 3 both used to be included in the next several Boost releases. Version 2 was removed in
+Boost 1.50.0.
+
+[section:path Class `path`]
+
+* Class template `basic_path` and its specializations are replaced by a single class `path`. Thus any code, such as overloaded
+  functions, that depend on `path` and `wpath` being two distinct types will fail to compile and must be restructured.
+  Restructuring may be as simple as removing one of the overloads, but also might require more complex redesign.
+* Certain functions now return `path` objects rather than `string` or `wstring` objects:
+  * `root_name()`
+  * `root_directory()`
+  * `filename()`
+  * `stem()`
+  * `extension()`
+  Not all uses will fail; if the function is being called in a context that accepts a `path`, all is well. If the result is being
+  used in a context requiring a `std::string` or `std::wstring`, then `.string()` or `.wstring()` respectively must be appended
+  to the function call.
+* `path::iterator::value_type` and `path::const_iterator::value_type` is `path` rather than `std::basic_string`.
+
+[endsect]
+
+[section:compilers Compiler Support]
+
+* Compilers and standard libraries that do not fully support wide characters and wide character strings (`std::wstring`) are
+  no longer supported.
+* Cygwin versions prior to 1.7 are no longer supported because they lack wide string support. Cygwin now compiles only for
+  the POSIX API and path syntax.
+* MinGW versions not supporting wide strings are no longer supported.
+* Microsoft VC++ 7.1 and earlier are no longer supported.
+
+[endsect]
+
+[endsect]
+
+[section:design Design]
+
+[warning This section documents thinking early in the V3 development process, and is intended to serve historical purposes.
+It is not updated to reflect the current state of the library.]
+
+[note Some parts of the discussion in this section are spoken from the perspective of the original author of Boost.Filesystem,
+Beman Dawes. This text is preserved, with minor editorial and formatting changes, for historical reasons.]
+
+[section:introduction Introduction]
+
+During the review of Boost.Filesystem.V2 (Internationalization), Peter Dimov suggested that the `basic_path` class template
+was unwieldy, and that a single path type that accommodated multiple character types and encodings would be more flexible. Although
+I wasn't willing to stop development at that time to explore how this idea might be implemented, or to break from the pattern for
+Internationalization used the C++ standard library, I've often thought about Peter's suggestion. With the advent of C++0x `char16_t`
+and `char32_t` character types, the `basic_path` class template approach becomes even more unwieldy, so it is time to revisit
+the problem in light of Peter's suggestion.
+
+[endsect]
+
+[section:problem Problem]
+
+With Filesystem.V2, a path argument to a user defined function that is to accommodate multiple character types and encodings must
+be written as a template. Do-the-right-thing overloads or template metaprogramming must be employed to allow arguments to be written
+as string literals. Here's what it looks like:
+
+```
+template<class Path>
+void foo(const Path& p);
+
+inline void foo(const path& p)
+{
+    foo<path>(p);
+}
+
+inline void foo(const wpath& p)
+{
+    foo<wpath>(p);
+}
+```
+
+That's really ugly for such a simple need, and there would be a combinatorial explosion if the function took multiple `Path`
+arguments and each could be either narrow or wide. It gets even worse if the C++0x `char16_t` and `char32_t` types are to be
+supported.
+
+[endsect]
+
+[section:solution Solution]
+
+Overview:
+
+* A single, non-template, class `path`.
+* Each member function is a template accommodating the various applicable character types, including user-defined character types.
+* Hold the path internally in a string of the type used by the operating system API; `std::string` for POSIX, `std::wstring` for
+  Windows.
+
+The signatures presented in [link filesystem.v3.design.problem Problem] collapse to simply:
+
+```
+void foo(const path& p);
+```
+
+That's a significant reduction in code complexity. Specification becomes simpler, too. I believe it will be far easier to teach,
+and result in much more flexible user code.
+
+Other benefits:
+
+* All the polymorphism still occurs at compile time.
+* Efficiency is increased, in that conversions of the encoding, if required, only occur once at the time of creation, not each time
+  the path is used.
+* The size of the implementation code drops approximately in half and becomes much more readable.
+
+Possible problems:
+
+* The combination of member function templates and implicit constructors can result in unclear error messages when the user makes
+  simple commonplace coding errors. This should be much less of a problem with C++ concepts, but in the meantime work continues
+  to restrict over aggressive templates via `enable_if`/`disable_if`.
+
+[endsect]
+
+[section:details Details]
+
+[table Encoding Conversions
+[[Host system] [char string path arguments] [wide string path arguments]]
+[[
+Systems with `char` as the native API path character type (i.e. POSIX-like systems)
+]
+[
+No conversion.
+]
+[
+Conversion occurs, performed by the current path locale's `codecvt` facet.
+]]
+[[
+Systems with `wchar_t` as the native API path character type (i.e. Windows-like systems).
+]
+[
+Conversion occurs, performed by the current path locale's `codecvt` facet.
+]
+[
+No conversion.
+]]
+]
+
+When a class `path` function argument type matches the operating system's API argument type for paths, no conversion is performed
+rather than conversion to a specified encoding such as one of the Unicode encodings. This avoids unintended consequences, etc.
+
+[endsect]
+
+[section:other-changes Other Changes]
+
+* Uniform hybrid error handling: The hybrid error handling idiom has been consistently applied to all applicable functions.
+
+[endsect]
+
+[section:relative-proposal Filesystem Relative Proposal]
+
+[section:introduction Introduction]
+
+There have been requests for a Filesystem library relative function for at least ten years. The requested functionality seems
+simple - given two paths with a common prefix, return the non-common suffix portion of one of the paths such that it is relative
+to the other path. In terms of the Filesystem library:
+
+```
+path p("/a/b/c");
+path base("/a/b");
+path rel = relative(p, base);  // the requested function
+cout << rel << endl;           // outputs "c"
+assert(absolute(rel, base) == p);
+```
+
+If that was all there was to it, the Filesystem library would have had a `relative` function years ago.
+
+Blocking issues: Clashing requirements, symlinks, directory placeholders (['dot], ['dot-dot]), user-expectations, corner cases.
+
+[section:acknowledgement Acknowledgement]
+
+A paper by Jamie Allsop, ['Additions to Filesystem supporting Relative Paths], is what broke my mental logjam. Much of what follows
+is based directly on Jamie's analysis and proposal. The `weakly_canonical` function and aspects of the semantic specifications
+are my contributions. Mistakes, of course, are mine.
+
+[endsect]
+
+[section:preliminary-implementation Preliminary Implementation]
+
+A preliminary implementation is available in the [@https://github.com/boostorg/filesystem/tree/feature/relative2 feature/relative2]
+branch of the Boost Filesystem Git repository.
+
+[endsect]
+
+[endsect]
+
+[section:requirements Requirements]
+
+* [*[#filesystem.v3.design.relative-proposal.requirements.req-1]Requirement 1:] Some uses require symlinks be followed; i.e. the path
+  must be resolved in the actual file system.
+* [*[#filesystem.v3.design.relative-proposal.requirements.req-2]Requirement 2:] Some uses require symlinks not be followed; i.e. the path
+  must not be resolved in the actual file system.
+* [*[#filesystem.v3.design.relative-proposal.requirements.req-3]Requirement 3:] Some uses require removing redundant current directory
+  (['dot]) or parent directory (['dot-dot]) placeholders.
+* [*[#filesystem.v3.design.relative-proposal.requirements.req-4]Requirement 4:] Some uses do not require removing redundant current
+  directory (['dot]) or parent directory (['dot-dot]) placeholders since the path is known to be already in normal form.
+
+[endsect]
+
+[section:issues Issues]
+
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-1]Issue 1:] What happens if `p` and `base` are themselves relative?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-2]Issue 2:] What happens if there is no common prefix? Is this an error,
+  the whole of `p` is relative to `base`, or something else?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-3]Issue 3:] What happens if `p`, `base`, or both are empty?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-4]Issue 4:] What happens if `p` and `base` are the same?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-5]Issue 5:] How is the "common prefix" determined?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-6]Issue 6:] What happens if portions of `p` or `base` exist but the entire path
+  does not exist and yet symlinks need to be followed?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-7]Issue 7:] What happens when a symlink in the existing portion of a path is
+  affected by a directory (['dot-dot]) placeholder in a later non-existent portion of the path?
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-8]Issue 8:] Overly complex semantics (and thus specifications) in preliminary
+  designs made reasoning about uses difficult.
+* [*[#filesystem.v3.design.relative-proposal.issues.issue-9]Issue 9: ]Some uses never have redundant current directory (['dot]) or parent
+  directory (['dot-dot]) placeholders, so a removal operation would be an unnecessary expense although otherwise harmless.
+
+[endsect]
+
+[section:design-decisions Design Decisions]
+
+[section:provide-separate-relative Provide Separate Lexical and Operational `relative` Functions]
+
+Resolves the conflict between [link filesystem.v3.design.relative-proposal.requirements.req-1 requirement 1] and
+[link filesystem.v3.design.relative-proposal.requirements.req-2 requirement 2] and ensures both requirements are met.
+
+A purely lexical function is needed by users working with directory hierarchies that do not actually exist.
+
+An operational function that queries the current file system for existence and follows symlinks is needed by users working with actual
+existing directory hierarchies.
+
+[endsect]
+
+[section:provide-separate-proximate Provide Separate Lexical and Operational `proximate` Functions]
+
+Although not the only possibility, a likely fallback when the relative functions cannot find a relative path is to return the path being
+made relative. As a convenience, the `proximate` functions do just that.
+
+[endsect]
+
+[section:add-lexical-functions Add Lexical Functions as `path` Member Functions]
+
+The Filesystem library is unusual in that it has several functions with both lexical (i.e. cheap) and operational (i.e. expensive due to
+file system access) forms with differing semantics. It is important that users choose the form that meets their application's specific
+needs. The library has always made the distinction via the convention of lexical functions being members of class `path`, while operational
+functions are non-member functions. The lexical functions proposed here also use the name prefix `lexically_` to drive home
+the distinction.
+
+For the contrary argument, see Sutter and Alexandrescu, ['C++ Coding Standards], 44: "Prefer writing nonmember nonfriend functions", and
+Meyers, ['Effective C++ Third Edition], 23: "Prefer non-member non-friend functions to member functions."
+
+[endsect]
+
+[section:provide-normal Provide a Non-member Function `lexically_normal` Returning a Normal Form Path]
+
+Enables resolution of [link filesystem.v3.design.relative-proposal.requirements.req-3 requirement 3] and
+[link filesystem.v3.design.relative-proposal.requirements.req-4 requirement 4] in a way consistent with
+[link filesystem.v3.design.relative-proposal.issues.issue-9 issue 9]. Is a contributor to the resolution of
+[link filesystem.v3.design.relative-proposal.issues.issue-8 issue 8].
+
+"Normalization" is the process of removing redundant current directory (['dot]), parent directory (['dot-dot]), and directory separator
+elements.
+
+Normalization is a byproduct the current `canonical` function. But for the path returned by the proposed
+[link filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.weakly_canonical `weakly_canonical`] function, only
+any leading canonic portion is in canonical form. So any trailing portion of the returned path has not been normalized.
+
+Jamie Allsop has proposed adding a separate normalization function returning a path, and I agree with him.
+
+Boost.Filesystem has a deprecated non-const normalization function that modifies the path, but I agree with Jamie that a function returning
+a path is a better solution.
+
+[endsect]
+
+[section:provide-weakly Provide a `weakly_canonical` Operational Function]
+
+Resolves [link filesystem.v3.design.relative-proposal.issues.issue-6 issue 6], [link filesystem.v3.design.relative-proposal.issues.issue-7
+issue 7], [link filesystem.v3.design.relative-proposal.issues.issue-9 issue 9], and is a contributor to the resolution of
+[link filesystem.v3.design.relative-proposal.issues.issue-8 issue 8].
+
+The operational function `weakly_canonical(p)` returns a path composed of `canonical(x)/y`, where `x` is a path composed of the longest
+leading sequence of elements in `p` that exist, and `y` is a path composed of the remaining trailing non-existent elements of `p` if any.
+"`weakly`" refers to weakened existence requirements compared to the existing canonical function.
+
+* Having `weakly_canonical` as a separate function, and then specifying the processing of operational `relative` arguments in terms of
+  calls to `weakly_canonical` makes it much easier to specify the operational `relative` function and reason about it. The difficulty of
+  reasoning about operational `relative` semantics before the invention of `weakly_canonical` was what led to its initial development.
+* Having `weakly_canonical` as a separate function also allows use in other contexts.
+* Specifying the return be in [link filesystem.v3.design.relative-proposal.proposed-wording.normal-form normal form] is an engineering
+  trade-off to resolve [link filesystem.v3.design.relative-proposal.issues.issue-7 issue 7] in a way that just works for most use cases.
+* Specifying normative encouragement to not perform unneeded normalization is a reasonable resolution for
+  [link filesystem.v3.design.relative-proposal.issues.issue-9 issue 9].
+
+[endsect]
+
+[section Resolve Issues in Ways that "Just Work" for Users]
+
+Resolves issues [link filesystem.v3.design.relative-proposal.issues.issue-1 1], [link filesystem.v3.design.relative-proposal.issues.issue-2
+2], [link filesystem.v3.design.relative-proposal.issues.issue-3 3], [link filesystem.v3.design.relative-proposal.issues.issue-4 4],
+[link filesystem.v3.design.relative-proposal.issues.issue-6 6], and [link filesystem.v3.design.relative-proposal.issues.issue-7 7]. Is
+a contributor to the resolution of [link filesystem.v3.design.relative-proposal.issues.issue-8 issue 8].
+
+The "just works" approach was suggested by Jamie Allsop. It is implemented by specifying a reasonable return value for all of the "What
+happens if..." corner case issues, rather that treating them as hard errors requiring an exception or error code.
+
+[endsect]
+
+[section Specify `lexically_relative` in Terms of `std::mismatch`]
+
+Resolves [link filesystem.v3.design.relative-proposal.issues.issue-5 issue 5]. Is a contributor to the resolution of
+[link filesystem.v3.design.relative-proposal.issues.issue-8 issue 8].
+
+[endsect]
+
+[section:specify-op-rel-weakly Specify `relative` in Terms of `weakly_canonical`]
+
+Is a contributor to the resolution of [filesystem.v3.design.relative-proposal.issues.issue-8 issue 8].
+
+* Covers a wide range of uses cases since a single function works for existing, non-existing, and partially existing paths.
+* Works correctly for partially existing paths that contain symlinks.
+
+[endsect]
+
+[section:specify-op-rel-lex-rel Specify `relative` in Terms of `lexically_relative`]
+
+Is a contributor to the resolution of [link filesystem.v3.design.relative-proposal.issues.issue-5 issue 5] and
+[link filesystem.v3.design.relative-proposal.issues.issue-8 issue 8].
+
+If would be confusing to users and difficult to specify correctly if the two functions had differing semantics:
+
+* When either or both paths are empty.
+* When all elements of the two paths match exactly.
+* Because different matching algorithms were used.
+* Because although the same matching algorithm was used, it was applied in different ways.
+
+These problems are avoided by specifying operational `relative` in terms of lexical `relative` after preparatory calls to operational
+functions.
+
+[endsect]
+
+[endsect]
+
+[section:proposed-wording Proposed Wording]
+
+[note "Overview:" sections below are non-normative experiments attempting to make the normative reference specifications easier to grasp.]
+
+[section:normal-form Define ['Normal Form]]
+
+A path is in [*['normal form]] if it has no redundant current directory (['dot]) or parent directory (['dot-dot]) elements. The normal form
+for an empty path is an empty path. The normal form for a path ending in a ['directory-separator] that is not the root directory is
+the same path with a current directory (['dot]) element appended.
+
+[note The last sentence above is not necessary for POSIX-like or Windows-like operating systems, but supports systems like OpenVMS that use
+different syntax for directory and regular-file names.]
+
+[endsect]
+
+[section:path-mem-funcs New Class `path` Member Functions]
+
+[section:synopsis Synopsis]
+
+```
+path lexically_normal() const;
+path lexically_relative(const path& base) const;
+path lexically_proximate(const path& base) const;
+```
+
+[endsect]
+
+[section:spec Specification]
+
+[#filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-normal]
+```
+path lexically_normal() const;
+```
+
+[:
+['Overview:] Returns `*this` with redundant current directory (['dot]), parent directory (['dot-dot]), and ['directory-separator] elements
+removed.
+
+['Returns:] `*this` in [link filesystem.v3.design.relative-proposal.proposed-wording.normal-form normal form].
+
+['Remarks:] Uses `operator/=` to compose the returned path.
+
+\[['Example:]
+
+```
+assert(path("foo/./bar/..").lexically_normal() == "foo");
+assert(path("foo/.///bar/../").lexically_normal() == "foo/.");
+```
+
+The above assertions will succeed. On Windows, the returned path's ['directory-separator] characters will be backslashes rather than
+slashes, but that does not affect `path` equality.
+['—end example]\]
+]
+
+[#filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-relative]
+```
+path lexically_relative(const path& base) const;
+```
+
+[:
+['Overview:] Returns `*this` made relative to `base`. Treats empty or identical paths as corner cases, not errors. Does not resolve
+symlinks. Does not first normalize `*this` or `base`.
+
+['Remarks:] Uses `std::mismatch(begin(), end(), base.begin(), base.end())`, to determine the first mismatched element of `*this` and
+`base`. Uses `operator==` to determine if elements match.
+
+['Returns:]
+
+* `path()` if the first mismatched element of `*this` is equal to `begin()` or the first mismatched element of `base` is equal to
+  `base.begin()`, or
+* `path(".")` if the first mismatched element of `*this` is equal to `end()` and the first mismatched element of `base` is equal to
+  `base.end()`, or
+* An object of class `path` composed via application of `operator/=("..")` for each element in the half-open range \[first
+  mismatched element of `base`, `base.end()`), and then application of `operator/=` for each element in the half-open range
+  \[first mismatched element of `*this`, `end()`).
+
+\[['Example:]
+
+```
+assert(path("/a/d").lexically_relative("/a/b/c") ==  "../../d");
+assert(path("/a/b/c").lexically_relative("/a/d") ==  "../b/c");
+assert(path("a/b/c").lexically_relative("a") == "b/c");
+assert(path("a/b/c").lexically_relative("a/b/c/x/y") ==  "../..");
+assert(path("a/b/c").lexically_relative("a/b/c") ==  ".");
+assert(path("a/b").lexically_relative("c/d") ==  "");
+```
+
+The above assertions will succeed. On Windows, the returned path's ['directory-separator]s will be backslashes rather than forward
+slashes, but that does not affect `path` equality.
+['—end example]\]
+
+\[['Note:] If symlink following semantics are desired, use the operational function
+[link filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.relative `relative`] ['—end note]\]
+
+\[['Note:] If [link filesystem.v3.design.relative-proposal.proposed-wording.normal-form normalization] is needed to ensure consistent
+matching of elements, apply [link filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-normal `lexically_normal()`]
+to `*this`, `base`, or both. ['—end note]\]
+]
+
+[#filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-proximate]
+```
+path lexically_proximate(const path& base) const;
+```
+
+[:
+['Returns:] If the value of `lexically_relative(base)` is not an empty path, return it. Otherwise return `*this`.
+
+\[['Note:] If symlink following semantics are desired, use the  operational function
+[link filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.proximate `proximate`] ['—end note]\]
+
+\[['Note:] If [link filesystem.v3.design.relative-proposal.proposed-wording.normal-form normalization] is needed to ensure consistent
+matching of elements, apply [link filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-normal `lexically_normal()`]
+to `*this`, `base`, or both. ['—end note]\]
+]
+
+[endsect]
+
+[endsect]
+
+[section:operational-funcs New operational functions]
+
+[section:synopsis Synopsis]
+
+```
+path weakly_canonical(const path& p);
+path weakly_canonical(const path& p, system::error_code& ec);
+path relative(const path& p, system::error_code& ec);
+path relative(const path& p, const path& base=current_path());
+path relative(const path& p, const path& base, system::error_code& ec);
+path proximate(const path& p, system::error_code& ec);
+path proximate(const path& p, const path& base=current_path());
+path proximate(const path& p, const path& base, system::error_code& ec);
+
+```
+
+[endsect]
+
+[section:spec Specification]
+
+[#filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.weakly_canonical]
+```
+path weakly_canonical(const path& p);
+path weakly_canonical(const path& p, system::error_code& ec);
+```
+
+[:
+['Overview:] Returns `p` with symlinks resolved and the result normalized.
+
+['Returns: ] A path composed of the result of calling the `canonical` function on a path composed of the leading elements of `p` that
+exist, if any, followed by the elements of `p` that do not exist, if any.
+
+['Postcondition:] The returned path is in [link filesystem.v3.design.relative-proposal.proposed-wording.normal-form normal form].
+
+['Remarks:] Uses `operator/=` to compose the returned path. Uses the `status` function to determine existence.
+
+['Remarks:] Implementations are encouraged to avoid unnecessary normalization such as when `canonical` has already been called on the
+entirety of `p`.
+
+['Throws:] As specified in Error reporting.
+]
+
+[#filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.relative]
+```
+path relative(const path& p, system::error_code& ec);
+```
+
+[:
+
+['Returns:] `relative(p, current_path(), ec)`.
+
+['Throws:] As specified in Error reporting.
+]
+
+```
+path relative(const path& p, const path& base=current_path());
+path relative(const path& p, const path& base, system::error_code& ec);
+```
+
+[:
+['Overview:] Returns `p` made relative to `base`. Treats empty or identical paths as corner cases, not errors. Resolves symlinks and
+normalizes both `p` and `base` before other processing.
+
+['Returns:] [link filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.weakly_canonical `weakly_canonical`]`(p).`[link
+filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-relative `lexically_relative`]`(`[link
+filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.weakly_canonical `weakly_canonical`]`(base))`.
+The second form returns `path()` if an error occurs.
+
+['Throws:] As specified in Error reporting.
+]
+
+[#filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.proximate]
+```
+path proximate(const path& p, system::error_code& ec);
+```
+
+[:
+['Returns:] `proximate(p, current_path(), ec)`.
+
+['Throws:] As specified in Error reporting.
+]
+
+```
+path proximate(const path& p, const path& base=current_path());
+path proximate(const path& p, const path& base, system::error_code& ec);
+```
+
+[:
+['Returns:] [link filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.weakly_canonical `weakly_canonical`]`(p).`[link
+filesystem.v3.design.relative-proposal.proposed-wording.path-mem-funcs.spec.lex-proximate `lexically_proximate`]`(`[link
+filesystem.v3.design.relative-proposal.proposed-wording.operational-funcs.spec.weakly_canonical `weakly_canonical`]`(base))`.
+The second form returns `path()` if an error occurs.
+
+['Throws:] As specified in Error reporting.
+]
+
+[endsect]
+
+[endsect]
+
+[endsect]
+
+[endsect] [/ section:relative-proposal ]
+
+[endsect]
+
+[endsect]

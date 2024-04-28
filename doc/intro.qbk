@@ -1,0 +1,75 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:intro Introduction]
+
+The Boost.Filesystem library provides facilities to manipulate files and directories,
+and the paths that identify them.
+
+The features of the library include:
+
+* A modern C++ interface, highly compatible with the C++ standard library.
+
+  Many users say the interface is their primary motivation for using
+  Boost.Filesystem. They like its use of familiar idioms based on standard library
+  containers, iterators, and algorithms. They like having errors reported by
+  throwing exceptions.
+
+* Portability between operating systems.
+  * At the C++ syntax level, it is convenient to learn and use one interface
+    regardless of the operating system.
+  * At the semantic level, behavior of code is reasonably portable across
+    operating systems.
+  * Dual generic or native path format support encourages program
+    portability, yet still allows communication with users in system specific
+    formats.
+* Error handling and reporting via C++ exceptions (the default) or error codes.
+  * C++ exceptions are the preferred error reporting mechanism for most
+    applications. The exception thrown includes the detailed error code
+    information important for diagnosing the exact cause of file system errors.
+  * Error reporting via error code allows user code that provides detailed
+    error recovery to avoid becoming so littered with try-catch blocks as to be
+    unmaintainable.
+* Suitable for a broad spectrum of applications, ranging from simple
+  script-like operations to extremely complex production code.
+  * At the simple script-like end of the spectrum, the intent is not to
+    compete with Python, Perl, or shell languages, but rather to provide
+    filesystem operations when C++ is already the language of choice.
+  * Finer grained control over operations and error handling is available to
+    support more complex applications or other cases where throwing exceptions
+    isn't desired.
+* Forms the basis for [@https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4100.pdf ISO/IEC TS 18822],
+  the C++ standard library Filesystem Technical Specification.
+
+[endsect]
+
+[section:docs Documentation]
+
+This documentation consists of a number of sections describing the library interface
+and usage, as well as historical insight and rationale behind the current design.
+
+* [link filesystem.tutorial Tutorial] - A gentle introduction to the library,
+  with example programs provided for you to experiment with. This section
+  is recommended for developers new to the library.
+* [link filesystem.reference Reference] - Formal documentation in the
+  style of the C++ standard for every component of the library. This section
+  is useful during active usage of the library, for detailed description
+  of library interfaces.
+* [link filesystem.faq FAQ] - Frequently asked questions.
+* [link filesystem.portability_guide Portability Guide] - Help for those
+  concerned with writing code to run on multiple operating systems.
+* [link filesystem.deprecated Deprecated Features] - Identifies
+  deprecated features and their replacements.
+* [link filesystem.v4 Version 4 Description] - Summary of changes from
+  Version 3.
+* [link filesystem.v3 Version 3 Description] - Historical documents,
+  aimed at users of prior Boost.Filesystem versions.
+* [link filesystem.design Original Design] - Historical document from
+  the start of the Version 1 design process.
+
+[endsect]

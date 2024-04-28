@@ -1,6 +1,6 @@
 //  boost/filesystem/cstdio.hpp  ------------------------------------------------------//
 
-//  Copyright Andrey Semashev 2023
+//  Copyright Andrey Semashev 2023-2026
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -27,10 +27,36 @@
 namespace boost {
 namespace filesystem {
 
-#if defined(BOOST_FILESYSTEM_WINDOWS_API)
-
+/*!
+ * \brief Opens a file using C standard library file descriptor.
+ *
+ * This function is equivalent to `std::fopen` from `<cstdio>` with the only difference being that the path
+ * argument is expressed as `const path&`. The function attempts to open the file without path character
+ * encoding conversion, permitting non-ASCII characters in filesystem paths. If the function does perform
+ * character code conversion, it does so by calling `path` methods, using the locale facet returned by
+ * `path::codecvt`.
+ *
+ * \param p Path to the file.
+ * \param mode File opening mode. Refer to `std::fopen` documentation for the supported modes.
+ *
+ * \returns If the file has been opened successfully, a pointer to the file descriptor, to be closed with
+ *          `std::fclose`. Otherwise, a null pointer and `errno` is set to the error code. Refer to `std::fopen`
+ *          documentation for the list of error codes.
+ *
+ * \error_reporting
+ * \parblock
+ * C standard library and system errors are reported using the return value of a null pointer and `errno` mechanism.
+ * An exception may be thrown by one of the `path` methods, if called by the implementation.
+ *
+ * \remark In particular, `path::string` may be called on a platform that uses `wchar_t` as the native path
+ *         character type but does not provide a low level API to open a file using a wide character path. This
+ *         is the case on the legacy MinGW32 in strict mode, for instance.
+ * \endparblock
+ */
 inline std::FILE* fopen(filesystem::path const& p, const char* mode)
 {
+#if defined(BOOST_FILESYSTEM_WINDOWS_API)
+
 #if defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR) && defined(__STRICT_ANSI__)
     // MinGW32 in strict ANSI mode does not declare _wfopen
     return std::fopen(p.string().c_str(), mode);
@@ -68,16 +94,13 @@ inline std::FILE* fopen(filesystem::path const& p, const char* mode)
 
     return ::_wfopen(p.c_str(), wmode.p);
 #endif
-}
 
 #else // defined(BOOST_FILESYSTEM_WINDOWS_API)
 
-inline std::FILE* fopen(filesystem::path const& p, const char* mode)
-{
     return std::fopen(p.c_str(), mode);
-}
 
 #endif // defined(BOOST_FILESYSTEM_WINDOWS_API)
+}
 
 } // namespace filesystem
 } // namespace boost

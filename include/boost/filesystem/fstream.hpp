@@ -1,7 +1,7 @@
 //  boost/filesystem/fstream.hpp  ------------------------------------------------------//
 
 //  Copyright Beman Dawes 2002
-//  Copyright Andrey Semashev 2021-2023
+//  Copyright Andrey Semashev 2021-2026
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -19,6 +19,8 @@
 #include <fstream>
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
+
+#if !defined(BOOST_FILESYSTEM_DOXYGEN)
 
 #if defined(BOOST_FILESYSTEM_WINDOWS_API)
 // On Windows, except for standard libaries known to have wchar_t overloads for
@@ -46,6 +48,8 @@
 #define BOOST_FILESYSTEM_C_STR(p) p.c_str()
 #endif
 
+#endif // !defined(BOOST_FILESYSTEM_DOXYGEN)
+
 #if defined(BOOST_MSVC)
 #pragma warning(push)
 // 'boost::filesystem::basic_fstream<Char>' : inherits 'std::basic_istream<_Elem,_Traits>::std::basic_istream<_Elem,_Traits>::_Add_vtordisp1' via dominance
@@ -58,13 +62,18 @@ namespace filesystem {
 //--------------------------------------------------------------------------------------//
 //                                  basic_filebuf                                       //
 //--------------------------------------------------------------------------------------//
-
+/*!
+ * \brief File buffer class template.
+ *
+ * The class template is equivalent to `std::basic_filebuf` from `<fstream>` with the only difference being that
+ * the `open` method accepts `path` as the first argument.
+ */
 template< class Char, class Traits = std::char_traits< Char > >
 class basic_filebuf :
     public std::basic_filebuf< Char, Traits >
 {
 private:
-    typedef std::basic_filebuf< Char, Traits > base_type;
+    using base_type = std::basic_filebuf< Char, Traits >;
 
 public:
     basic_filebuf() = default;
@@ -78,6 +87,27 @@ public:
     basic_filebuf const& operator= (basic_filebuf const&) = delete;
 
 public:
+    /*!
+     * \brief Opens a file identified by `p`.
+     *
+     * This method is equivalent to `std::basic_filebuf::open`, except that it accepts `path` as the first argument.
+     * The implementation will attempt to open the file using the native path character encoding, if possible. If
+     * `std::basic_filebuf` implementation does not support opening files using the native path character encoding,
+     * the implementation will perform path character code conversion by calling `path` methods, using the locale
+     * facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to `std::basic_filebuf::open` documentation for the supported modes.
+     *
+     * \returns `this` if the file was successfully opened, otherwise a null pointer.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by `std::basic_filebuf::open`.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
     basic_filebuf* open(path const& p, std::ios_base::openmode mode)
     {
         return base_type::open(BOOST_FILESYSTEM_C_STR(p), mode) ? this : nullptr;
@@ -87,24 +117,43 @@ public:
 //--------------------------------------------------------------------------------------//
 //                                 basic_ifstream                                       //
 //--------------------------------------------------------------------------------------//
-
+/*!
+ * \brief Input file stream class template.
+ *
+ * The class template is equivalent to `std::basic_ifstream` from `<fstream>` with the only difference being that
+ * the constructors and `open` methods accept `path` as the first argument.
+ */
 template< class Char, class Traits = std::char_traits< Char > >
 class basic_ifstream :
     public std::basic_ifstream< Char, Traits >
 {
 private:
-    typedef std::basic_ifstream< Char, Traits > base_type;
+    using base_type = std::basic_ifstream< Char, Traits >;
 
 public:
     basic_ifstream() = default;
 
-    // use two signatures, rather than one signature with default second
-    // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
-
-    explicit basic_ifstream(path const& p) :
-        base_type(BOOST_FILESYSTEM_C_STR(p), std::ios_base::in) {}
-
-    basic_ifstream(path const& p, std::ios_base::openmode mode) :
+    /*!
+     * \brief Constructs a stream and opens a file identified by `p`.
+     *
+     * This method is equivalent to the `std::basic_ifstream` constructor taking a path string and `mode` as arguments,
+     * except that it accepts `path` as the first argument. The implementation will attempt to open the file using
+     * the native path character encoding, if possible. If `std::basic_ifstream` implementation does not support
+     * opening files using the native path character encoding, the implementation will perform path character code
+     * conversion by calling `path` methods, using the locale facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to the `std::basic_ifstream` constructor documentation for the supported
+     *             modes.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by the `std::basic_ifstream` constructor.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
+    explicit basic_ifstream(path const& p, std::ios_base::openmode mode = std::ios_base::in) :
         base_type(BOOST_FILESYSTEM_C_STR(p), mode) {}
 
 #if !defined(BOOST_FILESYSTEM_DETAIL_NO_CXX11_MOVABLE_FSTREAMS)
@@ -122,12 +171,26 @@ public:
     basic_ifstream const& operator= (basic_ifstream const&) = delete;
 
 public:
-    void open(path const& p)
-    {
-        base_type::open(BOOST_FILESYSTEM_C_STR(p), std::ios_base::in);
-    }
-
-    void open(path const& p, std::ios_base::openmode mode)
+    /*!
+     * \brief Opens a file identified by `p`.
+     *
+     * This method is equivalent to `std::basic_ifstream::open`, except that it accepts `path` as the first
+     * argument. The implementation will attempt to open the file using the native path character encoding, if
+     * possible. If `std::basic_ifstream` implementation does not support opening files using the native path
+     * character encoding, the implementation will perform path character code conversion by calling `path` methods,
+     * using the locale facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to `std::basic_ifstream::open` documentation for the supported modes.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by `std::basic_ifstream::open`.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
+    void open(path const& p, std::ios_base::openmode mode = std::ios_base::in)
     {
         base_type::open(BOOST_FILESYSTEM_C_STR(p), mode);
     }
@@ -136,24 +199,43 @@ public:
 //--------------------------------------------------------------------------------------//
 //                                 basic_ofstream                                       //
 //--------------------------------------------------------------------------------------//
-
+/*!
+ * \brief Output file stream class template.
+ *
+ * The class template is equivalent to `std::basic_ofstream` from `<fstream>` with the only difference being that
+ * the constructors and `open` methods accept `path` as the first argument.
+ */
 template< class Char, class Traits = std::char_traits< Char > >
 class basic_ofstream :
     public std::basic_ofstream< Char, Traits >
 {
 private:
-    typedef std::basic_ofstream< Char, Traits > base_type;
+    using base_type = std::basic_ofstream< Char, Traits >;
 
 public:
     basic_ofstream() = default;
 
-    // use two signatures, rather than one signature with default second
-    // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
-
-    explicit basic_ofstream(path const& p) :
-        base_type(BOOST_FILESYSTEM_C_STR(p), std::ios_base::out) {}
-
-    basic_ofstream(path const& p, std::ios_base::openmode mode) :
+    /*!
+     * \brief Constructs a stream and opens a file identified by `p`.
+     *
+     * This method is equivalent to the `std::basic_ofstream` constructor taking a path string and `mode` as arguments,
+     * except that it accepts `path` as the first argument. The implementation will attempt to open the file using
+     * the native path character encoding, if possible. If `std::basic_ofstream` implementation does not support
+     * opening files using the native path character encoding, the implementation will perform path character code
+     * conversion by calling `path` methods, using the locale facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to the `std::basic_ofstream` constructor documentation for the supported
+     *             modes.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by the `std::basic_ofstream` constructor.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
+    explicit basic_ofstream(path const& p, std::ios_base::openmode mode = std::ios_base::out) :
         base_type(BOOST_FILESYSTEM_C_STR(p), mode) {}
 
 #if !defined(BOOST_FILESYSTEM_DETAIL_NO_CXX11_MOVABLE_FSTREAMS)
@@ -171,12 +253,26 @@ public:
     basic_ofstream const& operator= (basic_ofstream const&) = delete;
 
 public:
-    void open(path const& p)
-    {
-        base_type::open(BOOST_FILESYSTEM_C_STR(p), std::ios_base::out);
-    }
-
-    void open(path const& p, std::ios_base::openmode mode)
+    /*!
+     * \brief Opens a file identified by `p`.
+     *
+     * This method is equivalent to `std::basic_ofstream::open`, except that it accepts `path` as the first
+     * argument. The implementation will attempt to open the file using the native path character encoding, if
+     * possible. If `std::basic_ofstream` implementation does not support opening files using the native path
+     * character encoding, the implementation will perform path character code conversion by calling `path` methods,
+     * using the locale facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to `std::basic_ofstream::open` documentation for the supported modes.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by `std::basic_ofstream::open`.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
+    void open(path const& p, std::ios_base::openmode mode = std::ios_base::out)
     {
         base_type::open(BOOST_FILESYSTEM_C_STR(p), mode);
     }
@@ -185,24 +281,43 @@ public:
 //--------------------------------------------------------------------------------------//
 //                                  basic_fstream                                       //
 //--------------------------------------------------------------------------------------//
-
+/*!
+ * \brief Input/output file stream class template.
+ *
+ * The class template is equivalent to `std::basic_fstream` from `<fstream>` with the only difference being that
+ * the constructors and `open` methods accept `path` as the first argument.
+ */
 template< class Char, class Traits = std::char_traits< Char > >
 class basic_fstream :
     public std::basic_fstream< Char, Traits >
 {
 private:
-    typedef std::basic_fstream< Char, Traits > base_type;
+    using base_type = std::basic_fstream< Char, Traits >;
 
 public:
     basic_fstream() = default;
 
-    // use two signatures, rather than one signature with default second
-    // argument, to workaround VC++ 7.1 bug (ID VSWhidbey 38416)
-
-    explicit basic_fstream(path const& p) :
-        base_type(BOOST_FILESYSTEM_C_STR(p), std::ios_base::in | std::ios_base::out) {}
-
-    basic_fstream(path const& p, std::ios_base::openmode mode) :
+    /*!
+     * \brief Constructs a stream and opens a file identified by `p`.
+     *
+     * This method is equivalent to the `std::basic_fstream` constructor taking a path string and `mode` as arguments,
+     * except that it accepts `path` as the first argument. The implementation will attempt to open the file using
+     * the native path character encoding, if possible. If `std::basic_fstream` implementation does not support
+     * opening files using the native path character encoding, the implementation will perform path character code
+     * conversion by calling `path` methods, using the locale facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to the `std::basic_fstream` constructor documentation for the supported
+     *             modes.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by the `std::basic_fstream` constructor.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
+    explicit basic_fstream(path const& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) :
         base_type(BOOST_FILESYSTEM_C_STR(p), mode) {}
 
 #if !defined(BOOST_FILESYSTEM_DETAIL_NO_CXX11_MOVABLE_FSTREAMS)
@@ -220,12 +335,26 @@ public:
     basic_fstream const& operator= (basic_fstream const&) = delete;
 
 public:
-    void open(path const& p)
-    {
-        base_type::open(BOOST_FILESYSTEM_C_STR(p), std::ios_base::in | std::ios_base::out);
-    }
-
-    void open(path const& p, std::ios_base::openmode mode)
+    /*!
+     * \brief Opens a file identified by `p`.
+     *
+     * This method is equivalent to `std::basic_fstream::open`, except that it accepts `path` as the first
+     * argument. The implementation will attempt to open the file using the native path character encoding, if
+     * possible. If `std::basic_fstream` implementation does not support opening files using the native path
+     * character encoding, the implementation will perform path character code conversion by calling `path` methods,
+     * using the locale facet returned by `path::codecvt`.
+     *
+     * \param p Path to the file.
+     * \param mode File opening mode. Refer to `std::basic_fstream::open` documentation for the supported modes.
+     *
+     * \error_reporting
+     * \parblock
+     * C++ standard library and system errors are reported as documented by the `std::basic_fstream::open`.
+     * Additionally, an exception may be thrown by one of the `path` methods as part of character code conversion,
+     * if called by the implementation.
+     * \endparblock
+     */
+    void open(path const& p, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out)
     {
         base_type::open(BOOST_FILESYSTEM_C_STR(p), mode);
     }
@@ -235,15 +364,15 @@ public:
 //                                    typedefs                                          //
 //--------------------------------------------------------------------------------------//
 
-typedef basic_filebuf< char > filebuf;
-typedef basic_ifstream< char > ifstream;
-typedef basic_ofstream< char > ofstream;
-typedef basic_fstream< char > fstream;
+using filebuf = basic_filebuf< char >;
+using ifstream = basic_ifstream< char >;
+using ofstream = basic_ofstream< char >;
+using fstream = basic_fstream< char >;
 
-typedef basic_filebuf< wchar_t > wfilebuf;
-typedef basic_ifstream< wchar_t > wifstream;
-typedef basic_ofstream< wchar_t > wofstream;
-typedef basic_fstream< wchar_t > wfstream;
+using wfilebuf = basic_filebuf< wchar_t >;
+using wifstream = basic_ifstream< wchar_t >;
+using wofstream = basic_ofstream< wchar_t >;
+using wfstream = basic_fstream< wchar_t >;
 
 } // namespace filesystem
 } // namespace boost

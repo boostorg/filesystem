@@ -7,19 +7,19 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//[example_tut4
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <boost/filesystem.hpp>
 
-using std::cout;
 using namespace boost::filesystem;
 
 int main(int argc, char* argv[])
 {
     if (argc < 2)
     {
-        cout << "Usage: tut4 path\n";
+        std::cout << "Usage: tut4 path" << std::endl;
         return 1;
     }
 
@@ -31,13 +31,13 @@ int main(int argc, char* argv[])
         {
             if (is_regular_file(p))
             {
-                cout << p << " size is " << file_size(p) << '\n';
+                std::cout << p << " size is " << file_size(p) << std::endl;
             }
             else if (is_directory(p))
             {
-                cout << p << " is a directory containing:\n";
+                std::cout << p << " is a directory containing:" << std::endl;
 
-                std::vector< path > v;
+                std::vector<path> v;
 
                 for (auto&& x : directory_iterator(p))
                     v.push_back(x.path());
@@ -45,18 +45,19 @@ int main(int argc, char* argv[])
                 std::sort(v.begin(), v.end());
 
                 for (auto&& x : v)
-                    cout << "    " << x.filename() << '\n';
+                    std::cout << "    " << x.filename() << std::endl;
             }
             else
-                cout << p << " exists, but is not a regular file or directory\n";
+                std::cout << p << " exists, but is not a regular file or directory" << std::endl;
         }
         else
-            cout << p << " does not exist\n";
+            std::cout << p << " does not exist" << std::endl;
     }
     catch (filesystem_error& ex)
     {
-        cout << ex.what() << '\n';
+        std::cout << ex.what() << std::endl;
     }
 
     return 0;
 }
+//]

@@ -7,17 +7,17 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//[example_tut2
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-using namespace std;
 using namespace boost::filesystem;
 
 int main(int argc, char* argv[])
 {
     if (argc < 2)
     {
-        cout << "Usage: tut2 path\n";
+        std::cout << "Usage: tut2 path" << std::endl;
         return 1;
     }
 
@@ -26,14 +26,15 @@ int main(int argc, char* argv[])
     if (exists(p)) // does path p actually exist?
     {
         if (is_regular_file(p)) // is path p a regular file?
-            cout << p << " size is " << file_size(p) << '\n';
+            std::cout << p << " size is " << file_size(p) << std::endl;
         else if (is_directory(p)) // is path p a directory?
-            cout << p << " is a directory\n";
+            std::cout << p << " is a directory" << std::endl;
         else
-            cout << p << " exists, but is not a regular file or directory\n";
+            std::cout << p << " exists, but is not a regular file or directory" << std::endl;
     }
     else
-        cout << p << " does not exist\n";
+        std::cout << p << " does not exist" << std::endl;
 
     return 0;
 }
+//]
