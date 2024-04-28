@@ -7,6 +7,7 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//[example_tut0
 #include <iostream>
 #include <boost/filesystem.hpp>
 
@@ -16,9 +17,10 @@ int main(int argc, char* argv[])
 {
     if (argc < 2)
     {
-        std::cout << "Usage: tut0 path\n";
+        std::cout << "Usage: tut0 path" << std::endl;
         return 1;
     }
-    std::cout << argv[1] << '\n';
+    std::cout << argv[1] << std::endl;
     return 0;
 }
+//]

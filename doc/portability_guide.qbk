@@ -1,0 +1,205 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:portability_guide Portability Guide]
+
+[section:introduction Introduction]
+
+Like any other C++ program which performs I/O operations, there is no guarantee that a program using Boost.Filesystem will be
+portable between operating systems. Critical aspects of I/O such as how the operating system interprets paths are unspecified
+by the C and C++ Standards.
+
+It is not possible to know if a file or directory name will be valid (and thus portable) for an unknown operating system.
+There is always the possibility that an operating system could use names which are unusual (numbers less than 4096, for example)
+or very limited in size (maximum of six character names, for example). In other words, portability is never absolute; it is
+always relative to specific operating systems or file systems.
+
+It is possible, however, to know in advance if a directory or file name is likely to be valid for a particular operating system.
+It is also possible to construct names which are likely to be portable to a large number of modern and legacy operating systems.
+
+Almost all modern operating systems support multiple file systems. At the minimum, they support a native file system plus
+a CD-ROM file system (Generally ISO-9669, often with Joliet extensions).
+
+Each file system may have its own naming rules. For example, modern versions of Windows support NTFS, FAT, FAT32, and ISO-9660
+file systems, among others, and the naming rules for those file systems differ. Each file system may also have differing rules
+for overall path validity, such as a maximum length or number of sub-directories. Some legacy systems have different rules for
+directory names versus regular file names.
+
+As a result, Boost.Filesystem's name checking functions cannot guarantee directory and file name portability. Rather, they are
+intended to give the programmer a "fighting chance" to achieve portability by early detection of common naming problems.
+
+[endsect]
+
+[section:name_check_functions Name checking functions]
+
+A name checking function returns `true` if its argument is valid as a directory and regular file name for a particular operating
+or file system. A number of these functions are provided.
+
+The [link filesystem.portability_guide.name_check_functions.portable_name `portable_name`] function is of particular interest
+because it has been carefully designed to provide wide portability yet not overly restrict expressiveness.
+
+[table Library Supplied Name Checking Functions
+[[Function] [Description]]
+[[[#filesystem.portability_guide.name_check_functions.portable_posix_name]`bool portable_posix_name(const std::string& name)`]
+[
+[*Returns:] `true` if `!name.empty()` and `name` contains only the characters specified in ['Portable Filename Character Set]
+rules as defined in by POSIX ([@https://pubs.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap03.html
+www.opengroup.org/onlinepubs/007904975/basedefs/xbd_chap03.html]).
+
+The allowed characters are "0-9", "a-z", "A-Z", ".", "_", and "-".
+
+[*Use:] applications which must be portable to any POSIX system.
+]]
+[[[#filesystem.portability_guide.name_check_functions.windows_name]`bool windows_name(const std::string& name)`]
+[
+[*Returns:] `true` if
+
+* `!name.empty()`, and
+* `name` contains only the characters specified by the Windows platform SDK as valid regardless of the file system, and
+* `name` is "." or ".." or does not end with a trailing space or period.
+
+The allowed characters are anything except `0x0-0x1F`, "<", ">", ":", """, "/", "\\", and "|".
+
+[*Use:] applications which must be portable to Windows.
+
+[note Reserved device names are not valid as file names, but are not being detected because they are still valid as a path.
+Specifically, "CON", "PRN", "AUX", "CLOCK$", "NUL", "COM\[1-9\]", "LPT\[1-9\]", and these names followed by an extension
+(for example, "NUL.tx7").]
+]]
+[[[#filesystem.portability_guide.name_check_functions.portable_name]`bool portable_name(const std::string& name)`]
+[
+[*Returns:] `true` if
+
+* `windows_name(name)`, and
+* `portable_posix_name(name)`, and
+* `name` is "." or "..", or the first character of `name` is not a period or hyphen.
+
+[*Use:] applications which must be portable to a wide variety of modern operating systems, large and small, and to some
+legacy OSs. The first character not a period or hyphen restriction is a requirement of several older operating systems.
+]]
+[[[#filesystem.portability_guide.name_check_functions.portable_directory_name]`bool portable_directory_name(const std::string& name)`]
+[
+[*Returns:] `true` if `portable_name(name)` and `name` is "." or ".." or contains no periods.
+
+[*Use:] applications which must be portable to a wide variety of platforms, including OpenVMS.
+]]
+[[[#filesystem.portability_guide.name_check_functions.portable_file_name]`bool portable_file_name(const std::string& name)`]
+[
+[*Returns:] `true` if
+
+* `portable_name(name)`, and
+* any period is followed by one to three additional non-period characters.
+
+[*Use:] applications which must be portable to a wide variety of platforms, including OpenVMS and other systems which have
+a concept of "file extension" but limit its length.
+]]
+[[[#filesystem.portability_guide.name_check_functions.native]`bool native(const std::string& name)`]
+[
+[*Returns:] Implementation defined. Returns `true` for names considered valid by the operating system's native file systems.
+
+[*Note:] May return `true` for some names not considered valid by the operating system under all conditions (particularly
+on operating systems which support multiple file systems.)
+]]
+]
+
+[endsect]
+
+[section:recommendations File and directory name recommendations]
+
+[table
+[[Recommendation] [Rationale]]
+[[
+Limit file and directory names to the characters "A-Z", "a-z", "0-9", period, hyphen, and underscore.
+
+Use any of the `portable_` [link filesystem.portability_guide.name_check_functions name checking functions] to enforce this
+recommendation.
+]
+[
+These are the characters specified by the POSIX standard for portable directory and file names, and are also valid for Windows,
+Mac OS, and many other modern file systems.
+]]
+[[
+Do not use a period or hyphen as the first character of a name. Do not use period as the last character of a name.
+
+Use [link filesystem.portability_guide.name_check_functions.portable_name `portable_name`],
+[link filesystem.portability_guide.name_check_functions.portable_directory_name `portable_directory_name`], or
+[link filesystem.portability_guide.name_check_functions.portable_file_name `portable_file_name`] to enforce this
+recommendation.
+]
+[
+Some operating systems treat have special rules for the first character of names. POSIX, for example. Windows does not permit
+period as the last character.
+]]
+[[
+Do not use periods in directory names.
+
+Use [link filesystem.portability_guide.name_check_functions.portable_directory_name `portable_directory_name`] to enforce
+this recommendation.
+]
+[
+Requirement for ISO-9660 without Juliet extensions, OpenVMS filesystem, and other legacy systems.
+]]
+[[
+Do not use more that one period in a file name, and limit the portion after the period to three characters.
+
+Use [link filesystem.portability_guide.name_check_functions.portable_file_name `portable_file_name`] to enforce this
+recommendation.
+]
+[
+Requirement for ISO-9660 level 1, OpenVMS filesystem, and other legacy systems.
+]]
+[[
+Do not assume names are case sensitive. For example, do not expected a directory to be able to hold separate elements named
+"Foo" and "foo".
+]
+[
+Some file systems are case insensitive. For example, Windows NTFS is case preserving in the way it stores names, but case
+insensitive in searching for names (unless running under the POSIX sub-system, it which case it does case sensitive searches).
+]]
+[[
+Do not assume names are case insensitive. For example, do not expect a file created with the name of "Foo" to be opened
+successfully with the name of "foo".
+]
+[
+Some file systems are case sensitive. This is typically the case on POSIX systems. Even on Windows, NTFS supports creating
+files with names in [@https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions POSIX convention],
+which makes them case sensitive.
+]]
+[[
+Don't use hyphens in names.
+]
+[
+ISO-9660 level 1, and possibly some legacy systems, do not permit hyphens.
+]]
+[[
+Limit the length of the string returned by `path::string()` to 255 characters. Note that ISO 9660 has an explicit directory
+tree depth limit of 8, although this depth limit is removed by the Juliet extensions.
+]
+[
+Some operating systems place limits on the total path length. For example, Windows 2000 limits paths to 260 characters total
+length.
+]]
+[[
+Limit the length of any one name in a path. Pick the specific limit according to the operating systems and/or file systems
+you wish to maintain portability to:
+
+* Not a concern: POSIX, Windows, MAC OS X.
+* 31 characters: Classic Mac OS
+* 8 characters + period + 3 characters: ISO 9660 level 1
+* 32 characters: ISO 9660 level 2 and 3
+* 128 characters (64 if Unicode): ISO 9660 with Juliet extensions
+]
+[
+Limiting name length can markedly reduce the expressiveness of file names, yet placing only very high limits on lengths inhibits
+widest portability.
+]]
+]
+
+[endsect]
+
+[endsect]

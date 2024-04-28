@@ -41,26 +41,29 @@ struct space_info
     boost::uintmax_t available; // <= free
 };
 
+//! \hideinitializer
 enum class copy_options : unsigned int
 {
-    none = 0u, // Default. For copy_file: error if the target file exists. For copy: do not recurse, follow symlinks, copy file contents.
+    none = 0u, //!< Default. For copy_file: error if the target file exists. For copy: do not recurse, follow symlinks, copy file contents.
 
     // copy_file options:
-    skip_existing = 1u,                 // Don't overwrite the existing target file, don't report an error
-    overwrite_existing = 1u << 1u,      // Overwrite existing file
-    update_existing = 1u << 2u,         // Overwrite existing file if its last write time is older than the replacement file
-    synchronize_data = 1u << 3u,        // Flush all buffered data written to the target file to permanent storage
-    synchronize = 1u << 4u,             // Flush all buffered data and attributes written to the target file to permanent storage
-    ignore_attribute_errors = 1u << 5u, // Ignore errors of copying file attributes
+    skip_existing = 1u,                 //!< Don't overwrite the existing target file, don't report an error
+    overwrite_existing = 1u << 1u,      //!< Overwrite existing file
+    update_existing = 1u << 2u,         //!< Overwrite existing file if its last write time is older than the replacement file
+    synchronize_data = 1u << 3u,        //!< Flush all buffered data written to the target file to permanent storage
+    synchronize = 1u << 4u,             //!< Flush all buffered data and attributes written to the target file to permanent storage
+    ignore_attribute_errors = 1u << 5u, //!< Ignore errors of copying file attributes
 
     // copy options:
-    recursive = 1u << 8u,               // Recurse into sub-directories
-    copy_symlinks = 1u << 9u,           // Copy symlinks as symlinks instead of copying the referenced file
-    skip_symlinks = 1u << 10u,          // Don't copy symlinks
-    directories_only = 1u << 11u,       // Only copy directory structure, do not copy non-directory files
-    create_symlinks = 1u << 12u,        // Create symlinks instead of copying files
-    create_hard_links = 1u << 13u,      // Create hard links instead of copying files
+    recursive = 1u << 8u,               //!< Recurse into sub-directories
+    copy_symlinks = 1u << 9u,           //!< Copy symlinks as symlinks instead of copying the referenced file
+    skip_symlinks = 1u << 10u,          //!< Don't copy symlinks
+    directories_only = 1u << 11u,       //!< Only copy directory structure, do not copy non-directory files
+    create_symlinks = 1u << 12u,        //!< Create symlinks instead of copying files
+    create_hard_links = 1u << 13u,      //!< Create hard links instead of copying files
+#if !defined(BOOST_FILESYSTEM_DOXYGEN)
     _detail_recursing = 1u << 14u       // Internal use only, do not use
+#endif
 };
 
 BOOST_BITMASK(copy_options)

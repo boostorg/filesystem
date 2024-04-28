@@ -7,6 +7,7 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+//[example_tut5
 #include <boost/filesystem/fstream.hpp>
 #include <string>
 #include <list>
@@ -67,3 +68,4 @@ int main()
 
     return 0;
 }
+//]

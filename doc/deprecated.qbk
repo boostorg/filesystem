@@ -1,0 +1,225 @@
+[/
+ / Copyright Andrey Semashev 2024.
+ /
+ / Distributed under the Boost Software License, Version 1.0.
+ / (See accompanying file LICENSE_1_0.txt or copy at
+ / https://www.boost.org/LICENSE_1_0.txt)
+ /]
+
+[section:deprecated Deprecated Features]
+
+As the library evolves over time, names sometimes change or old features are removed to make way for new features. To ease transition,
+Boost.Filesystem deprecates the old names and features, but by default continues to provide many of them. The deprecated names and other
+workarounds can be suppressed by defining macro `BOOST_FILESYSTEM_NO_DEPRECATED`, and this is recommended for all new code.
+
+In the table below, \u2714 indicates a synonym or other workaround is provided unless `BOOST_FILESYSTEM_NO_DEPRECATED` is defined.
+
+Additionally, when not disabled, most of the deprecated components will generate compilation warnings when used. These warnings are
+intended to highlight the library usage that needs to be updated. For convenience during the transition period, these warnings can be
+suppressed by defining `BOOST_FILESYSTEM_ALLOW_DEPRECATED` macro.
+
+[table:deprecated-names Deprecated names and features
+[[Component or location] [Old name, now deprecated] [\u2714] [New name]]
+[[`class path`]
+[
+Construction, assignment and appending from container types.
+]
+[]
+[
+Use string types or iterators as the source for path construction, assignment and appending.
+]]
+[[`path.hpp`]
+[
+```
+template<class String, class Traits>
+class basic_path;
+```
+]
+[]
+[
+Class template `basic_path` is replaced by class `path`. No workaround for an explicitly coded `basic_path` is provided, but see the next
+row - `path`.
+]]
+[[`path.hpp`]
+[
+`typedef basic_path<std::string, path_traits> path`
+]
+[\u2714]
+[
+`class path`
+]]
+[[`operations.hpp`]
+[
+`initial_path()`
+]
+[\u2714]
+[
+Function removed. Cache `current_path()` early in the application startup.
+]]
+[[Build system]
+[
+Auto-linking on Windows
+]
+[]
+[
+No longer supported. When users are linking against static library of Boost.Filesystem, they are recommended to explicitly add Boost.Filesystem
+dependencies to their linker command line. Shared library of Boost.Filesystem is not affected by this as it is already linked with all its
+dependencies.
+]]
+]
+
+Some library features were removed in one of the past releases. The table below lists some of those features along with suggested replacements.
+
+[table Removed names and features
+[[Component or location] [Removed name] [Possible replacement]]
+[[`class path`]
+[`branch_path()`]
+[`parent_path()`]
+][
+[`class path`]
+[`directory_string()`]
+[`string`]
+][
+[`class path`]
+[`external_directory_string()`]
+[`native()`]
+][
+[`class path`]
+[`external_file_string()`]
+[`native()`]
+][
+[`class path`]
+[`file_string()`]
+[`string()`]
+][
+[`class path`]
+[`has_branch_path()`]
+[`has_parent_path()`]
+][
+[`class path`]
+[`has_leaf()`]
+[`has_filename()`]
+][
+[`class path`]
+[`is_complete()`]
+[`is_absolute()`]
+][
+[`class path`]
+[`leaf()`]
+[`filename()`]
+][
+[`class path`]
+[`native_directory_string()`]
+[`string()`]
+][
+[`class path`]
+[`native_file_string()`]
+[`string()`]
+][
+[`class path`]
+[`normalize()`]
+[Replace `p.normalize()` with `p = p.lexically_normal()`.]
+][
+[`class path`]
+[`remove_leaf()`]
+[`remove_filename()`]
+][
+[`path.hpp`]
+[`typedef basic_path<std::wstring, wpath_traits> wpath`]
+[`class path`]
+][
+[`convenience.hpp`]
+[`std::string extension(const path& p)`]
+[Replace `extension(p)` with `p.extension().string()`.]
+][
+[`convenience.hpp`]
+[`std::string basename(const path& p)`]
+[Replace `basename(p)` with `p.stem().string()`.]
+][
+[`convenience.hpp`]
+[`path change_extension(const path& p, const path& new_extension)`]
+[Replace `path new_p = change_extension(p, ext);` with `path new_p = p; new_p.replace_extension(ext);`.]
+][
+[`operations.hpp`]
+[
+```
+template <class Path>
+Path complete(const Path& p, const Path& base=initial_path<Path>())
+```
+]
+[`path absolute(const path& p, const path& base=current_path())`]
+][
+[`operations.hpp`]
+[`is_regular(file_status f)`]
+[`is_regular_file(file_status f)`]
+][
+[`operations.hpp`]
+[`symbolic_link_exists(const path& ph)`]
+[Replace `symbolic_link_exists(p)` with `is_symlink(symlink_status(p))`.]
+][
+[`operations.hpp`]
+[`copy_directory(const path& from, const path& to)`]
+[`create_directory(const path& to, const path& from)`. Note the reversed order of arguments.]
+][
+[`class directory_entry`]
+[`filename()`]
+[Replace `de.filename()` with `de.path().filename()`.]
+][
+[`class directory_entry`]
+[`leaf()`]
+[Replace `de.leaf()` with `de.path().filename()`.]
+][
+[`class directory_entry`]
+[`string()`]
+[Replace `de.string()` with `de.path().string()`.]
+][
+[`class recursive_directory_iterator`]
+[`level()`]
+[`depth()`]
+][
+[`class recursive_directory_iterator`]
+[`no_push_pending()`]
+[`!recursion_pending()`]
+][
+[`class recursive_directory_iterator`]
+[`no_push()`]
+[`disable_recursion_pending()`]
+][
+[`directory.hpp`]
+[`enum class symlink_option`]
+[Use corresponding values of `enum class directory_options` instead.]
+][
+[`directory.hpp`]
+[`wrecursive_directory_iterator` typedef]
+[`class recursive_directory_iterator`.]
+][
+[`operations.hpp`]
+[
+The header provides `filesystem_error`, `file_status`, `directory_entry`, `directory_iterator`, `recursive_directory_iterator` and associated
+enums and functions.
+]
+[Explicitly include headers `exception.hpp`, `file_status.hpp` and/or `directory.hpp` to introduce the required components.]
+][
+[`path_traits.hpp`]
+[The header contained implementation details of class `path`.]
+[Remove the include.]
+][
+[`convenience.hpp`]
+[The header contained helper functions that were deprecated and then removed.]
+[Remove the include.]
+]
+]
+
+[section:rationale Deprecation rationale]
+
+[section:initial_path `initial_path` function]
+
+Full implementation of `initial_path()` would require support from the C++ runtime startup code, and that doesn't seem likely to happen.
+Depending on the user to call `initial_path()` at the beginning of `main()` is too error prone. An equivalent function can trivially be provided
+by a user.
+
+[endsect]
+
+[endsect]
+
+[endsect]
