@@ -565,8 +565,8 @@ BOOST_FILESYSTEM_DECL void path_algorithms::append_v4(path& p, const value_type*
 
 BOOST_FILESYSTEM_DECL int path_algorithms::lex_compare_v3
 (
-    path_detail::path_iterator first1, path_detail::path_iterator const& last1,
-    path_detail::path_iterator first2, path_detail::path_iterator const& last2
+    path_impl::path_iterator first1, path_impl::path_iterator const& last1,
+    path_impl::path_iterator first2, path_impl::path_iterator const& last2
 )
 {
     for (; first1 != last1 && first2 != last2;)
@@ -586,8 +586,8 @@ BOOST_FILESYSTEM_DECL int path_algorithms::lex_compare_v3
 
 BOOST_FILESYSTEM_DECL int path_algorithms::lex_compare_v4
 (
-    path_detail::path_iterator first1, path_detail::path_iterator const& last1,
-    path_detail::path_iterator first2, path_detail::path_iterator const& last2
+    path_impl::path_iterator first1, path_impl::path_iterator const& last1,
+    path_impl::path_iterator first2, path_impl::path_iterator const& last2
 )
 {
     for (; first1 != last1 && first2 != last2;)
@@ -1130,7 +1130,7 @@ namespace boost {
 namespace filesystem {
 namespace detail {
 
-BOOST_FILESYSTEM_DECL void path_algorithms::increment_v3(path_detail::path_iterator& it)
+BOOST_FILESYSTEM_DECL void path_algorithms::increment_v3(path_impl::path_iterator& it)
 {
     const size_type size = it.m_path_ptr->m_pathname.size();
     BOOST_ASSERT_MSG(it.m_pos < size, "path::iterator increment past end()");
@@ -1184,7 +1184,7 @@ BOOST_FILESYSTEM_DECL void path_algorithms::increment_v3(path_detail::path_itera
     it.m_element.m_pathname.assign(p + it.m_pos, p + end_pos);
 }
 
-BOOST_FILESYSTEM_DECL void path_algorithms::increment_v4(path_detail::path_iterator& it)
+BOOST_FILESYSTEM_DECL void path_algorithms::increment_v4(path_impl::path_iterator& it)
 {
     const size_type size = it.m_path_ptr->m_pathname.size();
     BOOST_ASSERT_MSG(it.m_pos <= size, "path::iterator increment past end()");
@@ -1245,7 +1245,7 @@ BOOST_FILESYSTEM_DECL void path_algorithms::increment_v4(path_detail::path_itera
     it.m_element.m_pathname.assign(p + it.m_pos, p + end_pos);
 }
 
-BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v3(path_detail::path_iterator& it)
+BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v3(path_impl::path_iterator& it)
 {
     const size_type size = it.m_path_ptr->m_pathname.size();
     BOOST_ASSERT_MSG(it.m_pos > 0, "path::iterator decrement past begin()");
@@ -1305,7 +1305,7 @@ BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v3(path_detail::path_itera
     it.m_element.m_pathname.assign(p + it.m_pos, p + end_pos);
 }
 
-BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v4(path_detail::path_iterator& it)
+BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v4(path_impl::path_iterator& it)
 {
     const size_type size = it.m_path_ptr->m_pathname.size();
     BOOST_ASSERT_MSG(it.m_pos > 0, "path::iterator decrement past begin()");
