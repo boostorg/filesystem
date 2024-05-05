@@ -9,6 +9,7 @@
 
 import project ;
 import configure ;
+import-search /boost/config/checks ;
 import config : requires ;
 
 searched-lib bcrypt ;
