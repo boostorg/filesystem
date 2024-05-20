@@ -295,7 +295,7 @@ jobs:
 
           - toolset: clang
             cxxstd: "11,14,17,2a"
-            os: macos-11
+            os: macos-latest
 
           - name: CMake tests
             cmake_tests: 1
