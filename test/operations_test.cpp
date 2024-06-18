@@ -2255,6 +2255,105 @@ void creation_time_tests(const fs::path& dirx)
     fs::remove(f1x);
 }
 
+//  symlink_file_size_tests  ---------------------------------------------------------//
+
+void symlink_file_size_tests()
+{
+    cout << "symlink_file_size_tests..." << endl;
+
+    // Most of these symlinks are already created in symlink_status_tests(), which is run before this test
+    fs::path dangling_sym(dir / "dangling-sym");
+    fs::path dangling_directory_sym(dir / "dangling-directory-sym");
+    fs::path sym_d1(dir / "sym-d1");
+    fs::path sym_f1(dir / "sym-f1");
+    fs::path sym_d1f1(d1 / "sym-d1f1");
+    fs::create_symlink(d1f1, sym_d1f1);
+
+    bool exception_thrown = false;
+    try
+    {
+        fs::file_size(dangling_sym);
+    }
+    catch (fs::filesystem_error&)
+    {
+        exception_thrown = true;
+    }
+    BOOST_TEST(exception_thrown);
+
+    exception_thrown = false;
+    try
+    {
+        fs::file_size(dangling_directory_sym);
+    }
+    catch (fs::filesystem_error&)
+    {
+        exception_thrown = true;
+    }
+    BOOST_TEST(exception_thrown);
+
+    exception_thrown = false;
+    try
+    {
+        fs::file_size(sym_d1);
+    }
+    catch (fs::filesystem_error&)
+    {
+        exception_thrown = true;
+    }
+    BOOST_TEST(exception_thrown);
+
+    boost::uintmax_t size = fs::file_size(sym_f1);
+    BOOST_TEST_EQ(size, 7u);
+
+    size = fs::file_size(sym_d1f1);
+    BOOST_TEST_EQ(size, 0u);
+}
+
+//  symlink_is_empty_tests  ----------------------------------------------------------//
+
+void symlink_is_empty_tests()
+{
+    cout << "symlink_file_size_tests..." << endl;
+
+    // These symlinks are already created in symlink_status_tests() and symlink_file_size_tests(), which are run before this test
+    fs::path dangling_sym(dir / "dangling-sym");
+    fs::path dangling_directory_sym(dir / "dangling-directory-sym");
+    fs::path sym_d1(dir / "sym-d1");
+    fs::path sym_f1(dir / "sym-f1");
+    fs::path sym_d1f1(d1 / "sym-d1f1");
+
+    bool exception_thrown = false;
+    try
+    {
+        fs::is_empty(dangling_sym);
+    }
+    catch (fs::filesystem_error&)
+    {
+        exception_thrown = true;
+    }
+    BOOST_TEST(exception_thrown);
+
+    exception_thrown = false;
+    try
+    {
+        fs::is_empty(dangling_directory_sym);
+    }
+    catch (fs::filesystem_error&)
+    {
+        exception_thrown = true;
+    }
+    BOOST_TEST(exception_thrown);
+
+    bool empty = fs::is_empty(sym_d1);
+    BOOST_TEST_EQ(empty, false);
+
+    empty = fs::is_empty(sym_f1);
+    BOOST_TEST_EQ(empty, false);
+
+    empty = fs::is_empty(sym_d1f1);
+    BOOST_TEST_EQ(empty, true);
+}
+
 //  write_time_tests  ----------------------------------------------------------------//
 
 void write_time_tests(const fs::path& dirx)
@@ -2848,6 +2947,8 @@ int cpp_main(int argc, char* argv[])
         copy_symlink_tests(f1, d1);
         canonical_symlink_tests();
         weakly_canonical_symlink_tests();
+        symlink_file_size_tests();
+        symlink_is_empty_tests();
     }
     iterator_status_tests(); // lots of cases by now, so a good time to test
                              //  dump_tree(dir);

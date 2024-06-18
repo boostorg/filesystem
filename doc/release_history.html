@@ -40,6 +40,13 @@
   </tr>
 </table>
 
+<h2>1.86.0</h2>
+<ul>
+  <li><code>is_empty</code> operation is now better protected against concurrent filesystem modifications.</li>
+  <li>On POSIX systems, <code>is_empty</code> now indicates error if invoked on a file other than a regular file or a directory.</li>
+  <li>On Windows, fixed <code>file_size</code> and <code>is_empty</code> operating on symlinks rather than the files the symlinks refer to. (<a href="https://github.com/boostorg/filesystem/issues/313">#313</a>)</li>
+</ul>
+
 <h2>1.85.0</h2>
 <ul>
   <li><code>path::generic_path</code> and <code>path::generic_string</code> methods now remove duplicate directory separators in the returned paths.</li>
