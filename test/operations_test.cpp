@@ -2313,7 +2313,7 @@ void symlink_file_size_tests()
 
 void symlink_is_empty_tests()
 {
-    cout << "symlink_file_size_tests..." << endl;
+    cout << "symlink_is_empty_tests..." << endl;
 
     // These symlinks are already created in symlink_status_tests() and symlink_file_size_tests(), which are run before this test
     fs::path dangling_sym(dir / "dangling-sym");
