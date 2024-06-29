@@ -1929,21 +1929,6 @@ void copy_file_tests(const fs::path& f1x, const fs::path& d1x)
     verify_file(d1x / "f2-non-existing", "file-f1");
     fs::remove(d1x / "f2-non-existing");
 
-    file_copied = false;
-    copy_ex_ok = true;
-    try
-    {
-        file_copied = fs::copy_file(f1x, d1x / "f2", fs::copy_options::update_existing);
-    }
-    catch (const fs::filesystem_error&)
-    {
-        copy_ex_ok = false;
-    }
-    BOOST_TEST(copy_ex_ok);
-    BOOST_TEST(!file_copied);
-    BOOST_TEST_EQ(fs::file_size(d1x / "f2"), 10U);
-    verify_file(d1x / "f2", "1234567890");
-
     // Sleep for a while so that the last modify time is more recent for new files
 #if defined(BOOST_POSIX_API)
     sleep(2);
@@ -1953,6 +1938,22 @@ void copy_file_tests(const fs::path& f1x, const fs::path& d1x)
 
     create_file(d1x / "f2-more-recent", "x");
     BOOST_TEST_EQ(fs::file_size(d1x / "f2-more-recent"), 1U);
+
+    file_copied = false;
+    copy_ex_ok = true;
+    try
+    {
+        file_copied = fs::copy_file(d1x / "f2", d1x / "f2-more-recent", fs::copy_options::update_existing);
+    }
+    catch (const fs::filesystem_error&)
+    {
+        copy_ex_ok = false;
+    }
+    BOOST_TEST(copy_ex_ok);
+    BOOST_TEST(!file_copied);
+    BOOST_TEST_EQ(fs::file_size(d1x / "f2-more-recent"), 1U);
+    verify_file(d1x / "f2-more-recent", "x");
+
     file_copied = false;
     copy_ex_ok = true;
     try
