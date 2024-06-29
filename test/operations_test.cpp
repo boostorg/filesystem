@@ -603,6 +603,23 @@ void directory_iterator_tests()
         BOOST_TEST_EQ(vec[3].path().filename().string(), std::string("f1"));
     }
 
+    // Test that querying a file status for a removed file referenced by the iterator
+    // doesn't cause an error (i.e. the behavior is similar to standalone status/symlink_status).
+    // https://github.com/boostorg/filesystem/issues/314
+    {
+        BOOST_TEST(fs::is_empty(d2));
+        create_file(d2 / "file");
+        fs::directory_iterator it(d2);
+        fs::remove(d2 / "file");
+
+        for (; it != fs::directory_iterator(); ++it)
+        {
+            it->symlink_status();
+            it->status();
+            it->refresh();
+        }
+    }
+
     { // *i++ must meet the standard's InputIterator requirements
         fs::directory_iterator dir_itr(dir);
         BOOST_TEST(dir_itr != fs::directory_iterator());

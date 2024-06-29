@@ -91,25 +91,15 @@ namespace filesystem {
 
 BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(system::error_code* ec) const
 {
-    system::error_code local_ec;
-    m_symlink_status = detail::symlink_status(m_path, &local_ec);
+    m_status = filesystem::file_status();
+    m_symlink_status = filesystem::file_status();
+
+    m_symlink_status = detail::symlink_status(m_path, ec);
 
     if (!filesystem::is_symlink(m_symlink_status))
     {
         // Also works if symlink_status fails - set m_status to status_error as well
         m_status = m_symlink_status;
-
-        if (BOOST_UNLIKELY(!!local_ec))
-        {
-            if (!ec)
-                BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::directory_entry::refresh", m_path, local_ec));
-
-            *ec = local_ec;
-            return;
-        }
-
-        if (ec)
-            ec->clear();
     }
     else
     {
