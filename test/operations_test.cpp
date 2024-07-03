@@ -2821,6 +2821,12 @@ void weakly_canonical_basic_tests()
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/../bar"), dir / "no-such/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "../no-such/foo/../bar"), dir.parent_path() / "no-such/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/../f0"), dir / "f0"); // dir / "f0" exists, dir / "no-such" does not
+    BOOST_TEST_EQ(fs::weakly_canonical("f0", d1), d1 / "f0");
+    BOOST_TEST_EQ(fs::weakly_canonical("./f0", d1), d1 / "f0");
+    BOOST_TEST_EQ(fs::weakly_canonical("./foo", d1), d1 / "foo");
+    BOOST_TEST_EQ(fs::weakly_canonical("../f0", d1), dir / "f0");
+    BOOST_TEST_EQ(fs::weakly_canonical("../foo", d1), dir / "foo");
+    BOOST_TEST_EQ(fs::weakly_canonical("..//foo", d1), dir / "foo");
 
 #ifdef BOOST_WINDOWS_API
     BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), fs::path("c:/no-such/foo/bar"));

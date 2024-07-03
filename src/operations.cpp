@@ -2568,18 +2568,11 @@ path absolute_v4(path const& p, path const& base, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path canonical_v3(path const& p, path const& base, system::error_code* ec)
 {
-    if (ec)
-        ec->clear();
-
-    path source(p);
-    if (!p.is_absolute())
+    path source(detail::absolute_v3(p, base, ec));
+    if (ec && *ec)
     {
-        source = detail::absolute_v3(p, base, ec);
-        if (ec && *ec)
-        {
-        return_empty_path:
-            return path();
-        }
+    return_empty_path:
+        return path();
     }
 
     system::error_code local_ec;
@@ -2700,18 +2693,11 @@ path canonical_v3(path const& p, path const& base, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path canonical_v4(path const& p, path const& base, system::error_code* ec)
 {
-    if (ec)
-        ec->clear();
-
-    path source(p);
-    if (!p.is_absolute())
+    path source(detail::absolute_v4(p, base, ec));
+    if (ec && *ec)
     {
-        source = detail::absolute_v4(p, base, ec);
-        if (ec && *ec)
-        {
-        return_empty_path:
-            return path();
-        }
+    return_empty_path:
+        return path();
     }
 
     system::error_code local_ec;
@@ -4882,13 +4868,20 @@ path system_complete(path const& p, system::error_code* ec)
 BOOST_FILESYSTEM_DECL
 path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec)
 {
+    path source(detail::absolute_v3(p, base, ec));
+    if (ec && *ec)
+    {
+    return_empty_path:
+        return path();
+    }
+
     system::error_code local_ec;
-    const path::iterator p_end(p.end());
+    const path::iterator source_end(source.end());
 
 #if defined(BOOST_POSIX_API)
 
-    path::iterator itr(p_end);
-    path head(p);
+    path::iterator itr(source_end);
+    path head(source);
     for (; !head.empty(); path_algorithms::decrement_v4(itr))
     {
         file_status head_status(detail::status_impl(head, &local_ec));
@@ -4898,7 +4891,7 @@ path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
             *ec = local_ec;
-            return path();
+            goto return_empty_path;
         }
 
         if (head_status.type() != fs::file_not_found)
@@ -4925,18 +4918,18 @@ path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec
     // Also, avoid querying status of the root name such as \\?\c: as CreateFileW returns ERROR_INVALID_FUNCTION for
     // such path. Querying the status of a root name such as c: is also not right as this path refers to the current
     // directory on drive C:, which is not what we want to test for existence anyway.
-    path::iterator itr(p.begin());
+    path::iterator itr(source.begin());
     path head;
-    if (p.has_root_name())
+    if (source.has_root_name())
     {
-        BOOST_ASSERT(itr != p_end);
+        BOOST_ASSERT(itr != source_end);
         head = *itr;
         path_algorithms::increment_v4(itr);
     }
 
-    if (p.has_root_directory())
+    if (source.has_root_directory())
     {
-        BOOST_ASSERT(itr != p_end);
+        BOOST_ASSERT(itr != source_end);
         // Convert generic separator returned by the iterator for the root directory to
         // the preferred separator.
         head += path::preferred_separator;
@@ -4952,28 +4945,28 @@ path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
             *ec = local_ec;
-            return path();
+            goto return_empty_path;
         }
 
         if (head_status.type() == fs::file_not_found)
         {
             // If the root path does not exist then no path element exists
-            itr = p.begin();
+            itr = source.begin();
             head.clear();
             goto skip_head;
         }
     }
 
-    for (; itr != p_end; path_algorithms::increment_v4(itr))
+    for (; itr != source_end; path_algorithms::increment_v4(itr))
     {
-        path const& p_elem = *itr;
+        path const& source_elem = *itr;
 
         // Avoid querying status of paths containing dot and dot-dot elements, as this will break
         // if the root name starts with "\\?\".
-        if (path_algorithms::compare_v4(p_elem, dot_p) == 0)
+        if (path_algorithms::compare_v4(source_elem, dot_p) == 0)
             continue;
 
-        if (path_algorithms::compare_v4(p_elem, dot_dot_p) == 0)
+        if (path_algorithms::compare_v4(source_elem, dot_dot_p) == 0)
         {
             if (head.has_relative_path())
                 head.remove_filename_and_trailing_separators();
@@ -4981,7 +4974,7 @@ path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec
             continue;
         }
 
-        path_algorithms::append_v4(head, p_elem);
+        path_algorithms::append_v4(head, source_elem);
 
         file_status head_status(detail::status_impl(head, &local_ec));
         if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
@@ -4990,7 +4983,7 @@ path weakly_canonical_v3(path const& p, path const& base, system::error_code* ec
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
             *ec = local_ec;
-            return path();
+            goto return_empty_path;
         }
 
         if (head_status.type() == fs::file_not_found)
@@ -5006,7 +4999,7 @@ skip_head:;
 
     path tail;
     bool tail_has_dots = false;
-    for (; itr != p_end; path_algorithms::increment_v4(itr))
+    for (; itr != source_end; path_algorithms::increment_v4(itr))
     {
         path const& tail_elem = *itr;
         path_algorithms::append_v4(tail, tail_elem);
@@ -5022,7 +5015,7 @@ skip_head:;
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
         *ec = local_ec;
-        return path();
+        goto return_empty_path;
     }
 
     if (BOOST_LIKELY(!tail.empty()))
@@ -5031,7 +5024,7 @@ skip_head:;
 
         // optimization: only normalize if tail had dot or dot-dot element
         if (tail_has_dots)
-            return path_algorithms::lexically_normal_v4(head);
+            head = path_algorithms::lexically_normal_v4(head);
     }
 
     return head;
@@ -5040,13 +5033,20 @@ skip_head:;
 BOOST_FILESYSTEM_DECL
 path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec)
 {
+    path source(detail::absolute_v4(p, base, ec));
+    if (ec && *ec)
+    {
+    return_empty_path:
+        return path();
+    }
+
     system::error_code local_ec;
-    const path::iterator p_end(p.end());
+    const path::iterator source_end(source.end());
 
 #if defined(BOOST_POSIX_API)
 
-    path::iterator itr(p_end);
-    path head(p);
+    path::iterator itr(source_end);
+    path head(source);
     for (; !head.empty(); path_algorithms::decrement_v4(itr))
     {
         file_status head_status(detail::status_impl(head, &local_ec));
@@ -5056,7 +5056,7 @@ path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
             *ec = local_ec;
-            return path();
+            goto return_empty_path;
         }
 
         if (head_status.type() != fs::file_not_found)
@@ -5083,18 +5083,18 @@ path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec
     // Also, avoid querying status of the root name such as \\?\c: as CreateFileW returns ERROR_INVALID_FUNCTION for
     // such path. Querying the status of a root name such as c: is also not right as this path refers to the current
     // directory on drive C:, which is not what we want to test for existence anyway.
-    path::iterator itr(p.begin());
+    path::iterator itr(source.begin());
     path head;
-    if (p.has_root_name())
+    if (source.has_root_name())
     {
-        BOOST_ASSERT(itr != p_end);
+        BOOST_ASSERT(itr != source_end);
         head = *itr;
         path_algorithms::increment_v4(itr);
     }
 
-    if (p.has_root_directory())
+    if (source.has_root_directory())
     {
-        BOOST_ASSERT(itr != p_end);
+        BOOST_ASSERT(itr != source_end);
         // Convert generic separator returned by the iterator for the root directory to
         // the preferred separator.
         head += path::preferred_separator;
@@ -5110,28 +5110,28 @@ path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
             *ec = local_ec;
-            return path();
+            goto return_empty_path;
         }
 
         if (head_status.type() == fs::file_not_found)
         {
             // If the root path does not exist then no path element exists
-            itr = p.begin();
+            itr = source.begin();
             head.clear();
             goto skip_head;
         }
     }
 
-    for (; itr != p_end; path_algorithms::increment_v4(itr))
+    for (; itr != source_end; path_algorithms::increment_v4(itr))
     {
-        path const& p_elem = *itr;
+        path const& source_elem = *itr;
 
         // Avoid querying status of paths containing dot and dot-dot elements, as this will break
         // if the root name starts with "\\?\".
-        if (path_algorithms::compare_v4(p_elem, dot_p) == 0)
+        if (path_algorithms::compare_v4(source_elem, dot_p) == 0)
             continue;
 
-        if (path_algorithms::compare_v4(p_elem, dot_dot_p) == 0)
+        if (path_algorithms::compare_v4(source_elem, dot_dot_p) == 0)
         {
             if (head.has_relative_path())
                 head.remove_filename_and_trailing_separators();
@@ -5139,7 +5139,7 @@ path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec
             continue;
         }
 
-        path_algorithms::append_v4(head, p_elem);
+        path_algorithms::append_v4(head, source_elem);
 
         file_status head_status(detail::status_impl(head, &local_ec));
         if (BOOST_UNLIKELY(head_status.type() == fs::status_error))
@@ -5148,7 +5148,7 @@ path weakly_canonical_v4(path const& p, path const& base, system::error_code* ec
                 BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
             *ec = local_ec;
-            return path();
+            goto return_empty_path;
         }
 
         if (head_status.type() == fs::file_not_found)
@@ -5164,7 +5164,7 @@ skip_head:;
 
     path tail;
     bool tail_has_dots = false;
-    for (; itr != p_end; path_algorithms::increment_v4(itr))
+    for (; itr != source_end; path_algorithms::increment_v4(itr))
     {
         path const& tail_elem = *itr;
         path_algorithms::append_v4(tail, tail_elem);
@@ -5180,7 +5180,7 @@ skip_head:;
             BOOST_FILESYSTEM_THROW(filesystem_error("boost::filesystem::weakly_canonical", head, local_ec));
 
         *ec = local_ec;
-        return path();
+        goto return_empty_path;
     }
 
     if (BOOST_LIKELY(!tail.empty()))
@@ -5189,7 +5189,7 @@ skip_head:;
 
         // optimization: only normalize if tail had dot or dot-dot element
         if (tail_has_dots)
-            return path_algorithms::lexically_normal_v4(head);
+            head = path_algorithms::lexically_normal_v4(head);
     }
 
     return head;
