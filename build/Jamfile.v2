@@ -138,6 +138,7 @@ local cxx_requirements = [ requires
 ] ;
 
 project
+    : common-requirements <library>$(boost_dependencies)
     : requirements
       <host-os>hpux,<toolset>gcc:<define>_INCLUDE_STDC__SOURCE_199901
       [ check-target-builds ../config//has_attribute_init_priority "has init_priority attribute" : <define>BOOST_FILESYSTEM_HAS_INIT_PRIORITY ]
