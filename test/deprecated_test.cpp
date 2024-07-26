@@ -120,7 +120,7 @@ int cpp_main(int /*argc*/, char* /*argv*/[])
     de.replace_filename("bar.foo", fs::file_status(), fs::file_status());
     BOOST_TEST(de.path() == "bar.foo");
 
-    const fs::path temp_dir(fs::temp_directory_path() / fs::unique_path("deprecated_test-%%%%-%%%%-%%%%"));
+    const fs::path temp_dir(fs::current_path() / ".." / fs::unique_path("deprecated_test-%%%%-%%%%-%%%%"));
     std::cout << "temp_dir is " << temp_dir.string() << std::endl;
 
     fs::create_directory(temp_dir);
