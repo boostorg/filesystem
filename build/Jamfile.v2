@@ -137,9 +137,18 @@ local cxx_requirements = [ requires
     cxx11_override
 ] ;
 
+constant boost_dependencies_private :
+    /boost/atomic//boost_atomic
+    /boost/core//boost_core
+    /boost/predef//boost_predef
+    /boost/scope//boost_scope
+    /boost/winapi//boost_winapi
+    ;
+
 project
     : common-requirements <library>$(boost_dependencies)
     : requirements
+      <library>$(boost_dependencies_private)
       <host-os>hpux,<toolset>gcc:<define>_INCLUDE_STDC__SOURCE_199901
       [ check-target-builds ../config//has_attribute_init_priority "has init_priority attribute" : <define>BOOST_FILESYSTEM_HAS_INIT_PRIORITY ]
       [ check-target-builds ../config//has_stat_st_mtim "has stat::st_blksize" : <define>BOOST_FILESYSTEM_HAS_STAT_ST_BLKSIZE ]
