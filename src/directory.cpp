@@ -799,7 +799,7 @@ system::error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::f
                 if (!NT_SUCCESS(status))
                 {
                     dir_itr_close(imp);
-                    if (status == STATUS_NO_MORE_FILES)
+                    if (BOOST_NTSTATUS_EQ(status, STATUS_NO_MORE_FILES))
                         goto done;
 
                     return system::error_code(translate_ntstatus(status), system::system_category());
@@ -1047,7 +1047,7 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
                 // causes a ERROR_FILE_NOT_FOUND error returned from FindFirstFileW
                 // (which is presumably equivalent to STATUS_NO_SUCH_FILE) which we
                 // do not consider an error. It is treated as eof instead.
-                if (status == STATUS_NO_MORE_FILES || status == STATUS_NO_SUCH_FILE)
+                if (BOOST_NTSTATUS_EQ(status, STATUS_NO_MORE_FILES) || BOOST_NTSTATUS_EQ(status, STATUS_NO_SUCH_FILE))
                     goto done;
 
                 return error_code(translate_ntstatus(status), system_category());
@@ -1520,7 +1520,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         {
                             symlink_ft = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec).type();
                         }
-                        else if (status == STATUS_NOT_IMPLEMENTED)
+                        else if (BOOST_NTSTATUS_EQ(status, STATUS_NOT_IMPLEMENTED))
                         {
                             symlink_ft = dir_it->symlink_file_type(ec);
                         }
@@ -1615,7 +1615,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         {
                             goto get_file_type_by_handle;
                         }
-                        else if (status == STATUS_NOT_IMPLEMENTED)
+                        else if (BOOST_NTSTATUS_EQ(status, STATUS_NOT_IMPLEMENTED))
                         {
                             ft = dir_it->file_type(ec);
                         }

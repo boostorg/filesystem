@@ -1559,7 +1559,7 @@ boost::winapi::NTSTATUS_ nt_create_file_handle_at
 {
     NtCreateFile_t* nt_create_file = filesystem::detail::atomic_load_relaxed(nt_create_file_api);
     if (BOOST_UNLIKELY(!nt_create_file))
-        return STATUS_NOT_IMPLEMENTED;
+        return static_cast< boost::winapi::NTSTATUS_ >(STATUS_NOT_IMPLEMENTED);
 
     unicode_string obj_name = {};
     obj_name.Buffer = const_cast< wchar_t* >(p.c_str());
@@ -1591,7 +1591,7 @@ boost::winapi::NTSTATUS_ nt_create_file_handle_at
         0u // EaLength
     );
 
-    if (BOOST_UNLIKELY(status == STATUS_INVALID_PARAMETER && (obj_attrs.Attributes & OBJ_DONT_REPARSE) != 0u))
+    if (BOOST_UNLIKELY(BOOST_NTSTATUS_EQ(status, STATUS_INVALID_PARAMETER) && (obj_attrs.Attributes & OBJ_DONT_REPARSE) != 0u))
     {
         // OBJ_DONT_REPARSE is supported since Windows 10, retry without it
         filesystem::detail::atomic_store_relaxed(g_no_obj_dont_reparse, true);
