@@ -51,6 +51,12 @@ typedef boost::winapi::DWORD_ err_t;
 #define BOOST_ERROR_ALREADY_EXISTS boost::winapi::ERROR_ALREADY_EXISTS_
 #define BOOST_ERROR_NOT_SUPPORTED boost::winapi::ERROR_NOT_SUPPORTED_
 
+#if defined(__GNUC__)
+// STATUS_* constants defined in ntstatus.h are defined as DWORDs, and NTSTATUS is long. This results
+// in signed/unsigned mismatch warnings emitted by gcc and clang. Consider that a platform bug.
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
+
 // Note: Legacy MinGW doesn't have ntstatus.h and doesn't define NTSTATUS error codes other than STATUS_SUCCESS.
 #if !defined(NT_SUCCESS)
 #define NT_SUCCESS(Status) (((boost::winapi::NTSTATUS_)(Status)) >= 0)
