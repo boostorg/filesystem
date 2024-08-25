@@ -644,8 +644,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { sys: MINGW32, compiler: gcc, cxxstd: '03,11,17,20' }
-          - { sys: MINGW64, compiler: gcc, cxxstd: '03,11,17,20' }
+          - { sys: MINGW32, compiler: gcc, cxxstd: '11,17,20' }
+          - { sys: MINGW64, compiler: gcc, cxxstd: '11,17,20' }
 
     runs-on: windows-latest
 
