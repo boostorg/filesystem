@@ -1401,12 +1401,12 @@ BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
     boost::winapi::HMODULE_ h = boost::winapi::GetModuleHandleW(L"kernel32.dll");
     if (BOOST_LIKELY(!!h))
     {
-        GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = (GetFileInformationByHandleEx_t*)boost::winapi::get_proc_address(h, "GetFileInformationByHandleEx");
+        GetFileInformationByHandleEx_t* get_file_information_by_handle_ex = boost::winapi::get_proc_address<GetFileInformationByHandleEx_t*>(h, "GetFileInformationByHandleEx");
         filesystem::detail::atomic_store_relaxed(get_file_information_by_handle_ex_api, get_file_information_by_handle_ex);
-        SetFileInformationByHandle_t* set_file_information_by_handle = (SetFileInformationByHandle_t*)boost::winapi::get_proc_address(h, "SetFileInformationByHandle");
+        SetFileInformationByHandle_t* set_file_information_by_handle = boost::winapi::get_proc_address<SetFileInformationByHandle_t*>(h, "SetFileInformationByHandle");
         filesystem::detail::atomic_store_relaxed(set_file_information_by_handle_api, set_file_information_by_handle);
-        filesystem::detail::atomic_store_relaxed(create_hard_link_api, (CreateHardLinkW_t*)boost::winapi::get_proc_address(h, "CreateHardLinkW"));
-        filesystem::detail::atomic_store_relaxed(create_symbolic_link_api, (CreateSymbolicLinkW_t*)boost::winapi::get_proc_address(h, "CreateSymbolicLinkW"));
+        filesystem::detail::atomic_store_relaxed(create_hard_link_api, boost::winapi::get_proc_address<CreateHardLinkW_t*>(h, "CreateHardLinkW"));
+        filesystem::detail::atomic_store_relaxed(create_symbolic_link_api, boost::winapi::get_proc_address<CreateSymbolicLinkW_t*>(h, "CreateSymbolicLinkW"));
 
         if (get_file_information_by_handle_ex && set_file_information_by_handle)
         {
@@ -1419,8 +1419,8 @@ BOOST_FILESYSTEM_INIT_FUNC init_winapi_func_ptrs()
     h = boost::winapi::GetModuleHandleW(L"ntdll.dll");
     if (BOOST_LIKELY(!!h))
     {
-        filesystem::detail::atomic_store_relaxed(nt_create_file_api, (NtCreateFile_t*)boost::winapi::get_proc_address(h, "NtCreateFile"));
-        filesystem::detail::atomic_store_relaxed(nt_query_directory_file_api, (NtQueryDirectoryFile_t*)boost::winapi::get_proc_address(h, "NtQueryDirectoryFile"));
+        filesystem::detail::atomic_store_relaxed(nt_create_file_api, boost::winapi::get_proc_address<NtCreateFile_t*>(h, "NtCreateFile"));
+        filesystem::detail::atomic_store_relaxed(nt_query_directory_file_api, boost::winapi::get_proc_address<NtQueryDirectoryFile_t*>(h, "NtQueryDirectoryFile"));
     }
 
     init_directory_iterator_impl();
