@@ -167,9 +167,11 @@ project
       <target-os>windows:<define>_CRT_SECURE_NO_WARNINGS
       <target-os>windows:<define>_CRT_SECURE_NO_DEPRECATE
       <target-os>windows:<define>BOOST_USE_WINDOWS_H
+      <target-os>windows:<define>_WIN32_WINNT=0x0A00
       <target-os>windows:<define>WIN32_LEAN_AND_MEAN
       <target-os>windows:<define>NOMINMAX
       <target-os>cygwin:<define>BOOST_USE_WINDOWS_H
+      <target-os>cygwin:<define>_WIN32_WINNT=0x0A00
       <target-os>cygwin:<define>WIN32_LEAN_AND_MEAN
       <target-os>cygwin:<define>NOMINMAX
 

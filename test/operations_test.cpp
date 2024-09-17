@@ -1781,15 +1781,9 @@ void canonical_basic_tests()
     BOOST_TEST(ok);
 
     // non-symlink tests; also see canonical_symlink_tests()
-#if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST_EQ(fs::canonical(""), fs::current_path());
     BOOST_TEST_EQ(fs::canonical("", fs::current_path()), fs::current_path());
     BOOST_TEST_EQ(fs::canonical("", ""), fs::current_path());
-#else
-    BOOST_TEST_EQ(fs::canonical(""), fs::current_path() / fs::path());
-    BOOST_TEST_EQ(fs::canonical("", fs::current_path()), fs::current_path() / fs::path());
-    BOOST_TEST_EQ(fs::canonical("", ""), fs::current_path() / fs::path());
-#endif
     BOOST_TEST_EQ(fs::canonical(fs::current_path()), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(fs::current_path(), ""), fs::current_path());
     BOOST_TEST_EQ(fs::canonical(fs::current_path(), "no-such-file"), fs::current_path());
@@ -1836,6 +1830,23 @@ void canonical_basic_tests()
     // Test Windows long paths
     fs::path long_path = make_long_path(dir / L"f0");
     BOOST_TEST_EQ(fs::canonical(long_path), long_path);
+
+    // Test that canonical() consistently converts drive letters to upper case.
+    // https://github.com/boostorg/filesystem/issues/325
+    {
+        fs::path::string_type root_path = dir.root_path().native(), lc_root_path, uc_root_path;
+        for (fs::path::string_type::value_type c : root_path)
+        {
+            fs::path::string_type::value_type lc = c, uc = c;
+            if (lc >= L'A' && lc <= L'Z')
+                lc += L'a' - L'A';
+            if (uc >= L'a' && uc <= L'z')
+                uc -= L'a' - L'A';
+            lc_root_path.push_back(lc);
+            uc_root_path.push_back(uc);
+        }
+        BOOST_TEST_EQ(fs::canonical(fs::path(lc_root_path) / dir.relative_path()), fs::canonical(fs::path(uc_root_path) / dir.relative_path()));
+    }
 #endif
 }
 
@@ -2829,7 +2840,7 @@ void weakly_canonical_basic_tests()
     BOOST_TEST_EQ(fs::weakly_canonical("..//foo", d1), dir / "foo");
 
 #ifdef BOOST_WINDOWS_API
-    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), fs::path("c:/no-such/foo/bar"));
+    BOOST_TEST_EQ(fs::weakly_canonical("c:/no-such/foo/bar"), fs::path("C:/no-such/foo/bar"));
 
     // Test Windows long paths
     fs::path long_path = make_long_path(dir / L"f0");
