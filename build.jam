@@ -23,7 +23,7 @@ project /boost/filesystem
 
 explicit
     [ alias boost_filesystem : build//boost_filesystem ]
-    [ alias all : boost_filesystem bug example test ]
+    [ alias all : boost_filesystem example test ]
     ;
 
 call-if : boost-library filesystem
