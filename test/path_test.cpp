@@ -161,15 +161,16 @@ public:
     }
 
     operator fs::path() const { return m_path; }
-    operator const fs::path::value_type*() const
-    {
-#if defined(BOOST_WINDOWS_API)
-        return L"[invalid path]";
-#else
-        return "[invalid path]";
+    operator const char*() const { return "[invalid path]"; }
+    operator const wchar_t*() const { return L"[invalid path]"; }
+    operator std::string() const { return "[invalid path]"; }
+    operator std::wstring() const { return L"[invalid path]"; }
+#if !defined(BOOST_NO_CXX17_HDR_STRING_VIEW)
+    operator std::string_view() const { return "[invalid path]"; }
+    operator std::wstring_view() const { return L"[invalid path]"; }
 #endif
-    }
-    operator fs::path::string_type() const { return fs::path::string_type(static_cast< const fs::path::value_type* >(*this)); }
+    operator boost::basic_string_view< char, std::char_traits< char > >() const { return "[invalid path]"; }
+    operator boost::basic_string_view< wchar_t, std::char_traits< wchar_t > >() const { return L"[invalid path]"; }
 };
 
 
