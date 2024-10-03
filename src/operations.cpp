@@ -805,7 +805,7 @@ int copy_file_data_read_write(int infile, int outfile, uintmax_t size, std::size
 
 typedef int copy_file_data_t(int infile, int outfile, uintmax_t size, std::size_t blksize);
 
-//! Pointer to the actual implementation of the copy_file_data implementation
+//! Pointer to the actual implementation of copy_file_data
 copy_file_data_t* copy_file_data = &copy_file_data_read_write;
 
 #if defined(BOOST_FILESYSTEM_USE_SENDFILE) || defined(BOOST_FILESYSTEM_USE_COPY_FILE_RANGE)

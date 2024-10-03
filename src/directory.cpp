@@ -363,7 +363,7 @@ int readdir_select_impl(dir_itr_imp& imp, struct dirent** result);
 
 typedef int readdir_impl_t(dir_itr_imp& imp, struct dirent** result);
 
-//! Pointer to the actual implementation of the copy_file_data implementation
+//! Pointer to the actual implementation of readdir
 readdir_impl_t* readdir_impl_ptr = &readdir_select_impl;
 
 void init_readdir_impl()
