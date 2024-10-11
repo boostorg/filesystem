@@ -138,6 +138,19 @@ inline void unsetenv_(const char* name)
 
 #endif
 
+//! Converts root path of the argument to canonical form, i.e. "C:\" instead of "c:\" on Windows.
+inline fs::path canonicalize_root_path(fs::path const& p)
+{
+    fs::path root_path = p.root_path();
+    if (root_path.empty())
+        return p;
+    root_path = fs::canonical(root_path);
+    fs::path rel_path = p.relative_path();
+    if (!rel_path.empty())
+        root_path.append(rel_path);
+    return root_path;
+}
+
 #define CHECK_EXCEPTION(Functor, Expect) throws_fs_error(Functor, Expect, __LINE__)
 
 namespace {
@@ -1780,17 +1793,20 @@ void canonical_basic_tests()
     }
     BOOST_TEST(ok);
 
-    // non-symlink tests; also see canonical_symlink_tests()
-    BOOST_TEST_EQ(fs::canonical(""), fs::current_path());
-    BOOST_TEST_EQ(fs::canonical("", fs::current_path()), fs::current_path());
-    BOOST_TEST_EQ(fs::canonical("", ""), fs::current_path());
-    BOOST_TEST_EQ(fs::canonical(fs::current_path()), fs::current_path());
-    BOOST_TEST_EQ(fs::canonical(fs::current_path(), ""), fs::current_path());
-    BOOST_TEST_EQ(fs::canonical(fs::current_path(), "no-such-file"), fs::current_path());
+    // Note: Use cacnonical form of the root path in all paths to make path comparisons more stable
+    const fs::path cur_path = canonicalize_root_path(fs::current_path());
 
-    BOOST_TEST_EQ(fs::canonical("."), fs::current_path());
-    BOOST_TEST_EQ(fs::canonical(".."), fs::current_path().parent_path());
-    BOOST_TEST_EQ(fs::canonical("/"), fs::current_path().root_path());
+    // non-symlink tests; also see canonical_symlink_tests()
+    BOOST_TEST_EQ(fs::canonical(""), cur_path);
+    BOOST_TEST_EQ(fs::canonical("", fs::current_path()), cur_path);
+    BOOST_TEST_EQ(fs::canonical("", ""), cur_path);
+    BOOST_TEST_EQ(fs::canonical(fs::current_path()), cur_path);
+    BOOST_TEST_EQ(fs::canonical(fs::current_path(), ""), cur_path);
+    BOOST_TEST_EQ(fs::canonical(fs::current_path(), "no-such-file"), cur_path);
+
+    BOOST_TEST_EQ(fs::canonical("."), cur_path);
+    BOOST_TEST_EQ(fs::canonical(".."), cur_path.parent_path());
+    BOOST_TEST_EQ(fs::canonical("/"), cur_path.root_path());
 
     fs::path relative_dir(dir.filename());
     BOOST_TEST_EQ(fs::canonical(dir), dir);
@@ -1801,7 +1817,7 @@ void canonical_basic_tests()
     BOOST_TEST_EQ(fs::canonical(relative_dir / "d1/../f0"), dir / "f0");
 
     // treat parent of root as itself on both POSIX and Windows
-    fs::path init(fs::initial_path());
+    fs::path init(canonicalize_root_path(fs::initial_path()));
     fs::path root(init.root_path());
     fs::path::const_iterator it(init.begin());
     fs::path first; // relative first non-root directory
@@ -2825,8 +2841,11 @@ void weakly_canonical_basic_tests()
     cout << "weakly_canonical_basic_tests..." << endl;
     cout << "  dir is " << dir << endl;
 
-    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), fs::current_path() / fs::path("no-such/foo/bar"));
-    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), fs::current_path() / fs::path("no-such/bar"));
+    // Note: Use cacnonical form of the root path in all paths to make path comparisons more stable
+    const fs::path cur_path = canonicalize_root_path(fs::current_path());
+
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/bar"), cur_path / fs::path("no-such/foo/bar"));
+    BOOST_TEST_EQ(fs::weakly_canonical("no-such/foo/../bar"), cur_path / fs::path("no-such/bar"));
     BOOST_TEST_EQ(fs::weakly_canonical(dir), dir);
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/bar"), dir / "no-such/foo/bar");
     BOOST_TEST_EQ(fs::weakly_canonical(dir / "no-such/foo/../bar"), dir / "no-such/bar");
@@ -2910,8 +2929,8 @@ int cpp_main(int argc, char* argv[])
 #error neither BOOST_POSIX_API nor BOOST_WINDOWS_API is defined. See boost/system/api_config.hpp
 #endif
     cout << "API is " << platform << endl;
-    cout << "initial_path() is " << fs::initial_path() << endl;
-    fs::path ip = fs::initial_path();
+    const fs::path ip = fs::initial_path();
+    cout << "initial_path() is " << ip << endl;
     do_the_right_thing_tests(); // compile-only tests, but call anyhow to suppress warnings
 
     for (fs::path::const_iterator it = ip.begin(); it != ip.end(); ++it)
@@ -2922,7 +2941,8 @@ int cpp_main(int argc, char* argv[])
     }
     cout << endl;
 
-    dir = fs::initial_path() / temp_dir;
+    // Note: Use cacnonical form of the root path in all subsequent paths to make path comparisons more stable
+    dir = canonicalize_root_path(ip / temp_dir);
 
     if (fs::exists(dir))
     {
