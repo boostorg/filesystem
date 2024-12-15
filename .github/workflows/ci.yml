@@ -236,16 +236,6 @@ jobs:
               - g++-11
             gcc_toolchain: 11
           - toolset: clang
-            compiler: clang++-15
-            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
-            cxxflags: -stdlib=libc++
-            linkflags: -stdlib=libc++
-            os: ubuntu-22.04
-            install:
-              - clang-15
-              - libc++-15-dev
-              - libc++abi-15-dev
-          - toolset: clang
             compiler: clang++-16
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
             os: ubuntu-24.04
