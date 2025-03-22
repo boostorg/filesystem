@@ -20,7 +20,7 @@
     }
 #define BOOST_UTF8_DECL BOOST_FILESYSTEM_DECL
 
-#include <boost/detail/utf8_codecvt_facet.ipp>
+#include <boost/detail/utf8_codecvt_facet.hpp>
 
 #undef BOOST_UTF8_BEGIN_NAMESPACE
 #undef BOOST_UTF8_END_NAMESPACE
