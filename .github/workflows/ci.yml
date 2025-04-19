@@ -72,12 +72,14 @@ jobs:
               - g++-8
           - toolset: gcc-9
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install:
               - g++-9
           - toolset: gcc-10
             cxxstd: "11,14,17,20"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install:
               - g++-10
           - toolset: gcc-11
@@ -186,13 +188,15 @@ jobs:
           - toolset: clang
             compiler: clang++-9
             cxxstd: "11,14,17,2a"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install:
               - clang-9
           - toolset: clang
             compiler: clang++-10
             cxxstd: "11,14,17,20"
-            os: ubuntu-20.04
+            os: ubuntu-latest
+            container: ubuntu:20.04
             install:
               - clang-10
           - toolset: clang
@@ -305,7 +309,7 @@ jobs:
 
           - name: CMake tests
             cmake_tests: 1
-            os: ubuntu-20.04
+            os: ubuntu-24.04
 
     timeout-minutes: 30
     runs-on: ${{matrix.os}}
