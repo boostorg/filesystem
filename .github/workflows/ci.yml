@@ -102,6 +102,12 @@ jobs:
             os: ubuntu-24.04
             install:
               - g++-14
+          - toolset: gcc-15
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
+            os: ubuntu-latest
+            container: ubuntu:25.04
+            install:
+              - g++-15
           - name: UBSAN
             toolset: gcc-13
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
@@ -268,24 +274,24 @@ jobs:
             os: ubuntu-24.04
             install:
               - clang-19
-            sources:
-              - "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-19 main"
-            source_keys:
-              - "https://apt.llvm.org/llvm-snapshot.gpg.key"
           - toolset: clang
-            compiler: clang++-19
+            compiler: clang++-20
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
+            os: ubuntu-latest
+            container: ubuntu:25.04
+            install:
+              - clang-20
+          - toolset: clang
+            compiler: clang++-20
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
-            os: ubuntu-24.04
+            os: ubuntu-latest
+            container: ubuntu:25.04
             install:
-              - clang-19
-              - libc++-19-dev
-              - libc++abi-19-dev
-            sources:
-              - "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-19 main"
-            source_keys:
-              - "https://apt.llvm.org/llvm-snapshot.gpg.key"
+              - clang-20
+              - libc++-20-dev
+              - libc++abi-20-dev
           - name: UBSAN
             toolset: clang
             compiler: clang++-18
