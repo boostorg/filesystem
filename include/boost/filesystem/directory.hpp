@@ -35,6 +35,13 @@
 
 #include <boost/filesystem/detail/header.hpp> // must be the last #include
 
+#if defined(__MINGW32__) && defined(BOOST_GCC) && (__GNUC__ == 12)
+#pragma GCC diagnostic push
+// 'function' redeclared without dllimport attribute: previous dllimport ignored
+// MinGW-w64 bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106395
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 //--------------------------------------------------------------------------------------//
 
 namespace boost {
@@ -1033,6 +1040,10 @@ struct range_const_iterator< boost::filesystem::recursive_directory_iterator, vo
 };
 
 } // namespace boost
+
+#if defined(__MINGW32__) && defined(BOOST_GCC) && (__GNUC__ == 12)
+#pragma GCC diagnostic pop
+#endif
 
 #include <boost/filesystem/detail/footer.hpp>
 
