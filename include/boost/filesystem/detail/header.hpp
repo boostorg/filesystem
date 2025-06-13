@@ -44,6 +44,12 @@
 // unused function 'foo'
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+#if (__GNUC__ == 12)
+// 'function' redeclared without dllimport attribute: previous dllimport ignored
+// MinGW-w64 bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106395
+#pragma GCC diagnostic ignored "-Wattributes"
+#endif
+
 #if defined(__clang__)
 // template argument uses unnamed type
 #pragma clang diagnostic ignored "-Wunnamed-type-template-args"
