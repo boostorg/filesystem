@@ -12,9 +12,9 @@ import configure ;
 import-search /boost/config/checks ;
 import config : requires ;
 
-searched-lib bcrypt ;
-searched-lib advapi32 ;
-searched-lib coredll ;
+lib bcrypt ;
+lib advapi32 ;
+lib coredll ;
 explicit bcrypt advapi32 coredll ;
 
 # The rule checks if a config macro is defined in the command line or build properties
