@@ -137,6 +137,7 @@ local cxx_requirements = [ requires
     cxx11_defaulted_moves
     cxx11_deleted_functions
     cxx11_function_template_default_args
+    cxx11_unified_initialization_syntax
     cxx11_final
     cxx11_override
 ] ;
