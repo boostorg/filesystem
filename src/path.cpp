@@ -611,15 +611,15 @@ BOOST_FILESYSTEM_DECL int path_algorithms::compare_v4(path const& left, path con
 
 BOOST_FILESYSTEM_DECL path_algorithms::string_type::size_type path_algorithms::append_separator_if_needed(path& p)
 {
-    if (!p.m_pathname.empty() &&
+    string_type::size_type size(p.m_pathname.size());
+    if (size > static_cast< string_type::size_type >(0) &&
 #ifdef BOOST_WINDOWS_API
-        *(p.m_pathname.end() - 1) != colon &&
+        p.m_pathname[size - 1] != colon &&
 #endif
-        !detail::is_directory_separator(*(p.m_pathname.end() - 1)))
+        !detail::is_directory_separator(p.m_pathname[size - 1]))
     {
-        string_type::size_type tmp(p.m_pathname.size());
         p.m_pathname.push_back(path::preferred_separator);
-        return tmp;
+        return size;
     }
     return 0;
 }
