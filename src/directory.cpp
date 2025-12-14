@@ -852,7 +852,7 @@ inline bool is_dir_info_class_not_supported(DWORD error)
     return error == ERROR_NOT_SUPPORTED || error == ERROR_INVALID_PARAMETER ||
         error == ERROR_INVALID_LEVEL || error == ERROR_CALL_NOT_IMPLEMENTED ||
         error == ERROR_GEN_FAILURE || error == ERROR_INVALID_FUNCTION ||
-        error == ERROR_INTERNAL_ERROR || error == NTE_BAD_SIGNATURE;
+        error == ERROR_INTERNAL_ERROR || error == static_cast< DWORD >(NTE_BAD_SIGNATURE);
 }
 
 system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& imp, fs::path const& dir, directory_options opts, directory_iterator_params* params, fs::path& first_filename, fs::file_status& sf, fs::file_status& symlink_sf)
