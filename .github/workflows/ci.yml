@@ -282,16 +282,23 @@ jobs:
             install:
               - clang-20
           - toolset: clang
-            compiler: clang++-20
+            compiler: clang++-21
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
+            os: ubuntu-latest
+            container: ubuntu:25.10
+            install:
+              - clang-21
+          - toolset: clang
+            compiler: clang++-21
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
             os: ubuntu-latest
-            container: ubuntu:25.04
+            container: ubuntu:25.10
             install:
-              - clang-20
-              - libc++-20-dev
-              - libc++abi-20-dev
+              - clang-21
+              - libc++-21-dev
+              - libc++abi-21-dev
           - name: UBSAN
             toolset: clang
             compiler: clang++-18
@@ -307,11 +314,14 @@ jobs:
               - libc++abi-18-dev
 
           - toolset: clang
-            cxxstd: "11,14,17,20,2b"
             os: macos-14
+            cxxstd: "11,14,17,20,2b"
           - toolset: clang
-            cxxstd: "11,14,17,20,23"
             os: macos-15
+            cxxstd: "11,14,17,20,23,26"
+          - toolset: clang
+            os: macos-26
+            cxxstd: "11,14,17,20,23,26"
 
           - name: CMake tests
             cmake_tests: 1
