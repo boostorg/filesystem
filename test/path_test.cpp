@@ -72,7 +72,7 @@ using boost::filesystem::path;
 using boost::next;
 using boost::prior;
 
-#ifdef BOOST_WINDOWS_API
+#ifdef BOOST_FILESYSTEM_WINDOWS_API
 #define BOOST_DIR_SEP "\\"
 #else
 #define BOOST_DIR_SEP "/"
@@ -163,7 +163,7 @@ public:
     operator fs::path() const { return m_path; }
     operator const fs::path::value_type*() const
     {
-#if defined(BOOST_WINDOWS_API)
+#if defined(BOOST_FILESYSTEM_WINDOWS_API)
         return L"[invalid path]";
 #else
         return "[invalid path]";

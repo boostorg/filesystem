@@ -17,7 +17,6 @@
 // http://www.boost.org/more/separate_compilation.html
 
 #include <boost/config.hpp>
-#include <boost/system/api_config.hpp> // for BOOST_POSIX_API or BOOST_WINDOWS_API
 #include <boost/detail/workaround.hpp>
 
 #if defined(BOOST_FILESYSTEM_VERSION) && BOOST_FILESYSTEM_VERSION != 3 && BOOST_FILESYSTEM_VERSION != 4
@@ -52,6 +51,19 @@
 
 #if defined(BOOST_FILESYSTEM_DEPRECATED) && defined(BOOST_FILESYSTEM_NO_DEPRECATED)
 #error Both BOOST_FILESYSTEM_DEPRECATED and BOOST_FILESYSTEM_NO_DEPRECATED are defined
+#endif
+
+//  BOOST_FILESYSTEM_WINDOWS_API or BOOST_FILESYSTEM_POSIX_API -------------------------//
+
+#if defined(BOOST_FILESYSTEM_WINDOWS_API) || defined(BOOST_FILESYSTEM_POSIX_API)
+#error BOOST_FILESYSTEM_WINDOWS_API and BOOST_FILESYSTEM_POSIX_API must not be defined by users
+#endif
+
+// Cygwin is treated as Windows to minimize path character code conversions
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+#define BOOST_FILESYSTEM_WINDOWS_API
+#else
+#define BOOST_FILESYSTEM_POSIX_API
 #endif
 
 //  throw an exception  ----------------------------------------------------------------//

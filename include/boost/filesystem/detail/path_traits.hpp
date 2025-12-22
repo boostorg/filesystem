@@ -55,7 +55,7 @@ class directory_entry;
 namespace detail {
 namespace path_traits {
 
-#if defined(BOOST_WINDOWS_API)
+#if defined(BOOST_FILESYSTEM_WINDOWS_API)
 typedef wchar_t path_native_char_type;
 #define BOOST_FILESYSTEM_DETAIL_IS_CHAR_NATIVE false
 #define BOOST_FILESYSTEM_DETAIL_IS_WCHAR_T_NATIVE true

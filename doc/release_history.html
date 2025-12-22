@@ -40,6 +40,11 @@
   </tr>
 </table>
 
+<h2>1.91.0</h2>
+<ul>
+  <li>Due to a change in Boost.System, Boost.Filesystem now defines and uses its own platform macros <code>BOOST_FILESYSTEM_POSIX_API</code> and <code>BOOST_FILESYSTEM_WINDOWS_API</code>. These macros may not necessarily match the old <code>BOOST_POSIX_API</code> and <code>BOOST_WINDOWS_API</code> macros defined by Boost.System.</li>
+</ul>
+
 <h2>1.90.0</h2>
 <ul>
   <li>Clear passed <code>error_code</code> argument on successful completion of the <code>permissions</code> operation. (<a href="https://github.com/boostorg/filesystem/pull/338">PR#338</a>)</li>
