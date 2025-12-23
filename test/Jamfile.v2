@@ -49,6 +49,7 @@ rule check-mklink ( properties * )
 project
     : requirements
       <include>.
+      <include>../src
       <target-os>windows:<define>_SCL_SECURE_NO_WARNINGS
       <target-os>windows:<define>_SCL_SECURE_NO_DEPRECATE
       <target-os>windows:<define>_CRT_SECURE_NO_WARNINGS

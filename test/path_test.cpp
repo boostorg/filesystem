@@ -2936,7 +2936,7 @@ int cpp_main(int, char*[])
     // The choice of platform is make at runtime rather than compile-time
     // so that compile errors for all platforms will be detected even though
     // only the current platform is runtime tested.
-    platform = (platform == "Win32" || platform == "Win64" || platform == "Cygwin") ? "Windows" : "POSIX";
+    platform = (platform == "Win32" || platform == "Win64") ? "Windows" : "POSIX";
     std::cout << "Platform is " << platform << '\n';
 
     BOOST_TEST(p1.string() != p3.string());

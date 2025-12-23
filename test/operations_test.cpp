@@ -7,6 +7,8 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
+#include "platform_config.hpp"
+
 #include <boost/config/warning_disable.hpp>
 
 //  See deprecated_test for tests of deprecated features
@@ -729,10 +731,13 @@ void recursive_directory_iterator_tests()
          it != fs::recursive_directory_iterator();
          it.increment(ec))
     {
+        //std::cout << "  iterator path: " << it->path().string() << std::endl;
         if (it->path().filename() == "d1f1")
             ++d1f1_count;
         BOOST_TEST(it == it2); // verify single pass shallow copy semantics
     }
+    if (ec)
+        cout << "  iterator increment returned error: " << ec << ", " << ec.message() << endl;
     BOOST_TEST(!ec);
     BOOST_TEST_EQ(d1f1_count, 1);
     BOOST_TEST(it == it2); // verify single pass shallow copy semantics

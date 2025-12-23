@@ -186,6 +186,11 @@ using boost::system::system_category;
 #define BOOST_FILESYSTEM_NO_O_CLOEXEC
 #endif
 
+// At least Cygwin (cygwin1.dll 3.6.5, as of 2025-12-25) doesn't support AT_NO_AUTOMOUNT
+#ifndef AT_NO_AUTOMOUNT
+#define AT_NO_AUTOMOUNT 0
+#endif
+
 #if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
 #define BOOST_FILESYSTEM_HAS_FDATASYNC
 #endif

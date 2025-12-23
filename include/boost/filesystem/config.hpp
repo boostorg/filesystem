@@ -59,8 +59,8 @@
 #error BOOST_FILESYSTEM_WINDOWS_API and BOOST_FILESYSTEM_POSIX_API must not be defined by users
 #endif
 
-// Cygwin is treated as Windows to minimize path character code conversions
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+//  Note: Cygwin is treated as a POSIX platform
+#if defined(BOOST_WINDOWS)
 #define BOOST_FILESYSTEM_WINDOWS_API
 #else
 #define BOOST_FILESYSTEM_POSIX_API
