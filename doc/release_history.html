@@ -43,6 +43,7 @@
 <h2>1.91.0</h2>
 <ul>
   <li>Due to a change in Boost.System, Boost.Filesystem now defines and uses its own platform macros <code>BOOST_FILESYSTEM_POSIX_API</code> and <code>BOOST_FILESYSTEM_WINDOWS_API</code>. These macros may not necessarily match the old <code>BOOST_POSIX_API</code> and <code>BOOST_WINDOWS_API</code> macros defined by Boost.System.</li>
+  <li>On POSIX platforms not supporting <code>openat</code> and related APIs, fixed an error reported by <code>recursive_directory_iterator</code> increment when the iterator encounters a dangling symlink and following symlinks is disabled.</li>
 </ul>
 
 <h2>1.90.0</h2>

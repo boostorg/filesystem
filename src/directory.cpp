@@ -1487,7 +1487,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                 if ((imp->m_options & directory_options::follow_directory_symlink) == directory_options::none ||
                     (imp->m_options & directory_options::skip_dangling_symlinks) != directory_options::none)
                 {
-#if defined(BOOST_FILESYSTEM_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+#if defined(BOOST_FILESYSTEM_POSIX_API)
                     directory_iterator const& dir_it = imp->m_stack.back();
                     if (filesystem::type_present(dir_it->m_symlink_status))
                     {
@@ -1495,6 +1495,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     }
                     else
                     {
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                         parentdir_fd = dir_itr_fd(*dir_it.m_imp, ec);
                         if (ec)
                             return result;
@@ -1504,8 +1505,13 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         symlink_ft = detail::symlink_status_impl(dir_it_filename, &ec, parentdir_fd).type();
                         if (ec)
                             return result;
+#else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+                        symlink_ft = detail::symlink_status_impl(dir_it->path(), &ec).type();
+                        if (ec)
+                            return result;
+#endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                     }
-#elif defined(BOOST_FILESYSTEM_WINDOWS_API)
+#else // defined(BOOST_FILESYSTEM_POSIX_API)
                     directory_iterator const& dir_it = imp->m_stack.back();
                     if (filesystem::type_present(dir_it->m_symlink_status))
                     {
@@ -1544,11 +1550,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         if (ec)
                             return result;
                     }
-#else
-                    symlink_ft = imp->m_stack.back()->symlink_file_type(ec);
-                    if (ec)
-                        return result;
-#endif
+#endif // defined(BOOST_FILESYSTEM_POSIX_API)
                 }
 
                 // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
