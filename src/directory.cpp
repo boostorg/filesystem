@@ -1487,38 +1487,27 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                 if ((imp->m_options & directory_options::follow_directory_symlink) == directory_options::none ||
                     (imp->m_options & directory_options::skip_dangling_symlinks) != directory_options::none)
                 {
-#if defined(BOOST_FILESYSTEM_POSIX_API)
                     directory_iterator const& dir_it = imp->m_stack.back();
-                    if (filesystem::type_present(dir_it->m_symlink_status))
+                    if (!filesystem::type_present(dir_it->m_symlink_status))
                     {
-                        symlink_ft = dir_it->m_symlink_status.type();
-                    }
-                    else
-                    {
+#if defined(BOOST_FILESYSTEM_POSIX_API)
+
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                         parentdir_fd = dir_itr_fd(*dir_it.m_imp, ec);
-                        if (ec)
+                        if (BOOST_UNLIKELY(!!ec))
                             return result;
 
                         dir_it_filename = detail::path_algorithms::filename_v4(dir_it->path());
 
-                        symlink_ft = detail::symlink_status_impl(dir_it_filename, &ec, parentdir_fd).type();
-                        if (ec)
-                            return result;
+                        dir_it->m_symlink_status = detail::symlink_status_impl(dir_it_filename, &ec, parentdir_fd);
 #else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                        symlink_ft = detail::symlink_status_impl(dir_it->path(), &ec).type();
-                        if (ec)
-                            return result;
+                        dir_it->m_symlink_status = detail::symlink_status_impl(dir_it->path(), &ec);
 #endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-                    }
+                        if (BOOST_UNLIKELY(!!ec))
+                            return result;
+
 #else // defined(BOOST_FILESYSTEM_POSIX_API)
-                    directory_iterator const& dir_it = imp->m_stack.back();
-                    if (filesystem::type_present(dir_it->m_symlink_status))
-                    {
-                        symlink_ft = dir_it->m_symlink_status.type();
-                    }
-                    else
-                    {
+
                         boost::winapi::NTSTATUS_ status = nt_create_file_handle_at
                         (
                             direntry_handle,
@@ -1533,11 +1522,11 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
                         if (NT_SUCCESS(status))
                         {
-                            symlink_ft = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec).type();
+                            dir_it->m_symlink_status = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec);
                         }
                         else if (BOOST_NTSTATUS_EQ(status, STATUS_NOT_IMPLEMENTED))
                         {
-                            symlink_ft = dir_it->symlink_file_type(ec);
+                            dir_it->m_symlink_status = detail::symlink_status_impl(dir_it->path(), &ec);
                         }
                         else
                         {
@@ -1547,10 +1536,13 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                             return result;
                         }
 
-                        if (ec)
+                        if (BOOST_UNLIKELY(!!ec))
                             return result;
-                    }
+
 #endif // defined(BOOST_FILESYSTEM_POSIX_API)
+                    }
+
+                    symlink_ft = dir_it->m_symlink_status.type();
                 }
 
                 // Logic for following predicate was contributed by Daniel Aarno to handle cyclic
@@ -1571,6 +1563,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         return result;
 
 #if defined(BOOST_FILESYSTEM_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+
                     if (parentdir_fd < 0)
                     {
                         parentdir_fd = dir_itr_fd(*dir_it.m_imp, ec);
@@ -1600,8 +1593,19 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
                         return result;
                     }
+
 #else // defined(BOOST_FILESYSTEM_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
-#if defined(BOOST_FILESYSTEM_WINDOWS_API)
+
+#if defined(BOOST_FILESYSTEM_POSIX_API)
+
+                    if (ft == status_error)
+                    {
+                        dir_it->m_status = detail::status_impl(dir_it->path(), &ec);
+                        ft = dir_it->m_status.type();
+                    }
+
+#else // defined(BOOST_FILESYSTEM_POSIX_API)
+
                     if (!!direntry_handle && symlink_ft == symlink_file)
                     {
                         // Close the symlink to reopen the target file below
@@ -1628,7 +1632,8 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         }
                         else if (BOOST_NTSTATUS_EQ(status, STATUS_NOT_IMPLEMENTED))
                         {
-                            ft = dir_it->file_type(ec);
+                            dir_it->m_status = detail::status(dir_it->path(), &ec);
+                            ft = dir_it->m_status.type();
                         }
                         else
                         {
@@ -1638,12 +1643,11 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                     else
                     {
                     get_file_type_by_handle:
-                        ft = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec).type();
+                        dir_it->m_status = detail::status_by_handle(direntry_handle.get(), dir_it->path(), &ec);
+                        ft = dir_it->m_status.type();
                     }
-#else // defined(BOOST_FILESYSTEM_WINDOWS_API)
-                    if (ft == status_error)
-                        ft = dir_it->file_type(ec);
-#endif // defined(BOOST_FILESYSTEM_WINDOWS_API)
+
+#endif // defined(BOOST_FILESYSTEM_POSIX_API)
 
                     if (BOOST_UNLIKELY(!!ec))
                     {
@@ -1659,6 +1663,7 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 
                     if (ft != directory_file)
                         return result;
+
 #endif // defined(BOOST_FILESYSTEM_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
 
                     if (BOOST_UNLIKELY((imp->m_stack.size() - 1u) >= static_cast< std::size_t >((std::numeric_limits< int >::max)())))
@@ -1671,18 +1676,21 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
                         return result;
                     }
 
-#if defined(BOOST_FILESYSTEM_POSIX_API) && defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+#if defined(BOOST_FILESYSTEM_POSIX_API)
+#if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
                     directory_iterator next;
                     detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
-#elif defined(BOOST_FILESYSTEM_WINDOWS_API)
+#else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+                    directory_iterator next(dir_it->path(), imp->m_options, ec);
+#endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
+#else // defined(BOOST_FILESYSTEM_POSIX_API)
                     detail::directory_iterator_params params;
                     params.dir_handle = direntry_handle.get();
                     params.close_handle = true;
                     directory_iterator next;
                     detail::directory_iterator_construct(next, dir_it->path(), imp->m_options, &params, &ec);
-#else
-                    directory_iterator next(dir_it->path(), imp->m_options, ec);
-#endif
+#endif // defined(BOOST_FILESYSTEM_POSIX_API)
+
                     if (BOOST_LIKELY(!ec))
                     {
 #if defined(BOOST_FILESYSTEM_WINDOWS_API)
@@ -1776,7 +1784,6 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 }
 
 } // namespace detail
-
 } // namespace filesystem
 } // namespace boost
 

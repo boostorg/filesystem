@@ -1743,8 +1743,6 @@ fs::file_status status_by_handle(HANDLE h, path const& p, error_code* ec)
     return fs::file_status(ftype, make_permissions(p, attrs));
 }
 
-namespace {
-
 //! symlink_status() implementation
 fs::file_status symlink_status_impl(path const& p, error_code* ec)
 {
@@ -1812,6 +1810,8 @@ fs::file_status status_impl(path const& p, error_code* ec)
 
     return st;
 }
+
+namespace {
 
 //! remove() implementation for Windows XP and older
 bool remove_nt5_impl(path const& p, DWORD attrs, error_code* ec)
