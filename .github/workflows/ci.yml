@@ -679,8 +679,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { sys: MINGW32, toolset: gcc, cxxstd: '11,17,20,23' }
-          - { sys: MINGW64, toolset: gcc, cxxstd: '11,17,20,23' }
+          - sys: MINGW32
+            toolset: gcc
+            cxxstd: '11,17,20,23'
+            cmake_generator: "Ninja"
+          - sys: MINGW64
+            toolset: gcc
+            cxxstd: '11,17,20,23'
+            cmake_generator: "Ninja"
 
     timeout-minutes: 30
     runs-on: windows-latest
@@ -768,6 +774,10 @@ jobs:
       # Run also the CMake tests to avoid having to setup another matrix for CMake on MSYS
       - name: Run CMake tests
         run: |
+            if [ -n "${{matrix.cmake_generator}}" ]
+            then
+                export "CMAKE_GENERATOR=${{matrix.cmake_generator}}"
+            fi
             [ ! -d boost-root ] || cd boost-root
             mkdir __build_static__ && cd __build_static__
             cmake -DBUILD_SHARED_LIBS=OFF ../libs/$LIBRARY/test/test_cmake
@@ -793,6 +803,7 @@ jobs:
           - toolset: gcc
             cxxstd: "14-gnu,17-gnu,20-gnu,23-gnu"
             build_variant: debug
+            cmake_generator: "Ninja"
 
     timeout-minutes: 30
     runs-on: windows-latest
@@ -808,6 +819,7 @@ jobs:
           packages:
             gcc-g++
             cmake
+            ninja
 
       - name: Setup Boost
         run: |
@@ -885,6 +897,10 @@ jobs:
       # Run also the CMake tests to avoid having to setup another matrix for CMake on Cygwin
       - name: Run CMake tests
         run: |
+            if [ -n "${{matrix.cmake_generator}}" ]
+            then
+                export "CMAKE_GENERATOR=${{matrix.cmake_generator}}"
+            fi
             [ ! -d boost-root ] || cd boost-root
             mkdir __build_static__ && cd __build_static__
             cmake -DBUILD_SHARED_LIBS=OFF ../libs/$LIBRARY/test/test_cmake
