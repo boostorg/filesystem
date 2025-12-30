@@ -42,7 +42,7 @@
 
 <h2>1.91.0</h2>
 <ul>
-  <li>Boost.Filesystem now defines and uses its own platform macros <code>BOOST_FILESYSTEM_POSIX_API</code> and <code>BOOST_FILESYSTEM_WINDOWS_API</code>. The old <code>BOOST_POSIX_API</code> and <code>BOOST_WINDOWS_API</code> macros are still defined by Boost.System.</li>
+  <li>Boost.Filesystem now defines and uses its own platform macros <code>BOOST_FILESYSTEM_POSIX_API</code> and <code>BOOST_FILESYSTEM_WINDOWS_API</code>. The old <code>BOOST_POSIX_API</code> and <code>BOOST_WINDOWS_API</code> macros are still defined by Boost.System. Boost.Filesystem will check that the two sets of macros are in sync and by default will fail to compile if not. The compilation error can be reduced to a warning by defininig <code>BOOST_FILESYSTEM_ALLOW_SYSTEM_API_MISMATCH</code> to 1 or disabled entirely by defining it to 2. Note that in this case the error code values reported by Boost.Filesystem will not match the error category.</li>
   <li>On POSIX platforms not supporting <code>openat</code> and related APIs, fixed an error reported by <code>recursive_directory_iterator</code> increment when the iterator encounters a dangling symlink and following symlinks is disabled.</li>
   <li><b>Breaking change for Cygwin users.</b> The library now treats Cygwin as a POSIX platform. This has several user-facing consequences, in particular:
     <ul>

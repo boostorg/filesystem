@@ -66,6 +66,18 @@
 #define BOOST_FILESYSTEM_POSIX_API
 #endif
 
+#if !defined(BOOST_FILESYSTEM_ALLOW_SYSTEM_API_MISMATCH) || (BOOST_FILESYSTEM_ALLOW_SYSTEM_API_MISMATCH < 2)
+#include <boost/system/api_config.hpp>
+#if (defined(BOOST_FILESYSTEM_POSIX_API) && !defined(BOOST_POSIX_API)) || (defined(BOOST_FILESYSTEM_WINDOWS_API) && !defined(BOOST_WINDOWS_API))
+#if !defined(BOOST_FILESYSTEM_ALLOW_SYSTEM_API_MISMATCH) || (BOOST_FILESYSTEM_ALLOW_SYSTEM_API_MISMATCH < 1)
+#error Boost.Filesystem: Platform API mismatch between Boost.System and Boost.Filesystem, reported error code values will not match the error category
+#else
+#include <boost/config/pragma_message.hpp>
+BOOST_PRAGMA_MESSAGE("Boost.Filesystem: Platform API mismatch between Boost.System and Boost.Filesystem, reported error code values will not match the error category")
+#endif
+#endif
+#endif
+
 //  throw an exception  ----------------------------------------------------------------//
 //
 //  Exceptions were originally thrown via boost::throw_exception().
