@@ -314,6 +314,37 @@ jobs:
               - libc++abi-18-dev
 
           - toolset: clang
+            vm: freebsd
+            version: "14.3"
+            cxxstd: "11,14,17,20,23,26"
+            os: ubuntu-latest
+
+          - toolset: clang
+            vm: openbsd
+            version: "7.7"
+            cxxstd: "11,14,17,20,2b"
+            os: ubuntu-latest
+
+          - toolset: gcc
+            vm: netbsd
+            version: "10.1"
+            cxxstd: "11,14,17,20"
+            os: ubuntu-latest
+
+          - toolset: gcc
+            vm: dragonflybsd
+            version: "6.4.0"
+            cxxstd: "11,14,17,2a"
+            os: ubuntu-latest
+            lang: en_US.UTF-8
+
+          - toolset: gcc
+            vm: solaris
+            version: "11.4-gcc"
+            cxxstd: "11,14,17,20,23,26"
+            os: ubuntu-latest
+
+          - toolset: clang
             os: macos-14
             cxxstd: "11,14,17,20,2b"
           - toolset: clang
@@ -334,6 +365,11 @@ jobs:
     steps:
       - name: Setup environment
         run: |
+            if [ -n "${{matrix.lang}}" ]
+            then
+                echo "LANG=${{matrix.lang}}" >> $GITHUB_ENV
+                export LANG=${{matrix.lang}}
+            fi
             if [ -f "/etc/debian_version" ]
             then
                 echo "DEBIAN_FRONTEND=noninteractive" >> $GITHUB_ENV
@@ -512,25 +548,23 @@ jobs:
             fi
             DEPINST_ARGS+=("$LIBRARY")
             python tools/boostdep/depinst/depinst.py "${DEPINST_ARGS[@]}"
-            if [ -z "${{matrix.cmake_tests}}" ]
-            then
-                ./bootstrap.sh
-                ./b2 headers
-                if [ -n "${{matrix.compiler}}" -o -n "$GCC_TOOLCHAIN_ROOT" ]
-                then
-                    echo -n "using ${{matrix.toolset}} : : ${{matrix.compiler}}" > ~/user-config.jam
-                    if [ -n "$GCC_TOOLCHAIN_ROOT" ]
-                    then
-                        echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> ~/user-config.jam
-                    fi
-                    echo " ;" >> ~/user-config.jam
-                fi
-            fi
-
-      - name: Run tests
-        if: matrix.cmake_tests == ''
-        run: |
+            rm -rf ".git"
+            cd ..
+            cat > b2-run-tests.sh << "EOF"
+            #!/usr/bin/env bash
+            set -e
             cd boost-root
+            ./bootstrap.sh
+            ./b2 headers
+            if [ -n "${{matrix.compiler}}" -o -n "$GCC_TOOLCHAIN_ROOT" ]
+            then
+                echo -n "using ${{matrix.toolset}} : : ${{matrix.compiler}}" > ~/user-config.jam
+                if [ -n "$GCC_TOOLCHAIN_ROOT" ]
+                then
+                    echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> ~/user-config.jam
+                fi
+                echo " ;" >> ~/user-config.jam
+            fi
             if [ -n "${{matrix.extra_tests}}" ]
             then
                 export BOOST_FILESYSTEM_TEST_WITH_EXAMPLES=1
@@ -561,6 +595,146 @@ jobs:
             fi
             B2_ARGS+=("libs/$LIBRARY/test")
             ./b2 "${B2_ARGS[@]}"
+            EOF
+            chmod +x b2-run-tests.sh
+
+      # Note: The VMs must be created after the workspace is fully prepared, as it will be copied to the VM only once
+      - name: Setup FreeBSD VM
+        if: matrix.vm == 'freebsd'
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "${{matrix.version}}"
+          usesh: true
+          sync: rsync
+          copyback: false
+          envs: "LANG LIBRARY DEFAULT_BUILD_VARIANT BUILD_JOBS GCC_TOOLCHAIN_ROOT"
+          prepare: |
+              pkg install -y bash
+          run: |
+              uname -mrs
+              sysctl hw.model
+              sysctl hw.ncpu
+              sysctl hw.physmem
+              sysctl hw.usermem
+              locale
+              pwd
+              ls -la
+
+      - name: Setup OpenBSD VM
+        if: matrix.vm == 'openbsd'
+        uses: vmactions/openbsd-vm@v1
+        with:
+          release: "${{matrix.version}}"
+          usesh: true
+          sync: rsync
+          copyback: false
+          envs: "LANG LIBRARY DEFAULT_BUILD_VARIANT BUILD_JOBS GCC_TOOLCHAIN_ROOT"
+          prepare: |
+              pkg_add bash
+          run: |
+              uname -mrs
+              sysctl hw.model
+              sysctl hw.ncpu
+              sysctl hw.physmem
+              sysctl hw.usermem
+              locale
+              pwd
+              ls -la
+
+      - name: Setup NetBSD VM
+        if: matrix.vm == 'netbsd'
+        uses: vmactions/netbsd-vm@v1
+        with:
+          release: "${{matrix.version}}"
+          usesh: true
+          sync: rsync
+          copyback: false
+          envs: "LANG LIBRARY DEFAULT_BUILD_VARIANT BUILD_JOBS GCC_TOOLCHAIN_ROOT"
+          run: |
+              uname -mrs
+              /sbin/sysctl hw.model
+              /sbin/sysctl hw.ncpu
+              /sbin/sysctl hw.physmem64
+              /sbin/sysctl hw.usermem64
+              locale
+              pwd
+              ls -la
+
+      - name: Setup DragonFlyBSD VM
+        if: matrix.vm == 'dragonflybsd'
+        uses: vmactions/dragonflybsd-vm@v1
+        with:
+          release: "${{matrix.version}}"
+          usesh: true
+          sync: rsync
+          copyback: false
+          envs: "LANG LIBRARY DEFAULT_BUILD_VARIANT BUILD_JOBS GCC_TOOLCHAIN_ROOT"
+          prepare: |
+              pkg install -y bash
+          run: |
+              uname -mrs
+              sysctl hw.model
+              sysctl hw.ncpu
+              sysctl hw.physmem
+              sysctl hw.usermem
+              locale
+              pwd
+              ls -la
+
+      - name: Setup Solaris VM
+        if: matrix.vm == 'solaris'
+        uses: vmactions/solaris-vm@v1
+        with:
+          release: "${{matrix.version}}"
+          usesh: true
+          sync: rsync
+          copyback: false
+          envs: "LANG LIBRARY DEFAULT_BUILD_VARIANT BUILD_JOBS GCC_TOOLCHAIN_ROOT"
+          run: |
+              uname -mrs
+              locale
+              pwd
+              ls -la
+
+      - name: Run tests
+        if: matrix.cmake_tests == '' && matrix.vm == ''
+        run: |
+            bash ./b2-run-tests.sh
+
+      - name: Run tests (FreeBSD VM)
+        if: matrix.cmake_tests == '' && matrix.vm == 'freebsd'
+        shell: freebsd {0}
+        run: |
+            cd "$GITHUB_WORKSPACE"
+            bash ./b2-run-tests.sh
+
+      - name: Run tests (OpenBSD VM)
+        if: matrix.cmake_tests == '' && matrix.vm == 'openbsd'
+        shell: openbsd {0}
+        run: |
+            cd "$GITHUB_WORKSPACE"
+            bash ./b2-run-tests.sh
+
+      - name: Run tests (NetBSD VM)
+        if: matrix.cmake_tests == '' && matrix.vm == 'netbsd'
+        shell: netbsd {0}
+        run: |
+            cd "$GITHUB_WORKSPACE"
+            bash ./b2-run-tests.sh
+
+      - name: Run tests (DragonFlyBSD VM)
+        if: matrix.cmake_tests == '' && matrix.vm == 'dragonflybsd'
+        shell: dragonflybsd {0}
+        run: |
+            cd "$GITHUB_WORKSPACE"
+            bash ./b2-run-tests.sh
+
+      - name: Run tests (Solaris VM)
+        if: matrix.cmake_tests == '' && matrix.vm == 'solaris'
+        shell: solaris {0}
+        run: |
+            cd "$GITHUB_WORKSPACE"
+            bash ./b2-run-tests.sh
 
       - name: Run CMake tests
         if: matrix.cmake_tests
