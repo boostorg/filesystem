@@ -1122,7 +1122,7 @@ uintmax_t remove_all_impl
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW) && defined(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
     fs::path filename;
     const fs::path* remove_path = &p;
-    if (parentdir_fd != AT_FDCWD)
+    if (parentdir_fd != static_cast< int >(AT_FDCWD))
     {
         filename = path_algorithms::filename_v4(p);
         remove_path = &filename;
