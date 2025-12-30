@@ -1,7 +1,7 @@
 //  filesystem path.cpp  -------------------------------------------------------------  //
 
 //  Copyright Beman Dawes 2008
-//  Copyright Andrey Semashev 2021-2024
+//  Copyright Andrey Semashev 2021-2025
 
 //  Distributed under the Boost Software License, Version 1.0.
 //  See http://www.boost.org/LICENSE_1_0.txt
@@ -28,8 +28,39 @@
 #include "windows_file_codecvt.hpp"
 #include "windows_tools.hpp"
 #include <windows.h>
-#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__)
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || \
+    defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__NETBSD__) || defined(__NetBSD__) || \
+    defined(sun) || defined(__sun) || \
+    defined(__HAIKU__)
+// "All BSD system functions expect their string parameters to be in UTF-8 encoding
+// and nothing else." See
+// http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
+//
+// "The kernel will reject any filename that is not a valid UTF-8 string, and it will
+// even be normalized (to Unicode NFD) before stored on disk, at least when using HFS.
+// The right way to deal with it would be to always convert the filename to UTF-8
+// before trying to open/create a file." See
+// http://lists.apple.com/archives/unix-porting/2007/Sep/msg00023.html
+//
+// "How a file name looks at the API level depends on the API. Current Carbon APIs
+// handle file names as an array of UTF-16 characters; POSIX ones handle them as an
+// array of UTF-8, which is why UTF-8 works well in Terminal. How it's stored on disk
+// depends on the disk format; HFS+ uses UTF-16, but that's not important in most
+// cases." See
+// http://lists.apple.com/archives/applescript-users/2002/Sep/msg00319.html
+//
+// Many thanks to Peter Dimov for digging out the above references!
+//
+// BSD systems have historically been largely encoding-agnostic wrt. filesystem paths,
+// but more recent versions have come to universally use UTF-8.
+//
+// On DragonFly BSD 6.4.0, std::locale("") fails unless LANG is set to some locale that
+// is supported in libc.
+//
+// On Solaris 11.4, std::locale("") fails even if LANG is set correctly in the environment.
+// Recent versions of Solaris seem to have transitioned to UTF-8 for filename encoding.
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
+#define BOOST_FILESYSTEM_DETAIL_USE_UTF8_CODECVT_FACET
 #endif
 
 #ifdef BOOST_FILESYSTEM_DEBUG
@@ -1427,26 +1458,7 @@ std::locale default_locale()
 #if defined(BOOST_FILESYSTEM_WINDOWS_API)
     std::locale global_loc = std::locale();
     return std::locale(global_loc, new boost::filesystem::detail::windows_file_codecvt());
-#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__HAIKU__)
-    // "All BSD system functions expect their string parameters to be in UTF-8 encoding
-    // and nothing else." See
-    // http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
-    //
-    // "The kernel will reject any filename that is not a valid UTF-8 string, and it will
-    // even be normalized (to Unicode NFD) before stored on disk, at least when using HFS.
-    // The right way to deal with it would be to always convert the filename to UTF-8
-    // before trying to open/create a file." See
-    // http://lists.apple.com/archives/unix-porting/2007/Sep/msg00023.html
-    //
-    // "How a file name looks at the API level depends on the API. Current Carbon APIs
-    // handle file names as an array of UTF-16 characters; POSIX ones handle them as an
-    // array of UTF-8, which is why UTF-8 works well in Terminal. How it's stored on disk
-    // depends on the disk format; HFS+ uses UTF-16, but that's not important in most
-    // cases." See
-    // http://lists.apple.com/archives/applescript-users/2002/Sep/msg00319.html
-    //
-    // Many thanks to Peter Dimov for digging out the above references!
-
+#elif defined(BOOST_FILESYSTEM_DETAIL_USE_UTF8_CODECVT_FACET)
     std::locale global_loc = std::locale();
     return std::locale(global_loc, new boost::filesystem::detail::utf8_codecvt_facet());
 #else // Other POSIX
