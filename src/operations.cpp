@@ -984,6 +984,14 @@ int check_fs_type(int infile, int outfile, uintmax_t size, std::size_t blksize)
 
         if (BOOST_UNLIKELY(sfs.f_type == PROC_SUPER_MAGIC ||
             sfs.f_type == SYSFS_MAGIC ||
+#if defined(CGROUP2_SUPER_MAGIC)
+            sfs.f_type == CGROUP2_SUPER_MAGIC ||
+#endif
+#if defined(CGROUP_SUPER_MAGIC)
+            sfs.f_type == CGROUP_SUPER_MAGIC ||
+#endif
+            sfs.f_type == SECURITYFS_MAGIC ||
+            sfs.f_type == 0x62656570 || // CONFIGFS_MAGIC
             sfs.f_type == TRACEFS_MAGIC ||
             sfs.f_type == DEBUGFS_MAGIC))
         {

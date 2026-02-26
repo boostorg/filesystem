@@ -54,6 +54,7 @@
     </ul>
   </li>
   <li>On DragonFly BSD, NetBSD and Solaris, Boost.Filesystem default path locale now uses UTF-8 for path character encoding.</li>
+  <li>On Linux, use <code>read</code>/<code>write</code> loop implementation of <code>copy_file</code> and <code>copy</code> for configfs, securityfs, cgroup and cgroup2 filesystems, in addition to the previously blacklisted filesystems.</li>
 </ul>
 
 <h2>1.90.0</h2>
