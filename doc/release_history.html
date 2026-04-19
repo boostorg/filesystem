@@ -40,6 +40,11 @@
   </tr>
 </table>
 
+<h2>1.92.0</h2>
+<ul>
+  <li>Marked templated versions of <code>initial_path</code> as deprecated and removed from <b>v4</b>. Use the non-templated versions instead.</li>
+</ul>
+
 <h2>1.91.0</h2>
 <ul>
   <li>Boost.Filesystem now defines and uses its own platform macros <code>BOOST_FILESYSTEM_POSIX_API</code> and <code>BOOST_FILESYSTEM_WINDOWS_API</code>. The old <code>BOOST_POSIX_API</code> and <code>BOOST_WINDOWS_API</code> macros are still defined by Boost.System. Boost.Filesystem will check that the two sets of macros are in sync and by default will fail to compile if not. The compilation error can be reduced to a warning by defininig <code>BOOST_FILESYSTEM_ALLOW_SYSTEM_API_MISMATCH</code> to 1 or disabled entirely by defining it to 2. Note that in this case the error code values reported by Boost.Filesystem will not match the error category.</li>
