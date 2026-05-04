@@ -43,14 +43,29 @@
 #include <boost/scope/unique_fd.hpp>
 
 #if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && (_POSIX_THREAD_SAFE_FUNCTIONS >= 0) && defined(_SC_THREAD_SAFE_FUNCTIONS) && \
-    !defined(__CYGWIN__) && \
     !(defined(linux) || defined(__linux) || defined(__linux__)) && \
     !defined(__ANDROID__) && \
+    !defined(__APPLE__) && \
+    !defined(__FreeBSD__) && \
+    !defined(__OpenBSD__) && \
+    !(defined(__NETBSD__) || defined(__NetBSD__)) && \
+    !defined(__DragonFly__) && \
+    !(defined(__SunOS_5_10) || defined(__SunOS_5_11)) && \
+    !defined(__illumos__) && \
+    !defined(__QNXNTO__) && \
+    !defined(__CYGWIN__) && \
     (!defined(__hpux) || defined(_REENTRANT)) && \
     (!defined(_AIX) || defined(__THREAD_SAFE)) && \
     !defined(__wasm)
 #define BOOST_FILESYSTEM_USE_READDIR_R
 #endif
+
+#if defined(BOOST_FILESYSTEM_USE_READDIR_R) && !defined(BOOST_ALLOW_DEPRECATED)
+#include <boost/config/pragma_message.hpp>
+BOOST_PRAGMA_MESSAGE("Boost.Filesystem: readdir_r is used instead of readdir because the latter is assumed to be not thread-safe. " \
+    "If this assumption is wrong, please report to the library developers. " \
+    "Otherwise, support for this platform is deprecated and will be removed in a future release.")
+#endif // defined(BOOST_FILESYSTEM_USE_READDIR_R)
 
 // At least Mac OS X 10.6 and older doesn't support O_CLOEXEC
 #ifndef O_CLOEXEC
