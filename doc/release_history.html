@@ -45,6 +45,7 @@
   <li>Marked templated versions of <code>initial_path</code> as deprecated and removed from <b>v4</b>. Use the non-templated versions instead.</li>
   <li>Use <code>readdir</code> instead of <code>readdir_r</code> on more POSIX platforms, specifically on Mac OS and other Apple operating systems, FreeBSD, OpenBSD, DragonFly BSD, NetBSD, QNX 6.0 and later, Solaris 10 and later and Illumos-based systems. Solaris users with gcc are recommended to define <code>__SunOS_5_x</code> macros according to their target Solaris version (e.g. <code>__SunOS_5_11</code>) when building Boost. (<a href="https://github.com/boostorg/filesystem/issues/349">#349</a>)</li>
   <li>Support for platforms with non-thread-safe <code>readdir</code> is deprecated and will be removed in a future release. Although not required until <a href="https://pubs.opengroup.org/onlinepubs/9799919799/functions/readdir.html">POSIX.1-2024</a>, on modern systems <code>readdir</code> is thread-safe when used with separate <code>DIR</code> objects in different threads and on some systems <code>readdir_r</code> is marked as deprecated. POSIX.1-2024 has been updated accordingly and also marked <code>readdir_r</code> as obsolescent, with a planned removal in a future version of the specification.</li>
+  <li>On POSIX platforms, handle <code>EINTR</code> error code returned from <code>opendir</code>, <code>readdir</code> and equivalents. Although not documented, this error code, reportedly, may be returned on Apple operating systems and some BSD systems.</li>
 </ul>
 
 <h2>1.91.0</h2>

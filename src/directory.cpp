@@ -417,11 +417,21 @@ inline int invoke_readdir(dir_itr_imp& imp, struct dirent** result)
 system::error_code dir_itr_increment(dir_itr_imp& imp, fs::path& filename, fs::file_status& sf, fs::file_status& symlink_sf)
 {
     dirent* result = nullptr;
-    int err = invoke_readdir(imp, &result);
-    if (BOOST_UNLIKELY(err != 0))
-        return system::error_code(err, system::system_category());
-    if (result == nullptr)
-        return dir_itr_close(imp);
+    while (true)
+    {
+        int err = invoke_readdir(imp, &result);
+        if (BOOST_UNLIKELY(err != 0))
+        {
+            if (err == EINTR)
+                continue;
+            return system::error_code(err, system::system_category());
+        }
+
+        if (result == nullptr)
+            return dir_itr_close(imp);
+
+        break;
+    }
 
     filename = result->d_name;
 
@@ -511,21 +521,35 @@ system::error_code dir_itr_create(boost::intrusive_ptr< detail::dir_itr_imp >& i
             return ec;
     }
 
-    pimpl->handle = ::fdopendir(fd.get());
-    if (BOOST_UNLIKELY(!pimpl->handle))
+    while (true)
     {
-        const int err = errno;
-        return system::error_code(err, system::system_category());
+        pimpl->handle = ::fdopendir(fd.get());
+        if (BOOST_UNLIKELY(!pimpl->handle))
+        {
+            const int err = errno;
+            if (err == EINTR)
+                continue;
+            return system::error_code(err, system::system_category());
+        }
+
+        break;
     }
 
     // At this point fd will be closed by closedir
     fd.release();
 #else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
-    pimpl->handle = ::opendir(dir.c_str());
-    if (BOOST_UNLIKELY(!pimpl->handle))
+    while (true)
     {
-        const int err = errno;
-        return system::error_code(err, system::system_category());
+        pimpl->handle = ::opendir(dir.c_str());
+        if (BOOST_UNLIKELY(!pimpl->handle))
+        {
+            const int err = errno;
+            if (err == EINTR)
+                continue;
+            return system::error_code(err, system::system_category());
+        }
+
+        break;
     }
 #endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
 
@@ -1118,29 +1142,44 @@ bool is_empty_directory(boost::scope::unique_fd&& fd, path const& p, error_code*
             ::closedir(dir);
         }
     };
+    std::unique_ptr< DIR, closedir_deleter > dir;
 
     int err;
 
 #if defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
-    std::unique_ptr< DIR, closedir_deleter > dir(::fdopendir(fd.get()));
-    if (BOOST_UNLIKELY(!dir))
+    while (true)
     {
-        err = errno;
-    fail:
-        emit_error(err, p, ec, "boost::filesystem::is_empty");
-        return false;
+        dir.reset(::fdopendir(fd.get()));
+        if (BOOST_UNLIKELY(!dir))
+        {
+            err = errno;
+            if (err == EINTR)
+                continue;
+        fail:
+            emit_error(err, p, ec, "boost::filesystem::is_empty");
+            return false;
+        }
+
+        break;
     }
 
     // At this point fd will be closed by closedir
     fd.release();
 #else // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
-    std::unique_ptr< DIR, closedir_deleter > dir(::opendir(p.c_str()));
-    if (BOOST_UNLIKELY(!dir))
+    while (true)
     {
-        err = errno;
-    fail:
-        emit_error(err, p, ec, "boost::filesystem::is_empty");
-        return false;
+        dir.reset(::opendir(p.c_str()));
+        if (BOOST_UNLIKELY(!dir))
+        {
+            err = errno;
+            if (err == EINTR)
+                continue;
+        fail:
+            emit_error(err, p, ec, "boost::filesystem::is_empty");
+            return false;
+        }
+
+        break;
     }
 #endif // defined(BOOST_FILESYSTEM_HAS_FDOPENDIR_NOFOLLOW)
 
@@ -1151,6 +1190,8 @@ bool is_empty_directory(boost::scope::unique_fd&& fd, path const& p, error_code*
         if (!ent)
         {
             err = errno;
+            if (err == EINTR)
+                continue;
             if (err != 0)
                 goto fail;
 
