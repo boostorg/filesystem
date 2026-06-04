@@ -10,7 +10,6 @@
 import project ;
 import configure ;
 import regex ;
-import string ;
 import-search /boost/config/checks ;
 import config : requires ;
 
@@ -129,9 +128,7 @@ rule check-linkflag-no-undefined ( properties * )
 
             if [ MATCH "^(<(compile|c|cxx|link)flags>.*-fsanitize=.+)$" : $(property) ]
             {
-                # Note: avoid using regex.replace due to b2 bug: https://github.com/bfgroup/b2/issues/597
-                # property = [ regex.replace $(property) : "-fsanitize=[^\s]+\s*" : "" ] ;
-                property = [ string.join [ regex.transform $(property) : "^(.*)-fsanitize=[^\s]+\s*(.*)$" : 1 2 ] : "" ] ;
+                property = [ regex.replace $(property) "-fsanitize=[^\s]+\s*" "" ] ;
                 if [ MATCH "^(<(compile|c|cxx|link)flags>)\s*$" : $(property) ]
                 {
                     continue ;
