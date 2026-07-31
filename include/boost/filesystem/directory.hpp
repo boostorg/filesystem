@@ -500,8 +500,8 @@ public:
      * \brief Returns the file status.
      *
      * \effects
-     * For the cached file status `m_status`, if `!status_known(m_status)`, calls `refresh(ec)`. Then returns
-     * `m_status`.
+     * For the cached file status `m_status`, if `!status_known(m_status)`, refreshes the cache to update it.
+     * Then returns `m_status`.
      *
      * \note The implementation does not query the filesystem after the file status has been cached.
      *       Filesystem changes after the file status has been cached will not be reflected in the result.
@@ -515,7 +515,7 @@ public:
         ec.clear();
 
         if (!filesystem::status_known(m_status))
-            refresh_impl(&ec);
+            refresh_impl(&ec, refresh_mode::follow);
         return m_status;
     }
 
@@ -523,7 +523,7 @@ public:
     file_status status() const
     {
         if (!filesystem::status_known(m_status))
-            refresh_impl();
+            refresh_impl(refresh_mode::follow);
         return m_status;
     }
 
@@ -531,8 +531,8 @@ public:
      * \brief Returns the symlink file status.
      *
      * \effects
-     * For the cached symlink file status `m_symlink_status`, if `!status_known(m_symlink_status)`, calls
-     * `refresh(ec)`. Then returns `m_symlink_status`.
+     * For the cached symlink file status `m_symlink_status`, if `!status_known(m_symlink_status)`, refreshes
+     * the cache to update it. Then returns `m_symlink_status`.
      *
      * \note The implementation does not query the filesystem after the symlink file status has been cached.
      *       Filesystem changes after the symlink file status has been cached will not be reflected in the result.
@@ -546,7 +546,7 @@ public:
         ec.clear();
 
         if (!filesystem::status_known(m_symlink_status))
-            refresh_impl(&ec);
+            refresh_impl(&ec, refresh_mode::no_follow);
         return m_symlink_status;
     }
 
@@ -554,7 +554,7 @@ public:
     file_status symlink_status() const
     {
         if (!filesystem::status_known(m_symlink_status))
-            refresh_impl();
+            refresh_impl(refresh_mode::no_follow);
         return m_symlink_status;
     }
 
@@ -577,7 +577,7 @@ public:
         ec.clear();
 
         if (!filesystem::type_present(m_status))
-            refresh_impl(&ec);
+            refresh_impl(&ec, refresh_mode::follow);
         return m_status.type();
     }
 
@@ -585,7 +585,7 @@ public:
     filesystem::file_type file_type() const
     {
         if (!filesystem::type_present(m_status))
-            refresh_impl();
+            refresh_impl(refresh_mode::follow);
         return m_status.type();
     }
 
@@ -608,7 +608,7 @@ public:
         ec.clear();
 
         if (!filesystem::type_present(m_symlink_status))
-            refresh_impl(&ec);
+            refresh_impl(&ec, refresh_mode::no_follow);
         return m_symlink_status.type();
     }
 
@@ -616,7 +616,7 @@ public:
     filesystem::file_type symlink_file_type() const
     {
         if (!filesystem::type_present(m_symlink_status))
-            refresh_impl();
+            refresh_impl(refresh_mode::no_follow);
         return m_symlink_status.type();
     }
 
@@ -942,7 +942,17 @@ public:
 
 #if !defined(BOOST_FILESYSTEM_DOXYGEN)
 private:
-    BOOST_FILESYSTEM_DECL void refresh_impl(system::error_code* ec = nullptr) const;
+    enum class refresh_mode
+    {
+        no_follow,
+        follow,
+        follow_lenient
+    };
+
+    BOOST_FILESYSTEM_DECL void refresh_impl(
+        system::error_code* ec = nullptr,
+        refresh_mode mode = refresh_mode::follow_lenient) const;
+    void refresh_impl(refresh_mode mode) const { refresh_impl(nullptr, mode); }
 
     void assign_with_status(boost::filesystem::path&& p, file_status st, file_status symlink_st)
     {

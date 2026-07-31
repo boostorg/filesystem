@@ -104,9 +104,12 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(system::error_code* ec) const
+BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(
+    system::error_code* ec,
+    directory_entry::refresh_mode mode) const
 {
-    m_status = filesystem::file_status();
+    if (mode != refresh_mode::no_follow)
+        m_status = filesystem::file_status();
     m_symlink_status = filesystem::file_status();
 
     m_symlink_status = detail::symlink_status(m_path, ec);
@@ -116,9 +119,11 @@ BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(system::error_code* ec)
         // Also works if symlink_status fails - set m_status to status_error as well
         m_status = m_symlink_status;
     }
-    else
+    else if (mode != refresh_mode::no_follow)
     {
-        m_status = detail::status(m_path, ec);
+        system::error_code ec2;
+        // In follow_lenient mode, update m_status but suppress errors
+        m_status = detail::status(m_path, mode == refresh_mode::follow_lenient ? &ec2 : ec);
     }
 }
 
