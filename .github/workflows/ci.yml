@@ -84,12 +84,14 @@ jobs:
               - g++-10
           - toolset: gcc-11
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - g++-11
           - toolset: gcc-12
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - g++-12
           - toolset: gcc-13
@@ -104,18 +106,22 @@ jobs:
               - g++-14
           - toolset: gcc-15
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
-            os: ubuntu-latest
-            container: ubuntu:25.04
+            os: ubuntu-26.04
             install:
               - g++-15
+          - toolset: gcc-16
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
+            os: ubuntu-26.04
+            install:
+              - g++-16
           - name: UBSAN
-            toolset: gcc-13
-            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu"
+            toolset: gcc-15
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
             ubsan: 1
             build_variant: debug
-            os: ubuntu-24.04
+            os: ubuntu-26.04
             install:
-              - g++-13
+              - g++-15
 
           # Linux, clang
           - toolset: clang
@@ -208,7 +214,8 @@ jobs:
           - toolset: clang
             compiler: clang++-11
             cxxstd: "11,14,17,20"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - clang-11
               - g++-11
@@ -216,7 +223,8 @@ jobs:
           - toolset: clang
             compiler: clang++-12
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - clang-12
               - g++-11
@@ -224,7 +232,8 @@ jobs:
           - toolset: clang
             compiler: clang++-13
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - clang-13
               - g++-11
@@ -232,7 +241,8 @@ jobs:
           - toolset: clang
             compiler: clang++-14
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - clang-14
               - g++-11
@@ -240,7 +250,8 @@ jobs:
           - toolset: clang
             compiler: clang++-15
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,2b-gnu"
-            os: ubuntu-22.04
+            os: ubuntu-latest
+            container: ubuntu:22.04
             install:
               - clang-15
               - g++-11
@@ -277,41 +288,44 @@ jobs:
           - toolset: clang
             compiler: clang++-20
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
-            os: ubuntu-latest
-            container: ubuntu:25.04
+            os: ubuntu-26.04
             install:
               - clang-20
           - toolset: clang
             compiler: clang++-21
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
-            os: ubuntu-latest
-            container: ubuntu:25.10
+            os: ubuntu-26.04
             install:
               - clang-21
           - toolset: clang
-            compiler: clang++-21
+            compiler: clang++-22
+            cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
+            os: ubuntu-26.04
+            install:
+              - clang-22
+          - toolset: clang
+            compiler: clang++-22
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
             cxxflags: -stdlib=libc++
             linkflags: -stdlib=libc++
-            os: ubuntu-latest
-            container: ubuntu:25.10
+            os: ubuntu-26.04
             install:
-              - clang-21
-              - libc++-21-dev
-              - libc++abi-21-dev
+              - clang-22
+              - libc++-22-dev
+              - libc++abi-22-dev
           - name: UBSAN
             toolset: clang
-            compiler: clang++-18
+            compiler: clang++-22
             cxxstd: "11-gnu,14-gnu,17-gnu,20-gnu,23-gnu,26-gnu"
             cxxflags: -stdlib=libc++
             linkflags: "-stdlib=libc++ -lubsan"
             ubsan: 1
             build_variant: debug
-            os: ubuntu-24.04
+            os: ubuntu-26.04
             install:
-              - clang-18
-              - libc++-18-dev
-              - libc++abi-18-dev
+              - clang-22
+              - libc++-22-dev
+              - libc++abi-22-dev
 
           - toolset: clang
             vm: freebsd
@@ -604,7 +618,7 @@ jobs:
             if [ -n "${{matrix.ubsan}}" ]
             then
                 export UBSAN_OPTIONS="print_stacktrace=1"
-                B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined -fuse-ld=gold" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
+                B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
             fi
             if [ -n "${{matrix.cxxflags}}" ]
             then
@@ -962,7 +976,7 @@ jobs:
             if [ -n "${{matrix.ubsan}}" ]
             then
                 export UBSAN_OPTIONS="print_stacktrace=1"
-                B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined -fuse-ld=gold" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
+                B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
             fi
             if [ -n "${{matrix.cxxflags}}" ]
             then
@@ -1085,7 +1099,7 @@ jobs:
             if [ -n "${{matrix.ubsan}}" ]
             then
                 export UBSAN_OPTIONS="print_stacktrace=1"
-                B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined -fuse-ld=gold" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
+                B2_ARGS+=("cxxflags=-fsanitize=undefined -fno-sanitize-recover=undefined" "linkflags=-fsanitize=undefined" "define=UBSAN=1" "debug-symbols=on" "visibility=global")
             fi
             if [ -n "${{matrix.cxxflags}}" ]
             then
