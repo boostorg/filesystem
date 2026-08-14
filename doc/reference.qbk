@@ -1253,7 +1253,7 @@ be doubled, of course.\]]
 ]
 
 Because most Boost.Filesystem operational functions just pass the contents of a class path object to the Windows API, they do work with the extended-length
-prefixes. But some won't work, because to the limitations imposed by Windows.
+prefixes. But some won't work, because of the limitations imposed by Windows.
 
 Effectively, the "\\\\?\\" prefix informs the underlying Windows API that the path identifies an object in the Win32 filesystem namespace and disables
 most of the internal path processing, including normalization, by the Windows API. While it lifts the length limitation, this imposes a number of other
