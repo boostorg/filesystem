@@ -716,13 +716,12 @@ inline void last_write_time(path const& p, const std::time_t new_time)
  * [`fchmodat()`](http://pubs.opengroup.org/onlinepubs/9699919799/functions/fchmodat.html). The effective permission
  * bits are determined as specified by the following table.
  *
- * <table><thead>
+ * <table>
  * <tr><th>Bits present in `prms`                </th><th>Effective bits applied                          </th></tr>
- * </thead><tbody>
  * <tr><td>Neither `add_perms` nor `remove_perms`</td><td>`prms & perms_mask`                             </td></tr>
  * <tr><td>`add_perms`                           </td><td>`status(p).permissions() | (prms & perms_mask)` </td></tr>
  * <tr><td>`remove_perms`                        </td><td>`status(p).permissions() & ~(prms & perms_mask)`</td></tr>
- * </tbody></table>
+ * </table>
  *
  * \note Conceptually permissions are viewed as bits, but the actual implementation may use some other mechanism.
  *
