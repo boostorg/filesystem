@@ -2552,7 +2552,7 @@ void directory_entry_symlink_tests()
     sym_entry.refresh(ec);
     BOOST_TEST(!ec);
     dsym_entry.refresh(ec);
-    BOOST_TEST(!ec);
+    BOOST_TEST(ec);
 
     // Make sure status() and symlink_status() hold the expected types
     // after a call to refresh, too
@@ -2569,10 +2569,9 @@ void directory_entry_symlink_tests()
         BOOST_TEST(!ec);
         BOOST_TEST(sym_entry2.path() == valid_sym);
 
-        // In particular, shouldn't report an error with broken symlinks
         fs::directory_entry dsym_entry2(dangling_sym, ec);
-        BOOST_TEST(!ec);
-        BOOST_TEST(dsym_entry2.path() == dangling_sym);
+        BOOST_TEST(ec);
+        BOOST_TEST(dsym_entry2.path().empty());
     }
 
     ec.clear();
@@ -2580,9 +2579,8 @@ void directory_entry_symlink_tests()
     BOOST_TEST(!ec);
     BOOST_TEST(sym_entry.path() == valid_sym);
 
-    // In particular, shouldn't report an error with broken symlinks
     dsym_entry.assign(dangling_sym, ec);
-    BOOST_TEST(!ec);
+    BOOST_TEST(ec);
     BOOST_TEST(dsym_entry.path() == dangling_sym);
 #endif
 

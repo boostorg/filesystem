@@ -99,6 +99,15 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 BOOST_FILESYSTEM_DECL
 void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::error_code* ec);
 
+enum class directory_entry_update_mask : unsigned int
+{
+    none = 0u,
+    symlink_status = 1u,
+    status = 1u << 1u
+};
+
+BOOST_BITMASK(directory_entry_update_mask)
+
 } // namespace detail
 
 //--------------------------------------------------------------------------------------//
@@ -515,7 +524,7 @@ public:
         ec.clear();
 
         if (!filesystem::status_known(m_status))
-            refresh_impl(&ec, refresh_mode::follow);
+            refresh_impl(&ec, update_mask::status | update_mask::symlink_status);
         return m_status;
     }
 
@@ -523,7 +532,7 @@ public:
     file_status status() const
     {
         if (!filesystem::status_known(m_status))
-            refresh_impl(refresh_mode::follow);
+            refresh_impl(update_mask::status | update_mask::symlink_status);
         return m_status;
     }
 
@@ -546,7 +555,7 @@ public:
         ec.clear();
 
         if (!filesystem::status_known(m_symlink_status))
-            refresh_impl(&ec, refresh_mode::no_follow);
+            refresh_impl(&ec, update_mask::symlink_status);
         return m_symlink_status;
     }
 
@@ -554,7 +563,7 @@ public:
     file_status symlink_status() const
     {
         if (!filesystem::status_known(m_symlink_status))
-            refresh_impl(refresh_mode::no_follow);
+            refresh_impl(update_mask::symlink_status);
         return m_symlink_status;
     }
 
@@ -577,7 +586,7 @@ public:
         ec.clear();
 
         if (!filesystem::type_present(m_status))
-            refresh_impl(&ec, refresh_mode::follow);
+            refresh_impl(&ec, update_mask::status | update_mask::symlink_status);
         return m_status.type();
     }
 
@@ -585,7 +594,7 @@ public:
     filesystem::file_type file_type() const
     {
         if (!filesystem::type_present(m_status))
-            refresh_impl(refresh_mode::follow);
+            refresh_impl(update_mask::status | update_mask::symlink_status);
         return m_status.type();
     }
 
@@ -608,7 +617,7 @@ public:
         ec.clear();
 
         if (!filesystem::type_present(m_symlink_status))
-            refresh_impl(&ec, refresh_mode::no_follow);
+            refresh_impl(&ec, update_mask::symlink_status);
         return m_symlink_status.type();
     }
 
@@ -616,7 +625,7 @@ public:
     filesystem::file_type symlink_file_type() const
     {
         if (!filesystem::type_present(m_symlink_status))
-            refresh_impl(refresh_mode::no_follow);
+            refresh_impl(update_mask::symlink_status);
         return m_symlink_status.type();
     }
 
@@ -942,17 +951,12 @@ public:
 
 #if !defined(BOOST_FILESYSTEM_DOXYGEN)
 private:
-    enum class refresh_mode
-    {
-        no_follow,
-        follow,
-        follow_lenient
-    };
+    using update_mask = detail::directory_entry_update_mask;
 
     BOOST_FILESYSTEM_DECL void refresh_impl(
         system::error_code* ec = nullptr,
-        refresh_mode mode = refresh_mode::follow_lenient) const;
-    void refresh_impl(refresh_mode mode) const { refresh_impl(nullptr, mode); }
+        update_mask mask = update_mask::status | update_mask::symlink_status) const;
+    void refresh_impl(update_mask mask) const { refresh_impl(nullptr, mask); }
 
     void assign_with_status(boost::filesystem::path&& p, file_status st, file_status symlink_st)
     {
