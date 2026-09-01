@@ -105,8 +105,8 @@ namespace filesystem {
 //--------------------------------------------------------------------------------------//
 
 BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(
-    system::error_code* ec,
-    directory_entry::update_mask mask) const
+    directory_entry::update_mask mask,
+    system::error_code* ec) const
 {
     const bool update_status = (mask & update_mask::status) != update_mask::none;
 
