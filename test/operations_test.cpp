@@ -2510,7 +2510,6 @@ void directory_entry_symlink_tests()
     fs::directory_entry sym_entry(valid_sym);
     fs::directory_entry dsym_entry(dangling_sym);
 
-    // Valid symlink
     BOOST_TEST(sym_entry.exists());
     BOOST_TEST(sym_entry.exists(ec));
     BOOST_TEST(!ec);
