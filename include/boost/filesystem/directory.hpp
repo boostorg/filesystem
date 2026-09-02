@@ -104,7 +104,7 @@ enum class directory_entry_update_mask : unsigned int
     none = 0u,
     symlink_status = 1u,
     status = 1u << 1u,
-    all = 3u
+    all = (1u << 2u) - 1u
 };
 
 BOOST_BITMASK(directory_entry_update_mask)

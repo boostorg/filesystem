@@ -104,24 +104,30 @@ namespace filesystem {
 //                                                                                      //
 //--------------------------------------------------------------------------------------//
 
-BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(
-    directory_entry::update_mask mask,
-    system::error_code* ec) const
+BOOST_FILESYSTEM_DECL void directory_entry::refresh_impl(update_mask mask, system::error_code* ec) const
 {
     const bool update_status = (mask & update_mask::status) != update_mask::none;
 
     if (update_status)
         m_status = filesystem::file_status();
-    m_symlink_status = filesystem::file_status();
 
-    m_symlink_status = detail::symlink_status(m_path, ec);
-
-    if (!filesystem::is_symlink(m_symlink_status))
+    if ((mask & update_mask::symlink_status) != update_mask::none)
     {
-        // Also works if symlink_status fails - set m_status to status_error as well
-        m_status = m_symlink_status;
+        m_symlink_status = filesystem::file_status();
+        m_symlink_status = detail::symlink_status(m_path, ec);
+
+        if (!filesystem::is_symlink(m_symlink_status))
+        {
+            // Also works if symlink_status fails - set m_status to status_error as well.
+            // Do this even if not asked to update status, there's no harm and a possible
+            // performance benefit.
+            m_status = m_symlink_status;
+
+            return;
+        }
     }
-    else if (update_status)
+
+    if (update_status)
     {
         m_status = detail::status(m_path, ec);
     }
