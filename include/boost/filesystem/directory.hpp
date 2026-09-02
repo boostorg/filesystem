@@ -99,6 +99,16 @@ void recursive_directory_iterator_increment(recursive_directory_iterator& it, sy
 BOOST_FILESYSTEM_DECL
 void recursive_directory_iterator_pop(recursive_directory_iterator& it, system::error_code* ec);
 
+enum class directory_entry_update_mask : unsigned int
+{
+    none = 0u,
+    symlink_status = 1u,
+    status = 1u << 1u,
+    all = 3u
+};
+
+BOOST_BITMASK(directory_entry_update_mask)
+
 } // namespace detail
 
 //--------------------------------------------------------------------------------------//
@@ -199,7 +209,7 @@ public:
     directory_entry(boost::filesystem::path const& p, system::error_code& ec) :
         m_path(p)
     {
-        refresh_impl(&ec);
+        refresh_impl(update_mask::all, &ec);
         if (ec)
             m_path.clear();
     }
@@ -327,7 +337,7 @@ public:
     void assign(boost::filesystem::path const& p, system::error_code& ec)
     {
         m_path = p;
-        refresh_impl(&ec);
+        refresh_impl(update_mask::all, &ec);
     }
 
     /*!
@@ -345,7 +355,7 @@ public:
     void assign(boost::filesystem::path&& p, system::error_code& ec)
     {
         m_path = static_cast< boost::filesystem::path&& >(p);
-        refresh_impl(&ec);
+        refresh_impl(update_mask::all, &ec);
     }
 #endif
 #if BOOST_FILESYSTEM_VERSION < 4 || defined(BOOST_FILESYSTEM_DOXYGEN)
@@ -430,7 +440,7 @@ public:
     void replace_filename(boost::filesystem::path const& p, system::error_code& ec)
     {
         m_path.replace_filename(p);
-        refresh_impl(&ec);
+        refresh_impl(update_mask::all, &ec);
     }
 #endif
 #if BOOST_FILESYSTEM_VERSION < 4 || defined(BOOST_FILESYSTEM_DOXYGEN)
@@ -491,17 +501,17 @@ public:
      *
      * \param ec Error code returned in case of failure.
      */
-    void refresh(system::error_code& ec) noexcept { refresh_impl(&ec); }
+    void refresh(system::error_code& ec) noexcept { refresh_impl(update_mask::all, &ec); }
 
     /*! \overload */
-    void refresh() { refresh_impl(); }
+    void refresh() { refresh_impl(update_mask::all); }
 
     /*!
      * \brief Returns the file status.
      *
      * \effects
-     * For the cached file status `m_status`, if `!status_known(m_status)`, calls `refresh(ec)`. Then returns
-     * `m_status`.
+     * For the cached file status `m_status`, if `!status_known(m_status)`, refreshes the cache to update it.
+     * Then returns `m_status`.
      *
      * \note The implementation does not query the filesystem after the file status has been cached.
      *       Filesystem changes after the file status has been cached will not be reflected in the result.
@@ -515,7 +525,7 @@ public:
         ec.clear();
 
         if (!filesystem::status_known(m_status))
-            refresh_impl(&ec);
+            refresh_impl(update_mask::all, &ec);
         return m_status;
     }
 
@@ -523,7 +533,7 @@ public:
     file_status status() const
     {
         if (!filesystem::status_known(m_status))
-            refresh_impl();
+            refresh_impl(update_mask::all);
         return m_status;
     }
 
@@ -531,8 +541,8 @@ public:
      * \brief Returns the symlink file status.
      *
      * \effects
-     * For the cached symlink file status `m_symlink_status`, if `!status_known(m_symlink_status)`, calls
-     * `refresh(ec)`. Then returns `m_symlink_status`.
+     * For the cached symlink file status `m_symlink_status`, if `!status_known(m_symlink_status)`, refreshes
+     * the cache to update it. Then returns `m_symlink_status`.
      *
      * \note The implementation does not query the filesystem after the symlink file status has been cached.
      *       Filesystem changes after the symlink file status has been cached will not be reflected in the result.
@@ -546,7 +556,7 @@ public:
         ec.clear();
 
         if (!filesystem::status_known(m_symlink_status))
-            refresh_impl(&ec);
+            refresh_impl(update_mask::symlink_status, &ec);
         return m_symlink_status;
     }
 
@@ -554,7 +564,7 @@ public:
     file_status symlink_status() const
     {
         if (!filesystem::status_known(m_symlink_status))
-            refresh_impl();
+            refresh_impl(update_mask::symlink_status);
         return m_symlink_status;
     }
 
@@ -577,7 +587,7 @@ public:
         ec.clear();
 
         if (!filesystem::type_present(m_status))
-            refresh_impl(&ec);
+            refresh_impl(update_mask::all, &ec);
         return m_status.type();
     }
 
@@ -585,7 +595,7 @@ public:
     filesystem::file_type file_type() const
     {
         if (!filesystem::type_present(m_status))
-            refresh_impl();
+            refresh_impl(update_mask::all);
         return m_status.type();
     }
 
@@ -608,7 +618,7 @@ public:
         ec.clear();
 
         if (!filesystem::type_present(m_symlink_status))
-            refresh_impl(&ec);
+            refresh_impl(update_mask::symlink_status, &ec);
         return m_symlink_status.type();
     }
 
@@ -616,7 +626,7 @@ public:
     filesystem::file_type symlink_file_type() const
     {
         if (!filesystem::type_present(m_symlink_status))
-            refresh_impl();
+            refresh_impl(update_mask::symlink_status);
         return m_symlink_status.type();
     }
 
@@ -942,7 +952,9 @@ public:
 
 #if !defined(BOOST_FILESYSTEM_DOXYGEN)
 private:
-    BOOST_FILESYSTEM_DECL void refresh_impl(system::error_code* ec = nullptr) const;
+    using update_mask = detail::directory_entry_update_mask;
+
+    BOOST_FILESYSTEM_DECL void refresh_impl(update_mask mask, system::error_code* ec = nullptr) const;
 
     void assign_with_status(boost::filesystem::path&& p, file_status st, file_status symlink_st)
     {
@@ -978,7 +990,7 @@ inline directory_entry::directory_entry(boost::filesystem::path const& p) :
     m_path(p)
 {
 #if BOOST_FILESYSTEM_VERSION >= 4
-    refresh_impl();
+    refresh_impl(update_mask::all);
 #endif
 }
 
@@ -986,7 +998,7 @@ inline void directory_entry::assign(boost::filesystem::path&& p)
 {
     m_path = static_cast< boost::filesystem::path&& >(p);
 #if BOOST_FILESYSTEM_VERSION >= 4
-    refresh_impl();
+    refresh_impl(update_mask::all);
 #else
     m_status = file_status();
     m_symlink_status = file_status();
@@ -997,7 +1009,7 @@ inline void directory_entry::assign(boost::filesystem::path const& p)
 {
     m_path = p;
 #if BOOST_FILESYSTEM_VERSION >= 4
-    refresh_impl();
+    refresh_impl(update_mask::all);
 #else
     m_status = file_status();
     m_symlink_status = file_status();
@@ -1008,7 +1020,7 @@ inline void directory_entry::replace_filename(boost::filesystem::path const& p)
 {
     m_path.replace_filename(p);
 #if BOOST_FILESYSTEM_VERSION >= 4
-    refresh_impl();
+    refresh_impl(update_mask::all);
 #else
     m_status = file_status();
     m_symlink_status = file_status();
