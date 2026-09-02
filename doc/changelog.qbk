@@ -11,8 +11,7 @@
 [heading 1.93.0]
 
 * Reworked documentation, converted to QuickBook and Doxygen.
-* `directory_entry::symlink_status` and `directory_entry::is_symlink` no longer indicate failure if updating status (i.e. dereferencing the symlink) fails.
-  ([github_pr 353])
+* `directory_entry::symlink_status` and dependent APIs no longer indicate failure if updating status (i.e. dereferencing the symlink) fails. ([github_pr 353])
 
 [heading 1.92.0]
 
