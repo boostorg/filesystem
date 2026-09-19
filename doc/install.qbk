@@ -172,6 +172,14 @@ Those macros need not be defined when building code that uses Boost.Filesystem.
     [][\u2714]
     [Boost.Filesystem library does not use the BCrypt API on Windows. Has no effect on other platforms.]
 ]
+[
+    [`BOOST_FILESYSTEM_ALLOW_UNDEFINED_SYMBOLS`]
+    [Not defined. Library linking fails if there are unresolved symbols at link time.]
+    [][\u2714]
+    [Boost.Filesystem library linking does not enforce resolution of all symbols referenced by the library. This may be useful
+    when the compiler injects references to symbols that are meant to be resolved at library load time. For example, this is
+    the case with Clang, when sanitizers are enabled.]
+]
 ]
 
 In order to define macros when building Boost.Filesystem one can use `define` property with

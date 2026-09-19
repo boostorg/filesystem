@@ -1,5 +1,5 @@
 # Copyright 2019 Mike Dev
-# Copyright 2020-2022 Andrey Semashev
+# Copyright 2020-2026 Andrey Semashev
 #
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
@@ -20,6 +20,7 @@ set(BOOST_FILESYSTEM_DISABLE_GETRANDOM OFF CACHE BOOL "Disable usage of getrando
 set(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM OFF CACHE BOOL "Disable usage of arc4random API in Boost.Filesystem")
 set(BOOST_FILESYSTEM_DISABLE_BCRYPT OFF CACHE BOOL "Disable usage of BCrypt API in Boost.Filesystem")
 set(BOOST_FILESYSTEM_EMSCRIPTEN_USE_WASI OFF CACHE BOOL "Use WASI under emscripten in Boost.Filesystem")
+set(BOOST_FILESYSTEM_ALLOW_UNDEFINED_SYMBOLS OFF CACHE BOOL "Allow building Boost.Filesystem shared library with unresolved symbols")
 
 # Note: We can't use the Boost::library targets in the configure checks as they may not yet be included
 # by the superproject when this CMakeLists.txt is included. We also don't want to hardcode include paths
@@ -89,7 +90,7 @@ target_compile_features(boost_filesystem PUBLIC
 )
 
 get_target_property(BOOST_FILESYSTEM_TARGET_TYPE boost_filesystem TYPE)
-if(BOOST_FILESYSTEM_TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+if(BOOST_FILESYSTEM_TARGET_TYPE STREQUAL "SHARED_LIBRARY" AND NOT BOOST_FILESYSTEM_ALLOW_UNDEFINED_SYMBOLS)
     set(CMAKE_REQUIRED_LIBRARIES "-Wl,--no-undefined")
     check_cxx_source_compiles("#include <${CMAKE_CURRENT_SOURCE_DIR}/config/has_linkflag_no_undefined.cpp>" BOOST_FILESYSTEM_HAS_LINKFLAG_NO_UNDEFINED)
     unset(CMAKE_REQUIRED_LIBRARIES)

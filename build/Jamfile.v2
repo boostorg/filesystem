@@ -1,7 +1,7 @@
 # Boost Filesystem Library Build Jamfile
 
 # (C) Copyright Beman Dawes 2002-2006
-# (C) Copyright Andrey Semashev 2020-2025
+# (C) Copyright Andrey Semashev 2020-2026
 # Distributed under the Boost Software License, Version 1.0.
 # See www.boost.org/LICENSE_1_0.txt
 
@@ -113,7 +113,7 @@ rule check-linkflag-no-undefined ( properties * )
 {
     local result ;
 
-    if <link>shared in $(properties)
+    if <link>shared in $(properties) && ! [ has-config-flag BOOST_FILESYSTEM_ALLOW_UNDEFINED_SYMBOLS : $(properties) ]
     {
         local props ;
 
