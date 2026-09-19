@@ -229,7 +229,7 @@ rule select-platform-specific-sources ( properties * )
 {
     local result ;
 
-    if <target-os>windows in $(properties)
+    if <target-os>windows in $(properties) && ! [ has-config-flag BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET : $(properties) ]
     {
         result += <source>windows_file_codecvt.cpp ;
     }

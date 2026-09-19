@@ -15,6 +15,9 @@
 * Added support for building the library with unresolved symbols on POSIX systems. This can be useful when compiling the library with sanitizers enabled, if
   the sanitizer symbols are meant to be resolved at library load time. This build mode can be enabled by defining `BOOST_FILESYSTEM_ALLOW_UNDEFINED_SYMBOLS`
   at Boost.Filesystem build time. ([github_issue 350])
+* Added support for setting UTF-8 codecvt facet as the default codecvt facet for path character code conversions. This can be useful if the system locale
+  is non-functional (e.g. with Musl C library), if the user knows that filesystem paths are always encoded as UTF-8 on the target platform. This can be
+  enabled by defining `BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET` at Boost.Filesystem build time. ([github_issue 351])
 
 [heading 1.92.0]
 

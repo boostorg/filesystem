@@ -25,13 +25,16 @@
 #include <cstdlib> // std::atexit
 
 #ifdef BOOST_FILESYSTEM_WINDOWS_API
-#include "windows_file_codecvt.hpp"
 #include "windows_tools.hpp"
-#include <windows.h>
-#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || \
-    defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__NETBSD__) || defined(__NetBSD__) || \
-    defined(sun) || defined(__sun) || \
-    defined(__HAIKU__)
+#endif
+
+#if !defined(BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET) && \
+    (\
+        defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__) || \
+        defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__NETBSD__) || defined(__NetBSD__) || \
+        defined(sun) || defined(__sun) || \
+        defined(__HAIKU__) \
+    )
 // "All BSD system functions expect their string parameters to be in UTF-8 encoding
 // and nothing else." See
 // http://developer.apple.com/mac/library/documentation/MacOSX/Conceptual/BPInternational/Articles/FileEncodings.html
@@ -59,8 +62,13 @@
 //
 // On Solaris 11.4, std::locale("") fails even if LANG is set correctly in the environment.
 // Recent versions of Solaris seem to have transitioned to UTF-8 for filename encoding.
+#define BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET
+#endif
+
+#if defined(BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET)
 #include <boost/filesystem/detail/utf8_codecvt_facet.hpp>
-#define BOOST_FILESYSTEM_DETAIL_USE_UTF8_CODECVT_FACET
+#elif defined(BOOST_FILESYSTEM_WINDOWS_API)
+#include "windows_file_codecvt.hpp"
 #endif
 
 #ifdef BOOST_FILESYSTEM_DEBUG
@@ -1455,12 +1463,12 @@ namespace {
 
 std::locale default_locale()
 {
-#if defined(BOOST_FILESYSTEM_WINDOWS_API)
-    std::locale global_loc = std::locale();
-    return std::locale(global_loc, new boost::filesystem::detail::windows_file_codecvt());
-#elif defined(BOOST_FILESYSTEM_DETAIL_USE_UTF8_CODECVT_FACET)
+#if defined(BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET)
     std::locale global_loc = std::locale();
     return std::locale(global_loc, new boost::filesystem::detail::utf8_codecvt_facet());
+#elif defined(BOOST_FILESYSTEM_WINDOWS_API)
+    std::locale global_loc = std::locale();
+    return std::locale(global_loc, new boost::filesystem::detail::windows_file_codecvt());
 #else // Other POSIX
     // ISO C calls std::locale("") "the locale-specific native environment", and this
     // locale is the default for many POSIX-based operating systems such as Linux.

@@ -21,6 +21,7 @@ set(BOOST_FILESYSTEM_DISABLE_ARC4RANDOM OFF CACHE BOOL "Disable usage of arc4ran
 set(BOOST_FILESYSTEM_DISABLE_BCRYPT OFF CACHE BOOL "Disable usage of BCrypt API in Boost.Filesystem")
 set(BOOST_FILESYSTEM_EMSCRIPTEN_USE_WASI OFF CACHE BOOL "Use WASI under emscripten in Boost.Filesystem")
 set(BOOST_FILESYSTEM_ALLOW_UNDEFINED_SYMBOLS OFF CACHE BOOL "Allow building Boost.Filesystem shared library with unresolved symbols")
+set(BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET OFF CACHE BOOL "Use UTF-8 codecvt facet by default for path character code conversion in Boost.Filesystem")
 
 # Note: We can't use the Boost::library targets in the configure checks as they may not yet be included
 # by the superproject when this CMakeLists.txt is included. We also don't want to hardcode include paths
@@ -69,7 +70,7 @@ set(BOOST_FILESYSTEM_SOURCES
     src/unique_path.cpp
     src/utf8_codecvt_facet.cpp
 )
-if(WIN32 OR CYGWIN)
+if((WIN32 OR CYGWIN) AND NOT BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET)
     list(APPEND BOOST_FILESYSTEM_SOURCES src/windows_file_codecvt.cpp)
 endif()
 
@@ -224,6 +225,10 @@ if(BOOST_FILESYSTEM_HAS_POSIX_AT_APIS)
 endif()
 if(BOOST_FILESYSTEM_HAS_FALLOCATE)
     target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_HAS_FALLOCATE)
+endif()
+
+if(BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET)
+    target_compile_definitions(boost_filesystem PRIVATE BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET)
 endif()
 
 target_link_libraries(boost_filesystem

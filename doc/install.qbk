@@ -180,6 +180,14 @@ Those macros need not be defined when building code that uses Boost.Filesystem.
     when the compiler injects references to symbols that are meant to be resolved at library load time. For example, this is
     the case with Clang, when sanitizers are enabled.]
 ]
+[
+    [`BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET`]
+    [Not defined. Boost.Filesystem selects the default codecvt facet implementation for path character code conversions depending
+    on the target platform. The default codecvt facet may use system locale.]
+    [][\u2714]
+    [Boost.Filesystem library uses UTF-8 codecvt facet by default for path character code conversions, regardless of the system locale.
+    The user is still able to set a custom codecvt facet by calling `path::imbue` at run time.]
+]
 ]
 
 In order to define macros when building Boost.Filesystem one can use `define` property with
