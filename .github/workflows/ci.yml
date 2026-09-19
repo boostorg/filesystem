@@ -805,6 +805,10 @@ jobs:
             cxxstd: "14,17,20,latest"
             os: windows-2022
             extra_tests: 1
+          - toolset: msvc-14.3
+            cxxstd: "14,17,20,latest"
+            os: windows-2022
+            b2_args: define=BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET=1
           - toolset: clang-win
             cxxstd: "14,17,latest"
             os: windows-2022
@@ -869,6 +873,7 @@ jobs:
             set "B2_ARGS=-j %NUMBER_OF_PROCESSORS% toolset=${{matrix.toolset}} embed-manifest-via=linker"
             if not "${{matrix.cxxstd}}" == "" set "B2_ARGS=%B2_ARGS% ^"cxxstd=${{matrix.cxxstd}}^""
             if not "${{matrix.build_variant}}" == "" ( set "B2_ARGS=%B2_ARGS% variant=${{matrix.build_variant}}" ) else ( set "B2_ARGS=%B2_ARGS% variant=%DEFAULT_BUILD_VARIANT%" )
+            if not "${{matrix.b2_args}}" == "" set "B2_ARGS=%B2_ARGS% ${{matrix.b2_args}}"
             if not "${{matrix.cxxflags}}" == "" set "B2_ARGS=%B2_ARGS% ^"cxxflags=${{matrix.cxxflags}}^""
             if not "${{matrix.linkflags}}" == "" set "B2_ARGS=%B2_ARGS% ^"linkflags=${{matrix.linkflags}}^""
             if not "${{matrix.extra_tests}}" == "" set BOOST_FILESYSTEM_TEST_WITH_EXAMPLES=1
