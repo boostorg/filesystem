@@ -1029,6 +1029,58 @@ inline size_type find_filename_size(string_type const& str, size_type root_name_
 // Returns: starting position of root directory or size if not found
 size_type find_root_directory_start(const value_type* path, size_type size, size_type& root_name_size)
 {
+#ifdef BOOST_FILESYSTEM_WINDOWS_API
+    struct local
+    {
+        // Parses "\??\" or "\Global??\" prefix
+        static bool parse_nt_path_prefix(const value_type* path, size_type size, size_type& pos)
+        {
+            size_type i = 1u;
+            if (size >= 10u &&
+                (path[i] == L'G' || path[i] == L'g') &&
+                (path[i + 1u] == L'l' || path[i + 1u] == L'L') &&
+                (path[i + 2u] == L'o' || path[i + 2u] == L'O') &&
+                (path[i + 3u] == L'b' || path[i + 3u] == L'B') &&
+                (path[i + 4u] == L'a' || path[i + 4u] == L'A') &&
+                (path[i + 5u] == L'l' || path[i + 5u] == L'L'))
+            {
+                i += 6u;
+            }
+
+            if (size >= 4u && path[i] == questionmark && path[i + 1u] == questionmark && fs::detail::is_directory_separator(path[i + 2u]))
+            {
+                pos = i + 3u;
+                return true;
+            }
+
+            return false;
+        }
+
+        // Parses the "UNC" NT device name, followed by hostname and share, in the prefixed paths
+        // (e.g. "\\?\UNC\hostname\share"). If parsed, sets pos to the beginning of share.
+        static bool parse_unc_device_prefix(const value_type* path, size_type size, size_type& pos)
+        {
+            size_type i = pos;
+            if ((size - i) >= 4u &&
+                (path[i] == L'U' || path[i] == L'u') &&
+                (path[i + 1u] == L'N' || path[i + 1u] == L'n') &&
+                (path[i + 2u] == L'C' || path[i + 2u] == L'c') &&
+                fs::detail::is_directory_separator(path[i + 3u]))
+            {
+                i += 4u;
+                i += find_separator(path + i, size - i); // skip hostname
+                if (i < size)
+                {
+                    pos = i + 1u; // skip the separator
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    };
+#endif
+
     root_name_size = 0;
     if (size == 0)
         return 0;
@@ -1054,6 +1106,10 @@ size_type find_root_directory_start(const value_type* path, size_type size, size
             {
                 parsing_root_name = true;
                 pos += 4;
+
+                // For prefixed UNC paths, include UNC device name, hostname and share into the root-name. See below for rationale.
+                if (local::parse_unc_device_prefix(path, size, pos))
+                    goto find_next_separator; // will skip share
             }
 #endif
             else if (fs::detail::is_directory_separator(path[2]))
@@ -1063,19 +1119,29 @@ size_type find_root_directory_start(const value_type* path, size_type size, size
             }
             else
             {
-                // case "//net {/}"
+                // UNC path case, e.g. "//hostname/share". We include the share in the root-name for two reasons:
+                // 1. The "//hostname" alone is not enough to open a file (e.g. to list directory contents or shares on a host).
+                // 2. Operating systems (specifically, Windows) do not support relative paths between different shares of a host.
+                //    This means we should prevent path::lexically_relative() from forming relative paths across shares.
+                //
+                // So, for all intents and purposes, both the hostname and the share identify root of a filesystem.
                 parsing_root_name = true;
                 pos += 2;
-                goto find_next_separator;
+                pos += find_separator(path + pos, size - pos); // skip hostname
+                pos += pos < size; // skip the separator
+                goto find_next_separator; // will skip share
             }
         }
 #ifdef BOOST_FILESYSTEM_WINDOWS_API
         // https://stackoverflow.com/questions/23041983/path-prefixes-and
-        // case "\??\" (NT path prefix)
-        else if (size >= 4 && path[1] == questionmark && path[2] == questionmark && fs::detail::is_directory_separator(path[3]))
+        // case "\??\" or "\Global??\" (NT object manager path prefix)
+        else if (local::parse_nt_path_prefix(path, size, pos))
         {
             parsing_root_name = true;
-            pos += 4;
+
+            // Include UNC device name, hostname and share into the root-name. See the comment above for rationale.
+            if (local::parse_unc_device_prefix(path, size, pos))
+                goto find_next_separator; // will skip share
         }
 #endif
         else
@@ -1293,9 +1359,9 @@ BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v3(path_impl::path_iterato
     size_type root_name_size = 0;
     size_type root_dir_pos = find_root_directory_start(it.m_path_ptr->m_pathname.c_str(), size, root_name_size);
 
-    if (root_dir_pos < size && it.m_pos == root_dir_pos)
+    if (it.m_pos == root_name_size || (root_dir_pos < size && it.m_pos == root_dir_pos))
     {
-        // Was pointing at root directory, decrement to root name
+        // Was pointing at root directory or just past root name (if there is no root directory), decrement to root name
     set_to_root_name:
         it.m_pos = 0u;
         const path::value_type* p = it.m_path_ptr->m_pathname.c_str();
@@ -1353,9 +1419,9 @@ BOOST_FILESYSTEM_DECL void path_algorithms::decrement_v4(path_impl::path_iterato
     size_type root_name_size = 0;
     size_type root_dir_pos = find_root_directory_start(it.m_path_ptr->m_pathname.c_str(), size, root_name_size);
 
-    if (root_dir_pos < size && it.m_pos == root_dir_pos)
+    if (it.m_pos == root_name_size || (root_dir_pos < size && it.m_pos == root_dir_pos))
     {
-        // Was pointing at root directory, decrement to root name
+        // Was pointing at root directory or just past root name (if there is no root directory), decrement to root name
     set_to_root_name:
         it.m_pos = 0u;
         const path::value_type* p = it.m_path_ptr->m_pathname.c_str();

@@ -20,6 +20,7 @@ foo/bar
 /foo/bar
 //net
 //net/foo
+//net/foo/bar
 ///foo///
 ///foo///bar
 /.

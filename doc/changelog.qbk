@@ -18,6 +18,11 @@
 * Added support for setting UTF-8 codecvt facet as the default codecvt facet for path character code conversions. This can be useful if the system locale
   is non-functional (e.g. with Musl C library), if the user knows that filesystem paths are always encoded as UTF-8 on the target platform. This can be
   enabled by defining `BOOST_FILESYSTEM_USE_UTF8_CODECVT_FACET` at Boost.Filesystem build time. ([github_issue 351])
+* [*Breaking change] in UNC path support. Boost.Filesystem now treats share name as part of the path root name, whereas previously only the hostname was
+  included in the root name. This affects path iteration, path observers and relative path resolution. For example,
+  `path("//host/share1/file.txt").lexically_relative("//host/share2/")` now returns an empty path, whereas previously it returned "../share1/file.txt",
+  which was not a valid path. ([github_issue 347])
+* On Windows, `filesystem::path` now recognizes the global session object namespace prefix [^"\\Global??\\"].
 
 [heading 1.92.0]
 

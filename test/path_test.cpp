@@ -436,24 +436,38 @@ void iterator_tests()
 
     itr_ck = "//net/";
     itr_begin = itr = itr_ck.begin();
-    PATH_TEST_EQ(itr->string(), "//net");
+    PATH_TEST_EQ(itr->string(), "//net/");
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, "//net/");
+    BOOST_TEST(itr == itr_begin);
+
+    itr_ck = "//net/share";
+    itr_begin = itr = itr_ck.begin();
+    PATH_TEST_EQ(itr->string(), "//net/share");
+    BOOST_TEST(++itr == itr_ck.end());
+    PATH_TEST_EQ(*--itr, "//net/share");
+    BOOST_TEST(itr == itr_begin);
+
+    itr_ck = "//net/share/";
+    itr_begin = itr = itr_ck.begin();
+    PATH_TEST_EQ(itr->string(), "//net/share");
     PATH_TEST_EQ(*++itr, "/");
     BOOST_TEST(++itr == itr_ck.end());
     PATH_TEST_EQ(*--itr, "/");
-    PATH_TEST_EQ(*--itr, "//net");
+    PATH_TEST_EQ(*--itr, "//net/share");
     BOOST_TEST(itr == itr_begin);
 
-    itr_ck = "//foo///bar///";
+    itr_ck = "//foo/bar///qux///";
     itr_begin = itr = itr_ck.begin();
-    PATH_TEST_EQ(itr->string(), "//foo");
+    PATH_TEST_EQ(itr->string(), "//foo/bar");
     PATH_TEST_EQ(*++itr, "/");
-    PATH_TEST_EQ(*++itr, "bar");
+    PATH_TEST_EQ(*++itr, "qux");
     PATH_TEST_EQ(*++itr, BOOST_FILESYSTEM_V3_TRAILING_DOT);
     BOOST_TEST(++itr == itr_ck.end());
     PATH_TEST_EQ(*--itr, BOOST_FILESYSTEM_V3_TRAILING_DOT);
-    PATH_TEST_EQ(*--itr, "bar");
+    PATH_TEST_EQ(*--itr, "qux");
     PATH_TEST_EQ(*--itr, "/");
-    PATH_TEST_EQ(*--itr, "//foo");
+    PATH_TEST_EQ(*--itr, "//foo/bar");
     BOOST_TEST(itr == itr_begin);
 
     itr_ck = "///foo///bar///";
@@ -545,6 +559,17 @@ void iterator_tests()
         BOOST_TEST_EQ(*--itr, "\\??\\c:");
         BOOST_TEST(itr == itr_begin);
 
+        itr_ck = "\\Global??\\c:\\foo";
+        itr_begin = itr = itr_ck.begin();
+        BOOST_TEST_EQ(*itr, "\\Global??\\c:");
+        BOOST_TEST_EQ(*++itr, "\\");
+        BOOST_TEST_EQ(*++itr, "foo");
+        BOOST_TEST(++itr == itr_ck.end());
+        BOOST_TEST_EQ(*--itr, "foo");
+        BOOST_TEST_EQ(*--itr, "\\");
+        BOOST_TEST_EQ(*--itr, "\\Global??\\c:");
+        BOOST_TEST(itr == itr_begin);
+
         itr_ck = "\\\\\\foo\\\\\\bar\\\\\\";
         itr_begin = itr = itr_ck.begin();
         // three or more leading slashes are to be treated as a single slash
@@ -618,22 +643,76 @@ void iterator_tests()
         BOOST_TEST(*prior(itr_ck.end()) == std::string("//net"));
 
         itr_ck = path("//net/");
-        PATH_TEST_EQ(itr_ck.begin()->string(), "//net");
-        PATH_TEST_EQ(next(itr_ck.begin())->string(), "/");
-        BOOST_TEST(next(next(itr_ck.begin())) == itr_ck.end());
-        BOOST_TEST(prior(prior(itr_ck.end())) == itr_ck.begin());
-        PATH_TEST_EQ(prior(itr_ck.end())->string(), "/");
-        PATH_TEST_EQ(prior(prior(itr_ck.end()))->string(), "//net");
+        PATH_TEST_EQ(itr_ck.begin()->string(), "//net/");
+        BOOST_TEST(next(itr_ck.begin()) == itr_ck.end());
+        BOOST_TEST(prior(itr_ck.end()) == itr_ck.begin());
+        PATH_TEST_EQ(prior(itr_ck.end())->string(), "//net/");
 
         itr_ck = path("//net/foo");
-        BOOST_TEST(*itr_ck.begin() == std::string("//net"));
+        BOOST_TEST(*itr_ck.begin() == std::string("//net/foo"));
+        BOOST_TEST(next(itr_ck.begin()) == itr_ck.end());
+        BOOST_TEST(prior(itr_ck.end()) == itr_ck.begin());
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("//net/foo"));
+
+        itr_ck = path("//net/foo/bar");
+        BOOST_TEST(*itr_ck.begin() == std::string("//net/foo"));
         BOOST_TEST(*next(itr_ck.begin()) == std::string("/"));
-        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("foo"));
+        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("bar"));
         BOOST_TEST(next(next(next(itr_ck.begin()))) == itr_ck.end());
         BOOST_TEST(prior(prior(prior(itr_ck.end()))) == itr_ck.begin());
-        BOOST_TEST(*prior(itr_ck.end()) == std::string("foo"));
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("bar"));
         BOOST_TEST(*prior(prior(itr_ck.end())) == std::string("/"));
-        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("//net"));
+        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("//net/foo"));
+
+        itr_ck = path("\\\\net\\foo\\bar");
+        BOOST_TEST(*itr_ck.begin() == std::string("\\\\net\\foo"));
+        BOOST_TEST(*next(itr_ck.begin()) == std::string("\\"));
+        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("bar"));
+        BOOST_TEST(next(next(next(itr_ck.begin()))) == itr_ck.end());
+        BOOST_TEST(prior(prior(prior(itr_ck.end()))) == itr_ck.begin());
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("bar"));
+        BOOST_TEST(*prior(prior(itr_ck.end())) == std::string("\\"));
+        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("\\\\net\\foo"));
+
+        itr_ck = path("\\\\?\\UNC\\net\\foo\\bar");
+        BOOST_TEST(*itr_ck.begin() == std::string("\\\\?\\UNC\\net\\foo"));
+        BOOST_TEST(*next(itr_ck.begin()) == std::string("\\"));
+        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("bar"));
+        BOOST_TEST(next(next(next(itr_ck.begin()))) == itr_ck.end());
+        BOOST_TEST(prior(prior(prior(itr_ck.end()))) == itr_ck.begin());
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("bar"));
+        BOOST_TEST(*prior(prior(itr_ck.end())) == std::string("\\"));
+        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("\\\\?\\UNC\\net\\foo"));
+
+        itr_ck = path("\\\\.\\UNC\\net\\foo\\bar");
+        BOOST_TEST(*itr_ck.begin() == std::string("\\\\.\\UNC\\net\\foo"));
+        BOOST_TEST(*next(itr_ck.begin()) == std::string("\\"));
+        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("bar"));
+        BOOST_TEST(next(next(next(itr_ck.begin()))) == itr_ck.end());
+        BOOST_TEST(prior(prior(prior(itr_ck.end()))) == itr_ck.begin());
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("bar"));
+        BOOST_TEST(*prior(prior(itr_ck.end())) == std::string("\\"));
+        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("\\\\.\\UNC\\net\\foo"));
+
+        itr_ck = path("\\??\\UNC\\net\\foo\\bar");
+        BOOST_TEST(*itr_ck.begin() == std::string("\\??\\UNC\\net\\foo"));
+        BOOST_TEST(*next(itr_ck.begin()) == std::string("\\"));
+        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("bar"));
+        BOOST_TEST(next(next(next(itr_ck.begin()))) == itr_ck.end());
+        BOOST_TEST(prior(prior(prior(itr_ck.end()))) == itr_ck.begin());
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("bar"));
+        BOOST_TEST(*prior(prior(itr_ck.end())) == std::string("\\"));
+        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("\\??\\UNC\\net\\foo"));
+
+        itr_ck = path("\\Global??\\UNC\\net\\foo\\bar");
+        BOOST_TEST(*itr_ck.begin() == std::string("\\Global??\\UNC\\net\\foo"));
+        BOOST_TEST(*next(itr_ck.begin()) == std::string("\\"));
+        BOOST_TEST(*next(next(itr_ck.begin())) == std::string("bar"));
+        BOOST_TEST(next(next(next(itr_ck.begin()))) == itr_ck.end());
+        BOOST_TEST(prior(prior(prior(itr_ck.end()))) == itr_ck.begin());
+        BOOST_TEST(*prior(itr_ck.end()) == std::string("bar"));
+        BOOST_TEST(*prior(prior(itr_ck.end())) == std::string("\\"));
+        BOOST_TEST(*prior(prior(prior(itr_ck.end()))) == std::string("\\Global??\\UNC\\net\\foo"));
 
         itr_ck = path("prn:");
         BOOST_TEST(*itr_ck.begin() == std::string("prn:"));
@@ -750,13 +829,13 @@ void non_member_tests()
 
 #if BOOST_FILESYSTEM_VERSION == 3
         PATH_TEST_EQ(path("\\\\net1\\foo") / "\\\\net2\\bar", "\\\\net1\\foo\\\\net2\\bar");
-        PATH_TEST_EQ(path("\\\\net1\\foo") / "\\bar", "\\\\net1\\foo\\bar");
+        PATH_TEST_EQ(path("\\\\net1\\foo\\qux") / "\\bar", "\\\\net1\\foo\\qux\\bar");
         PATH_TEST_EQ(path("c:\\foo") / "d:\\bar", "c:\\foo\\d:\\bar");
         PATH_TEST_EQ(path("c:\\foo") / "\\bar", "c:\\foo\\bar");
         PATH_TEST_EQ(path("c:foo") / "\\bar", "c:foo\\bar");
 #else
         PATH_TEST_EQ(path("\\\\net1\\foo") / "\\\\net2\\bar", "\\\\net2\\bar");
-        PATH_TEST_EQ(path("\\\\net1\\foo") / "\\bar", "\\\\net1\\bar");
+        PATH_TEST_EQ(path("\\\\net1\\foo\\qux") / "\\bar", "\\\\net1\\foo\\bar");
         PATH_TEST_EQ(path("c:\\foo") / "d:\\bar", "d:\\bar");
         PATH_TEST_EQ(path("c:\\foo") / "\\bar", "c:\\bar");
         PATH_TEST_EQ(path("c:foo") / "\\bar", "c:\\bar");
@@ -1428,16 +1507,16 @@ void query_and_decomposition_tests()
     p = q = path("//net");
     PATH_TEST_EQ(p.string(), "//net");
     PATH_TEST_EQ(p.relative_path().string(), "");
-#if BOOST_FILESYSTEM_VERSION == 3
-    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-#else
-    PATH_TEST_EQ(q.remove_filename().string(), p.string());
-#endif
     PATH_TEST_EQ(p.parent_path().string(), "");
 #if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(p.filename(), "//net");
 #else
     PATH_TEST_EQ(p.filename(), "");
+#endif
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#else
+    PATH_TEST_EQ(q.remove_filename().string(), p.string());
 #endif
     PATH_TEST_EQ(p.root_name(), "//net");
     PATH_TEST_EQ(p.root_directory(), "");
@@ -1456,37 +1535,68 @@ void query_and_decomposition_tests()
 
     p = q = path("//net/");
     BOOST_TEST(p.relative_path().string() == "");
-    BOOST_TEST(p.parent_path().string() == "//net");
+    BOOST_TEST(p.parent_path().string() == "");
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(p.filename(), "//net/");
+#else
+    PATH_TEST_EQ(p.filename(), "");
+#endif
 #if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    BOOST_TEST(p.filename() == "/");
 #else
     PATH_TEST_EQ(q.remove_filename().string(), p.string());
-    BOOST_TEST(p.filename() == "");
 #endif
-    BOOST_TEST(p.root_name() == "//net");
-    BOOST_TEST(p.root_directory() == "/");
+    BOOST_TEST(p.root_name() == "//net/");
+    BOOST_TEST(p.root_directory() == "");
     BOOST_TEST(p.root_path().string() == "//net/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(p.has_root_name());
-    BOOST_TEST(p.has_root_directory());
+    BOOST_TEST(!p.has_root_directory());
     BOOST_TEST(!p.has_relative_path());
 #if BOOST_FILESYSTEM_VERSION == 3
     BOOST_TEST(p.has_filename());
 #else
     BOOST_TEST(!p.has_filename());
 #endif
-    BOOST_TEST(p.has_parent_path());
-    BOOST_TEST(p.is_absolute());
+    BOOST_TEST(!p.has_parent_path());
+    BOOST_TEST(!p.is_absolute());
 
     p = q = path("//net/foo");
-    BOOST_TEST(p.relative_path().string() == "foo");
-    BOOST_TEST(p.parent_path().string() == "//net/");
+    BOOST_TEST(p.relative_path().string() == "");
+    BOOST_TEST(p.parent_path().string() == "");
+#if BOOST_FILESYSTEM_VERSION == 3
+    PATH_TEST_EQ(p.filename(), "//net/foo");
+#else
+    PATH_TEST_EQ(p.filename(), "");
+#endif
+#if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
-    BOOST_TEST(p.filename() == "foo");
-    BOOST_TEST(p.root_name() == "//net");
+#else
+    PATH_TEST_EQ(q.remove_filename().string(), p.string());
+#endif
+    BOOST_TEST(p.root_name() == "//net/foo");
+    BOOST_TEST(p.root_directory() == "");
+    BOOST_TEST(p.root_path().string() == "//net/foo");
+    BOOST_TEST(p.has_root_path());
+    BOOST_TEST(p.has_root_name());
+    BOOST_TEST(!p.has_root_directory());
+    BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+    BOOST_TEST(p.has_filename());
+#else
+    BOOST_TEST(!p.has_filename());
+#endif
+    BOOST_TEST(!p.has_parent_path());
+    BOOST_TEST(!p.is_absolute());
+
+    p = q = path("//net/foo/bar");
+    BOOST_TEST(p.relative_path().string() == "bar");
+    BOOST_TEST(p.parent_path().string() == "//net/foo/");
+    BOOST_TEST(p.filename() == "bar");
+    PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+    BOOST_TEST(p.root_name() == "//net/foo");
     BOOST_TEST(p.root_directory() == "/");
-    BOOST_TEST(p.root_path().string() == "//net/");
+    BOOST_TEST(p.root_path().string() == "//net/foo/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -1495,18 +1605,18 @@ void query_and_decomposition_tests()
     BOOST_TEST(p.has_parent_path());
     BOOST_TEST(p.is_absolute());
 
-    p = q = path("//net///foo");
-    PATH_TEST_EQ(p.relative_path().string(), "foo");
-    PATH_TEST_EQ(p.parent_path().string(), "//net/");
+    p = q = path("//net/foo///bar");
+    PATH_TEST_EQ(p.relative_path().string(), "bar");
+    PATH_TEST_EQ(p.parent_path().string(), "//net/foo/");
+    PATH_TEST_EQ(p.filename(), "bar");
 #if BOOST_FILESYSTEM_VERSION == 3
     PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
 #else
-    PATH_TEST_EQ(q.remove_filename().string(), "//net///");
+    PATH_TEST_EQ(q.remove_filename().string(), "//net/foo///");
 #endif
-    PATH_TEST_EQ(p.filename(), "foo");
-    PATH_TEST_EQ(p.root_name(), "//net");
+    PATH_TEST_EQ(p.root_name(), "//net/foo");
     PATH_TEST_EQ(p.root_directory(), "/");
-    PATH_TEST_EQ(p.root_path().string(), "//net/");
+    PATH_TEST_EQ(p.root_path().string(), "//net/foo/");
     BOOST_TEST(p.has_root_path());
     BOOST_TEST(p.has_root_name());
     BOOST_TEST(p.has_root_directory());
@@ -1786,6 +1896,22 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
+        p = q = path("\\Global??\\c:foo");
+        PATH_TEST_EQ(p.relative_path().string(), "foo");
+        PATH_TEST_EQ(p.parent_path().string(), "\\Global??\\c:");
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+        PATH_TEST_EQ(p.filename(), "foo");
+        PATH_TEST_EQ(p.root_name(), "\\Global??\\c:");
+        PATH_TEST_EQ(p.root_directory(), "");
+        PATH_TEST_EQ(p.root_path().string(), "\\Global??\\c:");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(!p.has_root_directory());
+        BOOST_TEST(p.has_relative_path());
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(!p.is_absolute());
+
         p = q = path("c:/");
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "c:");
@@ -1874,6 +2000,31 @@ void query_and_decomposition_tests()
         PATH_TEST_EQ(p.root_name(), "\\??\\c:");
         PATH_TEST_EQ(p.root_directory(), "\\");
         PATH_TEST_EQ(p.root_path().string(), "\\??\\c:\\");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(p.has_root_directory());
+        BOOST_TEST(!p.has_relative_path());
+#if BOOST_FILESYSTEM_VERSION == 3
+        BOOST_TEST(p.has_filename());
+#else
+        BOOST_TEST(!p.has_filename());
+#endif
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(p.is_absolute());
+
+        p = q = path("\\Global??\\c:\\");
+        PATH_TEST_EQ(p.relative_path().string(), "");
+        PATH_TEST_EQ(p.parent_path().string(), "\\Global??\\c:");
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+        PATH_TEST_EQ(p.filename(), "\\");
+#else
+        PATH_TEST_EQ(q.remove_filename().string(), p.string());
+        PATH_TEST_EQ(p.filename(), "");
+#endif
+        PATH_TEST_EQ(p.root_name(), "\\Global??\\c:");
+        PATH_TEST_EQ(p.root_directory(), "\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\Global??\\c:\\");
         BOOST_TEST(p.has_root_path());
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(p.has_root_directory());
@@ -2018,6 +2169,26 @@ void query_and_decomposition_tests()
         BOOST_TEST(p.has_parent_path());
         BOOST_TEST(p.is_absolute());
 
+        p = q = path("\\Global??\\c:\\foo\\bar");
+        PATH_TEST_EQ(p.relative_path().string(), "foo\\bar");
+        PATH_TEST_EQ(p.parent_path().string(), "\\Global??\\c:\\foo");
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#else
+        PATH_TEST_EQ(q.remove_filename().string(), "\\Global??\\c:\\foo\\");
+#endif
+        PATH_TEST_EQ(p.filename(), "bar");
+        PATH_TEST_EQ(p.root_name(), "\\Global??\\c:");
+        PATH_TEST_EQ(p.root_directory(), "\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\Global??\\c:\\");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(p.has_root_directory());
+        BOOST_TEST(p.has_relative_path());
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(p.is_absolute());
+
         p = q = path("prn:");
         PATH_TEST_EQ(p.relative_path().string(), "");
         PATH_TEST_EQ(p.parent_path().string(), "");
@@ -2043,18 +2214,98 @@ void query_and_decomposition_tests()
         BOOST_TEST(!p.has_parent_path());
         BOOST_TEST(!p.is_absolute());
 
-        p = q = path("\\\\net\\\\\\foo");
-        PATH_TEST_EQ(p.relative_path().string(), "foo");
-        PATH_TEST_EQ(p.parent_path().string(), "\\\\net\\");
+        p = q = path("\\\\net\\foo\\\\\\bar");
+        PATH_TEST_EQ(p.relative_path().string(), "bar");
+        PATH_TEST_EQ(p.parent_path().string(), "\\\\net\\foo\\");
 #if BOOST_FILESYSTEM_VERSION == 3
         PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
 #else
-        PATH_TEST_EQ(q.remove_filename().string(), "\\\\net\\\\\\");
+        PATH_TEST_EQ(q.remove_filename().string(), "\\\\net\\foo\\\\\\");
 #endif
-        PATH_TEST_EQ(p.filename(), "foo");
-        PATH_TEST_EQ(p.root_name(), "\\\\net");
+        PATH_TEST_EQ(p.filename(), "bar");
+        PATH_TEST_EQ(p.root_name(), "\\\\net\\foo");
         PATH_TEST_EQ(p.root_directory(), "\\");
-        PATH_TEST_EQ(p.root_path().string(), "\\\\net\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\\\net\\foo\\");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(p.has_root_directory());
+        BOOST_TEST(p.has_relative_path());
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(p.is_absolute());
+
+        p = q = path("\\\\?\\UNC\\net\\foo\\\\\\bar");
+        PATH_TEST_EQ(p.relative_path().string(), "bar");
+        PATH_TEST_EQ(p.parent_path().string(), "\\\\?\\UNC\\net\\foo\\");
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#else
+        PATH_TEST_EQ(q.remove_filename().string(), "\\\\?\\UNC\\net\\foo\\\\\\");
+#endif
+        PATH_TEST_EQ(p.filename(), "bar");
+        PATH_TEST_EQ(p.root_name(), "\\\\?\\UNC\\net\\foo");
+        PATH_TEST_EQ(p.root_directory(), "\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\\\?\\UNC\\net\\foo\\");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(p.has_root_directory());
+        BOOST_TEST(p.has_relative_path());
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(p.is_absolute());
+
+        p = q = path("\\\\.\\UNC\\net\\foo\\\\\\bar");
+        PATH_TEST_EQ(p.relative_path().string(), "bar");
+        PATH_TEST_EQ(p.parent_path().string(), "\\\\.\\UNC\\net\\foo\\");
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#else
+        PATH_TEST_EQ(q.remove_filename().string(), "\\\\.\\UNC\\net\\foo\\\\\\");
+#endif
+        PATH_TEST_EQ(p.filename(), "bar");
+        PATH_TEST_EQ(p.root_name(), "\\\\.\\UNC\\net\\foo");
+        PATH_TEST_EQ(p.root_directory(), "\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\\\.\\UNC\\net\\foo\\");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(p.has_root_directory());
+        BOOST_TEST(p.has_relative_path());
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(p.is_absolute());
+
+        p = q = path("\\??\\UNC\\net\\foo\\\\\\bar");
+        PATH_TEST_EQ(p.relative_path().string(), "bar");
+        PATH_TEST_EQ(p.parent_path().string(), "\\??\\UNC\\net\\foo\\");
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#else
+        PATH_TEST_EQ(q.remove_filename().string(), "\\??\\UNC\\net\\foo\\\\\\");
+#endif
+        PATH_TEST_EQ(p.filename(), "bar");
+        PATH_TEST_EQ(p.root_name(), "\\??\\UNC\\net\\foo");
+        PATH_TEST_EQ(p.root_directory(), "\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\??\\UNC\\net\\foo\\");
+        BOOST_TEST(p.has_root_path());
+        BOOST_TEST(p.has_root_name());
+        BOOST_TEST(p.has_root_directory());
+        BOOST_TEST(p.has_relative_path());
+        BOOST_TEST(p.has_filename());
+        BOOST_TEST(p.has_parent_path());
+        BOOST_TEST(p.is_absolute());
+
+        p = q = path("\\Global??\\UNC\\net\\foo\\\\\\bar");
+        PATH_TEST_EQ(p.relative_path().string(), "bar");
+        PATH_TEST_EQ(p.parent_path().string(), "\\Global??\\UNC\\net\\foo\\");
+#if BOOST_FILESYSTEM_VERSION == 3
+        PATH_TEST_EQ(q.remove_filename().string(), p.parent_path().string());
+#else
+        PATH_TEST_EQ(q.remove_filename().string(), "\\Global??\\UNC\\net\\foo\\\\\\");
+#endif
+        PATH_TEST_EQ(p.filename(), "bar");
+        PATH_TEST_EQ(p.root_name(), "\\Global??\\UNC\\net\\foo");
+        PATH_TEST_EQ(p.root_directory(), "\\");
+        PATH_TEST_EQ(p.root_path().string(), "\\Global??\\UNC\\net\\foo\\");
         BOOST_TEST(p.has_root_path());
         BOOST_TEST(p.has_root_name());
         BOOST_TEST(p.has_root_directory());
@@ -2679,7 +2930,7 @@ void generic_path_tests()
 
     BOOST_TEST_EQ(path("foo//bar").generic_path().string(), std::string("foo/bar"));
 
-    BOOST_TEST_EQ(path("//net//foo//bar").generic_path().string(), std::string("//net/foo/bar"));
+    BOOST_TEST_EQ(path("//net/foo//bar").generic_path().string(), std::string("//net/foo/bar"));
 
     if (platform == "Windows")
     {
@@ -2690,14 +2941,14 @@ void generic_path_tests()
 
 #if BOOST_FILESYSTEM_VERSION == 3
         BOOST_TEST_EQ(path("\\\\net\\foo\\bar").generic_path().string(), std::string("//net/foo/bar"));
-        BOOST_TEST_EQ(path("\\\\net\\\\foo\\/bar//zoo").generic_path().string(), std::string("//net/foo/bar/zoo"));
+        BOOST_TEST_EQ(path("\\\\net\\foo\\/bar//zoo").generic_path().string(), std::string("//net/foo/bar/zoo"));
 
         BOOST_TEST_EQ(path("\\\\?\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("//?/c:/foo/bar/zoo"));
         BOOST_TEST_EQ(path("\\\\.\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("//./c:/foo/bar/zoo"));
         BOOST_TEST_EQ(path("\\??\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("/?" "?/c:/foo/bar/zoo")); // note: break trigraph
 #else
-        BOOST_TEST_EQ(path("\\\\net\\foo\\bar").generic_path().string(), std::string("\\\\net/foo/bar"));
-        BOOST_TEST_EQ(path("\\\\net\\\\foo\\/bar//zoo").generic_path().string(), std::string("\\\\net/foo/bar/zoo"));
+        BOOST_TEST_EQ(path("\\\\net\\foo\\bar").generic_path().string(), std::string("\\\\net\\foo/bar"));
+        BOOST_TEST_EQ(path("\\\\net\\foo\\/bar//zoo").generic_path().string(), std::string("\\\\net\\foo/bar/zoo"));
 
         BOOST_TEST_EQ(path("\\\\?\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("\\\\?\\c:/foo/bar/zoo"));
         BOOST_TEST_EQ(path("\\\\.\\c:\\\\foo\\\\bar//zoo").generic_path().string(), std::string("\\\\.\\c:/foo/bar/zoo"));
@@ -2779,19 +3030,19 @@ void lexically_normal_tests()
     PATH_TEST_EQ(path("//..net").lexically_normal().generic_path(), "//..net");
     PATH_TEST_EQ(path("//net/..").lexically_normal().generic_path(), "//net/..");
     PATH_TEST_EQ(path("//net/foo").lexically_normal().generic_path(), "//net/foo");
-    PATH_TEST_EQ(path("//net/foo/").lexically_normal().generic_path(), "//net/foo/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
-    PATH_TEST_EQ(path("//net/foo/..").lexically_normal().generic_path(), "//net/");
-    PATH_TEST_EQ(path("//net/foo/../").lexically_normal().generic_path(), "//net/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
+    PATH_TEST_EQ(path("//net/foo/").lexically_normal().generic_path(), "//net/foo/");
+    PATH_TEST_EQ(path("//net/foo/bar/..").lexically_normal().generic_path(), "//net/foo/");
+    PATH_TEST_EQ(path("//net/foo/bar/../").lexically_normal().generic_path(), "//net/foo/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
 
     PATH_TEST_EQ(path("/net/foo/bar").lexically_normal().generic_path(), "/net/foo/bar");
     PATH_TEST_EQ(path("/net/foo/bar/").lexically_normal().generic_path(), "/net/foo/bar/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
     PATH_TEST_EQ(path("/net/foo/..").lexically_normal().generic_path(), "/net");
     PATH_TEST_EQ(path("/net/foo/../").lexically_normal().generic_path(), "/net/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
 
-    PATH_TEST_EQ(path("//net//foo//bar").lexically_normal().generic_path(), "//net/foo/bar");
-    PATH_TEST_EQ(path("//net//foo//bar//").lexically_normal().generic_path(), "//net/foo/bar/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
-    PATH_TEST_EQ(path("//net//foo//..").lexically_normal().generic_path(), "//net/");
-    PATH_TEST_EQ(path("//net//foo//..//").lexically_normal().generic_path(), "//net/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
+    PATH_TEST_EQ(path("//net/foo//bar").lexically_normal().generic_path(), "//net/foo/bar");
+    PATH_TEST_EQ(path("//net/foo//bar//").lexically_normal().generic_path(), "//net/foo/bar/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
+    PATH_TEST_EQ(path("//net/foo//bar//..").lexically_normal().generic_path(), "//net/foo/");
+    PATH_TEST_EQ(path("//net/foo//bar//..//").lexically_normal().generic_path(), "//net/foo/" BOOST_FILESYSTEM_V3_TRAILING_DOT);
 
     PATH_TEST_EQ(path("///net///foo///bar").lexically_normal().generic_path(), "/net/foo/bar");
     PATH_TEST_EQ(path("///net///foo///bar///").lexically_normal().generic_path(), "/net/foo/bar/" BOOST_FILESYSTEM_V3_TRAILING_DOT);

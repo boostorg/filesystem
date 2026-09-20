@@ -56,6 +56,9 @@ void lexically_relative_test()
     BOOST_TEST(path("a/b/c").lexically_relative("a/b/d/..") == "c");
     BOOST_TEST(path("a/b/c").lexically_relative("a/b/d/../") == "c");
 
+    BOOST_TEST(path("//host/share/a/b/c").lexically_relative("//host/share/a/b/d/../") == "c");
+    BOOST_TEST(path("//host/share/a/b/c").lexically_relative("//host/share/d/e/f") == "../../../a/b/c");
+
     // paths unrelated except first element, and first element is root directory
     BOOST_TEST(path("/a/b/c").lexically_relative("/x") == "../a/b/c");
     BOOST_TEST(path("/a/b/c").lexically_relative("/x/y") == "../../a/b/c");
@@ -69,6 +72,9 @@ void lexically_relative_test()
     BOOST_TEST(path("a/b/c").lexically_relative("/x/y") == "");
     BOOST_TEST(path("a/b/c").lexically_relative("/x/y/z") == "");
     BOOST_TEST(path("a/b/c").lexically_relative("/a/b/c") == "");
+
+    BOOST_TEST(path("//host/share1/a/b/c").lexically_relative("//host/share2/a/b/c") == "");
+    BOOST_TEST(path("//host/share1/a/b/c").lexically_relative("//host/share2/d/e/f") == "");
 
     // TODO: add some Windows-only test cases that probe presence or absence of
     // drive specifier-and root-directory

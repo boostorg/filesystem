@@ -798,20 +798,23 @@ void test_decompositions()
     CHECK(path("/").root_name().string() == "");
     CHECK(path("/foo").root_name().string() == "");
     CHECK(path("//netname").root_name().string() == "//netname");
-    CHECK(path("//netname/foo").root_name().string() == "//netname");
+    CHECK(path("//netname/foo").root_name().string() == "//netname/foo");
+    CHECK(path("//netname/foo/bar").root_name().string() == "//netname/foo");
 
     CHECK(path("").root_directory().string() == "");
     CHECK(path("foo").root_directory().string() == "");
     CHECK(path("/").root_directory().string() == "/");
     CHECK(path("/foo").root_directory().string() == "/");
     CHECK(path("//netname").root_directory().string() == "");
-    CHECK(path("//netname/foo").root_directory().string() == "/");
+    CHECK(path("//netname/foo").root_directory().string() == "");
+    CHECK(path("//netname/foo/bar").root_directory().string() == "/");
 
     CHECK(path("").root_path().string() == "");
     CHECK(path("/").root_path().string() == "/");
     CHECK(path("/foo").root_path().string() == "/");
     CHECK(path("//netname").root_path().string() == "//netname");
-    CHECK(path("//netname/foo").root_path().string() == "//netname/");
+    CHECK(path("//netname/foo").root_path().string() == "//netname/foo");
+    CHECK(path("//netname/foo/bar").root_path().string() == "//netname/foo/");
 
 #ifdef BOOST_FILESYSTEM_WINDOWS_API
     CHECK(path("c:/foo").root_path().string() == "c:/");
@@ -844,6 +847,7 @@ void test_queries()
 
     path p1("");
     path p2("//netname/foo.doo");
+    path p3("//netname/foo.doo/bar.qux");
 
     CHECK(p1.empty());
     CHECK(!p1.has_root_path());
@@ -860,14 +864,32 @@ void test_queries()
     CHECK(!p2.empty());
     CHECK(p2.has_root_path());
     CHECK(p2.has_root_name());
-    CHECK(p2.has_root_directory());
-    CHECK(p2.has_relative_path());
-    CHECK(p2.has_parent_path());
+    CHECK(!p2.has_root_directory());
+    CHECK(!p2.has_relative_path());
+    CHECK(!p2.has_parent_path());
+#if BOOST_FILESYSTEM_VERSION == 3
     CHECK(p2.has_filename());
     CHECK(p2.has_stem());
     CHECK(p2.has_extension());
-    CHECK(p2.is_absolute());
-    CHECK(!p2.is_relative());
+#else
+    CHECK(!p2.has_filename());
+    CHECK(!p2.has_stem());
+    CHECK(!p2.has_extension());
+#endif
+    CHECK(!p2.is_absolute());
+    CHECK(p2.is_relative());
+
+    CHECK(!p3.empty());
+    CHECK(p3.has_root_path());
+    CHECK(p3.has_root_name());
+    CHECK(p3.has_root_directory());
+    CHECK(p3.has_relative_path());
+    CHECK(p3.has_parent_path());
+    CHECK(p3.has_filename());
+    CHECK(p3.has_stem());
+    CHECK(p3.has_extension());
+    CHECK(p3.is_absolute());
+    CHECK(!p3.is_relative());
 }
 
 //  test_imbue_locale  ---------------------------------------------------------------//

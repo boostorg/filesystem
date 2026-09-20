@@ -740,15 +740,26 @@ Windows implementations yield different results. The top value is the ISO/IEC 99
 [[^//net]]
 ][
 [[^//net/foo]]
-[[^//net], [^/], [^foo]]
 [[^//net/foo]]
 [[^//net/foo]]
-[[^//net/]]
-[[^//net]]
+[[^//net/foo]]
+[[^//net/foo]]
+[[^//net/foo]]
+[['empty]]
+[['empty]]
+[['empty]]
+[['empty]]
+][
+[[^//net/foo/bar]]
+[[^//net/foo], [^/], [^bar]]
+[[^//net/foo/bar]]
+[[^//net/foo/bar]]
+[[^//net/foo/]]
+[[^//net/foo]]
 [[^/]]
-[[^foo]]
-[[^//net/]]
-[[^foo]]
+[[^bar]]
+[[^//net/foo/]]
+[[^bar]]
 ][
 [[^///foo///]]
 [[^/], [^foo], [^.]]
@@ -1240,6 +1251,38 @@ Windows implementations yield different results. The top value is the ISO/IEC 99
 
 [endsect]
 
+[section:unc-path-support UNC Path Support]
+
+Boost.Filesystem recognizes [@https://en.wikipedia.org/wiki/Path_(computing)#UNC Universal Naming Convention (UNC) paths] starting with two
+['directory-separator] characters (forward slashes on POSIX or Windows or, on Windows, backslashes). This means [class path] will recognize
+this prefix and parse the path accordingly.
+
+[note More than two leading ['directory-separator]s are interpreted as a root directory and a number of duplicate separators, not a UNC path.]
+
+For example:
+
+```
+path p("//hostname/share/file.txt");
+assert(p.root_name() == "//hostname/share");
+assert(p.root_directory() == "/");
+assert(p.relative_path() == "file.txt");
+```
+
+Note that the share name is included in the ['root-name] of the path. This makes different shares of the same host unrelated filesystems. The rationale
+is that the host name alone is not sufficient to open a file or list files in a directory (i.e. there is no "//hostname" file and operating systems don't
+support listing shares using normal filesystem operations). Also note that the slash between the hostname and the share name is not considered as a
+['directory-separator] and is part of the ['root-name] as well. As such, any duplicate slashes in ['root-name] are not ignored or removed.
+
+Whether filesystem operations can be invoked on UNC paths is subject to the underlying operating system support. Windows is known to support UNC paths
+for filesystem operations, while most POSIX systems do not. Boost.Filesystem does not emulate filesystem operations on the operating systems without
+the native support; invoking filesystem operations in an unsupporting system has platform-specific behavior.
+
+[note An unsupporting operating system may or may not fail a filesystem operation on a UNC path. Users should not expect any particular error codes or
+that an error will be returned at all. For example, an operating system may interpret the UNC path in an implementation-defined way and successfully
+execute the operation. Users are recommended to limit use of UNC paths only to operating systems that are known to natively support them.]
+
+[endsect]
+
 [section:windows-path-prefixes Long Paths on Windows and the "\\\\?\\" Namespace Prefix]
 
 The Microsoft Windows "Maximum Path Length Limitation" specifies:
@@ -1252,20 +1295,28 @@ The Windows API has many functions that also have Unicode versions to permit an 
 be doubled, of course.\]]
 ]
 
-Because most Boost.Filesystem operational functions just pass the contents of a class path object to the Windows API, they do work with the extended-length
-prefixes. But some won't work, because of the limitations imposed by Windows.
+Boost.Filesystem has limited support for Windows-specific path prefixes such as "\\\\?\\". Because most Boost.Filesystem operational functions just pass
+the contents of a class path object to the Windows API, they do work with the extended-length prefixes. But some won't work, because of the limitations
+imposed by Windows.
 
 Effectively, the "\\\\?\\" prefix informs the underlying Windows API that the path identifies an object in the Win32 filesystem namespace and disables
 most of the internal path processing, including normalization, by the Windows API. While it lifts the length limitation, this imposes a number of other
 restrictions on the acceptable paths that are listed in the section below. There are a number of other prefixes that have different special meanings,
-such as "\\\\.\\" (a local device namespace prefix) and "\\??\\" (NT object namespace prefix). Note that UNC paths can be extended with the prefixes
-by referring to a special "UNC" device. For example, "\\\\server\\share" can be extended as "\\\\?\\UNC\\server\\share".
+such as "\\\\.\\" (a local device namespace prefix), "\\??\\" (local session object namespace prefix) and "\\Global??\\" (global session object namespace
+prefix). Note that UNC paths can be extended with the prefixes by referring to a special "UNC" device. For example, "\\\\server\\share" can be extended
+as "\\\\?\\UNC\\server\\share".
 
 In terms of Boost.Filesystem, the namespace prefixes are considered as parts of the path's root name. For example, the root name of "\\\\?\\c:\\foo"
 is "\\\\?\\c:". This interpretation is chosen to allow root paths to be iterable, that is you can list the contents of the "\\\\?\\c:\\" directory,
 provided that drive C: exists and you have the necessary permissions.
 
 [note You can't list the contents of "\\\\?\\" as such path does not exist.]
+
+In addition, this interpretation prevents forming invalid relative paths by `path::lexically_relative`, where one of the ".." path elements would
+reference a location outside the root directory. In other words, e.g. "\\\\?\\c:\\" and "\\\\?\\d:\\" are treated as unrelated paths.
+
+NT object manager prefixes "\\??\\" and "\\Global??\\" can be used to reference objects other than files on a file system. Paths with such prefixes are
+not universally accepted by file system-related Windows APIs and tools, and should be avoided for the purpose of working with file systems.
 
 [section Cautions for Paths with Namespace Prefixes]
 
