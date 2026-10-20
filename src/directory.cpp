@@ -241,6 +241,14 @@ boost::scope::unique_fd openat_directory(int basedir_fd, path const& p, director
 
 BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_imp_extra_data_alignment = 16u;
 
+#if defined(BOOST_GCC) && (BOOST_GCC >= 110000)
+#pragma GCC diagnostic push
+// 'void free(void*)' called on pointer returned from a mismatched allocation function
+// Bogus warning due to the compiler inlining `operator delete` but not `operator new`.
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=103993
+#pragma GCC diagnostic ignored "-Wmismatched-new-delete"
+#endif
+
 BOOST_FILESYSTEM_DECL void* dir_itr_imp::operator new(std::size_t class_size, std::size_t extra_size) noexcept
 {
     if (extra_size > 0)
@@ -263,6 +271,10 @@ BOOST_FILESYSTEM_DECL void dir_itr_imp::operator delete(void* p) noexcept
 {
     std::free(p);
 }
+
+#if defined(BOOST_GCC) && (BOOST_GCC >= 110000)
+#pragma GCC diagnostic pop
+#endif
 
 namespace {
 
