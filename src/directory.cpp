@@ -241,7 +241,11 @@ boost::scope::unique_fd openat_directory(int basedir_fd, path const& p, director
 
 BOOST_CONSTEXPR_OR_CONST std::size_t dir_itr_imp_extra_data_alignment = 16u;
 
-BOOST_FILESYSTEM_DECL void* dir_itr_imp::operator new(std::size_t class_size, std::size_t extra_size) noexcept
+// The class-specific operator new and operator delete are kept out of line as a pair. If GCC inlines only one of them
+// into a caller, it sees malloc paired with free through the new/delete expressions and reports a false
+// -Wmismatched-new-delete (an error with -Werror).
+
+BOOST_FILESYSTEM_DECL BOOST_NOINLINE void* dir_itr_imp::operator new(std::size_t class_size, std::size_t extra_size) noexcept
 {
     if (extra_size > 0)
         class_size = (class_size + dir_itr_imp_extra_data_alignment - 1u) & ~(dir_itr_imp_extra_data_alignment - 1u);
@@ -254,12 +258,12 @@ BOOST_FILESYSTEM_DECL void* dir_itr_imp::operator new(std::size_t class_size, st
     return p;
 }
 
-BOOST_FILESYSTEM_DECL void dir_itr_imp::operator delete(void* p, std::size_t extra_size) noexcept
+BOOST_FILESYSTEM_DECL BOOST_NOINLINE void dir_itr_imp::operator delete(void* p, std::size_t extra_size) noexcept
 {
     std::free(p);
 }
 
-BOOST_FILESYSTEM_DECL void dir_itr_imp::operator delete(void* p) noexcept
+BOOST_FILESYSTEM_DECL BOOST_NOINLINE void dir_itr_imp::operator delete(void* p) noexcept
 {
     std::free(p);
 }
